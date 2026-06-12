@@ -133,6 +133,29 @@ test("web modal restores focus and allows nested dropdowns above the surface", a
   expect(optionBox?.y).toBeGreaterThanOrEqual((modalBox?.y ?? 0) - 1);
 });
 
+test("date field opens the calendar, navigates months, and picks a day", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=date-examples--single-date-field");
+
+  const input = page.getByLabel("Year ends");
+  await expect(input).toHaveValue("31 Mar 2026");
+
+  // Focusing the input opens the calendar on the value's month.
+  await input.click();
+  await expect(page.getByText("March 2026")).toBeVisible();
+  await page.getByRole("button", { name: "15 Mar 2026" }).click();
+  await expect(input).toHaveValue("15 Mar 2026");
+  await expect(page.getByText("March 2026")).toBeHidden();
+
+  // Reopen and step to the previous month, then pick a day there.
+  await input.click();
+  await page.getByRole("button", { name: "Previous month" }).click();
+  await expect(page.getByText("February 2026")).toBeVisible();
+  await page.getByRole("button", { name: "10 Feb 2026" }).click();
+  await expect(input).toHaveValue("10 Feb 2026");
+});
+
 async function dropdownScrollState(page: Page, label: string) {
   return page
     .getByRole("button", { exact: true, name: label })
