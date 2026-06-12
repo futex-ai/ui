@@ -6,7 +6,7 @@ calling the binary directly.
 
 ## Responsibilities
 
-- Provide one command for the full local verification suite.
+- Provide one command for the JavaScript verification suite.
 - Provide one read-only AI review command matching the accounting repository
   workflow.
 - Keep repository automation close to the codebase and easy to run in CI or
@@ -14,8 +14,7 @@ calling the binary directly.
 
 ## What This Crate Does
 
-- Runs Markdown linting, whitespace checks, npm verification, Rust formatting,
-  clippy, and Rust tests through `cargo xtask check`.
+- Runs the existing npm verification suite through `cargo xtask check`.
 - Runs a read-only Codex review against `origin/main` through
   `cargo xtask review`.
 - Prints each child command before running it so failures are easy to reproduce.
@@ -40,7 +39,7 @@ cargo test --workspace
 ### Key Code
 
 - `src/cli.rs` - command-line parsing and dispatch.
-- `src/check.rs` - local verification orchestration.
+- `src/check.rs` - JavaScript verification orchestration.
 - `src/review.rs` - read-only Codex review wrapper.
 - `src/command.rs` - command execution helper.
 

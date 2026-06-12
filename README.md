@@ -33,7 +33,7 @@ npm run storybook:build
 npm run test:browser
 ```
 
-Run the full local verification suite with:
+Run the full JavaScript verification suite with:
 
 ```bash
 cargo xtask check
