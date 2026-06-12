@@ -5,7 +5,8 @@ surfaces. The first consumers are the accounting app and the Juno app.
 
 ## Key Features
 
-- Shared dropdown, selector, combobox, segmented control, and modal primitives.
+- Shared dropdown, selector, combobox, segmented control, switch, and modal
+  primitives.
 - Themeable visual tokens so consumers can use their own brand primary color.
 - Expo and React Native Web compatible platform files.
 - Focused unit tests, browser interaction tests, and package export checks.
@@ -19,6 +20,7 @@ The package name is `@futex/ui`. Public exports are available from:
 - `@futex/ui/dropdown` for dropdown, selector, combobox, and layer helpers.
 - `@futex/ui/modal` for web modal frame, portal, model, and layer helpers.
 - `@futex/ui/segmented` for themed single-select segmented controls.
+- `@futex/ui/switch` for themed binary on/off switches.
 - `@futex/ui/theme` for `SharedUiThemeProvider`, default accounting-style
   tokens, the Juno token preset, and `createSharedUiTheme`.
 
@@ -75,6 +77,7 @@ Storybook is built to `storybook-static`.
 - Modal components: [src/modal/README.md](src/modal/README.md)
 - Segmented control component:
   [src/segmented/README.md](src/segmented/README.md)
+- Switch component: [src/switch/README.md](src/switch/README.md)
 - Browser tests: [tests/browser/storybook.spec.ts](tests/browser/storybook.spec.ts)
 - Repository automation: [xtask/README.md](xtask/README.md)
 - Shared component protocol:

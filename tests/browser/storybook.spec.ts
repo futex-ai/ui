@@ -81,6 +81,17 @@ test("segmented control toggles report and source choices", async ({
   await expect(page.getByRole("radio", { name: "Consulting" })).toBeChecked();
 });
 
+test("switch toggles a binary setting", async ({ page }) => {
+  await page.goto("/iframe.html?id=switch-examples--privacy-toggle");
+
+  const toggle = page.getByRole("switch", { name: "Analytics cookies" });
+  await expect(toggle).toBeChecked();
+  await toggle.click();
+  await expect(toggle).not.toBeChecked();
+  await toggle.click();
+  await expect(toggle).toBeChecked();
+});
+
 test("web modal restores focus and allows nested dropdowns above the surface", async ({
   page,
 }) => {
