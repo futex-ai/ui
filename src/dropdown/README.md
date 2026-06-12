@@ -14,6 +14,8 @@ input-backed comboboxes in Futex apps.
   enough room below and clamping menu height.
 - Share keyboard navigation, hover/active row styling, right-side row content,
   section headers, disabled rows, and footer/action rows.
+- Pin optional `header` and `footer` content above and below the option list so
+  it stays visible while the rows scroll between them.
 - Keep the keyboard-active row scrolled into the visible list viewport for long
   dropdowns and combobox result lists.
 - Include visual field labels in selector accessible names when labels are
@@ -34,6 +36,26 @@ import { DropdownSelector } from "@futex/ui/dropdown";
   options={[{ label: "Standard", value: "standard" }]}
   value={scheme}
 />;
+```
+
+Pass `header` and/or `footer` to pin custom content above and below the option
+list. Both accept any node (a title, a hint, an action button), and they stay
+fixed while the options scroll between them. The same props are available on the
+underlying `DropdownList` for custom pickers and action menus:
+
+```tsx
+<DropdownSelector
+  label="Scheme"
+  header={<Text>Choose a scheme</Text>}
+  footer={
+    <Pressable onPress={addScheme}>
+      <Text>Add scheme</Text>
+    </Pressable>
+  }
+  onValueChange={setScheme}
+  options={options}
+  value={scheme}
+/>
 ```
 
 Use `ReadOnlySelector` when the UI is selector-shaped but has no scoped data

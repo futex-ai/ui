@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
@@ -211,3 +212,30 @@ test("selector keyboard stepping starts from the list edge when value is empty o
   assert.equal(nextDropdownValue(options, "missing", 1), "standard");
   assert.equal(nextDropdownValue(options, "missing", -1), "flat_rate");
 });
+
+test("dropdown list pins header and footer content outside the scroll area", () => {
+  const source = readSource("../../src/dropdown/DropdownList.tsx");
+
+  // Header renders before the scrollable rows, footer after them, so both
+  // stay fixed while the option list scrolls between them.
+  assert.match(
+    source,
+    /styles\.headerRegion[\s\S]*\{scroll\}[\s\S]*styles\.footerRegion/,
+  );
+  // The scroll body shrinks (rather than owning maxHeight) when chrome is
+  // present so the pinned regions keep their natural height.
+  assert.match(source, /hasChrome \? styles\.scroll : \{ maxHeight \}/);
+});
+
+test("dropdown selector forwards header and footer content to the list", () => {
+  const source = readSource("../../src/dropdown/DropdownSelector.tsx");
+
+  assert.match(source, /header\?: ReactNode;/);
+  assert.match(source, /footer\?: ReactNode;/);
+  assert.match(source, /<DropdownList[\s\S]*footer=\{footer\}/);
+  assert.match(source, /<DropdownList[\s\S]*header=\{header\}/);
+});
+
+function readSource(relativePath: string) {
+  return readFileSync(new URL(relativePath, import.meta.url), "utf8");
+}

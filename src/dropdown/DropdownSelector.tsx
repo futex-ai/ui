@@ -35,6 +35,8 @@ export type SelectorVariant = "field" | "map" | "mobilePeriod" | "pill";
 
 type DropdownSelectorProps = {
   error?: string | null;
+  footer?: ReactNode;
+  header?: ReactNode;
   hint?: string;
   invalid?: boolean;
   label?: string;
@@ -58,6 +60,8 @@ export function DropdownSelector(props: DropdownSelectorProps) {
 function DropdownSelectorView({
   error,
   focus,
+  footer,
+  header,
   hint,
   invalid: invalidProp = false,
   label,
@@ -154,6 +158,8 @@ function DropdownSelectorView({
           <DropdownList
             activeId={navigation.activeId}
             entries={entries}
+            footer={footer}
+            header={header}
             maxHeight={placement.maxHeight}
             onActiveIdChange={navigation.setActiveId}
             onClose={() => setOpen(false)}

@@ -7,6 +7,7 @@ export function createDropdownListStyles(theme: SharedUiTheme) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
   return StyleSheet.create({
     amberText: { color: theme.colors.amber },
+    chrome: { flexShrink: 1, minHeight: 0 },
     dangerText: { color: theme.colors.rose },
     divider: {
       backgroundColor: theme.colors.border,
@@ -18,6 +19,22 @@ export function createDropdownListStyles(theme: SharedUiTheme) {
       borderTopColor: theme.colors.border,
       borderTopWidth: 1,
       marginTop: 4,
+    },
+    footerRegion: {
+      borderTopColor: theme.colors.border,
+      borderTopWidth: 1,
+      marginTop: 4,
+      paddingBottom: 2,
+      paddingHorizontal: 10,
+      paddingTop: 8,
+    },
+    headerRegion: {
+      borderBottomColor: theme.colors.border,
+      borderBottomWidth: 1,
+      marginBottom: 4,
+      paddingBottom: 8,
+      paddingHorizontal: 10,
+      paddingTop: 2,
     },
     iconBox: {
       alignItems: "center",
@@ -50,6 +67,7 @@ export function createDropdownListStyles(theme: SharedUiTheme) {
     itemText: { flex: 1, minWidth: 0 },
     leading: { alignItems: "center", justifyContent: "center" },
     right: { alignItems: "center", justifyContent: "center" },
+    scroll: { flexGrow: 0, flexShrink: 1, minHeight: 0 },
     secondary: {
       ...baseText,
       color: theme.colors.muted,
