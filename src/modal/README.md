@@ -13,7 +13,8 @@ picker views instead of this component.
 - Support a centered dialog (`placement="center"`, the default) or a bottom
   sheet (`placement="bottom-sheet"`) pinned full-width to the viewport bottom.
 - Keep web focus behavior in one place: focus enters the close control while a
-  modal is open and returns to the previously focused element on close.
+  modal is open, Tab stays inside the modal, and focus returns to the
+  previously focused element on close.
 - Keep web close behavior explicit: Escape, backdrop press, close button, and
   request-close all use the same policy.
 - Define modal layer tokens so nested dropdowns and comboboxes render above

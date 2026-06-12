@@ -54,6 +54,10 @@ Required behavior:
   close, hover active state, outside pointer close, loading/empty rows, section
   headers, dividers, footers, secondary text, right-side content, and danger or
   warning row tones.
+- Include the field label in selector accessible names when a visual label is
+  supplied, so repeated selectors remain distinguishable to assistive
+  technology.
+- Preserve no-match empty rows even when combobox footers are present.
 - Keep input-backed comboboxes on a non-modal web portal so text inputs retain
   focus while results are open.
 - Keep dropdown and combobox portal layers above modal surfaces.
@@ -70,7 +74,8 @@ Required behavior:
   body, footer slot, size variants, and center or bottom-sheet placement.
 - Support close policy for Escape, backdrop press, close button, request close,
   non-dismissible flows, and busy/disabled close states.
-- Move focus into the modal on open and restore previous focus on close.
+- Move focus into the modal on open, trap Tab focus inside the modal while it is
+  open, and restore previous focus on close.
 - Use accessible dialog labeling and close labels.
 - Provide native-safe fallback files that return `null` rather than replacing
   iOS or Android native sheets, action sheets, OS pickers, or platform modals.

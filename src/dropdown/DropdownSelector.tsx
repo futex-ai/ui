@@ -94,6 +94,10 @@ function DropdownSelectorView({
     open,
   });
   const invalid = invalidProp || Boolean(error);
+  const accessibleLabel = selectorAccessibleLabel(
+    label,
+    display || placeholder,
+  );
 
   return (
     <View style={label ? styles.field : null}>
@@ -102,6 +106,7 @@ function DropdownSelectorView({
       ) : null}
       <Pressable
         accessibilityHint={error ?? hint}
+        accessibilityLabel={accessibleLabel}
         accessibilityRole={interactive ? "button" : undefined}
         accessibilityState={{ disabled: !interactive }}
         aria-expanded={interactive ? open : undefined}
@@ -172,12 +177,16 @@ export function ReadOnlySelector({
 }) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createDropdownSelectorStyles(theme), [theme]);
+  const accessibleLabel = selectorAccessibleLabel(label, value);
   return (
     <View style={label ? styles.field : null}>
       {label ? (
         <SelectorLabel label={label} required={required} styles={styles} />
       ) : null}
-      <View style={[triggerStyle(styles, variant), styles.readOnly]}>
+      <View
+        accessibilityLabel={accessibleLabel}
+        style={[triggerStyle(styles, variant), styles.readOnly]}
+      >
         <Text numberOfLines={1} style={valueStyle(styles, variant)}>
           {value}
         </Text>
@@ -188,6 +197,10 @@ export function ReadOnlySelector({
       </View>
     </View>
   );
+}
+
+function selectorAccessibleLabel(label: string | undefined, value: string) {
+  return label ? `${label}, ${value}` : value;
 }
 
 function selectorEntries(

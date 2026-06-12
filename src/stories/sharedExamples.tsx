@@ -122,6 +122,7 @@ export function ModalExample({
   title: string;
 }) {
   const [visible, setVisible] = useState(true);
+  const [text, setText] = useState("");
   return (
     <View>
       <Pressable
@@ -151,8 +152,10 @@ export function ModalExample({
         <View style={styles.modalBody}>
           <TextInput
             accessibilityLabel="Modal text field"
+            onChangeText={setText}
             placeholder="Type here"
             style={styles.input}
+            value={text}
           />
           <DropdownSelector
             label="Nested selector"

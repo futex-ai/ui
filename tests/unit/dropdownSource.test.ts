@@ -29,6 +29,13 @@ test("selector map variant supports invalid styling without error copy", () => {
   assert.match(stylesSource, /if \(variant === "map"\) return 210/);
 });
 
+test("selector labels are part of the accessible trigger name", () => {
+  const selectorSource = readSource("../../src/dropdown/DropdownSelector.tsx");
+
+  assert.match(selectorSource, /selectorAccessibleLabel/);
+  assert.match(selectorSource, /accessibilityLabel=\{accessibleLabel\}/);
+});
+
 test("shared dropdown hover support bridges trigger and portal surface", () => {
   const modelSource = readSource("../../src/dropdown/dropdownPortalModel.ts");
   const webPortalSource = readSource(

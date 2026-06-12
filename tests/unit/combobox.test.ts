@@ -52,6 +52,15 @@ test("combobox multi-select uses theme-driven selected chip colors", () => {
   assert.match(source, /placeholderTextColor=\{theme\.colors\.faint\}/);
 });
 
+test("combobox empty state renders before optional footer rows", () => {
+  const source = readSource("../../src/dropdown/ComboboxMultiSelect.tsx");
+
+  assert.match(source, /const optionRows: DropdownListEntry\[\]/);
+  assert.match(source, /optionRows\.length > 0/);
+  assert.match(source, /No matching options/);
+  assert.match(source, /rows\.push\(\{ id: "footer"/);
+});
+
 function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
 }

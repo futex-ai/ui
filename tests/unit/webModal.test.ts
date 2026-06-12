@@ -50,7 +50,10 @@ test("web modal uses a document body portal with Escape and focus handling", () 
   assert.match(portalSource, /document\.body/);
   assert.match(source, /WebModalPortal/);
   assert.match(source, /document\.addEventListener\("keydown"/);
+  assert.match(source, /webModalEventTargetsSurface/);
   assert.match(source, /previousFocusRef/);
+  assert.match(source, /trapWebModalFocus/);
+  assert.match(source, /event\.key === "Tab"/);
   assert.match(source, /role="dialog"/);
   assert.doesNotMatch(
     nativeFallback,
@@ -62,6 +65,14 @@ test("web modal uses a document body portal with Escape and focus handling", () 
   );
   assert.match(nativeFallback, /return null/);
   assert.match(nativePortalFallback, /return null/);
+});
+
+test("web modal focus restore lifecycle is decoupled from close callback changes", () => {
+  const source = readSource("../../src/modal/WebModalFrame.web.tsx");
+
+  assert.match(source, /onCloseRef\.current = onClose/);
+  assert.match(source, /webModalCanClose\(closePolicyRef\.current, source\)/);
+  assert.match(source, /}, \[visible\]\)/);
 });
 
 test("web modal frame styles are theme-driven", () => {

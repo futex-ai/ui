@@ -118,7 +118,7 @@ function entriesForOptions(
   styles: ComboboxMultiSelectStyles,
   footer?: string,
 ): DropdownListEntry[] {
-  const rows: DropdownListEntry[] = options.map((option) => {
+  const optionRows: DropdownListEntry[] = options.map((option) => {
     const selected = values.includes(option.value);
     return {
       disabled: selected,
@@ -133,12 +133,14 @@ function entriesForOptions(
       type: "item",
     };
   });
+  const rows: DropdownListEntry[] =
+    optionRows.length > 0
+      ? optionRows
+      : [{ id: "empty", label: "No matching options", type: "section" }];
   if (footer) {
     rows.push({ id: "footer", label: footer, type: "section" });
   }
-  return rows.length > 0
-    ? rows
-    : [{ id: "empty", label: "No matching options", type: "section" }];
+  return rows;
 }
 
 function OptionMark({

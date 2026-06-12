@@ -7,16 +7,16 @@ test("dropdown selector opens, navigates with keyboard, and closes outside", asy
     "/iframe.html?id=dropdown-examples--dropdown-selector-default",
   );
 
-  await page.getByRole("button", { name: "Standard" }).click();
+  await page.getByRole("button", { name: "Scheme, Standard" }).click();
   await expect(page.getByText("Cash accounting")).toBeVisible();
 
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("Enter");
   await expect(
-    page.getByRole("button", { name: "Cash accounting" }),
+    page.getByRole("button", { name: "Scheme, Cash accounting" }),
   ).toBeVisible();
 
-  await page.getByRole("button", { name: "Cash accounting" }).click();
+  await page.getByRole("button", { name: "Scheme, Cash accounting" }).click();
   await expect(page.getByText("Flat rate")).toBeVisible();
   await page.mouse.click(10, 10);
   await expect(page.getByText("Flat rate")).toBeHidden();
@@ -31,6 +31,12 @@ test("combobox keeps input focus while filtering options", async ({ page }) => {
 
   await expect(page.getByText("Payroll Reserve")).toBeVisible();
   await expect(input).toBeFocused();
+
+  await input.fill("zz");
+  await expect(page.getByText("No matching options")).toBeVisible();
+  await expect(
+    page.getByText("Only active books can be selected."),
+  ).toBeVisible();
 });
 
 test("web modal restores focus and allows nested dropdowns above the surface", async ({
@@ -45,6 +51,10 @@ test("web modal restores focus and allows nested dropdowns above the surface", a
     page.getByRole("dialog", { name: "Invite teammate" }),
   ).toBeVisible();
 
+  const textField = page.getByLabel("Modal text field");
+  await textField.fill("Focus stays here");
+  await expect(textField).toBeFocused();
+
   await page.keyboard.press("Escape");
   await expect(
     page.getByRole("dialog", { name: "Invite teammate" }),
@@ -52,7 +62,24 @@ test("web modal restores focus and allows nested dropdowns above the surface", a
   await expect(openButton).toBeFocused();
 
   await openButton.click();
-  await page.getByRole("button", { name: "Standard" }).click();
+  const closeButton = page.getByRole("button", {
+    name: "Close Invite teammate",
+  });
+  await expect(closeButton).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(textField).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(
+    page.getByRole("button", { name: "Nested selector, Standard" }),
+  ).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("button", { name: "Done" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(closeButton).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(page.getByRole("button", { name: "Done" })).toBeFocused();
+
+  await page.getByRole("button", { name: "Nested selector, Standard" }).click();
   await expect(page.getByText("Cash accounting")).toBeVisible();
 
   const modalBox = await page

@@ -50,6 +50,20 @@ export type WebModalFrameProps = {
 };
 
 type Focusable = { focus?: () => void };
+type ClosePolicyRef = {
+  closeDisabled: boolean;
+  dismissible: boolean;
+};
+
+const WEB_MODAL_FOCUSABLE_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "[contenteditable='true']",
+  "[tabindex]:not([tabindex='-1'])",
+].join(",");
 
 export function WebModalFrame({
   body,
@@ -77,16 +91,24 @@ export function WebModalFrame({
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createWebModalFrameStyles(theme), [theme]);
   const closeButtonRef = useRef<View>(null);
+  const closePolicyRef = useRef<ClosePolicyRef>({
+    closeDisabled,
+    dismissible,
+  });
+  const initialFocusTargetRef = useRef(initialFocusRef);
+  const onCloseRef = useRef(onClose);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const showCloseButtonRef = useRef(showCloseButton);
   const surfaceRef = useRef<View>(null);
-  const requestClose = useCallback(
-    (source: WebModalCloseSource) => {
-      if (webModalCanClose({ closeDisabled, dismissible }, source)) {
-        onClose();
-      }
-    },
-    [closeDisabled, dismissible, onClose],
-  );
+  closePolicyRef.current = { closeDisabled, dismissible };
+  initialFocusTargetRef.current = initialFocusRef;
+  onCloseRef.current = onClose;
+  showCloseButtonRef.current = showCloseButton;
+  const requestClose = useCallback((source: WebModalCloseSource) => {
+    if (webModalCanClose(closePolicyRef.current, source)) {
+      onCloseRef.current();
+    }
+  }, []);
 
   useEffect(() => {
     if (!visible || typeof document === "undefined") {
@@ -98,24 +120,44 @@ export function WebModalFrame({
         : null;
     const focusTimer = setTimeout(() => {
       const focusTarget =
-        initialFocusRef?.current ??
-        (showCloseButton ? closeButtonRef.current : surfaceRef.current);
-      (focusTarget as Focusable | null)?.focus?.();
+        initialFocusTargetRef.current?.current ??
+        (showCloseButtonRef.current
+          ? closeButtonRef.current
+          : surfaceRef.current);
+      focusWebModalElement(focusTarget);
     }, 0);
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        requestClose("escape");
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
     return () => {
       clearTimeout(focusTimer);
-      document.removeEventListener("keydown", handleKeyDown);
-      previousFocusRef.current?.focus();
+      focusWebModalElement(previousFocusRef.current);
       previousFocusRef.current = null;
     };
-  }, [initialFocusRef, requestClose, showCloseButton, visible]);
+  }, [visible]);
+
+  useEffect(() => {
+    if (!visible || typeof document === "undefined") {
+      return;
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        if (!webModalEventTargetsSurface(event, surfaceRef)) {
+          return;
+        }
+        event.preventDefault();
+        requestClose("escape");
+        return;
+      }
+      if (event.key === "Tab") {
+        if (!webModalEventTargetsSurface(event, surfaceRef)) {
+          return;
+        }
+        trapWebModalFocus(event, surfaceRef);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown, true);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown, true);
+    };
+  }, [requestClose, visible]);
 
   if (!visible || typeof document === "undefined") {
     return null;
@@ -145,6 +187,7 @@ export function WebModalFrame({
             sheet ? styles.surfaceSheet : { maxWidth: webModalMaxWidth(size) },
             surfaceStyle,
           ]}
+          tabIndex={-1}
         >
           {sheet ? <View style={styles.grip} /> : null}
           <View style={[styles.header, headerStyle]}>
@@ -187,4 +230,71 @@ export function WebModalFrame({
   );
 
   return <WebModalPortal visible={visible}>{modal}</WebModalPortal>;
+}
+
+function trapWebModalFocus(
+  event: KeyboardEvent,
+  surfaceRef: RefObject<View | null>,
+): void {
+  const surface = webModalSurfaceElement(surfaceRef);
+  if (!surface) {
+    return;
+  }
+  const focusable = webModalFocusableElements(surface);
+  if (focusable.length === 0) {
+    event.preventDefault();
+    focusWebModalElement(surface);
+    return;
+  }
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  const activeElement = document.activeElement;
+  const activeInside = activeElement ? surface.contains(activeElement) : false;
+  if (event.shiftKey && (!activeInside || activeElement === first)) {
+    event.preventDefault();
+    focusWebModalElement(last);
+    return;
+  }
+  if (!event.shiftKey && (!activeInside || activeElement === last)) {
+    event.preventDefault();
+    focusWebModalElement(first);
+  }
+}
+
+function webModalFocusableElements(surface: HTMLElement): HTMLElement[] {
+  return Array.from(
+    surface.querySelectorAll<HTMLElement>(WEB_MODAL_FOCUSABLE_SELECTOR),
+  ).filter(webModalElementIsFocusable);
+}
+
+function webModalElementIsFocusable(element: HTMLElement): boolean {
+  const disabled = (element as HTMLElement & { disabled?: boolean }).disabled;
+  if (disabled || element.getAttribute("aria-disabled") === "true") {
+    return false;
+  }
+  const style = window.getComputedStyle(element);
+  return style.display !== "none" && style.visibility !== "hidden";
+}
+
+function webModalSurfaceElement(
+  surfaceRef: RefObject<View | null>,
+): HTMLElement | null {
+  const surface = surfaceRef.current as unknown;
+  return surface instanceof HTMLElement ? surface : null;
+}
+
+function webModalEventTargetsSurface(
+  event: KeyboardEvent,
+  surfaceRef: RefObject<View | null>,
+): boolean {
+  const surface = webModalSurfaceElement(surfaceRef);
+  return (
+    surface !== null &&
+    event.target instanceof Node &&
+    surface.contains(event.target)
+  );
+}
+
+function focusWebModalElement(target: Focusable | null | undefined): void {
+  target?.focus?.();
 }
