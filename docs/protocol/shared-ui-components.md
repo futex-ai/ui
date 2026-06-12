@@ -97,16 +97,31 @@ Required behavior:
 
 ## CI And Preview Contract
 
+- Storybook deployments use Cloudflare Pages.
+- The Cloudflare Pages project name is `futex-ui-storybook`.
+- The stable main Storybook deploy uses the Cloudflare Pages production branch
+  `main` and the default production URL
+  `https://futex-ui-storybook.pages.dev`, unless a custom domain is added later.
+- PR Storybook previews deploy the static Storybook build to Cloudflare Pages
+  with branch name `pr-<number>`, producing a predictable preview URL such as
+  `https://pr-123.futex-ui-storybook.pages.dev`.
 - Every PR must run CI checks for install, formatting or linting, unit tests,
   browser interaction tests, typecheck, package build, and Storybook build.
 - The main branch must publish a stable default Storybook deployment.
 - Every PR must publish an isolated Storybook preview deployment.
-- The PR Storybook URL must be posted back to the pull request as a comment,
-  check summary, deployment status, or equivalent visible link, matching the
-  accounting and Juno repo workflow.
-- Storybook hosting can use Cloudflare or the `internal-498318` GCP project.
-  The implementation must document which provider is used and how previews are
-  named, updated, and cleaned up.
+- The PR Storybook URL must be posted back to the pull request through a sticky
+  comment with marker `<!-- futex-ui-storybook-preview -->`, matching the
+  preview-comment pattern used by accounting and Juno.
+- The sticky comment must be updated on every PR deploy attempt with status,
+  preview URL, commit SHA, and workflow run URL.
+- PR previews update in place on every new commit by redeploying the same
+  `pr-<number>` Cloudflare Pages branch.
+- On PR close, the workflow must mark the sticky comment inactive and delete the
+  PR branch deployments through the Cloudflare Pages API when that API is
+  available to the workflow; if deletion cannot be performed safely, the close
+  workflow must report the retained preview URL and the reason it was retained.
+- Required Cloudflare configuration is repository variable
+  `CLOUDFLARE_ACCOUNT_ID` and repository secret `CLOUDFLARE_PAGES_API_TOKEN`.
 - Storybook previews must include at least the shared dropdown selector,
   dropdown action menu, input-backed combobox, chip multi-select, centered web
   modal, bottom-sheet web modal, default accounting theme, and alternate primary

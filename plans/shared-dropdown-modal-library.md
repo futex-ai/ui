@@ -56,10 +56,9 @@ Important findings:
   first or built package artifacts? Recommendation: start with built package
   artifacts plus source maps so accounting and Juno do not depend on internal
   source layout.
-- Question: should Storybook preview hosting use Cloudflare or the
-  `internal-498318` GCP project? Recommendation: use whichever matches the
-  existing accounting/Juno automation most closely, and document the chosen
-  provider before implementation.
+- Decision: use Cloudflare Pages for Storybook hosting. It is simpler for a
+  static Storybook bundle than adding GCP static hosting infrastructure, and it
+  matches the existing accounting Cloudflare Pages deploy style.
 
 ## Scope Decisions
 
@@ -80,6 +79,36 @@ Important findings:
 - Adding app-specific data fetching, routing, mutations, or screen state.
 - Reworking visual design beyond theme token extraction and primary-color
   adaptability.
+
+## Storybook Deployment Decision
+
+- Provider: Cloudflare Pages.
+- Pages project: `futex-ui-storybook`.
+- Build artifact: `storybook-static`.
+- Main deployment: a push to `main` builds Storybook and deploys
+  `storybook-static` with Wrangler to project `futex-ui-storybook` on branch
+  `main`.
+- Main URL: `https://futex-ui-storybook.pages.dev`, unless a custom domain is
+  added later.
+- PR deployment: every same-repository pull request builds Storybook and
+  deploys `storybook-static` with Wrangler to project `futex-ui-storybook` on
+  branch `pr-<number>`.
+- PR URL: `https://pr-<number>.futex-ui-storybook.pages.dev`; the workflow may
+  fall back to the deployment URL printed by Wrangler if Cloudflare changes
+  alias behavior.
+- PR comment: use a sticky GitHub comment with marker
+  `<!-- futex-ui-storybook-preview -->`, updated on every deploy attempt with
+  status, Storybook URL, commit SHA, and workflow run URL.
+- PR update behavior: every new PR commit redeploys the same `pr-<number>`
+  branch so the preview URL remains stable.
+- PR close behavior: update the sticky comment to inactive and delete the
+  matching Cloudflare Pages PR branch deployments through the Cloudflare API
+  when the workflow can do so safely; otherwise leave the preview retained and
+  include the reason in the comment.
+- Required repository variable: `CLOUDFLARE_ACCOUNT_ID`.
+- Required repository secret: `CLOUDFLARE_PAGES_API_TOKEN`.
+- Fork PR behavior: run build/test checks, but skip deploy and comment steps
+  when secrets are unavailable.
 
 ## Milestone 1: Contract And Package Scaffold
 
@@ -144,14 +173,17 @@ surfaces before consumers migrate to the package.
 - [ ] Add Storybook stories for dropdown selector, dropdown action menu,
   input-backed combobox, chip multi-select, centered web modal, bottom-sheet web
   modal, accounting-default theme, and alternate-primary theme.
-- [ ] Add a stable main-branch Storybook deployment.
-- [ ] Add per-PR Storybook preview deployment.
-- [ ] Post the PR Storybook link back to the pull request as a visible comment,
-  check summary, deployment status, or equivalent link, matching the
-  accounting/Juno workflow.
-- [ ] Choose Cloudflare or the `internal-498318` GCP project for Storybook
-  hosting and document the provider, deployment naming, update behavior, and
-  cleanup behavior.
+- [ ] Add a stable main-branch Cloudflare Pages Storybook deployment for
+  `https://futex-ui-storybook.pages.dev`.
+- [ ] Add per-PR Cloudflare Pages Storybook preview deployment using branch
+  names `pr-<number>`.
+- [ ] Add sticky PR Storybook comments with marker
+  `<!-- futex-ui-storybook-preview -->`, status, URL, commit SHA, and workflow
+  run URL.
+- [ ] Add PR-close handling that marks the Storybook comment inactive and
+  deletes Cloudflare Pages PR branch deployments when safe.
+- [ ] Validate required Cloudflare configuration in CI:
+  `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_PAGES_API_TOKEN`.
 - [ ] Document local commands for running Storybook and browser interaction
   tests in the README.
 
