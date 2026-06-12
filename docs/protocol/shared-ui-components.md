@@ -122,10 +122,11 @@ Required behavior:
   preview URL, commit SHA, and workflow run URL.
 - PR previews update in place on every new commit by redeploying the same
   `pr-<number>` Cloudflare Pages branch.
-- On PR close, the workflow must mark the sticky comment inactive and delete the
-  PR branch deployments through the Cloudflare Pages API when that API is
-  available to the workflow; if deletion cannot be performed safely, the close
-  workflow must report the retained preview URL and the reason it was retained.
+- On PR close, the workflow must mark the sticky comment inactive and use the
+  Cloudflare Pages API to force-delete aliased non-production deployments for
+  the `pr-<number>` branch when that API is available to the workflow; if
+  deletion cannot be performed safely, the close workflow must report that the
+  preview was retained and include the reason.
 - Required Cloudflare configuration is repository variable
   `CLOUDFLARE_ACCOUNT_ID` and repository secret `CLOUDFLARE_PAGES_API_TOKEN` or
   `CLOUDFLARE_API_TOKEN`.
