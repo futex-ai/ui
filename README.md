@@ -58,6 +58,9 @@ Storybook is built to `storybook-static`.
   `https://pr-<number>.futex-ui-storybook.pages.dev`.
 - PR previews are posted through a sticky comment marked
   `<!-- futex-ui-storybook-preview -->`.
+- Closing a same-repository PR marks the sticky comment inactive and attempts
+  to delete aliased preview deployments for that PR branch; if Cloudflare
+  cleanup cannot complete safely, the comment reports the retained reason.
 - Storybook examples are grouped under `Dropdown/Examples`, `Modal/Examples`,
   and `Theme/Examples`.
 - Required repository variable: `CLOUDFLARE_ACCOUNT_ID`.
