@@ -56,6 +56,10 @@ Important findings:
   first or built package artifacts? Recommendation: start with built package
   artifacts plus source maps so accounting and Juno do not depend on internal
   source layout.
+- Question: should Storybook preview hosting use Cloudflare or the
+  `internal-498318` GCP project? Recommendation: use whichever matches the
+  existing accounting/Juno automation most closely, and document the chosen
+  provider before implementation.
 
 ## Scope Decisions
 
@@ -127,13 +131,39 @@ Summary: make the copied components brand-adaptable for accounting and Juno.
 - [ ] Add a small local usage fixture or example that renders accounting-default
   and alternate-primary variants.
 
-## Milestone 4: Verification And Smoke Coverage
+## Milestone 4: CI, Browser Tests, And Storybook
+
+Summary: add automated PR confidence checks and deployable visual review
+surfaces before consumers migrate to the package.
+
+- [ ] Add PR CI checks for install, formatting or linting, unit tests,
+  typecheck, package build, browser interaction tests, and Storybook build.
+- [ ] Add browser interaction tests for dropdown open/close, keyboard
+  navigation, outside dismissal, combobox input focus retention, modal focus
+  restoration, and dropdown-over-modal layering.
+- [ ] Add Storybook stories for dropdown selector, dropdown action menu,
+  input-backed combobox, chip multi-select, centered web modal, bottom-sheet web
+  modal, accounting-default theme, and alternate-primary theme.
+- [ ] Add a stable main-branch Storybook deployment.
+- [ ] Add per-PR Storybook preview deployment.
+- [ ] Post the PR Storybook link back to the pull request as a visible comment,
+  check summary, deployment status, or equivalent link, matching the
+  accounting/Juno workflow.
+- [ ] Choose Cloudflare or the `internal-498318` GCP project for Storybook
+  hosting and document the provider, deployment naming, update behavior, and
+  cleanup behavior.
+- [ ] Document local commands for running Storybook and browser interaction
+  tests in the README.
+
+## Milestone 5: Verification And Smoke Coverage
 
 Summary: prove the package is usable before consumers migrate to it.
 
 - [ ] Run the full package test suite.
 - [ ] Run the package typecheck.
 - [ ] Run the package build.
+- [ ] Run browser interaction tests.
+- [ ] Run Storybook build.
 - [ ] Run a local smoke test that opens a dropdown selector, input-backed
   combobox, and web modal in a browser or render harness.
 - [ ] If this repo has Cargo tooling by then, run `cargo fmt --all -- --check`,
@@ -149,7 +179,7 @@ Summary: prove the package is usable before consumers migrate to it.
 - [ ] Report every review finding without automatically fixing it, including
   severity, context, impact, solution options, and a recommended option.
 
-## Milestone 5: Consumer Migration Handoff
+## Milestone 6: Consumer Migration Handoff
 
 Summary: prepare accounting and Juno for follow-up work without changing them
 in this plan.

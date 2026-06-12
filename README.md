@@ -10,6 +10,8 @@ the accounting app and the Juno app.
 - Themeable visual tokens so consumers can use their own brand primary color.
 - Expo and React Native Web compatible platform files.
 - Focused tests for pure interaction behavior and package export contracts.
+- PR CI checks, browser interaction tests, and Storybook previews for visual
+  review.
 
 ## User-Facing Interface
 
@@ -25,7 +27,7 @@ The package interface is still being planned. The first intended exports are:
 
 This repo currently contains planning and protocol documentation only. Once the
 package scaffold lands, this section should include the exact install, build,
-test, and smoke-test commands.
+test, browser interaction test, Storybook, and smoke-test commands.
 
 ## Key Code Jumping Points
 
