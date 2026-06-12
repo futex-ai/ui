@@ -7,7 +7,7 @@ accounting app's shared `Switch` primitive.
 
 - Render a compact 40px by 24px toggle track with an 18px knob.
 - Expose `switch` semantics with checked and disabled state.
-- Keep a touch target of at least 44px with `hitSlop`.
+- Keep a real touch target of at least 44px on native and web.
 - Use shared theme colors and radii instead of consumer-local theme imports.
 - Allow consumer surfaces to override the track style without forking the
   component.

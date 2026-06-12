@@ -67,7 +67,7 @@ Required behavior:
 - Render a 40px by 24px track with an 18px knob that moves between off and on
   positions.
 - Expose `switch` accessibility semantics with checked and disabled state.
-- Keep the touch target at least 44px through hit slop even though the visible
+- Keep the touch target at least 44px on native and web even though the visible
   track is smaller.
 - Treat missing `onValueChange` as a read-only disabled control.
 - Use shared theme tokens for off track color, on track color, disabled opacity,

@@ -6,6 +6,13 @@ import { useSharedUiTheme } from "../theme";
 
 import { createSwitchStyles } from "./switchStyles";
 
+type SwitchKeyboardEvent = {
+  key?: string;
+  nativeEvent?: { key?: string };
+  preventDefault?: () => void;
+  stopPropagation?: () => void;
+};
+
 export type SwitchProps = {
   accessibilityLabel?: string;
   disabled?: boolean;
@@ -29,6 +36,17 @@ export function Switch({
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createSwitchStyles(theme), [theme]);
   const disabledState = disabled || !onValueChange;
+  const toggle = () => onValueChange?.(!value);
+  const handleKeyDown = (event: SwitchKeyboardEvent) => {
+    const key = event.nativeEvent?.key ?? event.key;
+    if (disabledState || (key !== " " && key !== "Spacebar")) {
+      return;
+    }
+    event.preventDefault?.();
+    event.stopPropagation?.();
+    toggle();
+  };
+  const keyProps = Platform.OS === "web" ? { onKeyDown: handleKeyDown } : {};
 
   return (
     <Pressable
@@ -37,8 +55,9 @@ export function Switch({
       accessibilityState={{ checked: value, disabled: disabledState }}
       aria-checked={value}
       disabled={disabledState}
-      hitSlop={10}
-      onPress={() => onValueChange?.(!value)}
+      onPress={toggle}
+      style={styles.pressable}
+      {...keyProps}
     >
       <View
         style={[

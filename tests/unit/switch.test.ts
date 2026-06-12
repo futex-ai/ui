@@ -13,12 +13,26 @@ test("switch exposes switch semantics and checked state", () => {
   assert.match(source, /aria-checked=\{value\}/);
 });
 
-test("switch keeps a large touch target and read-only disabled state", () => {
+test("switch keeps a real touch target and read-only disabled state", () => {
   const source = readSource("../../src/switch/Switch.tsx");
+  const stylesSource = readSource("../../src/switch/switchStyles.ts");
 
-  assert.match(source, /hitSlop=\{10\}/);
   assert.match(source, /disabledState = disabled \|\| !onValueChange/);
   assert.match(source, /disabled=\{disabledState\}/);
+  assert.match(source, /style=\{styles\.pressable\}/);
+  assert.match(stylesSource, /height: 44/);
+  assert.match(stylesSource, /width: 44/);
+});
+
+test("switch handles space key activation for web switch semantics", () => {
+  const source = readSource("../../src/switch/Switch.tsx");
+
+  assert.match(source, /keyProps = Platform\.OS === "web"/);
+  assert.match(source, /onKeyDown: handleKeyDown/);
+  assert.match(source, /\{\.\.\.keyProps\}/);
+  assert.match(source, /key !== " " && key !== "Spacebar"/);
+  assert.match(source, /event\.preventDefault\?\.\(\)/);
+  assert.match(source, /toggle\(\)/);
 });
 
 test("switch knob animates between the off and on positions", () => {

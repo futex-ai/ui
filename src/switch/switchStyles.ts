@@ -15,6 +15,12 @@ export function createSwitchStyles(theme: SharedUiTheme) {
       width: 18,
     },
     knobOn: { left: 19 },
+    pressable: {
+      alignItems: "center",
+      height: 44,
+      justifyContent: "center",
+      width: 44,
+    },
     track: {
       backgroundColor: theme.colors.border2,
       borderRadius: theme.radii.pill,
