@@ -61,6 +61,26 @@ test("combobox keeps input focus while filtering options", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("segmented control toggles report and source choices", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=segmented-examples--profit-loss-segmented-control",
+  );
+
+  await expect(
+    page.getByRole("radio", { name: "Profit & loss" }),
+  ).toBeChecked();
+  await page.getByRole("radio", { name: "Balance sheet" }).click();
+  await expect(
+    page.getByRole("radio", { name: "Balance sheet" }),
+  ).toBeChecked();
+
+  await expect(page.getByRole("radio", { name: "Combined" })).toBeChecked();
+  await page.getByRole("radio", { name: "Consulting" }).click();
+  await expect(page.getByRole("radio", { name: "Consulting" })).toBeChecked();
+});
+
 test("web modal restores focus and allows nested dropdowns above the surface", async ({
   page,
 }) => {

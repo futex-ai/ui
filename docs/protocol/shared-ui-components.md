@@ -2,14 +2,15 @@
 
 ## Status
 
-Implemented contract for the initial dropdown and modal extraction.
+Implemented contract for the dropdown, segmented control, and modal extraction.
 
 ## Purpose
 
 This repository provides shared React Native and React Native Web UI primitives
 for Futex apps. The first consumers are the accounting app and the Juno app.
-The first shared component families are the dropdown components and web modal
-components currently implemented in the accounting app.
+The first shared component families are the dropdown components, segmented
+control patterns, and web modal components currently implemented in the
+accounting app.
 
 ## Package Boundary
 
@@ -35,6 +36,25 @@ components currently implemented in the accounting app.
 - Focus rings use the active theme primary color.
 - Consumer theme overrides must be shallow and predictable; unspecified tokens
   fall back to the default shared theme.
+
+## Segmented Control Contract
+
+The segmented control family covers compact single-select controls where all
+options remain visible. This includes accounting's report-style pill tabs and
+the Profit & loss income-source filter pills.
+
+Required behavior:
+
+- Render one selected value from a small option set.
+- Expose `radiogroup` and `radio` accessibility roles, with checked and
+  disabled state on every segment.
+- Support the outline variant used for filter pills and the pill-track variant
+  used for tab-like report switches.
+- Support equal-width segments and content-sized wrapping filter pills.
+- Use shared theme tokens for selected backgrounds, selected text, borders,
+  disabled opacity, labels, hint text, and validation text.
+- Keep labels, required state, hints, and validation errors available without
+  depending on consumer-local form components.
 
 ## Dropdown Contract
 
@@ -96,11 +116,12 @@ Required behavior:
   have unit tests.
 - Component source contracts that protect web/native boundaries must have tests.
 - Browser interaction tests must cover opening, keyboard navigation, outside
-  dismissal, focus retention/restoration, and portal layering for dropdowns,
-  comboboxes, and web modals.
+  dismissal, segmented selection, focus retention/restoration, and portal
+  layering for dropdowns, comboboxes, and web modals.
 - The package must typecheck and build before it is used by accounting or Juno.
 - After package build/tests pass, smoke-test at least one local web route or
-  harness that opens a dropdown, a combobox, and a modal.
+  harness that opens a dropdown, a combobox, and a modal, and toggles a
+  segmented control.
 
 ## CI And Preview Contract
 
@@ -133,15 +154,17 @@ Required behavior:
   `CLOUDFLARE_ACCOUNT_ID` and repository secret `CLOUDFLARE_PAGES_API_TOKEN` or
   `CLOUDFLARE_API_TOKEN`.
 - Storybook previews must include at least the shared dropdown selector,
-  dropdown action menu, input-backed combobox, chip multi-select, centered web
-  modal, bottom-sheet web modal, default accounting theme, and alternate primary
-  color theme.
-- Storybook navigation must keep dropdown and modal examples in separate
-  top-level folders, currently `Dropdown/Examples` and `Modal/Examples`.
+  dropdown action menu, input-backed combobox, chip multi-select, segmented
+  control variants, centered web modal, bottom-sheet web modal, default
+  accounting theme, and alternate primary color theme.
+- Storybook navigation must keep dropdown, segmented control, and modal
+  examples in separate top-level folders, currently `Dropdown/Examples`,
+  `Segmented/Examples`, and `Modal/Examples`.
 
 ## Non-Goals
 
-- Migrating accounting or Juno imports in this initial copy plan.
+- Migrating accounting or Juno imports in this package extraction change.
 - Replacing native iOS or Android modal/sheet/picker behavior.
 - Adding app-specific mutations, data fetching, routing, or screen state.
-- Adding a broad design system beyond the copied dropdown and modal families.
+- Adding a broad design system beyond the copied dropdown, segmented control,
+  and modal families.
