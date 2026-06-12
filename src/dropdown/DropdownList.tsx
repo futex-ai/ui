@@ -149,12 +149,14 @@ export function DropdownList({
   );
 
   // Header and footer content pin outside the scroll area so they stay
-  // visible while the option rows scroll between them.
+  // visible while the option rows scroll between them. The wrapper shrinks to
+  // the surface's content box (which is inset by the surface padding) so the
+  // pinned footer is not clipped past the bottom edge.
   if (!hasChrome) {
     return scroll;
   }
   return (
-    <View style={{ maxHeight }}>
+    <View style={[styles.chrome, { maxHeight }]}>
       {header ? <View style={styles.headerRegion}>{header}</View> : null}
       {scroll}
       {footer ? <View style={styles.footerRegion}>{footer}</View> : null}

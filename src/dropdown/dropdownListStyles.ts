@@ -7,6 +7,7 @@ export function createDropdownListStyles(theme: SharedUiTheme) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
   return StyleSheet.create({
     amberText: { color: theme.colors.amber },
+    chrome: { flexShrink: 1, minHeight: 0 },
     dangerText: { color: theme.colors.rose },
     divider: {
       backgroundColor: theme.colors.border,

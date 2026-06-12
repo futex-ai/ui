@@ -92,7 +92,38 @@ test("dropdown selector pins header and footer while options scroll", async ({
   ).toBeLessThanOrEqual(1);
   await expect(header).toBeVisible();
   await expect(footer).toBeVisible();
+
+  // The footer must sit fully inside the clipping surface; the surface padding
+  // previously pushed it past the overflow:hidden bottom edge and clipped it.
+  expect(await bottomOverflowPast(footer, "clip")).toBeLessThanOrEqual(1);
 });
+
+async function bottomOverflowPast(
+  locator: ReturnType<Page["getByRole"]>,
+  _label: string,
+) {
+  return locator.evaluate((element) => {
+    let clip = element.parentElement;
+    while (clip) {
+      const overflowY = getComputedStyle(clip).overflowY;
+      if (
+        overflowY === "hidden" ||
+        overflowY === "auto" ||
+        overflowY === "scroll"
+      ) {
+        break;
+      }
+      clip = clip.parentElement;
+    }
+    if (!clip) {
+      return 0;
+    }
+    return (
+      element.getBoundingClientRect().bottom -
+      clip.getBoundingClientRect().bottom
+    );
+  });
+}
 
 test("combobox keeps input focus while filtering options", async ({ page }) => {
   await page.goto("/iframe.html?id=dropdown-examples--input-backed-combobox");
