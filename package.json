@@ -37,6 +37,11 @@
       "react-native": "./dist/segmented/index.js",
       "import": "./dist/segmented/index.js"
     },
+    "./switch": {
+      "types": "./dist/switch/index.d.ts",
+      "react-native": "./dist/switch/index.js",
+      "import": "./dist/switch/index.js"
+    },
     "./theme": {
       "types": "./dist/theme.d.ts",
       "react-native": "./dist/theme.js",
