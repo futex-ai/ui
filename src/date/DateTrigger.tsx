@@ -111,7 +111,7 @@ export function WebTrigger({
       <Pressable
         aria-hidden
         onPress={() => field.setOpen(true)}
-        style={[styles.triggerIcon, hideWebOutlineView]}
+        style={[styles.triggerIcon, styles.calendarNudge, hideWebOutlineView]}
         tabIndex={-1}
       >
         <CalendarDays color={theme.colors.muted} size={16} />
@@ -171,7 +171,9 @@ export function NativeTrigger({
         ) : null}
         {/* Decorative: the row already opens the picker on tap, so the icon just
             marks the affordance and carries no a11y semantics. */}
-        <CalendarDays color={theme.colors.muted} size={16} />
+        <View style={styles.calendarNudge}>
+          <CalendarDays color={theme.colors.muted} size={16} />
+        </View>
       </View>
     </Pressable>
   );

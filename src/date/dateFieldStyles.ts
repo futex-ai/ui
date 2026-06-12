@@ -47,6 +47,11 @@ export function createDateFieldStyles(theme: SharedUiTheme) {
     },
     triggerActive: { borderColor: theme.colors.primary },
     triggerFlex: { flex: 1 },
+    // The lucide calendar glyph is optically bottom-heavy (thin hanger tabs pad
+    // its box upward), so it reads ~1px low beside the symmetric clear circle and
+    // the value text. Nudge it up to optically center it. `transform` keeps it a
+    // pure visual shift with no layout effect on the row.
+    calendarNudge: { transform: [{ translateY: -1 }] },
     triggerIcon: { paddingLeft: 8 },
     // Groups the trailing clear + calendar icons on the native trigger so the
     // row's `space-between` keeps them together on the right, not spread apart.
