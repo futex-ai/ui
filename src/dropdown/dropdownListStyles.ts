@@ -68,6 +68,12 @@ export function createDropdownListStyles(theme: SharedUiTheme) {
     leading: { alignItems: "center", justifyContent: "center" },
     right: { alignItems: "center", justifyContent: "center" },
     scroll: { flexGrow: 0, flexShrink: 1, minHeight: 0 },
+    // No horizontal padding so the search field's border spans the full
+    // content width and lines up with the option rows' (selected) backgrounds.
+    searchRegion: {
+      paddingBottom: 6,
+      paddingTop: 2,
+    },
     secondary: {
       ...baseText,
       color: theme.colors.muted,

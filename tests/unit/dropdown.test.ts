@@ -236,6 +236,34 @@ test("dropdown selector forwards header and footer content to the list", () => {
   assert.match(source, /<DropdownList[\s\S]*header=\{header\}/);
 });
 
+test("dropdown list pins the search slot above the header and options", () => {
+  const source = readSource("../../src/dropdown/DropdownList.tsx");
+
+  // The search region renders before the header, which renders before the
+  // scrollable rows, so the search input stays fixed while options scroll.
+  assert.match(
+    source,
+    /styles\.searchRegion[\s\S]*styles\.headerRegion[\s\S]*\{scroll\}/,
+  );
+  // The search slot also counts as chrome so the scroll body shrinks for it.
+  assert.match(source, /Boolean\(search\)/);
+});
+
+test("dropdown selector filters options through a searchable input", () => {
+  const source = readSource("../../src/dropdown/DropdownSelector.tsx");
+
+  // Opt-in prop that filters options as the query changes.
+  assert.match(source, /searchable\?: boolean;/);
+  assert.match(source, /filterComboboxSections/);
+  // The search input drives navigation through the document-level key listener
+  // with the typeahead flag so the space bar keeps typing into the query.
+  assert.match(source, /typeahead: searchable/);
+  // A searchable selector renders a search field into the list search slot...
+  assert.match(source, /<DropdownList[\s\S]*search=\{searchField\}/);
+  // ...and shows an empty state when no options match the query.
+  assert.match(source, /No matching options/);
+});
+
 function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
 }

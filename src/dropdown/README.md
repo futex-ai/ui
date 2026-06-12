@@ -58,6 +58,23 @@ underlying `DropdownList` for custom pickers and action menus:
 />
 ```
 
+Pass `searchable` to add a search input pinned at the top of the menu that
+filters the options (and section groups) as the user types. Filtering is
+case-insensitive, empty section groups drop out, and a "No matching options"
+row shows when nothing matches. The input is focused on open, the query resets
+on close, and arrow keys / Enter / Escape keep working while typing:
+
+```tsx
+<DropdownSelector
+  label="Currency"
+  onValueChange={setCurrency}
+  options={currencyOptions}
+  searchable
+  searchPlaceholder="Search currencies"
+  value={currency}
+/>
+```
+
 Use `ReadOnlySelector` when the UI is selector-shaped but has no scoped data
 behavior yet:
 

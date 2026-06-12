@@ -5,6 +5,7 @@ import {
   ChipMultiSelectExample,
   InputBackedComboboxExample,
   LongSelectorExample,
+  SearchableSelectorExample,
   SelectorExample,
   SelectorWithHeaderFooterExample,
   StorySurface,
@@ -41,6 +42,15 @@ export const SelectorWithHeaderFooter: Story = {
   render: () => (
     <StorySurface>
       <SelectorWithHeaderFooterExample />
+    </StorySurface>
+  ),
+};
+
+export const SearchableSelector: Story = {
+  name: "Searchable selector",
+  render: () => (
+    <StorySurface>
+      <SearchableSelectorExample />
     </StorySurface>
   ),
 };

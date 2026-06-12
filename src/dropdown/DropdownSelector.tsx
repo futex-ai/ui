@@ -1,13 +1,14 @@
 /** Single-value selector and read-only selector input surfaces. */
-import { ChevronDown } from "lucide-react-native";
-import { ReactNode, useMemo, useRef, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { ChevronDown, Search } from "lucide-react-native";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { Pressable, Text, TextInput, View } from "react-native";
 
-import { hideWebOutlineView, useFocusRing } from "../focusRing";
+import { hideWebOutline, hideWebOutlineView, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { DropdownList, DropdownListEntry } from "./DropdownList";
 import { DropdownPortal } from "./DropdownPortal";
+import { filterComboboxSections } from "./comboboxModel";
 import {
   createDropdownSelectorStyles,
   dropdownMinWidth,
@@ -45,6 +46,8 @@ type DropdownSelectorProps = {
   placeholder?: string;
   readOnly?: boolean;
   required?: boolean;
+  searchPlaceholder?: string;
+  searchable?: boolean;
   sections?: DropdownSelectorSection[];
   value: string;
   variant?: SelectorVariant;
@@ -70,6 +73,8 @@ function DropdownSelectorView({
   placeholder = "Select an option",
   readOnly = false,
   required = false,
+  searchPlaceholder = "Search options",
+  searchable = false,
   sections,
   styles,
   value,
@@ -81,27 +86,66 @@ function DropdownSelectorView({
   const theme = useSharedUiTheme();
   const anchorRef = useRef<View>(null);
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const grouped = sections ?? [{ options }];
   const flat = grouped.flatMap((section) => section.options);
   const selected = flat.find((option) => option.value === value);
   const display = selected?.label ?? value;
   const interactive = !readOnly && Boolean(onValueChange) && flat.length > 0;
-  const entries = selectorEntries(grouped, value, (next) => {
+
+  // Reset the search query whenever the menu closes so the next open starts
+  // from the full option list.
+  useEffect(() => {
+    if (!open) {
+      setQuery("");
+    }
+  }, [open]);
+
+  const visibleSections = searchable
+    ? filterComboboxSections(grouped, query)
+    : grouped;
+  const optionEntries = selectorEntries(visibleSections, value, (next) => {
     onValueChange?.(next);
     setOpen(false);
   });
+  const entries: DropdownListEntry[] =
+    searchable && optionEntries.length === 0
+      ? [{ id: "empty", label: "No matching options", type: "section" }]
+      : optionEntries;
+
+  // Keyboard navigation runs through a document-level key listener (set up by
+  // the hook) rather than the input's own `onKeyDown`, because React Native Web
+  // `TextInput` replaces a forwarded `onKeyDown` with its internal handler. The
+  // `typeahead` flag keeps the space bar typing into the search query instead
+  // of activating the highlighted row.
   const navigation = useDropdownSelectorNavigation({
     entries,
     interactive,
     onClose: () => setOpen(false),
     onOpen: () => setOpen(true),
     open,
+    typeahead: searchable,
   });
+
   const invalid = invalidProp || Boolean(error);
   const accessibleLabel = selectorAccessibleLabel(
     label,
     display || placeholder,
   );
+  const searchField = searchable ? (
+    <View style={styles.searchField}>
+      <Search color={theme.colors.muted} size={15} />
+      <TextInput
+        accessibilityLabel={searchPlaceholder}
+        autoFocus
+        onChangeText={setQuery}
+        placeholder={searchPlaceholder}
+        placeholderTextColor={theme.colors.faint}
+        style={[styles.searchInput, hideWebOutline]}
+        value={query}
+      />
+    </View>
+  ) : null;
 
   return (
     <View style={label ? styles.field : null}>
@@ -163,6 +207,7 @@ function DropdownSelectorView({
             maxHeight={placement.maxHeight}
             onActiveIdChange={navigation.setActiveId}
             onClose={() => setOpen(false)}
+            search={searchField}
           />
         )}
       </DropdownPortal>
