@@ -2,7 +2,7 @@
 
 ## Status
 
-Active.
+Completed.
 
 ## Goal
 
@@ -207,11 +207,13 @@ Summary: prove the package is usable before consumers migrate to it.
       `xtask` command.
 - [x] Update README and protocol docs with any behavior discovered during
       implementation.
-- [ ] Run `git add -A`, commit the completed work using Conventional Commits,
+- [x] Run `git add -A`, commit the completed work using Conventional Commits,
       and push the branch.
-- [ ] After the push, run `cargo xtask review` if available; otherwise document
+- [x] After the push, run `cargo xtask review` if available; otherwise document
       the blocker and review the diff manually against `origin/main`.
-- [ ] Report every review finding without automatically fixing it, including
+      Review blocker: `cargo xtask review` reports no `xtask` command in this
+      repo.
+- [x] Report every review finding without automatically fixing it, including
       severity, context, impact, solution options, and a recommended option.
 
 ## Milestone 6: Consumer Migration Handoff
@@ -222,5 +224,5 @@ in this plan.
 - [x] Document the import migration path for accounting.
 - [x] Document the import migration path for Juno.
 - [x] Record any consumer-specific gaps that should become separate plans.
-- [ ] Move this plan from Active to Completed in `plans/README.md` after all
+- [x] Move this plan from Active to Completed in `plans/README.md` after all
       milestones, checks, smoke tests, push, and review reporting are complete.
