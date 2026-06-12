@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft contract for the initial dropdown and modal extraction.
+Implemented contract for the initial dropdown and modal extraction.
 
 ## Purpose
 

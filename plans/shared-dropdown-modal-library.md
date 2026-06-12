@@ -117,107 +117,110 @@ component code.
 
 - [x] Investigate the accounting dropdown and modal source components.
 - [x] Add a protocol doc for the initial shared component contract.
-- [ ] Confirm package name and export style, defaulting to `@futex/ui` unless
-  the repo already establishes another convention.
-- [ ] Inspect Juno's current UI tokens and package setup to confirm peer
-  dependency and theme compatibility.
-- [ ] Add TypeScript package scaffolding with source, tests, build output, and
-  package exports.
-- [ ] Declare React, React Native, React Native Web, React DOM, and icon
-  dependency boundaries.
-- [ ] Add initial README instructions for install, build, test, and local smoke
-  usage.
-- [ ] Run the initial package build/typecheck command.
+- [x] Confirm package name and export style, defaulting to `@futex/ui` unless
+      the repo already establishes another convention.
+- [x] Inspect Juno's current UI tokens and package setup to confirm peer
+      dependency and theme compatibility.
+- [x] Add TypeScript package scaffolding with source, tests, build output, and
+      package exports.
+- [x] Declare React, React Native, React Native Web, React DOM, and icon
+      dependency boundaries.
+- [x] Add initial README instructions for install, build, test, and local smoke
+      usage.
+- [x] Run the initial package build/typecheck command.
 
 ## Milestone 2: Copy Dropdown And Modal Components
 
 Summary: copy accounting components and tests while preserving current behavior.
 
-- [ ] Copy dropdown source files, README content, and focused dropdown tests.
-- [ ] Copy modal source files, README content, and focused modal tests.
-- [ ] Preserve platform-specific `.web.tsx` and native fallback files.
-- [ ] Replace accounting alias imports with package-local modules.
-- [ ] Export public dropdown, combobox, modal, model, and layer APIs from stable
-  package entrypoints.
-- [ ] Split files that would exceed the preferred 300-line limit after package
-  adaptation.
-- [ ] Run copied unit/source-contract tests and fix failures.
+- [x] Copy dropdown source files, README content, and focused dropdown tests.
+- [x] Copy modal source files, README content, and focused modal tests.
+- [x] Preserve platform-specific `.web.tsx` and native fallback files.
+- [x] Replace accounting alias imports with package-local modules.
+- [x] Export public dropdown, combobox, modal, model, and layer APIs from stable
+      package entrypoints.
+- [x] Split files that would exceed the preferred 300-line limit after package
+      adaptation.
+- [x] Run copied unit/source-contract tests and fix failures.
 
 ## Milestone 3: Theme And Focus Adaptation
 
 Summary: make the copied components brand-adaptable for accounting and Juno.
 
-- [ ] Add a package-owned default theme matching accounting's current component
-  colors.
-- [ ] Add a theme provider, theme creation helper, and documented override
-  shape.
-- [ ] Replace hard-coded accounting theme reads with the shared theme hook or
-  helper.
-- [ ] Move focus-ring helpers into the package and bind focus color to the
-  active theme primary token.
-- [ ] Add tests for default theme fallback, primary color overrides, and focus
-  ring color selection.
-- [ ] Add a small local usage fixture or example that renders accounting-default
-  and alternate-primary variants.
+- [x] Add a package-owned default theme matching accounting's current component
+      colors.
+- [x] Add a theme provider, theme creation helper, and documented override
+      shape.
+- [x] Replace hard-coded accounting theme reads with the shared theme hook or
+      helper.
+- [x] Move focus-ring helpers into the package and bind focus color to the
+      active theme primary token.
+- [x] Add tests for default theme fallback, primary color overrides, and focus
+      ring color selection.
+- [x] Add a small local usage fixture or example that renders accounting-default
+      and alternate-primary variants.
 
 ## Milestone 4: CI, Browser Tests, And Storybook
 
 Summary: add automated PR confidence checks and deployable visual review
 surfaces before consumers migrate to the package.
 
-- [ ] Add PR CI checks for install, formatting or linting, unit tests,
-  typecheck, package build, browser interaction tests, and Storybook build.
-- [ ] Add browser interaction tests for dropdown open/close, keyboard
-  navigation, outside dismissal, combobox input focus retention, modal focus
-  restoration, and dropdown-over-modal layering.
-- [ ] Add Storybook stories for dropdown selector, dropdown action menu,
-  input-backed combobox, chip multi-select, centered web modal, bottom-sheet web
-  modal, accounting-default theme, and alternate-primary theme.
-- [ ] Add a stable main-branch Cloudflare Pages Storybook deployment for
-  `https://futex-ui-storybook.pages.dev`.
-- [ ] Add per-PR Cloudflare Pages Storybook preview deployment using branch
-  names `pr-<number>`.
-- [ ] Add sticky PR Storybook comments with marker
-  `<!-- futex-ui-storybook-preview -->`, status, URL, commit SHA, and workflow
-  run URL.
-- [ ] Add PR-close handling that marks the Storybook comment inactive and
-  deletes Cloudflare Pages PR branch deployments when safe.
-- [ ] Validate required Cloudflare configuration in CI:
-  `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_PAGES_API_TOKEN`.
-- [ ] Document local commands for running Storybook and browser interaction
-  tests in the README.
+- [x] Add PR CI checks for install, formatting or linting, unit tests,
+      typecheck, package build, browser interaction tests, and Storybook build.
+- [x] Add browser interaction tests for dropdown open/close, keyboard
+      navigation, outside dismissal, combobox input focus retention, modal focus
+      restoration, and dropdown-over-modal layering.
+- [x] Add Storybook stories for dropdown selector, dropdown action menu,
+      input-backed combobox, chip multi-select, centered web modal,
+      bottom-sheet web modal, accounting-default theme, and alternate-primary
+      theme.
+- [x] Add a stable main-branch Cloudflare Pages Storybook deployment for
+      `https://futex-ui-storybook.pages.dev`.
+- [x] Add per-PR Cloudflare Pages Storybook preview deployment using branch
+      names `pr-<number>`.
+- [x] Add sticky PR Storybook comments with marker
+      `<!-- futex-ui-storybook-preview -->`, status, URL, commit SHA, and workflow
+      run URL.
+- [x] Add PR-close handling that marks the Storybook comment inactive and
+      deletes Cloudflare Pages PR branch deployments when safe.
+- [x] Validate required Cloudflare configuration in CI:
+      `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_PAGES_API_TOKEN`.
+- [x] Document local commands for running Storybook and browser interaction
+      tests in the README.
 
 ## Milestone 5: Verification And Smoke Coverage
 
 Summary: prove the package is usable before consumers migrate to it.
 
-- [ ] Run the full package test suite.
-- [ ] Run the package typecheck.
-- [ ] Run the package build.
-- [ ] Run browser interaction tests.
-- [ ] Run Storybook build.
-- [ ] Run a local smoke test that opens a dropdown selector, input-backed
-  combobox, and web modal in a browser or render harness.
-- [ ] If this repo has Cargo tooling by then, run `cargo fmt --all -- --check`,
-  `cargo clippy --all-targets --all-features`, and `cargo xtask check`; if it
-  does not, document that Cargo checks are unavailable and list the package
-  checks that were run.
-- [ ] Update README and protocol docs with any behavior discovered during
-  implementation.
+- [x] Run the full package test suite.
+- [x] Run the package typecheck.
+- [x] Run the package build.
+- [x] Run browser interaction tests.
+- [x] Run Storybook build.
+- [x] Run a local smoke test that opens a dropdown selector, input-backed
+      combobox, and web modal in a browser or render harness.
+- [x] If this repo has Cargo tooling by then, run `cargo fmt --all -- --check`,
+      `cargo clippy --all-targets --all-features`, and `cargo xtask check`; if it
+      does not, document that Cargo checks are unavailable and list the package
+      checks that were run.
+      Cargo tooling is unavailable in this repo: `cargo xtask check` reports no
+      `xtask` command.
+- [x] Update README and protocol docs with any behavior discovered during
+      implementation.
 - [ ] Run `git add -A`, commit the completed work using Conventional Commits,
-  and push the branch.
+      and push the branch.
 - [ ] After the push, run `cargo xtask review` if available; otherwise document
-  the blocker and review the diff manually against `origin/main`.
+      the blocker and review the diff manually against `origin/main`.
 - [ ] Report every review finding without automatically fixing it, including
-  severity, context, impact, solution options, and a recommended option.
+      severity, context, impact, solution options, and a recommended option.
 
 ## Milestone 6: Consumer Migration Handoff
 
 Summary: prepare accounting and Juno for follow-up work without changing them
 in this plan.
 
-- [ ] Document the import migration path for accounting.
-- [ ] Document the import migration path for Juno.
-- [ ] Record any consumer-specific gaps that should become separate plans.
+- [x] Document the import migration path for accounting.
+- [x] Document the import migration path for Juno.
+- [x] Record any consumer-specific gaps that should become separate plans.
 - [ ] Move this plan from Active to Completed in `plans/README.md` after all
-  milestones, checks, smoke tests, push, and review reporting are complete.
+      milestones, checks, smoke tests, push, and review reporting are complete.
