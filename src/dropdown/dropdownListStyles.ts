@@ -68,6 +68,11 @@ export function createDropdownListStyles(theme: SharedUiTheme) {
     leading: { alignItems: "center", justifyContent: "center" },
     right: { alignItems: "center", justifyContent: "center" },
     scroll: { flexGrow: 0, flexShrink: 1, minHeight: 0 },
+    searchRegion: {
+      paddingBottom: 6,
+      paddingHorizontal: 4,
+      paddingTop: 2,
+    },
     secondary: {
       ...baseText,
       color: theme.colors.muted,

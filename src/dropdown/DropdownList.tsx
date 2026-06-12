@@ -41,6 +41,7 @@ type DropdownListProps = {
   maxHeight: number;
   onActiveIdChange?: (id: string | null) => void;
   onClose: () => void;
+  search?: ReactNode;
 };
 
 export function DropdownList({
@@ -51,6 +52,7 @@ export function DropdownList({
   maxHeight,
   onActiveIdChange,
   onClose,
+  search,
 }: DropdownListProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createDropdownListStyles(theme), [theme]);
@@ -127,7 +129,7 @@ export function DropdownList({
     },
   };
 
-  const hasChrome = Boolean(header) || Boolean(footer);
+  const hasChrome = Boolean(search) || Boolean(header) || Boolean(footer);
   const scroll = (
     <ScrollView
       keyboardShouldPersistTaps="handled"
@@ -148,15 +150,16 @@ export function DropdownList({
     </ScrollView>
   );
 
-  // Header and footer content pin outside the scroll area so they stay
-  // visible while the option rows scroll between them. The wrapper shrinks to
-  // the surface's content box (which is inset by the surface padding) so the
+  // Search, header, and footer content pin outside the scroll area so they
+  // stay visible while the option rows scroll between them. The wrapper shrinks
+  // to the surface's content box (which is inset by the surface padding) so the
   // pinned footer is not clipped past the bottom edge.
   if (!hasChrome) {
     return scroll;
   }
   return (
     <View style={[styles.chrome, { maxHeight }]}>
+      {search ? <View style={styles.searchRegion}>{search}</View> : null}
       {header ? <View style={styles.headerRegion}>{header}</View> : null}
       {scroll}
       {footer ? <View style={styles.footerRegion}>{footer}</View> : null}

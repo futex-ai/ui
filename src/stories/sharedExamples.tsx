@@ -37,6 +37,21 @@ const books = [
   { color: "#315f96", label: "VAT Archive", mark: "V", value: "book_3" },
 ];
 
+const currencyOptions = [
+  { label: "US Dollar", value: "usd" },
+  { label: "Euro", value: "eur" },
+  { label: "British Pound", value: "gbp" },
+  { label: "Japanese Yen", value: "jpy" },
+  { label: "Swiss Franc", value: "chf" },
+  { label: "Canadian Dollar", value: "cad" },
+  { label: "Australian Dollar", value: "aud" },
+  { label: "Singapore Dollar", value: "sgd" },
+  { label: "Hong Kong Dollar", value: "hkd" },
+  { label: "Norwegian Krone", value: "nok" },
+  { label: "Swedish Krona", value: "sek" },
+  { label: "New Zealand Dollar", value: "nzd" },
+];
+
 export function SelectorExample() {
   const [value, setValue] = useState("standard");
   return (
@@ -79,6 +94,19 @@ export function SelectorWithHeaderFooterExample() {
       label="Scheme"
       onValueChange={setValue}
       options={longSelectorOptions}
+      value={value}
+    />
+  );
+}
+
+export function SearchableSelectorExample() {
+  const [value, setValue] = useState("usd");
+  return (
+    <DropdownSelector
+      label="Currency"
+      onValueChange={setValue}
+      options={currencyOptions}
+      searchable
       value={value}
     />
   );

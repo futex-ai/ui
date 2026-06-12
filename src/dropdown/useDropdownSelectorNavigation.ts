@@ -19,6 +19,9 @@ type DropdownSelectorNavigationOptions = {
   onClose: () => void;
   onOpen: () => void;
   open: boolean;
+  // When the menu is backed by a search input, the space bar must reach the
+  // input as typed text rather than activating the active row.
+  typeahead?: boolean;
 };
 
 type DropdownKeyboardEvent = {
@@ -34,6 +37,7 @@ export function useDropdownSelectorNavigation({
   onClose,
   onOpen,
   open,
+  typeahead = false,
 }: DropdownSelectorNavigationOptions) {
   const navItems = useMemo(
     () => dropdownListNavigationItems(entries),
@@ -58,6 +62,9 @@ export function useDropdownSelectorNavigation({
         event.nativeEvent?.key ?? event.key ?? "",
       );
       if (!action) {
+        return false;
+      }
+      if (typeahead && action === "toggle") {
         return false;
       }
       if (!open && (action === "select" || action === "toggle")) {
@@ -96,6 +103,7 @@ export function useDropdownSelectorNavigation({
       onOpen,
       open,
       selectedId,
+      typeahead,
     ],
   );
 

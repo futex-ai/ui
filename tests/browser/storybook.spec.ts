@@ -125,6 +125,46 @@ async function bottomOverflowPast(
   });
 }
 
+test("searchable dropdown selector filters options and selects by keyboard", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--searchable-selector");
+
+  await page.getByRole("button", { name: "Currency, US Dollar" }).click();
+
+  // The search input is focused on open. Typing (including the space bar, which
+  // must reach the input rather than activate a row) narrows the option rows
+  // while keeping focus in the input.
+  const search = page.getByPlaceholder("Search options");
+  await expect(search).toBeFocused();
+  await search.pressSequentially("new z");
+  await expect(
+    page.getByRole("button", { exact: true, name: "New Zealand Dollar" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { exact: true, name: "US Dollar" }),
+  ).toBeHidden();
+  await expect(search).toBeFocused();
+
+  // Enter activates the highlighted match and closes the menu.
+  await page.keyboard.press("Enter");
+  await expect(
+    page.getByRole("button", { name: "Currency, New Zealand Dollar" }),
+  ).toBeVisible();
+  await expect(page.getByPlaceholder("Search options")).toBeHidden();
+
+  // Reopening starts from the full list again; a non-matching query shows the
+  // empty state.
+  await page
+    .getByRole("button", { name: "Currency, New Zealand Dollar" })
+    .click();
+  await page.getByPlaceholder("Search options").fill("zzz");
+  await expect(page.getByText("No matching options")).toBeVisible();
+  await expect(
+    page.getByRole("button", { exact: true, name: "Euro" }),
+  ).toBeHidden();
+});
+
 test("combobox keeps input focus while filtering options", async ({ page }) => {
   await page.goto("/iframe.html?id=dropdown-examples--input-backed-combobox");
 

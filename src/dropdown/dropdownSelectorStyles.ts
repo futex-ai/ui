@@ -112,6 +112,25 @@ export function createDropdownSelectorStyles(theme: SharedUiTheme) {
     placeholder: { color: theme.colors.faint },
     readOnly: { opacity: 1 },
     required: { color: theme.colors.rose },
+    searchField: {
+      alignItems: "center",
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.border2,
+      borderRadius: theme.radii.md,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: 8,
+      height: 36,
+      paddingHorizontal: 10,
+    },
+    searchInput: {
+      ...baseText,
+      color: theme.colors.ink,
+      flex: 1,
+      fontSize: 13,
+      lineHeight: 18,
+      padding: 0,
+    },
   });
 }
 
