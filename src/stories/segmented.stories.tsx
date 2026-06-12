@@ -42,6 +42,7 @@ function ProfitLossSegmentedExample() {
         accessibilityLabel="Report"
         onChange={setReport}
         options={reportOptions}
+        sizing="content"
         value={report}
         variant="pill"
       />

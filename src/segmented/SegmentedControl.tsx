@@ -123,7 +123,7 @@ function SegmentedControlButton<T extends string>({
       }}
       style={[
         pill ? styles.pill : styles.cell,
-        sizing === "content" ? styles.contentSegment : null,
+        sizing === "equal" ? styles.equalSegment : styles.contentSegment,
         selected ? (pill ? styles.pillActive : styles.cellSelected) : null,
         focus.focused ? focus.focusRingStyle : null,
         disabled ? styles.disabled : null,

@@ -30,13 +30,17 @@ import { SegmentedControl } from "@futex/ui/segmented";
     { label: "Profit & loss", value: "pl" },
     { label: "Balance sheet", value: "bs" },
   ]}
+  sizing="content"
   value={report}
   variant="pill"
 />;
 ```
 
-Use `sizing="content"` with `wrap` when the control is a row of filter pills
-that may need to flow onto another line.
+Pair `variant="pill"` with `sizing="content"` for the report-style tab track,
+where each tab hugs its label and the track sits flush to the start. Use
+`sizing="content"` with `wrap` when the control is a row of filter pills that may
+need to flow onto another line. Leave `sizing` as the default `"equal"` to share
+width evenly across segments.
 
 ## Theming
 
