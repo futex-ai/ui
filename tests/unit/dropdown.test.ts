@@ -20,6 +20,7 @@ import {
   shouldResetDropdownListActiveId,
 } from "../../src/dropdown/dropdownNavigation";
 import { dropdownShouldClose } from "../../src/dropdown/dropdownOutsideClose";
+import { dropdownScrollOffsetForActiveRow } from "../../src/dropdown/dropdownScroll";
 
 const items = [
   { id: "section", selectable: false },
@@ -154,6 +155,36 @@ test("dropdown point containment matches trigger and surface rects", () => {
   assert.equal(
     dropdownPointWithinRects({ x: 150, y: 120 }, [null, null]),
     false,
+  );
+});
+
+test("dropdown active row scroll offset keeps rows inside the list viewport", () => {
+  assert.equal(
+    dropdownScrollOffsetForActiveRow({
+      activeBottom: 90,
+      activeTop: 50,
+      viewportBottom: 100,
+      viewportTop: 20,
+    }),
+    0,
+  );
+  assert.equal(
+    dropdownScrollOffsetForActiveRow({
+      activeBottom: 40,
+      activeTop: 10,
+      viewportBottom: 100,
+      viewportTop: 20,
+    }),
+    -10,
+  );
+  assert.equal(
+    dropdownScrollOffsetForActiveRow({
+      activeBottom: 130,
+      activeTop: 90,
+      viewportBottom: 100,
+      viewportTop: 20,
+    }),
+    30,
   );
 });
 

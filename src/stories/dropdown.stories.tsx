@@ -4,6 +4,7 @@ import {
   ActionMenuExample,
   ChipMultiSelectExample,
   InputBackedComboboxExample,
+  LongSelectorExample,
   SelectorExample,
   StorySurface,
 } from "./sharedExamples";
@@ -21,6 +22,15 @@ export const DropdownSelectorDefault: Story = {
   render: () => (
     <StorySurface>
       <SelectorExample />
+    </StorySurface>
+  ),
+};
+
+export const LongDropdownSelector: Story = {
+  name: "Long dropdown selector",
+  render: () => (
+    <StorySurface>
+      <LongSelectorExample />
     </StorySurface>
   ),
 };

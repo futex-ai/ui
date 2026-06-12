@@ -54,6 +54,8 @@ Required behavior:
   close, hover active state, outside pointer close, loading/empty rows, section
   headers, dividers, footers, secondary text, right-side content, and danger or
   warning row tones.
+- Keep the keyboard-active option scrolled into the visible list viewport when
+  navigation moves through long dropdown or combobox lists.
 - Include the field label in selector accessible names when a visual label is
   supplied, so repeated selectors remain distinguishable to assistive
   technology.

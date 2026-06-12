@@ -1,19 +1,21 @@
 /** Branded dropdown list rows with shared hover and keyboard state. */
 import { LucideIcon } from "lucide-react-native";
-import { ReactNode, useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { useSharedUiTheme } from "../theme";
-import type { SharedUiTheme } from "../theme";
 
+import { createDropdownListStyles } from "./dropdownListStyles";
+import type { DropdownListStyles } from "./dropdownListStyles";
 import {
   dropdownKeyAction,
-  DropdownNavigationItem,
   navigationResetKey,
   nextSelectableId,
   selectedOrFirstId,
   shouldResetDropdownListActiveId,
 } from "./dropdownNavigation";
+import type { DropdownNavigationItem } from "./dropdownNavigation";
+import { scrollDropdownActiveRowIntoView } from "./dropdownScroll";
 
 export type DropdownListEntry =
   | { id: string; label: string; type: "divider" }
@@ -48,6 +50,8 @@ export function DropdownList({
 }: DropdownListProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createDropdownListStyles(theme), [theme]);
+  const rowRefs = useRef(new Map<string, View>());
+  const scrollRef = useRef<ScrollView>(null);
   const navItems = useMemo<DropdownNavigationItem[]>(
     () => dropdownListNavigationItems(entries),
     [entries],
@@ -73,6 +77,21 @@ export function DropdownList({
       setUncontrolledActiveId(selectedOrFirstId(navItems, selectedId));
     }
   }, [controlledActiveId, navKey, selectedId]);
+
+  useEffect(() => {
+    scrollDropdownActiveRowIntoView(
+      scrollRef.current,
+      activeId ? rowRefs.current.get(activeId) : null,
+    );
+  }, [activeId, navKey]);
+
+  const setRowRef = (id: string) => (node: View | null) => {
+    if (node) {
+      rowRefs.current.set(id, node);
+      return;
+    }
+    rowRefs.current.delete(id);
+  };
 
   const keyProps = {
     onKeyDown: (event: {
@@ -107,6 +126,7 @@ export function DropdownList({
   return (
     <ScrollView
       keyboardShouldPersistTaps="handled"
+      ref={scrollRef}
       style={{ maxHeight }}
       {...keyProps}
     >
@@ -116,6 +136,7 @@ export function DropdownList({
           entry={entry}
           key={entry.id}
           onHover={() => setActiveId(entry.id)}
+          onRowRef={setRowRef(entry.id)}
           styles={styles}
         />
       ))}
@@ -145,11 +166,13 @@ function DropdownRow({
   active,
   entry,
   onHover,
+  onRowRef,
   styles,
 }: {
   active: boolean;
   entry: DropdownListEntry;
   onHover: () => void;
+  onRowRef: (node: View | null) => void;
   styles: DropdownListStyles;
 }) {
   if (entry.type === "section") {
@@ -170,6 +193,7 @@ function DropdownRow({
       disabled={entry.disabled}
       onHoverIn={entry.disabled ? undefined : onHover}
       onPress={entry.onPress}
+      ref={onRowRef}
       style={[
         styles.item,
         entry.type === "footer" ? styles.footer : null,
@@ -220,74 +244,3 @@ export function DropdownIconBox({
     </View>
   );
 }
-
-function createDropdownListStyles(theme: SharedUiTheme) {
-  const baseText = { fontFamily: theme.fonts.sans } as const;
-  return StyleSheet.create({
-    amberText: { color: theme.colors.amber },
-    dangerText: { color: theme.colors.rose },
-    divider: {
-      backgroundColor: theme.colors.border,
-      height: 1,
-      marginHorizontal: 6,
-      marginVertical: 4,
-    },
-    footer: {
-      borderTopColor: theme.colors.border,
-      borderTopWidth: 1,
-      marginTop: 4,
-    },
-    iconBox: {
-      alignItems: "center",
-      backgroundColor: theme.colors.primarySoft,
-      borderRadius: theme.radii.md,
-      height: 28,
-      justifyContent: "center",
-      width: 28,
-    },
-    iconBoxDanger: { backgroundColor: theme.colors.roseSoft },
-    item: {
-      alignItems: "center",
-      borderRadius: 7,
-      flexDirection: "row",
-      gap: 10,
-      paddingHorizontal: 10,
-      paddingVertical: 8,
-    },
-    itemActive: { backgroundColor: theme.colors.soft },
-    itemDisabled: { opacity: 0.5 },
-    itemLabel: {
-      ...baseText,
-      color: theme.colors.ink,
-      fontSize: 13,
-      fontWeight: "700",
-      lineHeight: 18,
-    },
-    itemLabelActive: { color: theme.colors.primaryDeep },
-    itemSelected: { backgroundColor: theme.colors.primarySoft },
-    itemText: { flex: 1, minWidth: 0 },
-    leading: { alignItems: "center", justifyContent: "center" },
-    right: { alignItems: "center", justifyContent: "center" },
-    secondary: {
-      ...baseText,
-      color: theme.colors.muted,
-      fontSize: 11,
-      lineHeight: 15,
-      marginTop: 1,
-    },
-    section: {
-      ...baseText,
-      color: theme.colors.muted,
-      fontSize: 10,
-      fontWeight: "700",
-      letterSpacing: 1,
-      lineHeight: 15,
-      paddingBottom: 2,
-      paddingHorizontal: 10,
-      paddingTop: 6,
-      textTransform: "uppercase",
-    },
-  });
-}
-
-type DropdownListStyles = ReturnType<typeof createDropdownListStyles>;

@@ -1,0 +1,75 @@
+/** Shared style factory for dropdown list rows. */
+import { StyleSheet } from "react-native";
+
+import type { SharedUiTheme } from "../theme";
+
+export function createDropdownListStyles(theme: SharedUiTheme) {
+  const baseText = { fontFamily: theme.fonts.sans } as const;
+  return StyleSheet.create({
+    amberText: { color: theme.colors.amber },
+    dangerText: { color: theme.colors.rose },
+    divider: {
+      backgroundColor: theme.colors.border,
+      height: 1,
+      marginHorizontal: 6,
+      marginVertical: 4,
+    },
+    footer: {
+      borderTopColor: theme.colors.border,
+      borderTopWidth: 1,
+      marginTop: 4,
+    },
+    iconBox: {
+      alignItems: "center",
+      backgroundColor: theme.colors.primarySoft,
+      borderRadius: theme.radii.md,
+      height: 28,
+      justifyContent: "center",
+      width: 28,
+    },
+    iconBoxDanger: { backgroundColor: theme.colors.roseSoft },
+    item: {
+      alignItems: "center",
+      borderRadius: 7,
+      flexDirection: "row",
+      gap: 10,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+    },
+    itemActive: { backgroundColor: theme.colors.soft },
+    itemDisabled: { opacity: 0.5 },
+    itemLabel: {
+      ...baseText,
+      color: theme.colors.ink,
+      fontSize: 13,
+      fontWeight: "700",
+      lineHeight: 18,
+    },
+    itemLabelActive: { color: theme.colors.primaryDeep },
+    itemSelected: { backgroundColor: theme.colors.primarySoft },
+    itemText: { flex: 1, minWidth: 0 },
+    leading: { alignItems: "center", justifyContent: "center" },
+    right: { alignItems: "center", justifyContent: "center" },
+    secondary: {
+      ...baseText,
+      color: theme.colors.muted,
+      fontSize: 11,
+      lineHeight: 15,
+      marginTop: 1,
+    },
+    section: {
+      ...baseText,
+      color: theme.colors.muted,
+      fontSize: 10,
+      fontWeight: "700",
+      letterSpacing: 1,
+      lineHeight: 15,
+      paddingBottom: 2,
+      paddingHorizontal: 10,
+      paddingTop: 6,
+      textTransform: "uppercase",
+    },
+  });
+}
+
+export type DropdownListStyles = ReturnType<typeof createDropdownListStyles>;

@@ -23,6 +23,14 @@ const selectorOptions = [
   { disabled: true, label: "Flat rate", value: "flat" },
 ];
 
+const longSelectorOptions = Array.from({ length: 28 }, (_, index) => {
+  const optionNumber = String(index + 1).padStart(2, "0");
+  return {
+    label: `Long option ${optionNumber}`,
+    value: `long-${optionNumber}`,
+  };
+});
+
 const books = [
   { color: "#4f7864", label: "Greenhouse Studio", mark: "G", value: "book_1" },
   { color: "#946727", label: "Payroll Reserve", mark: "P", value: "book_2" },
@@ -36,6 +44,18 @@ export function SelectorExample() {
       label="Scheme"
       onValueChange={setValue}
       options={selectorOptions}
+      value={value}
+    />
+  );
+}
+
+export function LongSelectorExample() {
+  const [value, setValue] = useState("long-01");
+  return (
+    <DropdownSelector
+      label="Long list"
+      onValueChange={setValue}
+      options={longSelectorOptions}
       value={value}
     />
   );

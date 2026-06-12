@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 test("dropdown selector opens, navigates with keyboard, and closes outside", async ({
   page,
@@ -20,6 +20,28 @@ test("dropdown selector opens, navigates with keyboard, and closes outside", asy
   await expect(page.getByText("Flat rate")).toBeVisible();
   await page.mouse.click(10, 10);
   await expect(page.getByText("Flat rate")).toBeHidden();
+});
+
+test("dropdown keyboard navigation keeps the active option in view", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--long-dropdown-selector");
+
+  await page.getByRole("button", { name: "Long list, Long option 01" }).click();
+  await expect(
+    page.getByRole("button", { exact: true, name: "Long option 01" }),
+  ).toBeVisible();
+
+  for (let step = 0; step < 15; step += 1) {
+    await page.keyboard.press("ArrowDown");
+  }
+
+  await expect
+    .poll(() => dropdownScrollState(page, "Long option 16"))
+    .toMatchObject({
+      activeInView: true,
+      scrolled: true,
+    });
 });
 
 test("combobox keeps input focus while filtering options", async ({ page }) => {
@@ -90,3 +112,28 @@ test("web modal restores focus and allows nested dropdowns above the surface", a
   expect(optionBox).not.toBeNull();
   expect(optionBox?.y).toBeGreaterThanOrEqual((modalBox?.y ?? 0) - 1);
 });
+
+async function dropdownScrollState(page: Page, label: string) {
+  return page
+    .getByRole("button", { exact: true, name: label })
+    .evaluate((element) => {
+      let scrollParent = element.parentElement;
+      while (scrollParent) {
+        if (scrollParent.scrollHeight > scrollParent.clientHeight) {
+          break;
+        }
+        scrollParent = scrollParent.parentElement;
+      }
+      if (!scrollParent) {
+        return { activeInView: false, scrolled: false };
+      }
+      const activeRect = element.getBoundingClientRect();
+      const viewportRect = scrollParent.getBoundingClientRect();
+      return {
+        activeInView:
+          activeRect.top >= viewportRect.top - 1 &&
+          activeRect.bottom <= viewportRect.bottom + 1,
+        scrolled: scrollParent.scrollTop > 0,
+      };
+    });
+}

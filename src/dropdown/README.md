@@ -14,6 +14,8 @@ input-backed comboboxes in Futex apps.
   enough room below and clamping menu height.
 - Share keyboard navigation, hover/active row styling, right-side row content,
   section headers, disabled rows, and footer/action rows.
+- Keep the keyboard-active row scrolled into the visible list viewport for long
+  dropdowns and combobox result lists.
 - Include visual field labels in selector accessible names when labels are
   present.
 - Keep button-backed selectors/action menus separate from input-backed
