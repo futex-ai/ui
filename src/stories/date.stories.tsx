@@ -36,7 +36,7 @@ function SingleDateExample() {
   return (
     <View style={{ gap: 14, minWidth: 320 }}>
       <DateField
-        hint="Pick a day or type it as 31 Mar 2026."
+        hint="Pick a day, type it as 31 Mar 2026, or clear it with the ✕."
         label="Year ends"
         onChange={setValue}
         value={value}
