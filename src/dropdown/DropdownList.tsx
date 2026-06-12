@@ -36,6 +36,8 @@ export type DropdownListEntry =
 type DropdownListProps = {
   activeId?: string | null;
   entries: DropdownListEntry[];
+  footer?: ReactNode;
+  header?: ReactNode;
   maxHeight: number;
   onActiveIdChange?: (id: string | null) => void;
   onClose: () => void;
@@ -44,6 +46,8 @@ type DropdownListProps = {
 export function DropdownList({
   activeId: controlledActiveId,
   entries,
+  footer,
+  header,
   maxHeight,
   onActiveIdChange,
   onClose,
@@ -123,11 +127,12 @@ export function DropdownList({
     },
   };
 
-  return (
+  const hasChrome = Boolean(header) || Boolean(footer);
+  const scroll = (
     <ScrollView
       keyboardShouldPersistTaps="handled"
       ref={scrollRef}
-      style={{ maxHeight }}
+      style={hasChrome ? styles.scroll : { maxHeight }}
       {...keyProps}
     >
       {entries.map((entry) => (
@@ -141,6 +146,19 @@ export function DropdownList({
         />
       ))}
     </ScrollView>
+  );
+
+  // Header and footer content pin outside the scroll area so they stay
+  // visible while the option rows scroll between them.
+  if (!hasChrome) {
+    return scroll;
+  }
+  return (
+    <View style={{ maxHeight }}>
+      {header ? <View style={styles.headerRegion}>{header}</View> : null}
+      {scroll}
+      {footer ? <View style={styles.footerRegion}>{footer}</View> : null}
+    </View>
   );
 }
 

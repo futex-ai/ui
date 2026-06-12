@@ -6,6 +6,7 @@ import {
   InputBackedComboboxExample,
   LongSelectorExample,
   SelectorExample,
+  SelectorWithHeaderFooterExample,
   StorySurface,
 } from "./sharedExamples";
 
@@ -31,6 +32,15 @@ export const LongDropdownSelector: Story = {
   render: () => (
     <StorySurface>
       <LongSelectorExample />
+    </StorySurface>
+  ),
+};
+
+export const SelectorWithHeaderFooter: Story = {
+  name: "Selector with header and footer",
+  render: () => (
+    <StorySurface>
+      <SelectorWithHeaderFooterExample />
     </StorySurface>
   ),
 };

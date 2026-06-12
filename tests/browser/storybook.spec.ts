@@ -44,6 +44,56 @@ test("dropdown keyboard navigation keeps the active option in view", async ({
     });
 });
 
+test("dropdown selector pins header and footer while options scroll", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=dropdown-examples--selector-with-header-footer",
+  );
+
+  await page.getByRole("button", { name: "Scheme, Long option 01" }).click();
+
+  const header = page.getByText("Choose a scheme");
+  const footer = page.getByRole("button", { name: "Add scheme" });
+  await expect(header).toBeVisible();
+  await expect(footer).toBeVisible();
+
+  const option = page.getByRole("button", {
+    exact: true,
+    name: "Long option 03",
+  });
+  const headerBefore = await header.boundingBox();
+  const footerBefore = await footer.boundingBox();
+  const optionBefore = await option.boundingBox();
+
+  for (let step = 0; step < 18; step += 1) {
+    await page.keyboard.press("ArrowDown");
+  }
+
+  const headerAfter = await header.boundingBox();
+  const footerAfter = await footer.boundingBox();
+  const optionAfter = await option.boundingBox();
+
+  // The option rows scroll up...
+  expect(optionBefore).not.toBeNull();
+  expect(optionAfter).not.toBeNull();
+  expect(
+    Math.abs((optionAfter?.y ?? 0) - (optionBefore?.y ?? 0)),
+  ).toBeGreaterThan(20);
+
+  // ...while the pinned header and footer keep their position and stay visible.
+  expect(headerBefore).not.toBeNull();
+  expect(footerBefore).not.toBeNull();
+  expect(
+    Math.abs((headerAfter?.y ?? 0) - (headerBefore?.y ?? 0)),
+  ).toBeLessThanOrEqual(1);
+  expect(
+    Math.abs((footerAfter?.y ?? 0) - (footerBefore?.y ?? 0)),
+  ).toBeLessThanOrEqual(1);
+  await expect(header).toBeVisible();
+  await expect(footer).toBeVisible();
+});
+
 test("combobox keeps input focus while filtering options", async ({ page }) => {
   await page.goto("/iframe.html?id=dropdown-examples--input-backed-combobox");
 

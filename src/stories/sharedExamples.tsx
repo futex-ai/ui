@@ -1,4 +1,4 @@
-import { MoreHorizontal, Settings, Trash2 } from "lucide-react-native";
+import { MoreHorizontal, Plus, Settings, Trash2 } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
@@ -54,6 +54,29 @@ export function LongSelectorExample() {
   return (
     <DropdownSelector
       label="Long list"
+      onValueChange={setValue}
+      options={longSelectorOptions}
+      value={value}
+    />
+  );
+}
+
+export function SelectorWithHeaderFooterExample() {
+  const [value, setValue] = useState("long-01");
+  return (
+    <DropdownSelector
+      footer={
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => undefined}
+          style={styles.menuFooterAction}
+        >
+          <Plus color="#2f5945" size={15} />
+          <Text style={styles.menuFooterText}>Add scheme</Text>
+        </Pressable>
+      }
+      header={<Text style={styles.menuHeaderText}>Choose a scheme</Text>}
+      label="Scheme"
       onValueChange={setValue}
       options={longSelectorOptions}
       value={value}
@@ -249,6 +272,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     minWidth: 240,
     padding: 10,
+  },
+  menuFooterAction: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 6,
+    paddingVertical: 4,
+  },
+  menuFooterText: {
+    color: "#2f5945",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  menuHeaderText: {
+    color: "#1c1f1d",
+    fontSize: 13,
+    fontWeight: "800",
   },
   modalBody: {
     gap: 12,
