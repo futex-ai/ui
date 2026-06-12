@@ -4,4 +4,5 @@ storybook-static/
 playwright-report/
 test-results/
 .wrangler/
+target/
 .DS_Store

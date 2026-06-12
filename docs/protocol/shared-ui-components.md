@@ -105,8 +105,10 @@ Required behavior:
 - PR Storybook previews deploy the static Storybook build to Cloudflare Pages
   with branch name `pr-<number>`, producing a predictable preview URL such as
   `https://pr-123.futex-ui-storybook.pages.dev`.
-- Every PR must run CI checks for install, formatting or linting, unit tests,
-  browser interaction tests, typecheck, package build, and Storybook build.
+- Every PR must run `cargo xtask check` after dependency installation. The
+  xtask check covers formatting, Markdown linting, whitespace checks, unit
+  tests, browser interaction tests, typecheck, package build, Storybook build,
+  Rust formatting, clippy, and Rust tests.
 - The main branch must publish a stable default Storybook deployment.
 - Every PR must publish an isolated Storybook preview deployment.
 - The PR Storybook URL must be posted back to the pull request through a sticky

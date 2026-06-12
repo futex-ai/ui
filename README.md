@@ -36,7 +36,13 @@ npm run test:browser
 Run the full local verification suite with:
 
 ```bash
-npm run verify
+cargo xtask check
+```
+
+Run the same read-only AI review wrapper used by the accounting repo with:
+
+```bash
+cargo xtask review
 ```
 
 Browser interaction tests start Storybook automatically through Playwright.
@@ -64,6 +70,7 @@ Storybook is built to `storybook-static`.
 - Dropdown components: [src/dropdown/README.md](src/dropdown/README.md)
 - Modal components: [src/modal/README.md](src/modal/README.md)
 - Browser tests: [tests/browser/storybook.spec.ts](tests/browser/storybook.spec.ts)
+- Repository automation: [xtask/README.md](xtask/README.md)
 - Shared component protocol:
   [docs/protocol/shared-ui-components.md](docs/protocol/shared-ui-components.md)
 - Consumer migration handoff: [docs/consumer-migration.md](docs/consumer-migration.md)
