@@ -3,7 +3,9 @@ import { expect, test } from "@playwright/test";
 test("dropdown selector opens, navigates with keyboard, and closes outside", async ({
   page,
 }) => {
-  await page.goto("/iframe.html?id=shared-ui--dropdown-selector-default");
+  await page.goto(
+    "/iframe.html?id=dropdown-examples--dropdown-selector-default",
+  );
 
   await page.getByRole("button", { name: "Standard" }).click();
   await expect(page.getByText("Cash accounting")).toBeVisible();
@@ -21,7 +23,7 @@ test("dropdown selector opens, navigates with keyboard, and closes outside", asy
 });
 
 test("combobox keeps input focus while filtering options", async ({ page }) => {
-  await page.goto("/iframe.html?id=shared-ui--input-backed-combobox");
+  await page.goto("/iframe.html?id=dropdown-examples--input-backed-combobox");
 
   const input = page.getByPlaceholder("Search to add...");
   await input.click();
@@ -34,7 +36,7 @@ test("combobox keeps input focus while filtering options", async ({ page }) => {
 test("web modal restores focus and allows nested dropdowns above the surface", async ({
   page,
 }) => {
-  await page.goto("/iframe.html?id=shared-ui--centered-web-modal");
+  await page.goto("/iframe.html?id=modal-examples--centered-web-modal");
 
   await page.getByRole("button", { name: "Close Invite teammate" }).click();
   const openButton = page.getByRole("button", { name: "Open Invite teammate" });

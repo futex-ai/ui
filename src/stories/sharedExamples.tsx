@@ -1,4 +1,3 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
 import { MoreHorizontal, Settings, Trash2 } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { useRef, useState } from "react";
@@ -11,20 +10,12 @@ import {
   DropdownListEntry,
   DropdownPortal,
   DropdownSelector,
+  SharedUiTheme,
+  SharedUiThemeOverrides,
   SharedUiThemeProvider,
   WebModalFrame,
-  createSharedUiTheme,
   defaultSharedUiTheme,
-  junoSharedUiTheme,
 } from "../index";
-
-const meta = {
-  title: "Shared UI",
-} satisfies Meta;
-
-export default meta;
-
-type Story = StoryObj<typeof meta>;
 
 const selectorOptions = [
   { label: "Standard", value: "standard" },
@@ -38,93 +29,7 @@ const books = [
   { color: "#315f96", label: "VAT Archive", mark: "V", value: "book_3" },
 ];
 
-const alternateTheme = createSharedUiTheme({
-  colors: {
-    primary: "#6F5BD0",
-    primaryBorder: "#E2DAF5",
-    primaryDeep: "#5A47BD",
-    primarySoft: "#F0EBFA",
-  },
-});
-
-export const DropdownSelectorDefault: Story = {
-  name: "Dropdown selector",
-  render: () => (
-    <StorySurface>
-      <SelectorExample />
-    </StorySurface>
-  ),
-};
-
-export const DropdownActionMenu: Story = {
-  name: "Dropdown action menu",
-  render: () => (
-    <StorySurface>
-      <ActionMenuExample />
-    </StorySurface>
-  ),
-};
-
-export const InputBackedCombobox: Story = {
-  name: "Input-backed combobox",
-  render: () => (
-    <StorySurface>
-      <ComboboxMultiSelect
-        footer="Only active books can be selected."
-        onChange={() => undefined}
-        options={books}
-        values={["book_1"]}
-      />
-    </StorySurface>
-  ),
-};
-
-export const ChipMultiSelect: Story = {
-  name: "Chip multi-select",
-  render: () => (
-    <StorySurface>
-      <ChipMultiSelectExample />
-    </StorySurface>
-  ),
-};
-
-export const CenteredWebModal: Story = {
-  name: "Centered web modal",
-  render: () => (
-    <StorySurface>
-      <ModalExample placement="center" title="Invite teammate" />
-    </StorySurface>
-  ),
-};
-
-export const BottomSheetWebModal: Story = {
-  name: "Bottom-sheet web modal",
-  render: () => (
-    <StorySurface>
-      <ModalExample placement="bottom-sheet" title="Cookie preferences" />
-    </StorySurface>
-  ),
-};
-
-export const DefaultAccountingTheme: Story = {
-  name: "Default accounting theme",
-  render: () => (
-    <StorySurface theme={defaultSharedUiTheme}>
-      <ThemeSwatch label="Accounting default" />
-    </StorySurface>
-  ),
-};
-
-export const AlternatePrimaryTheme: Story = {
-  name: "Alternate primary theme",
-  render: () => (
-    <StorySurface theme={junoSharedUiTheme}>
-      <ThemeSwatch label="Juno primary" />
-    </StorySurface>
-  ),
-};
-
-function SelectorExample() {
+export function SelectorExample() {
   const [value, setValue] = useState("standard");
   return (
     <DropdownSelector
@@ -136,7 +41,7 @@ function SelectorExample() {
   );
 }
 
-function ActionMenuExample() {
+export function ActionMenuExample() {
   const anchorRef = useRef<View>(null);
   const [open, setOpen] = useState(false);
   const entries: DropdownListEntry[] = [
@@ -186,7 +91,18 @@ function ActionMenuExample() {
   );
 }
 
-function ChipMultiSelectExample() {
+export function InputBackedComboboxExample() {
+  return (
+    <ComboboxMultiSelect
+      footer="Only active books can be selected."
+      onChange={() => undefined}
+      options={books}
+      values={["book_1"]}
+    />
+  );
+}
+
+export function ChipMultiSelectExample() {
   const [values, setValues] = useState(["book_1"]);
   return (
     <ComboboxMultiSelect
@@ -198,7 +114,7 @@ function ChipMultiSelectExample() {
   );
 }
 
-function ModalExample({
+export function ModalExample({
   placement,
   title,
 }: {
@@ -250,26 +166,26 @@ function ModalExample({
   );
 }
 
-function StorySurface({
-  children,
-  theme = defaultSharedUiTheme,
-}: {
-  children: ReactNode;
-  theme?: Parameters<typeof SharedUiThemeProvider>[0]["theme"];
-}) {
-  return (
-    <SharedUiThemeProvider theme={theme}>
-      <View style={styles.surface}>{children}</View>
-    </SharedUiThemeProvider>
-  );
-}
-
-function ThemeSwatch({ label }: { label: string }) {
+export function ThemeSwatch({ label }: { label: string }) {
   return (
     <View style={styles.themeDemo}>
       <Text style={styles.heading}>{label}</Text>
       <SelectorExample />
     </View>
+  );
+}
+
+export function StorySurface({
+  children,
+  theme = defaultSharedUiTheme,
+}: {
+  children: ReactNode;
+  theme?: SharedUiTheme | SharedUiThemeOverrides;
+}) {
+  return (
+    <SharedUiThemeProvider theme={theme}>
+      <View style={styles.surface}>{children}</View>
+    </SharedUiThemeProvider>
   );
 }
 

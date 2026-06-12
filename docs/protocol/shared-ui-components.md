@@ -127,6 +127,8 @@ Required behavior:
   dropdown action menu, input-backed combobox, chip multi-select, centered web
   modal, bottom-sheet web modal, default accounting theme, and alternate primary
   color theme.
+- Storybook navigation must keep dropdown and modal examples in separate
+  top-level folders, currently `Dropdown/Examples` and `Modal/Examples`.
 
 ## Non-Goals
 
