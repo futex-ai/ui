@@ -121,7 +121,8 @@ Required behavior:
   available to the workflow; if deletion cannot be performed safely, the close
   workflow must report the retained preview URL and the reason it was retained.
 - Required Cloudflare configuration is repository variable
-  `CLOUDFLARE_ACCOUNT_ID` and repository secret `CLOUDFLARE_PAGES_API_TOKEN`.
+  `CLOUDFLARE_ACCOUNT_ID` and repository secret `CLOUDFLARE_PAGES_API_TOKEN` or
+  `CLOUDFLARE_API_TOKEN`.
 - Storybook previews must include at least the shared dropdown selector,
   dropdown action menu, input-backed combobox, chip multi-select, centered web
   modal, bottom-sheet web modal, default accounting theme, and alternate primary

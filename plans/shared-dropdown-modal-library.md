@@ -106,7 +106,8 @@ Important findings:
   when the workflow can do so safely; otherwise leave the preview retained and
   include the reason in the comment.
 - Required repository variable: `CLOUDFLARE_ACCOUNT_ID`.
-- Required repository secret: `CLOUDFLARE_PAGES_API_TOKEN`.
+- Required repository secret: `CLOUDFLARE_PAGES_API_TOKEN` or
+  `CLOUDFLARE_API_TOKEN`.
 - Fork PR behavior: run build/test checks, but skip deploy and comment steps
   when secrets are unavailable.
 
@@ -184,7 +185,8 @@ surfaces before consumers migrate to the package.
 - [x] Add PR-close handling that marks the Storybook comment inactive and
       deletes Cloudflare Pages PR branch deployments when safe.
 - [x] Validate required Cloudflare configuration in CI:
-      `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_PAGES_API_TOKEN`.
+      `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_PAGES_API_TOKEN` or
+      `CLOUDFLARE_API_TOKEN`.
 - [x] Document local commands for running Storybook and browser interaction
       tests in the README.
 

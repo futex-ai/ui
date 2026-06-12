@@ -53,7 +53,8 @@ Storybook is built to `storybook-static`.
 - PR previews are posted through a sticky comment marked
   `<!-- futex-ui-storybook-preview -->`.
 - Required repository variable: `CLOUDFLARE_ACCOUNT_ID`.
-- Required repository secret: `CLOUDFLARE_PAGES_API_TOKEN`.
+- Required repository secret: `CLOUDFLARE_PAGES_API_TOKEN` or
+  `CLOUDFLARE_API_TOKEN`.
 
 ## Key Code Jumping Points
 

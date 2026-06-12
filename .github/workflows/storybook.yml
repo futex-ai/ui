@@ -42,13 +42,13 @@ jobs:
             missing=1
           fi
           if [ -z "${CLOUDFLARE_API_TOKEN}" ]; then
-            echo "::error title=Missing CLOUDFLARE_PAGES_API_TOKEN::Set repository secret CLOUDFLARE_PAGES_API_TOKEN."
+            echo "::error title=Missing Cloudflare API token::Set repository secret CLOUDFLARE_PAGES_API_TOKEN or CLOUDFLARE_API_TOKEN."
             missing=1
           fi
           exit "${missing}"
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
 
       - name: Install dependencies
         run: npm ci
@@ -60,7 +60,7 @@ jobs:
         run: npx wrangler pages deploy storybook-static --project-name "${CLOUDFLARE_PROJECT_NAME}" --branch main
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
 
   deploy-pr:
     name: Deploy PR Storybook
@@ -87,13 +87,13 @@ jobs:
             missing=1
           fi
           if [ -z "${CLOUDFLARE_API_TOKEN}" ]; then
-            echo "::error title=Missing CLOUDFLARE_PAGES_API_TOKEN::Set repository secret CLOUDFLARE_PAGES_API_TOKEN."
+            echo "::error title=Missing Cloudflare API token::Set repository secret CLOUDFLARE_PAGES_API_TOKEN or CLOUDFLARE_API_TOKEN."
             missing=1
           fi
           exit "${missing}"
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
 
       - name: Install dependencies
         run: npm ci
@@ -115,7 +115,7 @@ jobs:
           echo "url=${deployment_url}" >> "$GITHUB_OUTPUT"
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
 
       - name: Comment Storybook preview
         if: always()
@@ -170,7 +170,7 @@ jobs:
         id: cleanup
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
           PREVIEW_BRANCH: pr-${{ github.event.pull_request.number }}
         run: |
           if [ -z "${CLOUDFLARE_ACCOUNT_ID}" ] || [ -z "${CLOUDFLARE_API_TOKEN}" ]; then
