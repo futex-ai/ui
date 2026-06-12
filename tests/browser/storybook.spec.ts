@@ -137,6 +137,32 @@ test("searchable dropdown selector filters options and selects by keyboard", asy
   // while keeping focus in the input.
   const search = page.getByPlaceholder("Search options");
   await expect(search).toBeFocused();
+
+  // The search field's border lines up with the option rows' (selected)
+  // background, so its left and right edges match the highlighted row.
+  const alignment = await page.evaluate(() => {
+    const input = document.querySelector('input[placeholder="Search options"]');
+    const field = input?.parentElement ?? null;
+    const selectedRow =
+      Array.from(document.querySelectorAll('[role="button"]')).find(
+        (element) =>
+          element.textContent?.trim() === "US Dollar" &&
+          !element.hasAttribute("aria-expanded"),
+      ) ?? null;
+    if (!field || !selectedRow) {
+      return null;
+    }
+    const fieldRect = field.getBoundingClientRect();
+    const rowRect = selectedRow.getBoundingClientRect();
+    return {
+      left: Math.abs(fieldRect.left - rowRect.left),
+      right: Math.abs(fieldRect.right - rowRect.right),
+    };
+  });
+  expect(alignment).not.toBeNull();
+  expect(alignment?.left).toBeLessThanOrEqual(1);
+  expect(alignment?.right).toBeLessThanOrEqual(1);
+
   await search.pressSequentially("new z");
   await expect(
     page.getByRole("button", { exact: true, name: "New Zealand Dollar" }),
