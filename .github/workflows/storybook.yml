@@ -1,0 +1,242 @@
+name: Storybook
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  CLOUDFLARE_PROJECT_NAME: futex-ui-storybook
+  STORYBOOK_COMMENT_MARKER: "<!-- futex-ui-storybook-preview -->"
+
+jobs:
+  deploy-main:
+    name: Deploy Main Storybook
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "25"
+          cache: npm
+
+      - name: Validate Cloudflare configuration
+        run: |
+          missing=0
+          if [ -z "${CLOUDFLARE_ACCOUNT_ID}" ]; then
+            echo "::error title=Missing CLOUDFLARE_ACCOUNT_ID::Set repository variable CLOUDFLARE_ACCOUNT_ID."
+            missing=1
+          fi
+          if [ -z "${CLOUDFLARE_API_TOKEN}" ]; then
+            echo "::error title=Missing Cloudflare API token::Set repository secret CLOUDFLARE_PAGES_API_TOKEN or CLOUDFLARE_API_TOKEN."
+            missing=1
+          fi
+          exit "${missing}"
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Storybook
+        run: npm run storybook:build
+
+      - name: Deploy Storybook to Cloudflare Pages
+        run: npx wrangler pages deploy storybook-static --project-name "${CLOUDFLARE_PROJECT_NAME}" --branch main
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
+
+  deploy-pr:
+    name: Deploy PR Storybook
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.action != 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "25"
+          cache: npm
+
+      - name: Validate Cloudflare configuration
+        run: |
+          missing=0
+          if [ -z "${CLOUDFLARE_ACCOUNT_ID}" ]; then
+            echo "::error title=Missing CLOUDFLARE_ACCOUNT_ID::Set repository variable CLOUDFLARE_ACCOUNT_ID."
+            missing=1
+          fi
+          if [ -z "${CLOUDFLARE_API_TOKEN}" ]; then
+            echo "::error title=Missing Cloudflare API token::Set repository secret CLOUDFLARE_PAGES_API_TOKEN or CLOUDFLARE_API_TOKEN."
+            missing=1
+          fi
+          exit "${missing}"
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Storybook
+        run: npm run storybook:build
+
+      - name: Deploy Storybook preview
+        id: deploy
+        run: |
+          branch="pr-${{ github.event.pull_request.number }}"
+          output="$(npx wrangler pages deploy storybook-static --project-name "${CLOUDFLARE_PROJECT_NAME}" --branch "${branch}")"
+          echo "${output}"
+          deployment_url="$(printf "%s\n" "${output}" | grep -Eo "https://[^[:space:]]+" | tail -n 1)"
+          if [ -z "${deployment_url}" ]; then
+            deployment_url="https://${branch}.${CLOUDFLARE_PROJECT_NAME}.pages.dev"
+          fi
+          echo "branch=${branch}" >> "$GITHUB_OUTPUT"
+          echo "url=${deployment_url}" >> "$GITHUB_OUTPUT"
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Comment Storybook preview
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          DEPLOY_STATUS: ${{ job.status }}
+          PREVIEW_BRANCH: ${{ steps.deploy.outputs.branch }}
+          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
+        with:
+          script: |
+            const marker = process.env.STORYBOOK_COMMENT_MARKER;
+            const body = `${marker}
+            ### Futex UI Storybook preview
+
+            Status: **${process.env.DEPLOY_STATUS}**
+            - Storybook: ${process.env.PREVIEW_URL || "unavailable"}
+            - Cloudflare branch: \`${process.env.PREVIEW_BRANCH || "unknown"}\`
+            - Commit: \`${context.payload.pull_request.head.sha}\`
+            - Workflow: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
+            `;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number
+            });
+            const existing = comments.find((comment) => comment.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body
+              });
+            }
+
+  close-pr:
+    name: Close PR Storybook
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.action == 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete Cloudflare Pages PR deployments
+        id: cleanup
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
+          PREVIEW_BRANCH: pr-${{ github.event.pull_request.number }}
+        run: |
+          if [ -z "${CLOUDFLARE_ACCOUNT_ID}" ] || [ -z "${CLOUDFLARE_API_TOKEN}" ]; then
+            echo "status=retained: missing Cloudflare configuration" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          api_root="https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${CLOUDFLARE_PROJECT_NAME}"
+          deployments="$(
+            curl --fail --silent --show-error \
+              --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+              "${api_root}/deployments" \
+              | jq -r --arg branch "${PREVIEW_BRANCH}" '.result[] | select(.deployment_trigger.metadata.branch == $branch) | .id'
+          )"
+
+          if [ -z "${deployments}" ]; then
+            echo "status=deleted: no matching branch deployments found" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          while IFS= read -r deployment_id; do
+            [ -z "${deployment_id}" ] && continue
+            curl --fail --silent --show-error \
+              --request DELETE \
+              --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+              "${api_root}/deployments/${deployment_id}" >/dev/null
+          done <<EOF
+          ${deployments}
+          EOF
+
+          echo "status=deleted: removed matching branch deployments" >> "$GITHUB_OUTPUT"
+
+      - name: Mark preview inactive
+        uses: actions/github-script@v7
+        env:
+          CLEANUP_STATUS: ${{ steps.cleanup.outputs.status }}
+          PREVIEW_BRANCH: pr-${{ github.event.pull_request.number }}
+        with:
+          script: |
+            const marker = process.env.STORYBOOK_COMMENT_MARKER;
+            const body = `${marker}
+            ### Futex UI Storybook preview
+
+            Status: **inactive**
+            - Cloudflare branch: \`${process.env.PREVIEW_BRANCH}\`
+            - Cleanup: ${process.env.CLEANUP_STATUS || "retained: cleanup status unavailable"}
+            - PR closed at workflow: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
+            `;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number
+            });
+            const existing = comments.find((comment) => comment.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body
+              });
+            }

@@ -1,0 +1,243 @@
+import { MoreHorizontal, Settings, Trash2 } from "lucide-react-native";
+import type { ReactNode } from "react";
+import { useRef, useState } from "react";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+
+import {
+  ComboboxMultiSelect,
+  DropdownIconBox,
+  DropdownList,
+  DropdownListEntry,
+  DropdownPortal,
+  DropdownSelector,
+  SharedUiTheme,
+  SharedUiThemeOverrides,
+  SharedUiThemeProvider,
+  WebModalFrame,
+  defaultSharedUiTheme,
+} from "../index";
+
+const selectorOptions = [
+  { label: "Standard", value: "standard" },
+  { label: "Cash accounting", value: "cash" },
+  { disabled: true, label: "Flat rate", value: "flat" },
+];
+
+const books = [
+  { color: "#4f7864", label: "Greenhouse Studio", mark: "G", value: "book_1" },
+  { color: "#946727", label: "Payroll Reserve", mark: "P", value: "book_2" },
+  { color: "#315f96", label: "VAT Archive", mark: "V", value: "book_3" },
+];
+
+export function SelectorExample() {
+  const [value, setValue] = useState("standard");
+  return (
+    <DropdownSelector
+      label="Scheme"
+      onValueChange={setValue}
+      options={selectorOptions}
+      value={value}
+    />
+  );
+}
+
+export function ActionMenuExample() {
+  const anchorRef = useRef<View>(null);
+  const [open, setOpen] = useState(false);
+  const entries: DropdownListEntry[] = [
+    {
+      id: "settings",
+      label: "Settings",
+      leading: <DropdownIconBox Icon={Settings} />,
+      onPress: () => setOpen(false),
+      type: "item",
+    },
+    { id: "divider", label: "divider", type: "divider" },
+    {
+      id: "delete",
+      label: "Remove",
+      leading: <DropdownIconBox Icon={Trash2} tone="danger" />,
+      onPress: () => setOpen(false),
+      tone: "danger",
+      type: "item",
+    },
+  ];
+
+  return (
+    <View ref={anchorRef}>
+      <Pressable
+        accessibilityLabel="Open action menu"
+        accessibilityRole="button"
+        onPress={() => setOpen((current) => !current)}
+        style={styles.iconButton}
+      >
+        <MoreHorizontal color="#3e4540" size={18} />
+      </Pressable>
+      <DropdownPortal
+        anchorRef={anchorRef}
+        minWidth={180}
+        onClose={() => setOpen(false)}
+        open={open}
+      >
+        {(placement) => (
+          <DropdownList
+            entries={entries}
+            maxHeight={placement.maxHeight}
+            onClose={() => setOpen(false)}
+          />
+        )}
+      </DropdownPortal>
+    </View>
+  );
+}
+
+export function InputBackedComboboxExample() {
+  return (
+    <ComboboxMultiSelect
+      footer="Only active books can be selected."
+      onChange={() => undefined}
+      options={books}
+      values={["book_1"]}
+    />
+  );
+}
+
+export function ChipMultiSelectExample() {
+  const [values, setValues] = useState(["book_1"]);
+  return (
+    <ComboboxMultiSelect
+      footer="Only active books can be selected."
+      onChange={setValues}
+      options={books}
+      values={values}
+    />
+  );
+}
+
+export function ModalExample({
+  placement,
+  title,
+}: {
+  placement: "bottom-sheet" | "center";
+  title: string;
+}) {
+  const [visible, setVisible] = useState(true);
+  const [text, setText] = useState("");
+  return (
+    <View>
+      <Pressable
+        accessibilityLabel={`Open ${title}`}
+        accessibilityRole="button"
+        onPress={() => setVisible(true)}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Open modal</Text>
+      </Pressable>
+      <WebModalFrame
+        footer={
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setVisible(false)}
+            style={styles.button}
+          >
+            <Text style={styles.buttonText}>Done</Text>
+          </Pressable>
+        }
+        onClose={() => setVisible(false)}
+        placement={placement}
+        subtitle="Shared modal chrome with focus and close handling."
+        title={title}
+        visible={visible}
+      >
+        <View style={styles.modalBody}>
+          <TextInput
+            accessibilityLabel="Modal text field"
+            onChangeText={setText}
+            placeholder="Type here"
+            style={styles.input}
+            value={text}
+          />
+          <DropdownSelector
+            label="Nested selector"
+            onValueChange={() => undefined}
+            options={selectorOptions}
+            value="standard"
+          />
+        </View>
+      </WebModalFrame>
+    </View>
+  );
+}
+
+export function ThemeSwatch({ label }: { label: string }) {
+  return (
+    <View style={styles.themeDemo}>
+      <Text style={styles.heading}>{label}</Text>
+      <SelectorExample />
+    </View>
+  );
+}
+
+export function StorySurface({
+  children,
+  theme = defaultSharedUiTheme,
+}: {
+  children: ReactNode;
+  theme?: SharedUiTheme | SharedUiThemeOverrides;
+}) {
+  return (
+    <SharedUiThemeProvider theme={theme}>
+      <View style={styles.surface}>{children}</View>
+    </SharedUiThemeProvider>
+  );
+}
+
+const styles = StyleSheet.create({
+  button: {
+    alignItems: "center",
+    backgroundColor: "#2f5945",
+    borderRadius: 8,
+    height: 38,
+    justifyContent: "center",
+    paddingHorizontal: 14,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  heading: {
+    color: "#1c1f1d",
+    fontSize: 16,
+    fontWeight: "800",
+    marginBottom: 12,
+  },
+  iconButton: {
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderColor: "#d3d8cd",
+    borderRadius: 8,
+    borderWidth: 1,
+    height: 38,
+    justifyContent: "center",
+    width: 38,
+  },
+  input: {
+    borderColor: "#d3d8cd",
+    borderRadius: 8,
+    borderWidth: 1,
+    fontSize: 14,
+    minWidth: 240,
+    padding: 10,
+  },
+  modalBody: {
+    gap: 12,
+  },
+  surface: {
+    minWidth: 320,
+    padding: 24,
+  },
+  themeDemo: {
+    minWidth: 320,
+  },
+});

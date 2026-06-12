@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": false,
+    "noEmit": false,
+    "outDir": "dist",
+    "rootDir": "src",
+    "sourceMap": true
+  },
+  "exclude": [
+    "src/**/*.stories.tsx",
+    "src/**/__stories__/**",
+    "tests",
+    ".storybook",
+    "playwright.config.ts"
+  ],
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

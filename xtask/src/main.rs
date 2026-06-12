@@ -1,0 +1,11 @@
+//! Command-line entry point for workspace automation.
+
+mod check;
+mod cli;
+mod command;
+mod error;
+mod review;
+
+fn main() -> std::process::ExitCode {
+    cli::main()
+}
