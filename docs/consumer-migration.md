@@ -2,9 +2,9 @@
 
 ## Accounting
 
-Accounting currently owns the source dropdown, segmented control, switch, and
-modal components copied into this package. The migration should be a follow-up
-change in the accounting repo.
+Accounting currently owns the source dropdown, segmented control, radio card,
+switch, and modal components copied into this package. The migration should be a
+follow-up change in the accounting repo.
 
 Recommended path:
 
@@ -17,17 +17,18 @@ Recommended path:
 5. Replace imports from `@/components/SegmentedControl` with
    `@futex/ui/segmented`; Profit & loss source filters can use
    `sizing="content"` with `wrap`.
-6. Replace imports from `@/components/Switch` with `@futex/ui/switch`.
-7. Remove the duplicated accounting component files only after all imports,
+6. Replace imports from `@/components/RadioCard` with `@futex/ui/radio`.
+7. Replace imports from `@/components/Switch` with `@futex/ui/switch`.
+8. Remove the duplicated accounting component files only after all imports,
    tests, and smoke coverage pass.
-8. Run accounting app tests, typecheck, web smoke tests, `cargo xtask check`,
+9. Run accounting app tests, typecheck, web smoke tests, `cargo xtask check`,
    commit, push, and run `cargo xtask review`.
 
 Expected compatibility:
 
 - Accounting's current sage primary color is the package default.
-- Existing dropdown, segmented control, switch, and modal behavior is preserved by
-  copied unit and browser tests in this repo.
+- Existing dropdown, segmented control, radio card, switch, and modal behavior
+  is preserved by copied unit and browser tests in this repo.
 
 ## Juno
 
@@ -47,9 +48,9 @@ Recommended path:
    </SharedUiThemeProvider>;
    ```
 
-3. Import dropdowns from `@futex/ui/dropdown`, segmented controls from
-   `@futex/ui/segmented`, switches from `@futex/ui/switch`, and web modals from
-   `@futex/ui/modal`.
+3. Import dropdowns from `@futex/ui/dropdown`, radio cards from
+   `@futex/ui/radio`, segmented controls from `@futex/ui/segmented`, switches
+   from `@futex/ui/switch`, and web modals from `@futex/ui/modal`.
 4. Keep native iOS/Android sheets, action sheets, and OS pickers in Juno app
    code; this package's `WebModalFrame` remains web-only.
 5. Run Juno app tests, typecheck, browser smoke tests, `cargo xtask check`,
