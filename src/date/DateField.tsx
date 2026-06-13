@@ -39,6 +39,8 @@ export type DateFieldProps = {
   max?: string;
   /** Placeholder shown when no date is set. */
   placeholder?: string;
+  /** Show a clear (✕) button once a value is set. Off by default. */
+  clearable?: boolean;
 };
 
 /**
@@ -56,6 +58,7 @@ export function DateField({
   min,
   max,
   placeholder = "Select a date",
+  clearable = false,
 }: DateFieldProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createDateFieldStyles(theme), [theme]);
@@ -65,6 +68,7 @@ export function DateField({
     <View style={[styles.field, open ? styles.fieldOpen : null]}>
       <FieldLabel label={label} required={required} />
       <DateInput
+        clearable={clearable}
         invalid={invalid}
         label={label}
         max={max}
@@ -103,6 +107,8 @@ export type DateInputProps = {
   flex?: boolean;
   /** Notifies the parent when the picker opens/closes (so it can raise z-index). */
   onOpenChange?: (open: boolean) => void;
+  /** Show a clear (✕) button once a value is set. Off by default. */
+  clearable?: boolean;
 };
 
 /**
@@ -122,6 +128,7 @@ export function DateInput({
   max,
   flex = false,
   onOpenChange,
+  clearable = false,
 }: DateInputProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createDateFieldStyles(theme), [theme]);
@@ -145,6 +152,7 @@ export function DateInput({
     >
       {Platform.OS === "web" ? (
         <WebTrigger
+          clearable={clearable}
           field={field}
           invalid={invalid}
           label={label}
@@ -154,6 +162,7 @@ export function DateInput({
         />
       ) : (
         <NativeTrigger
+          clearable={clearable}
           field={field}
           invalid={invalid}
           label={label}

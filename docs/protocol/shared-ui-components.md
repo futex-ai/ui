@@ -90,10 +90,10 @@ Required behavior:
 - Clamp selections and typed values to the inclusive `min`/`max` bounds.
 - Validate range ordering, surfacing an error when the start is after the end,
   while still allowing each endpoint to hold any date independently.
-- Offer a clear affordance once a value is set that resets the value to the unset
-  sentinel without clamping and closes the picker; range endpoints clear
-  independently. The clear control is a labelled, focusable button, distinct from
-  the decorative calendar icon.
+- Offer an opt-in (`clearable`, off by default) clear affordance that, once a
+  value is set, resets the value to the unset sentinel without clamping and closes
+  the picker; range endpoints clear independently. The clear control is a
+  labelled, focusable button, distinct from the decorative calendar icon.
 - Lift the open field root (and the range row) above following form content so
   the calendar escapes sibling stacking contexts.
 - Keep day cells, navigation buttons, and the clear button labelled for

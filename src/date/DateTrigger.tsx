@@ -16,6 +16,8 @@ export type TriggerProps = {
   placeholder: string;
   required: boolean;
   styles: DateFieldStyles;
+  /** Whether the clear (✕) button is shown once a value is set. */
+  clearable: boolean;
 };
 
 export function WebTrigger({
@@ -25,6 +27,7 @@ export function WebTrigger({
   placeholder,
   required,
   styles,
+  clearable,
 }: TriggerProps) {
   const theme = useSharedUiTheme();
   const [text, setText] = useState(field.display);
@@ -93,8 +96,8 @@ export function WebTrigger({
       />
       {/* Unlike the calendar icon, clear is a distinct action with no keyboard
           equivalent, so it stays an accessible button (in the tab order and a11y
-          tree). Only shown once there is a value to remove. */}
-      {field.value ? (
+          tree). Opt-in, and only shown once there is a value to remove. */}
+      {clearable && field.value ? (
         <Pressable
           accessibilityLabel={`Clear ${label}`}
           accessibilityRole="button"
@@ -127,6 +130,7 @@ export function NativeTrigger({
   placeholder,
   required,
   styles,
+  clearable,
 }: TriggerProps) {
   const theme = useSharedUiTheme();
   // The row is a non-accessible Pressable (a full-row tap target to open) so its
@@ -159,7 +163,7 @@ export function NativeTrigger({
       <View style={styles.triggerIcons}>
         {/* Nested Pressable: on native it captures the touch (responder system),
             so clearing does not also open the picker the row press would. */}
-        {field.value ? (
+        {clearable && field.value ? (
           <Pressable
             accessibilityLabel={`Clear ${label}`}
             accessibilityRole="button"

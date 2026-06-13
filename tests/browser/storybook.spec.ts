@@ -239,9 +239,12 @@ test("date field opens the calendar, navigates months, and picks a day", async (
 }) => {
   await page.goto("/iframe.html?id=date-examples--single-date-field");
 
-  // Exact match so the clear button ("Clear Year ends") is not also selected.
-  const input = page.getByLabel("Year ends", { exact: true });
+  const input = page.getByLabel("Year ends");
   await expect(input).toHaveValue("31 Mar 2026");
+  // Clear is opt-in: the default field shows no clear button even with a value.
+  await expect(
+    page.getByRole("button", { name: "Clear Year ends" }),
+  ).toBeHidden();
 
   // Focusing the input opens the calendar on the value's month.
   await input.click();
@@ -259,8 +262,9 @@ test("date field opens the calendar, navigates months, and picks a day", async (
 });
 
 test("date field clears its value with the clear button", async ({ page }) => {
-  await page.goto("/iframe.html?id=date-examples--single-date-field");
+  await page.goto("/iframe.html?id=date-examples--clearable-date-field");
 
+  // Exact match so the clear button ("Clear Year ends") is not also selected.
   const input = page.getByLabel("Year ends", { exact: true });
   await expect(input).toHaveValue("31 Mar 2026");
 
@@ -282,7 +286,7 @@ test("date field clears its value with the clear button", async ({ page }) => {
 test("date field clear button is keyboard reachable and restores focus", async ({
   page,
 }) => {
-  await page.goto("/iframe.html?id=date-examples--single-date-field");
+  await page.goto("/iframe.html?id=date-examples--clearable-date-field");
 
   const input = page.getByLabel("Year ends", { exact: true });
   const clear = page.getByRole("button", { name: "Clear Year ends" });
