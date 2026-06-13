@@ -3,7 +3,7 @@ import { CalendarDays, CircleX } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 
-import { hideWebOutline, hideWebOutlineView } from "../focusRing";
+import { InputFrame } from "../input";
 import { useSharedUiTheme } from "../theme";
 
 import { DateFieldStyles } from "./dateFieldStyles";
@@ -29,7 +29,6 @@ export function WebTrigger({
   styles,
   clearable,
 }: TriggerProps) {
-  const theme = useSharedUiTheme();
   const [text, setText] = useState(field.display);
   const [editing, setEditing] = useState(false);
   const inputRef = useRef<TextInput>(null);
@@ -57,69 +56,50 @@ export function WebTrigger({
     suppressOpenRef.current = true;
     inputRef.current?.focus();
   };
-  // `editing` doubles as the focus state, so the focus ring shows on the whole
-  // field box (primary border) rather than the browser's default ring on the
-  // inner input.
+  // The shared input box owns the chrome, focus ring, clear button, and aria
+  // wiring; the date field only supplies the type-or-pick behaviour. `active`
+  // keeps the primary border while the calendar is open even without focus (a
+  // mouse click on the icon), matching `field.open || editing`. The calendar
+  // suffix icon is mouse-only (no label) since focusing the input already opens
+  // the picker.
   return (
-    <View
-      style={[
-        styles.trigger,
-        triggerBorder(styles, invalid, field.open || editing),
-      ]}
-    >
-      <TextInput
-        accessibilityHint={field.display ? undefined : placeholder}
-        accessibilityLabel={label}
-        aria-invalid={invalid}
-        aria-required={required}
-        // Commit live as the user types so a valid date moves the calendar.
-        onBlur={commitFromText}
-        onChangeText={(next) => {
-          setText(next);
-          field.commitText(next);
-        }}
-        // Focusing the input opens the calendar, unless a clear just refocused it.
-        onFocus={() => {
-          setEditing(true);
-          if (suppressOpenRef.current) {
-            suppressOpenRef.current = false;
-            return;
-          }
-          field.setOpen(true);
-        }}
-        onSubmitEditing={commitFromText}
-        placeholder={placeholder}
-        placeholderTextColor={theme.colors.faint}
-        ref={inputRef}
-        style={[styles.triggerInput, hideWebOutline]}
-        value={text}
-      />
-      {/* Unlike the calendar icon, clear is a distinct action with no keyboard
-          equivalent, so it stays an accessible button (in the tab order and a11y
-          tree). Opt-in, and only shown once there is a value to remove. */}
-      {clearable && field.value ? (
-        <Pressable
-          accessibilityLabel={`Clear ${label}`}
-          accessibilityRole="button"
-          onPress={clearValue}
-          style={[styles.triggerIcon, hideWebOutlineView]}
-        >
-          <CircleX color={theme.colors.muted} size={16} />
-        </Pressable>
-      ) : null}
-      {/* The input opens the calendar on focus, so the icon is a mouse-only
-          affordance: keep it out of the tab order (`tabIndex={-1}`; RNW's
-          Pressable ignores `focusable`) and the a11y tree, matching the mockup's
-          aria-hidden icon. The outline is hidden so a mouse click leaves no ring. */}
-      <Pressable
-        aria-hidden
-        onPress={() => field.setOpen(true)}
-        style={[styles.triggerIcon, styles.calendarNudge, hideWebOutlineView]}
-        tabIndex={-1}
-      >
-        <CalendarDays color={theme.colors.muted} size={16} />
-      </Pressable>
-    </View>
+    <InputFrame
+      accessibilityHint={field.display ? undefined : placeholder}
+      accessibilityLabel={label}
+      active={field.open || editing}
+      clearAccessibilityLabel={`Clear ${label}`}
+      clearable={clearable}
+      // Track the committed ISO value, not the live typed buffer (`value`), so
+      // the clear button mirrors the pre-refactor behaviour: visible while a
+      // committed date is being edited to empty, hidden for unparseable partial
+      // text in an otherwise-empty field.
+      clearVisible={Boolean(field.value)}
+      inputRef={inputRef}
+      invalid={invalid}
+      onBlur={commitFromText}
+      // Commit live as the user types so a valid date moves the calendar.
+      onChangeText={(next) => {
+        setText(next);
+        field.commitText(next);
+      }}
+      onClear={clearValue}
+      // Focusing the input opens the calendar, unless a clear just refocused it.
+      onFocus={() => {
+        setEditing(true);
+        if (suppressOpenRef.current) {
+          suppressOpenRef.current = false;
+          return;
+        }
+        field.setOpen(true);
+      }}
+      onSubmitEditing={commitFromText}
+      onSuffixIconPress={() => field.setOpen(true)}
+      placeholder={placeholder}
+      required={required}
+      suffixIcon={CalendarDays}
+      suffixIconStyle={styles.calendarNudge}
+      value={text}
+    />
   );
 }
 

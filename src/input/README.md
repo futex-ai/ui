@@ -1,0 +1,92 @@
+# Input
+
+Shared labelled text input for React Native and React Native Web, adapted from
+the accounting app's `Field` primitive and extended with the icon/clear chrome
+that the date field already used. It is the single text-input primitive for the
+library — other framed inputs (e.g. the date field's web trigger) build on it.
+
+## Responsibilities
+
+- Render a labelled text field: label (+ required `*`), a bordered input box, and
+  the error / hint messages below it.
+- Highlight validation state — an `error` message turns the border rose and is
+  announced via `aria-invalid`; `required` wires `aria-required` and the `*`.
+- Show optional leading (`prefixIcon`) and trailing (`suffixIcon`) icons inside
+  the box, plus an opt-in accessible `clearable` ✕ button.
+- Own the sage focus ring on the whole box and hide the browser's default
+  outline, using shared theme colors and radii.
+- Expose a bare box ({@link InputFrame}) so callers that own their own
+  label/messages or popover (like the date field) can embed just the framed
+  input.
+
+## Components
+
+- `Input` — the full labelled field (label + box + messages). The default
+  choice. Omit `label` for a bare variant that still renders messages.
+- `InputFrame` — just the bordered box (icons, input, clear button, focus ring),
+  with no label or messages. Embed it inside custom layouts or controls.
+
+## Usage
+
+```tsx
+import { Input } from "@futex/ui/input";
+import { Search } from "lucide-react-native";
+
+<Input
+  clearable
+  error={touched && !email ? "Email is required" : undefined}
+  hint="We only use this to send receipts."
+  label="Email"
+  onChangeText={setEmail}
+  placeholder="you@example.com"
+  prefixIcon={Search}
+  required
+  value={email}
+/>;
+```
+
+### Icons
+
+`prefixIcon` and `suffixIcon` take a `lucide-react-native` icon component and are
+decorative by default (hidden from assistive tech). Give the suffix an
+`onSuffixIconPress` to make it pressable; add `suffixIconLabel` to make it a
+focusable, keyboard-reachable button (e.g. a show/hide-password toggle). Without
+a label, a pressable suffix is a mouse-only affordance (skipped by the keyboard
+and assistive tech) for actions that already have an accessible path.
+
+### Clearing
+
+`clearable` shows a ✕ button — keyboard reachable and announced as
+`Clear {accessibilityLabel}` — once `value` is non-empty. It calls
+`onChangeText("")` by default (which also returns focus to the input), or
+`onClear` when provided. Pass `clearVisible` to drive the button's visibility
+explicitly when the value is committed separately from the live input text (the
+date field does this).
+
+## Styling
+
+The framed input exposes two style props, which **differ from the accounting
+`Field` this was adapted from** (where `style` targeted the input itself):
+
+- `style` — the outer bordered **box** (`ViewStyle`). When porting from `Field`,
+  text styling moves here only if it applies to the box.
+- `inputStyle` — the inner `TextInput` (`TextStyle`). Use this for text colour,
+  font, etc.
+
+`active` forces the primary (focused) border — useful when an attached popover is
+open without the input being focused (the date field uses it while the calendar
+is open).
+
+## Theming
+
+Inputs read colors and radii from `SharedUiThemeProvider`: the box uses
+`colors.surface` / `colors.border2`, the focus ring and active border use
+`colors.primary`, the invalid border and required `*` use `colors.rose`, and the
+box radius uses `radii.md`.
+
+## Used by
+
+The date field's web trigger (`src/date/DateTrigger.tsx`) renders an
+`InputFrame` with a calendar suffix icon and the clear button, so the type-or-pick
+date input shares the same chrome, focus ring, and clear behaviour as every other
+text input.

@@ -81,8 +81,13 @@ import { DateField, DateRangeField } from "@futex/ui/date";
 - `types.ts` — shared overlay prop contract (`DatePickerOverlayProps`).
 - `dateFieldLayers.ts` — z-index tokens for lifting open fields/rows.
 - `DateField.tsx` — `DateField`, `DateInput`, and the shared `FieldLabel`.
-- `DateTrigger.tsx` — the platform triggers (`WebTrigger` editable input,
-  `NativeTrigger` tap target), the clear button, and the `triggerBorder` helper.
+- `DateTrigger.tsx` — the platform triggers (`WebTrigger`, `NativeTrigger` tap
+  target) and the `triggerBorder` helper. `WebTrigger` renders the shared
+  `InputFrame` (`@futex/ui/input`) for the editable box — the same chrome, focus
+  ring, clear button, and `aria-invalid` wiring as every other text input — and
+  only supplies the type-or-pick behaviour (commit-on-type, focus-to-open) plus
+  the calendar suffix icon. `NativeTrigger` is a tap target, not a text input, so
+  it keeps its own row layout.
 - `DateRangeField.tsx` — two independent endpoints with ordering validation.
 - `CalendarMonth.tsx` — the shared month grid (calendar variant).
 - `DateWheel.tsx` — the shared spinning day/month/year wheel (wheel variant). A

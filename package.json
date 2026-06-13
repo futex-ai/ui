@@ -27,10 +27,20 @@
       "react-native": "./dist/dropdown/index.js",
       "import": "./dist/dropdown/index.js"
     },
+    "./input": {
+      "types": "./dist/input/index.d.ts",
+      "react-native": "./dist/input/index.js",
+      "import": "./dist/input/index.js"
+    },
     "./modal": {
       "types": "./dist/modal/index.d.ts",
       "react-native": "./dist/modal/index.js",
       "import": "./dist/modal/index.js"
+    },
+    "./radio": {
+      "types": "./dist/radio/index.d.ts",
+      "react-native": "./dist/radio/index.js",
+      "import": "./dist/radio/index.js"
     },
     "./segmented": {
       "types": "./dist/segmented/index.d.ts",

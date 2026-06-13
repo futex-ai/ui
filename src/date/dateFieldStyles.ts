@@ -1,39 +1,27 @@
 /** Shared chrome for the date-field triggers (single and range). */
 import { StyleSheet } from "react-native";
 
+import { fieldChromeTokens } from "../input";
 import type { SharedUiTheme } from "../theme";
 
 import { DATE_FIELD_LAYERS } from "./dateFieldLayers";
 
 export function createDateFieldStyles(theme: SharedUiTheme) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
+  // Share the label / required / message / hint tokens with the Input field so
+  // the two stay in lockstep. `fieldError` keeps its name (the date trigger uses
+  // it) but is the same token as the input's error message.
+  const chrome = fieldChromeTokens(theme);
   return StyleSheet.create({
     anchor: { position: "relative" },
-    field: { gap: 6 },
-    fieldError: {
-      ...baseText,
-      color: theme.colors.rose,
-      fontSize: 11,
-      fontWeight: "700",
-      lineHeight: 16,
-    },
-    fieldLabel: {
-      ...baseText,
-      color: theme.colors.ink2,
-      fontSize: 12,
-      fontWeight: "700",
-      lineHeight: 18,
-    },
+    field: chrome.field,
+    fieldError: chrome.message,
+    fieldLabel: chrome.fieldLabel,
     // Lifts the open field root (and the range row) above following/later-DOM
     // content so the calendar is not trapped by a sibling. See `dateFieldLayers`.
     fieldOpen: { zIndex: DATE_FIELD_LAYERS.open },
-    hint: {
-      ...baseText,
-      color: theme.colors.muted,
-      fontSize: 11,
-      lineHeight: 16.5,
-    },
-    required: { color: theme.colors.rose },
+    hint: chrome.hint,
+    required: chrome.required,
     trigger: {
       alignItems: "center",
       backgroundColor: theme.colors.surface,
@@ -52,23 +40,12 @@ export function createDateFieldStyles(theme: SharedUiTheme) {
     // the value text. Nudge it up to optically center it. `transform` keeps it a
     // pure visual shift with no layout effect on the row.
     calendarNudge: { transform: [{ translateY: -1 }] },
-    triggerIcon: { paddingLeft: 8 },
     // Groups the trailing clear + calendar icons on the native trigger so the
     // row's `space-between` keeps them together on the right, not spread apart.
     triggerIcons: { alignItems: "center", flexDirection: "row", gap: 8 },
     // The native open button fills the row left of the icons (preserving the old
     // single-row layout) while staying its own accessibility element.
     triggerOpen: { flex: 1 },
-    // `minWidth: 0` lets the web <input> shrink below its intrinsic size so the
-    // calendar icon stays inside the box in the narrow range endpoints.
-    triggerInput: {
-      ...baseText,
-      color: theme.colors.ink,
-      flex: 1,
-      fontSize: 14,
-      height: 38,
-      minWidth: 0,
-    },
     triggerInvalid: { borderColor: theme.colors.rose },
     triggerPlaceholder: {
       ...baseText,
