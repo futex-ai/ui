@@ -1,11 +1,25 @@
 /** Titled radio-option cards for larger one-of-N choices. */
 import { useMemo } from "react";
-import { Pressable, StyleProp, Text, View, ViewStyle } from "react-native";
+import {
+  Platform,
+  Pressable,
+  StyleProp,
+  Text,
+  View,
+  ViewStyle,
+} from "react-native";
 
 import { hideWebOutlineView, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { createRadioCardStyles } from "./radioCardStyles";
+
+type RadioCardKeyboardEvent = {
+  key?: string;
+  nativeEvent?: { key?: string };
+  preventDefault?: () => void;
+  stopPropagation?: () => void;
+};
 
 export type RadioCardProps = {
   accessibilityHint?: string;
@@ -32,6 +46,16 @@ export function RadioCard({
   const styles = useMemo(() => createRadioCardStyles(theme), [theme]);
   const focus = useFocusRing();
   const disabledState = disabled || !onPress;
+  const handleKeyDown = (event: RadioCardKeyboardEvent) => {
+    const key = event.nativeEvent?.key ?? event.key;
+    if (disabledState || (key !== " " && key !== "Spacebar")) {
+      return;
+    }
+    event.preventDefault?.();
+    event.stopPropagation?.();
+    onPress?.();
+  };
+  const keyProps = Platform.OS === "web" ? { onKeyDown: handleKeyDown } : {};
 
   return (
     <Pressable
@@ -44,6 +68,7 @@ export function RadioCard({
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onPress}
+      {...keyProps}
       style={[
         styles.radio,
         checked ? styles.radioChecked : null,

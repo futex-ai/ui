@@ -243,6 +243,10 @@ test("radio cards expose checked and disabled option states", async ({
   await accrual.click();
   await expect(accrual).toBeChecked();
   await expect(cash).not.toBeChecked();
+  await cash.focus();
+  await page.keyboard.press("Space");
+  await expect(cash).toBeChecked();
+  await expect(accrual).not.toBeChecked();
   await expect(flatRate).toBeDisabled();
 });
 

@@ -24,6 +24,17 @@ test("radio card keeps read-only disabled state and focus treatment", () => {
   assert.match(stylesSource, /radioDisabled: \{ opacity: 0\.6 \}/);
 });
 
+test("radio card handles space key activation on web", () => {
+  const source = readSource("../../src/radio/RadioCard.tsx");
+
+  assert.match(source, /keyProps = Platform\.OS === "web"/);
+  assert.match(source, /onKeyDown: handleKeyDown/);
+  assert.match(source, /\{\.\.\.keyProps\}/);
+  assert.match(source, /key !== " " && key !== "Spacebar"/);
+  assert.match(source, /event\.preventDefault\?\.\(\)/);
+  assert.match(source, /onPress\?\.\(\)/);
+});
+
 test("radio card visuals are driven by shared theme tokens", () => {
   const stylesSource = readSource("../../src/radio/radioCardStyles.ts");
 
