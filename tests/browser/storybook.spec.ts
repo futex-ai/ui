@@ -323,6 +323,73 @@ test("date field opens the calendar, navigates months, and picks a day", async (
   await expect(input).toHaveValue("10 Feb 2026");
 });
 
+test("popover opens content and closes by Escape, inside close, and outside press", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=popover-examples--content-popover");
+
+  const trigger = page.getByRole("button", { name: "Details" });
+  const content = page.getByText("Greenhouse Studio");
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await expect(content).toBeHidden();
+
+  // Pressing the trigger opens the surface and reports the expanded state.
+  await trigger.click();
+  await expect(content).toBeVisible();
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+  // Escape closes it.
+  await page.keyboard.press("Escape");
+  await expect(content).toBeHidden();
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+
+  // A close control inside the content closes it via the render-prop `close`.
+  await trigger.click();
+  await expect(content).toBeVisible();
+  await page.getByRole("button", { name: "Close" }).click();
+  await expect(content).toBeHidden();
+
+  // An outside press dismisses it through the document-level listener.
+  await trigger.click();
+  await expect(content).toBeVisible();
+  await page.mouse.click(5, 5);
+  await expect(content).toBeHidden();
+});
+
+test("controlled popover drives external state through onOpenChange", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=popover-examples--controlled-popover");
+
+  const trigger = page.getByRole("button", { name: "Account" });
+  const content = page.getByText("Greenhouse Studio");
+  const status = page.getByText("Popover is closed");
+
+  // The surface only opens because onOpenChange updated the external state that
+  // feeds the controlled `open` prop back in.
+  await expect(status).toBeVisible();
+  await trigger.click();
+  await expect(page.getByText("Popover is open")).toBeVisible();
+  await expect(content).toBeVisible();
+
+  // Each dismissal path fires onOpenChange, which closes it via external state.
+  await page.keyboard.press("Escape");
+  await expect(page.getByText("Popover is closed")).toBeVisible();
+  await expect(content).toBeHidden();
+
+  await trigger.click();
+  await expect(content).toBeVisible();
+  await page.getByRole("button", { name: "Close" }).click();
+  await expect(page.getByText("Popover is closed")).toBeVisible();
+  await expect(content).toBeHidden();
+
+  await trigger.click();
+  await expect(content).toBeVisible();
+  await page.mouse.click(5, 5);
+  await expect(page.getByText("Popover is closed")).toBeVisible();
+  await expect(content).toBeHidden();
+});
+
 async function dropdownScrollState(page: Page, label: string) {
   return page
     .getByRole("button", { exact: true, name: label })

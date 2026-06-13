@@ -32,6 +32,11 @@
       "react-native": "./dist/modal/index.js",
       "import": "./dist/modal/index.js"
     },
+    "./popover": {
+      "types": "./dist/popover/index.d.ts",
+      "react-native": "./dist/popover/index.js",
+      "import": "./dist/popover/index.js"
+    },
     "./segmented": {
       "types": "./dist/segmented/index.d.ts",
       "react-native": "./dist/segmented/index.js",
