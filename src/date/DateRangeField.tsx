@@ -27,6 +27,8 @@ export type DateRangeFieldProps = {
   min?: string;
   /** Latest selectable ISO date (inclusive). */
   max?: string;
+  /** Show a clear (✕) button on each endpoint once it has a value. Off by default. */
+  clearable?: boolean;
 };
 
 /**
@@ -43,6 +45,7 @@ export function DateRangeField({
   hint,
   min,
   max,
+  clearable = false,
 }: DateRangeFieldProps) {
   const theme = useSharedUiTheme();
   const fieldStyles = useMemo(() => createDateFieldStyles(theme), [theme]);
@@ -69,6 +72,7 @@ export function DateRangeField({
           itself is lifted above them. */}
       <View style={[styles.row, anyOpen ? fieldStyles.fieldOpen : null]}>
         <DateInput
+          clearable={clearable}
           flex
           invalid={invalid}
           label={`${label} start`}
@@ -82,6 +86,7 @@ export function DateRangeField({
         />
         <Text style={styles.sep}>→</Text>
         <DateInput
+          clearable={clearable}
           flex
           invalid={invalid}
           label={`${label} end`}

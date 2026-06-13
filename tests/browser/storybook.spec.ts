@@ -228,6 +228,28 @@ test("segmented control toggles report and source choices", async ({
   await expect(page.getByRole("radio", { name: "Consulting" })).toBeChecked();
 });
 
+test("radio cards expose checked and disabled option states", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=radio-examples--accounting-basis-radio-cards",
+  );
+
+  const cash = page.getByRole("radio", { name: /Cash basis/ });
+  const accrual = page.getByRole("radio", { name: /Accrual basis/ });
+  const flatRate = page.getByRole("radio", { name: /Flat rate VAT/ });
+
+  await expect(cash).toBeChecked();
+  await accrual.click();
+  await expect(accrual).toBeChecked();
+  await expect(cash).not.toBeChecked();
+  await cash.focus();
+  await page.keyboard.press("Space");
+  await expect(cash).toBeChecked();
+  await expect(accrual).not.toBeChecked();
+  await expect(flatRate).toBeDisabled();
+});
+
 test("switch toggles a binary setting", async ({ page }) => {
   await page.goto("/iframe.html?id=switch-examples--privacy-toggle");
 
@@ -307,6 +329,10 @@ test("date field opens the calendar, navigates months, and picks a day", async (
 
   const input = page.getByLabel("Year ends");
   await expect(input).toHaveValue("31 Mar 2026");
+  // Clear is opt-in: the default field shows no clear button even with a value.
+  await expect(
+    page.getByRole("button", { name: "Clear Year ends" }),
+  ).toBeHidden();
 
   // Focusing the input opens the calendar on the value's month.
   await input.click();
@@ -388,6 +414,135 @@ test("controlled popover drives external state through onOpenChange", async ({
   await page.mouse.click(5, 5);
   await expect(page.getByText("Popover is closed")).toBeVisible();
   await expect(content).toBeHidden();
+});
+
+test("date field clears its value with the clear button", async ({ page }) => {
+  await page.goto("/iframe.html?id=date-examples--clearable-date-field");
+
+  // Exact match so the clear button ("Clear Year ends") is not also selected.
+  const input = page.getByLabel("Year ends", { exact: true });
+  await expect(input).toHaveValue("31 Mar 2026");
+
+  // Open the calendar, then clear: clearing empties the field and closes the
+  // calendar without popping a fresh one (focus returns to the empty input).
+  await input.click();
+  await expect(page.getByText("March 2026")).toBeVisible();
+  await page.getByRole("button", { name: "Clear Year ends" }).click();
+
+  await expect(input).toHaveValue("");
+  await expect(page.getByText("March 2026")).toBeHidden();
+  await expect(page.getByText("June 2026")).toBeHidden();
+  // The clear button is gone once there is nothing left to clear.
+  await expect(
+    page.getByRole("button", { name: "Clear Year ends" }),
+  ).toBeHidden();
+});
+
+test("date field clear button is keyboard reachable and restores focus", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=date-examples--clearable-date-field");
+
+  const input = page.getByLabel("Year ends", { exact: true });
+  const clear = page.getByRole("button", { name: "Clear Year ends" });
+
+  // Tabbing from the input reaches the clear button (the calendar icon is
+  // tabIndex=-1 and skipped).
+  await input.focus();
+  await input.press("Tab");
+  await expect(clear).toBeFocused();
+
+  // Activating it via the keyboard clears the value and returns focus to the
+  // now-empty input rather than dropping focus to the body.
+  await clear.press("Enter");
+  await expect(input).toHaveValue("");
+  await expect(input).toBeFocused();
+  await expect(clear).toBeHidden();
+});
+
+test("date clear button tracks the committed value, not the typed buffer", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=date-examples--clearable-date-field");
+
+  const input = page.getByLabel("Year ends", { exact: true });
+  const clear = page.getByRole("button", { name: "Clear Year ends" });
+  await expect(input).toHaveValue("31 Mar 2026");
+
+  // Deleting all the text mid-edit does NOT commit (empty is unparseable), so
+  // the committed date remains and the clear button stays visible.
+  await input.focus();
+  await input.fill("");
+  await expect(clear).toBeVisible();
+
+  // Now actually clear it, then type unparseable partial text into the empty
+  // field: there is no committed value, so no clear button appears.
+  await clear.click();
+  await expect(input).toHaveValue("");
+  await input.fill("5 Ju");
+  await expect(clear).toBeHidden();
+});
+
+test("input field highlights validation state and clears it on valid input", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=input-examples--validated-field");
+
+  // The visible label names the input, and the error message turns the field
+  // invalid (announced via aria-invalid).
+  const input = page.getByLabel("Email");
+  await expect(input).toHaveValue("not-an-email");
+  await expect(page.getByText("Enter a valid email address")).toBeVisible();
+  await expect(input).toHaveAttribute("aria-invalid", "true");
+
+  // A valid value drops the error and the invalid state.
+  await input.fill("ada@example.com");
+  await expect(page.getByText("Enter a valid email address")).toBeHidden();
+  await expect(input).toHaveAttribute("aria-invalid", "false");
+});
+
+test("input clear button is keyboard reachable and restores focus", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=input-examples--clearable-field");
+
+  const input = page.getByLabel("Search", { exact: true });
+  const clear = page.getByRole("button", { name: "Clear Search" });
+  await expect(input).toHaveValue("Quarterly report");
+  await expect(clear).toBeVisible();
+
+  // Tab from the input reaches the clear button (no decorative icon to skip
+  // here), then Enter clears the value and returns focus to the empty input.
+  await input.focus();
+  await input.press("Tab");
+  await expect(clear).toBeFocused();
+  await clear.press("Enter");
+  await expect(input).toHaveValue("");
+  await expect(input).toBeFocused();
+  // The clear button is gone once there is nothing left to clear.
+  await expect(clear).toBeHidden();
+});
+
+test("input password suffix toggles between show and hide", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=input-examples--password-field");
+
+  // Exact so the "Show password" suffix button is not also matched.
+  const input = page.getByLabel("Password", { exact: true });
+  await input.fill("hunter2");
+
+  // The suffix icon is an accessible button (it has a label) whose name flips as
+  // it toggles the masked input.
+  const show = page.getByRole("button", { name: "Show password" });
+  await expect(show).toBeVisible();
+  await show.click();
+  await expect(
+    page.getByRole("button", { name: "Hide password" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Show password" }),
+  ).toBeHidden();
 });
 
 async function dropdownScrollState(page: Page, label: string) {

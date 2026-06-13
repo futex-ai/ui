@@ -2,16 +2,16 @@
 
 ## Status
 
-Implemented contract for the dropdown, segmented control, switch, and modal
-extraction.
+Implemented contract for the dropdown, segmented control, radio card, switch,
+and modal extraction.
 
 ## Purpose
 
 This repository provides shared React Native and React Native Web UI primitives
 for Futex apps. The first consumers are the accounting app and the Juno app.
 The first shared component families are the dropdown components, segmented
-control patterns, switch primitive, and web modal components currently
-implemented in the accounting app.
+control patterns, radio-option cards, switch primitive, and web modal
+components currently implemented in the accounting app.
 
 ## Package Boundary
 
@@ -74,6 +74,44 @@ Required behavior:
   and pill radius.
 - Keep a `trackStyle` override available for non-default surfaces without
   requiring consumers to fork the component.
+
+## Radio Card Contract
+
+The radio card family covers titled, card-shaped single-select options where the
+supporting body copy is part of the option label.
+
+Required behavior:
+
+- Render a title, optional body copy, and a circular checked indicator.
+- Expose `radio` accessibility semantics with checked and disabled state.
+- Treat missing `onPress` as a read-only disabled option.
+- Allow consumers to place related cards under their own labelled `radiogroup`.
+- Use shared theme tokens for selected backgrounds, selected borders, dot
+  colors, text, disabled opacity, fonts, radii, and focus treatment.
+
+## Date Contract
+
+The date family covers single-date fields and start–end ranges built from two
+independent single-date inputs.
+
+Required behavior:
+
+- Use ISO `YYYY-MM-DD` as the canonical value with `""` as the unset sentinel,
+  and render the display as `D Mon YYYY`.
+- Render an identical styled trigger on every platform and resolve only the
+  opened picker per platform: an editable type-or-pick text input plus anchored
+  calendar popover on web, and a tap-to-pick calendar sheet on native.
+- Clamp selections and typed values to the inclusive `min`/`max` bounds.
+- Validate range ordering, surfacing an error when the start is after the end,
+  while still allowing each endpoint to hold any date independently.
+- Offer an opt-in (`clearable`, off by default) clear affordance that, once a
+  value is set, resets the value to the unset sentinel without clamping and closes
+  the picker; range endpoints clear independently. The clear control is a
+  labelled, focusable button, distinct from the decorative calendar icon.
+- Lift the open field root (and the range row) above following form content so
+  the calendar escapes sibling stacking contexts.
+- Keep day cells, navigation buttons, and the clear button labelled for
+  assistive technology, and include the field label in those accessible names.
 
 ## Dropdown Contract
 
@@ -139,8 +177,8 @@ Required behavior:
   and portal layering for dropdowns, comboboxes, and web modals.
 - The package must typecheck and build before it is used by accounting or Juno.
 - After package build/tests pass, smoke-test at least one local web route or
-  harness that opens a dropdown, a combobox, and a modal, and toggles a
-  segmented control and switch.
+  harness that opens a dropdown, a combobox, and a modal, toggles a segmented
+  control and switch, and selects a radio card.
 
 ## CI And Preview Contract
 
@@ -174,11 +212,13 @@ Required behavior:
   `CLOUDFLARE_API_TOKEN`.
 - Storybook previews must include at least the shared dropdown selector,
   dropdown action menu, input-backed combobox, chip multi-select, segmented
-  control variants, switch toggle, centered web modal, bottom-sheet web modal,
-  default accounting theme, and alternate primary color theme.
-- Storybook navigation must keep dropdown, segmented control, switch, and modal
-  examples in separate top-level folders, currently `Dropdown/Examples`,
-  `Segmented/Examples`, `Switch/Examples`, and `Modal/Examples`.
+  control variants, radio card group, switch toggle, centered web modal,
+  bottom-sheet web modal, default accounting theme, and alternate primary color
+  theme.
+- Storybook navigation must keep dropdown, segmented control, radio card,
+  switch, and modal examples in separate top-level folders, currently
+  `Dropdown/Examples`, `Segmented/Examples`, `Radio/Examples`,
+  `Switch/Examples`, and `Modal/Examples`.
 
 ## Non-Goals
 

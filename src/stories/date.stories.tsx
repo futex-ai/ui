@@ -22,6 +22,15 @@ export const SingleDateField: Story = {
   ),
 };
 
+export const ClearableDateField: Story = {
+  name: "Clearable single date field",
+  render: () => (
+    <StorySurface>
+      <ClearableDateExample />
+    </StorySurface>
+  ),
+};
+
 export const DateRange_: Story = {
   name: "Date range field",
   render: () => (
@@ -37,6 +46,21 @@ function SingleDateExample() {
     <View style={{ gap: 14, minWidth: 320 }}>
       <DateField
         hint="Pick a day or type it as 31 Mar 2026."
+        label="Year ends"
+        onChange={setValue}
+        value={value}
+      />
+    </View>
+  );
+}
+
+function ClearableDateExample() {
+  const [value, setValue] = useState("2026-03-31");
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <DateField
+        clearable
+        hint="With clearable, a ✕ appears once a value is set."
         label="Year ends"
         onChange={setValue}
         value={value}

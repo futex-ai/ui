@@ -25,6 +25,8 @@ export type DateFieldController = DateBounds & {
   commit: (iso: string) => void;
   /** Parse typed `D Mon YYYY` text and commit if valid; returns whether it parsed. */
   commitText: (text: string) => boolean;
+  /** Reset to the unset value (`""`) and close the overlay. */
+  clear: () => void;
   /** True when `iso` falls outside the inclusive bounds. */
   isDisabled: (iso: string) => boolean;
 };
@@ -56,11 +58,22 @@ export function useDateField({
       if (!iso) {
         return false;
       }
-      onChange(clampIso(iso, min, max));
+      const next = clampIso(iso, min, max);
+      // Skip the no-op re-commit (e.g. blurring an unchanged field, or the blur
+      // that precedes a clear press) so it cannot fire a redundant `onChange`.
+      if (next !== value) {
+        onChange(next);
+      }
       return true;
     },
-    [max, min, onChange],
+    [max, min, onChange, value],
   );
+
+  // Empty is the unset sentinel, so clearing bypasses bound clamping entirely.
+  const clear = useCallback(() => {
+    onChange("");
+    setOpen(false);
+  }, [onChange]);
 
   const isDisabled = useCallback(
     (iso: string): boolean =>
@@ -77,6 +90,7 @@ export function useDateField({
     setOpen,
     commit,
     commitText,
+    clear,
     isDisabled,
     min,
     max,
