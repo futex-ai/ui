@@ -2,16 +2,16 @@
 
 ## Status
 
-Implemented contract for the dropdown, segmented control, switch, and modal
-extraction.
+Implemented contract for the dropdown, segmented control, radio card, switch,
+and modal extraction.
 
 ## Purpose
 
 This repository provides shared React Native and React Native Web UI primitives
 for Futex apps. The first consumers are the accounting app and the Juno app.
 The first shared component families are the dropdown components, segmented
-control patterns, switch primitive, and web modal components currently
-implemented in the accounting app.
+control patterns, radio-option cards, switch primitive, and web modal
+components currently implemented in the accounting app.
 
 ## Package Boundary
 
@@ -74,6 +74,20 @@ Required behavior:
   and pill radius.
 - Keep a `trackStyle` override available for non-default surfaces without
   requiring consumers to fork the component.
+
+## Radio Card Contract
+
+The radio card family covers titled, card-shaped single-select options where the
+supporting body copy is part of the option label.
+
+Required behavior:
+
+- Render a title, optional body copy, and a circular checked indicator.
+- Expose `radio` accessibility semantics with checked and disabled state.
+- Treat missing `onPress` as a read-only disabled option.
+- Allow consumers to place related cards under their own labelled `radiogroup`.
+- Use shared theme tokens for selected backgrounds, selected borders, dot
+  colors, text, disabled opacity, fonts, radii, and focus treatment.
 
 ## Date Contract
 
@@ -163,8 +177,8 @@ Required behavior:
   and portal layering for dropdowns, comboboxes, and web modals.
 - The package must typecheck and build before it is used by accounting or Juno.
 - After package build/tests pass, smoke-test at least one local web route or
-  harness that opens a dropdown, a combobox, and a modal, and toggles a
-  segmented control and switch.
+  harness that opens a dropdown, a combobox, and a modal, toggles a segmented
+  control and switch, and selects a radio card.
 
 ## CI And Preview Contract
 
@@ -198,11 +212,13 @@ Required behavior:
   `CLOUDFLARE_API_TOKEN`.
 - Storybook previews must include at least the shared dropdown selector,
   dropdown action menu, input-backed combobox, chip multi-select, segmented
-  control variants, switch toggle, centered web modal, bottom-sheet web modal,
-  default accounting theme, and alternate primary color theme.
-- Storybook navigation must keep dropdown, segmented control, switch, and modal
-  examples in separate top-level folders, currently `Dropdown/Examples`,
-  `Segmented/Examples`, `Switch/Examples`, and `Modal/Examples`.
+  control variants, radio card group, switch toggle, centered web modal,
+  bottom-sheet web modal, default accounting theme, and alternate primary color
+  theme.
+- Storybook navigation must keep dropdown, segmented control, radio card,
+  switch, and modal examples in separate top-level folders, currently
+  `Dropdown/Examples`, `Segmented/Examples`, `Radio/Examples`,
+  `Switch/Examples`, and `Modal/Examples`.
 
 ## Non-Goals
 

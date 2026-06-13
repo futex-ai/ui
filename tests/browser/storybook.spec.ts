@@ -228,6 +228,24 @@ test("segmented control toggles report and source choices", async ({
   await expect(page.getByRole("radio", { name: "Consulting" })).toBeChecked();
 });
 
+test("radio cards expose checked and disabled option states", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=radio-examples--accounting-basis-radio-cards",
+  );
+
+  const cash = page.getByRole("radio", { name: /Cash basis/ });
+  const accrual = page.getByRole("radio", { name: /Accrual basis/ });
+  const flatRate = page.getByRole("radio", { name: /Flat rate VAT/ });
+
+  await expect(cash).toBeChecked();
+  await accrual.click();
+  await expect(accrual).toBeChecked();
+  await expect(cash).not.toBeChecked();
+  await expect(flatRate).toBeDisabled();
+});
+
 test("switch toggles a binary setting", async ({ page }) => {
   await page.goto("/iframe.html?id=switch-examples--privacy-toggle");
 
