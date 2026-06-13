@@ -30,6 +30,19 @@ shared `CalendarMonth` itself. Web behaviour is unchanged.
 - **Display: `D Mon YYYY`** (e.g. `4 Mar 2024`).
 - **Range value: `{ start, end }`** of ISO strings.
 
+## Clearing
+
+Clearing is **opt-in**: pass `clearable` to `DateField` / `DateInput` /
+`DateRangeField` (off by default). When enabled, the trigger shows a circle-✕
+clear button beside the calendar icon once a value is set. Pressing it resets the
+value to `""` (unset) — bypassing the min/max clamp, since empty is the unset
+sentinel — and closes the calendar. Each `DateRangeField` endpoint clears
+independently. On web the focus returns to the
+now-empty input without re-opening the calendar. On native the clear button is a
+sibling accessible button inside a non-accessible row Pressable, so it captures
+its own touch (clearing never also opens the picker) while staying independently
+reachable by VoiceOver/TalkBack alongside the open button.
+
 `DateField` is controlled — `value` (ISO) plus `onChange: (iso) => void`.
 `DateRangeField` takes `value: { start, end }` plus `onChange: (next) => void`.
 
@@ -52,6 +65,8 @@ import { DateField, DateRangeField } from "@futex/ui/date";
 - `types.ts` — shared overlay prop contract (`DatePickerOverlayProps`).
 - `dateFieldLayers.ts` — z-index tokens for lifting open fields/rows.
 - `DateField.tsx` — `DateField`, `DateInput`, and the shared `FieldLabel`.
+- `DateTrigger.tsx` — the platform triggers (`WebTrigger` editable input,
+  `NativeTrigger` tap target), the clear button, and the `triggerBorder` helper.
 - `DateRangeField.tsx` — two independent endpoints with ordering validation.
 - `CalendarMonth.tsx` — the shared month grid.
 - `DatePickerOverlay.web.tsx` — web calendar popover (absolute, anchored).
@@ -89,6 +104,10 @@ its parent. The calendar is therefore lifted at each wrapper that would trap it:
 - The editable web trigger carries the field label (`accessibilityLabel`) and
   opens the calendar on focus; the calendar icon is decorative (`aria-hidden`,
   `tabIndex={-1}`).
+- The clear button (when `clearable`) is a real labelled `button` (`Clear
+<label>`) in the tab order and a11y tree — unlike the calendar icon it is a
+  distinct action with no keyboard equivalent, and it only renders while there is
+  a value to remove.
 - Day cells are labelled `button`s (`D Mon YYYY`) with `accessibilityState`
   selected/disabled; adjacent-month and out-of-bounds days are non-selectable;
   nav buttons are labelled.

@@ -307,6 +307,10 @@ test("date field opens the calendar, navigates months, and picks a day", async (
 
   const input = page.getByLabel("Year ends");
   await expect(input).toHaveValue("31 Mar 2026");
+  // Clear is opt-in: the default field shows no clear button even with a value.
+  await expect(
+    page.getByRole("button", { name: "Clear Year ends" }),
+  ).toBeHidden();
 
   // Focusing the input opens the calendar on the value's month.
   await input.click();
@@ -321,6 +325,50 @@ test("date field opens the calendar, navigates months, and picks a day", async (
   await expect(page.getByText("February 2026")).toBeVisible();
   await page.getByRole("button", { name: "10 Feb 2026" }).click();
   await expect(input).toHaveValue("10 Feb 2026");
+});
+
+test("date field clears its value with the clear button", async ({ page }) => {
+  await page.goto("/iframe.html?id=date-examples--clearable-date-field");
+
+  // Exact match so the clear button ("Clear Year ends") is not also selected.
+  const input = page.getByLabel("Year ends", { exact: true });
+  await expect(input).toHaveValue("31 Mar 2026");
+
+  // Open the calendar, then clear: clearing empties the field and closes the
+  // calendar without popping a fresh one (focus returns to the empty input).
+  await input.click();
+  await expect(page.getByText("March 2026")).toBeVisible();
+  await page.getByRole("button", { name: "Clear Year ends" }).click();
+
+  await expect(input).toHaveValue("");
+  await expect(page.getByText("March 2026")).toBeHidden();
+  await expect(page.getByText("June 2026")).toBeHidden();
+  // The clear button is gone once there is nothing left to clear.
+  await expect(
+    page.getByRole("button", { name: "Clear Year ends" }),
+  ).toBeHidden();
+});
+
+test("date field clear button is keyboard reachable and restores focus", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=date-examples--clearable-date-field");
+
+  const input = page.getByLabel("Year ends", { exact: true });
+  const clear = page.getByRole("button", { name: "Clear Year ends" });
+
+  // Tabbing from the input reaches the clear button (the calendar icon is
+  // tabIndex=-1 and skipped).
+  await input.focus();
+  await input.press("Tab");
+  await expect(clear).toBeFocused();
+
+  // Activating it via the keyboard clears the value and returns focus to the
+  // now-empty input rather than dropping focus to the body.
+  await clear.press("Enter");
+  await expect(input).toHaveValue("");
+  await expect(input).toBeFocused();
+  await expect(clear).toBeHidden();
 });
 
 async function dropdownScrollState(page: Page, label: string) {

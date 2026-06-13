@@ -75,6 +75,30 @@ Required behavior:
 - Keep a `trackStyle` override available for non-default surfaces without
   requiring consumers to fork the component.
 
+## Date Contract
+
+The date family covers single-date fields and start–end ranges built from two
+independent single-date inputs.
+
+Required behavior:
+
+- Use ISO `YYYY-MM-DD` as the canonical value with `""` as the unset sentinel,
+  and render the display as `D Mon YYYY`.
+- Render an identical styled trigger on every platform and resolve only the
+  opened picker per platform: an editable type-or-pick text input plus anchored
+  calendar popover on web, and a tap-to-pick calendar sheet on native.
+- Clamp selections and typed values to the inclusive `min`/`max` bounds.
+- Validate range ordering, surfacing an error when the start is after the end,
+  while still allowing each endpoint to hold any date independently.
+- Offer an opt-in (`clearable`, off by default) clear affordance that, once a
+  value is set, resets the value to the unset sentinel without clamping and closes
+  the picker; range endpoints clear independently. The clear control is a
+  labelled, focusable button, distinct from the decorative calendar icon.
+- Lift the open field root (and the range row) above following form content so
+  the calendar escapes sibling stacking contexts.
+- Keep day cells, navigation buttons, and the clear button labelled for
+  assistive technology, and include the field label in those accessible names.
+
 ## Dropdown Contract
 
 The dropdown family covers three related surfaces:
