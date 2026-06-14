@@ -18,6 +18,10 @@ import {
   shiftMonth,
   toIso,
   todayIso,
+  yearBlockStart,
+  yearRange,
+  yearRangeLabel,
+  YEARS_PER_PAGE,
 } from "../../src/date/dateMath";
 
 test("parseIso accepts valid dates and rejects malformed or out-of-range", () => {
@@ -167,6 +171,22 @@ test("deriveCurrentPeriod returns the FY that ends on the year end", () => {
 test("todayIso uses the local calendar day", () => {
   assert.equal(todayIso(new Date(2026, 4, 28)), "2026-05-28");
   assert.equal(todayIso(new Date(2024, 0, 1)), "2024-01-01");
+});
+
+test("year-picker helpers build aligned, stable blocks", () => {
+  // Blocks are aligned to multiples of YEARS_PER_PAGE, so any year in a block
+  // maps to the same start regardless of how the user got there.
+  assert.equal(yearBlockStart(2026), 2016);
+  assert.equal(yearBlockStart(2016), 2016);
+  assert.equal(yearBlockStart(2027), 2016);
+  assert.equal(yearBlockStart(2028), 2028);
+  assert.equal(yearBlockStart(2015), 2004);
+
+  const years = yearRange(2016);
+  assert.equal(years.length, YEARS_PER_PAGE);
+  assert.equal(years[0], 2016);
+  assert.equal(years[YEARS_PER_PAGE - 1], 2027);
+  assert.equal(yearRangeLabel(2016), "2016 – 2027");
 });
 
 test("buildMonthGrid is Monday-first with adjacent-month padding", () => {

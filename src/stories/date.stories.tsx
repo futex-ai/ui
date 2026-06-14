@@ -31,6 +31,15 @@ export const ClearableDateField: Story = {
   ),
 };
 
+export const BoundedDateField: Story = {
+  name: "Bounded single date field",
+  render: () => (
+    <StorySurface>
+      <BoundedDateExample />
+    </StorySurface>
+  ),
+};
+
 export const DateRange_: Story = {
   name: "Date range field",
   render: () => (
@@ -62,6 +71,22 @@ function ClearableDateExample() {
         clearable
         hint="With clearable, a ✕ appears once a value is set."
         label="Year ends"
+        onChange={setValue}
+        value={value}
+      />
+    </View>
+  );
+}
+
+function BoundedDateExample() {
+  const [value, setValue] = useState("2026-03-31");
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <DateField
+        hint="Click the title to pick a year; only 2024–2027 are selectable."
+        label="Year ends"
+        max="2027-12-31"
+        min="2024-01-01"
         onChange={setValue}
         value={value}
       />

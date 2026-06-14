@@ -83,7 +83,37 @@ export function createWebCalendarStyles(theme: SharedUiTheme) {
       fontSize: 14,
       fontWeight: "700",
     },
+    titleButton: {
+      alignItems: "center",
+      borderRadius: theme.radii.sm,
+      justifyContent: "center",
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+    },
+    titleButtonHover: { backgroundColor: theme.colors.soft },
     week: { flexDirection: "row", justifyContent: "space-between" },
+    yearCell: {
+      alignItems: "center",
+      borderRadius: theme.radii.md,
+      height: 38,
+      justifyContent: "center",
+      width: 72,
+    },
+    yearCellHover: { backgroundColor: theme.colors.soft },
+    yearCellSelected: { backgroundColor: theme.colors.primary },
+    // Fixed to the day grid's intrinsic width (7 × 34) so the three 72px cells
+    // are evenly spaced on both platforms — not only inside the web popover whose
+    // 280px frame happens to give `space-between` room. The native sheet sizes
+    // the calendar to its widest child, so without this the cells would butt
+    // together when the day grid is unmounted.
+    yearGrid: { marginTop: 4, width: 238 },
+    yearRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 8,
+    },
+    yearText: { ...baseText, color: theme.colors.ink, fontSize: 13 },
+    yearTextSelected: { color: theme.colors.surface, fontWeight: "700" },
   });
 }
 

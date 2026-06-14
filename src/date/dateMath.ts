@@ -157,6 +157,31 @@ export function monthLabel(year: number, month: number): string {
   return `${FULL_MONTHS[month - 1]} ${year}`;
 }
 
+/** Years shown per page of the calendar's year picker (a 3×4 grid). */
+export const YEARS_PER_PAGE = 12;
+
+/**
+ * Start year of the aligned {@link YEARS_PER_PAGE}-year block containing `year`
+ * (e.g. 2026 → 2016), so the year picker pages through stable blocks regardless
+ * of how the user reached the current year.
+ */
+export function yearBlockStart(year: number, perPage = YEARS_PER_PAGE): number {
+  return Math.floor(year / perPage) * perPage;
+}
+
+/** The `perPage` consecutive years starting at `start`, for the year-picker grid. */
+export function yearRange(start: number, perPage = YEARS_PER_PAGE): number[] {
+  return Array.from({ length: perPage }, (_unused, index) => start + index);
+}
+
+/** Inclusive year-range header label for a block (e.g. `2016 – 2027`). */
+export function yearRangeLabel(
+  start: number,
+  perPage = YEARS_PER_PAGE,
+): string {
+  return `${start} – ${start + perPage - 1}`;
+}
+
 /** ISO date for the local calendar day of `now` (inject the clock for purity). */
 export function todayIso(now: Date): string {
   return toIso({
