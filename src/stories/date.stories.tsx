@@ -40,6 +40,42 @@ export const DateRange_: Story = {
   ),
 };
 
+export const WheelDateField: Story = {
+  name: "Wheel date field",
+  render: () => (
+    <StorySurface>
+      <WheelDateExample />
+    </StorySurface>
+  ),
+};
+
+export const BoundedWheelDateField: Story = {
+  name: "Bounded wheel date field",
+  render: () => (
+    <StorySurface>
+      <BoundedWheelDateExample />
+    </StorySurface>
+  ),
+};
+
+export const WheelDateRange: Story = {
+  name: "Wheel date range field",
+  render: () => (
+    <StorySurface>
+      <WheelDateRangeExample />
+    </StorySurface>
+  ),
+};
+
+export const ClearableWheelDateField: Story = {
+  name: "Clearable wheel date field",
+  render: () => (
+    <StorySurface>
+      <ClearableWheelDateExample />
+    </StorySurface>
+  ),
+};
+
 function SingleDateExample() {
   const [value, setValue] = useState("2026-03-31");
   return (
@@ -69,6 +105,38 @@ function ClearableDateExample() {
   );
 }
 
+function WheelDateExample() {
+  const [value, setValue] = useState("2026-03-31");
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <DateField
+        hint="Tap to open the spinning day/month/year wheel."
+        label="Year ends"
+        onChange={setValue}
+        value={value}
+        variant="wheel"
+      />
+    </View>
+  );
+}
+
+function BoundedWheelDateExample() {
+  const [value, setValue] = useState("2026-03-15");
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <DateField
+        hint="Only Mar 2026 is selectable; out-of-range spins snap back."
+        label="Delivery date"
+        max="2026-03-20"
+        min="2026-03-10"
+        onChange={setValue}
+        value={value}
+        variant="wheel"
+      />
+    </View>
+  );
+}
+
 function DateRangeExample() {
   const [value, setValue] = useState<DateRange>({
     end: "2026-03-31",
@@ -81,6 +149,40 @@ function DateRangeExample() {
         label="Current period"
         onChange={setValue}
         value={value}
+      />
+    </View>
+  );
+}
+
+function ClearableWheelDateExample() {
+  const [value, setValue] = useState("2026-03-31");
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <DateField
+        clearable
+        hint="Wheel variant with a ✕ that clears the value."
+        label="Year ends"
+        onChange={setValue}
+        value={value}
+        variant="wheel"
+      />
+    </View>
+  );
+}
+
+function WheelDateRangeExample() {
+  const [value, setValue] = useState<DateRange>({
+    end: "2026-03-31",
+    start: "2025-04-01",
+  });
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <DateRangeField
+        hint="Each endpoint opens its own spinning wheel."
+        label="Current period"
+        onChange={setValue}
+        value={value}
+        variant="wheel"
       />
     </View>
   );

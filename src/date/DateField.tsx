@@ -8,6 +8,7 @@ import { createDateFieldStyles } from "./dateFieldStyles";
 import { DatePickerOverlay } from "./DatePickerOverlay";
 import { todayIso } from "./dateMath";
 import { NativeTrigger, WebTrigger } from "./DateTrigger";
+import { DatePickerVariant } from "./types";
 import { useDateField } from "./useDateField";
 import { useOutsideClose } from "./useOutsideClose";
 
@@ -41,12 +42,15 @@ export type DateFieldProps = {
   placeholder?: string;
   /** Show a clear (✕) button once a value is set. Off by default. */
   clearable?: boolean;
+  /** Calendar grid (default) or spinning day/month/year wheel bottom sheet. */
+  variant?: DatePickerVariant;
 };
 
 /**
  * Single date field. Identical trigger on every platform; the opened picker is
  * platform-resolved (web calendar popover vs native sheet). Web is type-or-pick,
  * native is tap-to-pick. On web, clicking outside the open calendar dismisses it.
+ * Pass `variant="wheel"` for the iOS-style spinning bottom-sheet picker instead.
  */
 export function DateField({
   label,
@@ -59,6 +63,7 @@ export function DateField({
   max,
   placeholder = "Select a date",
   clearable = false,
+  variant = "calendar",
 }: DateFieldProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createDateFieldStyles(theme), [theme]);
@@ -78,6 +83,7 @@ export function DateField({
         placeholder={placeholder}
         required={required}
         value={value}
+        variant={variant}
       />
       {error ? <Text style={styles.fieldError}>{error}</Text> : null}
       {hint ? <Text style={styles.hint}>{hint}</Text> : null}
@@ -109,6 +115,8 @@ export type DateInputProps = {
   onOpenChange?: (open: boolean) => void;
   /** Show a clear (✕) button once a value is set. Off by default. */
   clearable?: boolean;
+  /** Calendar grid (default) or spinning day/month/year wheel bottom sheet. */
+  variant?: DatePickerVariant;
 };
 
 /**
@@ -129,12 +137,17 @@ export function DateInput({
   flex = false,
   onOpenChange,
   clearable = false,
+  variant = "calendar",
 }: DateInputProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createDateFieldStyles(theme), [theme]);
   const field = useDateField({ value, onChange, min, max });
   const today = useMemo(() => todayIso(new Date()), []);
-  const rootRef = useOutsideClose(field.open, () => field.setOpen(false));
+  // The wheel sheet portals out of this anchor and manages its own dismissal, so
+  // outside-press close only applies to the anchored calendar popover.
+  const rootRef = useOutsideClose(field.open && variant === "calendar", () =>
+    field.setOpen(false),
+  );
   // Layout effect (not passive) so the parent raises its z-index in the same
   // frame the calendar first paints, otherwise the popover is one frame late and
   // a later sibling can flash over it on open.
@@ -150,7 +163,11 @@ export function DateInput({
         field.open ? styles.fieldOpen : null,
       ]}
     >
-      {Platform.OS === "web" ? (
+      {/* The editable type-or-pick input only fits the calendar popover. The
+          wheel is a tap-to-open sheet (typing a date doesn't pair with a
+          spinner), and its focus-restoring modal would re-trigger the input's
+          open-on-focus — so the wheel uses the tap trigger on every platform. */}
+      {Platform.OS === "web" && variant === "calendar" ? (
         <WebTrigger
           clearable={clearable}
           field={field}
@@ -173,12 +190,14 @@ export function DateInput({
       )}
       {field.open ? (
         <DatePickerOverlay
+          label={label}
           max={field.max}
           min={field.min}
           onClose={() => field.setOpen(false)}
           onSelect={field.commit}
           today={today}
           value={field.value}
+          variant={variant}
         />
       ) : null}
     </View>

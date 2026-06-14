@@ -1,12 +1,14 @@
 /**
  * Native single-date picker (the default file `tsc` resolves and bundlers use on
- * iOS/Android). Presents the shared calendar in a bottom sheet with Cancel/Done,
- * so a tap stages a draft and Done commits it.
+ * iOS/Android). Presents the picker in a bottom sheet with Cancel/Done, so a tap
+ * or spin stages a draft and Done commits it. The `variant` chooses the body:
+ * the shared {@link CalendarMonth} grid (default) or the spinning
+ * {@link DateWheel}.
  *
  * Unlike the accounting source — which delegated to the OS picker via
  * `@react-native-community/datetimepicker` — this library has no native picker
- * dependency, so it renders {@link CalendarMonth} itself. The web behaviour
- * (`DatePickerOverlay.web.tsx`) is unchanged.
+ * dependency, so it renders the calendar and the wheel itself. The web behaviour
+ * (`DatePickerOverlay.web.tsx`) mirrors this seam.
  */
 import { useMemo, useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
@@ -15,6 +17,7 @@ import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
 
 import { CalendarMonth } from "./CalendarMonth";
+import { DateWheel } from "./DateWheel";
 import { DatePickerOverlayProps } from "./types";
 
 export function DatePickerOverlay({
@@ -24,19 +27,28 @@ export function DatePickerOverlay({
   max,
   onSelect,
   onClose,
+  variant = "calendar",
+  label,
 }: DatePickerOverlayProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createSheetStyles(theme), [theme]);
   const [draft, setDraft] = useState(value || today);
+  const wheel = variant === "wheel";
 
   return (
     <Modal animationType="slide" onRequestClose={onClose} transparent visible>
       <Pressable
-        accessibilityLabel="Close date picker"
+        accessibilityLabel={label ? `Close ${label}` : "Close date picker"}
         onPress={onClose}
         style={styles.backdrop}
       />
-      <View style={styles.sheet}>
+      {/* `accessibilityViewIsModal` names the sheet and confines VoiceOver to it
+          (parity with the web sheet's role="dialog" + label). */}
+      <View
+        accessibilityLabel={label ?? "Date picker"}
+        accessibilityViewIsModal
+        style={styles.sheet}
+      >
         <View style={styles.bar}>
           <Pressable accessibilityRole="button" onPress={onClose}>
             <Text style={styles.barButton}>Cancel</Text>
@@ -45,14 +57,24 @@ export function DatePickerOverlay({
             <Text style={[styles.barButton, styles.barDone]}>Done</Text>
           </Pressable>
         </View>
-        <View style={styles.calendar}>
-          <CalendarMonth
-            max={max}
-            min={min}
-            onSelect={setDraft}
-            today={today}
-            value={draft}
-          />
+        <View style={wheel ? styles.wheelBody : styles.calendar}>
+          {wheel ? (
+            <DateWheel
+              max={max}
+              min={min}
+              onChange={setDraft}
+              today={today}
+              value={draft}
+            />
+          ) : (
+            <CalendarMonth
+              max={max}
+              min={min}
+              onSelect={setDraft}
+              today={today}
+              value={draft}
+            />
+          )}
         </View>
       </View>
     </Modal>
@@ -76,6 +98,7 @@ function createSheetStyles(theme: SharedUiTheme) {
     barButton: { ...baseText, color: theme.colors.primaryDeep, fontSize: 16 },
     barDone: { fontWeight: "700" },
     calendar: { alignSelf: "center" },
+    wheelBody: { paddingBottom: 4, paddingTop: 4 },
     sheet: {
       backgroundColor: theme.colors.surface,
       borderTopLeftRadius: theme.radii.xxl,
