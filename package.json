@@ -17,6 +17,11 @@
       "react-native": "./dist/index.js",
       "import": "./dist/index.js"
     },
+    "./button": {
+      "types": "./dist/button/index.d.ts",
+      "react-native": "./dist/button/index.js",
+      "import": "./dist/button/index.js"
+    },
     "./date": {
       "types": "./dist/date/index.d.ts",
       "react-native": "./dist/date/index.js",
