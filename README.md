@@ -76,9 +76,13 @@ package subpath.
   update the release PR but do not publish npm versions.
 - Merging the release PR lets release-plz create the `vX.Y.Z` tag and GitHub
   release.
-- npm publishing runs from the GitHub release with npm trusted publishing. The
-  npm package must configure this repository and the publish workflow as the
+- npm publishing runs in the same release-plz workflow invocation that creates
+  the GitHub release, using npm trusted publishing. The npm package must
+  configure this repository and `.github/workflows/release-plz.yml` as the
   trusted publisher, with allowed action `npm publish`.
+- The release-plz workflow can also be manually dispatched with `publish_ref`
+  set to a checked `vX.Y.Z` tag if the automatic publish job needs to be
+  retried.
 - Scoped npm packages default to private, so `publishConfig.access` is set to
   `public`.
 

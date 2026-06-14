@@ -13,6 +13,11 @@ Completed.
 - `npm pack --dry-run --json` after a clean package build produced
   `@firna/ui@0.1.0` with 266 entries and no files outside `README.md`,
   `package.json`, and `dist/**`.
+- Post-review release automation now publishes npm from the same
+  `.github/workflows/release-plz.yml` run that creates the GitHub release. The
+  same workflow has a manual `publish_ref` retry path so the npm package only
+  needs one trusted publisher configuration and the automatic publish path does
+  not depend on a `release` event created by `GITHUB_TOKEN`.
 
 ## Goal
 
@@ -61,9 +66,9 @@ release tag:
    only when the release PR is merged.
 4. Let the release workflow create the `vX.Y.Z` tag and GitHub release from the
    merged release PR.
-5. Publish `@firna/ui` from a GitHub-hosted npm workflow triggered by the
-   release tag or GitHub release, using npm trusted publishing instead of a
-   long-lived npm token.
+5. Publish `@firna/ui` from a GitHub-hosted npm job in the same workflow run
+   that creates the release tag and GitHub release, using npm trusted
+   publishing instead of a long-lived npm token.
 
 If release-plz cannot safely produce a release PR that includes synchronized npm
 metadata, stop the implementation and document the incompatibility. The fallback
@@ -165,7 +170,7 @@ the npm package with trusted publishing.
       `release_always = false`, and concurrency matching release-plz guidance.
 - [x] Ensure release-plz release execution is gated to the merged release PR
       path, not every ordinary commit merged to `main`.
-- [x] Add an npm publish workflow triggered by release tags or GitHub releases.
+- [x] Add an npm publish job triggered by release-plz's release-created output.
 - [x] Configure the publish workflow with GitHub-hosted runners, Node 24,
       npm 11.5.1 or later, `registry-url: https://registry.npmjs.org`, and
       `id-token: write`.
@@ -222,3 +227,18 @@ and run the AI review after the branch is available remotely.
 - [x] Move this plan from Active to Completed in `plans/README.md` only after
       all implementation milestones, checks, push, and review reporting are
       complete.
+
+## Milestone 7: Post-Review Release Corrections
+
+Summary: address selected AI review findings without reopening completed
+milestones.
+
+- [x] Move automatic npm publishing into the release-plz workflow so publishing
+      does not depend on a separate GitHub release event emitted by
+      `GITHUB_TOKEN`.
+- [x] Keep a manually dispatched `publish_ref` fallback in the release-plz
+      workflow for retrying a checked release tag.
+- [x] Update release workflow tests and docs to encode the same-workflow publish
+      contract.
+- [x] Replace the remaining active README reference to Futex apps with Firna
+      apps.

@@ -15,12 +15,17 @@ test("release-plz workflow uses manual release PR merges", () => {
   assert.match(workflow, /package\.json package-lock\.json/);
 });
 
-test("npm publish workflow uses trusted publishing and idempotency", () => {
-  const workflow = readSource("../../.github/workflows/npm-publish.yml");
+test("release-plz workflow publishes npm after creating a release", () => {
+  const workflow = readSource("../../.github/workflows/release-plz.yml");
 
+  assert.match(workflow, /publish_ref:/);
+  assert.match(workflow, /releases_created:/);
+  assert.match(workflow, /steps\.release-plz\.outputs\.releases_created/);
+  assert.match(workflow, /needs\.release\.outputs\.releases_created == 'true'/);
+  assert.match(workflow, /workflow_dispatch.+inputs\.publish_ref/s);
   assert.match(workflow, /id-token: write/);
-  assert.match(workflow, /node-version: "24"/);
   assert.match(workflow, /npm install --global npm@11\.7\.0/);
+  assert.match(workflow, /cargo xtask check/);
   assert.match(workflow, /npm view "\@firna\/ui@\$\{PACKAGE_VERSION\}"/);
   assert.match(workflow, /npm publish --access public/);
 });

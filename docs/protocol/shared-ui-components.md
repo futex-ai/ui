@@ -191,9 +191,14 @@ Required behavior:
   and GitHub releases.
 - release-plz must use `release_always = false`; ordinary pushes to `main`
   create or update a release PR but do not publish npm packages.
-- npm publishing must run only from a release tag or GitHub release, must use
-  npm trusted publishing with `id-token: write`, and must guard against
-  republishing an already-published version.
+- npm publishing must run in the same workflow invocation that creates the
+  GitHub release so it does not depend on a separate `release` event emitted by
+  `GITHUB_TOKEN`.
+- npm publishing must use npm trusted publishing with `id-token: write` and
+  must guard against republishing an already-published version.
+- The same workflow may expose a manually dispatched fallback that publishes a
+  checked release tag when a maintainer needs to retry a failed npm publish
+  without creating a new release.
 - Scoped package publishing must use public access.
 
 ## CI And Preview Contract

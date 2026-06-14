@@ -2,7 +2,7 @@
 
 Reusable React Native and React Native Web dropdown primitives. They provide a
 shared surface for form selects, compact filter pills, action menus, and
-input-backed comboboxes in Futex apps.
+input-backed comboboxes in Firna apps.
 
 ## Responsibilities
 
