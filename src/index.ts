@@ -1,3 +1,4 @@
+export * from "./avatar";
 export * from "./date";
 export * from "./dropdown";
 export * from "./focusRing";

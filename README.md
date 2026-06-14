@@ -6,7 +6,7 @@ surfaces. The first consumers are the accounting app and the Juno app.
 ## Key Features
 
 - Shared dropdown, selector, combobox, segmented control, radio card, switch,
-  and modal primitives.
+  modal, and avatar primitives.
 - Themeable visual tokens so consumers can use their own brand primary color.
 - Expo and React Native Web compatible platform files.
 - Focused unit tests, browser interaction tests, and package export checks.
@@ -17,6 +17,7 @@ surfaces. The first consumers are the accounting app and the Juno app.
 The package name is `@futex/ui`. Public exports are available from:
 
 - `@futex/ui` for all public components and helpers.
+- `@futex/ui/avatar` for the themed circular initials avatar.
 - `@futex/ui/dropdown` for dropdown, selector, combobox, and layer helpers.
 - `@futex/ui/modal` for web modal frame, portal, model, and layer helpers.
 - `@futex/ui/radio` for themed titled radio-option cards.
@@ -74,6 +75,7 @@ Storybook is built to `storybook-static`.
 ## Key Code Jumping Points
 
 - Shared theme boundary: [src/theme.tsx](src/theme.tsx)
+- Avatar component: [src/avatar/README.md](src/avatar/README.md)
 - Dropdown components: [src/dropdown/README.md](src/dropdown/README.md)
 - Modal components: [src/modal/README.md](src/modal/README.md)
 - Radio card component: [src/radio/README.md](src/radio/README.md)

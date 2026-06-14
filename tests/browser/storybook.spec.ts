@@ -668,6 +668,26 @@ test("input password suffix toggles between show and hide", async ({
   ).toBeHidden();
 });
 
+test("avatar renders initials and sizes the disc from the size prop", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=avatar-examples--user-avatars");
+
+  // The solid (default) and soft variants both render their initials.
+  await expect(page.getByText("GS", { exact: true })).toBeVisible();
+  await expect(page.getByText("PR", { exact: true })).toBeVisible();
+
+  // The accessibilityLabel names the disc for assistive tech, and the size prop
+  // drives the rendered circle (size={48} → a 48x48 disc).
+  const sized = page.locator('[aria-label="Vivienne Archer"]');
+  await expect(sized).toBeVisible();
+  const box = await sized.boundingBox();
+  expect(box?.width).toBeGreaterThanOrEqual(47);
+  expect(box?.width).toBeLessThanOrEqual(49);
+  expect(box?.height).toBeGreaterThanOrEqual(47);
+  expect(box?.height).toBeLessThanOrEqual(49);
+});
+
 async function dropdownScrollState(page: Page, label: string) {
   return page
     .getByRole("button", { exact: true, name: label })

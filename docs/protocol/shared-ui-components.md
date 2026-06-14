@@ -3,15 +3,15 @@
 ## Status
 
 Implemented contract for the dropdown, segmented control, radio card, switch,
-and modal extraction.
+modal, and avatar extraction.
 
 ## Purpose
 
 This repository provides shared React Native and React Native Web UI primitives
 for Futex apps. The first consumers are the accounting app and the Juno app.
 The first shared component families are the dropdown components, segmented
-control patterns, radio-option cards, switch primitive, and web modal
-components currently implemented in the accounting app.
+control patterns, radio-option cards, switch primitive, web modal components,
+and the circular user avatar currently implemented in the accounting app.
 
 ## Package Boundary
 
@@ -88,6 +88,23 @@ Required behavior:
 - Allow consumers to place related cards under their own labelled `radiogroup`.
 - Use shared theme tokens for selected backgrounds, selected borders, dot
   colors, text, disabled opacity, fonts, radii, and focus treatment.
+
+## Avatar Contract
+
+The avatar family covers the compact circular initials badge used to represent a
+person or entity.
+
+Required behavior:
+
+- Render a circular disc with one or two initials centered on it.
+- Drive the diameter, the circular radius, and the initials' font size from a
+  single `size` prop so every avatar scales proportionally.
+- Support a solid tone (primary-filled disc with white initials) and a soft tone
+  (soft-tinted disc with deep-primary initials).
+- Use shared theme tokens for the disc backgrounds, the initials' color, and the
+  initials' font, with no consumer-local theme imports.
+- Accept an optional accessible name and a container style override without
+  requiring consumers to fork the component.
 
 ## Date Contract
 
@@ -212,13 +229,13 @@ Required behavior:
   `CLOUDFLARE_API_TOKEN`.
 - Storybook previews must include at least the shared dropdown selector,
   dropdown action menu, input-backed combobox, chip multi-select, segmented
-  control variants, radio card group, switch toggle, centered web modal,
-  bottom-sheet web modal, default accounting theme, and alternate primary color
-  theme.
+  control variants, radio card group, switch toggle, user avatars, centered web
+  modal, bottom-sheet web modal, default accounting theme, and alternate primary
+  color theme.
 - Storybook navigation must keep dropdown, segmented control, radio card,
-  switch, and modal examples in separate top-level folders, currently
+  switch, avatar, and modal examples in separate top-level folders, currently
   `Dropdown/Examples`, `Segmented/Examples`, `Radio/Examples`,
-  `Switch/Examples`, and `Modal/Examples`.
+  `Switch/Examples`, `Avatar/Examples`, and `Modal/Examples`.
 
 ## Non-Goals
 

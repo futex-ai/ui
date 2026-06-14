@@ -3,8 +3,8 @@
 ## Accounting
 
 Accounting currently owns the source dropdown, segmented control, radio card,
-switch, and modal components copied into this package. The migration should be a
-follow-up change in the accounting repo.
+switch, modal, and avatar components copied into this package. The migration
+should be a follow-up change in the accounting repo.
 
 Recommended path:
 
@@ -19,16 +19,18 @@ Recommended path:
    `sizing="content"` with `wrap`.
 6. Replace imports from `@/components/RadioCard` with `@futex/ui/radio`.
 7. Replace imports from `@/components/Switch` with `@futex/ui/switch`.
-8. Remove the duplicated accounting component files only after all imports,
+8. Replace the `Avatar` export from `@/components/ui` with `@futex/ui/avatar`
+   (the `tone="sage"` default becomes `tone="solid"`).
+9. Remove the duplicated accounting component files only after all imports,
    tests, and smoke coverage pass.
-9. Run accounting app tests, typecheck, web smoke tests, `cargo xtask check`,
-   commit, push, and run `cargo xtask review`.
+10. Run accounting app tests, typecheck, web smoke tests, `cargo xtask check`,
+    commit, push, and run `cargo xtask review`.
 
 Expected compatibility:
 
 - Accounting's current sage primary color is the package default.
-- Existing dropdown, segmented control, radio card, switch, and modal behavior
-  is preserved by copied unit and browser tests in this repo.
+- Existing dropdown, segmented control, radio card, switch, modal, and avatar
+  behavior is preserved by copied unit and browser tests in this repo.
 
 ## Juno
 
@@ -50,7 +52,8 @@ Recommended path:
 
 3. Import dropdowns from `@futex/ui/dropdown`, radio cards from
    `@futex/ui/radio`, segmented controls from `@futex/ui/segmented`, switches
-   from `@futex/ui/switch`, and web modals from `@futex/ui/modal`.
+   from `@futex/ui/switch`, avatars from `@futex/ui/avatar`, and web modals from
+   `@futex/ui/modal`.
 4. Keep native iOS/Android sheets, action sheets, and OS pickers in Juno app
    code; this package's `WebModalFrame` remains web-only.
 5. Run Juno app tests, typecheck, browser smoke tests, `cargo xtask check`,
