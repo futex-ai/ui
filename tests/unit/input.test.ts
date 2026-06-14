@@ -45,10 +45,23 @@ test("input frame renders prefix and suffix icons", () => {
   assert.match(source, /prefixIcon: PrefixIcon/);
   assert.match(
     source,
-    /<PrefixIcon color=\{theme\.colors\.muted\} size=\{ICON_SIZE\}/,
+    /<PrefixIcon color=\{theme\.colors\.muted\} size=\{iconSize\}/,
   );
   assert.match(source, /suffixIcon: SuffixIcon/);
   assert.match(source, /<SuffixAdornment/);
+});
+
+test("input frame supports the shared size scale", () => {
+  const source = readSource("../../src/input/InputFrame.tsx");
+  const stylesSource = readSource("../../src/input/inputStyles.ts");
+
+  assert.match(source, /size = "md"/);
+  assert.match(source, /createInputStyles\(theme, size\)/);
+  assert.match(source, /inputIconSize\(size\)/);
+  // Each size sets a distinct box height (and scales the input/icons with it).
+  assert.match(stylesSource, /sm: \{[\s\S]*?boxHeight: 32/);
+  assert.match(stylesSource, /md: \{[\s\S]*?boxHeight: 40/);
+  assert.match(stylesSource, /lg: \{[\s\S]*?boxHeight: 48/);
 });
 
 test("a pressable suffix icon without a label is a mouse-only affordance", () => {

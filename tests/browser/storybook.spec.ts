@@ -688,6 +688,95 @@ test("avatar renders initials and sizes the disc from the size prop", async ({
   expect(box?.height).toBeLessThanOrEqual(49);
 });
 
+test("button reflects press and disabled state", async ({ page }) => {
+  await page.goto("/iframe.html?id=button-examples--interactive");
+
+  // Exact match so "Save" does not also resolve the "Saved" button.
+  const save = page.getByRole("button", { exact: true, name: "Save" });
+  await expect(save).toBeVisible();
+  // A button without an enabled handler is exposed as disabled.
+  await expect(
+    page.getByRole("button", { name: "Unavailable" }),
+  ).toBeDisabled();
+
+  // Pressing the primary button swaps its label.
+  await save.click();
+  await expect(
+    page.getByRole("button", { exact: true, name: "Saved" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { exact: true, name: "Save" }),
+  ).toBeHidden();
+});
+
+test("button activates from the keyboard", async ({ page }) => {
+  await page.goto("/iframe.html?id=button-examples--interactive");
+
+  const save = page.getByRole("button", { exact: true, name: "Save" });
+  await save.focus();
+  await page.keyboard.press("Enter");
+  await expect(
+    page.getByRole("button", { exact: true, name: "Saved" }),
+  ).toBeVisible();
+});
+
+test("button activates with the Space key", async ({ page }) => {
+  await page.goto("/iframe.html?id=button-examples--interactive");
+
+  const save = page.getByRole("button", { exact: true, name: "Save" });
+  await save.focus();
+  await page.keyboard.press("Space");
+  await expect(
+    page.getByRole("button", { exact: true, name: "Saved" }),
+  ).toBeVisible();
+});
+
+test("button with icons renders its labelled actions", async ({ page }) => {
+  await page.goto("/iframe.html?id=button-examples--with-icons");
+
+  await expect(page.getByRole("button", { name: "Add account" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Delete" })).toBeVisible();
+});
+
+test("button sizes step the control height across the shared scale", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=button-examples--sizes");
+
+  const small = await page.getByRole("button", { name: "Small" }).boundingBox();
+  const medium = await page
+    .getByRole("button", { name: "Medium" })
+    .boundingBox();
+  const large = await page.getByRole("button", { name: "Large" }).boundingBox();
+
+  expect(small).not.toBeNull();
+  expect(medium).not.toBeNull();
+  expect(large).not.toBeNull();
+  // sm / md / lg map to 30 / 38 / 46px tall buttons.
+  expect(Math.abs((small?.height ?? 0) - 30)).toBeLessThanOrEqual(1);
+  expect(Math.abs((medium?.height ?? 0) - 38)).toBeLessThanOrEqual(1);
+  expect(Math.abs((large?.height ?? 0) - 46)).toBeLessThanOrEqual(1);
+});
+
+test("input sizes step the field height across the shared scale", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=input-examples--field-sizes");
+
+  const small = await page.getByLabel("Small field").boundingBox();
+  const medium = await page.getByLabel("Medium field").boundingBox();
+  const large = await page.getByLabel("Large field").boundingBox();
+
+  expect(small).not.toBeNull();
+  expect(medium).not.toBeNull();
+  expect(large).not.toBeNull();
+  // getByLabel resolves the inner TextInput, whose height is the size's input
+  // height (30 / 38 / 46) inside the 32 / 40 / 48px box.
+  expect(Math.abs((small?.height ?? 0) - 30)).toBeLessThanOrEqual(1);
+  expect(Math.abs((medium?.height ?? 0) - 38)).toBeLessThanOrEqual(1);
+  expect(Math.abs((large?.height ?? 0) - 46)).toBeLessThanOrEqual(1);
+});
+
 async function dropdownScrollState(page: Page, label: string) {
   return page
     .getByRole("button", { exact: true, name: label })
