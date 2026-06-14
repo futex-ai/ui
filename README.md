@@ -29,7 +29,7 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/theme` for `SharedUiThemeProvider`, default accounting-style
   tokens, the Juno token preset, and `createSharedUiTheme`.
 
-## Developer Get Started
+## Installation
 
 ```bash
 npm install @firna/ui

@@ -9,6 +9,8 @@ test("release-plz workflow uses manual release PR merges", () => {
   assert.match(config, /release_always = false/);
   assert.match(config, /git_only = true/);
   assert.match(workflow, /command: release-pr/);
+  assert.doesNotMatch(workflow, /prs_created == 'true'/);
+  assert.match(workflow, /steps\.release-plz\.outputs\.pr != ''/);
   assert.match(workflow, /cargo xtask sync-package-version --version/);
   assert.match(workflow, /package\.json package-lock\.json/);
 });

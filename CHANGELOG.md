@@ -42,9 +42,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add ui preview checks to plan
 - plan shared UI components
 - init commit
-
-# Changelog
-
-All notable changes to `@firna/ui` will be documented in this file.
-
-Release entries are maintained by release-plz.
