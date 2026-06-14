@@ -8,7 +8,7 @@ and modal extraction.
 ## Purpose
 
 This repository provides shared React Native and React Native Web UI primitives
-for Futex apps. The first consumers are the accounting app and the Juno app.
+for Firna apps. The first consumers are the accounting app and the Juno app.
 The first shared component families are the dropdown components, segmented
 control patterns, radio-option cards, switch primitive, and web modal
 components currently implemented in the accounting app.
@@ -176,27 +176,44 @@ Required behavior:
   dismissal, segmented selection, switch toggling, focus retention/restoration,
   and portal layering for dropdowns, comboboxes, and web modals.
 - The package must typecheck and build before it is used by accounting or Juno.
+- `npm run test:package` must pack the built library, install the tarball into a
+  temporary consumer, and import every public package subpath.
 - After package build/tests pass, smoke-test at least one local web route or
   harness that opens a dropdown, a combobox, and a modal, toggles a segmented
   control and switch, and selects a radio card.
 
+## Package Release Contract
+
+- The public npm package name is `@firna/ui`.
+- `package.json` and `package-lock.json` versions must match the root
+  `firna-ui-release` Cargo package version before a release PR is merged.
+- release-plz owns changelog updates, release PR creation, `vX.Y.Z` Git tags,
+  and GitHub releases.
+- release-plz must use `release_always = false`; ordinary pushes to `main`
+  create or update a release PR but do not publish npm packages.
+- npm publishing must run only from a release tag or GitHub release, must use
+  npm trusted publishing with `id-token: write`, and must guard against
+  republishing an already-published version.
+- Scoped package publishing must use public access.
+
 ## CI And Preview Contract
 
 - Storybook deployments use Cloudflare Pages.
-- The Cloudflare Pages project name is `futex-ui-storybook`.
+- The Cloudflare Pages project name is `firna-ui-storybook`.
 - The stable main Storybook deploy uses the Cloudflare Pages production branch
   `main` and the default production URL
-  `https://futex-ui-storybook.pages.dev`, unless a custom domain is added later.
+  `https://firna-ui-storybook.pages.dev`, unless a custom domain is added later.
 - PR Storybook previews deploy the static Storybook build to Cloudflare Pages
   with branch name `pr-<number>`, producing a predictable preview URL such as
-  `https://pr-123.futex-ui-storybook.pages.dev`.
+  `https://pr-123.firna-ui-storybook.pages.dev`.
 - Every PR must run `cargo xtask check` after dependency installation. The
   xtask check runs the JavaScript verification suite: formatting, unit tests,
-  browser interaction tests, typecheck, package build, and Storybook build.
+  typecheck, package build, package tarball smoke test, Storybook build, and
+  browser interaction tests.
 - The main branch must publish a stable default Storybook deployment.
 - Every PR must publish an isolated Storybook preview deployment.
 - The PR Storybook URL must be posted back to the pull request through a sticky
-  comment with marker `<!-- futex-ui-storybook-preview -->`, matching the
+  comment with marker `<!-- firna-ui-storybook-preview -->`, matching the
   preview-comment pattern used by accounting and Juno.
 - The sticky comment must be updated on every PR deploy attempt with status,
   preview URL, commit SHA, and workflow run URL.

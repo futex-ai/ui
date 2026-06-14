@@ -1,6 +1,6 @@
 # ui
 
-Shared UI component library for Futex React Native and React Native Web
+Shared UI component library for Firna React Native and React Native Web
 surfaces. The first consumers are the accounting app and the Juno app.
 
 ## Key Features
@@ -11,19 +11,33 @@ surfaces. The first consumers are the accounting app and the Juno app.
 - Expo and React Native Web compatible platform files.
 - Focused unit tests, browser interaction tests, and package export checks.
 - Storybook previews for visual review on every PR.
+- Release-plz release PRs and npm trusted publishing for `@firna/ui`.
 
 ## User-Facing Interface
 
-The package name is `@futex/ui`. Public exports are available from:
+The package name is `@firna/ui`. Public exports are available from:
 
-- `@futex/ui` for all public components and helpers.
-- `@futex/ui/dropdown` for dropdown, selector, combobox, and layer helpers.
-- `@futex/ui/modal` for web modal frame, portal, model, and layer helpers.
-- `@futex/ui/radio` for themed titled radio-option cards.
-- `@futex/ui/segmented` for themed single-select segmented controls.
-- `@futex/ui/switch` for themed binary on/off switches.
-- `@futex/ui/theme` for `SharedUiThemeProvider`, default accounting-style
+- `@firna/ui` for all public components and helpers.
+- `@firna/ui/date` for single-date and date-range fields.
+- `@firna/ui/dropdown` for dropdown, selector, combobox, and layer helpers.
+- `@firna/ui/input` for shared input frames and labelled inputs.
+- `@firna/ui/modal` for web modal frame, portal, model, and layer helpers.
+- `@firna/ui/popover` for generic anchored popovers.
+- `@firna/ui/radio` for themed titled radio-option cards.
+- `@firna/ui/segmented` for themed single-select segmented controls.
+- `@firna/ui/switch` for themed binary on/off switches.
+- `@firna/ui/theme` for `SharedUiThemeProvider`, default accounting-style
   tokens, the Juno token preset, and `createSharedUiTheme`.
+
+## Developer Get Started
+
+```bash
+npm install @firna/ui
+```
+
+Consumers must provide the peer dependencies listed in `package.json`: React,
+React DOM, React Native, React Native Web, React Native SVG, and
+lucide-react-native.
 
 ## Developer Get Started
 
@@ -32,6 +46,7 @@ npm ci
 npm test
 npm run typecheck
 npm run build
+npm run test:package
 npm run storybook
 npm run storybook:build
 npm run test:browser
@@ -50,18 +65,33 @@ cargo xtask review
 ```
 
 Browser interaction tests start Storybook automatically through Playwright.
-Storybook is built to `storybook-static`.
+Storybook is built to `storybook-static`. `npm run test:package` builds a
+packed tarball, installs it into a temporary consumer, and imports every public
+package subpath.
+
+## Package Releases
+
+- release-plz opens and updates the release PR for `@firna/ui`.
+- The release flow uses `release_always = false`; ordinary pushes to `main`
+  update the release PR but do not publish npm versions.
+- Merging the release PR lets release-plz create the `vX.Y.Z` tag and GitHub
+  release.
+- npm publishing runs from the GitHub release with npm trusted publishing. The
+  npm package must configure this repository and the publish workflow as the
+  trusted publisher, with allowed action `npm publish`.
+- Scoped npm packages default to private, so `publishConfig.access` is set to
+  `public`.
 
 ## Storybook Deployments
 
 - Main branch Storybook deploys to Cloudflare Pages project
-  `futex-ui-storybook`.
-- Main URL: `https://futex-ui-storybook.pages.dev`.
+  `firna-ui-storybook`.
+- Main URL: `https://firna-ui-storybook.pages.dev`.
 - PR previews deploy to Cloudflare branch `pr-<number>`.
 - PR preview URL shape:
-  `https://pr-<number>.futex-ui-storybook.pages.dev`.
+  `https://pr-<number>.firna-ui-storybook.pages.dev`.
 - PR previews are posted through a sticky comment marked
-  `<!-- futex-ui-storybook-preview -->`.
+  `<!-- firna-ui-storybook-preview -->`.
 - Closing a same-repository PR marks the sticky comment inactive and attempts
   to delete aliased preview deployments for that PR branch; if Cloudflare
   cleanup cannot complete safely, the comment reports the retained reason.
@@ -82,6 +112,8 @@ Storybook is built to `storybook-static`.
 - Switch component: [src/switch/README.md](src/switch/README.md)
 - Browser tests: [tests/browser/storybook.spec.ts](tests/browser/storybook.spec.ts)
 - Repository automation: [xtask/README.md](xtask/README.md)
+- Release metadata crate:
+  [crates/firna-ui-release/README.md](crates/firna-ui-release/README.md)
 - Shared component protocol:
   [docs/protocol/shared-ui-components.md](docs/protocol/shared-ui-components.md)
 - Consumer migration handoff: [docs/consumer-migration.md](docs/consumer-migration.md)

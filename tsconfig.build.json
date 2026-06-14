@@ -10,7 +10,7 @@
     "sourceMap": true
   },
   "exclude": [
-    "src/**/*.stories.tsx",
+    "src/stories/**",
     "src/**/__stories__/**",
     "tests",
     ".storybook",

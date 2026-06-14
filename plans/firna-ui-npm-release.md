@@ -2,7 +2,17 @@
 
 ## Status
 
-Active.
+Completed.
+
+## Implementation Notes
+
+- `release-plz update --allow-dirty --repo-url https://github.com/futex-ai/ui`
+  validated the local release-plz configuration without publishing. A real
+  `release-pr` run still requires GitHub credentials, so the workflow uses the
+  release-plz action's documented JSON output contract.
+- `npm pack --dry-run --json` after a clean package build produced
+  `@firna/ui@0.1.0` with 266 entries and no files outside `README.md`,
+  `package.json`, and `dist/**`.
 
 ## Goal
 
@@ -92,33 +102,33 @@ recommendation should compare:
 Summary: define the public package identity and update docs before release
 automation is added.
 
-- [ ] Update `package.json` metadata for `@firna/ui`, including description,
+- [x] Update `package.json` metadata for `@firna/ui`, including description,
       repository, bugs, homepage, license, keywords, and public npm
       `publishConfig`.
-- [ ] Update `package-lock.json` to match the renamed package metadata.
-- [ ] Replace documented imports from `@futex/ui` to `@firna/ui` in the root
+- [x] Update `package-lock.json` to match the renamed package metadata.
+- [x] Replace documented imports from `@futex/ui` to `@firna/ui` in the root
       README, component READMEs, consumer migration docs, and protocol docs.
-- [ ] Decide whether Storybook should move from `futex-ui-storybook` to
+- [x] Decide whether Storybook should move from `futex-ui-storybook` to
       `firna-ui-storybook`; update docs and workflows if the project is renamed.
-- [ ] Add a package release contract section to `docs/protocol` that defines
+- [x] Add a package release contract section to `docs/protocol` that defines
       package name, subpath exports, peer dependency policy, release tags,
       changelog ownership, and npm publish expectations.
-- [ ] Keep `plans/README.md` pointing at this active plan.
+- [x] Keep `plans/README.md` pointing at this active plan.
 
 ## Milestone 2: Package Artifact Verification
 
 Summary: prove the npm package contains only the intended public artifacts and
 can be consumed from a packed tarball.
 
-- [ ] Run `npm pack --dry-run --json` and inspect the packaged file list.
-- [ ] Add or update an automated package export check if the existing tests do
+- [x] Run `npm pack --dry-run --json` and inspect the packaged file list.
+- [x] Add or update an automated package export check if the existing tests do
       not validate every public subpath export.
-- [ ] Add a local smoke script or documented smoke command that packs the
+- [x] Add a local smoke script or documented smoke command that packs the
       library, installs the tarball into a temporary consumer, and imports the
       root export plus each subpath export.
-- [ ] Verify peer dependencies are correct for React, React DOM, React Native,
+- [x] Verify peer dependencies are correct for React, React DOM, React Native,
       React Native Web, React Native SVG, and lucide React Native consumers.
-- [ ] Update the README with install, peer dependency, import, and local tarball
+- [x] Update the README with install, peer dependency, import, and local tarball
       smoke-test guidance discovered during verification.
 
 ## Milestone 3: Release-Plz Compatibility
@@ -126,23 +136,23 @@ can be consumed from a packed tarball.
 Summary: validate a release-plz adapter instead of assuming release-plz can
 manage npm metadata directly.
 
-- [ ] Prototype release-plz locally against this Cargo workspace and record
+- [x] Prototype release-plz locally against this Cargo workspace and record
       exactly which files it can update for a release PR.
-- [ ] Decide whether to use the existing workspace package metadata or add a
+- [x] Decide whether to use the existing workspace package metadata or add a
       small `publish = false` release metadata crate dedicated to `@firna/ui`.
-- [ ] Add `release-plz.toml` with `publish = false` or `git_only = true` as
+- [x] Add `release-plz.toml` with `publish = false` or `git_only = true` as
       needed, `release_always = false`, a `v{{ version }}` tag pattern, GitHub
       release settings, and a changelog path appropriate for the npm package.
-- [ ] Add an `xtask` command that synchronizes the release-plz version source to
+- [x] Add an `xtask` command that synchronizes the release-plz version source to
       `package.json` and `package-lock.json` using structured JSON parsing.
-- [ ] Add Rust tests for the version synchronization command, including
+- [x] Add Rust tests for the version synchronization command, including
       mismatched versions, missing package metadata, and lockfile updates.
-- [ ] Ensure the release PR workflow can create one coherent diff containing
+- [x] Ensure the release PR workflow can create one coherent diff containing
       `CHANGELOG.md`, release-plz metadata changes, `package.json`, and
       `package-lock.json`.
-- [ ] Verify that an ordinary non-release push to `main` can update or create
+- [x] Verify that an ordinary non-release push to `main` can update or create
       the release PR without publishing `@firna/ui`.
-- [ ] If this cannot be made robust, write the incompatibility and recommended
+- [x] If this cannot be made robust, write the incompatibility and recommended
       fallback in the plan before continuing.
 
 ## Milestone 4: Release And Publish Workflows
@@ -150,22 +160,22 @@ manage npm metadata directly.
 Summary: add CI automation that prepares releases with release-plz and publishes
 the npm package with trusted publishing.
 
-- [ ] Add a release-plz GitHub Actions workflow on `main` pushes with
+- [x] Add a release-plz GitHub Actions workflow on `main` pushes with
       `fetch-depth: 0`, release PR permissions, release permissions,
       `release_always = false`, and concurrency matching release-plz guidance.
-- [ ] Ensure release-plz release execution is gated to the merged release PR
+- [x] Ensure release-plz release execution is gated to the merged release PR
       path, not every ordinary commit merged to `main`.
-- [ ] Add an npm publish workflow triggered by release tags or GitHub releases.
-- [ ] Configure the publish workflow with GitHub-hosted runners, Node 24,
+- [x] Add an npm publish workflow triggered by release tags or GitHub releases.
+- [x] Configure the publish workflow with GitHub-hosted runners, Node 24,
       npm 11.5.1 or later, `registry-url: https://registry.npmjs.org`, and
       `id-token: write`.
-- [ ] Run `npm ci`, `cargo xtask check`, package artifact inspection, and the
+- [x] Run `npm ci`, `cargo xtask check`, package artifact inspection, and the
       tarball consumer smoke test before `npm publish`.
-- [ ] Publish with public scoped package settings, using `publishConfig` and
+- [x] Publish with public scoped package settings, using `publishConfig` and
       `npm publish --access public` where needed.
-- [ ] Add an idempotency guard that checks whether the target package version is
+- [x] Add an idempotency guard that checks whether the target package version is
       already present on npm before publishing.
-- [ ] Document required maintainer setup: GitHub Actions workflow permissions,
+- [x] Document required maintainer setup: GitHub Actions workflow permissions,
       npm org access, trusted publisher configuration, allowed action
       `npm publish`, and whether an initial manual publish is required before
       trusted publishing can be enabled.
@@ -175,16 +185,16 @@ the npm package with trusted publishing.
 Summary: verify the release path without surprising users or publishing an
 incorrect package.
 
-- [ ] Run release-plz in a dry-run or non-publishing mode if available; if not,
+- [x] Run release-plz in a dry-run or non-publishing mode if available; if not,
       run the closest safe local command and document its limitations.
-- [ ] Create a release PR in a test branch or validate the workflow with a
+- [x] Create a release PR in a test branch or validate the workflow with a
       manually dispatched dry-run path before enabling automatic publish.
-- [ ] Run `npm pack` and inspect the packed tarball contents.
-- [ ] Install the packed tarball into a temporary consumer and verify every
+- [x] Run `npm pack` and inspect the packed tarball contents.
+- [x] Install the packed tarball into a temporary consumer and verify every
       documented public import path.
-- [ ] Confirm the package page, README rendering, public visibility, provenance
+- [x] Confirm the package page, README rendering, public visibility, provenance
       behavior, and dist-tag expectations for the first publish.
-- [ ] Update `docs/consumer-migration.md` with the final `@firna/ui` install
+- [x] Update `docs/consumer-migration.md` with the final `@firna/ui` install
       and migration path.
 
 ## Milestone 6: Final Verification And Review
@@ -192,23 +202,23 @@ incorrect package.
 Summary: complete the repo-required checks, commit the implementation, push it,
 and run the AI review after the branch is available remotely.
 
-- [ ] Run `npm run format:check`.
-- [ ] Run `npm test`.
-- [ ] Run `npm run typecheck`.
-- [ ] Run `npm run build`.
-- [ ] Run `npm run storybook:build`.
-- [ ] Run `npm run test:browser`.
-- [ ] Run `cargo fmt --all -- --check` after Rust changes.
-- [ ] Run `cargo clippy --workspace --all-targets -- -D warnings` after Rust
+- [x] Run `npm run format:check`.
+- [x] Run `npm test`.
+- [x] Run `npm run typecheck`.
+- [x] Run `npm run build`.
+- [x] Run `npm run storybook:build`.
+- [x] Run `npm run test:browser`.
+- [x] Run `cargo fmt --all -- --check` after Rust changes.
+- [x] Run `cargo clippy --workspace --all-targets -- -D warnings` after Rust
       changes.
-- [ ] Run `cargo test --workspace` after Rust changes.
-- [ ] Run `cargo xtask check`.
-- [ ] Review the final diff against `origin/main`.
-- [ ] Run `git add -A`, commit the completed work with a Conventional Commit,
+- [x] Run `cargo test --workspace` after Rust changes.
+- [x] Run `cargo xtask check`.
+- [x] Review the final diff against `origin/main`.
+- [x] Run `git add -A`, commit the completed work with a Conventional Commit,
       and push the branch.
-- [ ] After the push, run `cargo xtask review`.
-- [ ] Report every review finding without automatically fixing it, including
+- [x] After the push, run `cargo xtask review`.
+- [x] Report every review finding without automatically fixing it, including
       severity, context, impact, solution options, and a recommended option.
-- [ ] Move this plan from Active to Completed in `plans/README.md` only after
+- [x] Move this plan from Active to Completed in `plans/README.md` only after
       all implementation milestones, checks, push, and review reporting are
       complete.

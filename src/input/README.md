@@ -29,7 +29,7 @@ library — other framed inputs (e.g. the date field's web trigger) build on it.
 ## Usage
 
 ```tsx
-import { Input } from "@futex/ui/input";
+import { Input } from "@firna/ui/input";
 import { Search } from "lucide-react-native";
 
 <Input

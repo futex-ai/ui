@@ -63,7 +63,7 @@ independently reachable by VoiceOver/TalkBack alongside the open button.
 `DateRangeField` takes `value: { start, end }` plus `onChange: (next) => void`.
 
 ```tsx
-import { DateField, DateRangeField } from "@futex/ui/date";
+import { DateField, DateRangeField } from "@firna/ui/date";
 
 <DateField label="Year ends" onChange={setIso} value={iso} />;
 
@@ -83,7 +83,7 @@ import { DateField, DateRangeField } from "@futex/ui/date";
 - `DateField.tsx` — `DateField`, `DateInput`, and the shared `FieldLabel`.
 - `DateTrigger.tsx` — the platform triggers (`WebTrigger`, `NativeTrigger` tap
   target) and the `triggerBorder` helper. `WebTrigger` renders the shared
-  `InputFrame` (`@futex/ui/input`) for the editable box — the same chrome, focus
+  `InputFrame` (`@firna/ui/input`) for the editable box — the same chrome, focus
   ring, clear button, and `aria-invalid` wiring as every other text input — and
   only supplies the type-or-pick behaviour (commit-on-type, focus-to-open) plus
   the calendar suffix icon. `NativeTrigger` is a tap target, not a text input, so
