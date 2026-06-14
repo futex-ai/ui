@@ -10,8 +10,8 @@ Completed.
   validated the local release-plz configuration without publishing. A real
   `release-pr` run still requires GitHub credentials, so the workflow uses the
   release-plz action's documented JSON output contract.
-- `npm pack --dry-run --json` after a clean package build produced
-  `@firna/ui@0.1.0` with 266 entries and no files outside `README.md`,
+- `npm pack --dry-run --json` after the Node-compatible ESM build produced
+  `@firna/ui@0.1.0` with 530 entries and no files outside `README.md`,
   `package.json`, and `dist/**`.
 - Post-review release automation now publishes npm from the same
   `.github/workflows/release-plz.yml` run that creates the GitHub release. The
@@ -242,3 +242,18 @@ milestones.
       contract.
 - [x] Replace the remaining active README reference to Futex apps with Firna
       apps.
+
+## Milestone 8: Post-Review Node ESM Package Imports
+
+Summary: fix Node-native package resolution without breaking the React Native
+platform-resolution export path.
+
+- [x] Add a tarball smoke check that imports every public package subpath with
+      Node's native ESM resolver.
+- [x] Add a build step that creates `dist/node/**` from `dist/**` and rewrites
+      relative ESM specifiers to explicit `.js` files.
+- [x] Point standard package `import` exports at `dist/node/**`.
+- [x] Keep `react-native` package exports pointed at the original `dist/**`
+      output so Metro and React Native platform resolution remain available.
+- [x] Keep the existing Vite tarball smoke check for bundler consumers.
+- [x] Update README and protocol docs with the split export-map contract.

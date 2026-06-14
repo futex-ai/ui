@@ -22,7 +22,7 @@
     "react-native-web",
     "ui"
   ],
-  "main": "./dist/index.js",
+  "main": "./dist/node/index.js",
   "types": "./dist/index.d.ts",
   "react-native": "./dist/index.js",
   "files": [
@@ -38,56 +38,56 @@
     ".": {
       "types": "./dist/index.d.ts",
       "react-native": "./dist/index.js",
-      "import": "./dist/index.js"
+      "import": "./dist/node/index.js"
     },
     "./date": {
       "types": "./dist/date/index.d.ts",
       "react-native": "./dist/date/index.js",
-      "import": "./dist/date/index.js"
+      "import": "./dist/node/date/index.js"
     },
     "./dropdown": {
       "types": "./dist/dropdown/index.d.ts",
       "react-native": "./dist/dropdown/index.js",
-      "import": "./dist/dropdown/index.js"
+      "import": "./dist/node/dropdown/index.js"
     },
     "./input": {
       "types": "./dist/input/index.d.ts",
       "react-native": "./dist/input/index.js",
-      "import": "./dist/input/index.js"
+      "import": "./dist/node/input/index.js"
     },
     "./modal": {
       "types": "./dist/modal/index.d.ts",
       "react-native": "./dist/modal/index.js",
-      "import": "./dist/modal/index.js"
+      "import": "./dist/node/modal/index.js"
     },
     "./popover": {
       "types": "./dist/popover/index.d.ts",
       "react-native": "./dist/popover/index.js",
-      "import": "./dist/popover/index.js"
+      "import": "./dist/node/popover/index.js"
     },
     "./radio": {
       "types": "./dist/radio/index.d.ts",
       "react-native": "./dist/radio/index.js",
-      "import": "./dist/radio/index.js"
+      "import": "./dist/node/radio/index.js"
     },
     "./segmented": {
       "types": "./dist/segmented/index.d.ts",
       "react-native": "./dist/segmented/index.js",
-      "import": "./dist/segmented/index.js"
+      "import": "./dist/node/segmented/index.js"
     },
     "./switch": {
       "types": "./dist/switch/index.d.ts",
       "react-native": "./dist/switch/index.js",
-      "import": "./dist/switch/index.js"
+      "import": "./dist/node/switch/index.js"
     },
     "./theme": {
       "types": "./dist/theme.d.ts",
       "react-native": "./dist/theme.js",
-      "import": "./dist/theme.js"
+      "import": "./dist/node/theme.js"
     }
   },
   "scripts": {
-    "build": "rm -rf dist && tsc --project tsconfig.build.json",
+    "build": "rm -rf dist && tsc --project tsconfig.build.json && node scripts/prepare-node-esm.mjs",
     "clean": "rm -rf dist storybook-static playwright-report test-results",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md,yml,yaml}\"",
     "storybook": "storybook dev -p 6006",

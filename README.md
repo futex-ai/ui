@@ -66,8 +66,18 @@ cargo xtask review
 
 Browser interaction tests start Storybook automatically through Playwright.
 Storybook is built to `storybook-static`. `npm run test:package` builds a
-packed tarball, installs it into a temporary consumer, and imports every public
-package subpath.
+packed tarball, installs it into temporary consumers, imports every public
+package subpath with Node's native ESM resolver, and then verifies the same
+subpaths through a Vite build.
+
+The package export map intentionally separates runtime targets:
+
+- The standard `import` condition points at `dist/node/**`, where relative ESM
+  specifiers include explicit `.js` files and web platform files are selected
+  when they exist.
+- The `react-native` condition points at `dist/**`, preserving extensionless
+  specifiers so Metro and React Native platform resolution can choose native or
+  web files.
 
 ## Package Releases
 

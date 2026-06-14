@@ -38,13 +38,35 @@ try {
   assertPackedFiles(packResult.files);
 
   const tarballPath = join(smokeRoot, basename(packResult.filename));
-  const consumerRoot = join(smokeRoot, "consumer");
+  const nodeConsumerRoot = join(smokeRoot, "node-consumer");
+  await prepareConsumer(nodeConsumerRoot, tarballPath);
+  await writeNodePeerStubs(nodeConsumerRoot);
+  await writeImportSmoke(nodeConsumerRoot, subpaths);
+  await execFileAsync("node", ["import-smoke.mjs"], { cwd: nodeConsumerRoot });
+
+  const viteConsumerRoot = join(smokeRoot, "vite-consumer");
+  await prepareConsumer(viteConsumerRoot, tarballPath);
+  await linkPeerDependencies(
+    viteConsumerRoot,
+    Object.keys(packageJson.peerDependencies),
+  );
+  await writeImportSmoke(viteConsumerRoot, subpaths);
+  await writeViteConfig(viteConsumerRoot);
+  await execFileAsync(
+    "node",
+    [resolve(workspaceRoot, "node_modules", "vite", "bin", "vite.js"), "build"],
+    { cwd: viteConsumerRoot },
+  );
+} finally {
+  await rm(smokeRoot, { force: true, recursive: true });
+}
+
+async function prepareConsumer(consumerRoot, tarballPath) {
   await mkdir(consumerRoot);
   await writeFile(
     join(consumerRoot, "package.json"),
     JSON.stringify({ name: "firna-ui-smoke", type: "module", private: true }),
   );
-
   await execFileAsync(
     "npm",
     [
@@ -57,20 +79,6 @@ try {
     ],
     { cwd: consumerRoot },
   );
-
-  await linkPeerDependencies(
-    consumerRoot,
-    Object.keys(packageJson.peerDependencies),
-  );
-  await writeImportSmoke(consumerRoot, subpaths);
-  await writeViteConfig(consumerRoot);
-  await execFileAsync(
-    "node",
-    [resolve(workspaceRoot, "node_modules", "vite", "bin", "vite.js"), "build"],
-    { cwd: consumerRoot },
-  );
-} finally {
-  await rm(smokeRoot, { force: true, recursive: true });
 }
 
 async function linkPeerDependencies(consumerRoot, peerNames) {
@@ -82,6 +90,127 @@ async function linkPeerDependencies(consumerRoot, peerNames) {
     await mkdir(resolve(target, ".."), { recursive: true });
     await symlink(source, target, "junction");
   }
+}
+
+async function writeNodePeerStubs(consumerRoot) {
+  await writeStubPackage(consumerRoot, "react", {
+    "index.js": `export const Fragment = Symbol.for("react.fragment");
+export function createContext(defaultValue) {
+  return { Provider: ({ children }) => children, _currentValue: defaultValue };
+}
+export function useCallback(callback) {
+  return callback;
+}
+export function useContext(context) {
+  return context?._currentValue;
+}
+export function useEffect() {}
+export function useLayoutEffect() {}
+export function useMemo(factory) {
+  return factory();
+}
+export function useRef(value = null) {
+  return { current: value };
+}
+export function useState(value) {
+  return [typeof value === "function" ? value() : value, () => {}];
+}
+export default {
+  Fragment,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+};
+`,
+    "jsx-runtime.js": `export const Fragment = Symbol.for("react.fragment");
+export function jsx(type, props) {
+  return { type, props };
+}
+export const jsxs = jsx;
+`,
+    "package.json": JSON.stringify({
+      name: "react",
+      type: "module",
+      exports: {
+        ".": "./index.js",
+        "./jsx-runtime": "./jsx-runtime.js",
+      },
+    }),
+  });
+  await writeStubPackage(consumerRoot, "react-dom", {
+    "index.js": `export function createPortal(children) {
+  return children;
+}
+`,
+    "package.json": JSON.stringify({ name: "react-dom", type: "module" }),
+  });
+  await writeStubPackage(consumerRoot, "react-native", {
+    "index.js": `export const Modal = "Modal";
+export const Pressable = "Pressable";
+export const ScrollView = "ScrollView";
+export const Text = "Text";
+export const TextInput = "TextInput";
+export const View = "View";
+export const Platform = {
+  OS: "web",
+  select(values) {
+    return values.web ?? values.default;
+  },
+};
+export const StyleSheet = {
+  absoluteFillObject: {},
+  create(styles) {
+    return styles;
+  },
+  flatten(styles) {
+    return styles;
+  },
+};
+export function useWindowDimensions() {
+  return { fontScale: 1, height: 768, scale: 1, width: 1024 };
+}
+`,
+    "package.json": JSON.stringify({ name: "react-native", type: "module" }),
+  });
+  await writeStubPackage(consumerRoot, "react-native-svg", {
+    "index.js": `export default "Svg";
+`,
+    "package.json": JSON.stringify({
+      name: "react-native-svg",
+      type: "module",
+    }),
+  });
+  await writeStubPackage(consumerRoot, "lucide-react-native", {
+    "index.js": `const Icon = () => null;
+export const CalendarDays = Icon;
+export const Check = Icon;
+export const ChevronDown = Icon;
+export const ChevronLeft = Icon;
+export const ChevronRight = Icon;
+export const CircleX = Icon;
+export const Search = Icon;
+export const X = Icon;
+`,
+    "package.json": JSON.stringify({
+      name: "lucide-react-native",
+      type: "module",
+    }),
+  });
+}
+
+async function writeStubPackage(consumerRoot, packageName, files) {
+  const packageRoot = join(consumerRoot, "node_modules", packageName);
+  await mkdir(packageRoot, { recursive: true });
+  await Promise.all(
+    Object.entries(files).map(([fileName, body]) =>
+      writeFile(join(packageRoot, fileName), body),
+    ),
+  );
 }
 
 function assertPackedFiles(files) {

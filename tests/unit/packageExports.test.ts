@@ -7,6 +7,8 @@ const packageJson = JSON.parse(readSource("../../package.json"));
 test("package metadata targets the public Firna npm package", () => {
   assert.equal(packageJson.name, "@firna/ui");
   assert.equal(packageJson.private, false);
+  assert.equal(packageJson.main, "./dist/node/index.js");
+  assert.equal(packageJson["react-native"], "./dist/index.js");
   assert.deepEqual(packageJson.publishConfig, {
     access: "public",
     registry: "https://registry.npmjs.org/",
@@ -37,8 +39,18 @@ function assertExportConfig(subpath: string, exportConfig: unknown) {
   assert.ok(exportConfig && typeof exportConfig === "object");
   const config = exportConfig as Record<string, string>;
   assert.ok(config.types.endsWith(".d.ts"), `${subpath} has types`);
-  assert.equal(config["react-native"], config.import);
-  assert.ok(config.import.startsWith("./dist/"), `${subpath} imports dist`);
+  assert.ok(
+    config["react-native"].startsWith("./dist/"),
+    `${subpath} keeps React Native dist export`,
+  );
+  assert.ok(
+    !config["react-native"].startsWith("./dist/node/"),
+    `${subpath} keeps platform resolution for React Native`,
+  );
+  assert.ok(
+    config.import.startsWith("./dist/node/"),
+    `${subpath} imports Node-compatible dist`,
+  );
   assert.ok(config.import.endsWith(".js"), `${subpath} imports JS`);
 }
 
