@@ -37,16 +37,21 @@ Reference docs:
 
 ## Release Strategy To Validate
 
-The preferred implementation is a release-plz-driven release PR and tag flow,
-paired with npm trusted publishing for the actual npm registry upload:
+The preferred implementation is a manual-merge release flow: release-plz opens a
+release PR, a maintainer reviews and merges that PR when ready, and npm trusted
+publishing uploads the package only after that release PR merge creates the
+release tag:
 
 1. Use release-plz to calculate release versions from Conventional Commits,
-   update `CHANGELOG.md`, open the release PR, create `vX.Y.Z` tags, and create
-   GitHub releases.
+   update `CHANGELOG.md`, and open the release PR.
 2. Add a repository-owned version sync step so the release PR also updates
    `package.json` and `package-lock.json` to the same version release-plz will
    tag.
-3. Publish `@firna/ui` from a GitHub-hosted npm workflow triggered by the
+3. Configure release-plz with `release_always = false` so packages are released
+   only when the release PR is merged.
+4. Let the release workflow create the `vX.Y.Z` tag and GitHub release from the
+   merged release PR.
+5. Publish `@firna/ui` from a GitHub-hosted npm workflow triggered by the
    release tag or GitHub release, using npm trusted publishing instead of a
    long-lived npm token.
 
@@ -67,6 +72,8 @@ recommendation should compare:
   checks reveal a broken public boundary.
 - Prefer npm trusted publishing over `NPM_TOKEN`.
 - Keep `cargo xtask check` as the required local and CI verification command.
+- Do not publish a new npm version for every ordinary push to `main`; batch
+  releases behind the generated release PR until a maintainer merges it.
 - Treat the first npm publish as a separate release milestone because the
   package may need maintainer action in npmjs.com before trusted publishing can
   be enabled.
@@ -124,8 +131,8 @@ manage npm metadata directly.
 - [ ] Decide whether to use the existing workspace package metadata or add a
       small `publish = false` release metadata crate dedicated to `@firna/ui`.
 - [ ] Add `release-plz.toml` with `publish = false` or `git_only = true` as
-      needed, a `v{{ version }}` tag pattern, GitHub release settings, and a
-      changelog path appropriate for the npm package.
+      needed, `release_always = false`, a `v{{ version }}` tag pattern, GitHub
+      release settings, and a changelog path appropriate for the npm package.
 - [ ] Add an `xtask` command that synchronizes the release-plz version source to
       `package.json` and `package-lock.json` using structured JSON parsing.
 - [ ] Add Rust tests for the version synchronization command, including
@@ -133,6 +140,8 @@ manage npm metadata directly.
 - [ ] Ensure the release PR workflow can create one coherent diff containing
       `CHANGELOG.md`, release-plz metadata changes, `package.json`, and
       `package-lock.json`.
+- [ ] Verify that an ordinary non-release push to `main` can update or create
+      the release PR without publishing `@firna/ui`.
 - [ ] If this cannot be made robust, write the incompatibility and recommended
       fallback in the plan before continuing.
 
@@ -142,8 +151,10 @@ Summary: add CI automation that prepares releases with release-plz and publishes
 the npm package with trusted publishing.
 
 - [ ] Add a release-plz GitHub Actions workflow on `main` pushes with
-      `fetch-depth: 0`, release PR permissions, release permissions, and
-      concurrency matching release-plz guidance.
+      `fetch-depth: 0`, release PR permissions, release permissions,
+      `release_always = false`, and concurrency matching release-plz guidance.
+- [ ] Ensure release-plz release execution is gated to the merged release PR
+      path, not every ordinary commit merged to `main`.
 - [ ] Add an npm publish workflow triggered by release tags or GitHub releases.
 - [ ] Configure the publish workflow with GitHub-hosted runners, Node 24,
       npm 11.5.1 or later, `registry-url: https://registry.npmjs.org`, and
