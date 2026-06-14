@@ -1,0 +1,203 @@
+# Firna UI Npm Release
+
+## Status
+
+Active.
+
+## Goal
+
+Turn this package into the public npm library `@firna/ui` under the Firna npm
+organization, with verified package contents, consumer documentation, and an
+automated release path that uses release-plz wherever it can safely own the
+version, changelog, tag, and GitHub release flow.
+
+## Investigation Summary
+
+- The current package is already shaped like an npm library: `package.json`
+  declares `@futex/ui`, `private: false`, ESM output under `dist`, typed
+  subpath exports, and npm scripts for tests, typecheck, build, Storybook, and
+  browser coverage.
+- Root docs, component READMEs, consumer handoff docs, and the Storybook
+  deployment names still use the Futex package identity.
+- CI already runs `cargo xtask check`, and `xtask` delegates to the npm
+  verification suite through `npm run verify`.
+- Release-plz's official documentation is Cargo-oriented: configuration lives
+  beside a root `Cargo.toml`, release PRs update Cargo package versions and
+  changelogs, and its native publish target is a Cargo registry.
+- npm's current recommended CI publish path is trusted publishing with OIDC,
+  Node 22.14.0 or later, npm 11.5.1 or later, and a workflow permission for
+  `id-token: write`.
+
+Reference docs:
+
+- <https://release-plz.dev/docs/config>
+- <https://release-plz.dev/docs/github/quickstart>
+- <https://docs.npmjs.com/trusted-publishers/>
+- <https://docs.npmjs.com/creating-and-publishing-scoped-public-packages/>
+
+## Release Strategy To Validate
+
+The preferred implementation is a release-plz-driven release PR and tag flow,
+paired with npm trusted publishing for the actual npm registry upload:
+
+1. Use release-plz to calculate release versions from Conventional Commits,
+   update `CHANGELOG.md`, open the release PR, create `vX.Y.Z` tags, and create
+   GitHub releases.
+2. Add a repository-owned version sync step so the release PR also updates
+   `package.json` and `package-lock.json` to the same version release-plz will
+   tag.
+3. Publish `@firna/ui` from a GitHub-hosted npm workflow triggered by the
+   release tag or GitHub release, using npm trusted publishing instead of a
+   long-lived npm token.
+
+If release-plz cannot safely produce a release PR that includes synchronized npm
+metadata, stop the implementation and document the incompatibility. The fallback
+recommendation should compare:
+
+- Option A: keep release-plz only for GitHub changelog/tag/release metadata and
+  publish npm from the matching tag.
+- Option B: use an npm-native release manager for this package and reserve
+  release-plz for Rust crates.
+
+## Scope Decisions
+
+- Rename the public package to `@firna/ui`; do not keep `@futex/ui` as the
+  documented package name.
+- Keep existing component APIs and subpath exports unless package publication
+  checks reveal a broken public boundary.
+- Prefer npm trusted publishing over `NPM_TOKEN`.
+- Keep `cargo xtask check` as the required local and CI verification command.
+- Treat the first npm publish as a separate release milestone because the
+  package may need maintainer action in npmjs.com before trusted publishing can
+  be enabled.
+
+## Non-Goals
+
+- Migrating downstream apps to `@firna/ui` in this repo change.
+- Redesigning components, theme tokens, or Storybook examples beyond package
+  identity and release-readiness updates.
+- Publishing a Rust crate to crates.io.
+- Creating a broader monorepo or multi-package workspace unless release-plz
+  compatibility requires an isolated release metadata crate.
+
+## Milestone 1: Package Identity Contract
+
+Summary: define the public package identity and update docs before release
+automation is added.
+
+- [ ] Update `package.json` metadata for `@firna/ui`, including description,
+      repository, bugs, homepage, license, keywords, and public npm
+      `publishConfig`.
+- [ ] Update `package-lock.json` to match the renamed package metadata.
+- [ ] Replace documented imports from `@futex/ui` to `@firna/ui` in the root
+      README, component READMEs, consumer migration docs, and protocol docs.
+- [ ] Decide whether Storybook should move from `futex-ui-storybook` to
+      `firna-ui-storybook`; update docs and workflows if the project is renamed.
+- [ ] Add a package release contract section to `docs/protocol` that defines
+      package name, subpath exports, peer dependency policy, release tags,
+      changelog ownership, and npm publish expectations.
+- [ ] Keep `plans/README.md` pointing at this active plan.
+
+## Milestone 2: Package Artifact Verification
+
+Summary: prove the npm package contains only the intended public artifacts and
+can be consumed from a packed tarball.
+
+- [ ] Run `npm pack --dry-run --json` and inspect the packaged file list.
+- [ ] Add or update an automated package export check if the existing tests do
+      not validate every public subpath export.
+- [ ] Add a local smoke script or documented smoke command that packs the
+      library, installs the tarball into a temporary consumer, and imports the
+      root export plus each subpath export.
+- [ ] Verify peer dependencies are correct for React, React DOM, React Native,
+      React Native Web, React Native SVG, and lucide React Native consumers.
+- [ ] Update the README with install, peer dependency, import, and local tarball
+      smoke-test guidance discovered during verification.
+
+## Milestone 3: Release-Plz Compatibility
+
+Summary: validate a release-plz adapter instead of assuming release-plz can
+manage npm metadata directly.
+
+- [ ] Prototype release-plz locally against this Cargo workspace and record
+      exactly which files it can update for a release PR.
+- [ ] Decide whether to use the existing workspace package metadata or add a
+      small `publish = false` release metadata crate dedicated to `@firna/ui`.
+- [ ] Add `release-plz.toml` with `publish = false` or `git_only = true` as
+      needed, a `v{{ version }}` tag pattern, GitHub release settings, and a
+      changelog path appropriate for the npm package.
+- [ ] Add an `xtask` command that synchronizes the release-plz version source to
+      `package.json` and `package-lock.json` using structured JSON parsing.
+- [ ] Add Rust tests for the version synchronization command, including
+      mismatched versions, missing package metadata, and lockfile updates.
+- [ ] Ensure the release PR workflow can create one coherent diff containing
+      `CHANGELOG.md`, release-plz metadata changes, `package.json`, and
+      `package-lock.json`.
+- [ ] If this cannot be made robust, write the incompatibility and recommended
+      fallback in the plan before continuing.
+
+## Milestone 4: Release And Publish Workflows
+
+Summary: add CI automation that prepares releases with release-plz and publishes
+the npm package with trusted publishing.
+
+- [ ] Add a release-plz GitHub Actions workflow on `main` pushes with
+      `fetch-depth: 0`, release PR permissions, release permissions, and
+      concurrency matching release-plz guidance.
+- [ ] Add an npm publish workflow triggered by release tags or GitHub releases.
+- [ ] Configure the publish workflow with GitHub-hosted runners, Node 24,
+      npm 11.5.1 or later, `registry-url: https://registry.npmjs.org`, and
+      `id-token: write`.
+- [ ] Run `npm ci`, `cargo xtask check`, package artifact inspection, and the
+      tarball consumer smoke test before `npm publish`.
+- [ ] Publish with public scoped package settings, using `publishConfig` and
+      `npm publish --access public` where needed.
+- [ ] Add an idempotency guard that checks whether the target package version is
+      already present on npm before publishing.
+- [ ] Document required maintainer setup: GitHub Actions workflow permissions,
+      npm org access, trusted publisher configuration, allowed action
+      `npm publish`, and whether an initial manual publish is required before
+      trusted publishing can be enabled.
+
+## Milestone 5: First Release Dry Run And Handoff
+
+Summary: verify the release path without surprising users or publishing an
+incorrect package.
+
+- [ ] Run release-plz in a dry-run or non-publishing mode if available; if not,
+      run the closest safe local command and document its limitations.
+- [ ] Create a release PR in a test branch or validate the workflow with a
+      manually dispatched dry-run path before enabling automatic publish.
+- [ ] Run `npm pack` and inspect the packed tarball contents.
+- [ ] Install the packed tarball into a temporary consumer and verify every
+      documented public import path.
+- [ ] Confirm the package page, README rendering, public visibility, provenance
+      behavior, and dist-tag expectations for the first publish.
+- [ ] Update `docs/consumer-migration.md` with the final `@firna/ui` install
+      and migration path.
+
+## Milestone 6: Final Verification And Review
+
+Summary: complete the repo-required checks, commit the implementation, push it,
+and run the AI review after the branch is available remotely.
+
+- [ ] Run `npm run format:check`.
+- [ ] Run `npm test`.
+- [ ] Run `npm run typecheck`.
+- [ ] Run `npm run build`.
+- [ ] Run `npm run storybook:build`.
+- [ ] Run `npm run test:browser`.
+- [ ] Run `cargo fmt --all -- --check` after Rust changes.
+- [ ] Run `cargo clippy --workspace --all-targets -- -D warnings` after Rust
+      changes.
+- [ ] Run `cargo test --workspace` after Rust changes.
+- [ ] Run `cargo xtask check`.
+- [ ] Review the final diff against `origin/main`.
+- [ ] Run `git add -A`, commit the completed work with a Conventional Commit,
+      and push the branch.
+- [ ] After the push, run `cargo xtask review`.
+- [ ] Report every review finding without automatically fixing it, including
+      severity, context, impact, solution options, and a recommended option.
+- [ ] Move this plan from Active to Completed in `plans/README.md` only after
+      all implementation milestones, checks, push, and review reporting are
+      complete.
