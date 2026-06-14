@@ -1,18 +1,33 @@
 # Date fields (`DateField` / `DateRangeField`)
 
 Branded date inputs for React Native and React Native Web. They render an
-identical styled trigger on every platform; only the _opened_ picker differs:
+identical styled trigger on every platform; only the _opened_ picker differs,
+and a `variant` prop chooses which picker that is.
 
-- **Web** renders our own sage calendar popover anchored below the field, and
-  the trigger is an editable text input (type **or** pick).
-- **Native** presents the same calendar in a bottom-sheet modal with Cancel /
-  Done (tap to pick).
+## Variants
 
-Ported from the accounting app's `components/date`. The one adaptation: the
-accounting native picker delegated to the OS via
-`@react-native-community/datetimepicker`. This shared library has no native
-picker dependency, so the native overlay (`DatePickerOverlay.tsx`) renders the
-shared `CalendarMonth` itself. Web behaviour is unchanged.
+- **`variant="calendar"` (default)** — the branded month grid.
+  - **Web** renders a sage calendar popover anchored below the field, and the
+    trigger is an editable text input (type **or** pick).
+  - **Native** presents the same calendar in a bottom-sheet modal with Cancel /
+    Done (tap to pick).
+- **`variant="wheel"`** — an iOS-style spinning **day / month / year** wheel in a
+  bottom sheet, built from our theme (not the OS picker). The trigger is a
+  tap-to-open target on every platform (typing a date doesn't pair with a
+  spinner). Spinning or tapping a row stages a draft; Cancel discards it and Done
+  commits it. The wheel sheet uses our own modal — `WebModalFrame`
+  (`placement="bottom-sheet"`) on web, RN `Modal` on native — so there is **no
+  native date-picker dependency**.
+
+```tsx
+<DateField label="Year ends" onChange={setIso} value={iso} variant="wheel" />
+```
+
+Ported from the accounting app's `components/date`. The accounting native picker
+delegated to the OS via `@react-native-community/datetimepicker`; this shared
+library has no native picker dependency, so the calendar variant renders the
+shared `CalendarMonth` itself and the wheel variant renders our own
+`DateWheel`.
 
 ## Components
 
@@ -37,14 +52,15 @@ shared `CalendarMonth` itself. Web behaviour is unchanged.
 
 Clearing is **opt-in**: pass `clearable` to `DateField` / `DateInput` /
 `DateRangeField` (off by default). When enabled, the trigger shows a circle-✕
-clear button beside the calendar icon once a value is set. Pressing it resets the
+clear button beside the trailing icon once a value is set. Pressing it resets the
 value to `""` (unset) — bypassing the min/max clamp, since empty is the unset
-sentinel — and closes the calendar. Each `DateRangeField` endpoint clears
-independently. On web the focus returns to the
-now-empty input without re-opening the calendar. On native the clear button is a
-sibling accessible button inside a non-accessible row Pressable, so it captures
-its own touch (clearing never also opens the picker) while staying independently
-reachable by VoiceOver/TalkBack alongside the open button.
+sentinel — and closes the open picker (calendar popover or wheel sheet). Each
+`DateRangeField` endpoint clears independently, in both variants. On web with the
+calendar variant, focus returns to the now-empty input without re-opening it.
+With the wheel variant on every platform — and the calendar on native — the clear
+button is a sibling accessible button inside a non-accessible row Pressable, so it
+captures its own touch (clearing never also opens the picker) while staying
+independently reachable by VoiceOver/TalkBack alongside the open button.
 
 `DateField` is controlled — `value` (ISO) plus `onChange: (iso) => void`.
 `DateRangeField` takes `value: { start, end }` plus `onChange: (next) => void`.
@@ -76,15 +92,21 @@ import { DateField, DateRangeField } from "@futex/ui/date";
   the calendar suffix icon. `NativeTrigger` is a tap target, not a text input, so
   it keeps its own row layout.
 - `DateRangeField.tsx` — two independent endpoints with ordering validation.
-- `CalendarMonth.tsx` — the shared month grid.
-- `DatePickerOverlay.web.tsx` — web calendar popover (absolute, anchored).
-- `DatePickerOverlay.tsx` — native calendar sheet (Cancel/Done draft).
-- `dateFieldStyles.ts` / `webCalendarStyles.ts` — `createXStyles(theme)`
-  factories for the triggers and the calendar.
+- `CalendarMonth.tsx` — the shared month grid (calendar variant).
+- `DateWheel.tsx` — the shared spinning day/month/year wheel (wheel variant). A
+  snap-scrolling, tappable, theme-driven three-column picker; spinning to a
+  shorter month keeps a valid day and out-of-bounds dates snap back.
+- `DatePickerOverlay.web.tsx` — web overlay: calendar popover (anchored) or, for
+  the wheel variant, a `WebModalFrame` bottom sheet with Cancel/Done.
+- `DatePickerOverlay.tsx` — native overlay: a bottom-sheet `Modal` (Cancel/Done
+  draft) rendering the calendar or the wheel by `variant`.
+- `dateFieldStyles.ts` / `webCalendarStyles.ts` / `wheelPickerStyles.ts` —
+  `createXStyles(theme)` factories for the triggers, the calendar, and the wheel.
 
 **Platform resolution:** the bare import `./DatePickerOverlay` resolves to the
 `.tsx` (native) file for `tsc` and native bundlers; the Vite/Metro web bundle
-swaps in `.web.tsx` (the Storybook config lists `.web.tsx` first).
+swaps in `.web.tsx` (the Storybook config lists `.web.tsx` first). Both files
+honour the `variant` prop, so the calendar/wheel choice is identical per platform.
 
 ## Theming
 
@@ -125,9 +147,15 @@ its parent. The calendar is therefore lifted at each wrapper that would trap it:
   to `Previous years` / `Next years` and page whole year blocks, and each year is
   a labelled `button` with `accessibilityState` selected/disabled — years wholly
   outside the min/max window are non-selectable.
-- Web dismissal: the popover closes on selection or on an outside press
-  (`useOutsideClose`). The native sheet closes on Cancel, Done, or backdrop
-  press. Escape-key dismissal of the web popover is not yet implemented.
+- Wheel rows are labelled `button`s (`Day 31`, `Month Mar`, `Year 2026`) with
+  `accessibilityState` selected/disabled — tapping a row selects it without
+  needing a fling, so the wheel is reachable by pointer and keyboard, not only by
+  scroll. Out-of-bounds rows are disabled.
+- Web dismissal: the calendar popover closes on selection or on an outside press
+  (`useOutsideClose`). The native sheet and the web wheel sheet close on Cancel,
+  Done, or backdrop press; the web wheel sheet (`WebModalFrame`) also closes on
+  Escape and traps/restores focus. Escape dismissal of the calendar popover is
+  not yet implemented.
 
 ## Locale
 
@@ -137,6 +165,10 @@ locales.
 
 ## Testing
 
-`dateMath.ts` and `dateFieldLayers.ts` are unit-tested with the repo's Node test
-runner. The web calendar is exercised by the Storybook Playwright spec
-(`tests/browser/storybook.spec.ts`) against the `Date/Examples` stories.
+`dateMath.ts` (including the wheel's `clampDay` / `wheelYearRange` helpers) and
+`dateFieldLayers.ts` are unit-tested with the repo's Node test runner. Both the
+calendar and wheel variants are exercised by the Storybook Playwright spec
+(`tests/browser/storybook.spec.ts`) against the `Date/Examples` stories —
+covering month navigation and day picking for the calendar, and draft
+staging/commit, day-and-bounds clamping, Cancel, clearing, and the range field
+for the wheel.

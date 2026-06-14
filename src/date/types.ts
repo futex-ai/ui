@@ -15,6 +15,13 @@ export type DateBounds = {
   max?: string | null;
 };
 
+/**
+ * Which picker the field opens:
+ * - `calendar` (default) — the branded month grid (web popover / native sheet).
+ * - `wheel` — an iOS-style spinning day/month/year wheel in a bottom sheet.
+ */
+export type DatePickerVariant = "calendar" | "wheel";
+
 /** Props for a single-date picker overlay (web popover or native sheet). */
 export type DatePickerOverlayProps = DateBounds & {
   /** Currently selected ISO date, or `""` when unset. */
@@ -25,4 +32,8 @@ export type DatePickerOverlayProps = DateBounds & {
   onSelect: (iso: string) => void;
   /** Called when the overlay should close without selecting. */
   onClose: () => void;
+  /** Calendar grid (default) or spinning day/month/year wheel. */
+  variant?: DatePickerVariant;
+  /** Field label, used as the wheel bottom sheet's title/accessibility name. */
+  label?: string;
 };

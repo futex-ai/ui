@@ -8,6 +8,7 @@ import { useSharedUiTheme } from "../theme";
 import { createDateFieldStyles } from "./dateFieldStyles";
 import { DateInput, FieldLabel } from "./DateField";
 import { compareIso, DateRange } from "./dateMath";
+import { DatePickerVariant } from "./types";
 
 /** Props for {@link DateRangeField}. `value` is an ISO `{ start, end }` range. */
 export type DateRangeFieldProps = {
@@ -29,6 +30,8 @@ export type DateRangeFieldProps = {
   max?: string;
   /** Show a clear (✕) button on each endpoint once it has a value. Off by default. */
   clearable?: boolean;
+  /** Calendar grid (default) or spinning day/month/year wheel bottom sheet. */
+  variant?: DatePickerVariant;
 };
 
 /**
@@ -46,6 +49,7 @@ export function DateRangeField({
   min,
   max,
   clearable = false,
+  variant = "calendar",
 }: DateRangeFieldProps) {
   const theme = useSharedUiTheme();
   const fieldStyles = useMemo(() => createDateFieldStyles(theme), [theme]);
@@ -83,6 +87,7 @@ export function DateRangeField({
           placeholder="Start"
           required={required}
           value={value.start}
+          variant={variant}
         />
         <Text style={styles.sep}>→</Text>
         <DateInput
@@ -97,6 +102,7 @@ export function DateRangeField({
           placeholder="End"
           required={required}
           value={value.end}
+          variant={variant}
         />
       </View>
       {shownError ? (

@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   addDays,
   buildMonthGrid,
+  clampDay,
   clampIso,
   compareIso,
   daysInMonth,
@@ -18,6 +19,7 @@ import {
   shiftMonth,
   toIso,
   todayIso,
+  wheelYearRange,
   yearBlockStart,
   yearRange,
   yearRangeLabel,
@@ -117,6 +119,40 @@ test("daysInMonth handles leap years and month lengths", () => {
   assert.equal(daysInMonth(2023, 2), 28);
   assert.equal(daysInMonth(2026, 4), 30);
   assert.equal(daysInMonth(2026, 12), 31);
+});
+
+test("clampDay keeps a day inside the month it lands in", () => {
+  // 31 → February clamps to the month's last valid day (leap-aware).
+  assert.equal(clampDay(2024, 2, 31), 29);
+  assert.equal(clampDay(2023, 2, 31), 28);
+  assert.equal(clampDay(2026, 4, 31), 30);
+  assert.equal(clampDay(2026, 3, 15), 15);
+  assert.equal(clampDay(2026, 3, 0), 1);
+});
+
+test("wheelYearRange fixes ends to bounds and otherwise spans around the anchor", () => {
+  // No bounds: a wide window centered on the value's year.
+  assert.deepEqual(wheelYearRange("2026-03-31", "2026-06-13"), {
+    lo: 1926,
+    hi: 2036,
+  });
+  // No value: fall back to today's year as the anchor.
+  assert.deepEqual(wheelYearRange("", "2026-06-13"), { lo: 1926, hi: 2036 });
+  // Bounds, when present, fix the ends exactly.
+  assert.deepEqual(
+    wheelYearRange("2026-03-31", "2026-06-13", "2020-01-01", "2030-12-31"),
+    { lo: 2020, hi: 2030 },
+  );
+  // A one-sided bound fixes only that end.
+  assert.deepEqual(wheelYearRange("2026-03-31", "2026-06-13", "2024-01-01"), {
+    lo: 2024,
+    hi: 2036,
+  });
+  // The anchor year is always representable even if it sits outside the bounds.
+  assert.deepEqual(
+    wheelYearRange("2040-01-01", "2026-06-13", "2020-01-01", "2030-12-31"),
+    { lo: 2020, hi: 2040 },
+  );
 });
 
 test("shiftMonth carries across year boundaries", () => {

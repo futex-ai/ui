@@ -70,6 +70,37 @@ export function daysInMonth(year: number, month: number): number {
   return new Date(year, month, 0).getDate();
 }
 
+/**
+ * Clamp `day` into the `1..daysInMonth(year, month)` window. Used by the wheel
+ * picker so spinning the month/year to a shorter month (e.g. 31 → February)
+ * keeps a valid day rather than rolling over into the next month.
+ */
+export function clampDay(year: number, month: number, day: number): number {
+  return Math.min(Math.max(day, 1), daysInMonth(year, month));
+}
+
+/**
+ * Inclusive `[lo, hi]` year span the wheel picker offers in its year column.
+ * Bounds, when present, fix the ends (the wheel never offers a year that has no
+ * selectable day); otherwise it spans a wide window around the anchor year (the
+ * current value, falling back to today). The anchor is always representable.
+ */
+export function wheelYearRange(
+  value: string,
+  today: string,
+  min?: string | null,
+  max?: string | null,
+): { lo: number; hi: number } {
+  const anchor = parseIso(value)?.year ?? parseIso(today)?.year ?? 2000;
+  const minYear = parseIso(min)?.year ?? null;
+  const maxYear = parseIso(max)?.year ?? null;
+  // Keep the anchor inside the span even if a caller passes an out-of-bounds
+  // value (defensive — committed values are clamped to the bounds upstream).
+  const lo = Math.min(minYear ?? anchor - 100, anchor);
+  const hi = Math.max(maxYear ?? anchor + 10, anchor, lo);
+  return { lo, hi };
+}
+
 /** Build an ISO `YYYY-MM-DD` string from parts. */
 export function toIso({ year, month, day }: DateParts): string {
   return [
