@@ -12,6 +12,14 @@ test("release-plz workflow uses manual release PR merges", () => {
   assert.doesNotMatch(workflow, /prs_created == 'true'/);
   assert.match(workflow, /steps\.release-plz\.outputs\.pr != ''/);
   assert.match(workflow, /cargo xtask sync-package-version --version/);
+  assert.match(
+    workflow,
+    /refs\/heads\/\$\{branch\}:refs\/remotes\/origin\/\$\{branch\}/,
+  );
+  assert.match(
+    workflow,
+    /git checkout -B "\$\{branch\}" "origin\/\$\{branch\}"/,
+  );
   assert.match(workflow, /package\.json package-lock\.json/);
 });
 

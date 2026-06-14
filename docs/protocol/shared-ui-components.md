@@ -178,6 +178,7 @@ Required behavior:
 - The package must typecheck and build before it is used by accounting or Juno.
 - `npm run test:package` must pack the built library, install the tarball into a
   temporary consumer, import every public package subpath with Node's native ESM
+  resolver, typecheck those public package subpaths with TypeScript's NodeNext
   resolver, and import the same subpaths through a Vite build.
 - After package build/tests pass, smoke-test at least one local web route or
   harness that opens a dropdown, a combobox, and a modal, toggles a segmented
@@ -188,6 +189,9 @@ Required behavior:
 - The public npm package name is `@firna/ui`.
 - Standard ESM `import` exports must point at Node-resolvable `dist/node/**`
   files with explicit relative `.js` specifiers.
+- Exported `types` entries must point at NodeNext-compatible declarations under
+  `dist/node/**`, with explicit relative `.js` specifiers inside declaration
+  imports and re-exports.
 - The `react-native` export condition must continue to point at the normal
   `dist/**` build so React Native platform resolution can choose platform files.
 - `package.json` and `package-lock.json` versions must match the root

@@ -13,6 +13,11 @@ import { basename, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
+import {
+  writeNodePeerStubs,
+  writeTypePeerStubs,
+} from "./package-smoke-stubs.mjs";
+
 const execFileAsync = promisify(execFile);
 const workspaceRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const packageJson = JSON.parse(
@@ -43,6 +48,17 @@ try {
   await writeNodePeerStubs(nodeConsumerRoot);
   await writeImportSmoke(nodeConsumerRoot, subpaths);
   await execFileAsync("node", ["import-smoke.mjs"], { cwd: nodeConsumerRoot });
+
+  const typesConsumerRoot = join(smokeRoot, "types-consumer");
+  await prepareConsumer(typesConsumerRoot, tarballPath);
+  await writeTypePeerStubs(typesConsumerRoot);
+  await writeTypeSmoke(typesConsumerRoot, subpaths);
+  await writeTypeScriptConfig(typesConsumerRoot);
+  await execFileAsync(
+    "node",
+    [resolve(workspaceRoot, "node_modules", "typescript", "bin", "tsc")],
+    { cwd: typesConsumerRoot },
+  );
 
   const viteConsumerRoot = join(smokeRoot, "vite-consumer");
   await prepareConsumer(viteConsumerRoot, tarballPath);
@@ -92,127 +108,6 @@ async function linkPeerDependencies(consumerRoot, peerNames) {
   }
 }
 
-async function writeNodePeerStubs(consumerRoot) {
-  await writeStubPackage(consumerRoot, "react", {
-    "index.js": `export const Fragment = Symbol.for("react.fragment");
-export function createContext(defaultValue) {
-  return { Provider: ({ children }) => children, _currentValue: defaultValue };
-}
-export function useCallback(callback) {
-  return callback;
-}
-export function useContext(context) {
-  return context?._currentValue;
-}
-export function useEffect() {}
-export function useLayoutEffect() {}
-export function useMemo(factory) {
-  return factory();
-}
-export function useRef(value = null) {
-  return { current: value };
-}
-export function useState(value) {
-  return [typeof value === "function" ? value() : value, () => {}];
-}
-export default {
-  Fragment,
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-};
-`,
-    "jsx-runtime.js": `export const Fragment = Symbol.for("react.fragment");
-export function jsx(type, props) {
-  return { type, props };
-}
-export const jsxs = jsx;
-`,
-    "package.json": JSON.stringify({
-      name: "react",
-      type: "module",
-      exports: {
-        ".": "./index.js",
-        "./jsx-runtime": "./jsx-runtime.js",
-      },
-    }),
-  });
-  await writeStubPackage(consumerRoot, "react-dom", {
-    "index.js": `export function createPortal(children) {
-  return children;
-}
-`,
-    "package.json": JSON.stringify({ name: "react-dom", type: "module" }),
-  });
-  await writeStubPackage(consumerRoot, "react-native", {
-    "index.js": `export const Modal = "Modal";
-export const Pressable = "Pressable";
-export const ScrollView = "ScrollView";
-export const Text = "Text";
-export const TextInput = "TextInput";
-export const View = "View";
-export const Platform = {
-  OS: "web",
-  select(values) {
-    return values.web ?? values.default;
-  },
-};
-export const StyleSheet = {
-  absoluteFillObject: {},
-  create(styles) {
-    return styles;
-  },
-  flatten(styles) {
-    return styles;
-  },
-};
-export function useWindowDimensions() {
-  return { fontScale: 1, height: 768, scale: 1, width: 1024 };
-}
-`,
-    "package.json": JSON.stringify({ name: "react-native", type: "module" }),
-  });
-  await writeStubPackage(consumerRoot, "react-native-svg", {
-    "index.js": `export default "Svg";
-`,
-    "package.json": JSON.stringify({
-      name: "react-native-svg",
-      type: "module",
-    }),
-  });
-  await writeStubPackage(consumerRoot, "lucide-react-native", {
-    "index.js": `const Icon = () => null;
-export const CalendarDays = Icon;
-export const Check = Icon;
-export const ChevronDown = Icon;
-export const ChevronLeft = Icon;
-export const ChevronRight = Icon;
-export const CircleX = Icon;
-export const Search = Icon;
-export const X = Icon;
-`,
-    "package.json": JSON.stringify({
-      name: "lucide-react-native",
-      type: "module",
-    }),
-  });
-}
-
-async function writeStubPackage(consumerRoot, packageName, files) {
-  const packageRoot = join(consumerRoot, "node_modules", packageName);
-  await mkdir(packageRoot, { recursive: true });
-  await Promise.all(
-    Object.entries(files).map(([fileName, body]) =>
-      writeFile(join(packageRoot, fileName), body),
-    ),
-  );
-}
-
 function assertPackedFiles(files) {
   for (const file of files) {
     const allowedRoot =
@@ -236,6 +131,32 @@ void mod${index};`,
 console.log("package imports resolved");
 `;
   await writeFile(join(consumerRoot, "import-smoke.mjs"), body);
+}
+
+async function writeTypeSmoke(consumerRoot, importNames) {
+  const lines = importNames.map(
+    (name, index) => `import type * as mod${index} from ${JSON.stringify(name)};
+type Module${index} = typeof mod${index};`,
+  );
+  const body = `${lines.join("\n")}
+export {};
+`;
+  await writeFile(join(consumerRoot, "import-smoke.ts"), body);
+}
+
+async function writeTypeScriptConfig(consumerRoot) {
+  const body = {
+    compilerOptions: {
+      module: "NodeNext",
+      moduleResolution: "NodeNext",
+      noEmit: true,
+      skipLibCheck: false,
+      strict: true,
+      target: "ES2023",
+    },
+    include: ["import-smoke.ts"],
+  };
+  await writeFile(join(consumerRoot, "tsconfig.json"), JSON.stringify(body));
 }
 
 async function writeViteConfig(consumerRoot) {

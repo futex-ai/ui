@@ -8,6 +8,7 @@ test("package metadata targets the public Firna npm package", () => {
   assert.equal(packageJson.name, "@firna/ui");
   assert.equal(packageJson.private, false);
   assert.equal(packageJson.main, "./dist/node/index.js");
+  assert.equal(packageJson.types, "./dist/node/index.d.ts");
   assert.equal(packageJson["react-native"], "./dist/index.js");
   assert.deepEqual(packageJson.publishConfig, {
     access: "public",
@@ -38,6 +39,10 @@ test("package exposes every documented public subpath", () => {
 function assertExportConfig(subpath: string, exportConfig: unknown) {
   assert.ok(exportConfig && typeof exportConfig === "object");
   const config = exportConfig as Record<string, string>;
+  assert.ok(
+    config.types.startsWith("./dist/node/"),
+    `${subpath} uses Node-compatible declarations`,
+  );
   assert.ok(config.types.endsWith(".d.ts"), `${subpath} has types`);
   assert.ok(
     config["react-native"].startsWith("./dist/"),

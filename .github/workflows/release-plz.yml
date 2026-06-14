@@ -184,8 +184,8 @@ jobs:
             echo "::error title=Missing release version::release-plz did not return a package version."
             exit 1
           fi
-          git fetch origin "${branch}"
-          git checkout "${branch}"
+          git fetch origin "refs/heads/${branch}:refs/remotes/origin/${branch}"
+          git checkout -B "${branch}" "origin/${branch}"
           echo "branch=${branch}" >> "$GITHUB_OUTPUT"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
 

@@ -37,7 +37,7 @@ async function rewriteTree(root) {
         await rewriteTree(path);
         return;
       }
-      if (entry.isFile() && path.endsWith(".js")) {
+      if (entry.isFile() && (path.endsWith(".js") || path.endsWith(".d.ts"))) {
         await rewriteFile(path);
       }
     }),

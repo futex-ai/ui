@@ -23,7 +23,7 @@
     "ui"
   ],
   "main": "./dist/node/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/node/index.d.ts",
   "react-native": "./dist/index.js",
   "files": [
     "dist",
@@ -36,52 +36,52 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./dist/node/index.d.ts",
       "react-native": "./dist/index.js",
       "import": "./dist/node/index.js"
     },
     "./date": {
-      "types": "./dist/date/index.d.ts",
+      "types": "./dist/node/date/index.d.ts",
       "react-native": "./dist/date/index.js",
       "import": "./dist/node/date/index.js"
     },
     "./dropdown": {
-      "types": "./dist/dropdown/index.d.ts",
+      "types": "./dist/node/dropdown/index.d.ts",
       "react-native": "./dist/dropdown/index.js",
       "import": "./dist/node/dropdown/index.js"
     },
     "./input": {
-      "types": "./dist/input/index.d.ts",
+      "types": "./dist/node/input/index.d.ts",
       "react-native": "./dist/input/index.js",
       "import": "./dist/node/input/index.js"
     },
     "./modal": {
-      "types": "./dist/modal/index.d.ts",
+      "types": "./dist/node/modal/index.d.ts",
       "react-native": "./dist/modal/index.js",
       "import": "./dist/node/modal/index.js"
     },
     "./popover": {
-      "types": "./dist/popover/index.d.ts",
+      "types": "./dist/node/popover/index.d.ts",
       "react-native": "./dist/popover/index.js",
       "import": "./dist/node/popover/index.js"
     },
     "./radio": {
-      "types": "./dist/radio/index.d.ts",
+      "types": "./dist/node/radio/index.d.ts",
       "react-native": "./dist/radio/index.js",
       "import": "./dist/node/radio/index.js"
     },
     "./segmented": {
-      "types": "./dist/segmented/index.d.ts",
+      "types": "./dist/node/segmented/index.d.ts",
       "react-native": "./dist/segmented/index.js",
       "import": "./dist/node/segmented/index.js"
     },
     "./switch": {
-      "types": "./dist/switch/index.d.ts",
+      "types": "./dist/node/switch/index.d.ts",
       "react-native": "./dist/switch/index.js",
       "import": "./dist/node/switch/index.js"
     },
     "./theme": {
-      "types": "./dist/theme.d.ts",
+      "types": "./dist/node/theme.d.ts",
       "react-native": "./dist/theme.js",
       "import": "./dist/node/theme.js"
     }

@@ -257,3 +257,17 @@ platform-resolution export path.
       output so Metro and React Native platform resolution remain available.
 - [x] Keep the existing Vite tarball smoke check for bundler consumers.
 - [x] Update README and protocol docs with the split export-map contract.
+
+## Milestone 9: Post-Review NodeNext Types And Release Branch Checkout
+
+Summary: address selected follow-up review findings around TypeScript NodeNext
+declarations and release PR metadata sync checkout.
+
+- [x] Point package `types` entries at the Node-compatible declaration tree.
+- [x] Rewrite relative declaration specifiers in `dist/node/**` to explicit
+      `.js` paths for TypeScript NodeNext consumers.
+- [x] Add a packed-tarball TypeScript NodeNext smoke test for every public
+      package subpath.
+- [x] Fetch the release-plz release PR branch into a remote ref before checking
+      out a local branch in the metadata sync step.
+- [x] Update unit tests, README, and protocol docs with the finalized contract.
