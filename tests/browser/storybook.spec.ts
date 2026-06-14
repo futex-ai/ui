@@ -349,6 +349,115 @@ test("date field opens the calendar, navigates months, and picks a day", async (
   await expect(input).toHaveValue("10 Feb 2026");
 });
 
+test("date field jumps to a far year through the header year picker", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=date-examples--single-date-field");
+
+  const input = page.getByLabel("Year ends");
+  await input.click();
+  await expect(page.getByText("March 2026")).toBeVisible();
+
+  // Clicking the month/year title swaps the day grid for a year picker, where
+  // the current year is shown selected and the day grid is gone.
+  await page.getByRole("button", { name: "March 2026, change year" }).click();
+  // The current year carries the filled selected background; an unselected year
+  // is transparent. (RNW does not surface accessibilityState.selected as
+  // aria-selected on role="button", matching the day cells, so assert the style.)
+  await expect(
+    page.getByRole("button", { exact: true, name: "2025" }),
+  ).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  const selectedBg = await page
+    .getByRole("button", { exact: true, name: "2026" })
+    .evaluate((node) => getComputedStyle(node).backgroundColor);
+  expect(selectedBg).not.toBe("rgba(0, 0, 0, 0)");
+  await expect(
+    page.getByRole("button", { name: "Previous month" }),
+  ).toBeHidden();
+
+  // Picking a year in view jumps straight to it, keeps the month, and returns to
+  // the day grid — without committing a date yet.
+  await page.getByRole("button", { exact: true, name: "2018" }).click();
+  await expect(page.getByText("March 2018")).toBeVisible();
+  await expect(input).toHaveValue("31 Mar 2026");
+
+  // Reopen the picker and page whole blocks forwards and backwards with the
+  // header chevrons.
+  await page.getByRole("button", { name: "March 2018, change year" }).click();
+  await expect(
+    page.getByRole("button", { exact: true, name: "2018" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Next years" }).click();
+  await expect(
+    page.getByRole("button", { exact: true, name: "2030" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { exact: true, name: "2018" }),
+  ).toBeHidden();
+  await page.getByRole("button", { name: "Previous years" }).click();
+  await page.getByRole("button", { name: "Previous years" }).click();
+  await expect(
+    page.getByRole("button", { exact: true, name: "2010" }),
+  ).toBeVisible();
+
+  // Choosing a year there, then a day, commits as usual and closes the calendar.
+  await page.getByRole("button", { exact: true, name: "2010" }).click();
+  await expect(page.getByText("March 2010")).toBeVisible();
+  await page.getByRole("button", { name: "15 Mar 2010" }).click();
+  await expect(input).toHaveValue("15 Mar 2010");
+  await expect(page.getByText("March 2010")).toBeHidden();
+});
+
+test("year picker returns to the day grid via the title and keeps keyboard focus", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=date-examples--single-date-field");
+
+  const input = page.getByLabel("Year ends");
+  await input.click();
+
+  // Clicking the title again (now "back to month") returns to the day grid
+  // without committing a date.
+  await page.getByRole("button", { name: "March 2026, change year" }).click();
+  await expect(
+    page.getByRole("button", { exact: true, name: "2026" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: /back to month/ }).click();
+  await expect(page.getByText("March 2026")).toBeVisible();
+  await expect(input).toHaveValue("31 Mar 2026");
+
+  // Selecting a year by keyboard moves focus to the relabelled title button
+  // rather than stranding it on <body> when the chosen year cell unmounts.
+  await page.getByRole("button", { name: "March 2026, change year" }).click();
+  await page.getByRole("button", { exact: true, name: "2024" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("March 2024")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "March 2024, change year" }),
+  ).toBeFocused();
+});
+
+test("bounded date field disables out-of-range years in the picker", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=date-examples--bounded-date-field");
+
+  const input = page.getByLabel("Year ends");
+  await input.click();
+  await page.getByRole("button", { name: "March 2026, change year" }).click();
+
+  // Years inside the [2024, 2027] window are pickable; years outside it are not.
+  await expect(
+    page.getByRole("button", { exact: true, name: "2025" }),
+  ).toBeEnabled();
+  await expect(
+    page.getByRole("button", { exact: true, name: "2023" }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("button", { exact: true, name: "2016" }),
+  ).toBeDisabled();
+});
+
 test("popover opens content and closes by Escape, inside close, and outside press", async ({
   page,
 }) => {
