@@ -3,7 +3,8 @@
 ## Status
 
 Implemented contract for the dropdown, segmented control, radio card, switch,
-and modal extraction.
+button, and modal extraction, including the shared control-size scale for
+buttons and inputs.
 
 ## Purpose
 
@@ -88,6 +89,42 @@ Required behavior:
 - Allow consumers to place related cards under their own labelled `radiogroup`.
 - Use shared theme tokens for selected backgrounds, selected borders, dot
   colors, text, disabled opacity, fonts, radii, and focus treatment.
+
+## Button Contract
+
+The button family covers the pressable actions that the accounting mockups model
+as `.btn`: primary calls to action, neutral secondary actions, low-emphasis
+ghost actions, and destructive danger actions.
+
+Required behavior:
+
+- Render a labelled button with an optional leading icon tinted to match the
+  label color.
+- Support the primary (filled), secondary (surface + border, the default), ghost
+  (no fill or border), and danger (rose border + label) tones.
+- Support a full-width block variant for stacked form actions and bottom sheets.
+- Expose `button` accessibility semantics with a disabled state, and treat a
+  missing press handler as a read-only disabled control.
+- Own the shared focus ring and hide the browser's default outline.
+- Use shared theme tokens for fills, borders, label colors, disabled opacity,
+  fonts, and radii, and size with the shared control-size scale.
+
+## Control Size Contract
+
+Interactive controls share one size scale so a form can size its fields and
+their buttons from a single vocabulary.
+
+Required behavior:
+
+- Expose `sm`, `md` (default), and `lg` sizes through a shared `ControlSize`
+  type used by the button and the input/field.
+- The button scales its height, horizontal padding, label type scale, and icon
+  with the size.
+- The input/field scales its box height, padding, input text, and prefix /
+  suffix / clear icons with the size, while keeping the label, hint, and error
+  messages at a constant scale.
+- `md` preserves the established defaults (the 38px button and the 40px input
+  box) so existing call sites are unchanged when no size is supplied.
 
 ## Date Contract
 
@@ -212,13 +249,13 @@ Required behavior:
   `CLOUDFLARE_API_TOKEN`.
 - Storybook previews must include at least the shared dropdown selector,
   dropdown action menu, input-backed combobox, chip multi-select, segmented
-  control variants, radio card group, switch toggle, centered web modal,
-  bottom-sheet web modal, default accounting theme, and alternate primary color
-  theme.
-- Storybook navigation must keep dropdown, segmented control, radio card,
-  switch, and modal examples in separate top-level folders, currently
-  `Dropdown/Examples`, `Segmented/Examples`, `Radio/Examples`,
-  `Switch/Examples`, and `Modal/Examples`.
+  control variants, radio card group, switch toggle, button tones and sizes,
+  centered web modal, bottom-sheet web modal, default accounting theme, and
+  alternate primary color theme.
+- Storybook navigation must keep each example family in its own top-level
+  folder, currently `Button/Examples`, `Date/Examples`, `Dropdown/Examples`,
+  `Input/Examples`, `Modal/Examples`, `Popover/Examples`, `Radio/Examples`,
+  `Segmented/Examples`, `Switch/Examples`, and `Theme/Examples`.
 
 ## Non-Goals
 
