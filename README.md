@@ -6,7 +6,7 @@ surfaces. The first consumers are the accounting app and the Juno app.
 ## Key Features
 
 - Shared dropdown, selector, combobox, segmented control, radio card, switch,
-  button, labelled input, and modal primitives.
+  button, labelled input, modal, and avatar primitives.
 - A shared `sm` / `md` / `lg` size scale (`ControlSize`) for buttons and inputs.
 - Themeable visual tokens so consumers can use their own brand primary color.
 - Expo and React Native Web compatible platform files.
@@ -18,6 +18,7 @@ surfaces. The first consumers are the accounting app and the Juno app.
 The package name is `@futex/ui`. Public exports are available from:
 
 - `@futex/ui` for all public components and helpers.
+- `@futex/ui/avatar` for the themed circular initials avatar.
 - `@futex/ui/button` for the themed button with tone, size, and block variants.
 - `@futex/ui/dropdown` for dropdown, selector, combobox, and layer helpers.
 - `@futex/ui/input` for the labelled text input and bare input frame.
@@ -69,9 +70,9 @@ Storybook is built to `storybook-static`.
   to delete aliased preview deployments for that PR branch; if Cloudflare
   cleanup cannot complete safely, the comment reports the retained reason.
 - Storybook examples are grouped under one top-level folder per family:
-  `Button/Examples`, `Date/Examples`, `Dropdown/Examples`, `Input/Examples`,
-  `Modal/Examples`, `Popover/Examples`, `Radio/Examples`, `Segmented/Examples`,
-  `Switch/Examples`, and `Theme/Examples`.
+  `Avatar/Examples`, `Button/Examples`, `Date/Examples`, `Dropdown/Examples`,
+  `Input/Examples`, `Modal/Examples`, `Popover/Examples`, `Radio/Examples`,
+  `Segmented/Examples`, `Switch/Examples`, and `Theme/Examples`.
 - Required repository variable: `CLOUDFLARE_ACCOUNT_ID`.
 - Required repository secret: `CLOUDFLARE_PAGES_API_TOKEN` or
   `CLOUDFLARE_API_TOKEN`.
@@ -79,6 +80,7 @@ Storybook is built to `storybook-static`.
 ## Key Code Jumping Points
 
 - Shared theme boundary: [src/theme.tsx](src/theme.tsx)
+- Avatar component: [src/avatar/README.md](src/avatar/README.md)
 - Shared control-size scale: [src/controlSize.ts](src/controlSize.ts)
 - Button component: [src/button/README.md](src/button/README.md)
 - Input component: [src/input/README.md](src/input/README.md)
