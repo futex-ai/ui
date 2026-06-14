@@ -10,6 +10,7 @@ import {
   DropdownListEntry,
   DropdownPortal,
   DropdownSelector,
+  Popover,
   SharedUiTheme,
   SharedUiThemeOverrides,
   SharedUiThemeProvider,
@@ -162,6 +163,82 @@ export function ActionMenuExample() {
   );
 }
 
+export function PopoverExample() {
+  return (
+    <Popover
+      minWidth={240}
+      trigger={({ open, triggerProps }) => (
+        <Pressable
+          {...triggerProps}
+          accessibilityLabel="Details"
+          accessibilityRole="button"
+          style={[styles.button, open ? styles.buttonOpen : null]}
+        >
+          <Text style={styles.buttonText}>Details</Text>
+        </Pressable>
+      )}
+    >
+      {({ close }) => (
+        <View style={styles.popoverCard}>
+          <Text style={styles.popoverTitle}>Greenhouse Studio</Text>
+          <Text style={styles.popoverBody}>
+            Standard VAT scheme · GBP · Reconciled to 31 May.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            onPress={close}
+            style={styles.popoverClose}
+          >
+            <Text style={styles.popoverCloseText}>Close</Text>
+          </Pressable>
+        </View>
+      )}
+    </Popover>
+  );
+}
+
+export function ControlledPopoverExample() {
+  const [open, setOpen] = useState(false);
+  return (
+    <View style={styles.controlledPopover}>
+      <Text style={styles.popoverStatus}>
+        {open ? "Popover is open" : "Popover is closed"}
+      </Text>
+      <Popover
+        minWidth={240}
+        onOpenChange={setOpen}
+        open={open}
+        trigger={({ open: isOpen, triggerProps }) => (
+          <Pressable
+            {...triggerProps}
+            accessibilityLabel="Account"
+            accessibilityRole="button"
+            style={[styles.button, isOpen ? styles.buttonOpen : null]}
+          >
+            <Text style={styles.buttonText}>Account</Text>
+          </Pressable>
+        )}
+      >
+        {({ close }) => (
+          <View style={styles.popoverCard}>
+            <Text style={styles.popoverTitle}>Greenhouse Studio</Text>
+            <Text style={styles.popoverBody}>
+              Owner · billing@greenhouse.example
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={close}
+              style={styles.popoverClose}
+            >
+              <Text style={styles.popoverCloseText}>Close</Text>
+            </Pressable>
+          </View>
+        )}
+      </Popover>
+    </View>
+  );
+}
+
 export function InputBackedComboboxExample() {
   return (
     <ComboboxMultiSelect
@@ -272,10 +349,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 14,
   },
+  buttonOpen: {
+    backgroundColor: "#24432f",
+  },
   buttonText: {
     color: "#fff",
     fontSize: 13,
     fontWeight: "700",
+  },
+  controlledPopover: {
+    alignItems: "flex-start",
+    gap: 8,
   },
   heading: {
     color: "#1c1f1d",
@@ -319,6 +403,34 @@ const styles = StyleSheet.create({
   },
   modalBody: {
     gap: 12,
+  },
+  popoverBody: {
+    color: "#3e4540",
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  popoverCard: {
+    gap: 6,
+    padding: 12,
+  },
+  popoverClose: {
+    alignSelf: "flex-start",
+    paddingTop: 4,
+  },
+  popoverCloseText: {
+    color: "#2f5945",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  popoverStatus: {
+    color: "#3e4540",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  popoverTitle: {
+    color: "#1c1f1d",
+    fontSize: 14,
+    fontWeight: "800",
   },
   surface: {
     minWidth: 320,
