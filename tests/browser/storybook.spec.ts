@@ -302,6 +302,38 @@ test("drag-select marquee selects intersecting target rows", async ({
   ).toBeVisible();
 });
 
+test("drag-select marquee can start in page content", async ({ page }) => {
+  await page.goto("/iframe.html?id=drag-select-examples--page-content-area");
+
+  const startZone = page.getByTestId("drag-page-content-start-zone");
+  const first = page.getByTestId("drag-target-txn_1");
+  const third = page.getByTestId("drag-target-txn_3");
+  const startBox = await startZone.boundingBox();
+  const firstBox = await first.boundingBox();
+  const thirdBox = await third.boundingBox();
+  expect(startBox).not.toBeNull();
+  expect(firstBox).not.toBeNull();
+  expect(thirdBox).not.toBeNull();
+
+  await page.mouse.move(
+    (startBox?.x ?? 0) + (startBox?.width ?? 0) / 2,
+    (firstBox?.y ?? 0) + (firstBox?.height ?? 0) / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    (thirdBox?.x ?? 0) + (thirdBox?.width ?? 0) - 8,
+    (thirdBox?.y ?? 0) + (thirdBox?.height ?? 0) / 2,
+    { steps: 8 },
+  );
+  await expect(page.getByText("Matching 3 transactions")).toBeVisible();
+  await page.mouse.up();
+
+  await expect(page.getByText("Selected 3 transactions")).toBeVisible();
+  await expect(
+    page.getByText("Last change: txn_1, txn_2, txn_3"),
+  ).toBeVisible();
+});
+
 test("web modal restores focus and allows nested dropdowns above the surface", async ({
   page,
 }) => {

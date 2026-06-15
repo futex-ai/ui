@@ -38,6 +38,15 @@ export const LedgerRows: Story = {
   ),
 };
 
+export const PageContentArea: Story = {
+  name: "Page content area",
+  render: () => (
+    <StorySurface>
+      <PageContentAreaExample />
+    </StorySurface>
+  ),
+};
+
 function LedgerRowsExample() {
   return (
     <DragSelectableProvider
@@ -49,6 +58,28 @@ function LedgerRowsExample() {
         {rows.map((row) => (
           <LedgerRow key={row.id} row={row} />
         ))}
+      </View>
+    </DragSelectableProvider>
+  );
+}
+
+function PageContentAreaExample() {
+  return (
+    <DragSelectableProvider
+      selectionLabel={(count) => transactionCountLabel(count)}
+      style={[styles.shell, styles.pageArea]}
+    >
+      <SelectionStatus />
+      <View style={styles.pageBody}>
+        <View
+          style={styles.pageStartZone}
+          testID="drag-page-content-start-zone"
+        />
+        <View style={[styles.list, styles.pageList]}>
+          {rows.map((row) => (
+            <LedgerRow key={row.id} row={row} />
+          ))}
+        </View>
       </View>
     </DragSelectableProvider>
   );
@@ -108,6 +139,29 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     overflow: "hidden",
+  },
+  pageArea: {
+    backgroundColor: "#f7f7f3",
+    borderColor: "#d3d8cd",
+    borderRadius: 8,
+    borderWidth: 1,
+    minHeight: 420,
+    padding: 16,
+  },
+  pageBody: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  pageList: {
+    flex: 1,
+  },
+  pageStartZone: {
+    backgroundColor: "#ecede7",
+    borderColor: "#d3d8cd",
+    borderRadius: 8,
+    borderWidth: 1,
+    minHeight: 260,
+    width: 120,
   },
   row: {
     alignItems: "center",
