@@ -32,17 +32,16 @@ import { SegmentedControl } from "@firna/ui/segmented";
     { label: "Profit & loss", value: "pl" },
     { label: "Balance sheet", value: "bs" },
   ]}
-  sizing="content"
   value={report}
   variant="pill"
 />;
 ```
 
-Pair `variant="pill"` with `sizing="content"` for the report-style tab track,
-where each tab hugs its label and the track sits flush to the start. Use
-`sizing="content"` with `wrap` when the control is a row of filter pills that may
-need to flow onto another line. Leave `sizing` as the default `"equal"` to share
-width evenly across segments.
+`sizing` defaults to `"content"`, so each segment hugs its label and the track
+sits flush to the start — the right fit for report-style `variant="pill"` tabs
+and for rows of filter pills (pair with `wrap` when they may flow onto another
+line). Pass `sizing="equal"` to share width evenly across segments, e.g. for a
+full-width two-up toggle.
 
 > `sizing` is the **width** strategy (equal vs content-hugging); `size` is the
 > **density** (`sm` / `md` / `lg`). They are independent.

@@ -32,6 +32,7 @@ export type SegmentedControlProps<T extends string> = {
   required?: boolean;
   /** Control density: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
+  /** Width strategy: `content` (default) hugs each label; `equal` shares width evenly. */
   sizing?: SegmentedControlSizing;
   value: T;
   variant?: SegmentedControlVariant;
@@ -48,7 +49,7 @@ export function SegmentedControl<T extends string>({
   options,
   required = false,
   size = "md",
-  sizing = "equal",
+  sizing = "content",
   value,
   variant = "outline",
   wrap = false,
