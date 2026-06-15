@@ -22,6 +22,8 @@ test("segmented control keeps report and filter variants", () => {
 
   assert.match(source, /"outline" \| "pill"/);
   assert.match(source, /"content" \| "equal"/);
+  // Segments hug their labels by default; equal-width is opt-in.
+  assert.match(source, /sizing = "content"/);
   for (const key of [
     "cellSelected",
     "contentSegment",

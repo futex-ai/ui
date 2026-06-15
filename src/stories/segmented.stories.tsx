@@ -42,6 +42,39 @@ export const Sizes: Story = {
   ),
 };
 
+export const Sizing: Story = {
+  name: "Sizing",
+  render: () => (
+    <StorySurface>
+      <SizingExample />
+    </StorySurface>
+  ),
+};
+
+function SizingExample() {
+  const [content, setContent] = useState("pl");
+  const [equal, setEqual] = useState("pl");
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <SegmentedControl
+        accessibilityLabel="Content sizing (default)"
+        label="Content (default) — segments hug their labels"
+        onChange={setContent}
+        options={reportOptions}
+        value={content}
+      />
+      <SegmentedControl
+        accessibilityLabel="Equal sizing"
+        label="Equal — segments share width evenly"
+        onChange={setEqual}
+        options={reportOptions}
+        sizing="equal"
+        value={equal}
+      />
+    </View>
+  );
+}
+
 function SizesExample() {
   const [small, setSmall] = useState("pl");
   const [medium, setMedium] = useState("pl");
