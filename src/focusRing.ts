@@ -9,6 +9,9 @@ export const hideWebOutlineView = {
   outlineStyle: "none",
 } as unknown as ViewStyle;
 
+/** Pressable style-callback state, widened with react-native-web's `hovered`. */
+export type PressableHoverState = { pressed: boolean; hovered?: boolean };
+
 export function useFocusRing() {
   const [focused, setFocused] = useState(false);
   const theme = useSharedUiTheme();

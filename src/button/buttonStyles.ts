@@ -76,6 +76,12 @@ export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
       paddingHorizontal: sizing.paddingHorizontal,
     },
     danger: { borderColor: theme.colors.roseSoft },
+    // Danger is the only tone whose label is a saturated colour (`rose`) on a
+    // light fill, so washing the fill like the other tones would push the label
+    // below WCAG AA (rose on `roseSoft` is ~4.4:1). Instead its hover sharpens
+    // the warning edge from `roseSoft` to full `rose` and keeps the surface
+    // fill, so the label's contrast stays at its (AA-passing) resting ratio.
+    dangerHover: { borderColor: theme.colors.rose },
     disabled: { opacity: 0.55 },
     // A ring sitting just outside the button, so focus stays visible on every
     // tone — including `primary`, whose border already matches the theme primary
@@ -85,6 +91,10 @@ export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
       boxShadow: `0 0 0 2px ${theme.colors.surface}, 0 0 0 4px ${theme.colors.primary}`,
     },
     ghost: { backgroundColor: "transparent", borderColor: "transparent" },
+    // The accent's pale tint surfaces on hover (ghost's label is already
+    // `primaryDeep`), keeping it visually distinct from the neutral secondary
+    // hover while staying borderless.
+    ghostHover: { backgroundColor: theme.colors.primarySoft },
     label: {
       ...baseText,
       fontSize: sizing.fontSize,
@@ -95,6 +105,16 @@ export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
       backgroundColor: theme.colors.primary,
       borderColor: theme.colors.primary,
     },
+    // A filled tone can't take a light wash, so hover deepens the fill (and its
+    // matching border) to `primaryDeep`, which also raises the white label's
+    // contrast rather than weakening it.
+    primaryHover: {
+      backgroundColor: theme.colors.primaryDeep,
+      borderColor: theme.colors.primaryDeep,
+    },
+    // The neutral hover, reused verbatim from the calendar cells: swap the white
+    // surface for `soft`, holding the `border2` edge.
+    secondaryHover: { backgroundColor: theme.colors.soft },
   });
 }
 

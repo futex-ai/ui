@@ -4,8 +4,9 @@
  * `DatePickerOverlayProps` so the `DateField` seam is identical on every platform.
  */
 
-/** Pressable style-callback state, widened with react-native-web's `hovered`. */
-export type PressableHoverState = { pressed: boolean; hovered?: boolean };
+// Defined in the shared focus-ring helper; re-exported here so date consumers
+// (and the `@firna/ui/date` subpath) keep importing it from this module.
+export type { PressableHoverState } from "../focusRing";
 
 /** Inclusive selectable-date bounds as ISO `YYYY-MM-DD` strings. */
 export type DateBounds = {

@@ -4,7 +4,11 @@ import { PropsWithChildren, useMemo } from "react";
 import { Pressable, StyleProp, Text, ViewStyle } from "react-native";
 
 import { ControlSize } from "../controlSize";
-import { hideWebOutlineView, useFocusRing } from "../focusRing";
+import {
+  hideWebOutlineView,
+  PressableHoverState,
+  useFocusRing,
+} from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { buttonIconSize, createButtonStyles } from "./buttonStyles";
@@ -84,12 +88,27 @@ export function Button({
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onPress}
-      style={[
+      style={({ hovered }: PressableHoverState) => [
         styles.button,
         tone === "primary" ? styles.primary : null,
         tone === "ghost" ? styles.ghost : null,
         tone === "danger" ? styles.danger : null,
         block ? styles.block : null,
+        // Hover layers over the tone fill but never while disabled. It sits
+        // before the focus ring (a box-shadow on a different paint channel), so
+        // a focused + hovered button shows the deeper fill inside its ring.
+        hovered && !disabledState && tone === "primary"
+          ? styles.primaryHover
+          : null,
+        hovered && !disabledState && tone === "secondary"
+          ? styles.secondaryHover
+          : null,
+        hovered && !disabledState && tone === "ghost"
+          ? styles.ghostHover
+          : null,
+        hovered && !disabledState && tone === "danger"
+          ? styles.dangerHover
+          : null,
         focus.focused ? styles.focusRing : null,
         disabledState ? styles.disabled : null,
         style,
