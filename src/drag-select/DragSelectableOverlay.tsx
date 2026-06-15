@@ -1,6 +1,9 @@
 /** Native-safe no-op overlay fallback for drag selection. */
 import type { DragSelectableBox } from "./dragSelectableModel";
-import type { DragSelectableTargetSnapshot } from "./dragSelectableTypes";
+import type {
+  DragSelectableSelectionLabel,
+  DragSelectableTargetSnapshot,
+} from "./dragSelectableTypes";
 import type { SharedUiTheme } from "../theme";
 
 export type DragSelectableActiveDrag = {
@@ -12,7 +15,7 @@ export type DragSelectableActiveDrag = {
 export function DragSelectableOverlay(_props: {
   activeDrag: DragSelectableActiveDrag | null;
   overlayZIndex?: number;
-  selectionLabel?: (count: number) => string;
+  selectionLabel?: DragSelectableSelectionLabel;
   theme: SharedUiTheme;
 }) {
   return null;

@@ -213,6 +213,8 @@ Required behavior:
   hooks.
 - Provide a provider-level selection-change callback and a hook-level listener
   for components that need side effects when selection changes.
+- Allow the marquee badge copy to be customized from the live matching count,
+  ids, and target metadata.
 - Render the web marquee through a body-level portal using shared theme primary
   colors, radii, and a shared layer token that clears modal and dropdown
   surfaces while allowing an explicit provider override.

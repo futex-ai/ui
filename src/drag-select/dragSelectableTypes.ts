@@ -15,6 +15,17 @@ export type DragSelectableSelection = {
   selectedTargets: DragSelectableTargetSnapshot[];
 };
 
+export type DragSelectableSelectionLabelContext = {
+  matchingCount: number;
+  matchingIds: string[];
+  matchingTargets: DragSelectableTargetSnapshot[];
+};
+
+export type DragSelectableSelectionLabel = (
+  count: number,
+  context: DragSelectableSelectionLabelContext,
+) => string;
+
 export type DragSelectableState = DragSelectableSelection & {
   dragBox: DragSelectableBox | null;
   dragging: boolean;
@@ -30,7 +41,7 @@ export type DragSelectableProviderProps = {
   disabled?: boolean;
   onSelectionChange?: (selection: DragSelectableSelection) => void;
   overlayZIndex?: number;
-  selectionLabel?: (count: number) => string;
+  selectionLabel?: DragSelectableSelectionLabel;
   style?: StyleProp<ViewStyle>;
 };
 

@@ -99,6 +99,7 @@ test("drag-select provider exposes provider, target, and listener hooks", () => 
   const overlaySource = readSource(
     "../../src/drag-select/DragSelectableOverlay.web.tsx",
   );
+  const typeSource = readSource("../../src/drag-select/dragSelectableTypes.ts");
   const nativeProviderSource = readSource(
     "../../src/drag-select/DragSelectableProvider.tsx",
   );
@@ -113,7 +114,9 @@ test("drag-select provider exposes provider, target, and listener hooks", () => 
   assert.match(providerSource, /overlayZIndex/);
   assert.match(overlaySource, /createPortal/);
   assert.match(overlaySource, /DRAG_SELECTABLE_LAYERS\.overlay/);
+  assert.match(overlaySource, /matchingIds/);
   assert.match(overlaySource, /theme\.colors\.primary/);
+  assert.match(typeSource, /DragSelectableSelectionLabelContext/);
   assert.match(nativeProviderSource, /registerTarget/);
   assert.match(nativeProviderSource, /emptyDragSelectableState/);
   assert.match(indexSource, /dragSelectableLayers/);

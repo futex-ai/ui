@@ -61,6 +61,18 @@ after drag matches or final selections change. `state.matchingCount` and
 `state.matchingIds` update while dragging; `state.selectedCount`,
 `state.selectedIds`, and `state.selectedTargets` update when the drag finishes.
 
-`selectionLabel` customizes the badge text in the marquee overlay.
+`selectionLabel` customizes the badge text in the marquee overlay. It receives
+the live matching count plus matching ids and target metadata:
+
+```tsx
+<DragSelectableProvider
+  selectionLabel={(count, { matchingIds }) =>
+    `${count} transactions (${matchingIds.join(", ")})`
+  }
+>
+  {children}
+</DragSelectableProvider>
+```
+
 `overlayZIndex` can override the default `DRAG_SELECTABLE_LAYERS.overlay` value
 when a consuming surface owns a higher portal layer.

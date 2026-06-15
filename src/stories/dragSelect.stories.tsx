@@ -17,6 +17,10 @@ const rows = [
   { amount: "-GBP 142.20", id: "txn_5", label: "Trainline" },
 ];
 
+function transactionCountLabel(count: number) {
+  return `${count} transaction${count === 1 ? "" : "s"}`;
+}
+
 const meta = {
   title: "Drag Select/Examples",
 } satisfies Meta;
@@ -37,7 +41,7 @@ export const LedgerRows: Story = {
 function LedgerRowsExample() {
   return (
     <DragSelectableProvider
-      selectionLabel={(count) => `${count} row${count === 1 ? "" : "s"}`}
+      selectionLabel={(count) => transactionCountLabel(count)}
       style={styles.shell}
     >
       <SelectionStatus />
@@ -58,14 +62,11 @@ function SelectionStatus() {
   return (
     <View style={styles.status}>
       <Text style={styles.statusTitle}>
-        Selected {state.selectedCount} row
-        {state.selectedCount === 1 ? "" : "s"}
+        Selected {transactionCountLabel(state.selectedCount)}
       </Text>
       <Text style={styles.statusMeta}>
         {state.dragging
-          ? `Matching ${state.matchingCount} row${
-              state.matchingCount === 1 ? "" : "s"
-            }`
+          ? `Matching ${transactionCountLabel(state.matchingCount)}`
           : `Last change: ${lastChange}`}
       </Text>
     </View>

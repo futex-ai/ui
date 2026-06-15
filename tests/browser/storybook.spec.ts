@@ -292,10 +292,11 @@ test("drag-select marquee selects intersecting target rows", async ({
     (thirdBox?.y ?? 0) + (thirdBox?.height ?? 0) / 2,
     { steps: 8 },
   );
-  await expect(page.getByText("Matching 3 rows")).toBeVisible();
+  await expect(page.getByText("Matching 3 transactions")).toBeVisible();
+  await expect(page.getByText("3 transactions", { exact: true })).toBeVisible();
   await page.mouse.up();
 
-  await expect(page.getByText("Selected 3 rows")).toBeVisible();
+  await expect(page.getByText("Selected 3 transactions")).toBeVisible();
   await expect(
     page.getByText("Last change: txn_1, txn_2, txn_3"),
   ).toBeVisible();

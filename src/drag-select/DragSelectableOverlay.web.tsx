@@ -4,7 +4,10 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { DRAG_SELECTABLE_LAYERS } from "./dragSelectableLayers";
 import type { DragSelectableBox } from "./dragSelectableModel";
-import type { DragSelectableTargetSnapshot } from "./dragSelectableTypes";
+import type {
+  DragSelectableSelectionLabel,
+  DragSelectableTargetSnapshot,
+} from "./dragSelectableTypes";
 import type { SharedUiTheme } from "../theme";
 
 export type DragSelectableActiveDrag = {
@@ -21,7 +24,7 @@ export function DragSelectableOverlay({
 }: {
   activeDrag: DragSelectableActiveDrag | null;
   overlayZIndex?: number;
-  selectionLabel?: (count: number) => string;
+  selectionLabel?: DragSelectableSelectionLabel;
   theme: SharedUiTheme;
 }) {
   if (
@@ -33,7 +36,11 @@ export function DragSelectableOverlay({
   }
   const count = activeDrag.matchedTargets.length;
   const label =
-    selectionLabel?.(count) ?? `${count} item${count === 1 ? "" : "s"}`;
+    selectionLabel?.(count, {
+      matchingCount: count,
+      matchingIds: activeDrag.matchedTargets.map((target) => target.id),
+      matchingTargets: activeDrag.matchedTargets,
+    }) ?? `${count} item${count === 1 ? "" : "s"}`;
   return createPortal(
     <View
       pointerEvents="none"
