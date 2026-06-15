@@ -255,8 +255,10 @@ Required behavior:
 - release-plz owns changelog updates, release PR creation, `vX.Y.Z` Git tags,
   and GitHub releases.
 - release-plz must use `release_always = true` so squash-merged release PRs
-  create tags and GitHub releases; ordinary pushes to `main` must not publish
-  unless the release metadata version is ahead of the latest tag.
+  create tags and GitHub releases, and the release workflow must verify the
+  `main` commit is associated with a `release-plz-*` PR before creating a
+  release. Ordinary pushes to `main` must not create releases or publish npm
+  packages.
 - npm publishing must run in the same workflow invocation that creates the
   GitHub release so it does not depend on a separate `release` event emitted by
   `GITHUB_TOKEN`.

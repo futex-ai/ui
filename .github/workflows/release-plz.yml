@@ -36,7 +36,27 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Verify release PR source
+        id: release-source
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_PR_BRANCH_PREFIX: release-plz-
+        run: |
+          pulls="$(gh api -H "Accept: application/vnd.github+json" "/repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls")"
+          release_pr="$(printf "%s" "${pulls}" | jq -cer --arg prefix "${RELEASE_PR_BRANCH_PREFIX}" 'map(select(.head.ref | startswith($prefix)))[0] // empty')" || {
+            echo "release_pr=false" >> "$GITHUB_OUTPUT"
+            echo "No ${RELEASE_PR_BRANCH_PREFIX} pull request is associated with ${GITHUB_SHA}; skipping release."
+            exit 0
+          }
+          number="$(printf "%s" "${release_pr}" | jq -r ".number")"
+          branch="$(printf "%s" "${release_pr}" | jq -r ".head.ref")"
+          echo "release_pr=true" >> "$GITHUB_OUTPUT"
+          echo "release_pr_number=${number}" >> "$GITHUB_OUTPUT"
+          echo "release_pr_branch=${branch}" >> "$GITHUB_OUTPUT"
+          echo "Release source is pull request #${number} from ${branch}."
+
       - name: Run release-plz release
+        if: steps.release-source.outputs.release_pr == 'true'
         id: release-plz
         uses: release-plz/action@v0.5.130
         with:
@@ -45,7 +65,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Resolve release output
-        if: steps.release-plz.outputs.releases_created == 'true'
+        if: steps.release-source.outputs.release_pr == 'true' && steps.release-plz.outputs.releases_created == 'true'
         id: release-output
         env:
           RELEASES: ${{ steps.release-plz.outputs.releases }}
