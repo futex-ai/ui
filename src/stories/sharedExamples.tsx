@@ -1,13 +1,28 @@
-import { MoreHorizontal, Plus, Settings, Trash2 } from "lucide-react-native";
+import {
+  ChevronDown,
+  MoreHorizontal,
+  Plus,
+  Settings,
+  Trash2,
+} from "lucide-react-native";
 import type { ReactNode } from "react";
 import { useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import type { GestureResponderEvent } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  useWindowDimensions,
+} from "react-native";
 
 import {
   ComboboxMultiSelect,
   DropdownIconBox,
   DropdownList,
   DropdownListEntry,
+  DropdownPlacement,
   DropdownPortal,
   DropdownSelector,
   Popover,
@@ -16,6 +31,9 @@ import {
   SharedUiThemeProvider,
   WebModalFrame,
   defaultSharedUiTheme,
+  dropdownPlacement,
+  dropdownSurfaceRect,
+  useDropdownSurfaceStyles,
 } from "../index";
 
 const selectorOptions = [
@@ -340,6 +358,393 @@ export function StorySurface({
   );
 }
 
+// --- Placement / edge-collision examples ----------------------------------
+//
+// These stories pin triggers to the real viewport edges so you can watch the
+// menu reposition itself: it flips above the trigger when there is no room
+// below, and slides inward so it never spills past the left or right edge. The
+// web portal renders through a `position: fixed` layer over the document body,
+// so within Storybook the surface reacts to the canvas (iframe) edges. Pair
+// each one with `parameters: { layout: "fullscreen" }`.
+
+const placementOptions = Array.from({ length: 10 }, (_, index) => {
+  const optionNumber = String(index + 1).padStart(2, "0");
+  return { label: `Region ${optionNumber}`, value: `region-${optionNumber}` };
+});
+
+/**
+ * Theme-wrapped surface that fills the Storybook canvas so triggers inside it
+ * can be anchored to the true viewport edges.
+ */
+export function ViewportStage({ children }: { children: ReactNode }) {
+  const { height, width } = useWindowDimensions();
+  return (
+    <SharedUiThemeProvider theme={defaultSharedUiTheme}>
+      <View style={[styles.stage, { height, width }]}>{children}</View>
+    </SharedUiThemeProvider>
+  );
+}
+
+function PlacementHint({ lines, title }: { lines: string[]; title: string }) {
+  return (
+    <View style={styles.placementHint}>
+      <Text style={styles.placementHintTitle}>{title}</Text>
+      {lines.map((line) => (
+        <Text key={line} style={styles.placementHintText}>
+          {line}
+        </Text>
+      ))}
+    </View>
+  );
+}
+
+function EdgeSelector({ label }: { label: string }) {
+  const [value, setValue] = useState(placementOptions[0].value);
+  return (
+    <View style={styles.edgeSelector}>
+      <DropdownSelector
+        label={label}
+        onValueChange={setValue}
+        options={placementOptions}
+        value={value}
+      />
+    </View>
+  );
+}
+
+export function EdgePlacementGridExample() {
+  return (
+    <ViewportStage>
+      <View style={styles.grid}>
+        <View style={styles.gridRow}>
+          <EdgeSelector label="Top left" />
+          <EdgeSelector label="Top center" />
+          <EdgeSelector label="Top right" />
+        </View>
+        <View style={[styles.gridRow, styles.gridRowCenter]}>
+          <EdgeSelector label="Mid left" />
+          <PlacementHint
+            lines={[
+              "Open any selector.",
+              "Menus near the bottom flip upward, and menus near an",
+              "edge slide inward so they always stay on screen.",
+            ]}
+            title="Edge-aware placement"
+          />
+          <EdgeSelector label="Mid right" />
+        </View>
+        <View style={[styles.gridRow, styles.gridRowBottom]}>
+          <EdgeSelector label="Bottom left" />
+          <EdgeSelector label="Bottom center" />
+          <EdgeSelector label="Bottom right" />
+        </View>
+      </View>
+    </ViewportStage>
+  );
+}
+
+export function BottomEdgeFlipExample() {
+  const [near, setNear] = useState(longSelectorOptions[0].value);
+  const [far, setFar] = useState(longSelectorOptions[0].value);
+  return (
+    <ViewportStage>
+      <View style={styles.flipColumn}>
+        <View style={styles.flipCell}>
+          <Text style={styles.placementHintText}>
+            Anchored near the top edge — the long menu opens downward.
+          </Text>
+          <DropdownSelector
+            label="Opens below"
+            onValueChange={setNear}
+            options={longSelectorOptions}
+            value={near}
+          />
+        </View>
+        <View style={styles.flipCell}>
+          <Text style={styles.placementHintText}>
+            Anchored near the bottom edge — the same menu flips to open upward.
+          </Text>
+          <DropdownSelector
+            label="Flips above"
+            onValueChange={setFar}
+            options={longSelectorOptions}
+            value={far}
+          />
+        </View>
+      </View>
+    </ViewportStage>
+  );
+}
+
+function EdgeMenuButton({
+  accessibilityLabel,
+  align,
+  label,
+  minWidth = 320,
+}: {
+  accessibilityLabel: string;
+  align?: "end" | "start";
+  label: string;
+  minWidth?: number;
+}) {
+  const anchorRef = useRef<View>(null);
+  const [open, setOpen] = useState(false);
+  const entries: DropdownListEntry[] = currencyOptions.map((option) => ({
+    id: option.value,
+    label: option.label,
+    onPress: () => setOpen(false),
+    type: "item",
+  }));
+  return (
+    <View ref={anchorRef} style={styles.edgeMenuAnchor}>
+      <Pressable
+        accessibilityLabel={accessibilityLabel}
+        accessibilityRole="button"
+        onPress={() => setOpen((current) => !current)}
+        style={styles.edgeButton}
+      >
+        <Text style={styles.edgeButtonText}>{label}</Text>
+        <ChevronDown color="#3e4540" size={16} />
+      </Pressable>
+      <DropdownPortal
+        align={align}
+        anchorRef={anchorRef}
+        minWidth={minWidth}
+        onClose={() => setOpen(false)}
+        open={open}
+      >
+        {(placement) => (
+          <DropdownList
+            entries={entries}
+            maxHeight={placement.maxHeight}
+            onClose={() => setOpen(false)}
+          />
+        )}
+      </DropdownPortal>
+    </View>
+  );
+}
+
+export function HorizontalEdgeClampExample() {
+  return (
+    <ViewportStage>
+      <View style={styles.clampColumn}>
+        <PlacementHint
+          lines={[
+            "Both menus are wider than the triggers that open them.",
+            "Each one slides inward so it never spills past the left",
+            "or right edge of the screen.",
+          ]}
+          title="Horizontal edge clamping"
+        />
+        <View style={styles.clampRow}>
+          <EdgeMenuButton
+            accessibilityLabel="Open left edge menu"
+            label="Left edge"
+          />
+          <EdgeMenuButton
+            accessibilityLabel="Open right edge menu"
+            label="Right edge"
+          />
+        </View>
+      </View>
+    </ViewportStage>
+  );
+}
+
+export function EndAlignedMenuExample() {
+  return (
+    <ViewportStage>
+      <View style={styles.endAlignColumn}>
+        <PlacementHint
+          lines={[
+            'With align="end" the menu’s right edge lines up with the',
+            "trigger, so a wide menu extends leftward from a right-aligned",
+            "control instead of overflowing.",
+          ]}
+          title="End-aligned menu"
+        />
+        <View style={styles.endAlignRow}>
+          <EdgeMenuButton
+            accessibilityLabel="Open end aligned menu"
+            align="end"
+            label="Account actions"
+            minWidth={300}
+          />
+        </View>
+      </View>
+    </ViewportStage>
+  );
+}
+
+const PLAYGROUND_FRAME = { height: 360, width: 660 };
+const PLAYGROUND_ANCHOR = { height: 34, width: 152 };
+
+function playgroundEntries(): DropdownListEntry[] {
+  return [
+    { id: "rename", label: "Rename", onPress: () => undefined, type: "item" },
+    {
+      id: "duplicate",
+      label: "Duplicate",
+      onPress: () => undefined,
+      type: "item",
+    },
+    { id: "move", label: "Move to…", onPress: () => undefined, type: "item" },
+    { id: "divider", label: "divider", type: "divider" },
+    { id: "archive", label: "Archive", onPress: () => undefined, type: "item" },
+  ];
+}
+
+function placementReadout(placement: DropdownPlacement) {
+  const vertical =
+    placement.side === "top"
+      ? `bottom ${Math.round(placement.bottom ?? 0)}`
+      : `top ${Math.round(placement.top ?? 0)}`;
+  return `left ${Math.round(placement.left)} · ${vertical} · width ${Math.round(
+    placement.width,
+  )} · max-height ${Math.round(placement.maxHeight)}`;
+}
+
+function clampValue(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function PlacementPlaygroundBody() {
+  const frame = PLAYGROUND_FRAME;
+  const anchorSize = PLAYGROUND_ANCHOR;
+  const surfaceStyles = useDropdownSurfaceStyles();
+  const [point, setPoint] = useState({
+    x: (frame.width - anchorSize.width) / 2,
+    y: frame.height * 0.42,
+  });
+
+  const moveToCenter = (centerX: number, centerY: number) => {
+    setPoint({
+      x: clampValue(
+        centerX - anchorSize.width / 2,
+        0,
+        frame.width - anchorSize.width,
+      ),
+      y: clampValue(
+        centerY - anchorSize.height / 2,
+        0,
+        frame.height - anchorSize.height,
+      ),
+    });
+  };
+  const onResponderMove = (event: GestureResponderEvent) =>
+    moveToCenter(event.nativeEvent.locationX, event.nativeEvent.locationY);
+
+  const placement = dropdownPlacement(
+    {
+      height: anchorSize.height,
+      width: anchorSize.width,
+      x: point.x,
+      y: point.y,
+    },
+    frame,
+    { maxHeight: 200, minHeight: 110, minWidth: 220 },
+  );
+
+  const presets = [
+    { key: "top-left", label: "Top-left", x: anchorSize.width * 0.7, y: 30 },
+    {
+      key: "top-right",
+      label: "Top-right",
+      x: frame.width - anchorSize.width * 0.7,
+      y: 30,
+    },
+    { key: "center", label: "Center", x: frame.width / 2, y: frame.height / 2 },
+    {
+      key: "bottom-left",
+      label: "Bottom-left",
+      x: anchorSize.width * 0.7,
+      y: frame.height - 30,
+    },
+    {
+      key: "bottom-right",
+      label: "Bottom-right",
+      x: frame.width - anchorSize.width * 0.7,
+      y: frame.height - 30,
+    },
+  ];
+
+  return (
+    <View style={styles.playground}>
+      <PlacementHint
+        lines={[
+          "Drag inside the frame (or use the presets) to move the trigger.",
+          "The menu re-resolves against the content-area edges in real time.",
+        ]}
+        title="Placement playground"
+      />
+      <View
+        onMoveShouldSetResponder={() => true}
+        onResponderGrant={onResponderMove}
+        onResponderMove={onResponderMove}
+        onStartShouldSetResponder={() => true}
+        style={[styles.playFrame, { height: frame.height, width: frame.width }]}
+      >
+        <Text style={[styles.playEdgeLabel, styles.playEdgeTop]}>top edge</Text>
+        <Text style={[styles.playEdgeLabel, styles.playEdgeBottom]}>
+          bottom edge
+        </Text>
+        <View
+          pointerEvents="none"
+          style={[
+            styles.playAnchor,
+            {
+              height: anchorSize.height,
+              left: point.x,
+              top: point.y,
+              width: anchorSize.width,
+            },
+          ]}
+        >
+          <Text style={styles.playAnchorText}>Trigger</Text>
+        </View>
+        <View
+          pointerEvents="none"
+          style={[surfaceStyles.surface, dropdownSurfaceRect(placement)]}
+        >
+          <DropdownList
+            entries={playgroundEntries()}
+            maxHeight={placement.maxHeight}
+            onClose={() => undefined}
+          />
+        </View>
+      </View>
+      <View style={styles.presetRow}>
+        {presets.map((preset) => (
+          <Pressable
+            accessibilityLabel={`Move trigger to ${preset.label.toLowerCase()}`}
+            accessibilityRole="button"
+            key={preset.key}
+            onPress={() => moveToCenter(preset.x, preset.y)}
+            style={styles.presetButton}
+          >
+            <Text style={styles.presetButtonText}>{preset.label}</Text>
+          </Pressable>
+        ))}
+      </View>
+      <View style={styles.readout}>
+        <Text style={styles.readoutPrimary}>
+          {placement.side === "top" ? "Opens upward ↑" : "Opens downward ↓"}
+        </Text>
+        <Text style={styles.readoutText}>{placementReadout(placement)}</Text>
+      </View>
+    </View>
+  );
+}
+
+export function PlacementPlaygroundExample() {
+  return (
+    <ViewportStage>
+      <PlacementPlaygroundBody />
+    </ViewportStage>
+  );
+}
+
 const styles = StyleSheet.create({
   button: {
     alignItems: "center",
@@ -357,9 +762,78 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
   },
+  clampColumn: {
+    flex: 1,
+    gap: 16,
+    padding: 16,
+  },
+  clampRow: {
+    alignItems: "flex-start",
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
   controlledPopover: {
     alignItems: "flex-start",
     gap: 8,
+  },
+  edgeButton: {
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderColor: "#d3d8cd",
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 8,
+    height: 38,
+    paddingHorizontal: 14,
+  },
+  edgeButtonText: {
+    color: "#1c1f1d",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  edgeMenuAnchor: {
+    alignSelf: "flex-start",
+  },
+  edgeSelector: {
+    minWidth: 150,
+  },
+  endAlignColumn: {
+    flex: 1,
+    gap: 16,
+    padding: 16,
+  },
+  endAlignRow: {
+    alignItems: "flex-start",
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  flipCell: {
+    gap: 8,
+  },
+  flipColumn: {
+    flex: 1,
+    justifyContent: "space-between",
+    padding: 24,
+    width: 360,
+  },
+  grid: {
+    flex: 1,
+    justifyContent: "space-between",
+    padding: 16,
+  },
+  gridRow: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  gridRowBottom: {
+    alignItems: "flex-end",
+  },
+  gridRowCenter: {
+    alignItems: "center",
   },
   heading: {
     color: "#1c1f1d",
@@ -404,6 +878,64 @@ const styles = StyleSheet.create({
   modalBody: {
     gap: 12,
   },
+  placementHint: {
+    backgroundColor: "#fff",
+    borderColor: "#d8dccf",
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 4,
+    maxWidth: 340,
+    padding: 14,
+  },
+  placementHintText: {
+    color: "#3e4540",
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  placementHintTitle: {
+    color: "#1c1f1d",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  playAnchor: {
+    alignItems: "center",
+    backgroundColor: "#2f5945",
+    borderRadius: 8,
+    justifyContent: "center",
+    position: "absolute",
+  },
+  playAnchorText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  playEdgeBottom: {
+    bottom: 6,
+  },
+  playEdgeLabel: {
+    color: "#aeb4a5",
+    fontSize: 11,
+    fontWeight: "700",
+    left: 0,
+    position: "absolute",
+    right: 0,
+    textAlign: "center",
+  },
+  playEdgeTop: {
+    top: 6,
+  },
+  playFrame: {
+    backgroundColor: "#fbfbf8",
+    borderColor: "#c7cdbd",
+    borderRadius: 14,
+    borderWidth: 1,
+    overflow: "hidden",
+    position: "relative",
+  },
+  playground: {
+    gap: 16,
+    padding: 24,
+  },
   popoverBody: {
     color: "#3e4540",
     fontSize: 13,
@@ -431,6 +963,42 @@ const styles = StyleSheet.create({
     color: "#1c1f1d",
     fontSize: 14,
     fontWeight: "800",
+  },
+  presetButton: {
+    backgroundColor: "#e7ebe1",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  presetButtonText: {
+    color: "#2f5945",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  presetRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  readout: {
+    backgroundColor: "#1c2620",
+    borderRadius: 10,
+    gap: 4,
+    padding: 14,
+  },
+  readoutPrimary: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "800",
+  },
+  readoutText: {
+    color: "#b9c6bd",
+    fontSize: 13,
+  },
+  stage: {
+    backgroundColor: "#eef1ea",
+    overflow: "hidden",
+    position: "relative",
   },
   surface: {
     minWidth: 320,
