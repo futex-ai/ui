@@ -16,8 +16,8 @@ permissions:
   pull-requests: write
 
 env:
-  CLOUDFLARE_PROJECT_NAME: firna-ui-storybook
-  STORYBOOK_COMMENT_MARKER: "<!-- firna-ui-storybook-preview -->"
+  CLOUDFLARE_PROJECT_NAME: futex-ui-storybook
+  STORYBOOK_COMMENT_MARKER: "<!-- futex-ui-storybook-preview -->"
 
 jobs:
   deploy-main:

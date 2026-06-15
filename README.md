@@ -105,13 +105,13 @@ The package export map intentionally separates runtime targets:
 ## Storybook Deployments
 
 - Main branch Storybook deploys to Cloudflare Pages project
-  `firna-ui-storybook`.
-- Main URL: `https://firna-ui-storybook.pages.dev`.
+  `futex-ui-storybook`.
+- Main URL: `https://futex-ui-storybook.pages.dev`.
 - PR previews deploy to Cloudflare branch `pr-<number>`.
 - PR preview URL shape:
-  `https://pr-<number>.firna-ui-storybook.pages.dev`.
+  `https://pr-<number>.futex-ui-storybook.pages.dev`.
 - PR previews are posted through a sticky comment marked
-  `<!-- firna-ui-storybook-preview -->`.
+  `<!-- futex-ui-storybook-preview -->`.
 - Closing a same-repository PR marks the sticky comment inactive and attempts
   to delete aliased preview deployments for that PR branch; if Cloudflare
   cleanup cannot complete safely, the comment reports the retained reason.

@@ -113,8 +113,9 @@ automation is added.
 - [x] Update `package-lock.json` to match the renamed package metadata.
 - [x] Replace documented imports from `@futex/ui` to `@firna/ui` in the root
       README, component READMEs, consumer migration docs, and protocol docs.
-- [x] Decide whether Storybook should move from `futex-ui-storybook` to
-      `firna-ui-storybook`; update docs and workflows if the project is renamed.
+- [x] Keep Cloudflare Storybook deployments on the existing
+      `futex-ui-storybook` project while publishing the npm package as
+      `@firna/ui`.
 - [x] Add a package release contract section to `docs/protocol` that defines
       package name, subpath exports, peer dependency policy, release tags,
       changelog ownership, and npm publish expectations.

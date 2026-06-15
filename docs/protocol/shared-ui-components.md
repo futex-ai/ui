@@ -267,13 +267,13 @@ Required behavior:
 ## CI And Preview Contract
 
 - Storybook deployments use Cloudflare Pages.
-- The Cloudflare Pages project name is `firna-ui-storybook`.
+- The Cloudflare Pages project name is `futex-ui-storybook`.
 - The stable main Storybook deploy uses the Cloudflare Pages production branch
   `main` and the default production URL
-  `https://firna-ui-storybook.pages.dev`, unless a custom domain is added later.
+  `https://futex-ui-storybook.pages.dev`, unless a custom domain is added later.
 - PR Storybook previews deploy the static Storybook build to Cloudflare Pages
   with branch name `pr-<number>`, producing a predictable preview URL such as
-  `https://pr-123.firna-ui-storybook.pages.dev`.
+  `https://pr-123.futex-ui-storybook.pages.dev`.
 - Every PR must run `cargo xtask check` after dependency installation. The
   xtask check runs the JavaScript verification suite: formatting, unit tests,
   typecheck, package build, package tarball smoke test, Storybook build, and
@@ -281,7 +281,7 @@ Required behavior:
 - The main branch must publish a stable default Storybook deployment.
 - Every PR must publish an isolated Storybook preview deployment.
 - The PR Storybook URL must be posted back to the pull request through a sticky
-  comment with marker `<!-- firna-ui-storybook-preview -->`, matching the
+  comment with marker `<!-- futex-ui-storybook-preview -->`, matching the
   preview-comment pattern used by accounting and Juno.
 - The sticky comment must be updated on every PR deploy attempt with status,
   preview URL, commit SHA, and workflow run URL.
