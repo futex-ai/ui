@@ -215,6 +215,9 @@ Required behavior:
 - Expose final selected ids, selected target metadata, selected count, live
   matching ids, live matching target metadata, and live matching count through
   hooks.
+- Treat selected target metadata as a snapshot captured when selection finishes;
+  consumers that need live target data should map selected ids through their own
+  current data source.
 - Provide a provider-level selection-change callback and a hook-level listener
   for components that need side effects when selection changes.
 - Allow the marquee badge copy to be customized from the live matching count,

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+import type { DragSelectableState } from "../index";
 import {
   DragSelectableProvider,
   useDragSelectableChanges,
@@ -52,6 +53,15 @@ export const LargerMinimumDrag: Story = {
   render: () => (
     <StorySurface>
       <LargerMinimumDragExample />
+    </StorySurface>
+  ),
+};
+
+export const DisabledDuringDrag: Story = {
+  name: "Disabled during drag",
+  render: () => (
+    <StorySurface>
+      <DisabledDuringDragExample />
     </StorySurface>
   ),
 };
@@ -111,10 +121,42 @@ function LargerMinimumDragExample() {
   );
 }
 
-function SelectionStatus() {
+function DisabledDuringDragExample() {
+  const [disabled, setDisabled] = useState(false);
+  return (
+    <DragSelectableProvider
+      disabled={disabled}
+      selectionLabel={(count) => transactionCountLabel(count)}
+      style={styles.shell}
+    >
+      <SelectionStatus
+        onStateChange={(state) => {
+          if (state.matchingCount > 0) {
+            setDisabled(true);
+          }
+        }}
+      />
+      <Text style={styles.statusMeta} testID="drag-disabled-state">
+        {disabled ? "Drag disabled" : "Drag enabled"}
+      </Text>
+      <View style={styles.list}>
+        {rows.map((row) => (
+          <LedgerRow key={row.id} row={row} />
+        ))}
+      </View>
+    </DragSelectableProvider>
+  );
+}
+
+function SelectionStatus({
+  onStateChange,
+}: {
+  onStateChange?: (state: DragSelectableState) => void;
+}) {
   const [lastChange, setLastChange] = useState("none");
   const state = useDragSelectableChanges((next) => {
     setLastChange(next.selectedIds.join(", ") || "none");
+    onStateChange?.(next);
   });
   return (
     <View style={styles.status}>

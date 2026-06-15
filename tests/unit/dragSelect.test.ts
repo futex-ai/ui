@@ -7,7 +7,7 @@ import {
   dragSelectableOverlayClearsSurface,
 } from "../../src/drag-select/dragSelectableLayers";
 import {
-  dragSelectableRegistrationInvalidatesRegistry,
+  dragSelectableSelectionForTargets,
   dragSelectableShouldStartFromTarget,
 } from "../../src/drag-select/dragSelectableDom";
 import {
@@ -179,40 +179,13 @@ test("drag-select ignores nested interactive controls inside targets", () => {
   });
 });
 
-test("drag-select target metadata does not invalidate provider state", () => {
-  withFakeDragSelectableDom(() => {
-    const node = new FakeElement();
-    const previous = dragSelectableRegistration(node, {
-      data: { label: "Previous" },
-    });
-    const nextData = dragSelectableRegistration(node, {
-      data: { label: "Next" },
-    });
-    const nextDisabled = dragSelectableRegistration(node, {
-      data: previous.data,
-      disabled: true,
-    });
-    const nextNode = dragSelectableRegistration(new FakeElement(), {
-      data: previous.data,
-    });
+test("drag-select snapshots selected target metadata on commit", () => {
+  const data = { label: "Previous" };
+  const selection = dragSelectableSelectionForTargets([{ data, id: "target" }]);
 
-    assert.equal(
-      dragSelectableRegistrationInvalidatesRegistry(undefined, previous),
-      true,
-    );
-    assert.equal(
-      dragSelectableRegistrationInvalidatesRegistry(previous, nextData),
-      false,
-    );
-    assert.equal(
-      dragSelectableRegistrationInvalidatesRegistry(previous, nextDisabled),
-      true,
-    );
-    assert.equal(
-      dragSelectableRegistrationInvalidatesRegistry(previous, nextNode),
-      true,
-    );
-  });
+  assert.deepEqual(selection.selectedIds, ["target"]);
+  assert.equal(selection.selectedCount, 1);
+  assert.deepEqual(selection.selectedTargets, [{ data, id: "target" }]);
 });
 
 test("drag-select selection callback is stable across callback identities", () => {
@@ -236,15 +209,21 @@ test("drag-select selection callback ignores registry-only updates", () => {
     "../../src/drag-select/DragSelectableProvider.web.tsx",
   );
 
+  assert.match(providerSource, /useState<DragSelectableSelection>/);
   assert.match(providerSource, /const notifiedSelectedIdsRef = useRef/);
   assert.match(
     providerSource,
-    /dragSelectableIdsEqual\(notifiedSelectedIdsRef\.current, selectedIds\)/,
+    /dragSelectableIdsEqual\(\s*notifiedSelectedIdsRef\.current,\s*selection\.selectedIds,/,
   );
   assert.match(
     providerSource,
-    /notifiedSelectedIdsRef\.current = \[\.\.\.selectedIds\]/,
+    /notifiedSelectedIdsRef\.current = \[\.\.\.selection\.selectedIds\]/,
   );
+  assert.match(
+    providerSource,
+    /setSelection\(dragSelectableSelectionForTargets\(selectedTargetsForBox\)\)/,
+  );
+  assert.doesNotMatch(providerSource, /dragSelectableSnapshotsForIds/);
 });
 
 test("drag-select provider uses the configured movement threshold", () => {
@@ -270,6 +249,9 @@ test("drag-select provider cancels stale pointer streams", () => {
   );
 
   assert.match(providerSource, /const cancelDrag = useCallback/);
+  assert.match(providerSource, /const disabledRef = useRef\(disabled\)/);
+  assert.match(providerSource, /if \(disabledRef\.current\)/);
+  assert.match(providerSource, /if \(disabled\) {\s*cancelDrag\(\);/);
   assert.match(providerSource, /document\.addEventListener\("pointercancel"/);
   assert.match(providerSource, /window\.addEventListener\("blur"/);
   assert.match(

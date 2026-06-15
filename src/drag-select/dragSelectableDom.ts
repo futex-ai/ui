@@ -3,6 +3,7 @@ import type { DragSelectableBounds } from "./dragSelectableModel";
 import { dragSelectablePointFromEvent } from "./dragSelectableModel";
 import type { DragSelectablePoint } from "./dragSelectableModel";
 import type {
+  DragSelectableSelection,
   DragSelectableTargetRegistration,
   DragSelectableTargetSnapshot,
 } from "./dragSelectableTypes";
@@ -34,18 +35,17 @@ export const dragSelectableInteractiveSelector = [
   "[role='textbox']",
 ].join(",");
 
-export function dragSelectableRegistrationInvalidatesRegistry(
-  previous: DragSelectableTargetRegistration | undefined,
-  next: DragSelectableTargetRegistration,
-): boolean {
-  if (!previous) {
-    return true;
-  }
-  return (
-    previous.id !== next.id ||
-    previous.node !== next.node ||
-    previous.disabled !== next.disabled
-  );
+export function dragSelectableSelectionForTargets(
+  targets: readonly DragSelectableTargetSnapshot[],
+): DragSelectableSelection {
+  return {
+    selectedCount: targets.length,
+    selectedIds: targets.map((target) => target.id),
+    selectedTargets: targets.map((target) => ({
+      data: target.data,
+      id: target.id,
+    })),
+  };
 }
 
 export function measureDragSelectableTargets(

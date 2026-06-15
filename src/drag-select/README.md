@@ -63,6 +63,9 @@ state. Use `useDragSelectableChanges(listener)` when it needs to run an effect
 after drag matches or final selections change. `state.matchingCount` and
 `state.matchingIds` update while dragging; `state.selectedCount`,
 `state.selectedIds`, and `state.selectedTargets` update when the drag finishes.
+`state.selectedTargets` is a selection-time metadata snapshot. Use
+`state.selectedIds` to look up fresh row data from the consuming app's current
+data source.
 
 `selectionLabel` customizes the badge text in the marquee overlay. It receives
 the live matching count plus matching ids and target metadata:

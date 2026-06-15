@@ -18,8 +18,7 @@ import {
   dragSelectableEventTarget,
   dragSelectablePointFromUnknownEvent,
   dragSelectablePointerSource,
-  dragSelectableRegistrationInvalidatesRegistry,
-  dragSelectableSnapshotsForIds,
+  dragSelectableSelectionForTargets,
   dragSelectableShouldStartFromTarget,
   measureDragSelectableTargets,
 } from "./dragSelectableDom";
@@ -27,6 +26,7 @@ import type { DragSelectableMeasuredTarget } from "./dragSelectableDom";
 import type {
   DragSelectableChangeListener,
   DragSelectableProviderProps,
+  DragSelectableSelection,
   DragSelectableState,
   DragSelectableTargetOptions,
   DragSelectableTargetRegistration,
@@ -47,6 +47,11 @@ type DragSession = {
 };
 
 const emptyMatchingTargets: DragSelectableTargetSnapshot[] = [];
+const emptySelection: DragSelectableSelection = {
+  selectedCount: 0,
+  selectedIds: [],
+  selectedTargets: [],
+};
 
 export function DragSelectableProvider({
   children,
@@ -66,26 +71,25 @@ export function DragSelectableProvider({
   const removeDragListenersRef = useRef<(() => void) | null>(null);
   const onSelectionChangeRef = useRef(onSelectionChange);
   onSelectionChangeRef.current = onSelectionChange;
-  const [registryVersion, setRegistryVersion] = useState(0);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const notifiedSelectedIdsRef = useRef<readonly string[]>(selectedIds);
+  const disabledRef = useRef(disabled);
+  disabledRef.current = disabled;
+  const [selection, setSelection] =
+    useState<DragSelectableSelection>(emptySelection);
+  const notifiedSelectedIdsRef = useRef<readonly string[]>(
+    selection.selectedIds,
+  );
   const [activeDrag, setActiveDrag] = useState<DragSelectableActiveDrag | null>(
     null,
   );
 
   const registerTarget = useCallback(
     (target: DragSelectableTargetRegistration) => {
-      const previous = targetsRef.current.get(target.id);
       targetsRef.current.set(target.id, target);
-      if (dragSelectableRegistrationInvalidatesRegistry(previous, target)) {
-        setRegistryVersion((version) => version + 1);
-      }
       return () => {
         if (targetsRef.current.get(target.id)?.node !== target.node) {
           return;
         }
         targetsRef.current.delete(target.id);
-        setRegistryVersion((version) => version + 1);
       };
     },
     [],
@@ -101,15 +105,8 @@ export function DragSelectableProvider({
       return;
     }
     targetsRef.current.set(target.id, next);
-    if (dragSelectableRegistrationInvalidatesRegistry(current, next)) {
-      setRegistryVersion((version) => version + 1);
-    }
   }, []);
 
-  const selectedTargets = useMemo(
-    () => dragSelectableSnapshotsForIds(selectedIds, targetsRef.current),
-    [registryVersion, selectedIds],
-  );
   const matchingTargets = activeDrag?.matchedTargets ?? emptyMatchingTargets;
   const state: DragSelectableState = useMemo(
     () => ({
@@ -118,13 +115,16 @@ export function DragSelectableProvider({
       matchingCount: matchingTargets.length,
       matchingIds: matchingTargets.map((target) => target.id),
       matchingTargets,
-      selectedCount: selectedTargets.length,
-      selectedIds,
-      selectedTargets,
+      selectedCount: selection.selectedCount,
+      selectedIds: selection.selectedIds,
+      selectedTargets: selection.selectedTargets,
     }),
-    [activeDrag, matchingTargets, selectedIds, selectedTargets],
+    [activeDrag, matchingTargets, selection],
   );
-  const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
+  const selectedIdSet = useMemo(
+    () => new Set(selection.selectedIds),
+    [selection.selectedIds],
+  );
   const matchedIdSet = useMemo(
     () => new Set(state.matchingIds),
     [state.matchingIds],
@@ -137,19 +137,22 @@ export function DragSelectableProvider({
   }, [state]);
 
   useEffect(() => {
-    if (dragSelectableIdsEqual(notifiedSelectedIdsRef.current, selectedIds)) {
+    if (
+      dragSelectableIdsEqual(
+        notifiedSelectedIdsRef.current,
+        selection.selectedIds,
+      )
+    ) {
       return;
     }
-    notifiedSelectedIdsRef.current = [...selectedIds];
-    onSelectionChangeRef.current?.({
-      selectedCount: selectedTargets.length,
-      selectedIds,
-      selectedTargets,
-    });
-  }, [selectedIds, selectedTargets]);
+    notifiedSelectedIdsRef.current = [...selection.selectedIds];
+    onSelectionChangeRef.current?.(selection);
+  }, [selection]);
 
   const clearSelection = useCallback(() => {
-    setSelectedIds((current) => (current.length === 0 ? current : []));
+    setSelection((current) =>
+      current.selectedIds.length === 0 ? current : emptySelection,
+    );
   }, []);
 
   const cancelDrag = useCallback(() => {
@@ -188,6 +191,9 @@ export function DragSelectableProvider({
     }
     dragSessionRef.current = null;
     setActiveDrag(null);
+    if (disabledRef.current) {
+      return;
+    }
     const moved =
       session.moved ||
       hasDragSelectableMoved(session.start, point, session.threshold);
@@ -202,7 +208,7 @@ export function DragSelectableProvider({
       measuredTargets.length > 0 ? measuredTargets : session.targets,
       box,
     );
-    setSelectedIds(selectedTargetsForBox.map((target) => target.id));
+    setSelection(dragSelectableSelectionForTargets(selectedTargetsForBox));
   }, []);
 
   const attachDragListeners = useCallback(() => {
@@ -296,6 +302,12 @@ export function DragSelectableProvider({
     },
     [],
   );
+
+  useEffect(() => {
+    if (disabled) {
+      cancelDrag();
+    }
+  }, [cancelDrag, disabled]);
 
   const subscribe = useCallback((listener: DragSelectableChangeListener) => {
     listenersRef.current.add(listener);
