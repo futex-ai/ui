@@ -2,6 +2,7 @@
 import { createPortal } from "react-dom";
 import { StyleSheet, Text, View } from "react-native";
 
+import { DRAG_SELECTABLE_LAYERS } from "./dragSelectableLayers";
 import type { DragSelectableBox } from "./dragSelectableModel";
 import type { DragSelectableTargetSnapshot } from "./dragSelectableTypes";
 import type { SharedUiTheme } from "../theme";
@@ -14,10 +15,12 @@ export type DragSelectableActiveDrag = {
 
 export function DragSelectableOverlay({
   activeDrag,
+  overlayZIndex,
   selectionLabel,
   theme,
 }: {
   activeDrag: DragSelectableActiveDrag | null;
+  overlayZIndex?: number;
   selectionLabel?: (count: number) => string;
   theme: SharedUiTheme;
 }) {
@@ -44,6 +47,7 @@ export function DragSelectableOverlay({
           left: activeDrag.box.left,
           top: activeDrag.box.top,
           width: activeDrag.box.width,
+          zIndex: overlayZIndex ?? DRAG_SELECTABLE_LAYERS.overlay,
         },
       ]}
     >
@@ -101,6 +105,5 @@ const styles = StyleSheet.create({
   marquee: {
     borderWidth: 1.5,
     position: "fixed" as "absolute",
-    zIndex: 30,
   },
 });

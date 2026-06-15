@@ -27,6 +27,7 @@ import type {
   DragSelectableState,
   DragSelectableTargetOptions,
   DragSelectableTargetRegistration,
+  DragSelectableTargetSnapshot,
 } from "./dragSelectableTypes";
 import {
   DragSelectableOverlay,
@@ -41,10 +42,13 @@ type DragSession = {
   targets: DragSelectableMeasuredTarget[];
 };
 
+const emptyMatchingTargets: DragSelectableTargetSnapshot[] = [];
+
 export function DragSelectableProvider({
   children,
   disabled = false,
   onSelectionChange,
+  overlayZIndex,
   selectionLabel,
   style,
 }: DragSelectableProviderProps) {
@@ -99,7 +103,7 @@ export function DragSelectableProvider({
     () => dragSelectableSnapshotsForIds(selectedIds, targetsRef.current),
     [registryVersion, selectedIds],
   );
-  const matchingTargets = activeDrag?.matchedTargets ?? [];
+  const matchingTargets = activeDrag?.matchedTargets ?? emptyMatchingTargets;
   const state: DragSelectableState = useMemo(
     () => ({
       dragBox: activeDrag?.box ?? null,
@@ -286,6 +290,7 @@ export function DragSelectableProvider({
       </View>
       <DragSelectableOverlay
         activeDrag={activeDrag}
+        overlayZIndex={overlayZIndex}
         selectionLabel={selectionLabel}
         theme={theme}
       />

@@ -29,6 +29,7 @@ export type DragSelectableProviderProps = {
   children: ReactNode;
   disabled?: boolean;
   onSelectionChange?: (selection: DragSelectableSelection) => void;
+  overlayZIndex?: number;
   selectionLabel?: (count: number) => string;
   style?: StyleProp<ViewStyle>;
 };

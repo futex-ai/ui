@@ -12,6 +12,8 @@ overlay only run on web.
 - Expose final selection ids, selected target metadata, live matching ids, and
   live matching counts through hooks.
 - Render a themed, page-level marquee overlay on web.
+- Keep the marquee overlay above shared modal and dropdown surfaces, with an
+  `overlayZIndex` escape hatch for consumers with custom stacking contexts.
 - Ignore touch drags and nested interactive controls while still allowing a
   selectable target root to begin a drag.
 - Keep a native fallback that renders children and registers no selections.
@@ -59,5 +61,6 @@ after drag matches or final selections change. `state.matchingCount` and
 `state.matchingIds` update while dragging; `state.selectedCount`,
 `state.selectedIds`, and `state.selectedTargets` update when the drag finishes.
 
-`selectionLabel` customizes the badge text in the marquee overlay, for example
-`(count) => `${count} rows``.
+`selectionLabel` customizes the badge text in the marquee overlay.
+`overlayZIndex` can override the default `DRAG_SELECTABLE_LAYERS.overlay` value
+when a consuming surface owns a higher portal layer.

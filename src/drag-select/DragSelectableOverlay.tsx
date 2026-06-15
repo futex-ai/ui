@@ -11,6 +11,7 @@ export type DragSelectableActiveDrag = {
 
 export function DragSelectableOverlay(_props: {
   activeDrag: DragSelectableActiveDrag | null;
+  overlayZIndex?: number;
   selectionLabel?: (count: number) => string;
   theme: SharedUiTheme;
 }) {

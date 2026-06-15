@@ -214,7 +214,8 @@ Required behavior:
 - Provide a provider-level selection-change callback and a hook-level listener
   for components that need side effects when selection changes.
 - Render the web marquee through a body-level portal using shared theme primary
-  colors and radii.
+  colors, radii, and a shared layer token that clears modal and dropdown
+  surfaces while allowing an explicit provider override.
 - Ignore touch drags and nested form/menu/link controls while allowing a
   selectable target root to start the drag.
 - Keep the pure geometry helpers exported and covered by unit tests.

@@ -3,12 +3,18 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
+  DRAG_SELECTABLE_LAYERS,
+  dragSelectableOverlayClearsSurface,
+} from "../../src/drag-select/dragSelectableLayers";
+import {
   dragSelectableBoundsForBox,
   dragSelectableBox,
   dragSelectableIdsForBox,
   dragSelectablePointFromEvent,
   hasDragSelectableMoved,
 } from "../../src/drag-select/dragSelectableModel";
+import { DROPDOWN_LAYERS } from "../../src/dropdown/dropdownLayers";
+import { WEB_MODAL_LAYERS } from "../../src/modal/modalLayers";
 
 test("drag-select normalizes a box dragged in any direction", () => {
   assert.deepEqual(dragSelectableBox({ x: 320, y: 180 }, { x: 120, y: 60 }), {
@@ -66,6 +72,23 @@ test("drag-select converts page coordinates into fixed viewport coordinates", ()
   );
 });
 
+test("drag-select overlay clears shared portal surfaces", () => {
+  assert.equal(
+    dragSelectableOverlayClearsSurface(
+      DRAG_SELECTABLE_LAYERS.overlay,
+      WEB_MODAL_LAYERS.surface,
+    ),
+    true,
+  );
+  assert.equal(
+    dragSelectableOverlayClearsSurface(
+      DRAG_SELECTABLE_LAYERS.overlay,
+      DROPDOWN_LAYERS.surface,
+    ),
+    true,
+  );
+});
+
 test("drag-select provider exposes provider, target, and listener hooks", () => {
   const contextSource = readSource(
     "../../src/drag-select/DragSelectableContext.tsx",
@@ -84,12 +107,16 @@ test("drag-select provider exposes provider, target, and listener hooks", () => 
   assert.match(contextSource, /useDragSelectableTarget/);
   assert.match(contextSource, /useDragSelectableChanges/);
   assert.match(providerSource, /document\.addEventListener\("pointermove"/);
+  assert.match(providerSource, /emptyMatchingTargets/);
   assert.match(providerSource, /measureDragSelectableTargets/);
   assert.match(providerSource, /onSelectionChange/);
+  assert.match(providerSource, /overlayZIndex/);
   assert.match(overlaySource, /createPortal/);
+  assert.match(overlaySource, /DRAG_SELECTABLE_LAYERS\.overlay/);
   assert.match(overlaySource, /theme\.colors\.primary/);
   assert.match(nativeProviderSource, /registerTarget/);
   assert.match(nativeProviderSource, /emptyDragSelectableState/);
+  assert.match(indexSource, /dragSelectableLayers/);
   assert.match(indexSource, /dragSelectableModel/);
 });
 
