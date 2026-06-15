@@ -34,6 +34,20 @@ export const dragSelectableInteractiveSelector = [
   "[role='textbox']",
 ].join(",");
 
+export function dragSelectableRegistrationInvalidatesRegistry(
+  previous: DragSelectableTargetRegistration | undefined,
+  next: DragSelectableTargetRegistration,
+): boolean {
+  if (!previous) {
+    return true;
+  }
+  return (
+    previous.id !== next.id ||
+    previous.node !== next.node ||
+    previous.disabled !== next.disabled
+  );
+}
+
 export function measureDragSelectableTargets(
   targets: Iterable<DragSelectableTargetRegistration>,
 ): DragSelectableMeasuredTarget[] {

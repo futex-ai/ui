@@ -18,6 +18,7 @@ import {
   dragSelectableEventTarget,
   dragSelectablePointFromUnknownEvent,
   dragSelectablePointerSource,
+  dragSelectableRegistrationInvalidatesRegistry,
   dragSelectableSnapshotsForIds,
   dragSelectableShouldStartFromTarget,
   measureDragSelectableTargets,
@@ -76,11 +77,7 @@ export function DragSelectableProvider({
     (target: DragSelectableTargetRegistration) => {
       const previous = targetsRef.current.get(target.id);
       targetsRef.current.set(target.id, target);
-      if (
-        previous?.node !== target.node ||
-        previous.data !== target.data ||
-        previous.disabled !== target.disabled
-      ) {
+      if (dragSelectableRegistrationInvalidatesRegistry(previous, target)) {
         setRegistryVersion((version) => version + 1);
       }
       return () => {
@@ -99,11 +96,14 @@ export function DragSelectableProvider({
     if (!current) {
       return;
     }
-    if (current.data === target.data && current.disabled === target.disabled) {
+    const next = { ...current, ...target };
+    if (current.data === next.data && current.disabled === next.disabled) {
       return;
     }
-    targetsRef.current.set(target.id, { ...current, ...target });
-    setRegistryVersion((version) => version + 1);
+    targetsRef.current.set(target.id, next);
+    if (dragSelectableRegistrationInvalidatesRegistry(current, next)) {
+      setRegistryVersion((version) => version + 1);
+    }
   }, []);
 
   const selectedTargets = useMemo(

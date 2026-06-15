@@ -6,7 +6,10 @@ import {
   DRAG_SELECTABLE_LAYERS,
   dragSelectableOverlayClearsSurface,
 } from "../../src/drag-select/dragSelectableLayers";
-import { dragSelectableShouldStartFromTarget } from "../../src/drag-select/dragSelectableDom";
+import {
+  dragSelectableRegistrationInvalidatesRegistry,
+  dragSelectableShouldStartFromTarget,
+} from "../../src/drag-select/dragSelectableDom";
 import {
   dragSelectableIdsEqual,
   dragSelectableBoundsForBox,
@@ -55,6 +58,14 @@ test("drag-select normalizes configurable movement thresholds", () => {
 });
 
 test("drag-select respects a custom movement threshold", () => {
+  assert.equal(
+    hasDragSelectableMoved({ x: 10, y: 10 }, { x: 10, y: 10 }, 0),
+    false,
+  );
+  assert.equal(
+    hasDragSelectableMoved({ x: 10, y: 10 }, { x: 10.5, y: 10 }, 0),
+    true,
+  );
   assert.equal(
     hasDragSelectableMoved({ x: 10, y: 10 }, { x: 21, y: 10 }, 12),
     false,
@@ -168,6 +179,42 @@ test("drag-select ignores nested interactive controls inside targets", () => {
   });
 });
 
+test("drag-select target metadata does not invalidate provider state", () => {
+  withFakeDragSelectableDom(() => {
+    const node = new FakeElement();
+    const previous = dragSelectableRegistration(node, {
+      data: { label: "Previous" },
+    });
+    const nextData = dragSelectableRegistration(node, {
+      data: { label: "Next" },
+    });
+    const nextDisabled = dragSelectableRegistration(node, {
+      data: previous.data,
+      disabled: true,
+    });
+    const nextNode = dragSelectableRegistration(new FakeElement(), {
+      data: previous.data,
+    });
+
+    assert.equal(
+      dragSelectableRegistrationInvalidatesRegistry(undefined, previous),
+      true,
+    );
+    assert.equal(
+      dragSelectableRegistrationInvalidatesRegistry(previous, nextData),
+      false,
+    );
+    assert.equal(
+      dragSelectableRegistrationInvalidatesRegistry(previous, nextDisabled),
+      true,
+    );
+    assert.equal(
+      dragSelectableRegistrationInvalidatesRegistry(previous, nextNode),
+      true,
+    );
+  });
+});
+
 test("drag-select selection callback is stable across callback identities", () => {
   const providerSource = readSource(
     "../../src/drag-select/DragSelectableProvider.web.tsx",
@@ -271,8 +318,10 @@ function readSource(relativePath: string) {
 
 function dragSelectableRegistration(
   node: FakeElement,
+  options: Omit<DragSelectableTargetRegistration, "id" | "node"> = {},
 ): DragSelectableTargetRegistration {
   return {
+    ...options,
     id: "target",
     node: node as unknown as DragSelectableTargetRegistration["node"],
   };

@@ -62,10 +62,12 @@ export function hasDragSelectableMoved(
   current: DragSelectablePoint,
   threshold = dragSelectableDefaultThreshold,
 ): boolean {
-  return (
-    Math.abs(start.x - current.x) >= threshold ||
-    Math.abs(start.y - current.y) >= threshold
-  );
+  const horizontalDistance = Math.abs(start.x - current.x);
+  const verticalDistance = Math.abs(start.y - current.y);
+  if (threshold <= 0) {
+    return horizontalDistance > 0 || verticalDistance > 0;
+  }
+  return horizontalDistance >= threshold || verticalDistance >= threshold;
 }
 
 export function dragSelectablePointFromEvent(
