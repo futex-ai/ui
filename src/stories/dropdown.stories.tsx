@@ -6,9 +6,14 @@ import { DropdownSelector } from "../index";
 
 import {
   ActionMenuExample,
+  BottomEdgeFlipExample,
   ChipMultiSelectExample,
+  EdgePlacementGridExample,
+  EndAlignedMenuExample,
+  HorizontalEdgeClampExample,
   InputBackedComboboxExample,
   LongSelectorExample,
+  PlacementPlaygroundExample,
   SearchableSelectorExample,
   SelectorExample,
   SelectorWithHeaderFooterExample,
@@ -99,6 +104,36 @@ export const ChipMultiSelect: Story = {
       <ChipMultiSelectExample />
     </StorySurface>
   ),
+};
+
+export const EdgePlacementGrid: Story = {
+  name: "Placement · edge grid",
+  parameters: { layout: "fullscreen" },
+  render: () => <EdgePlacementGridExample />,
+};
+
+export const BottomEdgeFlip: Story = {
+  name: "Placement · flips above the bottom edge",
+  parameters: { layout: "fullscreen" },
+  render: () => <BottomEdgeFlipExample />,
+};
+
+export const HorizontalEdgeClamp: Story = {
+  name: "Placement · clamps to the side edges",
+  parameters: { layout: "fullscreen" },
+  render: () => <HorizontalEdgeClampExample />,
+};
+
+export const EndAlignedMenu: Story = {
+  name: "Placement · end-aligned menu",
+  parameters: { layout: "fullscreen" },
+  render: () => <EndAlignedMenuExample />,
+};
+
+export const PlacementPlayground: Story = {
+  name: "Placement · playground",
+  parameters: { layout: "fullscreen" },
+  render: () => <PlacementPlaygroundExample />,
 };
 
 function SelectorSizesExample() {
