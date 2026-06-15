@@ -112,6 +112,11 @@ export function dragSelectableShouldStartFromTarget(
     targets,
   );
   if (registeredTarget && !registeredTarget.disabled) {
+    const interactive = dragSelectableClosestInteractive(target);
+    const registeredElement = registeredTarget.node as unknown as Element;
+    if (interactive && interactive !== registeredElement) {
+      return false;
+    }
     return true;
   }
   const interactive = dragSelectableClosestInteractive(target);

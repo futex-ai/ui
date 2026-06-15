@@ -6,6 +6,7 @@ import {
   DRAG_SELECTABLE_LAYERS,
   dragSelectableOverlayClearsSurface,
 } from "../../src/drag-select/dragSelectableLayers";
+import { dragSelectableShouldStartFromTarget } from "../../src/drag-select/dragSelectableDom";
 import {
   dragSelectableBoundsForBox,
   dragSelectableBox,
@@ -13,6 +14,7 @@ import {
   dragSelectablePointFromEvent,
   hasDragSelectableMoved,
 } from "../../src/drag-select/dragSelectableModel";
+import type { DragSelectableTargetRegistration } from "../../src/drag-select/dragSelectableTypes";
 import { DROPDOWN_LAYERS } from "../../src/dropdown/dropdownLayers";
 import { WEB_MODAL_LAYERS } from "../../src/modal/modalLayers";
 
@@ -89,6 +91,27 @@ test("drag-select overlay clears shared portal surfaces", () => {
   );
 });
 
+test("drag-select ignores nested interactive controls inside targets", () => {
+  withFakeDragSelectableDom(() => {
+    const row = new FakeElement();
+    const nestedButton = row.append(new FakeElement("button"));
+    const rootButton = new FakeElement("button");
+
+    assert.equal(
+      dragSelectableShouldStartFromTarget(nestedButton as unknown as Node, [
+        dragSelectableRegistration(row),
+      ]),
+      false,
+    );
+    assert.equal(
+      dragSelectableShouldStartFromTarget(rootButton as unknown as Node, [
+        dragSelectableRegistration(rootButton),
+      ]),
+      true,
+    );
+  });
+});
+
 test("drag-select provider exposes provider, target, and listener hooks", () => {
   const contextSource = readSource(
     "../../src/drag-select/DragSelectableContext.tsx",
@@ -125,4 +148,89 @@ test("drag-select provider exposes provider, target, and listener hooks", () => 
 
 function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
+}
+
+function dragSelectableRegistration(
+  node: FakeElement,
+): DragSelectableTargetRegistration {
+  return {
+    id: "target",
+    node: node as unknown as DragSelectableTargetRegistration["node"],
+  };
+}
+
+function withFakeDragSelectableDom(run: () => void) {
+  const globals = globalThis as FakeDomGlobals;
+  const hadElement = "Element" in globals;
+  const hadNode = "Node" in globals;
+  const previousElement = globals.Element;
+  const previousNode = globals.Node;
+  globals.Element = FakeElement;
+  globals.Node = FakeNode;
+  try {
+    run();
+  } finally {
+    restoreFakeDomGlobal(globals, "Element", hadElement, previousElement);
+    restoreFakeDomGlobal(globals, "Node", hadNode, previousNode);
+  }
+}
+
+function restoreFakeDomGlobal(
+  globals: FakeDomGlobals,
+  key: "Element" | "Node",
+  hadValue: boolean,
+  previousValue: unknown,
+) {
+  if (hadValue) {
+    globals[key] = previousValue;
+    return;
+  }
+  delete globals[key];
+}
+
+type FakeDomGlobals = {
+  Element?: unknown;
+  Node?: unknown;
+};
+
+class FakeNode {
+  parentElement: FakeElement | null = null;
+}
+
+class FakeElement extends FakeNode {
+  private readonly selectorName: string | null;
+  private readonly children: FakeNode[] = [];
+
+  constructor(selectorName: string | null = null) {
+    super();
+    this.selectorName = selectorName;
+  }
+
+  append<T extends FakeNode>(child: T): T {
+    child.parentElement = this;
+    this.children.push(child);
+    return child;
+  }
+
+  contains(target: FakeNode): boolean {
+    if (target === this) {
+      return true;
+    }
+    return this.children.some(
+      (child) =>
+        child === target ||
+        (child instanceof FakeElement && child.contains(target)),
+    );
+  }
+
+  closest(selector: string): FakeElement | null {
+    let current: FakeElement | null = this;
+    while (current) {
+      if (current.selectorName && selector.includes(current.selectorName)) {
+        return current;
+      }
+      current = current.parentElement;
+    }
+    return null;
+  }
 }
