@@ -1,7 +1,57 @@
 /** Shared chrome for the {@link Input} field and bare {@link InputFrame} box. */
 import { StyleSheet } from "react-native";
 
+import type { ControlSize } from "../controlSize";
 import type { SharedUiTheme } from "../theme";
+
+/**
+ * Per-size geometry for the framed input: the bordered box height, the gap
+ * between the input and its adornments, the horizontal padding, the inner
+ * `TextInput` height and type scale, and the matching icon diameter. `md`
+ * matches the original 40px box; `sm` is the compact density and `lg` the
+ * roomier, touch-first density.
+ */
+const INPUT_SIZES: Record<
+  ControlSize,
+  {
+    boxHeight: number;
+    gap: number;
+    iconSize: number;
+    inputFontSize: number;
+    inputHeight: number;
+    paddingHorizontal: number;
+  }
+> = {
+  sm: {
+    boxHeight: 32,
+    gap: 6,
+    iconSize: 14,
+    inputFontSize: 13,
+    inputHeight: 30,
+    paddingHorizontal: 10,
+  },
+  md: {
+    boxHeight: 40,
+    gap: 8,
+    iconSize: 16,
+    inputFontSize: 14,
+    inputHeight: 38,
+    paddingHorizontal: 12,
+  },
+  lg: {
+    boxHeight: 48,
+    gap: 10,
+    iconSize: 18,
+    inputFontSize: 16,
+    inputHeight: 46,
+    paddingHorizontal: 14,
+  },
+};
+
+/** Diameter of the prefix / suffix / clear icons for a given input size, in px. */
+export function inputIconSize(size: ControlSize) {
+  return INPUT_SIZES[size].iconSize;
+}
 
 /**
  * The label / message tokens shared by every labelled field — the `Input` field
@@ -38,9 +88,13 @@ export function fieldChromeTokens(theme: SharedUiTheme) {
   };
 }
 
-export function createInputStyles(theme: SharedUiTheme) {
+export function createInputStyles(
+  theme: SharedUiTheme,
+  size: ControlSize = "md",
+) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
   const chrome = fieldChromeTokens(theme);
+  const sizing = INPUT_SIZES[size];
   return StyleSheet.create({
     field: chrome.field,
     fieldLabel: chrome.fieldLabel,
@@ -55,9 +109,9 @@ export function createInputStyles(theme: SharedUiTheme) {
       borderRadius: theme.radii.md,
       borderWidth: 1,
       flexDirection: "row",
-      gap: 8,
-      height: 40,
-      paddingHorizontal: 12,
+      gap: sizing.gap,
+      height: sizing.boxHeight,
+      paddingHorizontal: sizing.paddingHorizontal,
     },
     boxActive: { borderColor: theme.colors.primary },
     boxInvalid: { borderColor: theme.colors.rose },
@@ -67,8 +121,8 @@ export function createInputStyles(theme: SharedUiTheme) {
       ...baseText,
       color: theme.colors.ink,
       flex: 1,
-      fontSize: 14,
-      height: 38,
+      fontSize: sizing.inputFontSize,
+      height: sizing.inputHeight,
       minWidth: 0,
     },
     // Decorative icon wrapper (centred so it lines up with the input baseline).

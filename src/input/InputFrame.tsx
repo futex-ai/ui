@@ -11,17 +11,17 @@ import {
   ViewStyle,
 } from "react-native";
 
+import type { ControlSize } from "../controlSize";
 import { hideWebOutline, hideWebOutlineView, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
-import { createInputStyles } from "./inputStyles";
-
-/** Diameter of the prefix/suffix/clear icons, in px. */
-const ICON_SIZE = 16;
+import { createInputStyles, inputIconSize } from "./inputStyles";
 
 export type InputFrameProps = Omit<TextInputProps, "style"> & {
   /** Renders the rose invalid border (independent of any message). */
   invalid?: boolean;
+  /** Control density: `sm`, `md` (default), or `lg`. */
+  size?: ControlSize;
   /** Force the active (primary) border, e.g. while an attached popover is open. */
   active?: boolean;
   /** Marks the input required (wires `aria-required`). */
@@ -80,6 +80,7 @@ export function InputFrame({
   onSuffixIconPress,
   prefixIcon: PrefixIcon,
   required = false,
+  size = "md",
   style,
   suffixIcon: SuffixIcon,
   suffixIconLabel,
@@ -87,7 +88,8 @@ export function InputFrame({
   ...props
 }: InputFrameProps) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(() => createInputStyles(theme), [theme]);
+  const styles = useMemo(() => createInputStyles(theme, size), [theme, size]);
+  const iconSize = inputIconSize(size);
   const focus = useFocusRing();
   const showClear = clearable && (clearVisible ?? Boolean(props.value));
   const borderActive = focus.focused || active;
@@ -129,7 +131,7 @@ export function InputFrame({
     >
       {PrefixIcon ? (
         <View aria-hidden style={styles.icon}>
-          <PrefixIcon color={theme.colors.muted} size={ICON_SIZE} />
+          <PrefixIcon color={theme.colors.muted} size={iconSize} />
         </View>
       ) : null}
       <TextInput
@@ -159,7 +161,7 @@ export function InputFrame({
           onPress={handleClear}
           style={[styles.iconButton, hideWebOutlineView]}
         >
-          <CircleX color={theme.colors.muted} size={ICON_SIZE} />
+          <CircleX color={theme.colors.muted} size={iconSize} />
         </Pressable>
       ) : null}
       {SuffixIcon ? (
@@ -168,6 +170,7 @@ export function InputFrame({
           color={theme.colors.muted}
           label={suffixIconLabel}
           onPress={onSuffixIconPress}
+          size={iconSize}
           style={[styles.iconButton, suffixIconStyle]}
         />
       ) : null}
@@ -186,15 +189,17 @@ function SuffixAdornment({
   color,
   label,
   onPress,
+  size,
   style,
 }: {
   Icon: LucideIcon;
   color: string;
   label?: string;
   onPress?: () => void;
+  size: number;
   style: StyleProp<ViewStyle>;
 }) {
-  const icon = <Icon color={color} size={ICON_SIZE} />;
+  const icon = <Icon color={color} size={size} />;
   if (!onPress) {
     return (
       <View aria-hidden style={style}>

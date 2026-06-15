@@ -6,7 +6,8 @@ surfaces. The first consumers are the accounting app and the Juno app.
 ## Key Features
 
 - Shared dropdown, selector, combobox, segmented control, radio card, switch,
-  and modal primitives.
+  button, labelled input, modal, and avatar primitives.
+- A shared `sm` / `md` / `lg` size scale (`ControlSize`) for buttons and inputs.
 - Themeable visual tokens so consumers can use their own brand primary color.
 - Expo and React Native Web compatible platform files.
 - Focused unit tests, browser interaction tests, and package export checks.
@@ -18,9 +19,11 @@ surfaces. The first consumers are the accounting app and the Juno app.
 The package name is `@firna/ui`. Public exports are available from:
 
 - `@firna/ui` for all public components and helpers.
+- `@firna/ui/avatar` for the themed circular initials avatar.
+- `@firna/ui/button` for the themed button with tone, size, and block variants.
 - `@firna/ui/date` for single-date and date-range fields.
 - `@firna/ui/dropdown` for dropdown, selector, combobox, and layer helpers.
-- `@firna/ui/input` for shared input frames and labelled inputs.
+- `@firna/ui/input` for the labelled text input and bare input frame.
 - `@firna/ui/modal` for web modal frame, portal, model, and layer helpers.
 - `@firna/ui/popover` for generic anchored popovers.
 - `@firna/ui/radio` for themed titled radio-option cards.
@@ -112,8 +115,10 @@ The package export map intentionally separates runtime targets:
 - Closing a same-repository PR marks the sticky comment inactive and attempts
   to delete aliased preview deployments for that PR branch; if Cloudflare
   cleanup cannot complete safely, the comment reports the retained reason.
-- Storybook examples are grouped under `Dropdown/Examples`, `Modal/Examples`,
-  and `Theme/Examples`.
+- Storybook examples are grouped under one top-level folder per family:
+  `Avatar/Examples`, `Button/Examples`, `Date/Examples`, `Dropdown/Examples`,
+  `Input/Examples`, `Modal/Examples`, `Popover/Examples`, `Radio/Examples`,
+  `Segmented/Examples`, `Switch/Examples`, and `Theme/Examples`.
 - Required repository variable: `CLOUDFLARE_ACCOUNT_ID`.
 - Required repository secret: `CLOUDFLARE_PAGES_API_TOKEN` or
   `CLOUDFLARE_API_TOKEN`.
@@ -121,6 +126,10 @@ The package export map intentionally separates runtime targets:
 ## Key Code Jumping Points
 
 - Shared theme boundary: [src/theme.tsx](src/theme.tsx)
+- Avatar component: [src/avatar/README.md](src/avatar/README.md)
+- Shared control-size scale: [src/controlSize.ts](src/controlSize.ts)
+- Button component: [src/button/README.md](src/button/README.md)
+- Input component: [src/input/README.md](src/input/README.md)
 - Dropdown components: [src/dropdown/README.md](src/dropdown/README.md)
 - Modal components: [src/modal/README.md](src/modal/README.md)
 - Radio card component: [src/radio/README.md](src/radio/README.md)

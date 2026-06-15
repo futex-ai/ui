@@ -57,6 +57,11 @@ export const BareField: Story = {
   render: () => surface(<BareExample />),
 };
 
+export const FieldSizes: Story = {
+  name: "Field sizes",
+  render: () => surface(<FieldSizesExample />),
+};
+
 function LabelledExample() {
   const [value, setValue] = useState("");
   return (
@@ -142,5 +147,39 @@ function BareExample() {
       placeholder="Promo code"
       value={value}
     />
+  );
+}
+
+function FieldSizesExample() {
+  const [small, setSmall] = useState("");
+  const [medium, setMedium] = useState("");
+  const [large, setLarge] = useState("");
+  return (
+    <>
+      <Input
+        label="Small field"
+        onChangeText={setSmall}
+        placeholder="Search"
+        prefixIcon={Search}
+        size="sm"
+        value={small}
+      />
+      <Input
+        label="Medium field"
+        onChangeText={setMedium}
+        placeholder="Search"
+        prefixIcon={Search}
+        size="md"
+        value={medium}
+      />
+      <Input
+        label="Large field"
+        onChangeText={setLarge}
+        placeholder="Search"
+        prefixIcon={Search}
+        size="lg"
+        value={large}
+      />
+    </>
   );
 }

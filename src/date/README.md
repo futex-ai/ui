@@ -37,7 +37,10 @@ shared `CalendarMonth` itself and the wheel variant renders our own
 - **`DateRangeField`** — start–end range built from two independent
   `DateInput`s, with ordering validation.
 - **`CalendarMonth`** — the shared, theme-driven month grid (header nav,
-  Monday-first weekday row, labelled day buttons).
+  Monday-first weekday row, labelled day buttons). Clicking the month/year title
+  swaps the grid for a year picker — a paged 3×4 grid of year buttons — so a
+  far-off year is one jump away instead of many month steps. Picking a year keeps
+  the month and returns to the day grid; it does not commit a date.
 
 ## Value model
 
@@ -138,6 +141,12 @@ its parent. The calendar is therefore lifted at each wrapper that would trap it:
 - Day cells are labelled `button`s (`D Mon YYYY`) with `accessibilityState`
   selected/disabled; adjacent-month and out-of-bounds days are non-selectable;
   nav buttons are labelled.
+- The month/year title is a labelled `button` that toggles the year picker; its
+  label states the current action (`<Month YYYY>, change year` /
+  `<YYYY – YYYY>, back to month`). In the year picker the header chevrons relabel
+  to `Previous years` / `Next years` and page whole year blocks, and each year is
+  a labelled `button` with `accessibilityState` selected/disabled — years wholly
+  outside the min/max window are non-selectable.
 - Wheel rows are labelled `button`s (`Day 31`, `Month Mar`, `Year 2026`) with
   `accessibilityState` selected/disabled — tapping a row selects it without
   needing a fling, so the wheel is reachable by pointer and keyboard, not only by

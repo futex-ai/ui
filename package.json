@@ -40,6 +40,16 @@
       "react-native": "./dist/index.js",
       "import": "./dist/node/index.js"
     },
+    "./avatar": {
+      "types": "./dist/node/avatar/index.d.ts",
+      "react-native": "./dist/avatar/index.js",
+      "import": "./dist/node/avatar/index.js"
+    },
+    "./button": {
+      "types": "./dist/node/button/index.d.ts",
+      "react-native": "./dist/button/index.js",
+      "import": "./dist/node/button/index.js"
+    },
     "./date": {
       "types": "./dist/node/date/index.d.ts",
       "react-native": "./dist/date/index.js",

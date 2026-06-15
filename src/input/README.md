@@ -15,6 +15,8 @@ library — other framed inputs (e.g. the date field's web trigger) build on it.
   the box, plus an opt-in accessible `clearable` ✕ button.
 - Own the sage focus ring on the whole box and hide the browser's default
   outline, using shared theme colors and radii.
+- Size the field with the shared `ControlSize` scale (`sm` / `md` / `lg`),
+  scaling the box height, padding, text, and icons together.
 - Expose a bare box ({@link InputFrame}) so callers that own their own
   label/messages or popover (like the date field) can embed just the framed
   input.
@@ -62,6 +64,15 @@ and assistive tech) for actions that already have an accessible path.
 `onClear` when provided. Pass `clearVisible` to drive the button's visibility
 explicitly when the value is committed separately from the live input text (the
 date field does this).
+
+### Sizes
+
+`size` takes the shared `ControlSize` (`sm` / `md` / `lg`); `md` is the default
+and matches the original 40px box. The size scales the box height, padding, the
+input text, and the prefix/suffix/clear icons together. The label, hint, and
+error messages keep a constant scale so dense and roomy fields read the same.
+Buttons share this scale, so a field and its submit button can be sized to
+match.
 
 ## Styling
 

@@ -115,6 +115,7 @@ export const X = Icon;
 export async function writeTypePeerStubs(consumerRoot) {
   await writeStubPackage(consumerRoot, "react", {
     "index.d.ts": `export type Dispatch<T> = (value: T) => void;
+export type PropsWithChildren<P = unknown> = P & { children?: ReactNode };
 export type ReactNode = unknown;
 export type ReactPortal = unknown;
 export type Ref<T> = ((instance: T | null) => void) | RefObject<T | null> | null;
