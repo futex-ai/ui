@@ -1,9 +1,35 @@
+[package]
+name = "firna-ui-release"
+version = "0.1.0"
+description = "Release metadata package for the @firna/ui npm library."
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+publish = false
+readme = "README.md"
+repository = "https://github.com/futex-ai/ui"
+homepage = "https://github.com/futex-ai/ui#readme"
+include = [
+    "/Cargo.toml",
+    "/README.md",
+    "/CHANGELOG.md",
+    "/release-plz.toml",
+    "/package.json",
+    "/package-lock.json",
+    "/src/**",
+    "/docs/**",
+    "/crates/firna-ui-release/**",
+]
+
+[lib]
+path = "crates/firna-ui-release/src/lib.rs"
+
 [workspace]
 members = ["xtask"]
 resolver = "2"
 
 [workspace.package]
-authors = ["Futex"]
+authors = ["Firna"]
 edition = "2024"
 license = "MIT"
 version = "0.1.0"

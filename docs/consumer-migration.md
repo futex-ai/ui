@@ -8,23 +8,23 @@ migration should be a follow-up change in the accounting repo.
 
 Recommended path:
 
-1. Add `@futex/ui` to the accounting app dependency graph once this package is
+1. Add `@firna/ui` to the accounting app dependency graph once this package is
    published or linked into the workspace.
 2. Wrap the app or product shell in `SharedUiThemeProvider` with the default
    theme, or omit the provider if the default accounting-style theme is enough.
-3. Replace imports from `@/components/dropdown/*` with `@futex/ui/dropdown`.
-4. Replace imports from `@/components/modal/*` with `@futex/ui/modal`.
+3. Replace imports from `@/components/dropdown/*` with `@firna/ui/dropdown`.
+4. Replace imports from `@/components/modal/*` with `@firna/ui/modal`.
 5. Replace imports from `@/components/SegmentedControl` with
-   `@futex/ui/segmented`; Profit & loss source filters can use
+   `@firna/ui/segmented`; Profit & loss source filters can use
    `sizing="content"` with `wrap`.
-6. Replace imports from `@/components/RadioCard` with `@futex/ui/radio`.
-7. Replace imports from `@/components/Switch` with `@futex/ui/switch`.
+6. Replace imports from `@/components/RadioCard` with `@firna/ui/radio`.
+7. Replace imports from `@/components/Switch` with `@firna/ui/switch`.
 8. Replace the `Button` (and `UiButton` alias) exported from `@/components/ui`
-   with `@futex/ui/button`; the tone, block, and icon props match, and `size`
+   with `@firna/ui/button`; the tone, block, and icon props match, and `size`
    is extended with a new `lg` (46px) variant beyond the accounting button's
    `sm` / `md`. The shared button additionally treats a missing `onPress` as
    disabled, so audit any decorative `Button` without a handler.
-9. Replace the `Avatar` export from `@/components/ui` with `@futex/ui/avatar`
+9. Replace the `Avatar` export from `@/components/ui` with `@firna/ui/avatar`
    (the `tone="sage"` default becomes `tone="solid"`).
 10. Remove the duplicated accounting component files only after all imports,
     tests, and smoke coverage pass.
@@ -43,22 +43,22 @@ Juno should consume the same components with Juno's purple primary color family.
 
 Recommended path:
 
-1. Add `@futex/ui` to the Juno app dependency graph once this package is
+1. Add `@firna/ui` to the Juno app dependency graph once this package is
    published or linked into the workspace.
 2. Wrap the relevant app shell with:
 
    ```tsx
-   import { SharedUiThemeProvider, junoSharedUiTheme } from "@futex/ui";
+   import { SharedUiThemeProvider, junoSharedUiTheme } from "@firna/ui";
 
    <SharedUiThemeProvider theme={junoSharedUiTheme}>
      <App />
    </SharedUiThemeProvider>;
    ```
 
-3. Import dropdowns from `@futex/ui/dropdown`, radio cards from
-   `@futex/ui/radio`, segmented controls from `@futex/ui/segmented`, switches
-   from `@futex/ui/switch`, buttons from `@futex/ui/button`, avatars from
-   `@futex/ui/avatar`, and web modals from `@futex/ui/modal`.
+3. Import dropdowns from `@firna/ui/dropdown`, radio cards from
+   `@firna/ui/radio`, segmented controls from `@firna/ui/segmented`, switches
+   from `@firna/ui/switch`, buttons from `@firna/ui/button`, avatars from
+   `@firna/ui/avatar`, and web modals from `@firna/ui/modal`.
 4. Keep native iOS/Android sheets, action sheets, and OS pickers in Juno app
    code; this package's `WebModalFrame` remains web-only.
 5. Run Juno app tests, typecheck, browser smoke tests, `cargo xtask check`,
@@ -66,8 +66,8 @@ Recommended path:
 
 ## Follow-Up Gaps
 
-- Decide how this package will be published or linked into the accounting and
-  Juno workspaces.
+- Use the published `@firna/ui` package for normal migrations, or the tarball
+  from `npm pack` for pre-release app smoke tests.
 - Add consumer-specific visual smoke coverage after each app migrates imports.
 - Confirm whether either app needs more theme tokens beyond the primary color
   family and existing semantic tokens.

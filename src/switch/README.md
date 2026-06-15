@@ -18,7 +18,7 @@ Use `Switch` for binary settings where the label is owned by the surrounding
 row:
 
 ```tsx
-import { Switch } from "@futex/ui/switch";
+import { Switch } from "@firna/ui/switch";
 
 <Switch
   accessibilityLabel="Analytics cookies"

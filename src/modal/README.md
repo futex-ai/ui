@@ -35,7 +35,7 @@ popovers, native date pickers, native bottom sheets, or native action sheets.
 ## Quick Start
 
 ```tsx
-import { WebModalFrame } from "@futex/ui/modal";
+import { WebModalFrame } from "@firna/ui/modal";
 
 <WebModalFrame
   footer={<Button onPress={onClose}>Done</Button>}

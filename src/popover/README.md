@@ -23,7 +23,7 @@ dismissal. `Popover` adds only the open-state controller and the trigger props.
 ## Usage
 
 ```tsx
-import { Popover } from "@futex/ui/popover";
+import { Popover } from "@firna/ui/popover";
 
 <Popover
   minWidth={240}

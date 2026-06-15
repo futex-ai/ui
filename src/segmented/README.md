@@ -21,7 +21,7 @@ Use `SegmentedControl` for compact selectors where all options should stay
 visible:
 
 ```tsx
-import { SegmentedControl } from "@futex/ui/segmented";
+import { SegmentedControl } from "@firna/ui/segmented";
 
 <SegmentedControl
   label="Report"

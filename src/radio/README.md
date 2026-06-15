@@ -20,7 +20,7 @@ Group related cards under a labelled `radiogroup` owned by the consuming form:
 ```tsx
 import { View } from "react-native";
 
-import { RadioCard } from "@futex/ui/radio";
+import { RadioCard } from "@firna/ui/radio";
 
 <View accessibilityLabel="Accounting basis" accessibilityRole="radiogroup">
   <RadioCard

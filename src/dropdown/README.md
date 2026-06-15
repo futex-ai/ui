@@ -2,7 +2,7 @@
 
 Reusable React Native and React Native Web dropdown primitives. They provide a
 shared surface for form selects, compact filter pills, action menus, and
-input-backed comboboxes in Futex apps.
+input-backed comboboxes in Firna apps.
 
 ## Responsibilities
 
@@ -28,7 +28,7 @@ input-backed comboboxes in Futex apps.
 Use `DropdownSelector` for value selects:
 
 ```tsx
-import { DropdownSelector } from "@futex/ui/dropdown";
+import { DropdownSelector } from "@firna/ui/dropdown";
 
 <DropdownSelector
   label="Scheme"
@@ -79,7 +79,7 @@ Use `ReadOnlySelector` when the UI is selector-shaped but has no scoped data
 behavior yet:
 
 ```tsx
-import { ReadOnlySelector } from "@futex/ui/dropdown";
+import { ReadOnlySelector } from "@firna/ui/dropdown";
 
 <ReadOnlySelector label="Date format" value="DD/MM/YYYY" />;
 ```
@@ -98,7 +98,7 @@ focus stays in the input.
 Use `ComboboxMultiSelect` for removable-chip autocomplete controls:
 
 ```tsx
-import { ComboboxMultiSelect } from "@futex/ui/dropdown";
+import { ComboboxMultiSelect } from "@firna/ui/dropdown";
 
 <ComboboxMultiSelect
   onChange={setBookIds}

@@ -13,6 +13,17 @@ test("close PR cleanup force-deletes preview aliases", () => {
   );
 });
 
+test("storybook deploys to the existing Futex Cloudflare Pages project", () => {
+  const source = readWorkflow();
+
+  assert.match(source, /CLOUDFLARE_PROJECT_NAME: futex-ui-storybook/);
+  assert.match(
+    source,
+    /STORYBOOK_COMMENT_MARKER: "<!-- futex-ui-storybook-preview -->"/,
+  );
+  assert.doesNotMatch(source, /firna-ui-storybook/);
+});
+
 function readWorkflow() {
   return readFileSync(
     new URL("../../.github/workflows/storybook.yml", import.meta.url),
