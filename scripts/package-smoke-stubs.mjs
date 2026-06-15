@@ -119,10 +119,15 @@ export type PropsWithChildren<P = unknown> = P & { children?: ReactNode };
 export type ReactNode = unknown;
 export type ReactPortal = unknown;
 export type Ref<T> = ((instance: T | null) => void) | RefObject<T | null> | null;
+export interface Context<T> {
+  Provider: unknown;
+  _currentValue?: T;
+}
 export interface RefObject<T> {
   current: T;
 }
 export type SetStateAction<T> = T | ((previous: T) => T);
+export declare function createContext<T>(defaultValue: T): Context<T>;
 export namespace JSX {
   export type Element = unknown;
 }
