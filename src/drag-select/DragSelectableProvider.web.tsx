@@ -9,6 +9,7 @@ import {
 import {
   dragSelectableBoundsForBox,
   dragSelectableBox,
+  dragSelectableIdsEqual,
   hasDragSelectableMoved,
 } from "./dragSelectableModel";
 import type { DragSelectablePoint } from "./dragSelectableModel";
@@ -63,6 +64,7 @@ export function DragSelectableProvider({
   onSelectionChangeRef.current = onSelectionChange;
   const [registryVersion, setRegistryVersion] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const notifiedSelectedIdsRef = useRef<readonly string[]>(selectedIds);
   const [activeDrag, setActiveDrag] = useState<DragSelectableActiveDrag | null>(
     null,
   );
@@ -132,6 +134,10 @@ export function DragSelectableProvider({
   }, [state]);
 
   useEffect(() => {
+    if (dragSelectableIdsEqual(notifiedSelectedIdsRef.current, selectedIds)) {
+      return;
+    }
+    notifiedSelectedIdsRef.current = [...selectedIds];
     onSelectionChangeRef.current?.({
       selectedCount: selectedTargets.length,
       selectedIds,

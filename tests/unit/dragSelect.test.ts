@@ -8,6 +8,7 @@ import {
 } from "../../src/drag-select/dragSelectableLayers";
 import { dragSelectableShouldStartFromTarget } from "../../src/drag-select/dragSelectableDom";
 import {
+  dragSelectableIdsEqual,
   dragSelectableBoundsForBox,
   dragSelectableBox,
   dragSelectableIdsForBox,
@@ -58,6 +59,13 @@ test("drag-select returns every target intersecting the independent box", () => 
     dragSelectableBoundsForBox(targets, box).map((target) => target.id),
     ["row_b", "row_c"],
   );
+});
+
+test("drag-select compares selected ids by value", () => {
+  assert.equal(dragSelectableIdsEqual([], []), true);
+  assert.equal(dragSelectableIdsEqual(["row_a"], ["row_a"]), true);
+  assert.equal(dragSelectableIdsEqual(["row_a"], ["row_b"]), false);
+  assert.equal(dragSelectableIdsEqual(["row_a"], ["row_a", "row_b"]), false);
 });
 
 test("drag-select converts page coordinates into fixed viewport coordinates", () => {
@@ -125,6 +133,22 @@ test("drag-select selection callback is stable across callback identities", () =
   assert.doesNotMatch(
     providerSource,
     /\[onSelectionChange, selectedIds, selectedTargets\]/,
+  );
+});
+
+test("drag-select selection callback ignores registry-only updates", () => {
+  const providerSource = readSource(
+    "../../src/drag-select/DragSelectableProvider.web.tsx",
+  );
+
+  assert.match(providerSource, /const notifiedSelectedIdsRef = useRef/);
+  assert.match(
+    providerSource,
+    /dragSelectableIdsEqual\(notifiedSelectedIdsRef\.current, selectedIds\)/,
+  );
+  assert.match(
+    providerSource,
+    /notifiedSelectedIdsRef\.current = \[\.\.\.selectedIds\]/,
   );
 });
 

@@ -92,6 +92,16 @@ export function dragSelectableIdsForBox(
   return dragSelectableBoundsForBox(targets, box).map((target) => target.id);
 }
 
+export function dragSelectableIdsEqual(
+  left: readonly string[],
+  right: readonly string[],
+): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+  return left.every((id, index) => id === right[index]);
+}
+
 export function dragSelectableIntersectsBox(
   target: DragSelectableBounds,
   box: DragSelectableBox,
