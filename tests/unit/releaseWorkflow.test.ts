@@ -2,13 +2,21 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-test("release-plz workflow uses manual release PR merges", () => {
+test("release-plz workflow supports squash-merged release PRs", () => {
   const config = readSource("../../release-plz.toml");
   const workflow = readSource("../../.github/workflows/release-plz.yml");
 
-  assert.match(config, /release_always = false/);
+  assert.match(config, /release_always = true/);
+  assert.doesNotMatch(config, /release_always = false/);
   assert.match(config, /git_only = true/);
   assert.match(workflow, /command: release-pr/);
+  assert.match(workflow, /id: release-source/);
+  assert.match(workflow, /commits\/\$\{GITHUB_SHA\}\/pulls/);
+  assert.match(workflow, /startswith\(\$prefix\)/);
+  assert.match(
+    workflow,
+    /if: steps\.release-source\.outputs\.release_pr == 'true'/,
+  );
   assert.equal(
     countMatches(
       workflow,
@@ -36,6 +44,10 @@ test("release-plz workflow publishes npm after creating a release", () => {
   assert.match(workflow, /releases_created:/);
   assert.match(workflow, /steps\.release-plz\.outputs\.releases_created/);
   assert.match(workflow, /needs\.release\.outputs\.releases_created == 'true'/);
+  assert.match(
+    workflow,
+    /steps\.release-source\.outputs\.release_pr == 'true' && steps\.release-plz\.outputs\.releases_created == 'true'/,
+  );
   assert.match(workflow, /workflow_dispatch.+inputs\.publish_ref/s);
   assert.match(workflow, /id-token: write/);
   assert.match(workflow, /npm install --global npm@11\.7\.0/);

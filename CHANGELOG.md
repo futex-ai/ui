@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- *(avatar)* allow text color override ([#23](https://github.com/futex-ai/ui/pull/23))
+- _(avatar)_ allow text color override ([#23](https://github.com/futex-ai/ui/pull/23))
 
 ## [0.1.0](https://github.com/futex-ai/ui/releases/tag/v0.1.0) - 2026-06-14
 

@@ -254,8 +254,11 @@ Required behavior:
   `firna-ui-release` Cargo package version before a release PR is merged.
 - release-plz owns changelog updates, release PR creation, `vX.Y.Z` Git tags,
   and GitHub releases.
-- release-plz must use `release_always = false`; ordinary pushes to `main`
-  create or update a release PR but do not publish npm packages.
+- release-plz must use `release_always = true` so squash-merged release PRs
+  create tags and GitHub releases, and the release workflow must verify the
+  `main` commit is associated with a `release-plz-*` PR before creating a
+  release. Ordinary pushes to `main` must not create releases or publish npm
+  packages.
 - npm publishing must run in the same workflow invocation that creates the
   GitHub release so it does not depend on a separate `release` event emitted by
   `GITHUB_TOKEN`.
