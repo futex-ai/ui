@@ -59,6 +59,8 @@ export function DragSelectableProvider({
   const listenersRef = useRef(new Set<DragSelectableChangeListener>());
   const dragSessionRef = useRef<DragSession | null>(null);
   const removeDragListenersRef = useRef<(() => void) | null>(null);
+  const onSelectionChangeRef = useRef(onSelectionChange);
+  onSelectionChangeRef.current = onSelectionChange;
   const [registryVersion, setRegistryVersion] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeDrag, setActiveDrag] = useState<DragSelectableActiveDrag | null>(
@@ -130,12 +132,12 @@ export function DragSelectableProvider({
   }, [state]);
 
   useEffect(() => {
-    onSelectionChange?.({
+    onSelectionChangeRef.current?.({
       selectedCount: selectedTargets.length,
       selectedIds,
       selectedTargets,
     });
-  }, [onSelectionChange, selectedIds, selectedTargets]);
+  }, [selectedIds, selectedTargets]);
 
   const clearSelection = useCallback(() => {
     setSelectedIds((current) => (current.length === 0 ? current : []));

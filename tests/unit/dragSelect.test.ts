@@ -112,6 +112,22 @@ test("drag-select ignores nested interactive controls inside targets", () => {
   });
 });
 
+test("drag-select selection callback is stable across callback identities", () => {
+  const providerSource = readSource(
+    "../../src/drag-select/DragSelectableProvider.web.tsx",
+  );
+
+  assert.match(providerSource, /const onSelectionChangeRef = useRef/);
+  assert.match(
+    providerSource,
+    /onSelectionChangeRef\.current = onSelectionChange/,
+  );
+  assert.doesNotMatch(
+    providerSource,
+    /\[onSelectionChange, selectedIds, selectedTargets\]/,
+  );
+});
+
 test("drag-select provider exposes provider, target, and listener hooks", () => {
   const contextSource = readSource(
     "../../src/drag-select/DragSelectableContext.tsx",
