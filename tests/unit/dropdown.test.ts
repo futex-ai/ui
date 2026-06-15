@@ -264,6 +264,28 @@ test("dropdown selector filters options through a searchable input", () => {
   assert.match(source, /No matching options/);
 });
 
+test("dropdown selector sizes the field variant from the shared input scale", () => {
+  const source = readSource("../../src/dropdown/DropdownSelector.tsx");
+  const stylesSource = readSource(
+    "../../src/dropdown/dropdownSelectorStyles.ts",
+  );
+
+  // Opt-in size prop, default md, threaded into the styles and the chevron.
+  assert.match(source, /size\?: ControlSize;/);
+  assert.match(
+    source,
+    /createDropdownSelectorStyles\(theme, props\.size \?\? "md"\)/,
+  );
+  assert.match(source, /size = "md"/);
+  assert.match(source, /variant === "field" \? inputIconSize\(size\) : 13/);
+  // The field box reuses the input's per-size geometry (single source of truth)
+  // so a select and a text input stay the same height.
+  assert.match(stylesSource, /import \{ inputSizeTokens \} from "\.\.\/input"/);
+  assert.match(stylesSource, /const sizing = inputSizeTokens\(size\)/);
+  assert.match(stylesSource, /height: sizing\.boxHeight/);
+  assert.match(stylesSource, /paddingHorizontal: sizing\.paddingHorizontal/);
+});
+
 function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
 }

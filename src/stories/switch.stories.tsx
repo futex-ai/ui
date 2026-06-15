@@ -22,6 +22,43 @@ export const PrivacyToggle: Story = {
   ),
 };
 
+export const Sizes: Story = {
+  name: "Sizes",
+  render: () => (
+    <StorySurface>
+      <SizesExample />
+    </StorySurface>
+  ),
+};
+
+function SizesExample() {
+  const [small, setSmall] = useState(true);
+  const [medium, setMedium] = useState(true);
+  const [large, setLarge] = useState(true);
+  return (
+    <View style={styles.sizes}>
+      <Switch
+        accessibilityLabel="Small switch"
+        onValueChange={setSmall}
+        size="sm"
+        value={small}
+      />
+      <Switch
+        accessibilityLabel="Medium switch"
+        onValueChange={setMedium}
+        size="md"
+        value={medium}
+      />
+      <Switch
+        accessibilityLabel="Large switch"
+        onValueChange={setLarge}
+        size="lg"
+        value={large}
+      />
+    </View>
+  );
+}
+
 function PrivacyToggleExample() {
   const [enabled, setEnabled] = useState(true);
   return (
@@ -60,6 +97,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     gap: 16,
+    minWidth: 300,
+  },
+  sizes: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 20,
     minWidth: 300,
   },
 });

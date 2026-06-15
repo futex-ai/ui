@@ -2,6 +2,7 @@
 import { useMemo } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import type { ControlSize } from "../controlSize";
 import { hideWebOutlineView, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
@@ -29,6 +30,8 @@ export type SegmentedControlProps<T extends string> = {
   onChange: (value: T) => void;
   options: readonly SegmentOption<T>[];
   required?: boolean;
+  /** Control density: `sm`, `md` (default), or `lg`. */
+  size?: ControlSize;
   sizing?: SegmentedControlSizing;
   value: T;
   variant?: SegmentedControlVariant;
@@ -44,13 +47,17 @@ export function SegmentedControl<T extends string>({
   onChange,
   options,
   required = false,
+  size = "md",
   sizing = "equal",
   value,
   variant = "outline",
   wrap = false,
 }: SegmentedControlProps<T>) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(() => createSegmentedControlStyles(theme), [theme]);
+  const styles = useMemo(
+    () => createSegmentedControlStyles(theme, size),
+    [theme, size],
+  );
   const pill = variant === "pill";
   const invalid = Boolean(error);
 

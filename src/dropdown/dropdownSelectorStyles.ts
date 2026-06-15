@@ -1,11 +1,21 @@
 import { StyleSheet } from "react-native";
 
+import type { ControlSize } from "../controlSize";
+import { inputSizeTokens } from "../input";
 import type { SharedUiTheme } from "../theme";
 
 import type { SelectorVariant } from "./DropdownSelector";
 
-export function createDropdownSelectorStyles(theme: SharedUiTheme) {
+// The default `field` selector is the input's twin — same bordered box — so it
+// sizes from the shared input scale, keeping a select and a text input the same
+// height in a form. The `map` / `pill` / `mobilePeriod` variants keep their
+// bespoke, position-tuned dimensions and are unaffected by `size`.
+export function createDropdownSelectorStyles(
+  theme: SharedUiTheme,
+  size: ControlSize = "md",
+) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
+  const sizing = inputSizeTokens(size);
   return StyleSheet.create({
     error: {
       ...baseText,
@@ -28,12 +38,17 @@ export function createDropdownSelectorStyles(theme: SharedUiTheme) {
       borderRadius: theme.radii.md,
       borderWidth: 1,
       flexDirection: "row",
-      gap: 8,
-      height: 40,
+      gap: sizing.gap,
+      height: sizing.boxHeight,
       justifyContent: "space-between",
-      paddingHorizontal: 12,
+      paddingHorizontal: sizing.paddingHorizontal,
     },
-    inputValue: { ...baseText, color: theme.colors.ink, flex: 1, fontSize: 14 },
+    inputValue: {
+      ...baseText,
+      color: theme.colors.ink,
+      flex: 1,
+      fontSize: sizing.inputFontSize,
+    },
     invalid: {
       borderColor: theme.colors.rose,
       boxShadow: `0 0 0 2px ${theme.colors.roseSoft}`,

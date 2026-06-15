@@ -1,4 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { useState } from "react";
+import { View } from "react-native";
+
+import { DropdownSelector } from "../index";
 
 import {
   ActionMenuExample,
@@ -10,6 +14,12 @@ import {
   SelectorWithHeaderFooterExample,
   StorySurface,
 } from "./sharedExamples";
+
+const sizeOptions = [
+  { label: "Standard", value: "standard" },
+  { label: "Cash accounting", value: "cash" },
+  { label: "Flat rate", value: "flat" },
+];
 
 const meta = {
   title: "Dropdown/Examples",
@@ -24,6 +34,15 @@ export const DropdownSelectorDefault: Story = {
   render: () => (
     <StorySurface>
       <SelectorExample />
+    </StorySurface>
+  ),
+};
+
+export const SelectorSizes: Story = {
+  name: "Selector sizes",
+  render: () => (
+    <StorySurface>
+      <SelectorSizesExample />
     </StorySurface>
   ),
 };
@@ -81,3 +100,34 @@ export const ChipMultiSelect: Story = {
     </StorySurface>
   ),
 };
+
+function SelectorSizesExample() {
+  const [small, setSmall] = useState("standard");
+  const [medium, setMedium] = useState("standard");
+  const [large, setLarge] = useState("standard");
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <DropdownSelector
+        label="Small selector"
+        onValueChange={setSmall}
+        options={sizeOptions}
+        size="sm"
+        value={small}
+      />
+      <DropdownSelector
+        label="Medium selector"
+        onValueChange={setMedium}
+        options={sizeOptions}
+        size="md"
+        value={medium}
+      />
+      <DropdownSelector
+        label="Large selector"
+        onValueChange={setLarge}
+        options={sizeOptions}
+        size="lg"
+        value={large}
+      />
+    </View>
+  );
+}

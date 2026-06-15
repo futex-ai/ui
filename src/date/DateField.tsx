@@ -2,6 +2,7 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { Platform, Text, View } from "react-native";
 
+import type { ControlSize } from "../controlSize";
 import { useSharedUiTheme } from "../theme";
 
 import { createDateFieldStyles } from "./dateFieldStyles";
@@ -44,6 +45,8 @@ export type DateFieldProps = {
   clearable?: boolean;
   /** Calendar grid (default) or spinning day/month/year wheel bottom sheet. */
   variant?: DatePickerVariant;
+  /** Control density: `sm`, `md` (default), or `lg`. */
+  size?: ControlSize;
 };
 
 /**
@@ -64,9 +67,13 @@ export function DateField({
   placeholder = "Select a date",
   clearable = false,
   variant = "calendar",
+  size = "md",
 }: DateFieldProps) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(() => createDateFieldStyles(theme), [theme]);
+  const styles = useMemo(
+    () => createDateFieldStyles(theme, size),
+    [theme, size],
+  );
   const [open, setOpen] = useState(false);
   const invalid = Boolean(error);
   return (
@@ -82,6 +89,7 @@ export function DateField({
         onOpenChange={setOpen}
         placeholder={placeholder}
         required={required}
+        size={size}
         value={value}
         variant={variant}
       />
@@ -117,6 +125,8 @@ export type DateInputProps = {
   clearable?: boolean;
   /** Calendar grid (default) or spinning day/month/year wheel bottom sheet. */
   variant?: DatePickerVariant;
+  /** Control density: `sm`, `md` (default), or `lg`. */
+  size?: ControlSize;
 };
 
 /**
@@ -138,9 +148,13 @@ export function DateInput({
   onOpenChange,
   clearable = false,
   variant = "calendar",
+  size = "md",
 }: DateInputProps) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(() => createDateFieldStyles(theme), [theme]);
+  const styles = useMemo(
+    () => createDateFieldStyles(theme, size),
+    [theme, size],
+  );
   const field = useDateField({ value, onChange, min, max });
   const today = useMemo(() => todayIso(new Date()), []);
   // The wheel sheet portals out of this anchor and manages its own dismissal, so
@@ -175,6 +189,7 @@ export function DateInput({
           label={label}
           placeholder={placeholder}
           required={required}
+          size={size}
           styles={styles}
         />
       ) : (
@@ -185,6 +200,7 @@ export function DateInput({
           label={label}
           placeholder={placeholder}
           required={required}
+          size={size}
           styles={styles}
         />
       )}

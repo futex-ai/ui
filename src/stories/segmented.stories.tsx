@@ -33,6 +33,46 @@ export const ProfitLossSegmentedControl: Story = {
   ),
 };
 
+export const Sizes: Story = {
+  name: "Sizes",
+  render: () => (
+    <StorySurface>
+      <SizesExample />
+    </StorySurface>
+  ),
+};
+
+function SizesExample() {
+  const [small, setSmall] = useState("pl");
+  const [medium, setMedium] = useState("pl");
+  const [large, setLarge] = useState("pl");
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <SegmentedControl
+        accessibilityLabel="Small report"
+        onChange={setSmall}
+        options={reportOptions}
+        size="sm"
+        value={small}
+      />
+      <SegmentedControl
+        accessibilityLabel="Medium report"
+        onChange={setMedium}
+        options={reportOptions}
+        size="md"
+        value={medium}
+      />
+      <SegmentedControl
+        accessibilityLabel="Large report"
+        onChange={setLarge}
+        options={reportOptions}
+        size="lg"
+        value={large}
+      />
+    </View>
+  );
+}
+
 function ProfitLossSegmentedExample() {
   const [report, setReport] = useState("pl");
   const [source, setSource] = useState("combined");

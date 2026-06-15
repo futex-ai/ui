@@ -48,6 +48,19 @@ shared `CalendarMonth` itself and the wheel variant renders our own
 - **Display: `D Mon YYYY`** (e.g. `4 Mar 2024`).
 - **Range value: `{ start, end }`** of ISO strings.
 
+## Sizes
+
+`size` (`sm` / `md` / `lg`, default `md`) sizes the **trigger** from the shared
+`ControlSize` scale on `DateField`, `DateInput`, and `DateRangeField`. The web
+trigger is an `InputFrame`, so it scales exactly like the text input; the native
+trigger mirrors the same box height, padding, value text, and icon diameter — so
+a date field and a text input stay the same height in a form. The opened picker
+(calendar popover or wheel sheet) keeps its natural size.
+
+```tsx
+<DateField label="Year ends" onChange={setIso} size="sm" value={iso} />
+```
+
 ## Clearing
 
 Clearing is **opt-in**: pass `clearable` to `DateField` / `DateInput` /

@@ -3,7 +3,9 @@ import { ChevronDown, Search } from "lucide-react-native";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 
+import type { ControlSize } from "../controlSize";
 import { hideWebOutline, hideWebOutlineView, useFocusRing } from "../focusRing";
+import { inputIconSize } from "../input";
 import { useSharedUiTheme } from "../theme";
 
 import { DropdownList, DropdownListEntry } from "./DropdownList";
@@ -49,13 +51,18 @@ type DropdownSelectorProps = {
   searchPlaceholder?: string;
   searchable?: boolean;
   sections?: DropdownSelectorSection[];
+  /** Control density of the default `field` variant: `sm`, `md` (default), or `lg`. */
+  size?: ControlSize;
   value: string;
   variant?: SelectorVariant;
 };
 
 export function DropdownSelector(props: DropdownSelectorProps) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(() => createDropdownSelectorStyles(theme), [theme]);
+  const styles = useMemo(
+    () => createDropdownSelectorStyles(theme, props.size ?? "md"),
+    [theme, props.size],
+  );
   const focus = useFocusRing();
   return <DropdownSelectorView {...props} focus={focus} styles={styles} />;
 }
@@ -76,6 +83,7 @@ function DropdownSelectorView({
   searchPlaceholder = "Search options",
   searchable = false,
   sections,
+  size = "md",
   styles,
   value,
   variant = "field",
@@ -187,7 +195,7 @@ function DropdownSelectorView({
         </Text>
         <ChevronDown
           color={invalid ? theme.colors.rose : theme.colors.muted}
-          size={variant === "field" ? 16 : 13}
+          size={variant === "field" ? inputIconSize(size) : 13}
         />
       </Pressable>
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -218,16 +226,22 @@ function DropdownSelectorView({
 export function ReadOnlySelector({
   label,
   required = false,
+  size = "md",
   value,
   variant = "field",
 }: {
   label?: string;
   required?: boolean;
+  /** Control density of the default `field` variant: `sm`, `md` (default), or `lg`. */
+  size?: ControlSize;
   value: string;
   variant?: SelectorVariant;
 }) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(() => createDropdownSelectorStyles(theme), [theme]);
+  const styles = useMemo(
+    () => createDropdownSelectorStyles(theme, size),
+    [theme, size],
+  );
   const accessibleLabel = selectorAccessibleLabel(label, value);
   return (
     <View style={label ? styles.field : null}>
@@ -243,7 +257,7 @@ export function ReadOnlySelector({
         </Text>
         <ChevronDown
           color={theme.colors.muted}
-          size={variant === "field" ? 16 : 13}
+          size={variant === "field" ? inputIconSize(size) : 13}
         />
       </View>
     </View>
