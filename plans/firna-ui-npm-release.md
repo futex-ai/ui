@@ -6,6 +6,12 @@ Completed.
 
 ## Implementation Notes
 
+- 2026-06-15 correction: the release flow now uses
+  `release_always = true` so squash-merged release PRs can create the
+  `vX.Y.Z` tag and GitHub release. The older `release_always = false`
+  references in this completed plan's original strategy and milestone
+  checklists are historical planning notes; the current contract lives in
+  `README.md` and `docs/protocol/shared-ui-components.md`.
 - `release-plz update --allow-dirty --repo-url https://github.com/futex-ai/ui`
   validated the local release-plz configuration without publishing. A real
   `release-pr` run still requires GitHub credentials, so the workflow uses the
