@@ -152,6 +152,13 @@ export function DragSelectableProvider({
     setSelectedIds((current) => (current.length === 0 ? current : []));
   }, []);
 
+  const cancelDrag = useCallback(() => {
+    removeDragListenersRef.current?.();
+    removeDragListenersRef.current = null;
+    dragSessionRef.current = null;
+    setActiveDrag(null);
+  }, []);
+
   const updateDrag = useCallback((point: DragSelectablePoint) => {
     const session = dragSessionRef.current;
     if (!session) {
@@ -214,13 +221,31 @@ export function DragSelectableProvider({
         finishDrag(point);
       }
     };
+    const handleCancel = () => {
+      cancelDrag();
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== "visible") {
+        cancelDrag();
+      }
+    };
     document.addEventListener("pointermove", handleMove, true);
     document.addEventListener("pointerup", handleUp, true);
+    document.addEventListener("pointercancel", handleCancel, true);
+    document.addEventListener("visibilitychange", handleVisibilityChange, true);
+    window.addEventListener("blur", handleCancel, true);
     removeDragListenersRef.current = () => {
       document.removeEventListener("pointermove", handleMove, true);
       document.removeEventListener("pointerup", handleUp, true);
+      document.removeEventListener("pointercancel", handleCancel, true);
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange,
+        true,
+      );
+      window.removeEventListener("blur", handleCancel, true);
     };
-  }, [finishDrag, updateDrag]);
+  }, [cancelDrag, finishDrag, updateDrag]);
 
   const beginDrag = useCallback(
     (event: unknown) => {

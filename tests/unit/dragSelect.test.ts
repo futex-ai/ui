@@ -123,10 +123,38 @@ test("drag-select ignores nested interactive controls inside targets", () => {
   withFakeDragSelectableDom(() => {
     const row = new FakeElement();
     const nestedButton = row.append(new FakeElement("button"));
+    const nestedCheckbox = row.append(new FakeElement("[role='checkbox']"));
+    const nestedEditable = row.append(new FakeElement("[contenteditable]"));
+    const nestedRadio = row.append(new FakeElement("[role='radio']"));
+    const nestedSwitch = row.append(new FakeElement("[role='switch']"));
     const rootButton = new FakeElement("button");
 
     assert.equal(
       dragSelectableShouldStartFromTarget(nestedButton as unknown as Node, [
+        dragSelectableRegistration(row),
+      ]),
+      false,
+    );
+    assert.equal(
+      dragSelectableShouldStartFromTarget(nestedCheckbox as unknown as Node, [
+        dragSelectableRegistration(row),
+      ]),
+      false,
+    );
+    assert.equal(
+      dragSelectableShouldStartFromTarget(nestedEditable as unknown as Node, [
+        dragSelectableRegistration(row),
+      ]),
+      false,
+    );
+    assert.equal(
+      dragSelectableShouldStartFromTarget(nestedRadio as unknown as Node, [
+        dragSelectableRegistration(row),
+      ]),
+      false,
+    );
+    assert.equal(
+      dragSelectableShouldStartFromTarget(nestedSwitch as unknown as Node, [
         dragSelectableRegistration(row),
       ]),
       false,
@@ -187,6 +215,20 @@ test("drag-select provider uses the configured movement threshold", () => {
     /hasDragSelectableMoved\(session\.start, point, session\.threshold\)/,
   );
   assert.match(readmeSource, /minimumDragDistance/);
+});
+
+test("drag-select provider cancels stale pointer streams", () => {
+  const providerSource = readSource(
+    "../../src/drag-select/DragSelectableProvider.web.tsx",
+  );
+
+  assert.match(providerSource, /const cancelDrag = useCallback/);
+  assert.match(providerSource, /document\.addEventListener\("pointercancel"/);
+  assert.match(providerSource, /window\.addEventListener\("blur"/);
+  assert.match(
+    providerSource,
+    /document\.addEventListener\("visibilitychange"/,
+  );
 });
 
 test("drag-select provider exposes provider, target, and listener hooks", () => {

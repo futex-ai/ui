@@ -16,11 +16,22 @@ export const dragSelectableInteractiveSelector = [
   "input",
   "select",
   "textarea",
+  "[contenteditable]:not([contenteditable='false'])",
   "[contenteditable='true']",
   "[role='button']",
+  "[role='checkbox']",
+  "[role='combobox']",
   "[role='link']",
   "[role='menuitem']",
+  "[role='menuitemcheckbox']",
+  "[role='menuitemradio']",
   "[role='option']",
+  "[role='radio']",
+  "[role='slider']",
+  "[role='spinbutton']",
+  "[role='switch']",
+  "[role='tab']",
+  "[role='textbox']",
 ].join(",");
 
 export function measureDragSelectableTargets(

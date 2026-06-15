@@ -18,6 +18,7 @@ overlay only run on web.
   `overlayZIndex` escape hatch for consumers with custom stacking contexts.
 - Ignore touch drags and nested interactive controls while still allowing a
   selectable target root to begin a drag.
+- Cancel interrupted pointer streams without committing a partial selection.
 - Keep a native fallback that renders children and registers no selections.
 
 ## Usage
