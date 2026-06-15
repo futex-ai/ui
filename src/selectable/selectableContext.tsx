@@ -1,14 +1,10 @@
-import { createContext, useContext, useEffect, useRef } from "react";
+import { useContext, useEffect, useRef } from "react";
 
 import {
-  emptySelectableSelection,
   type SelectableSelection,
   type SelectableSelectionChangeOptions,
 } from "./selectableTypes";
-
-export const SelectableSelectionContext = createContext<SelectableSelection>(
-  emptySelectableSelection,
-);
+import { SelectableSelectionContext } from "./selectableContextValue";
 
 export function useSelectableSelection(): SelectableSelection {
   return useContext(SelectableSelectionContext);

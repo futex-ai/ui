@@ -128,12 +128,17 @@ test("the date web trigger reuses the shared InputFrame", () => {
 
   // The web trigger no longer hand-rolls its own TextInput + icons; it renders
   // the shared box and supplies only the date behaviour.
-  assert.match(source, /import \{ InputFrame \} from "\.\.\/input"/);
+  assert.match(
+    source,
+    /import \{ InputFrame, inputIconSize \} from "\.\.\/input"/,
+  );
   assert.match(source, /<InputFrame/);
   assert.match(source, /suffixIcon=\{CalendarDays\}/);
   assert.match(source, /onSuffixIconPress=\{\(\) => field\.setOpen\(true\)\}/);
   assert.match(source, /clearAccessibilityLabel=\{`Clear \$\{label\}`\}/);
   assert.match(source, /active=\{field\.open \|\| editing\}/);
+  // The trigger box and its native icons scale with the shared size prop.
+  assert.match(source, /size=\{size\}/);
   // Clear visibility tracks the committed ISO value, not the typed buffer.
   assert.match(source, /clearVisible=\{Boolean\(field\.value\)\}/);
 });

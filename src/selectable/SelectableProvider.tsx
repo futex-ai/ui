@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { SelectableSelectionContext } from "./selectableContext";
+import { SelectableSelectionContext } from "./selectableContextValue";
 import {
   emptySelectableSelection,
   type SelectableProviderProps,

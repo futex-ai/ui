@@ -1,9 +1,69 @@
 import { StyleSheet } from "react-native";
 
+import type { ControlSize } from "../controlSize";
 import type { SharedUiTheme } from "../theme";
 
-export function createSegmentedControlStyles(theme: SharedUiTheme) {
+/**
+ * Per-size geometry for the segmented control: the outline cell and pill-track
+ * horizontal padding, the shared vertical padding, the cell / pill label type
+ * scale, and the gaps that separate the segments. `md` matches the original
+ * accounting control; `sm` is the compact density and `lg` the roomier one.
+ */
+const SEGMENTED_SIZES: Record<
+  ControlSize,
+  {
+    cellFontSize: number;
+    cellPaddingHorizontal: number;
+    paddingVertical: number;
+    pillFontSize: number;
+    pillLineHeight: number;
+    pillPaddingHorizontal: number;
+    rowGap: number;
+    trackGap: number;
+    trackPadding: number;
+  }
+> = {
+  sm: {
+    cellFontSize: 11,
+    cellPaddingHorizontal: 8,
+    paddingVertical: 5,
+    pillFontSize: 12,
+    pillLineHeight: 18,
+    pillPaddingHorizontal: 12,
+    rowGap: 6,
+    trackGap: 4,
+    trackPadding: 3,
+  },
+  md: {
+    cellFontSize: 12,
+    cellPaddingHorizontal: 10,
+    paddingVertical: 7,
+    pillFontSize: 13,
+    pillLineHeight: 19.5,
+    pillPaddingHorizontal: 14,
+    rowGap: 8,
+    trackGap: 4,
+    trackPadding: 4,
+  },
+  lg: {
+    cellFontSize: 14,
+    cellPaddingHorizontal: 14,
+    paddingVertical: 10,
+    pillFontSize: 15,
+    pillLineHeight: 22,
+    pillPaddingHorizontal: 18,
+    rowGap: 10,
+    trackGap: 6,
+    trackPadding: 5,
+  },
+};
+
+export function createSegmentedControlStyles(
+  theme: SharedUiTheme,
+  size: ControlSize = "md",
+) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
+  const sizing = SEGMENTED_SIZES[size];
   return StyleSheet.create({
     cell: {
       alignItems: "center",
@@ -12,8 +72,8 @@ export function createSegmentedControlStyles(theme: SharedUiTheme) {
       borderWidth: 1,
       justifyContent: "center",
       minWidth: 0,
-      paddingHorizontal: 10,
-      paddingVertical: 7,
+      paddingHorizontal: sizing.cellPaddingHorizontal,
+      paddingVertical: sizing.paddingVertical,
     },
     cellSelected: {
       backgroundColor: theme.colors.primarySoft,
@@ -22,7 +82,7 @@ export function createSegmentedControlStyles(theme: SharedUiTheme) {
     cellText: {
       ...baseText,
       color: theme.colors.muted,
-      fontSize: 12,
+      fontSize: sizing.cellFontSize,
       fontWeight: "700",
       minWidth: 0,
     },
@@ -61,8 +121,8 @@ export function createSegmentedControlStyles(theme: SharedUiTheme) {
       borderRadius: theme.radii.md,
       justifyContent: "center",
       minWidth: 0,
-      paddingHorizontal: 14,
-      paddingVertical: 7,
+      paddingHorizontal: sizing.pillPaddingHorizontal,
+      paddingVertical: sizing.paddingVertical,
     },
     pillActive: {
       backgroundColor: theme.colors.surface,
@@ -71,22 +131,22 @@ export function createSegmentedControlStyles(theme: SharedUiTheme) {
     pillText: {
       ...baseText,
       color: theme.colors.muted,
-      fontSize: 13,
+      fontSize: sizing.pillFontSize,
       fontWeight: "700",
-      lineHeight: 19.5,
+      lineHeight: sizing.pillLineHeight,
       minWidth: 0,
     },
     pillTextActive: { color: theme.colors.ink },
     required: { color: theme.colors.rose },
-    row: { flexDirection: "row", gap: 8 },
+    row: { flexDirection: "row", gap: sizing.rowGap },
     rowWrap: { flexWrap: "wrap" },
     track: {
       alignSelf: "flex-start",
       backgroundColor: theme.colors.soft,
       borderRadius: theme.radii.lg,
       flexDirection: "row",
-      gap: 4,
-      padding: 4,
+      gap: sizing.trackGap,
+      padding: sizing.trackPadding,
     },
   });
 }

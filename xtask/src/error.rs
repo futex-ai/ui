@@ -17,10 +17,24 @@ pub(crate) enum Error {
     GitBaseUnavailable { base_ref: String },
     #[error("[xtask/error] missing workspace root for manifest dir {manifest_dir}")]
     MissingWorkspaceRoot { manifest_dir: PathBuf },
+    #[error("[xtask/sync-package-version] missing `{field}` in {path}")]
+    MissingPackageMetadata { path: PathBuf, field: String },
+    #[error(
+        "[xtask/sync-package-version] package name in {path} is `{actual}`, expected `{expected}`"
+    )]
+    PackageNameMismatch {
+        path: PathBuf,
+        actual: String,
+        expected: String,
+    },
     #[error("[xtask/error] review command failed with status {status}")]
     ReviewFailed { status: String },
     #[error("[xtask/error] IO failure")]
     Io { source: std::io::Error },
+    #[error("[xtask/error] JSON parse failure: {source}")]
+    Json { source: serde_json::Error },
+    #[error("[xtask/error] TOML parse failure: {source}")]
+    Toml { source: toml::de::Error },
     #[error("[xtask/error] child command output was not valid UTF-8")]
     Utf8 { source: std::string::FromUtf8Error },
 }
@@ -28,6 +42,18 @@ pub(crate) enum Error {
 impl From<std::io::Error> for Error {
     fn from(source: std::io::Error) -> Self {
         Self::Io { source }
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(source: serde_json::Error) -> Self {
+        Self::Json { source }
+    }
+}
+
+impl From<toml::de::Error> for Error {
+    fn from(source: toml::de::Error) -> Self {
+        Self::Toml { source }
     }
 }
 

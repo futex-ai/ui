@@ -9,7 +9,7 @@ control-size scale for buttons and inputs.
 ## Purpose
 
 This repository provides shared React Native and React Native Web UI primitives
-for Futex apps. The first consumers are the accounting app and the Juno app.
+for Firna apps. The first consumers are the accounting app and the Juno app.
 The first shared component families are the dropdown components, segmented
 control patterns, radio-option cards, switch primitive, selectable selection
 observer, web modal components, and the circular user avatar currently
@@ -254,9 +254,39 @@ Required behavior:
   dismissal, segmented selection, switch toggling, focus retention/restoration,
   and portal layering for dropdowns, comboboxes, and web modals.
 - The package must typecheck and build before it is used by accounting or Juno.
+- `npm run test:package` must pack the built library, install the tarball into a
+  temporary consumer, import every public package subpath with Node's native ESM
+  resolver, typecheck those public package subpaths with TypeScript's NodeNext
+  resolver, and import the same subpaths through a Vite build.
 - After package build/tests pass, smoke-test at least one local web route or
   harness that opens a dropdown, a combobox, and a modal, toggles a segmented
   control and switch, and selects a radio card.
+
+## Package Release Contract
+
+- The public npm package name is `@firna/ui`.
+- Standard ESM `import` exports must point at Node-resolvable `dist/node/**`
+  files with explicit relative `.js` specifiers.
+- Exported `types` entries must point at NodeNext-compatible declarations under
+  `dist/node/**`, with explicit relative `.js` specifiers inside declaration
+  imports and re-exports.
+- The `react-native` export condition must continue to point at the normal
+  `dist/**` build so React Native platform resolution can choose platform files.
+- `package.json` and `package-lock.json` versions must match the root
+  `firna-ui-release` Cargo package version before a release PR is merged.
+- release-plz owns changelog updates, release PR creation, `vX.Y.Z` Git tags,
+  and GitHub releases.
+- release-plz must use `release_always = false`; ordinary pushes to `main`
+  create or update a release PR but do not publish npm packages.
+- npm publishing must run in the same workflow invocation that creates the
+  GitHub release so it does not depend on a separate `release` event emitted by
+  `GITHUB_TOKEN`.
+- npm publishing must use npm trusted publishing with `id-token: write` and
+  must guard against republishing an already-published version.
+- The same workflow may expose a manually dispatched fallback that publishes a
+  checked release tag when a maintainer needs to retry a failed npm publish
+  without creating a new release.
+- Scoped package publishing must use public access.
 
 ## CI And Preview Contract
 
@@ -270,7 +300,8 @@ Required behavior:
   `https://pr-123.futex-ui-storybook.pages.dev`.
 - Every PR must run `cargo xtask check` after dependency installation. The
   xtask check runs the JavaScript verification suite: formatting, unit tests,
-  browser interaction tests, typecheck, package build, and Storybook build.
+  typecheck, package build, package tarball smoke test, Storybook build, and
+  browser interaction tests.
 - The main branch must publish a stable default Storybook deployment.
 - Every PR must publish an isolated Storybook preview deployment.
 - The PR Storybook URL must be posted back to the pull request through a sticky

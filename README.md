@@ -1,35 +1,50 @@
 # ui
 
-Shared UI component library for Futex React Native and React Native Web
+Shared UI component library for Firna React Native and React Native Web
 surfaces. The first consumers are the accounting app and the Juno app.
 
 ## Key Features
 
 - Shared dropdown, selector, combobox, segmented control, radio card, switch,
   button, labelled input, modal, selectable, and avatar primitives.
-- A shared `sm` / `md` / `lg` size scale (`ControlSize`) for buttons and inputs.
+- A shared `sm` / `md` / `lg` size scale (`ControlSize`) across the interactive
+  controls — buttons, inputs, dropdown selectors, date fields, segmented
+  controls, and switches.
 - Themeable visual tokens so consumers can use their own brand primary color.
 - Expo and React Native Web compatible platform files.
 - Focused unit tests, browser interaction tests, and package export checks.
 - Storybook previews for visual review on every PR.
+- Release-plz release PRs and npm trusted publishing for `@firna/ui`.
 
 ## User-Facing Interface
 
-The package name is `@futex/ui`. Public exports are available from:
+The package name is `@firna/ui`. Public exports are available from:
 
-- `@futex/ui` for all public components and helpers.
-- `@futex/ui/avatar` for the themed circular initials avatar.
-- `@futex/ui/button` for the themed button with tone, size, and block variants.
-- `@futex/ui/dropdown` for dropdown, selector, combobox, and layer helpers.
-- `@futex/ui/input` for the labelled text input and bare input frame.
-- `@futex/ui/modal` for web modal frame, portal, model, and layer helpers.
-- `@futex/ui/radio` for themed titled radio-option cards.
-- `@futex/ui/selectable` for observing browser selections across matching DOM
+- `@firna/ui` for all public components and helpers.
+- `@firna/ui/avatar` for the themed circular initials avatar.
+- `@firna/ui/button` for the themed button with tone, size, and block variants.
+- `@firna/ui/date` for single-date and date-range fields.
+- `@firna/ui/dropdown` for dropdown, selector, combobox, and layer helpers.
+- `@firna/ui/input` for the labelled text input and bare input frame.
+- `@firna/ui/modal` for web modal frame, portal, model, and layer helpers.
+- `@firna/ui/popover` for generic anchored popovers.
+- `@firna/ui/radio` for themed titled radio-option cards.
+- `@firna/ui/selectable` for observing browser selections across matching DOM
   elements.
-- `@futex/ui/segmented` for themed single-select segmented controls.
-- `@futex/ui/switch` for themed binary on/off switches.
-- `@futex/ui/theme` for `SharedUiThemeProvider`, default accounting-style
+- `@firna/ui/segmented` for themed single-select segmented controls.
+- `@firna/ui/switch` for themed binary on/off switches.
+- `@firna/ui/theme` for `SharedUiThemeProvider`, default accounting-style
   tokens, the Juno token preset, and `createSharedUiTheme`.
+
+## Installation
+
+```bash
+npm install @firna/ui
+```
+
+Consumers must provide the peer dependencies listed in `package.json`: React,
+React DOM, React Native, React Native Web, React Native SVG, and
+lucide-react-native.
 
 ## Developer Get Started
 
@@ -38,6 +53,7 @@ npm ci
 npm test
 npm run typecheck
 npm run build
+npm run test:package
 npm run storybook
 npm run storybook:build
 npm run test:browser
@@ -56,7 +72,39 @@ cargo xtask review
 ```
 
 Browser interaction tests start Storybook automatically through Playwright.
-Storybook is built to `storybook-static`.
+Storybook is built to `storybook-static`. `npm run test:package` builds a
+packed tarball, installs it into temporary consumers, imports every public
+package subpath with Node's native ESM resolver, typechecks those subpaths with
+TypeScript's NodeNext resolver, and then verifies the same subpaths through a
+Vite build.
+
+The package export map intentionally separates runtime targets:
+
+- The standard `import` condition points at `dist/node/**`, where relative ESM
+  specifiers include explicit `.js` files and web platform files are selected
+  when they exist.
+- Type declarations also point at `dist/node/**`, where relative declaration
+  specifiers use NodeNext-compatible `.js` paths.
+- The `react-native` condition points at `dist/**`, preserving extensionless
+  specifiers so Metro and React Native platform resolution can choose native or
+  web files.
+
+## Package Releases
+
+- release-plz opens and updates the release PR for `@firna/ui`.
+- The release flow uses `release_always = false`; ordinary pushes to `main`
+  update the release PR but do not publish npm versions.
+- Merging the release PR lets release-plz create the `vX.Y.Z` tag and GitHub
+  release.
+- npm publishing runs in the same release-plz workflow invocation that creates
+  the GitHub release, using npm trusted publishing. The npm package must
+  configure this repository and `.github/workflows/release-plz.yml` as the
+  trusted publisher, with allowed action `npm publish`.
+- The release-plz workflow can also be manually dispatched with `publish_ref`
+  set to a checked `vX.Y.Z` tag if the automatic publish job needs to be
+  retried.
+- Scoped npm packages default to private, so `publishConfig.access` is set to
+  `public`.
 
 ## Storybook Deployments
 
@@ -96,6 +144,8 @@ Storybook is built to `storybook-static`.
 - Switch component: [src/switch/README.md](src/switch/README.md)
 - Browser tests: [tests/browser/storybook.spec.ts](tests/browser/storybook.spec.ts)
 - Repository automation: [xtask/README.md](xtask/README.md)
+- Release metadata crate:
+  [crates/firna-ui-release/README.md](crates/firna-ui-release/README.md)
 - Shared component protocol:
   [docs/protocol/shared-ui-components.md](docs/protocol/shared-ui-components.md)
 - Consumer migration handoff: [docs/consumer-migration.md](docs/consumer-migration.md)

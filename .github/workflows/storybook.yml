@@ -128,7 +128,7 @@ jobs:
           script: |
             const marker = process.env.STORYBOOK_COMMENT_MARKER;
             const body = `${marker}
-            ### Futex UI Storybook preview
+            ### Firna UI Storybook preview
 
             Status: **${process.env.DEPLOY_STATUS}**
             - Storybook: ${process.env.PREVIEW_URL || "unavailable"}
@@ -260,7 +260,7 @@ jobs:
           script: |
             const marker = process.env.STORYBOOK_COMMENT_MARKER;
             const body = `${marker}
-            ### Futex UI Storybook preview
+            ### Firna UI Storybook preview
 
             Status: **inactive**
             - Cloudflare branch: \`${process.env.PREVIEW_BRANCH}\`

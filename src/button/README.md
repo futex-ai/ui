@@ -23,7 +23,7 @@ all driven by shared theme tokens.
 ## Usage
 
 ```tsx
-import { Button } from "@futex/ui/button";
+import { Button } from "@firna/ui/button";
 import { Plus } from "lucide-react-native";
 
 <Button icon={Plus} onPress={addAccount} tone="primary">

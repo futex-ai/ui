@@ -2,6 +2,7 @@
 import { useMemo } from "react";
 import { Platform, Pressable, StyleProp, View, ViewStyle } from "react-native";
 
+import type { ControlSize } from "../controlSize";
 import { useSharedUiTheme } from "../theme";
 
 import { createSwitchStyles } from "./switchStyles";
@@ -17,6 +18,8 @@ export type SwitchProps = {
   accessibilityLabel?: string;
   disabled?: boolean;
   onValueChange?: (value: boolean) => void;
+  /** Control density: `sm`, `md` (default), or `lg`. */
+  size?: ControlSize;
   trackStyle?: StyleProp<ViewStyle>;
   value: boolean;
 };
@@ -30,11 +33,12 @@ export function Switch({
   accessibilityLabel,
   disabled = false,
   onValueChange,
+  size = "md",
   trackStyle,
   value,
 }: SwitchProps) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(() => createSwitchStyles(theme), [theme]);
+  const styles = useMemo(() => createSwitchStyles(theme, size), [theme, size]);
   const disabledState = disabled || !onValueChange;
   const toggle = () => onValueChange?.(!value);
   const handleKeyDown = (event: SwitchKeyboardEvent) => {

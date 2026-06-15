@@ -20,7 +20,7 @@ themed disc.
 Use `Avatar` wherever a person or entity needs a compact initials badge:
 
 ```tsx
-import { Avatar } from "@futex/ui/avatar";
+import { Avatar } from "@firna/ui/avatar";
 
 <Avatar accessibilityLabel="Greenhouse Studio" label="GS" />;
 <Avatar label="PR" tone="soft" />;

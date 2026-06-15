@@ -22,7 +22,7 @@ highlighted table rows, cards, transcript spans, or other selectable content.
 import {
   SelectableProvider,
   useSelectableSelectionChange,
-} from "@futex/ui/selectable";
+} from "@firna/ui/selectable";
 
 function InvoiceTable({ children }: { children: React.ReactNode }) {
   return (

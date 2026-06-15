@@ -2,7 +2,7 @@
 
 Reusable React Native and React Native Web dropdown primitives. They provide a
 shared surface for form selects, compact filter pills, action menus, and
-input-backed comboboxes in Futex apps.
+input-backed comboboxes in Firna apps.
 
 ## Responsibilities
 
@@ -20,6 +20,8 @@ input-backed comboboxes in Futex apps.
   dropdowns and combobox result lists.
 - Include visual field labels in selector accessible names when labels are
   present.
+- Size the default `field` selector with the shared `ControlSize` scale (`sm` /
+  `md` / `lg`) so a select matches the height of the text inputs beside it.
 - Keep button-backed selectors/action menus separate from input-backed
   comboboxes so autocomplete inputs keep focus while results are open.
 
@@ -28,7 +30,7 @@ input-backed comboboxes in Futex apps.
 Use `DropdownSelector` for value selects:
 
 ```tsx
-import { DropdownSelector } from "@futex/ui/dropdown";
+import { DropdownSelector } from "@firna/ui/dropdown";
 
 <DropdownSelector
   label="Scheme"
@@ -75,11 +77,28 @@ on close, and arrow keys / Enter / Escape keep working while typing:
 />
 ```
 
+Pass `size` (`sm` / `md` / `lg`, default `md`) to size the default `field`
+selector from the shared `ControlSize` scale. It reuses the input's per-size box
+geometry — height, padding, value text, and chevron — so a select and a text
+input stay the same height in a form. `size` applies to the `field` variant
+only; the `map` / `pill` / `mobilePeriod` variants keep their bespoke
+dimensions. `ReadOnlySelector` takes the same `size`:
+
+```tsx
+<DropdownSelector
+  label="Currency"
+  onValueChange={setCurrency}
+  options={currencyOptions}
+  size="sm"
+  value={currency}
+/>
+```
+
 Use `ReadOnlySelector` when the UI is selector-shaped but has no scoped data
 behavior yet:
 
 ```tsx
-import { ReadOnlySelector } from "@futex/ui/dropdown";
+import { ReadOnlySelector } from "@firna/ui/dropdown";
 
 <ReadOnlySelector label="Date format" value="DD/MM/YYYY" />;
 ```
@@ -98,7 +117,7 @@ focus stays in the input.
 Use `ComboboxMultiSelect` for removable-chip autocomplete controls:
 
 ```tsx
-import { ComboboxMultiSelect } from "@futex/ui/dropdown";
+import { ComboboxMultiSelect } from "@firna/ui/dropdown";
 
 <ComboboxMultiSelect
   onChange={setBookIds}

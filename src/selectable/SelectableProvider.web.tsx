@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { SelectableSelectionContext } from "./selectableContext";
+import { SelectableSelectionContext } from "./selectableContextValue";
 import {
   selectableSelectionFromSelection,
   selectableSelectionsEqual,

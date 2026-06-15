@@ -48,6 +48,19 @@ shared `CalendarMonth` itself and the wheel variant renders our own
 - **Display: `D Mon YYYY`** (e.g. `4 Mar 2024`).
 - **Range value: `{ start, end }`** of ISO strings.
 
+## Sizes
+
+`size` (`sm` / `md` / `lg`, default `md`) sizes the **trigger** from the shared
+`ControlSize` scale on `DateField`, `DateInput`, and `DateRangeField`. The web
+trigger is an `InputFrame`, so it scales exactly like the text input; the native
+trigger mirrors the same box height, padding, value text, and icon diameter — so
+a date field and a text input stay the same height in a form. The opened picker
+(calendar popover or wheel sheet) keeps its natural size.
+
+```tsx
+<DateField label="Year ends" onChange={setIso} size="sm" value={iso} />
+```
+
 ## Clearing
 
 Clearing is **opt-in**: pass `clearable` to `DateField` / `DateInput` /
@@ -66,7 +79,7 @@ independently reachable by VoiceOver/TalkBack alongside the open button.
 `DateRangeField` takes `value: { start, end }` plus `onChange: (next) => void`.
 
 ```tsx
-import { DateField, DateRangeField } from "@futex/ui/date";
+import { DateField, DateRangeField } from "@firna/ui/date";
 
 <DateField label="Year ends" onChange={setIso} value={iso} />;
 
@@ -86,7 +99,7 @@ import { DateField, DateRangeField } from "@futex/ui/date";
 - `DateField.tsx` — `DateField`, `DateInput`, and the shared `FieldLabel`.
 - `DateTrigger.tsx` — the platform triggers (`WebTrigger`, `NativeTrigger` tap
   target) and the `triggerBorder` helper. `WebTrigger` renders the shared
-  `InputFrame` (`@futex/ui/input`) for the editable box — the same chrome, focus
+  `InputFrame` (`@firna/ui/input`) for the editable box — the same chrome, focus
   ring, clear button, and `aria-invalid` wiring as every other text input — and
   only supplies the type-or-pick behaviour (commit-on-type, focus-to-open) plus
   the calendar suffix icon. `NativeTrigger` is a tap target, not a text input, so

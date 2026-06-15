@@ -20,8 +20,10 @@ test("switch keeps a real touch target and read-only disabled state", () => {
   assert.match(source, /disabledState = disabled \|\| !onValueChange/);
   assert.match(source, /disabled=\{disabledState\}/);
   assert.match(source, /style=\{styles\.pressable\}/);
-  assert.match(stylesSource, /height: 44/);
-  assert.match(stylesSource, /width: 44/);
+  // The touch target scales with the size, staying >= 40px at the smallest.
+  assert.match(stylesSource, /height: sizing\.touchTarget/);
+  assert.match(stylesSource, /width: sizing\.touchTarget/);
+  assert.match(stylesSource, /md: \{[\s\S]*?touchTarget: 44/);
 });
 
 test("switch handles space key activation for web switch semantics", () => {
@@ -40,10 +42,24 @@ test("switch knob animates between the off and on positions", () => {
   const stylesSource = readSource("../../src/switch/switchStyles.ts");
 
   assert.match(source, /transition: "left 0\.15s ease"/);
-  assert.match(stylesSource, /width: 40/);
-  assert.match(stylesSource, /height: 24/);
-  assert.match(stylesSource, /left: 3/);
-  assert.match(stylesSource, /knobOn: \{ left: 19 \}/);
+  // `md` preserves the original 40×24 track, 3px inset, and 19px on-position.
+  assert.match(stylesSource, /md: \{[\s\S]*?trackWidth: 40/);
+  assert.match(stylesSource, /md: \{[\s\S]*?trackHeight: 24/);
+  assert.match(stylesSource, /md: \{[\s\S]*?inset: 3/);
+  assert.match(stylesSource, /md: \{[\s\S]*?knobOn: 19/);
+  assert.match(stylesSource, /knobOn: \{ left: sizing\.knobOn \}/);
+});
+
+test("switch supports the shared size scale", () => {
+  const source = readSource("../../src/switch/Switch.tsx");
+  const stylesSource = readSource("../../src/switch/switchStyles.ts");
+
+  assert.match(source, /size = "md"/);
+  assert.match(source, /createSwitchStyles\(theme, size\)/);
+  // Each size sets a distinct track width.
+  assert.match(stylesSource, /sm: \{[\s\S]*?trackWidth: 32/);
+  assert.match(stylesSource, /md: \{[\s\S]*?trackWidth: 40/);
+  assert.match(stylesSource, /lg: \{[\s\S]*?trackWidth: 48/);
 });
 
 test("switch states are driven by shared theme tokens", () => {
