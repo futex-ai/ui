@@ -59,6 +59,40 @@ test("button tone and block styles layer over the base button", () => {
   assert.match(source, /block \? styles\.block : null/);
 });
 
+test("button shows a per-tone hover state, suppressed when disabled", () => {
+  const source = readSource("../../src/button/Button.tsx");
+  const stylesSource = readSource("../../src/button/buttonStyles.ts");
+
+  // The style prop is a Pressable callback reading react-native-web's hovered flag.
+  assert.match(source, /style=\{\(\{ hovered \}: PressableHoverState\) =>/);
+  // Every tone has a hover style, gated off while the button is disabled.
+  for (const tone of ["primary", "secondary", "ghost", "danger"]) {
+    assert.match(
+      source,
+      new RegExp(`hovered && !disabledState && tone === "${tone}"`),
+    );
+  }
+  // Hover treatments are theme tokens: the filled tone deepens, the neutral and
+  // ghost tones gain a soft / accent wash, and danger firms its border to full
+  // rose (keeping its fill so the rose label stays legible).
+  assert.match(
+    stylesSource,
+    /primaryHover: \{[\s\S]*?backgroundColor: theme\.colors\.primaryDeep/,
+  );
+  assert.match(
+    stylesSource,
+    /secondaryHover: \{[\s\S]*?backgroundColor: theme\.colors\.soft/,
+  );
+  assert.match(
+    stylesSource,
+    /ghostHover: \{[\s\S]*?backgroundColor: theme\.colors\.primarySoft/,
+  );
+  assert.match(
+    stylesSource,
+    /dangerHover: \{[\s\S]*?borderColor: theme\.colors\.rose/,
+  );
+});
+
 test("button supports the shared size scale", () => {
   const source = readSource("../../src/button/Button.tsx");
   const stylesSource = readSource("../../src/button/buttonStyles.ts");

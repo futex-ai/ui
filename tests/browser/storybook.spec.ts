@@ -1003,6 +1003,44 @@ test("button reflects press and disabled state", async ({ page }) => {
   ).toBeHidden();
 });
 
+test("button deepens its fill on hover, per tone", async ({ page }) => {
+  await page.goto("/iframe.html?id=button-examples--tones");
+
+  const primary = page.getByRole("button", { name: "Primary" });
+  const secondary = page.getByRole("button", { name: "Secondary" });
+  const ghost = page.getByRole("button", { name: "Ghost" });
+  const danger = page.getByRole("button", { name: "Danger" });
+
+  // Resting: the primary tone carries the theme primary fill.
+  await expect(primary).toHaveCSS("background-color", "rgb(79, 120, 100)");
+
+  // Hover deepens the filled tone to primaryDeep (raising the white label's
+  // contrast), and washes the neutral / ghost tones with their token: soft for
+  // the secondary, the primary accent's primarySoft for ghost.
+  await primary.hover();
+  await expect(primary).toHaveCSS("background-color", "rgb(47, 89, 69)");
+  await secondary.hover();
+  await expect(secondary).toHaveCSS("background-color", "rgb(238, 242, 237)");
+  await ghost.hover();
+  await expect(ghost).toHaveCSS("background-color", "rgb(227, 238, 230)");
+  // Danger keeps its surface fill (a wash would drop the rose label below AA)
+  // and instead firms its border from roseSoft to full rose (rgb(168, 79, 69)).
+  await danger.hover();
+  await expect(danger).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expect(danger).toHaveCSS("border-top-color", "rgb(168, 79, 69)");
+});
+
+test("disabled button does not take a hover fill", async ({ page }) => {
+  await page.goto("/iframe.html?id=button-examples--block-and-disabled");
+
+  const disabled = page.getByRole("button", { name: "Disabled" });
+  await expect(disabled).toBeDisabled();
+  await expect(disabled).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  // Hovering a disabled button leaves its surface fill untouched.
+  await disabled.hover({ force: true });
+  await expect(disabled).toHaveCSS("background-color", "rgb(255, 255, 255)");
+});
+
 test("button activates from the keyboard", async ({ page }) => {
   await page.goto("/iframe.html?id=button-examples--interactive");
 
