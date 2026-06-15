@@ -92,10 +92,10 @@ The package export map intentionally separates runtime targets:
 - release-plz opens and updates the release PR for `@firna/ui`.
 - When release-plz reports no release PR changes, the workflow exits
   successfully without checking out a release branch or syncing npm metadata.
-- The release flow uses `release_always = false`; ordinary pushes to `main`
-  update the release PR but do not publish npm versions.
-- Merging the release PR lets release-plz create the `vX.Y.Z` tag and GitHub
-  release.
+- The release flow uses `release_always = true` so squash-merged release PRs
+  still let release-plz create the `vX.Y.Z` tag and GitHub release. Ordinary
+  pushes to `main` do not publish unless the release metadata version is ahead
+  of the latest tag.
 - npm publishing runs in the same release-plz workflow invocation that creates
   the GitHub release, using npm trusted publishing. The npm package must
   configure this repository and `.github/workflows/release-plz.yml` as the
