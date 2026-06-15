@@ -142,6 +142,8 @@ Required behavior:
   initials' font, with no consumer-local theme imports.
 - Accept an optional accessible name and a container style override without
   requiring consumers to fork the component.
+- Accept an optional initials color override so consumer-provided palette discs
+  can keep matching palette-specific foreground colors.
 
 ## Date Contract
 
