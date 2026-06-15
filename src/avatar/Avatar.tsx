@@ -1,6 +1,6 @@
 /** Circular user avatar that renders initials on a themed disc. */
 import { useMemo } from "react";
-import { StyleProp, Text, View, ViewStyle } from "react-native";
+import { StyleProp, Text, TextStyle, View, ViewStyle } from "react-native";
 
 import { useSharedUiTheme } from "../theme";
 
@@ -17,6 +17,8 @@ export type AvatarProps = {
   size?: number;
   /** Override the container disc style without forking the component. */
   style?: StyleProp<ViewStyle>;
+  /** Override the initials color for palette-specific avatar discs. */
+  textColor?: TextStyle["color"];
   /** `solid` fills the disc with the primary color; `soft` uses the soft tint. */
   tone?: AvatarTone;
 };
@@ -25,13 +27,15 @@ export type AvatarProps = {
  * A circular avatar showing initials. `size` drives the diameter, the circular
  * radius (`size / 2`), and the initials' font size (`size * 0.38`). The `solid`
  * tone fills the disc with the theme primary and white text; the `soft` tone
- * uses the soft tint with deep-primary text.
+ * uses the soft tint with deep-primary text. `textColor` can override those
+ * defaults when a consumer supplies a palette-specific disc color.
  */
 export function Avatar({
   accessibilityLabel,
   label,
   size = 32,
   style,
+  textColor,
   tone = "solid",
 }: AvatarProps) {
   const theme = useSharedUiTheme();
@@ -54,6 +58,7 @@ export function Avatar({
           styles.avatarText,
           { fontSize: size * 0.38 },
           solid ? styles.avatarTextSolid : null,
+          textColor === undefined ? null : { color: textColor },
         ]}
       >
         {label}

@@ -785,6 +785,14 @@ test("avatar renders initials and sizes the disc from the size prop", async ({
   // The solid (default) and soft variants both render their initials.
   await expect(page.getByText("GS", { exact: true })).toBeVisible();
   await expect(page.getByText("PR", { exact: true })).toBeVisible();
+  await expect(page.getByText("AR", { exact: true })).toHaveCSS(
+    "color",
+    "rgb(148, 103, 39)",
+  );
+  await expect(page.locator('[aria-label="Accounts Receivable"]')).toHaveCSS(
+    "background-color",
+    "rgb(244, 236, 216)",
+  );
 
   // The accessibilityLabel names the disc for assistive tech, and the size prop
   // drives the rendered circle (size={48} → a 48x48 disc).

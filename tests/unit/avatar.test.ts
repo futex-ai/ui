@@ -31,11 +31,16 @@ test("avatar sizes the disc and initials from the size prop", () => {
   assert.match(source, /fontSize: size \* 0\.38/);
 });
 
-test("avatar forwards an accessible name and a container style override", () => {
+test("avatar forwards accessible names and style overrides", () => {
   const source = readSource("../../src/avatar/Avatar.tsx");
 
   assert.match(source, /accessibilityLabel=\{accessibilityLabel \?\? label\}/);
   assert.match(source, /style,\n/);
+  assert.match(source, /textColor\?: TextStyle\["color"\]/);
+  assert.match(
+    source,
+    /textColor === undefined \? null : \{ color: textColor \}/,
+  );
 });
 
 test("avatar has public root and subpath exports", () => {

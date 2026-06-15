@@ -19,6 +19,13 @@ export const UserAvatars: Story = {
       <View style={styles.row}>
         <Avatar accessibilityLabel="Greenhouse Studio" label="GS" />
         <Avatar accessibilityLabel="Payroll Reserve" label="PR" tone="soft" />
+        <Avatar
+          accessibilityLabel="Accounts Receivable"
+          label="AR"
+          style={styles.amberDisc}
+          textColor="#946727"
+          tone="soft"
+        />
         <Avatar accessibilityLabel="Vivienne Archer" label="VA" size={48} />
       </View>
     </StorySurface>
@@ -30,5 +37,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     gap: 16,
+  },
+  amberDisc: {
+    backgroundColor: "#f4ecd8",
   },
 });
