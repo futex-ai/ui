@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+import type { ControlSize } from "../controlSize";
 import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
 
@@ -32,6 +33,8 @@ export type DateRangeFieldProps = {
   clearable?: boolean;
   /** Calendar grid (default) or spinning day/month/year wheel bottom sheet. */
   variant?: DatePickerVariant;
+  /** Control density: `sm`, `md` (default), or `lg`. */
+  size?: ControlSize;
 };
 
 /**
@@ -50,9 +53,17 @@ export function DateRangeField({
   max,
   clearable = false,
   variant = "calendar",
+  size = "md",
 }: DateRangeFieldProps) {
   const theme = useSharedUiTheme();
-  const fieldStyles = useMemo(() => createDateFieldStyles(theme), [theme]);
+  // The wrapper only reads size-independent chrome (label / error / hint / open
+  // z-index); the per-size trigger geometry lives on the two DateInputs. Thread
+  // `size` anyway so the range field stays in lockstep with DateField/DateInput
+  // if a size-dependent token is ever added to the wrapper.
+  const fieldStyles = useMemo(
+    () => createDateFieldStyles(theme, size),
+    [theme, size],
+  );
   const styles = useMemo(() => createRangeStyles(theme), [theme]);
   const [startOpen, setStartOpen] = useState(false);
   const [endOpen, setEndOpen] = useState(false);
@@ -86,6 +97,7 @@ export function DateRangeField({
           onOpenChange={setStartOpen}
           placeholder="Start"
           required={required}
+          size={size}
           value={value.start}
           variant={variant}
         />
@@ -101,6 +113,7 @@ export function DateRangeField({
           onOpenChange={setEndOpen}
           placeholder="End"
           required={required}
+          size={size}
           value={value.end}
           variant={variant}
         />

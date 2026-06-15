@@ -54,6 +54,16 @@ export function inputIconSize(size: ControlSize) {
 }
 
 /**
+ * The framed-field geometry for a given size — box height, gap, icon diameter,
+ * text scale, and horizontal padding. Exported so the other controls that share
+ * the input's bordered-box look (the {@link DropdownSelector} field and the date
+ * triggers) size from the same scale and stay in lockstep with the text input.
+ */
+export function inputSizeTokens(size: ControlSize) {
+  return INPUT_SIZES[size];
+}
+
+/**
  * The label / message tokens shared by every labelled field — the `Input` field
  * and the date field both consume these so their label, required marker, error,
  * and hint styling stay in lockstep (single source of truth, no drift).

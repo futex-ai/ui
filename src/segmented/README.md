@@ -11,6 +11,8 @@ used around Profit & loss reporting.
 - Expose `radiogroup` and `radio` semantics with checked and disabled state.
 - Support outline cells for filter pills and pill-track tabs for report-style
   segmented controls.
+- Size the control with the shared `ControlSize` scale (`sm` / `md` / `lg`),
+  scaling the segment padding, the label type scale, and the track gaps.
 - Use shared theme colors, fonts, and radii instead of consumer-local theme
   imports.
 - Keep equal-width and content-sized segment layouts available to consumers.
@@ -41,6 +43,26 @@ where each tab hugs its label and the track sits flush to the start. Use
 `sizing="content"` with `wrap` when the control is a row of filter pills that may
 need to flow onto another line. Leave `sizing` as the default `"equal"` to share
 width evenly across segments.
+
+> `sizing` is the **width** strategy (equal vs content-hugging); `size` is the
+> **density** (`sm` / `md` / `lg`). They are independent.
+
+### Sizes
+
+`size` takes the shared `ControlSize` (`sm` / `md` / `lg`); `md` is the default
+and matches the original accounting control. It scales the segment padding, the
+label type scale, and the gaps between segments, so a segmented control reads at
+the same density as the inputs and buttons beside it.
+
+```tsx
+<SegmentedControl
+  label="Report"
+  onChange={setReport}
+  options={reportOptions}
+  size="sm"
+  value={report}
+/>
+```
 
 ## Theming
 

@@ -7,7 +7,9 @@ surfaces. The first consumers are the accounting app and the Juno app.
 
 - Shared dropdown, selector, combobox, segmented control, radio card, switch,
   button, labelled input, modal, and avatar primitives.
-- A shared `sm` / `md` / `lg` size scale (`ControlSize`) for buttons and inputs.
+- A shared `sm` / `md` / `lg` size scale (`ControlSize`) across the interactive
+  controls — buttons, inputs, dropdown selectors, date fields, segmented
+  controls, and switches.
 - Themeable visual tokens so consumers can use their own brand primary color.
 - Expo and React Native Web compatible platform files.
 - Focused unit tests, browser interaction tests, and package export checks.

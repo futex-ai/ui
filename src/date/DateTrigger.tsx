@@ -3,7 +3,8 @@ import { CalendarDays, CircleX } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 
-import { InputFrame } from "../input";
+import type { ControlSize } from "../controlSize";
+import { InputFrame, inputIconSize } from "../input";
 import { useSharedUiTheme } from "../theme";
 
 import { DateFieldStyles } from "./dateFieldStyles";
@@ -15,6 +16,8 @@ export type TriggerProps = {
   label: string;
   placeholder: string;
   required: boolean;
+  /** Control density: scales the box (web) / icons (native) to match the field. */
+  size: ControlSize;
   styles: DateFieldStyles;
   /** Whether the clear (✕) button is shown once a value is set. */
   clearable: boolean;
@@ -26,6 +29,7 @@ export function WebTrigger({
   label,
   placeholder,
   required,
+  size,
   styles,
   clearable,
 }: TriggerProps) {
@@ -96,6 +100,7 @@ export function WebTrigger({
       onSuffixIconPress={() => field.setOpen(true)}
       placeholder={placeholder}
       required={required}
+      size={size}
       suffixIcon={CalendarDays}
       suffixIconStyle={styles.calendarNudge}
       value={text}
@@ -109,10 +114,12 @@ export function NativeTrigger({
   label,
   placeholder,
   required,
+  size,
   styles,
   clearable,
 }: TriggerProps) {
   const theme = useSharedUiTheme();
+  const iconSize = inputIconSize(size);
   // The row is a non-accessible Pressable (a full-row tap target to open) so its
   // two accessible children — the labelled open button and the clear button —
   // stay independently focusable. If the row were itself an accessibility element
@@ -150,13 +157,13 @@ export function NativeTrigger({
             hitSlop={8}
             onPress={field.clear}
           >
-            <CircleX color={theme.colors.muted} size={16} />
+            <CircleX color={theme.colors.muted} size={iconSize} />
           </Pressable>
         ) : null}
         {/* Decorative: the row already opens the picker on tap, so the icon just
             marks the affordance and carries no a11y semantics. */}
         <View style={styles.calendarNudge}>
-          <CalendarDays color={theme.colors.muted} size={16} />
+          <CalendarDays color={theme.colors.muted} size={iconSize} />
         </View>
       </View>
     </Pressable>

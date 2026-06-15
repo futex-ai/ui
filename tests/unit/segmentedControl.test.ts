@@ -33,6 +33,21 @@ test("segmented control keeps report and filter variants", () => {
   }
 });
 
+test("segmented control supports the shared size scale", () => {
+  const source = readSource("../../src/segmented/SegmentedControl.tsx");
+  const stylesSource = readSource(
+    "../../src/segmented/segmentedControlStyles.ts",
+  );
+
+  assert.match(source, /size = "md"/);
+  assert.match(source, /createSegmentedControlStyles\(theme, size\)/);
+  // Each size sets a distinct cell type scale; `md` preserves the original 12/13.
+  assert.match(stylesSource, /sm: \{[\s\S]*?cellFontSize: 11/);
+  assert.match(stylesSource, /md: \{[\s\S]*?cellFontSize: 12/);
+  assert.match(stylesSource, /md: \{[\s\S]*?pillFontSize: 13/);
+  assert.match(stylesSource, /lg: \{[\s\S]*?cellFontSize: 14/);
+});
+
 test("segmented selected states are driven by shared theme tokens", () => {
   const stylesSource = readSource(
     "../../src/segmented/segmentedControlStyles.ts",

@@ -31,6 +31,15 @@ export const ClearableDateField: Story = {
   ),
 };
 
+export const DateFieldSizes: Story = {
+  name: "Date field sizes",
+  render: () => (
+    <StorySurface>
+      <DateFieldSizesExample />
+    </StorySurface>
+  ),
+};
+
 export const BoundedDateField: Story = {
   name: "Bounded single date field",
   render: () => (
@@ -95,6 +104,19 @@ function SingleDateExample() {
         onChange={setValue}
         value={value}
       />
+    </View>
+  );
+}
+
+function DateFieldSizesExample() {
+  const [small, setSmall] = useState("2026-03-31");
+  const [medium, setMedium] = useState("2026-03-31");
+  const [large, setLarge] = useState("2026-03-31");
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <DateField label="Small" onChange={setSmall} size="sm" value={small} />
+      <DateField label="Medium" onChange={setMedium} size="md" value={medium} />
+      <DateField label="Large" onChange={setLarge} size="lg" value={large} />
     </View>
   );
 }
