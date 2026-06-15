@@ -228,6 +228,37 @@ test("segmented control toggles report and source choices", async ({
   await expect(page.getByRole("radio", { name: "Consulting" })).toBeChecked();
 });
 
+test("selectable provider reports selected matching ids", async ({ page }) => {
+  await page.goto("/iframe.html?id=selectable-examples--selection-observer");
+
+  await expect(page.getByText("Selected matching elements")).toBeVisible();
+  await expect(page.getByText("Selected IDs: None")).toBeVisible();
+
+  await page.evaluate(() => {
+    const first = document.getElementById("selectable-invoice-greenhouse");
+    const second = document.getElementById("selectable-invoice-payroll");
+    const selection = window.getSelection();
+    if (!first || !second || !selection) {
+      throw new Error("Selectable story rows are missing");
+    }
+
+    const range = document.createRange();
+    range.setStartBefore(first);
+    range.setEndAfter(second);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    document.dispatchEvent(new Event("selectionchange"));
+  });
+
+  await expect(page.getByText("Selected matching elements")).toBeVisible();
+  await expect(page.getByText("2", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText(
+      "Selected IDs: selectable-invoice-greenhouse, selectable-invoice-payroll",
+    ),
+  ).toBeVisible();
+});
+
 test("radio cards expose checked and disabled option states", async ({
   page,
 }) => {

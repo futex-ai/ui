@@ -322,13 +322,14 @@ Required behavior:
 - Storybook previews must include at least the shared dropdown selector,
   dropdown action menu, input-backed combobox, chip multi-select, segmented
   control variants, radio card group, switch toggle, button tones and sizes,
-  user avatars, centered web modal, bottom-sheet web modal, default accounting
-  theme, and alternate primary color theme.
+  user avatars, centered web modal, bottom-sheet web modal, selectable
+  selection observer, default accounting theme, and alternate primary color
+  theme.
 - Storybook navigation must keep each example family in its own top-level
   folder, currently `Avatar/Examples`, `Button/Examples`, `Date/Examples`,
   `Dropdown/Examples`, `Input/Examples`, `Modal/Examples`, `Popover/Examples`,
-  `Radio/Examples`, `Segmented/Examples`, `Switch/Examples`, and
-  `Theme/Examples`.
+  `Radio/Examples`, `Selectable/Examples`, `Segmented/Examples`,
+  `Switch/Examples`, and `Theme/Examples`.
 
 ## Non-Goals
 

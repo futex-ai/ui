@@ -122,7 +122,8 @@ The package export map intentionally separates runtime targets:
 - Storybook examples are grouped under one top-level folder per family:
   `Avatar/Examples`, `Button/Examples`, `Date/Examples`, `Dropdown/Examples`,
   `Input/Examples`, `Modal/Examples`, `Popover/Examples`, `Radio/Examples`,
-  `Segmented/Examples`, `Switch/Examples`, and `Theme/Examples`.
+  `Selectable/Examples`, `Segmented/Examples`, `Switch/Examples`, and
+  `Theme/Examples`.
 - Required repository variable: `CLOUDFLARE_ACCOUNT_ID`.
 - Required repository secret: `CLOUDFLARE_PAGES_API_TOKEN` or
   `CLOUDFLARE_API_TOKEN`.
