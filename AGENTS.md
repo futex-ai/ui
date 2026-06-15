@@ -49,6 +49,12 @@
   labels, badges, or explanatory copy in the implementation. The same view
   should render across environments, with environment-specific data selected
   from the URL or environment configuration.
+- Every shared UI component must be added to Storybook: each new component
+  requires a matching story at `src/stories/<component>.stories.tsx` that
+  renders the component's main variants. Group a component family's examples
+  under a single top-level title folder (e.g. `title: "Avatar/Examples"`). A
+  component is not complete until its story renders in `npm run storybook` and
+  the `npm run storybook:build` step of `npm run verify` passes.
 
 ## Readme (README.md)
 
