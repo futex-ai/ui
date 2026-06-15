@@ -57,6 +57,11 @@
       "react-native": "./dist/radio/index.js",
       "import": "./dist/radio/index.js"
     },
+    "./selectable": {
+      "types": "./dist/selectable/index.d.ts",
+      "react-native": "./dist/selectable/index.js",
+      "import": "./dist/selectable/index.js"
+    },
     "./segmented": {
       "types": "./dist/segmented/index.d.ts",
       "react-native": "./dist/segmented/index.js",

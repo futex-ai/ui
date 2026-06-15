@@ -3,16 +3,17 @@
 ## Status
 
 Implemented contract for the dropdown, segmented control, radio card, switch,
-button, modal, and avatar extraction, including the shared control-size scale
-for buttons and inputs.
+button, modal, selectable, and avatar extraction, including the shared
+control-size scale for buttons and inputs.
 
 ## Purpose
 
 This repository provides shared React Native and React Native Web UI primitives
 for Futex apps. The first consumers are the accounting app and the Juno app.
 The first shared component families are the dropdown components, segmented
-control patterns, radio-option cards, switch primitive, web modal components,
-and the circular user avatar currently implemented in the accounting app.
+control patterns, radio-option cards, switch primitive, selectable selection
+observer, web modal components, and the circular user avatar currently
+implemented in the accounting app.
 
 ## Package Boundary
 
@@ -166,6 +167,29 @@ Required behavior:
   the calendar escapes sibling stacking contexts.
 - Keep day cells, navigation buttons, and the clear button labelled for
   assistive technology, and include the field label in those accessible names.
+
+## Selectable Contract
+
+The selectable family covers screens that need to observe browser text
+selection across known DOM elements, such as table rows, transcript spans, or
+document blocks.
+
+Required behavior:
+
+- Provide one provider boundary that listens to browser selection changes and
+  exposes the current selection through context.
+- Match selected content against a caller-supplied CSS selector, defaulting to
+  `[data-selectable-id]`.
+- Report whether a selection is active, how many matching elements intersect
+  the selection, which matching elements were selected, their ids, and the
+  selected text.
+- Include a hook for reading the latest selection and a hook for callback-style
+  change notification.
+- Let callers scope matching to a root document or element.
+- Render as a native-safe no-op outside web, returning an empty selection
+  without registering DOM listeners.
+- Keep the primitive observational only: it must not own copy behavior, drag
+  selection mechanics, row styling, or consumer-specific selection state.
 
 ## Dropdown Contract
 

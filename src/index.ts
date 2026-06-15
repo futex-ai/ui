@@ -8,6 +8,7 @@ export * from "./input";
 export * from "./modal";
 export * from "./popover";
 export * from "./radio";
+export * from "./selectable";
 export * from "./segmented";
 export * from "./switch";
 export * from "./theme";

@@ -6,7 +6,7 @@ surfaces. The first consumers are the accounting app and the Juno app.
 ## Key Features
 
 - Shared dropdown, selector, combobox, segmented control, radio card, switch,
-  button, labelled input, modal, and avatar primitives.
+  button, labelled input, modal, selectable, and avatar primitives.
 - A shared `sm` / `md` / `lg` size scale (`ControlSize`) for buttons and inputs.
 - Themeable visual tokens so consumers can use their own brand primary color.
 - Expo and React Native Web compatible platform files.
@@ -24,6 +24,8 @@ The package name is `@futex/ui`. Public exports are available from:
 - `@futex/ui/input` for the labelled text input and bare input frame.
 - `@futex/ui/modal` for web modal frame, portal, model, and layer helpers.
 - `@futex/ui/radio` for themed titled radio-option cards.
+- `@futex/ui/selectable` for observing browser selections across matching DOM
+  elements.
 - `@futex/ui/segmented` for themed single-select segmented controls.
 - `@futex/ui/switch` for themed binary on/off switches.
 - `@futex/ui/theme` for `SharedUiThemeProvider`, default accounting-style
@@ -87,6 +89,8 @@ Storybook is built to `storybook-static`.
 - Dropdown components: [src/dropdown/README.md](src/dropdown/README.md)
 - Modal components: [src/modal/README.md](src/modal/README.md)
 - Radio card component: [src/radio/README.md](src/radio/README.md)
+- Selectable provider and hooks:
+  [src/selectable/README.md](src/selectable/README.md)
 - Segmented control component:
   [src/segmented/README.md](src/segmented/README.md)
 - Switch component: [src/switch/README.md](src/switch/README.md)
