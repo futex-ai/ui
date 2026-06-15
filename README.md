@@ -90,6 +90,8 @@ The package export map intentionally separates runtime targets:
 ## Package Releases
 
 - release-plz opens and updates the release PR for `@firna/ui`.
+- When release-plz reports no release PR changes, the workflow exits
+  successfully without checking out a release branch or syncing npm metadata.
 - The release flow uses `release_always = false`; ordinary pushes to `main`
   update the release PR but do not publish npm versions.
 - Merging the release PR lets release-plz create the `vX.Y.Z` tag and GitHub
