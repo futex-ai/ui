@@ -32,6 +32,13 @@ export type DragSelectablePointerEventPoint = {
 
 export const dragSelectableDefaultThreshold = 4;
 
+export function dragSelectableThresholdForValue(value?: number): number {
+  if (value === undefined || !Number.isFinite(value)) {
+    return dragSelectableDefaultThreshold;
+  }
+  return Math.max(0, value);
+}
+
 export function dragSelectableBox(
   start: DragSelectablePoint,
   current: DragSelectablePoint,

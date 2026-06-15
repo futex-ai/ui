@@ -9,6 +9,8 @@ overlay only run on web.
 - Track registered selectable targets by stable id.
 - Measure target bounds on web drag start and select every target intersecting
   the marquee box on pointer up.
+- Keep clicks and short pointer movement from starting the visible marquee or
+  committing a selection. The default threshold is `4px`.
 - Expose final selection ids, selected target metadata, live matching ids, and
   live matching counts through hooks.
 - Render a themed, page-level marquee overlay on web.
@@ -76,3 +78,14 @@ the live matching count plus matching ids and target metadata:
 
 `overlayZIndex` can override the default `DRAG_SELECTABLE_LAYERS.overlay` value
 when a consuming surface owns a higher portal layer.
+
+`minimumDragDistance` customizes how far the pointer must move before live
+matching, the marquee overlay, and final selection can begin. Pass `0` to start
+selection as soon as the pointer moves; negative values are clamped to `0`;
+non-finite values fall back to the default `4px`.
+
+```tsx
+<DragSelectableProvider minimumDragDistance={16}>
+  {children}
+</DragSelectableProvider>
+```

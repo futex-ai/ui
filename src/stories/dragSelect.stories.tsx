@@ -47,6 +47,15 @@ export const PageContentArea: Story = {
   ),
 };
 
+export const LargerMinimumDrag: Story = {
+  name: "Larger minimum drag",
+  render: () => (
+    <StorySurface>
+      <LargerMinimumDragExample />
+    </StorySurface>
+  ),
+};
+
 function LedgerRowsExample() {
   return (
     <DragSelectableProvider
@@ -80,6 +89,23 @@ function PageContentAreaExample() {
             <LedgerRow key={row.id} row={row} />
           ))}
         </View>
+      </View>
+    </DragSelectableProvider>
+  );
+}
+
+function LargerMinimumDragExample() {
+  return (
+    <DragSelectableProvider
+      minimumDragDistance={24}
+      selectionLabel={(count) => transactionCountLabel(count)}
+      style={styles.shell}
+    >
+      <SelectionStatus />
+      <View style={styles.list}>
+        {rows.map((row) => (
+          <LedgerRow key={row.id} row={row} />
+        ))}
       </View>
     </DragSelectableProvider>
   );

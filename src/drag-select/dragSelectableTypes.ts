@@ -39,6 +39,7 @@ export type DragSelectableChangeListener = (state: DragSelectableState) => void;
 export type DragSelectableProviderProps = {
   children: ReactNode;
   disabled?: boolean;
+  minimumDragDistance?: number;
   onSelectionChange?: (selection: DragSelectableSelection) => void;
   overlayZIndex?: number;
   selectionLabel?: DragSelectableSelectionLabel;

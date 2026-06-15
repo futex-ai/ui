@@ -13,6 +13,7 @@ import {
   dragSelectableBox,
   dragSelectableIdsForBox,
   dragSelectablePointFromEvent,
+  dragSelectableThresholdForValue,
   hasDragSelectableMoved,
 } from "../../src/drag-select/dragSelectableModel";
 import type { DragSelectableTargetRegistration } from "../../src/drag-select/dragSelectableTypes";
@@ -41,6 +42,25 @@ test("drag-select uses a movement threshold to separate clicks from drags", () =
   );
   assert.equal(
     hasDragSelectableMoved({ x: 10, y: 10 }, { x: 10, y: 14 }),
+    true,
+  );
+});
+
+test("drag-select normalizes configurable movement thresholds", () => {
+  assert.equal(dragSelectableThresholdForValue(undefined), 4);
+  assert.equal(dragSelectableThresholdForValue(Number.NaN), 4);
+  assert.equal(dragSelectableThresholdForValue(-8), 0);
+  assert.equal(dragSelectableThresholdForValue(0), 0);
+  assert.equal(dragSelectableThresholdForValue(12), 12);
+});
+
+test("drag-select respects a custom movement threshold", () => {
+  assert.equal(
+    hasDragSelectableMoved({ x: 10, y: 10 }, { x: 21, y: 10 }, 12),
+    false,
+  );
+  assert.equal(
+    hasDragSelectableMoved({ x: 10, y: 10 }, { x: 22, y: 10 }, 12),
     true,
   );
 });
@@ -150,6 +170,23 @@ test("drag-select selection callback ignores registry-only updates", () => {
     providerSource,
     /notifiedSelectedIdsRef\.current = \[\.\.\.selectedIds\]/,
   );
+});
+
+test("drag-select provider uses the configured movement threshold", () => {
+  const providerSource = readSource(
+    "../../src/drag-select/DragSelectableProvider.web.tsx",
+  );
+  const typeSource = readSource("../../src/drag-select/dragSelectableTypes.ts");
+  const readmeSource = readSource("../../src/drag-select/README.md");
+
+  assert.match(typeSource, /minimumDragDistance\?: number/);
+  assert.match(providerSource, /minimumDragDistance/);
+  assert.match(providerSource, /threshold: dragSelectableThresholdForValue/);
+  assert.match(
+    providerSource,
+    /hasDragSelectableMoved\(session\.start, point, session\.threshold\)/,
+  );
+  assert.match(readmeSource, /minimumDragDistance/);
 });
 
 test("drag-select provider exposes provider, target, and listener hooks", () => {

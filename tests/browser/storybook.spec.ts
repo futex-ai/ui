@@ -334,6 +334,48 @@ test("drag-select marquee can start in page content", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("drag-select minimum distance gates matching and selection", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=drag-select-examples--larger-minimum-drag");
+
+  const first = page.getByTestId("drag-target-txn_1");
+  const third = page.getByTestId("drag-target-txn_3");
+  const firstBox = await first.boundingBox();
+  const thirdBox = await third.boundingBox();
+  expect(firstBox).not.toBeNull();
+  expect(thirdBox).not.toBeNull();
+
+  await page.mouse.move(
+    (firstBox?.x ?? 0) + 8,
+    (firstBox?.y ?? 0) + (firstBox?.height ?? 0) / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    (firstBox?.x ?? 0) + 20,
+    (firstBox?.y ?? 0) + (firstBox?.height ?? 0) / 2,
+    { steps: 4 },
+  );
+  await expect(page.getByText("Matching 0 transactions")).toBeVisible();
+  await page.mouse.up();
+  await expect(page.getByText("Selected 0 transactions")).toBeVisible();
+  await expect(page.getByText("Last change: none")).toBeVisible();
+
+  await page.mouse.move(
+    (firstBox?.x ?? 0) + 8,
+    (firstBox?.y ?? 0) + (firstBox?.height ?? 0) / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    (thirdBox?.x ?? 0) + (thirdBox?.width ?? 0) - 8,
+    (thirdBox?.y ?? 0) + (thirdBox?.height ?? 0) / 2,
+    { steps: 8 },
+  );
+  await expect(page.getByText("Matching 3 transactions")).toBeVisible();
+  await page.mouse.up();
+  await expect(page.getByText("Selected 3 transactions")).toBeVisible();
+});
+
 test("web modal restores focus and allows nested dropdowns above the surface", async ({
   page,
 }) => {

@@ -10,6 +10,7 @@ import {
   dragSelectableBoundsForBox,
   dragSelectableBox,
   dragSelectableIdsEqual,
+  dragSelectableThresholdForValue,
   hasDragSelectableMoved,
 } from "./dragSelectableModel";
 import type { DragSelectablePoint } from "./dragSelectableModel";
@@ -41,6 +42,7 @@ type DragSession = {
   moved: boolean;
   start: DragSelectablePoint;
   targets: DragSelectableMeasuredTarget[];
+  threshold: number;
 };
 
 const emptyMatchingTargets: DragSelectableTargetSnapshot[] = [];
@@ -48,6 +50,7 @@ const emptyMatchingTargets: DragSelectableTargetSnapshot[] = [];
 export function DragSelectableProvider({
   children,
   disabled = false,
+  minimumDragDistance,
   onSelectionChange,
   overlayZIndex,
   selectionLabel,
@@ -156,7 +159,8 @@ export function DragSelectableProvider({
     }
     session.current = point;
     session.moved =
-      session.moved || hasDragSelectableMoved(session.start, point);
+      session.moved ||
+      hasDragSelectableMoved(session.start, point, session.threshold);
     const box = dragSelectableBox(session.start, point);
     const matchedTargets = session.moved
       ? dragSelectableBoundsForBox(session.targets, box)
@@ -177,7 +181,9 @@ export function DragSelectableProvider({
     }
     dragSessionRef.current = null;
     setActiveDrag(null);
-    const moved = session.moved || hasDragSelectableMoved(session.start, point);
+    const moved =
+      session.moved ||
+      hasDragSelectableMoved(session.start, point, session.threshold);
     if (!moved) {
       return;
     }
@@ -246,6 +252,7 @@ export function DragSelectableProvider({
         moved: false,
         start: point,
         targets: measureDragSelectableTargets(targetsRef.current.values()),
+        threshold: dragSelectableThresholdForValue(minimumDragDistance),
       };
       dragSessionRef.current = session;
       setActiveDrag({
@@ -255,7 +262,7 @@ export function DragSelectableProvider({
       });
       attachDragListeners();
     },
-    [attachDragListeners, disabled],
+    [attachDragListeners, disabled, minimumDragDistance],
   );
 
   useEffect(

@@ -208,6 +208,10 @@ Required behavior:
 - Register selectable targets by stable id through a hook-owned ref.
 - Measure registered target bounds on drag start and select every enabled target
   whose measured bounds intersect the marquee box on pointer up.
+- Require pointer movement to meet a provider-configurable minimum drag
+  distance before live matching, marquee rendering, or final selection starts.
+  The default minimum is `4px`; `0` starts selection immediately after movement,
+  negative values clamp to `0`, and non-finite values fall back to the default.
 - Expose final selected ids, selected target metadata, selected count, live
   matching ids, live matching target metadata, and live matching count through
   hooks.
