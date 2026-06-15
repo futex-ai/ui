@@ -2,17 +2,18 @@
 
 ## Status
 
-Implemented contract for the dropdown, segmented control, radio card, switch,
-button, modal, and avatar extraction, including the shared control-size scale
-for buttons and inputs.
+Implemented contract for the dropdown, drag-select, segmented control, radio
+card, switch, button, modal, and avatar extraction, including the shared
+control-size scale for buttons and inputs.
 
 ## Purpose
 
 This repository provides shared React Native and React Native Web UI primitives
 for Firna apps. The first consumers are the accounting app and the Juno app.
-The first shared component families are the dropdown components, segmented
-control patterns, radio-option cards, switch primitive, web modal components,
-and the circular user avatar currently implemented in the accounting app.
+The first shared component families are the dropdown components, drag-select
+provider, segmented control patterns, radio-option cards, switch primitive, web
+modal components, and the circular user avatar currently implemented in the
+accounting app.
 
 ## Package Boundary
 
@@ -195,6 +196,29 @@ Required behavior:
   focus while results are open.
 - Keep dropdown and combobox portal layers above modal surfaces.
 - Preserve native-safe fallbacks for Expo platform resolution.
+
+## Drag Select Contract
+
+The drag-select family covers web-only rubber-band selection for repeated rows,
+tiles, and similar rendered targets. Native platforms receive a safe provider
+fallback but no drag gesture.
+
+Required behavior:
+
+- Register selectable targets by stable id through a hook-owned ref.
+- Measure registered target bounds on drag start and select every enabled target
+  whose measured bounds intersect the marquee box on pointer up.
+- Expose final selected ids, selected target metadata, selected count, live
+  matching ids, live matching target metadata, and live matching count through
+  hooks.
+- Provide a provider-level selection-change callback and a hook-level listener
+  for components that need side effects when selection changes.
+- Render the web marquee through a body-level portal using shared theme primary
+  colors and radii.
+- Ignore touch drags and nested form/menu/link controls while allowing a
+  selectable target root to start the drag.
+- Keep the pure geometry helpers exported and covered by unit tests.
+- Preserve a native-safe fallback for Expo platform resolution.
 
 ## Modal Contract
 

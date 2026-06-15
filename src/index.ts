@@ -2,6 +2,7 @@ export * from "./avatar";
 export * from "./button";
 export * from "./controlSize";
 export * from "./date";
+export * from "./drag-select";
 export * from "./dropdown";
 export * from "./focusRing";
 export * from "./input";

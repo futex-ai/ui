@@ -55,6 +55,11 @@
       "react-native": "./dist/date/index.js",
       "import": "./dist/node/date/index.js"
     },
+    "./drag-select": {
+      "types": "./dist/node/drag-select/index.d.ts",
+      "react-native": "./dist/drag-select/index.js",
+      "import": "./dist/node/drag-select/index.js"
+    },
     "./dropdown": {
       "types": "./dist/node/dropdown/index.d.ts",
       "react-native": "./dist/dropdown/index.js",

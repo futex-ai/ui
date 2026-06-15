@@ -5,8 +5,8 @@ surfaces. The first consumers are the accounting app and the Juno app.
 
 ## Key Features
 
-- Shared dropdown, selector, combobox, segmented control, radio card, switch,
-  button, labelled input, modal, and avatar primitives.
+- Shared dropdown, selector, combobox, drag-select, segmented control, radio
+  card, switch, button, labelled input, modal, and avatar primitives.
 - A shared `sm` / `md` / `lg` size scale (`ControlSize`) across the interactive
   controls — buttons, inputs, dropdown selectors, date fields, segmented
   controls, and switches.
@@ -24,6 +24,8 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/avatar` for the themed circular initials avatar.
 - `@firna/ui/button` for the themed button with tone, size, and block variants.
 - `@firna/ui/date` for single-date and date-range fields.
+- `@firna/ui/drag-select` for web drag-selection providers, target hooks, and
+  geometry helpers.
 - `@firna/ui/dropdown` for dropdown, selector, combobox, and layer helpers.
 - `@firna/ui/input` for the labelled text input and bare input frame.
 - `@firna/ui/modal` for web modal frame, portal, model, and layer helpers.
@@ -118,8 +120,9 @@ The package export map intentionally separates runtime targets:
   to delete aliased preview deployments for that PR branch; if Cloudflare
   cleanup cannot complete safely, the comment reports the retained reason.
 - Storybook examples are grouped under one top-level folder per family:
-  `Avatar/Examples`, `Button/Examples`, `Date/Examples`, `Dropdown/Examples`,
-  `Input/Examples`, `Modal/Examples`, `Popover/Examples`, `Radio/Examples`,
+  `Avatar/Examples`, `Button/Examples`, `Date/Examples`,
+  `Drag Select/Examples`, `Dropdown/Examples`, `Input/Examples`,
+  `Modal/Examples`, `Popover/Examples`, `Radio/Examples`,
   `Segmented/Examples`, `Switch/Examples`, and `Theme/Examples`.
 - Required repository variable: `CLOUDFLARE_ACCOUNT_ID`.
 - Required repository secret: `CLOUDFLARE_PAGES_API_TOKEN` or
@@ -133,6 +136,8 @@ The package export map intentionally separates runtime targets:
 - Button component: [src/button/README.md](src/button/README.md)
 - Input component: [src/input/README.md](src/input/README.md)
 - Dropdown components: [src/dropdown/README.md](src/dropdown/README.md)
+- Drag-select components:
+  [src/drag-select/README.md](src/drag-select/README.md)
 - Modal components: [src/modal/README.md](src/modal/README.md)
 - Radio card component: [src/radio/README.md](src/radio/README.md)
 - Segmented control component:
