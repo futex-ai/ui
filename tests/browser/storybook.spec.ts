@@ -22,6 +22,27 @@ test("dropdown selector opens, navigates with keyboard, and closes outside", asy
   await expect(page.getByText("Flat rate")).toBeHidden();
 });
 
+test("dropdown action menu opens from child trigger and closes after selection", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--dropdown-action-menu");
+
+  const trigger = page.getByRole("button", { name: "Open action menu" });
+  await trigger.click();
+
+  const settings = page.getByRole("button", {
+    exact: true,
+    name: "Settings",
+  });
+  await expect(settings).toBeVisible();
+  await expect(
+    page.getByRole("button", { exact: true, name: "Remove" }),
+  ).toBeVisible();
+
+  await settings.click();
+  await expect(settings).toBeHidden();
+});
+
 test("dropdown keyboard navigation keeps the active option in view", async ({
   page,
 }) => {

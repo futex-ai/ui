@@ -5,8 +5,9 @@ surfaces. The first consumers are the accounting app and the Juno app.
 
 ## Key Features
 
-- Shared dropdown, selector, combobox, drag-select, segmented control, radio
-  card, switch, button, labelled input, modal, toast, and avatar primitives.
+- Shared dropdown menu, selector, combobox, drag-select, segmented control,
+  radio card, switch, button, labelled input, modal, toast, and avatar
+  primitives.
 - A shared `sm` / `md` / `lg` size scale (`ControlSize`) across the interactive
   controls — buttons, inputs, dropdown selectors, date fields, segmented
   controls, and switches.
@@ -28,7 +29,7 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/date` for single-date and date-range fields.
 - `@firna/ui/drag-select` for web drag-selection providers, target hooks, and
   geometry helpers.
-- `@firna/ui/dropdown` for dropdown, selector, combobox, and layer helpers.
+- `@firna/ui/dropdown` for dropdown menu, selector, combobox, and layer helpers.
 - `@firna/ui/input` for the labelled text input and bare input frame.
 - `@firna/ui/modal` for web modal frame, portal, model, and layer helpers.
 - `@firna/ui/popover` for generic anchored popovers.
