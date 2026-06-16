@@ -20,6 +20,9 @@ input-backed comboboxes in Firna apps.
   dropdowns and combobox result lists.
 - Include visual field labels in selector accessible names when labels are
   present.
+- Provide a concise `DropdownMenu` wrapper for the common trigger + action list
+  case, while leaving `DropdownPortal` and `DropdownList` available for custom
+  pickers.
 - Size the default `field` selector with the shared `ControlSize` scale (`sm` /
   `md` / `lg`) so a select matches the height of the text inputs beside it.
 - Keep button-backed selectors/action menus separate from input-backed
@@ -103,12 +106,42 @@ import { ReadOnlySelector } from "@firna/ui/dropdown";
 <ReadOnlySelector label="Date format" value="DD/MM/YYYY" />;
 ```
 
-Use `DropdownPortal` plus `DropdownList` for action menus or custom pickers that
-need grouped rows, right icons, and footers.
+Use `DropdownMenu` for the common action-menu case. It owns the anchor ref,
+open state, portal/list composition, and closes after selectable row presses by
+default:
+
+```tsx
+import { DropdownMenu } from "@firna/ui/dropdown";
+
+<DropdownMenu
+  align="end"
+  entries={entries}
+  minWidth={220}
+  trigger={({ triggerProps }) => (
+    <Pressable
+      {...triggerProps}
+      accessibilityLabel={`Actions for ${name}`}
+      accessibilityRole="button"
+      style={styles.memberMenuButton}
+    >
+      <MoreHorizontal color={colors.ink2} size={17} />
+    </Pressable>
+  )}
+/>;
+```
+
+Pass `open` and `onOpenChange` for controlled state, `defaultOpen` for
+uncontrolled initial state, and `closeOnSelect={false}` when a row should keep
+the menu open. `entries` may also be a function that receives
+`{ close, open, toggle }` for uncommon rows that need direct control.
+
+Use `DropdownPortal` plus `DropdownList` directly for custom pickers that need
+to own the anchor ref, surface body, or list wiring.
 
 For web hover menus, use `useDropdownHover` on the trigger and pass
-`surfaceHoverProps` into `DropdownPortal`. The hook keeps the menu open across
-the small pointer gap between the trigger and the portal surface.
+`surfaceHoverProps` into `DropdownMenu` or `DropdownPortal`. The hook keeps the
+menu open across the small pointer gap between the trigger and the portal
+surface.
 
 Use `ComboboxPopover` plus `DropdownList` when the user keeps typing in an
 existing input while results are open. This path uses a non-modal web portal so

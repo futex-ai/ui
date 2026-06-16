@@ -6,7 +6,7 @@ import {
   Trash2,
 } from "lucide-react-native";
 import type { ReactNode } from "react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import type { GestureResponderEvent } from "react-native";
 import {
   Pressable,
@@ -22,8 +22,8 @@ import {
   DropdownIconBox,
   DropdownList,
   DropdownListEntry,
+  DropdownMenu,
   DropdownPlacement,
-  DropdownPortal,
   DropdownSelector,
   Popover,
   SharedUiTheme,
@@ -132,14 +132,12 @@ export function SearchableSelectorExample() {
 }
 
 export function ActionMenuExample() {
-  const anchorRef = useRef<View>(null);
-  const [open, setOpen] = useState(false);
   const entries: DropdownListEntry[] = [
     {
       id: "settings",
       label: "Settings",
       leading: <DropdownIconBox Icon={Settings} />,
-      onPress: () => setOpen(false),
+      onPress: () => undefined,
       type: "item",
     },
     { id: "divider", label: "divider", type: "divider" },
@@ -147,37 +145,27 @@ export function ActionMenuExample() {
       id: "delete",
       label: "Remove",
       leading: <DropdownIconBox Icon={Trash2} tone="danger" />,
-      onPress: () => setOpen(false),
+      onPress: () => undefined,
       tone: "danger",
       type: "item",
     },
   ];
 
   return (
-    <View ref={anchorRef}>
-      <Pressable
-        accessibilityLabel="Open action menu"
-        accessibilityRole="button"
-        onPress={() => setOpen((current) => !current)}
-        style={styles.iconButton}
-      >
-        <MoreHorizontal color="#3e4540" size={18} />
-      </Pressable>
-      <DropdownPortal
-        anchorRef={anchorRef}
-        minWidth={180}
-        onClose={() => setOpen(false)}
-        open={open}
-      >
-        {(placement) => (
-          <DropdownList
-            entries={entries}
-            maxHeight={placement.maxHeight}
-            onClose={() => setOpen(false)}
-          />
-        )}
-      </DropdownPortal>
-    </View>
+    <DropdownMenu
+      entries={entries}
+      minWidth={180}
+      trigger={({ triggerProps }) => (
+        <Pressable
+          {...triggerProps}
+          accessibilityLabel="Open action menu"
+          accessibilityRole="button"
+          style={styles.iconButton}
+        >
+          <MoreHorizontal color="#3e4540" size={18} />
+        </Pressable>
+      )}
+    />
   );
 }
 
@@ -487,41 +475,30 @@ function EdgeMenuButton({
   label: string;
   minWidth?: number;
 }) {
-  const anchorRef = useRef<View>(null);
-  const [open, setOpen] = useState(false);
   const entries: DropdownListEntry[] = currencyOptions.map((option) => ({
     id: option.value,
     label: option.label,
-    onPress: () => setOpen(false),
+    onPress: () => undefined,
     type: "item",
   }));
   return (
-    <View ref={anchorRef} style={styles.edgeMenuAnchor}>
-      <Pressable
-        accessibilityLabel={accessibilityLabel}
-        accessibilityRole="button"
-        onPress={() => setOpen((current) => !current)}
-        style={styles.edgeButton}
-      >
-        <Text style={styles.edgeButtonText}>{label}</Text>
-        <ChevronDown color="#3e4540" size={16} />
-      </Pressable>
-      <DropdownPortal
-        align={align}
-        anchorRef={anchorRef}
-        minWidth={minWidth}
-        onClose={() => setOpen(false)}
-        open={open}
-      >
-        {(placement) => (
-          <DropdownList
-            entries={entries}
-            maxHeight={placement.maxHeight}
-            onClose={() => setOpen(false)}
-          />
-        )}
-      </DropdownPortal>
-    </View>
+    <DropdownMenu
+      align={align}
+      entries={entries}
+      minWidth={minWidth}
+      style={styles.edgeMenuAnchor}
+      trigger={({ triggerProps }) => (
+        <Pressable
+          {...triggerProps}
+          accessibilityLabel={accessibilityLabel}
+          accessibilityRole="button"
+          style={styles.edgeButton}
+        >
+          <Text style={styles.edgeButtonText}>{label}</Text>
+          <ChevronDown color="#3e4540" size={16} />
+        </Pressable>
+      )}
+    />
   );
 }
 

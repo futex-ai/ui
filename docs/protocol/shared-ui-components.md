@@ -196,6 +196,9 @@ Required behavior:
 - Preserve no-match empty rows even when combobox footers are present.
 - Keep input-backed comboboxes on a non-modal web portal so text inputs retain
   focus while results are open.
+- Provide an action-menu wrapper that owns the trigger anchor, controlled or
+  uncontrolled open state, portal/list composition, and default close-after-row
+  selection behavior for common trigger-backed menus.
 - Keep dropdown and combobox portal layers above modal surfaces.
 - Preserve native-safe fallbacks for Expo platform resolution.
 
