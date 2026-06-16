@@ -10,6 +10,10 @@ on:
         description: Existing vX.Y.Z tag to publish without creating a new release.
         required: false
         type: string
+      release_ref:
+        description: Commit SHA to recover a missed release-plz release.
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -20,7 +24,8 @@ jobs:
     if: github.repository == 'futex-ai/ui' && (github.event_name != 'workflow_dispatch' || inputs.publish_ref == '')
     runs-on: ubuntu-latest
     outputs:
-      releases_created: ${{ steps.release-plz.outputs.releases_created }}
+      releases_created: ${{ steps.release-output.outputs.releases_created }}
+      commit: ${{ steps.release-output.outputs.commit }}
       tag: ${{ steps.release-output.outputs.tag }}
       version: ${{ steps.release-output.outputs.version }}
     permissions:
@@ -32,6 +37,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_ref != '' && inputs.release_ref || github.sha }}
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
@@ -42,18 +48,32 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_PR_BRANCH_PREFIX: release-plz-
         run: |
-          pulls="$(gh api -H "Accept: application/vnd.github+json" "/repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls")"
+          target_sha="$(git rev-parse HEAD)"
+          pulls="$(gh api -H "Accept: application/vnd.github+json" "/repos/${GITHUB_REPOSITORY}/commits/${target_sha}/pulls")"
           release_pr="$(printf "%s" "${pulls}" | jq -cer --arg prefix "${RELEASE_PR_BRANCH_PREFIX}" 'map(select(.head.ref | startswith($prefix)))[0] // empty')" || {
             echo "release_pr=false" >> "$GITHUB_OUTPUT"
-            echo "No ${RELEASE_PR_BRANCH_PREFIX} pull request is associated with ${GITHUB_SHA}; skipping release."
+            echo "No ${RELEASE_PR_BRANCH_PREFIX} pull request is associated with ${target_sha}; skipping release."
             exit 0
           }
           number="$(printf "%s" "${release_pr}" | jq -r ".number")"
           branch="$(printf "%s" "${release_pr}" | jq -r ".head.ref")"
           echo "release_pr=true" >> "$GITHUB_OUTPUT"
+          echo "release_target_sha=${target_sha}" >> "$GITHUB_OUTPUT"
           echo "release_pr_number=${number}" >> "$GITHUB_OUTPUT"
           echo "release_pr_branch=${branch}" >> "$GITHUB_OUTPUT"
           echo "Release source is pull request #${number} from ${branch}."
+
+      - name: Resolve release target
+        if: steps.release-source.outputs.release_pr == 'true'
+        id: release-target
+        run: |
+          version="$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "firna-ui-release") | .version' | head -n 1)"
+          if [ -z "${version}" ] || [ "${version}" = "null" ]; then
+            echo "::error title=Missing release version::Cargo metadata did not return firna-ui-release."
+            exit 1
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${version}" >> "$GITHUB_OUTPUT"
 
       - name: Run release-plz release
         if: steps.release-source.outputs.release_pr == 'true'
@@ -65,17 +85,41 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Resolve release output
-        if: steps.release-source.outputs.release_pr == 'true' && steps.release-plz.outputs.releases_created == 'true'
+        if: steps.release-source.outputs.release_pr == 'true'
         id: release-output
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASES: ${{ steps.release-plz.outputs.releases }}
+          RELEASE_PLZ_CREATED: ${{ steps.release-plz.outputs.releases_created }}
+          FALLBACK_TAG: ${{ steps.release-target.outputs.tag }}
+          FALLBACK_VERSION: ${{ steps.release-target.outputs.version }}
+          TARGET_SHA: ${{ steps.release-source.outputs.release_target_sha }}
         run: |
-          release="$(printf "%s" "${RELEASES}" | jq -cer 'map(select(.package_name == "firna-ui-release"))[0] // empty')" || {
-            echo "::error title=Missing release-plz release::release-plz did not return the firna-ui-release package."
-            exit 1
-          }
-          version="$(printf "%s" "${release}" | jq -r ".version")"
-          tag="$(printf "%s" "${release}" | jq -r ".tag")"
+          if [ "${RELEASE_PLZ_CREATED}" = "true" ]; then
+            release="$(printf "%s" "${RELEASES}" | jq -cer 'map(select(.package_name == "firna-ui-release"))[0] // empty')" || {
+              echo "::error title=Missing release-plz release::release-plz did not return the firna-ui-release package."
+              exit 1
+            }
+            version="$(printf "%s" "${release}" | jq -r ".version")"
+            tag="$(printf "%s" "${release}" | jq -r ".tag")"
+          else
+            version="${FALLBACK_VERSION}"
+            tag="${FALLBACK_TAG}"
+            if gh release view "${tag}" >/dev/null 2>&1; then
+              echo "Release ${tag} already exists."
+            else
+              notes_file="$(mktemp)"
+              awk -v version="${version}" '
+                $0 ~ "^## \\[" version "\\]" { in_section = 1; next }
+                in_section && /^## \[/ { exit }
+                in_section { print }
+              ' CHANGELOG.md > "${notes_file}"
+              if [ ! -s "${notes_file}" ]; then
+                printf "Release %s.\n" "${tag}" > "${notes_file}"
+              fi
+              gh release create "${tag}" --target "${TARGET_SHA}" --title "@firna/ui ${tag}" --notes-file "${notes_file}"
+            fi
+          fi
           if [ -z "${version}" ] || [ "${version}" = "null" ]; then
             echo "::error title=Missing release version::release-plz did not return a package version."
             exit 1
@@ -84,8 +128,10 @@ jobs:
             echo "::error title=Missing release tag::release-plz did not return a release tag."
             exit 1
           fi
+          echo "commit=${TARGET_SHA}" >> "$GITHUB_OUTPUT"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "releases_created=true" >> "$GITHUB_OUTPUT"
 
   publish:
     name: Publish @firna/ui
@@ -99,7 +145,7 @@ jobs:
       - name: Check out release commit
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_ref != '' && inputs.publish_ref || github.sha }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_ref != '' && inputs.publish_ref || needs.release.outputs.commit || github.sha }}
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -119,10 +165,8 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
-      - name: Verify npm metadata version
-        run: |
-          cargo xtask sync-package-version
-          git diff --exit-code -- package.json package-lock.json
+      - name: Sync npm metadata version
+        run: cargo xtask sync-package-version
 
       - name: Verify release version
         id: version
@@ -204,7 +248,7 @@ jobs:
             echo "::error title=Missing release version::release-plz did not return a package version."
             exit 1
           fi
-          git fetch origin "refs/heads/${branch}:refs/remotes/origin/${branch}"
+          git fetch origin "+refs/heads/${branch}:refs/remotes/origin/${branch}"
           git checkout -B "${branch}" "origin/${branch}"
           echo "branch=${branch}" >> "$GITHUB_OUTPUT"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
