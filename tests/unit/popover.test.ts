@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
@@ -40,3 +41,14 @@ test("popover trigger props expose expanded state and the toggle handler", () =>
   assert.equal(closed.onPress, toggle);
   assert.equal(popoverTriggerProps(true, toggle)["aria-expanded"], true);
 });
+
+test("popover forwards z-index overrides to its dropdown portal", () => {
+  const source = readSource("../../src/popover/Popover.tsx");
+
+  assert.match(source, /zIndex\?: number;/);
+  assert.match(source, /zIndex=\{zIndex\}/);
+});
+
+function readSource(relativePath: string) {
+  return readFileSync(new URL(relativePath, import.meta.url), "utf8");
+}

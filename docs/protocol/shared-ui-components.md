@@ -254,6 +254,9 @@ Required behavior:
 - Ordinary content sits below dropdowns and modal portals.
 - Modal backdrop sits below modal surface.
 - Dropdowns and comboboxes opened inside modals sit above modal surfaces.
+- Date calendar popovers, dropdown portals, and generic popovers use a high
+  default overlay floor and expose z-index props for consumer-owned stacking
+  contexts that sit above the shared defaults.
 - Layer tokens must be exported so consumers can align adjacent overlays
   without hard-coded numeric z-index values.
 

@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
 import { StyleSheet, View } from "react-native";
 
-import { DROPDOWN_LAYERS } from "./dropdownLayers";
+import { dropdownPortalZIndex } from "./dropdownLayers";
 
 /**
  * Portals dropdown surfaces over the page without an intervening modal.
@@ -14,12 +14,21 @@ import { DROPDOWN_LAYERS } from "./dropdownLayers";
  * and content container are full-viewport elements that always hit-test, which
  * steals hover from the trigger and flickers hover-opened menus shut.
  */
-export function DropdownWebLayer({ children }: { children: ReactNode }) {
+export function DropdownWebLayer({
+  children,
+  zIndex,
+}: {
+  children: ReactNode;
+  zIndex?: number;
+}) {
   if (typeof document === "undefined") {
     return null;
   }
   return createPortal(
-    <View pointerEvents="box-none" style={styles.layer}>
+    <View
+      pointerEvents="box-none"
+      style={[styles.layer, { zIndex: dropdownPortalZIndex(zIndex) }]}
+    >
       {children}
     </View>,
     document.body,
@@ -36,6 +45,5 @@ const styles = StyleSheet.create({
     position: fixedPosition,
     right: 0,
     top: 0,
-    zIndex: DROPDOWN_LAYERS.portal,
   },
 });

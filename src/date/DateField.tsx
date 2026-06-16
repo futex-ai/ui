@@ -7,6 +7,7 @@ import { useSharedUiTheme } from "../theme";
 
 import { createDateFieldStyles } from "./dateFieldStyles";
 import { DatePickerOverlay } from "./DatePickerOverlay";
+import { dateFieldZIndex } from "./dateFieldLayers";
 import { todayIso } from "./dateMath";
 import { NativeTrigger, WebTrigger } from "./DateTrigger";
 import { DatePickerVariant } from "./types";
@@ -47,6 +48,8 @@ export type DateFieldProps = {
   variant?: DatePickerVariant;
   /** Control density: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
+  /** z-index for the open calendar wrappers and web popover frame. */
+  zIndex?: number;
 };
 
 /**
@@ -68,6 +71,7 @@ export function DateField({
   clearable = false,
   variant = "calendar",
   size = "md",
+  zIndex,
 }: DateFieldProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(
@@ -75,9 +79,13 @@ export function DateField({
     [theme, size],
   );
   const [open, setOpen] = useState(false);
+  const openLayer = useMemo(
+    () => ({ zIndex: dateFieldZIndex(zIndex) }),
+    [zIndex],
+  );
   const invalid = Boolean(error);
   return (
-    <View style={[styles.field, open ? styles.fieldOpen : null]}>
+    <View style={[styles.field, open ? openLayer : null]}>
       <FieldLabel label={label} required={required} />
       <DateInput
         clearable={clearable}
@@ -92,6 +100,7 @@ export function DateField({
         size={size}
         value={value}
         variant={variant}
+        zIndex={zIndex}
       />
       {error ? <Text style={styles.fieldError}>{error}</Text> : null}
       {hint ? <Text style={styles.hint}>{hint}</Text> : null}
@@ -127,6 +136,8 @@ export type DateInputProps = {
   variant?: DatePickerVariant;
   /** Control density: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
+  /** z-index for the open calendar wrappers and web popover frame. */
+  zIndex?: number;
 };
 
 /**
@@ -149,6 +160,7 @@ export function DateInput({
   clearable = false,
   variant = "calendar",
   size = "md",
+  zIndex,
 }: DateInputProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(
@@ -157,6 +169,10 @@ export function DateInput({
   );
   const field = useDateField({ value, onChange, min, max });
   const today = useMemo(() => todayIso(new Date()), []);
+  const openLayer = useMemo(
+    () => ({ zIndex: dateFieldZIndex(zIndex) }),
+    [zIndex],
+  );
   // The wheel sheet portals out of this anchor and manages its own dismissal, so
   // outside-press close only applies to the anchored calendar popover.
   const rootRef = useOutsideClose(field.open && variant === "calendar", () =>
@@ -174,7 +190,7 @@ export function DateInput({
       style={[
         styles.anchor,
         flex ? styles.triggerFlex : null,
-        field.open ? styles.fieldOpen : null,
+        field.open ? openLayer : null,
       ]}
     >
       {/* The editable type-or-pick input only fits the calendar popover. The
@@ -214,6 +230,7 @@ export function DateInput({
           today={today}
           value={field.value}
           variant={variant}
+          zIndex={zIndex}
         />
       ) : null}
     </View>

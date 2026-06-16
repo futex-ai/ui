@@ -10,17 +10,17 @@ export const WEB_MODAL_LAYERS = {
   /** Modal surface within the portal. */
   surface: 9_002,
   /** Nested overlay floor for dropdowns and comboboxes opened inside modals. */
-  nestedOverlay: 10_000,
+  nestedOverlay: 1_000_000,
 } as const;
 
 /**
  * Cookie-consent stacking layer. The non-blocking marketing consent banner
- * floats above every modal/dropdown surface (which top out at `nestedOverlay`
- * 10_000) so page chrome can never occlude it.
+ * floats above the default nested overlay, dropdown, and drag-select layers so
+ * page chrome can never occlude it.
  */
 export const COOKIE_CONSENT_LAYERS = {
   /** The fixed first-visit consent banner. */
-  banner: 10_100,
+  banner: 1_000_100,
 } as const;
 
 export function webModalClearsContent(

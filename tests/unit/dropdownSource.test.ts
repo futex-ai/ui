@@ -66,7 +66,7 @@ test("web dropdown portal is non-modal so the trigger keeps hover while open", (
 
   assert.doesNotMatch(webPortalSource, /<Modal/);
   assert.doesNotMatch(webPortalSource, /<Pressable/);
-  assert.match(webPortalSource, /<DropdownWebLayer>/);
+  assert.match(webPortalSource, /<DropdownWebLayer zIndex=\{zIndex\}>/);
   assert.match(webPortalSource, /useDropdownDismiss/);
   assert.match(layerSource, /createPortal/);
   assert.match(layerSource, /pointerEvents="box-none"/);

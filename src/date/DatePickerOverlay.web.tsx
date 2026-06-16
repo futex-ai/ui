@@ -15,6 +15,7 @@ import { useSharedUiTheme } from "../theme";
 
 import { CalendarMonth } from "./CalendarMonth";
 import { DateWheel } from "./DateWheel";
+import { dateFieldZIndex } from "./dateFieldLayers";
 import { DatePickerOverlayProps } from "./types";
 import { createWebCalendarStyles } from "./webCalendarStyles";
 import { createWheelPickerStyles } from "./wheelPickerStyles";
@@ -28,6 +29,7 @@ export function DatePickerOverlay({
   onClose,
   variant = "calendar",
   label,
+  zIndex,
 }: DatePickerOverlayProps) {
   if (variant === "wheel") {
     return (
@@ -49,6 +51,7 @@ export function DatePickerOverlay({
       onSelect={onSelect}
       today={today}
       value={value}
+      zIndex={zIndex}
     />
   );
 }
@@ -59,14 +62,18 @@ function CalendarPopover({
   min,
   max,
   onSelect,
+  zIndex,
 }: Pick<
   DatePickerOverlayProps,
-  "value" | "today" | "min" | "max" | "onSelect"
+  "value" | "today" | "min" | "max" | "onSelect" | "zIndex"
 >) {
   const theme = useSharedUiTheme();
   const s = useMemo(() => createWebCalendarStyles(theme), [theme]);
   return (
-    <View accessibilityViewIsModal style={s.pop}>
+    <View
+      accessibilityViewIsModal
+      style={[s.pop, { zIndex: dateFieldZIndex(zIndex) }]}
+    >
       <CalendarMonth
         max={max}
         min={min}

@@ -2,12 +2,12 @@
 import { Modal, Pressable, StyleSheet, View } from "react-native";
 
 import { dropdownPlacement } from "./dropdownGeometry";
+import { dropdownPortalZIndex } from "./dropdownLayers";
 import {
   DropdownPortalProps,
   dropdownSurfaceRect,
   useDropdownSurfaceStyles,
 } from "./dropdownPortalModel";
-import { DROPDOWN_LAYERS } from "./dropdownLayers";
 import { useDropdownAnchor } from "./useDropdownAnchor";
 
 /**
@@ -28,6 +28,7 @@ export function DropdownPortal({
   onClose,
   open,
   surfaceHoverProps,
+  zIndex,
 }: DropdownPortalProps) {
   const { anchor, viewport } = useDropdownAnchor(anchorRef, open);
   const surfaceStyles = useDropdownSurfaceStyles();
@@ -49,7 +50,7 @@ export function DropdownPortal({
 
   return (
     <Modal animationType="none" onRequestClose={onClose} transparent visible>
-      <View style={styles.layer}>
+      <View style={[styles.layer, { zIndex: dropdownPortalZIndex(zIndex) }]}>
         <Pressable
           accessibilityLabel="Close dropdown"
           onPress={onClose}
@@ -77,7 +78,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 0,
     top: 0,
-    zIndex: DROPDOWN_LAYERS.portal,
   },
   scrim: {
     bottom: 0,

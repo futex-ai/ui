@@ -5,6 +5,7 @@ import test from "node:test";
 import {
   DROPDOWN_LAYERS,
   dropdownPortalClearsContent,
+  dropdownPortalZIndex,
 } from "../../src/dropdown/dropdownLayers";
 import {
   dropdownPlacement,
@@ -127,6 +128,14 @@ test("dropdown portal layer clears ordinary app content", () => {
     dropdownPortalClearsContent(DROPDOWN_LAYERS.portal, DROPDOWN_LAYERS.base),
     true,
   );
+});
+
+test("dropdown portal uses a high default layer with an explicit override", () => {
+  assert.ok(DROPDOWN_LAYERS.portal >= 1_000_000);
+  assert.equal(DROPDOWN_LAYERS.surface > DROPDOWN_LAYERS.portal, true);
+  assert.equal(dropdownPortalZIndex(), DROPDOWN_LAYERS.portal);
+  assert.equal(dropdownPortalZIndex(4_200), 4_200);
+  assert.equal(dropdownPortalZIndex(0), 0);
 });
 
 test("dropdown point containment matches trigger and surface rects", () => {
