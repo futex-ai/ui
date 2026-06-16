@@ -8,6 +8,7 @@ use clap::{Parser, Subcommand};
 use crate::check::run_check;
 use crate::command::{CommandRunner, RealCommandRunner};
 use crate::error::{Error, Result};
+use crate::prepare_release_pr::run_prepare_release_pr;
 use crate::review::run_review;
 use crate::sync_package_version::run_sync_package_version;
 
@@ -24,8 +25,17 @@ enum Commands {
     Check,
     /// Run a read-only AI code review against origin/main and local changes.
     Review,
+    /// Prepare generated release PR files before CI validates them.
+    PrepareReleasePr(PrepareReleasePrArgs),
     /// Sync release-plz's package version into npm metadata.
     SyncPackageVersion(SyncPackageVersionArgs),
+}
+
+#[derive(clap::Args, Debug)]
+struct PrepareReleasePrArgs {
+    /// Release version that release-plz wrote into the release PR branch.
+    #[arg(long)]
+    version: String,
 }
 
 #[derive(clap::Args, Debug)]
@@ -51,6 +61,9 @@ fn run(cli: Cli, runner: &dyn CommandRunner) -> Result<()> {
     match cli.command {
         Commands::Check => run_check(runner, workspace_root.as_path()),
         Commands::Review => run_review(workspace_root.as_path()),
+        Commands::PrepareReleasePr(args) => {
+            run_prepare_release_pr(runner, workspace_root.as_path(), &args.version)
+        }
         Commands::SyncPackageVersion(args) => {
             run_sync_package_version(workspace_root.as_path(), args.version.as_deref())
         }

@@ -180,6 +180,12 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "25"
+          cache: npm
+
       - name: Run release-plz release-pr
         id: release-plz
         uses: release-plz/action@v0.5.130
@@ -209,24 +215,28 @@ jobs:
           echo "branch=${branch}" >> "$GITHUB_OUTPUT"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
 
-      - name: Sync npm metadata
+      - name: Install dependencies
         if: steps.release-plz.outputs.prs_created == 'true'
-        run: cargo xtask sync-package-version --version "${RELEASE_VERSION}"
+        run: npm ci
+
+      - name: Prepare generated release PR files
+        if: steps.release-plz.outputs.prs_created == 'true'
+        run: cargo xtask prepare-release-pr --version "${RELEASE_VERSION}"
         env:
           RELEASE_VERSION: ${{ steps.release-pr.outputs.version }}
 
-      - name: Commit synced npm metadata
+      - name: Commit prepared release PR files
         if: steps.release-plz.outputs.prs_created == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_BRANCH: ${{ steps.release-pr.outputs.branch }}
         run: |
-          if git diff --quiet -- package.json package-lock.json; then
-            echo "npm metadata already matches release-plz version."
+          if git diff --quiet -- CHANGELOG.md package.json package-lock.json; then
+            echo "Generated release PR files are already prepared."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json
-          git commit -m "chore: sync npm package version"
+          git add CHANGELOG.md package.json package-lock.json
+          git commit -m "chore: prepare release PR files"
           git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${RELEASE_BRANCH}"
