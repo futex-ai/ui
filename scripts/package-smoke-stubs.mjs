@@ -101,8 +101,12 @@ export const Check = Icon;
 export const ChevronDown = Icon;
 export const ChevronLeft = Icon;
 export const ChevronRight = Icon;
+export const CircleAlert = Icon;
+export const CircleCheck = Icon;
 export const CircleX = Icon;
+export const Info = Icon;
 export const Search = Icon;
+export const TriangleAlert = Icon;
 export const X = Icon;
 `,
     "package.json": JSON.stringify({

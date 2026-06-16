@@ -1403,3 +1403,99 @@ async function dropdownScrollState(page: Page, label: string) {
       };
     });
 }
+
+test("toast appears on trigger, announces its tone, and dismisses on close", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=toast-examples--tones");
+
+  await page.getByRole("button", { name: "Show success" }).click();
+  const success = page.getByText("Saved", { exact: true });
+  await expect(success).toBeVisible();
+  // The success toast is a polite status region.
+  await expect(
+    page.getByRole("status").filter({ hasText: "Saved" }),
+  ).toBeVisible();
+
+  // Errors render as an assertive alert and stack alongside the success toast.
+  await page.getByRole("button", { name: "Show error" }).click();
+  await expect(
+    page.getByRole("alert").filter({ hasText: "Save failed" }),
+  ).toBeVisible();
+  await expect(success).toBeVisible();
+
+  // The close control dismisses just its own toast.
+  await page.getByRole("button", { name: "Dismiss Saved" }).click();
+  await expect(success).toBeHidden();
+  await expect(page.getByText("Save failed")).toBeVisible();
+});
+
+test("toast action runs and dismisses the toast", async ({ page }) => {
+  await page.goto("/iframe.html?id=toast-examples--with-action");
+
+  await page.getByRole("button", { name: "Delete invoice" }).click();
+  const toast = page.getByText("Invoice deleted");
+  await expect(toast).toBeVisible();
+
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(toast).toBeHidden();
+});
+
+test("toast auto-dismisses after its duration elapses", async ({ page }) => {
+  await page.goto("/iframe.html?id=toast-examples--auto-dismiss");
+
+  await page.getByRole("button", { name: "Copy link" }).click();
+  // Move the pointer off the toast so hover does not pause the countdown.
+  await page.mouse.move(0, 0);
+  const toast = page.getByText("Copied to clipboard");
+  await expect(toast).toBeVisible();
+  // Duration is 2s; allow margin for the auto-dismiss to fire.
+  await expect(toast).toBeHidden({ timeout: 5000 });
+});
+
+test("top-center toast pins to the top of the viewport", async ({ page }) => {
+  await page.goto("/iframe.html?id=toast-examples--top-center");
+
+  await page.getByRole("button", { name: "Show info" }).click();
+  const heading = page.getByText("Heads up", { exact: true });
+  await expect(heading).toBeVisible();
+  const box = await heading.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box?.y ?? Number.MAX_SAFE_INTEGER).toBeLessThan(200);
+});
+
+test("hovering a toast pauses its auto-dismiss countdown", async ({ page }) => {
+  await page.goto("/iframe.html?id=toast-examples--auto-dismiss");
+
+  await page.getByRole("button", { name: "Copy link" }).click();
+  const toast = page.getByText("Copied to clipboard");
+  await expect(toast).toBeVisible();
+
+  // Hold the pointer over the 2s toast well past its duration; the pause keeps
+  // it alive instead of letting the countdown fire.
+  await toast.hover();
+  await page.waitForTimeout(2600);
+  await expect(toast).toBeVisible();
+
+  // Releasing the hover resumes the (now nearly elapsed) countdown.
+  await page.mouse.move(0, 0);
+  await expect(toast).toBeHidden();
+});
+
+test("non-dismissible toast has no close control and dismissAll clears the queue", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=toast-examples--queue-and-dismiss-all");
+
+  await page.getByRole("button", { name: "Start upload" }).click();
+  await page.getByRole("button", { name: "Start upload" }).click();
+  const uploading = page.getByText("Uploading…");
+  await expect(uploading.first()).toBeVisible();
+  // A non-dismissible toast renders no close control.
+  await expect(
+    page.getByRole("button", { name: /Dismiss Uploading/ }),
+  ).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Dismiss all" }).click();
+  await expect(page.getByText("Uploading…")).toHaveCount(0);
+});
