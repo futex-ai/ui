@@ -103,17 +103,26 @@ The package export map intentionally separates runtime targets:
 - When release-plz reports no release PR changes, the workflow exits
   successfully without checking out a release branch or syncing npm metadata.
 - The release flow uses `release_always = true` so squash-merged release PRs
-  still let release-plz create the `vX.Y.Z` tag and GitHub release. The
+  still trigger the `vX.Y.Z` tag, GitHub release, and npm publish flow. The
   automatic release path first verifies that the `main` commit is associated
   with a `release-plz-*` PR, so ordinary pushes do not create releases or
   publish npm packages.
-- npm publishing runs in the same release-plz workflow invocation that creates
-  the GitHub release, using npm trusted publishing. The npm package must
-  configure this repository and `.github/workflows/release-plz.yml` as the
-  trusted publisher, with allowed action `npm publish`.
+- If release-plz reports no new release after a merged release PR has already
+  bumped the Cargo version, the workflow creates the missing GitHub release
+  from the checked-out `firna-ui-release` version and changelog section.
+- npm publishing runs in the same release-plz workflow invocation that prepares
+  the GitHub release, using npm trusted publishing. The publish job syncs
+  `package.json` and `package-lock.json` from the Cargo version before
+  verification and publishing. The npm package must configure this repository
+  and `.github/workflows/release-plz.yml` as the trusted publisher, with allowed
+  action `npm publish`.
 - The release-plz workflow can also be manually dispatched with `publish_ref`
   set to a checked `vX.Y.Z` tag if the automatic publish job needs to be
   retried.
+- To recover a missed automatic release, manually dispatch the workflow with
+  `release_ref` set to the missed release PR merge commit SHA. The workflow
+  still verifies that the commit came from a `release-plz-*` PR before creating
+  the GitHub release and publishing npm.
 - Scoped npm packages default to private, so `publishConfig.access` is set to
   `public`.
 
