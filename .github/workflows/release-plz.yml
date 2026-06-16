@@ -168,6 +168,10 @@ jobs:
       - name: Sync npm metadata version
         run: cargo xtask sync-package-version
 
+      - name: Normalize publish retry changelog formatting
+        if: github.event_name == 'workflow_dispatch' && inputs.publish_ref != ''
+        run: npx prettier --write CHANGELOG.md
+
       - name: Verify release version
         id: version
         run: |

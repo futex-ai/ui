@@ -65,6 +65,10 @@ test("release-plz workflow publishes npm after creating a release", () => {
   assert.match(workflow, /id-token: write/);
   assert.match(workflow, /npm install --global npm@11\.7\.0/);
   assert.match(workflow, /name: Sync npm metadata version/);
+  assert.match(
+    workflow,
+    /if: github\.event_name == 'workflow_dispatch' && inputs\.publish_ref != ''\s+run: npx prettier --write CHANGELOG\.md/,
+  );
   assert.doesNotMatch(
     workflow,
     /git diff --exit-code -- package\.json package-lock\.json/,
