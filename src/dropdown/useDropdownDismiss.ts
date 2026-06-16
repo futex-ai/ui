@@ -3,11 +3,12 @@ import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
 import { View } from "react-native";
 
+import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
+
 import { dropdownShouldClose, type DropdownNode } from "./dropdownOutsideClose";
 
 type DropdownDismissOptions = {
   anchorRef: RefObject<View | null>;
-  closeOnEscape?: boolean;
   onClose: () => void;
   open: boolean;
   surfaceRef: RefObject<View | null>;
@@ -18,13 +19,13 @@ type DropdownDismissOptions = {
  * the page under the menu stays hoverable and clickable while it is open.
  *
  * Outside presses are detected on `pointerdown` capture and pass through to
- * whatever was pressed. Escape closes on `keydown` capture and stops
- * propagation so a dropdown opened inside a web modal closes itself without
- * also closing the modal, which listens for Escape at the bubble phase.
+ * whatever was pressed. Escape is handled through the shared escape-layer stack:
+ * the open menu registers as the top layer, so pressing Escape closes the menu —
+ * even when it is opened inside a web modal — without also closing the modal
+ * beneath it, which registers a layer of its own. See {@link pushEscapeLayer}.
  */
 export function useDropdownDismiss({
   anchorRef,
-  closeOnEscape = false,
   onClose,
   open,
   surfaceRef,
@@ -43,21 +44,12 @@ export function useDropdownDismiss({
         onCloseRef.current();
       }
     };
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") {
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      onCloseRef.current();
-    };
     document.addEventListener("pointerdown", handlePointerDown, true);
-    if (closeOnEscape) {
-      document.addEventListener("keydown", handleKeyDown, true);
-    }
+    const layer = { onEscape: () => onCloseRef.current() };
+    pushEscapeLayer(layer);
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown, true);
-      document.removeEventListener("keydown", handleKeyDown, true);
+      removeEscapeLayer(layer);
     };
-  }, [anchorRef, closeOnEscape, open, surfaceRef]);
+  }, [anchorRef, open, surfaceRef]);
 }

@@ -628,6 +628,28 @@ test("web modal restores focus and allows nested dropdowns above the surface", a
   expect(optionBox?.y).toBeGreaterThanOrEqual((modalBox?.y ?? 0) - 1);
 });
 
+test("a dropdown inside a modal closes on Escape without closing the modal", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=modal-examples--centered-web-modal");
+  const dialog = page.getByRole("dialog", { name: "Invite teammate" });
+  await expect(dialog).toBeVisible();
+
+  // Open the selector nested inside the modal.
+  await page.getByRole("button", { name: "Nested selector, Standard" }).click();
+  await expect(page.getByText("Cash accounting")).toBeVisible();
+
+  // Escape closes only the dropdown list (the top-most layer); the modal beneath
+  // it stays open. This is the regression: Escape used to close both at once.
+  await page.keyboard.press("Escape");
+  await expect(page.getByText("Cash accounting")).toBeHidden();
+  await expect(dialog).toBeVisible();
+
+  // With no overlay above it, a second Escape now closes the modal itself.
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+});
+
 test("date field opens the calendar, navigates months, and picks a day", async ({
   page,
 }) => {

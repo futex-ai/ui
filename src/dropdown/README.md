@@ -138,9 +138,10 @@ default theme matches the accounting source components. Juno can use
 On web, `DropdownPortal` and `ComboboxPopover` render through
 `DropdownWebLayer`, a non-modal `pointer-events: box-none` DOM portal. Only the
 menu surface is hit-testable, so the trigger keeps real hover state while the
-menu is open and the rest of the page stays interactive. Outside presses and
-Escape close the menu through `useDropdownDismiss` document listeners instead
-of a scrim.
+menu is open and the rest of the page stays interactive. Outside presses close
+the menu through a `useDropdownDismiss` document listener instead of a scrim,
+and Escape closes it through the shared escape-layer stack (`src/escapeLayer.ts`)
+so a menu opened inside a modal dismisses without also closing the modal.
 
 Do not render web dropdown surfaces through React Native Web `Modal`: its
 internal wrappers are full-viewport hit-testable elements that steal hover from

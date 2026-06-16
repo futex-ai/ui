@@ -76,17 +76,21 @@ test("web dropdown portal is non-modal so the trigger keeps hover while open", (
 test("web dropdown dismissal is document-level instead of a scrim", () => {
   const dismissSource = readSource("../../src/dropdown/useDropdownDismiss.ts");
 
+  // Outside presses are still detected with a document-level pointerdown
+  // listener (no scrim).
   assert.match(dismissSource, /dropdownShouldClose/);
   assert.match(
     dismissSource,
     /document\.addEventListener\("pointerdown", handlePointerDown, true\)/,
   );
-  assert.match(
-    dismissSource,
-    /document\.addEventListener\("keydown", handleKeyDown, true\)/,
-  );
-  assert.match(dismissSource, /event\.key !== "Escape"/);
-  assert.match(dismissSource, /event\.stopPropagation\(\)/);
+
+  // Escape is no longer owned by a private keydown listener here; it goes
+  // through the shared escape-layer stack so a menu opened inside a modal
+  // dismisses without also closing the modal.
+  assert.doesNotMatch(dismissSource, /addEventListener\("keydown"/);
+  assert.match(dismissSource, /pushEscapeLayer\(layer\)/);
+  assert.match(dismissSource, /removeEscapeLayer\(layer\)/);
+  assert.match(dismissSource, /onEscape: \(\) => onCloseRef\.current\(\)/);
 });
 
 test("web dropdown portal rescues hover when the surface mounts under a fast pointer", () => {
