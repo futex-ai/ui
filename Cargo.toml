@@ -1,6 +1,6 @@
 [package]
 name = "firna-ui-release"
-version = "0.1.1"
+version = "0.2.0"
 description = "Release metadata package for the @firna/ui npm library."
 edition.workspace = true
 license.workspace = true

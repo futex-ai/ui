@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/futex-ai/ui/compare/v0.1.1...v0.2.0) - 2026-06-16
+
+### Added
+
+- *(dropdown)* add ergonomic menu trigger ([#33](https://github.com/futex-ai/ui/pull/33))
+- *(toast)* add toast notification component ([#32](https://github.com/futex-ai/ui/pull/32))
+- *(button)* add per-tone hover states ([#29](https://github.com/futex-ai/ui/pull/29))
+- *(segmented)* [**breaking**] default sizing to content ([#27](https://github.com/futex-ai/ui/pull/27))
+- add drag-select provider ([#22](https://github.com/futex-ai/ui/pull/22))
+
+### Fixed
+
+- *(date)* lift calendar popover layers ([#30](https://github.com/futex-ai/ui/pull/30))
+- *(dropdown)* capture Escape so a menu in a modal keeps the modal open ([#31](https://github.com/futex-ai/ui/pull/31))
+- release after squash release PRs ([#25](https://github.com/futex-ai/ui/pull/25))
+
+### Other
+
+- *(dropdown)* add edge-placement Storybook examples ([#28](https://github.com/futex-ai/ui/pull/28))
+
 ## [0.1.1](https://github.com/futex-ai/ui/compare/v0.1.0...v0.1.1) - 2026-06-15
 
 ### Added
