@@ -97,6 +97,9 @@ The package export map intentionally separates runtime targets:
 ## Package Releases
 
 - release-plz opens and updates the release PR for `@firna/ui`.
+- Generated release PR files are normalized with
+  `cargo xtask prepare-release-pr`, which syncs npm metadata and formats the
+  changelog before CI validates the branch.
 - When release-plz reports no release PR changes, the workflow exits
   successfully without checking out a release branch or syncing npm metadata.
 - The release flow uses `release_always = true` so squash-merged release PRs

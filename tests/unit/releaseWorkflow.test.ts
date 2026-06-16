@@ -22,10 +22,10 @@ test("release-plz workflow supports squash-merged release PRs", () => {
       workflow,
       /if: steps\.release-plz\.outputs\.prs_created == 'true'/g,
     ),
-    3,
+    4,
   );
   assert.doesNotMatch(workflow, /if: steps\.release-plz\.outputs\.pr != ''/);
-  assert.match(workflow, /cargo xtask sync-package-version --version/);
+  assert.match(workflow, /cargo xtask prepare-release-pr --version/);
   assert.match(
     workflow,
     /refs\/heads\/\$\{branch\}:refs\/remotes\/origin\/\$\{branch\}/,
@@ -34,7 +34,24 @@ test("release-plz workflow supports squash-merged release PRs", () => {
     workflow,
     /git checkout -B "\$\{branch\}" "origin\/\$\{branch\}"/,
   );
-  assert.match(workflow, /package\.json package-lock\.json/);
+  assert.match(workflow, /CHANGELOG\.md package\.json package-lock\.json/);
+});
+
+test("release-plz workflow formats generated release PR files", () => {
+  const workflow = readSource("../../.github/workflows/release-plz.yml");
+
+  assert.match(workflow, /name: Prepare generated release PR files/);
+  assert.match(workflow, /npm ci/);
+  assert.match(workflow, /cargo xtask prepare-release-pr --version/);
+  assert.match(
+    workflow,
+    /git diff --quiet -- CHANGELOG\.md package\.json package-lock\.json/,
+  );
+  assert.match(
+    workflow,
+    /git add CHANGELOG\.md package\.json package-lock\.json/,
+  );
+  assert.match(workflow, /chore: prepare release PR files/);
 });
 
 test("release-plz workflow publishes npm after creating a release", () => {

@@ -326,6 +326,10 @@ Required behavior:
   `dist/**` build so React Native platform resolution can choose platform files.
 - `package.json` and `package-lock.json` versions must match the root
   `firna-ui-release` Cargo package version before a release PR is merged.
+- Generated release PR files must be prepared with
+  `cargo xtask prepare-release-pr`, which syncs npm metadata and formats
+  `CHANGELOG.md`, `package.json`, and `package-lock.json` before CI validates
+  the branch.
 - release-plz owns changelog updates, release PR creation, `vX.Y.Z` Git tags,
   and GitHub releases.
 - release-plz must use `release_always = true` so squash-merged release PRs
