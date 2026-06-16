@@ -113,27 +113,23 @@ default:
 ```tsx
 import { DropdownMenu } from "@firna/ui/dropdown";
 
-<DropdownMenu
-  align="end"
-  entries={entries}
-  minWidth={220}
-  trigger={({ triggerProps }) => (
-    <Pressable
-      {...triggerProps}
-      accessibilityLabel={`Actions for ${name}`}
-      accessibilityRole="button"
-      style={styles.memberMenuButton}
-    >
-      <MoreHorizontal color={colors.ink2} size={17} />
-    </Pressable>
-  )}
-/>;
+<DropdownMenu align="end" entries={entries} minWidth={220}>
+  <Pressable
+    accessibilityLabel={`Actions for ${name}`}
+    accessibilityRole="button"
+    style={styles.memberMenuButton}
+  >
+    <MoreHorizontal color={colors.ink2} size={17} />
+  </Pressable>
+</DropdownMenu>;
 ```
 
 Pass `open` and `onOpenChange` for controlled state, `defaultOpen` for
 uncontrolled initial state, and `closeOnSelect={false}` when a row should keep
 the menu open. `entries` may also be a function that receives
-`{ close, open, toggle }` for uncommon rows that need direct control.
+`{ close, open, toggle }` for uncommon rows that need direct control. When the
+trigger needs open-state styling, pass a function child that receives
+`{ open, triggerProps }` and spread `triggerProps` onto the pressable.
 
 Use `DropdownPortal` plus `DropdownList` directly for custom pickers that need
 to own the anchor ref, surface body, or list wiring.

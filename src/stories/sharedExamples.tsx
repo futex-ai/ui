@@ -152,20 +152,15 @@ export function ActionMenuExample() {
   ];
 
   return (
-    <DropdownMenu
-      entries={entries}
-      minWidth={180}
-      trigger={({ triggerProps }) => (
-        <Pressable
-          {...triggerProps}
-          accessibilityLabel="Open action menu"
-          accessibilityRole="button"
-          style={styles.iconButton}
-        >
-          <MoreHorizontal color="#3e4540" size={18} />
-        </Pressable>
-      )}
-    />
+    <DropdownMenu entries={entries} minWidth={180}>
+      <Pressable
+        accessibilityLabel="Open action menu"
+        accessibilityRole="button"
+        style={styles.iconButton}
+      >
+        <MoreHorizontal color="#3e4540" size={18} />
+      </Pressable>
+    </DropdownMenu>
   );
 }
 
@@ -487,18 +482,16 @@ function EdgeMenuButton({
       entries={entries}
       minWidth={minWidth}
       style={styles.edgeMenuAnchor}
-      trigger={({ triggerProps }) => (
-        <Pressable
-          {...triggerProps}
-          accessibilityLabel={accessibilityLabel}
-          accessibilityRole="button"
-          style={styles.edgeButton}
-        >
-          <Text style={styles.edgeButtonText}>{label}</Text>
-          <ChevronDown color="#3e4540" size={16} />
-        </Pressable>
-      )}
-    />
+    >
+      <Pressable
+        accessibilityLabel={accessibilityLabel}
+        accessibilityRole="button"
+        style={styles.edgeButton}
+      >
+        <Text style={styles.edgeButtonText}>{label}</Text>
+        <ChevronDown color="#3e4540" size={16} />
+      </Pressable>
+    </DropdownMenu>
   );
 }
 

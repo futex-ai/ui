@@ -7,6 +7,12 @@ export async function writeNodePeerStubs(consumerRoot) {
 export function createContext(defaultValue) {
   return { Provider: ({ children }) => children, _currentValue: defaultValue };
 }
+export function cloneElement(element, props) {
+  return { ...element, props: { ...(element?.props ?? {}), ...props } };
+}
+export function isValidElement(element) {
+  return Boolean(element && typeof element === "object" && "props" in element);
+}
 export function useCallback(callback) {
   return callback;
 }
@@ -26,7 +32,9 @@ export function useState(value) {
 }
 export default {
   Fragment,
+  cloneElement,
   createContext,
+  isValidElement,
   useCallback,
   useContext,
   useEffect,
@@ -116,6 +124,11 @@ export async function writeTypePeerStubs(consumerRoot) {
   await writeStubPackage(consumerRoot, "react", {
     "index.d.ts": `export type Dispatch<T> = (value: T) => void;
 export type PropsWithChildren<P = unknown> = P & { children?: ReactNode };
+export interface ReactElement<P = unknown> {
+  key: unknown;
+  props: P;
+  type: unknown;
+}
 export type ReactNode = unknown;
 export type ReactPortal = unknown;
 export type Ref<T> = ((instance: T | null) => void) | RefObject<T | null> | null;
@@ -127,7 +140,14 @@ export interface RefObject<T> {
   current: T;
 }
 export type SetStateAction<T> = T | ((previous: T) => T);
+export declare function cloneElement<P>(
+  element: ReactElement<P>,
+  props?: Partial<P> & Record<string, unknown>,
+): ReactElement<P>;
 export declare function createContext<T>(defaultValue: T): Context<T>;
+export declare function isValidElement<P = unknown>(
+  value: unknown,
+): value is ReactElement<P>;
 export namespace JSX {
   export type Element = unknown;
 }

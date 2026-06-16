@@ -1,6 +1,13 @@
 /** Ergonomic trigger-backed dropdown menu built from portal and list primitives. */
-import { useCallback, useMemo, useRef, useState } from "react";
-import type { ReactNode } from "react";
+import {
+  cloneElement,
+  isValidElement,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import type { ReactElement, ReactNode } from "react";
 import { StyleSheet, View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
 
@@ -37,10 +44,17 @@ export type DropdownMenuTriggerState = DropdownMenuEntriesState & {
   triggerProps: DropdownMenuTriggerProps;
 };
 
+/** Child trigger element or render function. */
+export type DropdownMenuTrigger =
+  | ReactElement<DropdownMenuTriggerElementProps>
+  | ((state: DropdownMenuTriggerState) => ReactNode);
+
 /** Props for `DropdownMenu`. */
 export type DropdownMenuProps = DropdownPlacementOptions & {
   /** Parent-owned keyboard active row id. */
   activeId?: string | null;
+  /** Trigger element, or a render function for advanced state access. */
+  children: DropdownMenuTrigger;
   /** Close automatically after selectable row presses. Defaults to true. */
   closeOnSelect?: boolean;
   /** Initial open state when uncontrolled. */
@@ -63,8 +77,6 @@ export type DropdownMenuProps = DropdownPlacementOptions & {
   style?: StyleProp<ViewStyle>;
   /** Hover props for web hover menus that bridge trigger and portal surface. */
   surfaceHoverProps?: DropdownHoverProps;
-  /** Renders the pressable that anchors and toggles the menu. */
-  trigger: (state: DropdownMenuTriggerState) => ReactNode;
   /** z-index for the portal layer. Defaults to `DROPDOWN_LAYERS.portal`. */
   zIndex?: number;
 };
@@ -77,6 +89,7 @@ export type DropdownMenuProps = DropdownPlacementOptions & {
 export function DropdownMenu({
   activeId,
   align,
+  children,
   closeOnSelect = true,
   defaultOpen = false,
   entries,
@@ -93,7 +106,6 @@ export function DropdownMenu({
   search,
   style,
   surfaceHoverProps,
-  trigger,
   zIndex,
 }: DropdownMenuProps) {
   const anchorRef = useRef<View>(null);
@@ -123,13 +135,11 @@ export function DropdownMenu({
     () => closeDropdownMenuEntries(rawEntries, close, closeOnSelect),
     [close, closeOnSelect, rawEntries],
   );
+  const triggerProps = dropdownMenuTriggerProps(open, toggle);
 
   return (
     <View ref={anchorRef} style={[styles.anchor, style]}>
-      {trigger({
-        ...menuState,
-        triggerProps: dropdownMenuTriggerProps(open, toggle),
-      })}
+      {dropdownMenuTriggerNode(children, menuState, triggerProps)}
       <DropdownPortal
         align={align}
         anchorRef={anchorRef}
@@ -158,6 +168,32 @@ export function DropdownMenu({
       </DropdownPortal>
     </View>
   );
+}
+
+type DropdownMenuTriggerElementProps = {
+  "aria-expanded"?: boolean;
+  onPress?: (event: unknown) => void;
+};
+
+function dropdownMenuTriggerNode(
+  trigger: DropdownMenuTrigger,
+  state: DropdownMenuEntriesState,
+  triggerProps: DropdownMenuTriggerProps,
+) {
+  if (typeof trigger === "function") {
+    return trigger({ ...state, triggerProps });
+  }
+  if (!isValidElement<DropdownMenuTriggerElementProps>(trigger)) {
+    return trigger;
+  }
+  const originalOnPress = trigger.props.onPress;
+  return cloneElement(trigger, {
+    ...triggerProps,
+    onPress: (event: unknown) => {
+      originalOnPress?.(event);
+      triggerProps.onPress();
+    },
+  });
 }
 
 const styles = StyleSheet.create({
