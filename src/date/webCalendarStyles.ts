@@ -3,6 +3,8 @@ import { StyleSheet } from "react-native";
 
 import type { SharedUiTheme } from "../theme";
 
+import { dateFieldZIndex } from "./dateFieldLayers";
+
 export function createWebCalendarStyles(theme: SharedUiTheme) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
   return StyleSheet.create({
@@ -75,7 +77,7 @@ export function createWebCalendarStyles(theme: SharedUiTheme) {
       position: "absolute",
       top: 46,
       width: 280,
-      zIndex: 1000,
+      zIndex: dateFieldZIndex(),
     },
     title: {
       ...baseText,

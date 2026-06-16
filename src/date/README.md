@@ -134,13 +134,17 @@ react-native-web gives every `View` `position: relative` + `zIndex: 0`, so each
 is its own stacking context and a high `zIndex` on a nested element cannot escape
 its parent. The calendar is therefore lifted at each wrapper that would trap it:
 
-- **Field root** — `fieldOpen` (`zIndex: 1000`) on the open field so the calendar
-  paints over following form fields.
+- **Field root** — `fieldOpen` (`zIndex: 1_000_000`) on the open field so the
+  calendar paints over following form fields.
 - **`DateRangeField` row** — also lifted when either endpoint is open, because the
   open endpoint's calendar is nested inside the row and would otherwise be painted
   over by the row's later-DOM hint/error siblings.
 
-`dateFieldLayers.ts` documents and unit-tests this rule.
+`DateField`, `DateInput`, and `DateRangeField` accept a `zIndex` prop when a
+consumer owns an even higher custom stacking context. The override is applied to
+the open wrappers and the web calendar popover frame; native calendar sheets and
+the wheel sheet continue to use their modal layer. `dateFieldLayers.ts`
+documents and unit-tests this rule.
 
 ## Accessibility
 

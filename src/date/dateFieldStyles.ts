@@ -5,7 +5,7 @@ import type { ControlSize } from "../controlSize";
 import { fieldChromeTokens, inputSizeTokens } from "../input";
 import type { SharedUiTheme } from "../theme";
 
-import { DATE_FIELD_LAYERS } from "./dateFieldLayers";
+import { dateFieldZIndex } from "./dateFieldLayers";
 
 export function createDateFieldStyles(
   theme: SharedUiTheme,
@@ -27,7 +27,7 @@ export function createDateFieldStyles(
     fieldLabel: chrome.fieldLabel,
     // Lifts the open field root (and the range row) above following/later-DOM
     // content so the calendar is not trapped by a sibling. See `dateFieldLayers`.
-    fieldOpen: { zIndex: DATE_FIELD_LAYERS.open },
+    fieldOpen: { zIndex: dateFieldZIndex() },
     hint: chrome.hint,
     required: chrome.required,
     trigger: {

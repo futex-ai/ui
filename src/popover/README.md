@@ -79,6 +79,16 @@ are forwarded straight to `DropdownPortal`. Pass `style` to change how the
 wrapper lays out (for example `alignSelf: "stretch"` to match the trigger to its
 parent width).
 
+The portal defaults to the high shared dropdown layer
+(`DROPDOWN_LAYERS.portal`, currently `1_000_000`). Pass `zIndex` to `Popover`
+when a consuming screen owns an even higher stacking context:
+
+```tsx
+<Popover minWidth={240} trigger={renderTrigger} zIndex={2_000_000}>
+  <DetailsCard />
+</Popover>
+```
+
 ## Theming
 
 The surface chrome (background, border, radius, shadow) comes from

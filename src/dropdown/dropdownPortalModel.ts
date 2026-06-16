@@ -19,6 +19,7 @@ export type DropdownPortalProps = DropdownPlacementOptions & {
   onClose: () => void;
   open: boolean;
   surfaceHoverProps?: DropdownHoverProps;
+  zIndex?: number;
 };
 
 /** Absolute-position rect that pins a dropdown surface to its placement. */

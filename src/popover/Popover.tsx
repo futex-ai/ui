@@ -49,6 +49,8 @@ export type PopoverProps = DropdownPlacementOptions & {
   style?: StyleProp<ViewStyle>;
   /** Renders the pressable that anchors and toggles the popover. */
   trigger: (state: PopoverTriggerState) => ReactNode;
+  /** z-index for the portal layer. Defaults to `DROPDOWN_LAYERS.portal`. */
+  zIndex?: number;
 };
 
 /**
@@ -75,6 +77,7 @@ export function Popover({
   open: openProp,
   style,
   trigger,
+  zIndex,
 }: PopoverProps) {
   const anchorRef = useRef<View>(null);
   const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
@@ -110,6 +113,7 @@ export function Popover({
         minWidth={minWidth}
         onClose={close}
         open={open}
+        zIndex={zIndex}
       >
         {(placement) =>
           typeof children === "function"

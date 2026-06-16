@@ -37,4 +37,6 @@ export type DatePickerOverlayProps = DateBounds & {
   variant?: DatePickerVariant;
   /** Field label, used as the wheel bottom sheet's title/accessibility name. */
   label?: string;
+  /** Optional z-index override for the web calendar popover. */
+  zIndex?: number;
 };

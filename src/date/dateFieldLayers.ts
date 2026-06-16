@@ -20,8 +20,13 @@ export const DATE_FIELD_LAYERS = {
   /** Resting elevation of closed fields, the range row, and later-DOM siblings. */
   base: 0,
   /** Elevation of an open field root and the range row while an endpoint is open. */
-  open: 1000,
+  open: 1_000_000,
 } as const;
+
+/** Default or consumer-supplied elevation for an open calendar field/popover. */
+export function dateFieldZIndex(zIndex?: number): number {
+  return zIndex ?? DATE_FIELD_LAYERS.open;
+}
 
 /**
  * Whether a field/row lifted to `fieldLayer` while open paints above sibling

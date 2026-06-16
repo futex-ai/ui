@@ -655,6 +655,33 @@ test("date field opens the calendar, navigates months, and picks a day", async (
   await expect(input).toHaveValue("10 Feb 2026");
 });
 
+test("date calendar z-index override clears overlapping content", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=date-examples--calendar-layering");
+
+  const input = page.getByLabel("Layered date");
+  await input.click();
+  await expect(page.getByText("Overlapping panel")).toBeVisible();
+  const day = page.getByRole("button", { name: "15 Mar 2026" });
+  await expect(day).toBeVisible();
+
+  const topLabel = await day.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    const target = document.elementFromPoint(
+      rect.left + rect.width / 2,
+      rect.top + rect.height / 2,
+    );
+    return (
+      target?.closest("[aria-label]")?.getAttribute("aria-label") ??
+      target?.textContent ??
+      ""
+    );
+  });
+
+  expect(topLabel).toBe("15 Mar 2026");
+});
+
 test("date field jumps to a far year through the header year picker", async ({
   page,
 }) => {

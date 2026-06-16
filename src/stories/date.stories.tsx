@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 
 import { DateField, DateRangeField, type DateRange } from "../index";
 import { StorySurface } from "./sharedExamples";
@@ -45,6 +45,15 @@ export const BoundedDateField: Story = {
   render: () => (
     <StorySurface>
       <BoundedDateExample />
+    </StorySurface>
+  ),
+};
+
+export const CalendarLayering: Story = {
+  name: "Calendar layering",
+  render: () => (
+    <StorySurface>
+      <CalendarLayeringExample />
     </StorySurface>
   ),
 };
@@ -148,6 +157,43 @@ function BoundedDateExample() {
         onChange={setValue}
         value={value}
       />
+    </View>
+  );
+}
+
+function CalendarLayeringExample() {
+  const [value, setValue] = useState("2026-03-31");
+  return (
+    <View style={{ minWidth: 340, width: 340 }}>
+      <DateField
+        label="Layered date"
+        onChange={setValue}
+        value={value}
+        zIndex={2_000_000}
+      />
+      <View
+        style={{
+          backgroundColor: "#E6EFE7",
+          borderColor: "#BCD2C4",
+          borderRadius: 8,
+          borderWidth: 1,
+          marginTop: -16,
+          minHeight: 180,
+          padding: 18,
+          position: "relative",
+          zIndex: 1_500_000,
+        }}
+      >
+        <Text
+          style={{
+            color: "#28352D",
+            fontSize: 16,
+            fontWeight: "700",
+          }}
+        >
+          Overlapping panel
+        </Text>
+      </View>
     </View>
   );
 }

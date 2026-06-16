@@ -150,4 +150,7 @@ back button closes the menu.
 
 When a dropdown or combobox opens from inside a web modal, it must remain above
 the modal surface. Keep `DROPDOWN_LAYERS.portal` above
-`WEB_MODAL_LAYERS.surface`.
+`WEB_MODAL_LAYERS.surface`. The default portal layer is intentionally high
+(`1_000_000`) so anchored menus and popovers clear consumer content stacks.
+`DropdownPortal` accepts `zIndex` for the rare screen that owns an even higher
+custom layer.

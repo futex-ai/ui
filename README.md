@@ -11,6 +11,8 @@ surfaces. The first consumers are the accounting app and the Juno app.
   controls — buttons, inputs, dropdown selectors, date fields, segmented
   controls, and switches.
 - Themeable visual tokens so consumers can use their own brand primary color.
+- High-layer date, dropdown, and popover overlays with z-index escape hatches
+  for custom consumer stacking contexts.
 - Expo and React Native Web compatible platform files.
 - Focused unit tests, browser interaction tests, and package export checks.
 - Storybook previews for visual review on every PR.
