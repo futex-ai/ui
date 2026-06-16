@@ -3,7 +3,7 @@
 ## Status
 
 Implemented contract for the dropdown, drag-select, segmented control, radio
-card, switch, button, modal, and avatar extraction, including the shared
+card, switch, button, modal, toast, and avatar extraction, including the shared
 control-size scale for buttons and inputs.
 
 ## Purpose
@@ -12,8 +12,8 @@ This repository provides shared React Native and React Native Web UI primitives
 for Firna apps. The first consumers are the accounting app and the Juno app.
 The first shared component families are the dropdown components, drag-select
 provider, segmented control patterns, radio-option cards, switch primitive, web
-modal components, and the circular user avatar currently implemented in the
-accounting app.
+modal components, transient notification toasts, and the circular user avatar
+currently implemented in the accounting app.
 
 ## Package Boundary
 
@@ -252,11 +252,45 @@ Required behavior:
 - Provide native-safe fallback files that return `null` rather than replacing
   iOS or Android native sheets, action sheets, OS pickers, or platform modals.
 
+## Toast Contract
+
+The toast family covers transient, non-blocking notifications driven from an
+imperative API rather than rendered declaratively at a call site.
+
+Required behavior:
+
+- Provide a `ToastProvider` that owns a capped, ordered queue and publishes an
+  imperative API (`toast`, `dismiss`, `dismissAll`) through a `useToast` hook;
+  the hook must throw when used outside a provider.
+- `toast()` must return an id usable with `dismiss`, default the tone to `info`,
+  and default the auto-dismiss delay to the provider default while accepting a
+  per-toast `duration` override and a `null`/non-positive duration for sticky
+  toasts.
+- Cap simultaneously visible toasts at a provider-configurable `max` (default 4)
+  by dropping the oldest entries.
+- Render toasts in a viewport pinned to one of six placements (top/bottom ×
+  left/center/right), with the newest toast nearest the pinned edge, through a
+  `document.body` portal with `position: fixed` on web and an
+  absolutely-positioned, `pointerEvents="box-none"` overlay on native.
+- Auto-dismiss each toast after its resolved duration and pause the countdown
+  while the pointer or keyboard focus is over the toast.
+- Carry tone (`info`, `success`, `warning`, `error`) as a left accent strip,
+  leading icon, and screen-reader semantics: errors announce assertively with
+  the `alert` role, other tones politely with the `status` role.
+- Support an optional action button that runs its handler and then dismisses the
+  toast, and an optional close control that dismisses only its own toast.
+- Use shared theme tokens for the surface, border, accent colors, text, fonts,
+  and radii, with no consumer-local theme imports.
+- Float the toast viewport above modal surfaces, nested overlays, and the
+  consent banner, and export the layer token for consumers.
+
 ## Layering Contract
 
 - Ordinary content sits below dropdowns and modal portals.
 - Modal backdrop sits below modal surface.
 - Dropdowns and comboboxes opened inside modals sit above modal surfaces.
+- The toast viewport sits above modal surfaces, nested dropdown/combobox
+  overlays, and the cookie-consent banner.
 - Date calendar popovers, dropdown portals, and generic popovers use a high
   default overlay floor and expose z-index props for consumer-owned stacking
   contexts that sit above the shared defaults.
@@ -343,13 +377,13 @@ Required behavior:
 - Storybook previews must include at least the shared dropdown selector,
   dropdown action menu, input-backed combobox, chip multi-select, segmented
   control variants, radio card group, switch toggle, button tones and sizes,
-  user avatars, centered web modal, bottom-sheet web modal, default accounting
-  theme, and alternate primary color theme.
+  user avatars, centered web modal, bottom-sheet web modal, toast tones and an
+  action toast, default accounting theme, and alternate primary color theme.
 - Storybook navigation must keep each example family in its own top-level
   folder, currently `Avatar/Examples`, `Button/Examples`, `Date/Examples`,
   `Dropdown/Examples`, `Input/Examples`, `Modal/Examples`, `Popover/Examples`,
-  `Radio/Examples`, `Segmented/Examples`, `Switch/Examples`, and
-  `Theme/Examples`.
+  `Radio/Examples`, `Segmented/Examples`, `Switch/Examples`, `Theme/Examples`,
+  and `Toast/Examples`.
 
 ## Non-Goals
 

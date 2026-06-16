@@ -6,7 +6,8 @@ surfaces. The first consumers are the accounting app and the Juno app.
 ## Key Features
 
 - Shared dropdown menu, selector, combobox, drag-select, segmented control,
-  radio card, switch, button, labelled input, modal, and avatar primitives.
+  radio card, switch, button, labelled input, modal, toast, and avatar
+  primitives.
 - A shared `sm` / `md` / `lg` size scale (`ControlSize`) across the interactive
   controls — buttons, inputs, dropdown selectors, date fields, segmented
   controls, and switches.
@@ -37,6 +38,8 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/switch` for themed binary on/off switches.
 - `@firna/ui/theme` for `SharedUiThemeProvider`, default accounting-style
   tokens, the Juno token preset, and `createSharedUiTheme`.
+- `@firna/ui/toast` for the toast provider, the `useToast` hook, and transient
+  notification toasts.
 
 ## Installation
 
@@ -128,7 +131,8 @@ The package export map intentionally separates runtime targets:
   `Avatar/Examples`, `Button/Examples`, `Date/Examples`,
   `Drag Select/Examples`, `Dropdown/Examples`, `Input/Examples`,
   `Modal/Examples`, `Popover/Examples`, `Radio/Examples`,
-  `Segmented/Examples`, `Switch/Examples`, and `Theme/Examples`.
+  `Segmented/Examples`, `Switch/Examples`, `Theme/Examples`, and
+  `Toast/Examples`.
 - Required repository variable: `CLOUDFLARE_ACCOUNT_ID`.
 - Required repository secret: `CLOUDFLARE_PAGES_API_TOKEN` or
   `CLOUDFLARE_API_TOKEN`.
@@ -148,6 +152,7 @@ The package export map intentionally separates runtime targets:
 - Segmented control component:
   [src/segmented/README.md](src/segmented/README.md)
 - Switch component: [src/switch/README.md](src/switch/README.md)
+- Toast component: [src/toast/README.md](src/toast/README.md)
 - Browser tests: [tests/browser/storybook.spec.ts](tests/browser/storybook.spec.ts)
 - Repository automation: [xtask/README.md](xtask/README.md)
 - Release metadata crate:

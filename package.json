@@ -99,6 +99,11 @@
       "types": "./dist/node/theme.d.ts",
       "react-native": "./dist/theme.js",
       "import": "./dist/node/theme.js"
+    },
+    "./toast": {
+      "types": "./dist/node/toast/index.d.ts",
+      "react-native": "./dist/toast/index.js",
+      "import": "./dist/node/toast/index.js"
     }
   },
   "scripts": {
