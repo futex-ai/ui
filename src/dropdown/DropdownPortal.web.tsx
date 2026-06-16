@@ -63,7 +63,6 @@ export function DropdownPortal({
   const surfaceMounted = open && anchor !== null;
   useDropdownDismiss({
     anchorRef,
-    closeOnEscape: true,
     onClose,
     open,
     surfaceRef,

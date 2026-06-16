@@ -16,7 +16,12 @@ picker views instead of this component.
   modal is open, Tab stays inside the modal, and focus returns to the
   previously focused element on close.
 - Keep web close behavior explicit: Escape, backdrop press, close button, and
-  request-close all use the same policy.
+  request-close all use the same policy. Escape is routed through the shared
+  escape-layer stack (`src/escapeLayer.ts`), so a dropdown, popover, or nested
+  modal opened above this surface consumes Escape first and only the top-most
+  overlay closes. While a modal is open the stack consumes Escape (the host
+  app's own document/window Escape handlers will not fire); an open overlay owns
+  Escape.
 - Define modal layer tokens so nested dropdowns and comboboxes render above
   modal content while ordinary page content stays underneath the modal.
 

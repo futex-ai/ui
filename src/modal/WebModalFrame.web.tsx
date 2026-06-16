@@ -12,6 +12,7 @@ import {
   ViewStyle,
 } from "react-native";
 
+import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
 import { useSharedUiTheme } from "../theme";
 
 import { createWebModalFrameStyles } from "./webModalFrameStyles";
@@ -133,23 +134,30 @@ export function WebModalFrame({
     };
   }, [visible]);
 
+  // Escape goes through the shared escape-layer stack rather than this modal's
+  // own keydown listener, so a dropdown, popover, or nested modal opened above
+  // this surface consumes Escape first and this modal stays open. Only the
+  // top-most layer closes; see escapeLayer.ts.
+  useEffect(() => {
+    if (!visible || typeof document === "undefined") {
+      return;
+    }
+    const layer = { onEscape: () => requestClose("escape") };
+    pushEscapeLayer(layer);
+    return () => {
+      removeEscapeLayer(layer);
+    };
+  }, [requestClose, visible]);
+
   useEffect(() => {
     if (!visible || typeof document === "undefined") {
       return;
     }
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        if (!webModalEventTargetsSurface(event, surfaceRef)) {
-          return;
-        }
-        event.preventDefault();
-        requestClose("escape");
-        return;
-      }
-      if (event.key === "Tab") {
-        if (!webModalEventTargetsSurface(event, surfaceRef)) {
-          return;
-        }
+      if (
+        event.key === "Tab" &&
+        webModalEventTargetsSurface(event, surfaceRef)
+      ) {
         trapWebModalFocus(event, surfaceRef);
       }
     };
@@ -157,7 +165,7 @@ export function WebModalFrame({
     return () => {
       document.removeEventListener("keydown", handleKeyDown, true);
     };
-  }, [requestClose, visible]);
+  }, [visible]);
 
   if (!visible || typeof document === "undefined") {
     return null;
