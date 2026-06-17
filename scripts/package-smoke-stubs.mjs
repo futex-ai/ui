@@ -113,6 +113,7 @@ export const CircleAlert = Icon;
 export const CircleCheck = Icon;
 export const CircleX = Icon;
 export const Info = Icon;
+export const Plus = Icon;
 export const Search = Icon;
 export const TriangleAlert = Icon;
 export const X = Icon;
@@ -178,6 +179,7 @@ export declare const Fragment: unique symbol;
   });
   await writeStubPackage(consumerRoot, "react-native", {
     "index.d.ts": `export type StyleProp<T> = T | readonly T[] | false | null | undefined;
+export type DimensionValue = number | string | null | undefined;
 export interface TextInputProps {
   [key: string]: unknown;
 }

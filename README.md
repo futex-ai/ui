@@ -6,7 +6,8 @@ surfaces. The first consumers are the accounting app and the Juno app.
 ## Key Features
 
 - Shared dropdown menu, selector, combobox, drag-select, segmented control,
-  radio card, switch, button, labelled input, modal, toast, and avatar
+  radio card, switch, button, labelled input, modal, toast, avatar, and
+  full event-calendar (month/week/day/agenda, recurring events, drag-to-create)
   primitives.
 - A shared `sm` / `md` / `lg` size scale (`ControlSize`) across the interactive
   controls — buttons, inputs, dropdown selectors, date fields, segmented
@@ -26,6 +27,8 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui` for all public components and helpers.
 - `@firna/ui/avatar` for the themed circular initials avatar.
 - `@firna/ui/button` for the themed button with tone, size, and block variants.
+- `@firna/ui/calendar` for the full event calendar (month, week, day, and agenda
+  views, recurring events, and drag-to-create).
 - `@firna/ui/date` for single-date and date-range fields.
 - `@firna/ui/drag-select` for web drag-selection providers, target hooks, and
   geometry helpers.
@@ -140,7 +143,7 @@ The package export map intentionally separates runtime targets:
   to delete aliased preview deployments for that PR branch; if Cloudflare
   cleanup cannot complete safely, the comment reports the retained reason.
 - Storybook examples are grouped under one top-level folder per family:
-  `Avatar/Examples`, `Button/Examples`, `Date/Examples`,
+  `Avatar/Examples`, `Button/Examples`, `Calendar/Examples`, `Date/Examples`,
   `Drag Select/Examples`, `Dropdown/Examples`, `Input/Examples`,
   `Modal/Examples`, `Popover/Examples`, `Radio/Examples`,
   `Segmented/Examples`, `Switch/Examples`, `Theme/Examples`, and
@@ -155,6 +158,7 @@ The package export map intentionally separates runtime targets:
 - Avatar component: [src/avatar/README.md](src/avatar/README.md)
 - Shared control-size scale: [src/controlSize.ts](src/controlSize.ts)
 - Button component: [src/button/README.md](src/button/README.md)
+- Calendar component: [src/calendar/README.md](src/calendar/README.md)
 - Input component: [src/input/README.md](src/input/README.md)
 - Dropdown components: [src/dropdown/README.md](src/dropdown/README.md)
 - Drag-select components:
