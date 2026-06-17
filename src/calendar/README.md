@@ -118,8 +118,11 @@ the column via `getBoundingClientRect`, listens on `document` for
 `pointermove` / `pointerup` / `pointercancel`, ignores touch and non-left
 buttons, and is guarded for SSR. On **native**, `useCalendarDragCreate` resolves
 to a no-op fallback (same signature), so platform resolution keeps the API stable
-without a drag gesture. In `MonthView`, pressing an empty day cell calls
-`onCreateEvent` with an all-day draft for that day.
+without a drag gesture. `MonthView` has the matching gesture for the month grid
+(`useCalendarMonthDragCreate`): **clicking** a day creates a single-day all-day
+draft, while **dragging across day cells** sweeps out a highlighted multi-day
+all-day range and creates it on release. The single-day click works on native
+too (the cell keeps its own press); only the cross-cell drag is web-only.
 
 The consumer owns persistence — `onCreateEvent` hands you the range; you decide
 whether to open an editor, push to state, or POST it.
@@ -141,7 +144,9 @@ snap. `weekStartsOn` (0=Sun..6=Sat, default 0) rotates the week/month grids and
   positioned blocks, drag-to-create) that `WeekView` / `DayView` wrap.
 - `CalendarEventBlock` / `CalendarEventChip` — the rendered event block (time
   grid) and chip (month / agenda), both labelled buttons.
-- `useCalendarDragCreate` — the web/native drag-to-create hook.
+- `useCalendarDragCreate` — the web/native time-grid drag-to-create hook.
+- `useCalendarMonthDragCreate` — the web/native month-grid click & drag-to-create
+  hook (drag across day cells for a multi-day range).
 
 ## File layout
 
@@ -159,9 +164,11 @@ snap. `weekStartsOn` (0=Sun..6=Sat, default 0) rotates the week/month grids and
 - `MonthView.tsx` / `TimeGrid.tsx` / `WeekView.tsx` / `DayView.tsx` /
   `AgendaView.tsx` — the views.
 - `CalendarEventBlock.tsx` / `CalendarEventChip.tsx` — event presenters.
-- `useCalendarDragCreate.web.ts` / `useCalendarDragCreate.ts` — web hook + the
-  native-safe no-op fallback (the bare `./useCalendarDragCreate` import resolves
-  `.web` on web bundlers and `.ts` for `tsc` / native).
+- `useCalendarDragCreate.web.ts` / `useCalendarDragCreate.ts` — time-grid web
+  hook + the native-safe no-op fallback (the bare `./useCalendarDragCreate`
+  import resolves `.web` on web bundlers and `.ts` for `tsc` / native).
+- `useCalendarMonthDragCreate.web.ts` / `useCalendarMonthDragCreate.ts` — the
+  month-grid click & drag-to-create web hook + its native-safe fallback.
 
 ## Theming
 

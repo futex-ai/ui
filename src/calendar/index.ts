@@ -20,3 +20,5 @@ export * from "./CalendarEventBlock";
 export * from "./CalendarEventChip";
 export { useCalendarDragCreate } from "./useCalendarDragCreate";
 export type { CalendarDragCreate } from "./useCalendarDragCreate";
+export { useCalendarMonthDragCreate } from "./useCalendarMonthDragCreate";
+export type { CalendarMonthDragCreate } from "./useCalendarMonthDragCreate";

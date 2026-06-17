@@ -123,6 +123,8 @@ export function createCalendarStyles(theme: SharedUiTheme) {
     // Cells from the previous/next month read back.
     monthDayCellOutside: { backgroundColor: theme.colors.bg },
     monthDayCellHover: { backgroundColor: theme.colors.soft },
+    // A cell inside the in-progress drag-to-create range.
+    monthDayCellSelected: { backgroundColor: theme.colors.primarySoft },
     // Day-number row at the top of the cell.
     monthDayHeader: {
       alignItems: "center",

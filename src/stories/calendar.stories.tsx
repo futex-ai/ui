@@ -210,6 +210,15 @@ export const DragToCreateCalendar: Story = {
   ),
 };
 
+export const MonthDragToCreateCalendar: Story = {
+  name: "Month: click & drag to create",
+  render: () => (
+    <StorySurface>
+      <MonthDragToCreateExample />
+    </StorySurface>
+  ),
+};
+
 /**
  * A fixed-size frame so the calendar fills a predictable area in Storybook (and
  * gives the time grid room to scroll). The views flex to fill it.
@@ -275,6 +284,50 @@ function DragToCreateExample() {
           events={events}
           minHour={7}
           now={NOW}
+          onCreateEvent={handleCreate}
+          today={TODAY}
+        />
+      </View>
+    </View>
+  );
+}
+
+/**
+ * A month view that creates events from the grid: click a day for a single-day
+ * all-day event, or drag across days for a multi-day one. The last created range
+ * is echoed into a `created-event-log` Text and the event is appended to local
+ * state so its chip/bar renders in the grid.
+ */
+function MonthDragToCreateExample() {
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [lastRange, setLastRange] = useState<CalendarDraftRange | null>(null);
+
+  const handleCreate = (range: CalendarDraftRange) => {
+    setLastRange(range);
+    setEvents((prev) => [
+      ...prev,
+      {
+        allDay: true,
+        color: "#4f7864",
+        end: range.end,
+        id: `created-${prev.length + 1}`,
+        start: range.start,
+        title: "New event",
+      },
+    ]);
+  };
+
+  return (
+    <View style={{ gap: 10, height: 560, width: 760 }}>
+      <Text testID="created-event-log">
+        {lastRange
+          ? `Created ${lastRange.start} – ${lastRange.end}`
+          : "Click a day, or drag across days, to create an event"}
+      </Text>
+      <View style={{ flex: 1 }}>
+        <MonthView
+          date={TODAY}
+          events={events}
           onCreateEvent={handleCreate}
           today={TODAY}
         />

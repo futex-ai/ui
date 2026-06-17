@@ -11,7 +11,7 @@ import { useMemo } from "react";
 import { Pressable, StyleProp, Text, View, ViewStyle } from "react-native";
 
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";
-import { parseIso } from "../date/dateMath";
+import { compareIso, parseIso } from "../date/dateMath";
 import { useSharedUiTheme } from "../theme";
 
 import { CalendarEventChip } from "./CalendarEventChip";
@@ -24,6 +24,10 @@ import type {
   CalendarEvent,
   CalendarOccurrence,
 } from "./types";
+import {
+  useCalendarMonthDragCreate,
+  type CalendarMonthDragCreate,
+} from "./useCalendarMonthDragCreate";
 
 /** Vertical room reserved above the bar lanes for the day-number header. */
 const HEADER_HEIGHT = 22;
@@ -64,6 +68,11 @@ export function MonthView({
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createCalendarStyles(theme), [theme]);
 
+  // Web drag-to-create: dragging across day cells sweeps out a multi-day all-day
+  // range. A plain click is handled by each cell's own press (single day), which
+  // also keeps tap-to-create working on native where this hook is a no-op.
+  const drag = useCalendarMonthDragCreate({ onCreateEvent });
+
   const parts = parseIso(date);
   const weeks = useMemo(() => {
     if (!parts) {
@@ -84,7 +93,7 @@ export function MonthView({
   }, [events, weeks]);
 
   return (
-    <View style={[styles.monthGrid, style]}>
+    <View ref={drag.bindGrid.ref} style={[styles.monthGrid, style]}>
       <View style={styles.monthWeekdayRow}>
         {labels.map((label) => (
           <View key={label} style={styles.monthWeekdayCell}>
@@ -94,6 +103,7 @@ export function MonthView({
       </View>
       {weeks.map((week) => (
         <MonthWeekRow
+          drag={drag}
           key={week[0]}
           maxLanes={maxLanes}
           month={month}
@@ -118,6 +128,7 @@ function MonthWeekRow({
   maxLanes,
   onSelectEvent,
   onCreateEvent,
+  drag,
   styles,
 }: {
   week: string[];
@@ -127,6 +138,7 @@ function MonthWeekRow({
   maxLanes: number;
   onSelectEvent?: (occurrence: CalendarOccurrence) => void;
   onCreateEvent?: (range: CalendarDraftRange) => void;
+  drag: CalendarMonthDragCreate;
   styles: CalendarStyles;
 }) {
   const layout = useMemo(
@@ -134,6 +146,7 @@ function MonthWeekRow({
     [week, occurrences, maxLanes],
   );
   const colWidth = 100 / week.length;
+  const draftRange = drag.draft;
 
   return (
     <View style={styles.monthWeekRow}>
@@ -141,10 +154,16 @@ function MonthWeekRow({
         const cellParts = parseIso(cellDate);
         const inMonth = cellParts?.month === month;
         const overflow = layout.overflowByCol[index] ?? 0;
+        const inDraft = draftRange
+          ? compareIso(cellDate, draftRange.start) >= 0 &&
+            compareIso(cellDate, draftRange.end) <= 0
+          : false;
         return (
           <MonthDayCell
+            consumePressSuppression={drag.consumePressSuppression}
             date={cellDate}
             dayNumber={cellParts?.day ?? 0}
+            inDraft={inDraft}
             inMonth={inMonth}
             isLast={index === week.length - 1}
             isToday={cellDate === today}
@@ -175,32 +194,46 @@ function MonthDayCell({
   date,
   dayNumber,
   inMonth,
+  inDraft,
   isLast,
   isToday,
   overflow,
   onCreateEvent,
+  consumePressSuppression,
   styles,
 }: {
   date: string;
   dayNumber: number;
   inMonth: boolean;
+  inDraft: boolean;
   isLast: boolean;
   isToday: boolean;
   overflow: number;
   onCreateEvent?: (range: CalendarDraftRange) => void;
+  consumePressSuppression: () => boolean;
   styles: CalendarStyles;
 }) {
   // The cell is a non-accessible Pressable so the inner chips/overflow button
   // stay independently focusable (RNW would otherwise merge them into one node).
+  // A plain press creates a single-day all-day event (works on native too); the
+  // cross-cell drag is started from the grid container (see
+  // useCalendarMonthDragCreate), and a drag that just committed a multi-day range
+  // swallows the trailing press so it is not created twice.
   return (
     <Pressable
       accessible={false}
-      onPress={() => onCreateEvent?.({ start: date, end: date, allDay: true })}
+      onPress={() => {
+        if (consumePressSuppression()) {
+          return;
+        }
+        onCreateEvent?.({ start: date, end: date, allDay: true });
+      }}
       style={({ hovered }: PressableHoverState) => [
         styles.monthDayCell,
         !inMonth ? styles.monthDayCellOutside : null,
         isLast ? styles.monthDayCellLast : null,
         hovered ? styles.monthDayCellHover : null,
+        inDraft ? styles.monthDayCellSelected : null,
         hideWebOutlineView,
       ]}
       testID={`calendar-month-cell-${date}`}

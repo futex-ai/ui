@@ -1677,3 +1677,48 @@ test("calendar drag creates a timed event", async ({ page }) => {
     page.getByRole("button", { name: /New event/ }).first(),
   ).toBeVisible();
 });
+
+test("calendar month view creates events by click and by drag across days", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=calendar-examples--month-drag-to-create-calendar",
+  );
+
+  const log = page.getByTestId("created-event-log");
+  await expect(log).toHaveText(
+    "Click a day, or drag across days, to create an event",
+  );
+
+  // A plain click on a day cell creates a single-day all-day event.
+  await page.getByTestId("calendar-month-cell-2026-06-10").click();
+  await expect(log).toContainText("Created 2026-06-10 – 2026-06-10");
+
+  // Dragging across several day cells creates a multi-day all-day event, using
+  // the same page.mouse pointer-drag idiom as the drag-select tests.
+  const startCell = page.getByTestId("calendar-month-cell-2026-06-16");
+  const endCell = page.getByTestId("calendar-month-cell-2026-06-18");
+  const startBox = await startCell.boundingBox();
+  const endBox = await endCell.boundingBox();
+  expect(startBox).not.toBeNull();
+  expect(endBox).not.toBeNull();
+
+  await page.mouse.move(
+    (startBox?.x ?? 0) + (startBox?.width ?? 0) / 2,
+    (startBox?.y ?? 0) + (startBox?.height ?? 0) / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    (endBox?.x ?? 0) + (endBox?.width ?? 0) / 2,
+    (endBox?.y ?? 0) + (endBox?.height ?? 0) / 2,
+    { steps: 10 },
+  );
+  await page.mouse.up();
+
+  // The log reports the multi-day all-day range, and the new event renders as a
+  // labelled "New event" spanning bar.
+  await expect(log).toContainText("Created 2026-06-16 – 2026-06-18");
+  await expect(
+    page.getByRole("button", { name: /New event/ }).first(),
+  ).toBeVisible();
+});
