@@ -8,6 +8,10 @@ import { useSharedUiTheme } from "../theme";
 import { createDropdownListStyles } from "./dropdownListStyles";
 import type { DropdownListStyles } from "./dropdownListStyles";
 import {
+  dropdownListNavigationItems,
+  selectedDropdownListEntryId,
+} from "./dropdownListModel";
+import {
   dropdownKeyAction,
   navigationResetKey,
   nextSelectableId,
@@ -16,6 +20,11 @@ import {
 } from "./dropdownNavigation";
 import type { DropdownNavigationItem } from "./dropdownNavigation";
 import { scrollDropdownActiveRowIntoView } from "./dropdownScroll";
+
+export {
+  dropdownListNavigationItems,
+  selectedDropdownListEntryId,
+} from "./dropdownListModel";
 
 export type DropdownListEntry =
   | { id: string; label: string; type: "divider" }
@@ -164,24 +173,6 @@ export function DropdownList({
       {scroll}
       {footer ? <View style={styles.footerRegion}>{footer}</View> : null}
     </View>
-  );
-}
-
-export function dropdownListNavigationItems(
-  entries: DropdownListEntry[],
-): DropdownNavigationItem[] {
-  return entries.map((entry) => ({
-    disabled: "disabled" in entry ? entry.disabled : true,
-    id: entry.id,
-    selectable: entry.type === "item" || entry.type === "footer",
-  }));
-}
-
-export function selectedDropdownListEntryId(
-  entries: DropdownListEntry[],
-): string | null {
-  return (
-    entries.find((entry) => "selected" in entry && entry.selected)?.id ?? null
   );
 }
 

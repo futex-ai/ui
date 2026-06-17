@@ -108,7 +108,9 @@ import { ReadOnlySelector } from "@firna/ui/dropdown";
 
 Use `DropdownMenu` for the common action-menu case. It owns the anchor ref,
 open state, portal/list composition, and closes after selectable row presses by
-default:
+default. When the menu opens, the first selectable row is active immediately;
+ArrowUp / ArrowDown move that active row, mouse hover keeps the active row in
+sync with the pointer, and Enter / Space activates the active row:
 
 ```tsx
 import { DropdownMenu } from "@firna/ui/dropdown";
@@ -129,7 +131,8 @@ uncontrolled initial state, and `closeOnSelect={false}` when a row should keep
 the menu open. `entries` may also be a function that receives
 `{ close, open, toggle }` for uncommon rows that need direct control. When the
 trigger needs open-state styling, pass a function child that receives
-`{ open, triggerProps }` and spread `triggerProps` onto the pressable.
+`{ open, triggerProps }` and spread `triggerProps` onto the pressable so the
+standard press and keyboard handlers stay attached.
 
 Use `DropdownPortal` plus `DropdownList` directly for custom pickers that need
 to own the anchor ref, surface body, or list wiring.

@@ -40,7 +40,41 @@ test("dropdown action menu opens from child trigger and closes after selection",
   ).toBeVisible();
 
   await settings.click();
+  await expect(page.getByText("Last action: Settings")).toBeVisible();
   await expect(settings).toBeHidden();
+});
+
+test("dropdown action menu preselects first row and tracks hover selection", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--dropdown-action-menu");
+
+  await page.getByRole("button", { name: "Open action menu" }).click();
+
+  const settings = page.getByRole("button", {
+    exact: true,
+    name: "Settings",
+  });
+  const remove = page.getByRole("button", { exact: true, name: "Remove" });
+  await expect(settings).toBeVisible();
+  await expect(remove).toBeVisible();
+
+  const activeBackground = await backgroundColor(settings);
+  expect(activeBackground).not.toBe("rgba(0, 0, 0, 0)");
+  expect(await backgroundColor(remove)).not.toBe(activeBackground);
+
+  await remove.hover();
+  await expect.poll(() => backgroundColor(remove)).toBe(activeBackground);
+  await expect.poll(() => backgroundColor(settings)).not.toBe(activeBackground);
+
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("Last action: Remove")).toBeVisible();
+  await expect(remove).toBeHidden();
+
+  await page.getByRole("button", { name: "Open action menu" }).click();
+  await expect(settings).toBeVisible();
+  await expect.poll(() => backgroundColor(settings)).toBe(activeBackground);
+  await expect.poll(() => backgroundColor(remove)).not.toBe(activeBackground);
 });
 
 test("dropdown keyboard navigation keeps the active option in view", async ({
@@ -144,6 +178,12 @@ async function bottomOverflowPast(
       clip.getBoundingClientRect().bottom
     );
   });
+}
+
+async function backgroundColor(locator: ReturnType<Page["getByRole"]>) {
+  return locator.evaluate(
+    (element) => getComputedStyle(element).backgroundColor,
+  );
 }
 
 test("searchable dropdown selector filters options and selects by keyboard", async ({

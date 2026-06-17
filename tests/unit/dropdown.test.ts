@@ -3,14 +3,15 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
+  dropdownPlacement,
+  dropdownPointWithinRects,
+} from "../../src/dropdown/dropdownGeometry";
+import {
   DROPDOWN_LAYERS,
   dropdownPortalClearsContent,
   dropdownPortalZIndex,
 } from "../../src/dropdown/dropdownLayers";
-import {
-  dropdownPlacement,
-  dropdownPointWithinRects,
-} from "../../src/dropdown/dropdownGeometry";
+import { dropdownListNavigationItems } from "../../src/dropdown/dropdownListModel";
 import {
   dropdownKeyAction,
   dropdownTriggerKeyAction,
@@ -58,6 +59,21 @@ test("dropdown navigation skips disabled and structural rows", () => {
   assert.equal(nextSelectableId(items, "a", 1), "c");
   assert.equal(nextSelectableId(items, "c", 1), "a");
   assert.equal(nextSelectableId(items, "a", -1), "c");
+});
+
+test("dropdown list navigation keeps action rows enabled by default", () => {
+  const navItems = dropdownListNavigationItems([
+    { id: "section", label: "Menu", type: "section" },
+    { id: "settings", label: "Settings", type: "item" },
+    { disabled: true, id: "remove", label: "Remove", type: "item" },
+  ]);
+
+  assert.deepEqual(navItems, [
+    { disabled: true, id: "section", selectable: false },
+    { disabled: undefined, id: "settings", selectable: true },
+    { disabled: true, id: "remove", selectable: true },
+  ]);
+  assert.equal(firstSelectableId(navItems), "settings");
 });
 
 test("dropdown navigation falls back from missing selection to first selectable row", () => {

@@ -132,12 +132,13 @@ export function SearchableSelectorExample() {
 }
 
 export function ActionMenuExample() {
+  const [lastAction, setLastAction] = useState("None");
   const entries: DropdownListEntry[] = [
     {
       id: "settings",
       label: "Settings",
       leading: <DropdownIconBox Icon={Settings} />,
-      onPress: () => undefined,
+      onPress: () => setLastAction("Settings"),
       type: "item",
     },
     { id: "divider", label: "divider", type: "divider" },
@@ -145,22 +146,25 @@ export function ActionMenuExample() {
       id: "delete",
       label: "Remove",
       leading: <DropdownIconBox Icon={Trash2} tone="danger" />,
-      onPress: () => undefined,
+      onPress: () => setLastAction("Remove"),
       tone: "danger",
       type: "item",
     },
   ];
 
   return (
-    <DropdownMenu entries={entries} minWidth={180}>
-      <Pressable
-        accessibilityLabel="Open action menu"
-        accessibilityRole="button"
-        style={styles.iconButton}
-      >
-        <MoreHorizontal color="#3e4540" size={18} />
-      </Pressable>
-    </DropdownMenu>
+    <View style={styles.actionMenuExample}>
+      <DropdownMenu entries={entries} minWidth={180}>
+        <Pressable
+          accessibilityLabel="Open action menu"
+          accessibilityRole="button"
+          style={styles.iconButton}
+        >
+          <MoreHorizontal color="#3e4540" size={18} />
+        </Pressable>
+      </DropdownMenu>
+      <Text style={styles.actionMenuStatus}>Last action: {lastAction}</Text>
+    </View>
   );
 }
 
@@ -716,6 +720,15 @@ export function PlacementPlaygroundExample() {
 }
 
 const styles = StyleSheet.create({
+  actionMenuExample: {
+    alignItems: "flex-start",
+    gap: 8,
+  },
+  actionMenuStatus: {
+    color: "#3e4540",
+    fontSize: 13,
+    fontWeight: "600",
+  },
   button: {
     alignItems: "center",
     backgroundColor: "#2f5945",

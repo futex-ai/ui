@@ -105,10 +105,14 @@ test("dropdown menu composes the shared portal and list primitives", () => {
 
   assert.match(source, /resolveDropdownMenuOpen/);
   assert.match(source, /closeDropdownMenuEntries/);
+  assert.match(source, /useDropdownSelectorNavigation/);
+  assert.match(source, /resetOnOpen: true/);
   assert.match(source, /children: DropdownMenuTrigger/);
   assert.match(source, /cloneElement/);
   assert.match(source, /<DropdownPortal/);
   assert.match(source, /<DropdownList/);
+  assert.match(source, /activeId=\{activeRowId\}/);
+  assert.match(source, /onActiveIdChange=\{setActiveRowId\}/);
   assert.match(
     source,
     /dropdownMenuTriggerNode\(children, menuState, triggerProps\)/,

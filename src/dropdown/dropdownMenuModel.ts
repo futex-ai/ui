@@ -1,9 +1,18 @@
 /** Shared open-state and row-close helpers for dropdown menus. */
 import type { DropdownListEntry } from "./DropdownList";
 
+/** Keyboard event shape handled by dropdown menu triggers. */
+export type DropdownMenuTriggerKeyEvent = {
+  key?: string;
+  nativeEvent?: { key?: string };
+  preventDefault?: () => void;
+  stopPropagation?: () => void;
+};
+
 /** Props to spread onto a dropdown menu trigger. */
 export type DropdownMenuTriggerProps = {
   "aria-expanded": boolean;
+  onKeyDown?: (event: DropdownMenuTriggerKeyEvent) => boolean | void;
   onPress: () => void;
 };
 

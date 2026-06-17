@@ -20,7 +20,11 @@ import {
   dropdownMenuTriggerProps,
   resolveDropdownMenuOpen,
 } from "./dropdownMenuModel";
-import type { DropdownMenuTriggerProps } from "./dropdownMenuModel";
+import type {
+  DropdownMenuTriggerKeyEvent,
+  DropdownMenuTriggerProps,
+} from "./dropdownMenuModel";
+import { useDropdownSelectorNavigation } from "./useDropdownSelectorNavigation";
 import type { DropdownHoverProps } from "./useDropdownHover";
 
 /** State exposed to menu entry factories. */
@@ -135,7 +139,30 @@ export function DropdownMenu({
     () => closeDropdownMenuEntries(rawEntries, close, closeOnSelect),
     [close, closeOnSelect, rawEntries],
   );
-  const triggerProps = dropdownMenuTriggerProps(open, toggle);
+  const {
+    activeId: navigationActiveId,
+    keyProps: navigationKeyProps,
+    setActiveId: setNavigationActiveId,
+  } = useDropdownSelectorNavigation({
+    entries: menuEntries,
+    interactive: hasSelectableDropdownMenuEntry(menuEntries),
+    onClose: close,
+    onOpen: () => setOpen(true),
+    open,
+    resetOnOpen: true,
+  });
+  const activeRowId = activeId === undefined ? navigationActiveId : activeId;
+  const setActiveRowId = useCallback(
+    (id: string | null) => {
+      setNavigationActiveId(id);
+      onActiveIdChange?.(id);
+    },
+    [onActiveIdChange, setNavigationActiveId],
+  );
+  const triggerProps = {
+    ...dropdownMenuTriggerProps(open, toggle),
+    ...navigationKeyProps,
+  };
 
   return (
     <View ref={anchorRef} style={[styles.anchor, style]}>
@@ -155,12 +182,12 @@ export function DropdownMenu({
       >
         {(placement) => (
           <DropdownList
-            activeId={activeId}
+            activeId={activeRowId}
             entries={menuEntries}
             footer={footer}
             header={header}
             maxHeight={placement.maxHeight}
-            onActiveIdChange={onActiveIdChange}
+            onActiveIdChange={setActiveRowId}
             onClose={close}
             search={search}
           />
@@ -172,6 +199,7 @@ export function DropdownMenu({
 
 type DropdownMenuTriggerElementProps = {
   "aria-expanded"?: boolean;
+  onKeyDown?: (event: DropdownMenuTriggerKeyEvent) => void;
   onPress?: (event: unknown) => void;
 };
 
@@ -187,13 +215,25 @@ function dropdownMenuTriggerNode(
     return trigger;
   }
   const originalOnPress = trigger.props.onPress;
+  const originalOnKeyDown = trigger.props.onKeyDown;
   return cloneElement(trigger, {
     ...triggerProps,
+    onKeyDown: (event: DropdownMenuTriggerKeyEvent) => {
+      originalOnKeyDown?.(event);
+      triggerProps.onKeyDown?.(event);
+    },
     onPress: (event: unknown) => {
       originalOnPress?.(event);
       triggerProps.onPress();
     },
   });
+}
+
+function hasSelectableDropdownMenuEntry(entries: DropdownListEntry[]): boolean {
+  return entries.some(
+    (entry) =>
+      (entry.type === "item" || entry.type === "footer") && !entry.disabled,
+  );
 }
 
 const styles = StyleSheet.create({
