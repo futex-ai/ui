@@ -8,10 +8,13 @@ import {
   ActionMenuExample,
   BottomEdgeFlipExample,
   ChipMultiSelectExample,
+  ContextMenuExample,
   EdgePlacementGridExample,
   EndAlignedMenuExample,
   HorizontalEdgeClampExample,
+  HoverMenuExample,
   InputBackedComboboxExample,
+  LongPressMenuExample,
   LongSelectorExample,
   PlacementPlaygroundExample,
   SearchableSelectorExample,
@@ -84,6 +87,33 @@ export const DropdownActionMenu: Story = {
   render: () => (
     <StorySurface>
       <ActionMenuExample />
+    </StorySurface>
+  ),
+};
+
+export const DropdownHoverMenu: Story = {
+  name: "Trigger · hover menu",
+  render: () => (
+    <StorySurface>
+      <HoverMenuExample />
+    </StorySurface>
+  ),
+};
+
+export const DropdownLongPressMenu: Story = {
+  name: "Trigger · long-press menu",
+  render: () => (
+    <StorySurface>
+      <LongPressMenuExample />
+    </StorySurface>
+  ),
+};
+
+export const DropdownContextMenu: Story = {
+  name: "Trigger · context menu",
+  render: () => (
+    <StorySurface>
+      <ContextMenuExample />
     </StorySurface>
   ),
 };

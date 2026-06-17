@@ -28,6 +28,8 @@ test("dropdown action menu opens from child trigger and closes after selection",
   await page.goto("/iframe.html?id=dropdown-examples--dropdown-action-menu");
 
   const trigger = page.getByRole("button", { name: "Open action menu" });
+  // The trigger advertises its popup to assistive tech in every mode.
+  await expect(trigger).toHaveAttribute("aria-haspopup", "menu");
   await trigger.click();
 
   const settings = page.getByRole("button", {
@@ -41,6 +43,65 @@ test("dropdown action menu opens from child trigger and closes after selection",
 
   await settings.click();
   await expect(settings).toBeHidden();
+});
+
+test("dropdown hover menu opens on pointer hover and closes on hover out", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--dropdown-hover-menu");
+
+  const trigger = page.getByRole("button", { name: "Open hover menu" });
+  const profile = page.getByRole("button", { exact: true, name: "Profile" });
+
+  await trigger.hover();
+  await expect(profile).toBeVisible();
+
+  // Move the pointer well away from the trigger and surface to hover out.
+  await page.mouse.move(5, 5);
+  await expect(profile).toBeHidden();
+});
+
+test("dropdown long-press menu opens on press-and-hold, not a plain tap", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=dropdown-examples--dropdown-long-press-menu",
+  );
+
+  const trigger = page.getByRole("button", { name: "Open long-press menu" });
+  const rename = page.getByRole("button", { exact: true, name: "Rename" });
+
+  // A quick tap must not open a long-press menu.
+  await trigger.click();
+  await expect(rename).toBeHidden();
+
+  // Press and hold past the long-press delay opens it.
+  const box = await trigger.boundingBox();
+  if (!box) {
+    throw new Error("long-press trigger not found");
+  }
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(700);
+  await page.mouse.up();
+
+  await expect(rename).toBeVisible();
+});
+
+test("dropdown context menu opens on right-click, not on a left click", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--dropdown-context-menu");
+
+  const trigger = page.getByRole("button", { name: "Open context menu" });
+  const copy = page.getByRole("button", { exact: true, name: "Copy" });
+
+  // A left click must not open a context menu.
+  await trigger.click();
+  await expect(copy).toBeHidden();
+
+  await trigger.click({ button: "right" });
+  await expect(copy).toBeVisible();
 });
 
 test("dropdown keyboard navigation keeps the active option in view", async ({
