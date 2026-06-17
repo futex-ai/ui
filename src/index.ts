@@ -5,6 +5,7 @@ export * from "./date";
 export * from "./drag-select";
 export * from "./dropdown";
 export * from "./focusRing";
+export * from "./heatmap";
 export * from "./input";
 export * from "./modal";
 export * from "./popover";

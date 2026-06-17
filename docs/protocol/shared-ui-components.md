@@ -170,6 +170,35 @@ Required behavior:
 - Keep day cells, navigation buttons, and the clear button labelled for
   assistive technology, and include the field label in those accessible names.
 
+## Heatmap Contract
+
+The heatmap family covers the calendar contribution grid: a date range laid out
+as columns of weeks with per-day intensity coloring, month labels along the top,
+and an optional weekday gutter and intensity legend.
+
+Required behavior:
+
+- Take an inclusive ISO `YYYY-MM-DD` start/end range plus a sparse list of
+  per-date values, and lay it out as column-major weeks (one column per week,
+  one row per weekday) padded so the grid stays rectangular.
+- Resolve the layout from pure, timezone-safe, unit-tested helpers that never
+  read the current date, returning an empty grid for an invalid or reversed
+  range.
+- Place a short month label above the column where each month's in-range days
+  begin, detecting the transition from in-range days so a leading partial week
+  is not mislabeled with the previous month.
+- Map each day's value to an ordered intensity ramp through ascending
+  lower-bound thresholds, deriving even bands from the data's max value by
+  default and honoring explicit thresholds for an absolute scale, with a
+  distinct empty color for days with no value.
+- Drive the cell size, gap, and corner radius, the color ramp and empty color,
+  the week start, and the month / weekday / legend chrome from props with
+  sensible defaults.
+- Use shared theme tokens for the default ramp, the empty cell, and the label
+  colors instead of consumer-local theme imports.
+- Label each in-range cell for assistive technology, hide padding cells from it,
+  and make cells focusable, pressable buttons when a press handler is supplied.
+
 ## Dropdown Contract
 
 The dropdown family covers three related surfaces:
@@ -388,9 +417,9 @@ Required behavior:
   action toast, default accounting theme, and alternate primary color theme.
 - Storybook navigation must keep each example family in its own top-level
   folder, currently `Avatar/Examples`, `Button/Examples`, `Date/Examples`,
-  `Dropdown/Examples`, `Input/Examples`, `Modal/Examples`, `Popover/Examples`,
-  `Radio/Examples`, `Segmented/Examples`, `Switch/Examples`, `Theme/Examples`,
-  and `Toast/Examples`.
+  `Dropdown/Examples`, `Heatmap/Examples`, `Input/Examples`, `Modal/Examples`,
+  `Popover/Examples`, `Radio/Examples`, `Segmented/Examples`, `Switch/Examples`,
+  `Theme/Examples`, and `Toast/Examples`.
 
 ## Non-Goals
 
