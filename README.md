@@ -6,8 +6,8 @@ surfaces. The first consumers are the accounting app and the Juno app.
 ## Key Features
 
 - Shared dropdown menu, selector, combobox, drag-select, segmented control,
-  radio card, switch, button, labelled input, modal, toast, and avatar
-  primitives.
+  radio card, switch, button, labelled input, modal, toast, avatar, and calendar
+  heatmap primitives.
 - A shared `sm` / `md` / `lg` size scale (`ControlSize`) across the interactive
   controls — buttons, inputs, dropdown selectors, date fields, segmented
   controls, and switches.
@@ -30,6 +30,8 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/drag-select` for web drag-selection providers, target hooks, and
   geometry helpers.
 - `@firna/ui/dropdown` for dropdown menu, selector, combobox, and layer helpers.
+- `@firna/ui/heatmap` for the calendar contribution heatmap and its pure layout
+  and color-scale helpers.
 - `@firna/ui/input` for the labelled text input and bare input frame.
 - `@firna/ui/modal` for web modal frame, portal, model, and layer helpers.
 - `@firna/ui/popover` for generic anchored popovers.
@@ -141,8 +143,8 @@ The package export map intentionally separates runtime targets:
   cleanup cannot complete safely, the comment reports the retained reason.
 - Storybook examples are grouped under one top-level folder per family:
   `Avatar/Examples`, `Button/Examples`, `Date/Examples`,
-  `Drag Select/Examples`, `Dropdown/Examples`, `Input/Examples`,
-  `Modal/Examples`, `Popover/Examples`, `Radio/Examples`,
+  `Drag Select/Examples`, `Dropdown/Examples`, `Heatmap/Examples`,
+  `Input/Examples`, `Modal/Examples`, `Popover/Examples`, `Radio/Examples`,
   `Segmented/Examples`, `Switch/Examples`, `Theme/Examples`, and
   `Toast/Examples`.
 - Required repository variable: `CLOUDFLARE_ACCOUNT_ID`.
@@ -159,6 +161,7 @@ The package export map intentionally separates runtime targets:
 - Dropdown components: [src/dropdown/README.md](src/dropdown/README.md)
 - Drag-select components:
   [src/drag-select/README.md](src/drag-select/README.md)
+- Heatmap component: [src/heatmap/README.md](src/heatmap/README.md)
 - Modal components: [src/modal/README.md](src/modal/README.md)
 - Radio card component: [src/radio/README.md](src/radio/README.md)
 - Segmented control component:
