@@ -199,6 +199,9 @@ Required behavior:
 - Provide an action-menu wrapper that owns the trigger anchor, controlled or
   uncontrolled open state, portal/list composition, and default close-after-row
   selection behavior for common trigger-backed menus.
+- Offer selectable trigger gestures (press, hover, long-press, context menu) on
+  the action-menu wrapper, resolving hover and context-menu behavior per
+  platform and keeping press available where a gesture is unavailable.
 - Keep dropdown and combobox portal layers above modal surfaces.
 - Preserve native-safe fallbacks for Expo platform resolution.
 

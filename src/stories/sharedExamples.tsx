@@ -164,6 +164,68 @@ export function ActionMenuExample() {
   );
 }
 
+export function HoverMenuExample() {
+  const entries: DropdownListEntry[] = [
+    { id: "profile", label: "Profile", onPress: () => undefined, type: "item" },
+    { id: "billing", label: "Billing", onPress: () => undefined, type: "item" },
+  ];
+
+  return (
+    <DropdownMenu entries={entries} minWidth={180} trigger="hover">
+      <Pressable
+        accessibilityLabel="Open hover menu"
+        accessibilityRole="button"
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Hover me</Text>
+      </Pressable>
+    </DropdownMenu>
+  );
+}
+
+export function LongPressMenuExample() {
+  const entries: DropdownListEntry[] = [
+    { id: "rename", label: "Rename", onPress: () => undefined, type: "item" },
+    {
+      id: "duplicate",
+      label: "Duplicate",
+      onPress: () => undefined,
+      type: "item",
+    },
+  ];
+
+  return (
+    <DropdownMenu entries={entries} minWidth={180} trigger="longPress">
+      <Pressable
+        accessibilityLabel="Open long-press menu"
+        accessibilityRole="button"
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Hold me</Text>
+      </Pressable>
+    </DropdownMenu>
+  );
+}
+
+export function ContextMenuExample() {
+  const entries: DropdownListEntry[] = [
+    { id: "copy", label: "Copy", onPress: () => undefined, type: "item" },
+    { id: "paste", label: "Paste", onPress: () => undefined, type: "item" },
+  ];
+
+  return (
+    <DropdownMenu entries={entries} minWidth={180} trigger="contextMenu">
+      <Pressable
+        accessibilityLabel="Open context menu"
+        accessibilityRole="button"
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Right-click me</Text>
+      </Pressable>
+    </DropdownMenu>
+  );
+}
+
 export function PopoverExample() {
   return (
     <Popover

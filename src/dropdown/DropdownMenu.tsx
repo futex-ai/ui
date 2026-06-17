@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
 
 import { DropdownList } from "./DropdownList";
@@ -17,10 +17,17 @@ import { DropdownPortal } from "./DropdownPortal";
 import type { DropdownPlacementOptions } from "./dropdownGeometry";
 import {
   closeDropdownMenuEntries,
-  dropdownMenuTriggerProps,
+  mergeDropdownMenuTriggerProps,
+  mergeDropdownSurfaceHoverProps,
   resolveDropdownMenuOpen,
+  resolveDropdownMenuTriggerProps,
 } from "./dropdownMenuModel";
-import type { DropdownMenuTriggerProps } from "./dropdownMenuModel";
+import type {
+  DropdownMenuTriggerElementProps,
+  DropdownMenuTriggerMode,
+  DropdownMenuTriggerProps,
+} from "./dropdownMenuModel";
+import { useDropdownHover } from "./useDropdownHover";
 import type { DropdownHoverProps } from "./useDropdownHover";
 
 /** State exposed to menu entry factories. */
@@ -77,6 +84,8 @@ export type DropdownMenuProps = DropdownPlacementOptions & {
   style?: StyleProp<ViewStyle>;
   /** Hover props for web hover menus that bridge trigger and portal surface. */
   surfaceHoverProps?: DropdownHoverProps;
+  /** How the child trigger opens the menu. Defaults to `"press"`. */
+  trigger?: DropdownMenuTriggerMode;
   /** z-index for the portal layer. Defaults to `DROPDOWN_LAYERS.portal`. */
   zIndex?: number;
 };
@@ -106,6 +115,7 @@ export function DropdownMenu({
   search,
   style,
   surfaceHoverProps,
+  trigger = "press",
   zIndex,
 }: DropdownMenuProps) {
   const anchorRef = useRef<View>(null);
@@ -124,6 +134,7 @@ export function DropdownMenu({
     [controlled, onOpenChange],
   );
   const close = useCallback(() => setOpen(false), [setOpen]);
+  const openMenu = useCallback(() => setOpen(true), [setOpen]);
   const toggle = useCallback(() => setOpen(!open), [open, setOpen]);
   const menuState = useMemo(
     () => ({ close, open, toggle }),
@@ -135,7 +146,24 @@ export function DropdownMenu({
     () => closeDropdownMenuEntries(rawEntries, close, closeOnSelect),
     [close, closeOnSelect, rawEntries],
   );
-  const triggerProps = dropdownMenuTriggerProps(open, toggle);
+  // Hover-open is auto-wired for `trigger="hover"` and inert otherwise. The hook
+  // runs every render (rules of hooks) but no-ops while disabled.
+  const hover = useDropdownHover({
+    disabled: trigger !== "hover",
+    onClose: close,
+    onOpen: openMenu,
+  });
+  const triggerProps = resolveDropdownMenuTriggerProps(open, toggle, trigger, {
+    hoverProps: hover.triggerHoverProps,
+    isWeb: Platform.OS === "web",
+  });
+  const portalSurfaceHoverProps =
+    trigger === "hover"
+      ? mergeDropdownSurfaceHoverProps(
+          surfaceHoverProps,
+          hover.surfaceHoverProps,
+        )
+      : surfaceHoverProps;
 
   return (
     <View ref={anchorRef} style={[styles.anchor, style]}>
@@ -150,7 +178,7 @@ export function DropdownMenu({
         minWidth={minWidth}
         onClose={close}
         open={open}
-        surfaceHoverProps={surfaceHoverProps}
+        surfaceHoverProps={portalSurfaceHoverProps}
         zIndex={zIndex}
       >
         {(placement) => (
@@ -170,11 +198,6 @@ export function DropdownMenu({
   );
 }
 
-type DropdownMenuTriggerElementProps = {
-  "aria-expanded"?: boolean;
-  onPress?: (event: unknown) => void;
-};
-
 function dropdownMenuTriggerNode(
   trigger: DropdownMenuTrigger,
   state: DropdownMenuEntriesState,
@@ -186,14 +209,10 @@ function dropdownMenuTriggerNode(
   if (!isValidElement<DropdownMenuTriggerElementProps>(trigger)) {
     return trigger;
   }
-  const originalOnPress = trigger.props.onPress;
-  return cloneElement(trigger, {
-    ...triggerProps,
-    onPress: (event: unknown) => {
-      originalOnPress?.(event);
-      triggerProps.onPress();
-    },
-  });
+  return cloneElement(
+    trigger,
+    mergeDropdownMenuTriggerProps(trigger.props, triggerProps),
+  );
 }
 
 const styles = StyleSheet.create({

@@ -131,13 +131,45 @@ the menu open. `entries` may also be a function that receives
 trigger needs open-state styling, pass a function child that receives
 `{ open, triggerProps }` and spread `triggerProps` onto the pressable.
 
+By default the menu opens on press. Pass `trigger` to change how the child opens
+it:
+
+- `"press"` (default) — tap or click opens the menu, on every platform.
+- `"hover"` — pointer hover opens it on web. The menu auto-wires
+  `useDropdownHover` and bridges the trigger-to-surface gap, so no manual hook is
+  needed. Press stays wired as the touch/keyboard fallback. On native, where
+  hover does not exist, only press opens it.
+- `"longPress"` — a press-and-hold opens it on web and native. A plain tap is
+  left to the trigger's own `onPress`, so a tappable row stays tappable.
+- `"contextMenu"` — right-click opens it on web (the browser's native menu is
+  suppressed) and a long-press opens it on native. A plain tap is again left to
+  the trigger.
+
+```tsx
+<DropdownMenu entries={entries} trigger="hover">
+  <Pressable accessibilityLabel="Account" accessibilityRole="button">
+    <Text>Account</Text>
+  </Pressable>
+</DropdownMenu>
+```
+
+In every mode the trigger advertises its menu to assistive tech with
+`aria-haspopup="menu"` and reflects the open state with `aria-expanded`.
+`longPress` and `contextMenu` are secondary-gesture triggers, so they never
+hijack a tap; pair them with another affordance when keyboard-only users must
+reach the menu (right-click is keyboard-reachable on web via the context-menu
+key). For per-platform behavior, drive the prop yourself, for example
+`trigger={Platform.OS === "web" ? "hover" : "longPress"}`.
+
 Use `DropdownPortal` plus `DropdownList` directly for custom pickers that need
 to own the anchor ref, surface body, or list wiring.
 
-For web hover menus, use `useDropdownHover` on the trigger and pass
+`trigger="hover"` covers the common hover menu. For custom hover timing, keep
+`trigger="press"` and wire `useDropdownHover` on the trigger yourself, passing
 `surfaceHoverProps` into `DropdownMenu` or `DropdownPortal`. The hook keeps the
 menu open across the small pointer gap between the trigger and the portal
-surface.
+surface, and a consumer-supplied `surfaceHoverProps` still composes with the
+built-in bridge when `trigger="hover"`.
 
 Use `ComboboxPopover` plus `DropdownList` when the user keeps typing in an
 existing input while results are open. This path uses a non-modal web portal so
