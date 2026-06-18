@@ -1829,3 +1829,17 @@ test("table disabled row is exposed as a non-pressable button", async ({
     page.getByRole("button", { name: "Open invoice INV-0009" }),
   ).toBeDisabled();
 });
+
+test("table rich cells render and the per-row Open action fires", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=table-examples--rich-cells");
+
+  // Rich cells render: a two-line name cell and a toned status badge.
+  await expect(page.getByText("Maya Okafor")).toBeVisible();
+  await expect(page.getByText("Leaving 31 May")).toBeVisible();
+
+  // The per-row action button (in the headerless action column) fires.
+  await page.getByRole("button", { name: "Open Maya Okafor" }).click();
+  await expect(page.getByText("Opened Maya Okafor")).toBeVisible();
+});
