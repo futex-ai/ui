@@ -90,8 +90,8 @@ Important findings:
   `main`.
 - Main URL: `https://futex-ui-storybook.pages.dev`, unless a custom domain is
   added later.
-- PR deployment: every same-repository pull request builds Storybook and
-  deploys `storybook-static` with Wrangler to project `futex-ui-storybook` on
+- PR deployment: same-repository non-release pull requests build Storybook and
+  deploy `storybook-static` with Wrangler to project `futex-ui-storybook` on
   branch `pr-<number>`.
 - PR URL: `https://pr-<number>.futex-ui-storybook.pages.dev`; the workflow may
   fall back to the deployment URL printed by Wrangler if Cloudflare changes
@@ -99,8 +99,8 @@ Important findings:
 - PR comment: use a sticky GitHub comment with marker
   `<!-- futex-ui-storybook-preview -->`, updated on every deploy attempt with
   status, Storybook URL, commit SHA, and workflow run URL.
-- PR update behavior: every new PR commit redeploys the same `pr-<number>`
-  branch so the preview URL remains stable.
+- PR update behavior: every new non-release PR commit redeploys the same
+  `pr-<number>` branch so the preview URL remains stable.
 - PR close behavior: update the sticky comment to inactive and delete the
   matching Cloudflare Pages PR branch deployments through the Cloudflare API
   when the workflow can do so safely; otherwise leave the preview retained and
@@ -177,8 +177,8 @@ surfaces before consumers migrate to the package.
       theme.
 - [x] Add a stable main-branch Cloudflare Pages Storybook deployment for
       `https://futex-ui-storybook.pages.dev`.
-- [x] Add per-PR Cloudflare Pages Storybook preview deployment using branch
-      names `pr-<number>`.
+- [x] Add per-PR Cloudflare Pages Storybook preview deployment for
+      non-release PRs using branch names `pr-<number>`.
 - [x] Add sticky PR Storybook comments with marker
       `<!-- futex-ui-storybook-preview -->`, status, URL, commit SHA, and workflow
       run URL.

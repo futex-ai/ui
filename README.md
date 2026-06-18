@@ -17,7 +17,7 @@ surfaces. The first consumers are the accounting app and the Juno app.
   for custom consumer stacking contexts.
 - Expo and React Native Web compatible platform files.
 - Focused unit tests, browser interaction tests, and package export checks.
-- Storybook previews for visual review on every PR.
+- Storybook previews for visual review on same-repository non-release PRs.
 - Release-please release PRs and npm trusted publishing for `@firna/ui`.
 
 ## User-Facing Interface
@@ -130,11 +130,14 @@ The package export map intentionally separates runtime targets:
 - Main branch Storybook deploys to Cloudflare Pages project
   `futex-ui-storybook`.
 - Main URL: `https://futex-ui-storybook.pages.dev`.
-- PR previews deploy to Cloudflare branch `pr-<number>`.
+- Same-repository non-release PR previews deploy to Cloudflare branch
+  `pr-<number>`.
 - PR preview URL shape:
   `https://pr-<number>.futex-ui-storybook.pages.dev`.
 - PR previews are posted through a sticky comment marked
   `<!-- futex-ui-storybook-preview -->`.
+- Release Please PRs are skipped by the Storybook preview deploy job; their
+  component changes were already previewed in the source PRs.
 - Closing a same-repository PR marks the sticky comment inactive and attempts
   to delete aliased preview deployments for that PR branch; if Cloudflare
   cleanup cannot complete safely, the comment reports the retained reason.
