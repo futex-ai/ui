@@ -6,9 +6,9 @@ surfaces. The first consumers are the accounting app and the Juno app.
 ## Key Features
 
 - Shared dropdown menu, selector, combobox, drag-select, segmented control,
-  radio card, switch, button, labelled input, modal, toast, avatar, calendar
-  heatmap, and full event-calendar (month/week/day/agenda, recurring events,
-  drag-to-create) primitives.
+  radio card, switch, button, labelled input, data table, modal, toast, avatar,
+  calendar heatmap, and full event-calendar (month/week/day/agenda, recurring
+  events, drag-to-create) primitives.
 - A shared `sm` / `md` / `lg` size scale (`ControlSize`) across the interactive
   controls — buttons, inputs, dropdown selectors, date fields, segmented
   controls, and switches.
@@ -41,6 +41,7 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/radio` for themed titled radio-option cards.
 - `@firna/ui/segmented` for themed single-select segmented controls.
 - `@firna/ui/switch` for themed binary on/off switches.
+- `@firna/ui/table` for the data table with optional headers and clickable rows.
 - `@firna/ui/theme` for `SharedUiThemeProvider`, default accounting-style
   tokens, the Juno token preset, and `createSharedUiTheme`.
 - `@firna/ui/toast` for the toast provider, the `useToast` hook, and transient
@@ -148,8 +149,8 @@ The package export map intentionally separates runtime targets:
   `Avatar/Examples`, `Button/Examples`, `Calendar/Examples`, `Date/Examples`,
   `Drag Select/Examples`, `Dropdown/Examples`, `Heatmap/Examples`,
   `Input/Examples`, `Modal/Examples`, `Popover/Examples`, `Radio/Examples`,
-  `Segmented/Examples`, `Switch/Examples`, `Theme/Examples`, and
-  `Toast/Examples`.
+  `Segmented/Examples`, `Switch/Examples`, `Table/Examples`, `Theme/Examples`,
+  and `Toast/Examples`.
 - Required repository variable: `CLOUDFLARE_ACCOUNT_ID`.
 - Required repository secret: `CLOUDFLARE_PAGES_API_TOKEN` or
   `CLOUDFLARE_API_TOKEN`.
@@ -171,6 +172,7 @@ The package export map intentionally separates runtime targets:
 - Segmented control component:
   [src/segmented/README.md](src/segmented/README.md)
 - Switch component: [src/switch/README.md](src/switch/README.md)
+- Table component: [src/table/README.md](src/table/README.md)
 - Toast component: [src/toast/README.md](src/toast/README.md)
 - Browser tests: [tests/browser/storybook.spec.ts](tests/browser/storybook.spec.ts)
 - Repository automation: [xtask/README.md](xtask/README.md)

@@ -33,6 +33,7 @@ test("package exposes every documented public subpath", () => {
     "./radio",
     "./segmented",
     "./switch",
+    "./table",
     "./theme",
     "./toast",
   ]);

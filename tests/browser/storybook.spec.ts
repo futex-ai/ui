@@ -1796,3 +1796,36 @@ test("heatmap reports the pressed cell to its handler", async ({ page }) => {
   await page.getByRole("button", { name: "15 Jan 2024: 8" }).click();
   await expect(page.getByText("Selected: 2024-01-15 (8)")).toBeVisible();
 });
+
+test("table row opens on click and reports the opened row", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=table-examples--clickable-rows");
+
+  // With onRowPress, each row is a button named by its rowLabel.
+  const paid = page.getByRole("button", { name: "Open invoice INV-0007" });
+  await expect(paid).toBeVisible();
+  await paid.click();
+  await expect(page.getByText("Opened INV-0007")).toBeVisible();
+});
+
+test("table row activates from the keyboard", async ({ page }) => {
+  await page.goto("/iframe.html?id=table-examples--clickable-rows");
+
+  // The button-role row is keyboard operable via react-native-web's Pressable.
+  const overdue = page.getByRole("button", { name: "Open invoice INV-0008" });
+  await overdue.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("Opened INV-0008")).toBeVisible();
+});
+
+test("table disabled row is exposed as a non-pressable button", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=table-examples--clickable-rows");
+
+  // The draft row is marked non-pressable via rowDisabled.
+  await expect(
+    page.getByRole("button", { name: "Open invoice INV-0009" }),
+  ).toBeDisabled();
+});

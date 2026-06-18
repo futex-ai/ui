@@ -13,5 +13,6 @@ export * from "./popover";
 export * from "./radio";
 export * from "./segmented";
 export * from "./switch";
+export * from "./table";
 export * from "./theme";
 export * from "./toast";
