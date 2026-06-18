@@ -411,15 +411,20 @@ Required behavior:
 - The stable main Storybook deploy uses the Cloudflare Pages production branch
   `main` and the default production URL
   `https://futex-ui-storybook.pages.dev`, unless a custom domain is added later.
-- PR Storybook previews deploy the static Storybook build to Cloudflare Pages
-  with branch name `pr-<number>`, producing a predictable preview URL such as
+- Same-repository non-release PR Storybook previews deploy the static Storybook
+  build to Cloudflare Pages with branch name `pr-<number>`, producing a
+  predictable preview URL such as
   `https://pr-123.futex-ui-storybook.pages.dev`.
 - Every PR must run `cargo xtask check` after dependency installation. The
   xtask check runs the JavaScript verification suite: formatting, unit tests,
   typecheck, package build, package tarball smoke test, Storybook build, and
   browser interaction tests.
 - The main branch must publish a stable default Storybook deployment.
-- Every PR must publish an isolated Storybook preview deployment.
+- Every same-repository non-release PR must publish an isolated Storybook
+  preview deployment.
+- Release Please PRs, identified by a `release-please--` head branch or an
+  `autorelease:` label, must skip the Storybook preview deploy job because they
+  only update release metadata for changes already previewed in source PRs.
 - The PR Storybook URL must be posted back to the pull request through a sticky
   comment with marker `<!-- futex-ui-storybook-preview -->`, matching the
   preview-comment pattern used by accounting and Juno.
