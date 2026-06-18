@@ -14,8 +14,9 @@ export type ToastTone = "error" | "info" | "success" | "warning";
  * Visual presentation of a toast.
  * - `card` (default) — surface card with a leading tone icon and accent strip.
  * - `solid` — compact filled toast for short, bottom-centered feedback.
+ * - `loading` — dark compact status toast with a spinner.
  */
-export type ToastVariant = "card" | "solid";
+export type ToastVariant = "card" | "loading" | "solid";
 
 /**
  * Where the toast stack is pinned within the viewport. The first segment picks

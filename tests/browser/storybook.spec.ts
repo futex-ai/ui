@@ -1642,6 +1642,49 @@ test("solid toast variant can be triggered through the controller", async ({
   await expect(closeToast).toBeHidden();
 });
 
+test("loading toast variant matches the compact dark progress surface", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=toast-examples--loading-bottom-center");
+
+  await page.getByRole("button", { name: "Show loading" }).click();
+  const toast = page
+    .getByRole("status")
+    .filter({ hasText: "Saving payslips to your device • 3 of 5" });
+  await expect(toast).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Dismiss Saving payslips/ }),
+  ).toHaveCount(0);
+
+  const background = await toast.evaluate(
+    (node) => window.getComputedStyle(node as HTMLElement).backgroundColor,
+  );
+  expect(background).toBe("rgb(28, 31, 29)");
+
+  const box = await toast.boundingBox();
+  const viewport = page.viewportSize();
+  expect(box).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  if (box && viewport) {
+    const toastCenter = box.x + box.width / 2;
+    expect(box.width).toBeGreaterThan(360);
+    expect(box.height).toBeGreaterThanOrEqual(60);
+    expect(Math.abs(toastCenter - viewport.width / 2)).toBeLessThan(20);
+    expect(box.y + box.height).toBeGreaterThan(viewport.height - 48);
+  }
+});
+
+test("toast controller is registered before descendant mount effects", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=toast-examples--controller-on-mount");
+
+  const toast = page
+    .getByRole("status")
+    .filter({ hasText: "Mounted through controller" });
+  await expect(toast).toBeVisible();
+});
+
 test("hovering a toast pauses its auto-dismiss countdown", async ({ page }) => {
   await page.goto("/iframe.html?id=toast-examples--auto-dismiss");
 

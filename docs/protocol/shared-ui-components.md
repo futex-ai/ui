@@ -343,8 +343,11 @@ Required behavior:
 - Support a compact `solid` variant that uses the tone color as the filled
   background, hides the default card icon/accent strip, and can match the
   bottom-center transaction-error style through props.
+- Support a compact `loading` variant that uses a dark filled background,
+  renders a left spinner, and can match bottom-center in-progress status toasts
+  through props.
 - Allow per-toast title and description text style overrides that layer after
-  the built-in card/solid text styles.
+  the built-in variant text styles.
 - Support an optional action button that runs its handler and then dismisses the
   toast, and an optional close control that dismisses only its own toast.
 - Use shared theme tokens for the surface, border, accent colors, text, fonts,

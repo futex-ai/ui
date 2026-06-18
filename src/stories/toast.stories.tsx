@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 
 import { Button, ToastProvider, toastController, useToast } from "../index";
@@ -203,6 +204,38 @@ function SolidVariantTriggers() {
   );
 }
 
+function LoadingVariantTrigger() {
+  return (
+    <Button
+      onPress={() =>
+        toastController.toast({
+          dismissible: false,
+          duration: null,
+          title: "Saving payslips to your device • 3 of 5",
+          variant: "loading",
+        })
+      }
+      tone="primary"
+    >
+      Show loading
+    </Button>
+  );
+}
+
+function ControllerOnMountTrigger() {
+  useEffect(() => {
+    const id = toastController.toast({
+      dismissible: false,
+      duration: null,
+      title: "Mounted through controller",
+      variant: "loading",
+    });
+    return () => toastController.dismiss(id);
+  }, []);
+
+  return null;
+}
+
 const playground = (placement: ToastPlacement, children: React.ReactNode) => (
   <StorySurface>
     <ToastProvider placement={placement}>{children}</ToastProvider>
@@ -237,4 +270,14 @@ export const QueueAndDismissAll: Story = {
 export const SolidBottomCenter: Story = {
   name: "Solid bottom-center",
   render: () => playground("bottom-center", <SolidVariantTriggers />),
+};
+
+export const LoadingBottomCenter: Story = {
+  name: "Loading bottom-center",
+  render: () => playground("bottom-center", <LoadingVariantTrigger />),
+};
+
+export const ControllerOnMount: Story = {
+  name: "Controller on mount",
+  render: () => playground("bottom-center", <ControllerOnMountTrigger />),
 };

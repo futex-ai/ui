@@ -243,6 +243,31 @@ test("toast solid variant is prop-driven and owns filled styling", () => {
   assert.match(styles, /solidTitle/);
 });
 
+test("toast loading variant is prop-driven and owns spinner styling", () => {
+  const item = createToastItem(
+    "toast-loading",
+    {
+      dismissible: false,
+      duration: null,
+      title: "Saving payslips to your device • 3 of 5",
+      variant: "loading",
+    },
+    5000,
+  );
+  const surface = readSource("../../src/toast/Toast.tsx");
+  const styles = readSource("../../src/toast/toastStyles.ts");
+
+  assert.equal(item.variant, "loading");
+  assert.equal(item.dismissible, false);
+  assert.equal(item.duration, null);
+  assert.match(surface, /toast\.variant === "loading"/);
+  assert.match(surface, /styles\.loadingSpinner/);
+  assert.match(surface, /styles\.loadingToast/);
+  assert.match(styles, /loadingIconWrap/);
+  assert.match(styles, /loadingSpinner/);
+  assert.match(styles, /loadingTitle/);
+});
+
 test("toast text styles are caller-overridable", () => {
   const source = readSource("../../src/toast/Toast.tsx");
   const item = createToastItem(
@@ -270,6 +295,8 @@ test("useToast throws outside a provider and the provider renders the viewport",
   const provider = readSource("../../src/toast/ToastProvider.tsx");
 
   assert.match(context, /must be used within a <ToastProvider>/);
+  assert.match(provider, /useLayoutEffect/);
+  assert.match(provider, /ToastProviderDepthContext/);
   assert.match(provider, /<ToastViewport/);
   assert.match(provider, /enqueueToast/);
   assert.match(provider, /dequeueToast/);
@@ -321,6 +348,39 @@ test("toast controller restores the outer provider after nested cleanup", () => 
       return "inner";
     },
   });
+
+  assert.equal(toastController.toast({ title: "First" }), "inner");
+  unregisterInner();
+  assert.equal(toastController.toast({ title: "Second" }), "outer");
+  unregisterOuter();
+
+  assert.deepEqual(calls, ["inner:First", "outer:Second"]);
+});
+
+test("toast controller prefers deeper providers regardless of registration order", () => {
+  const calls: string[] = [];
+  const unregisterInner = registerToastProviderApi(
+    {
+      dismiss: () => undefined,
+      dismissAll: () => undefined,
+      toast: (options) => {
+        calls.push(`inner:${options.title}`);
+        return "inner";
+      },
+    },
+    2,
+  );
+  const unregisterOuter = registerToastProviderApi(
+    {
+      dismiss: () => undefined,
+      dismissAll: () => undefined,
+      toast: (options) => {
+        calls.push(`outer:${options.title}`);
+        return "outer";
+      },
+    },
+    1,
+  );
 
   assert.equal(toastController.toast({ title: "First" }), "inner");
   unregisterInner();

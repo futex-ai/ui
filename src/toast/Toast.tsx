@@ -50,17 +50,21 @@ export function Toast({ toast, onDismiss }: ToastProps) {
   const styles = useMemo(() => createToastStyles(theme), [theme]);
   const accent = toastToneAccent(theme, toast.tone);
   const solid = toast.variant === "solid";
-  const solidBackground = toastSolidToneBackground(theme, toast.tone);
-  const solidForeground = toastSolidToneForeground(theme, solidBackground);
+  const loading = toast.variant === "loading";
+  const filled = solid || loading;
+  const filledBackground = loading
+    ? theme.colors.ink
+    : toastSolidToneBackground(theme, toast.tone);
+  const filledForeground = toastSolidToneForeground(theme, filledBackground);
   const ToneIcon = TONE_ICONS[toast.tone];
   const [paused, setPaused] = useState(false);
-  const [solidActionFocused, setSolidActionFocused] = useState(false);
+  const [filledActionFocused, setFilledActionFocused] = useState(false);
   const [closeFocused, setCloseFocused] = useState(false);
-  const solidControlFocusRing = {
-    boxShadow: `0 0 0 2px ${solidForeground}`,
+  const filledControlFocusRing = {
+    boxShadow: `0 0 0 2px ${filledForeground}`,
   };
-  const closeControlFocusRing = solid
-    ? solidControlFocusRing
+  const closeControlFocusRing = filled
+    ? filledControlFocusRing
     : {
         boxShadow: `0 0 0 2px ${theme.colors.surface}, 0 0 0 4px ${theme.colors.primary}`,
       };
@@ -109,21 +113,44 @@ export function Toast({ toast, onDismiss }: ToastProps) {
       role={toastRole(toast.tone)}
       style={[
         styles.toast,
-        solid
-          ? [styles.solidToast, { backgroundColor: solidBackground }]
+        filled
+          ? [
+              solid ? styles.solidToast : styles.loadingToast,
+              { backgroundColor: filledBackground },
+            ]
           : [styles.cardToast, { borderLeftColor: accent }],
       ]}
     >
-      {solid ? null : (
+      {loading ? (
+        <View style={styles.loadingIconWrap}>
+          <View
+            style={[
+              styles.loadingSpinner,
+              {
+                borderColor: filledForeground,
+                borderRightColor: "rgba(255, 255, 255, 0.34)",
+              },
+            ]}
+          />
+        </View>
+      ) : null}
+      {filled ? null : (
         <View style={styles.iconWrap}>
           <ToneIcon color={accent} size={18} />
         </View>
       )}
-      <View style={[styles.content, solid ? styles.solidContent : null]}>
+      <View
+        style={
+          loading
+            ? styles.loadingContent
+            : [styles.content, solid ? styles.solidContent : null]
+        }
+      >
         <Text
           style={[
             styles.title,
-            solid ? [styles.solidTitle, { color: solidForeground }] : null,
+            solid ? [styles.solidTitle, { color: filledForeground }] : null,
+            loading ? [styles.loadingTitle, { color: filledForeground }] : null,
             toast.titleStyle,
           ]}
         >
@@ -134,7 +161,10 @@ export function Toast({ toast, onDismiss }: ToastProps) {
             style={[
               styles.description,
               solid
-                ? [styles.solidDescription, { color: solidForeground }]
+                ? [styles.solidDescription, { color: filledForeground }]
+                : null,
+              loading
+                ? [styles.loadingDescription, { color: filledForeground }]
                 : null,
               toast.descriptionStyle,
             ]}
@@ -143,12 +173,12 @@ export function Toast({ toast, onDismiss }: ToastProps) {
           </Text>
         ) : null}
         {toast.action ? (
-          <View style={[styles.actions, solid ? styles.solidActions : null]}>
-            {solid ? (
+          <View style={[styles.actions, filled ? styles.solidActions : null]}>
+            {filled ? (
               <Pressable
                 accessibilityRole="button"
-                onBlur={() => setSolidActionFocused(false)}
-                onFocus={() => setSolidActionFocused(true)}
+                onBlur={() => setFilledActionFocused(false)}
+                onFocus={() => setFilledActionFocused(true)}
                 onPress={() => {
                   toast.action?.onPress();
                   onDismiss(toast.id);
@@ -156,12 +186,12 @@ export function Toast({ toast, onDismiss }: ToastProps) {
                 style={({ hovered }: PressableHoverState) => [
                   styles.solidActionButton,
                   hovered ? styles.solidActionButtonHover : null,
-                  solidActionFocused ? solidControlFocusRing : null,
+                  filledActionFocused ? filledControlFocusRing : null,
                   hideWebOutlineView,
                 ]}
               >
                 <Text
-                  style={[styles.solidActionText, { color: solidForeground }]}
+                  style={[styles.solidActionText, { color: filledForeground }]}
                 >
                   {toast.action.label}
                 </Text>
@@ -190,9 +220,9 @@ export function Toast({ toast, onDismiss }: ToastProps) {
           onPress={() => onDismiss(toast.id)}
           style={({ hovered }: PressableHoverState) => [
             styles.closeButton,
-            solid ? styles.solidCloseButton : null,
+            filled ? styles.solidCloseButton : null,
             hovered
-              ? solid
+              ? filled
                 ? styles.solidCloseButtonHover
                 : styles.closeButtonHover
               : null,
@@ -200,7 +230,7 @@ export function Toast({ toast, onDismiss }: ToastProps) {
             hideWebOutlineView,
           ]}
         >
-          <X color={solid ? solidForeground : theme.colors.muted} size={16} />
+          <X color={filled ? filledForeground : theme.colors.muted} size={16} />
         </Pressable>
       ) : null}
     </View>
