@@ -109,6 +109,10 @@ The package export map intentionally separates runtime targets:
   automatic release path first verifies that the `main` commit is associated
   with a `release-plz-*` PR, so ordinary pushes do not create releases or
   publish npm packages.
+- The release job checks out the repository default branch, then attaches the
+  target commit SHA to that local branch before running release-plz. This keeps
+  release-plz on a branch with an `origin/main` upstream while still releasing
+  the exact push commit or manual recovery commit.
 - If release-plz reports no new release after a merged release PR has already
   bumped the Cargo version, the workflow creates the missing GitHub release
   from the checked-out `firna-ui-release` version and changelog section.

@@ -95,10 +95,53 @@ test("release-plz workflow publishes npm after creating a release", () => {
   assert.match(workflow, /npm publish --access public/);
 });
 
+test("release-plz workflow runs release from an attached branch", () => {
+  const workflow = readSource("../../.github/workflows/release-plz.yml");
+  const releaseJob = sectionBetween(workflow, "  release:\n", "  publish:\n");
+  const checkoutStart = releaseJob.indexOf("- name: Check out repository");
+  const attachStart = releaseJob.indexOf(
+    "- name: Attach release target to branch",
+  );
+  const releasePlzStart = releaseJob.indexOf("- name: Run release-plz release");
+
+  assert.notEqual(checkoutStart, -1);
+  assert.notEqual(attachStart, -1);
+  assert.notEqual(releasePlzStart, -1);
+  assert.ok(attachStart < releasePlzStart);
+
+  const checkoutStep = releaseJob.slice(checkoutStart, attachStart);
+  assert.match(
+    checkoutStep,
+    /ref: \$\{\{ github\.event\.repository\.default_branch \}\}/,
+  );
+  assert.doesNotMatch(checkoutStep, /github\.sha/);
+  assert.match(
+    releaseJob,
+    /RELEASE_REF: \$\{\{ github\.event_name == 'workflow_dispatch' && inputs\.release_ref != '' && inputs\.release_ref \|\| github\.sha \}\}/,
+  );
+  assert.match(
+    releaseJob,
+    /git checkout -B "\$\{RELEASE_BRANCH\}" "\$\{RELEASE_REF\}"/,
+  );
+  assert.match(
+    releaseJob,
+    /git branch --set-upstream-to="origin\/\$\{RELEASE_BRANCH\}" "\$\{RELEASE_BRANCH\}"/,
+  );
+});
+
 function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
 }
 
 function countMatches(source: string, pattern: RegExp) {
   return Array.from(source.matchAll(pattern)).length;
+}
+
+function sectionBetween(source: string, start: string, end: string) {
+  const startIndex = source.indexOf(start);
+  assert.notEqual(startIndex, -1);
+  const endIndex = source.indexOf(end, startIndex + start.length);
+  assert.notEqual(endIndex, -1);
+
+  return source.slice(startIndex, endIndex);
 }

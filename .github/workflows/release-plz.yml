@@ -37,7 +37,16 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_ref != '' && inputs.release_ref || github.sha }}
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Attach release target to branch
+        env:
+          RELEASE_BRANCH: ${{ github.event.repository.default_branch }}
+          RELEASE_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.release_ref != '' && inputs.release_ref || github.sha }}
+        run: |
+          git checkout -B "${RELEASE_BRANCH}" "${RELEASE_REF}"
+          git branch --set-upstream-to="origin/${RELEASE_BRANCH}" "${RELEASE_BRANCH}"
+          echo "Release target is $(git rev-parse HEAD) on $(git branch --show-current)."
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
