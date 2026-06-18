@@ -9,6 +9,7 @@
 import { useMemo } from "react";
 import { ScrollView, StyleProp, Text, View, ViewStyle } from "react-native";
 
+import { parseIso } from "../date/dateMath";
 import { useSharedUiTheme } from "../theme";
 
 import { CalendarEventBlock } from "./CalendarEventBlock";
@@ -20,6 +21,8 @@ import {
   hours,
   minutesOfDay,
   minutesToY,
+  WEEKDAY_LABELS,
+  weekdayOf,
 } from "./calendarMath";
 import { layoutDayColumns } from "./eventLayout";
 import { getOccurrences } from "./recurrence";
@@ -95,6 +98,7 @@ export function TimeGrid({
 
   return (
     <View style={[styles.timeGrid, style]}>
+      <ColumnHeaderRow dates={dates} today={today} styles={styles} />
       <AllDayRow
         dates={dates}
         occurrences={allOccurrences}
@@ -143,6 +147,56 @@ export function TimeGrid({
           </View>
         </View>
       </ScrollView>
+    </View>
+  );
+}
+
+/**
+ * The fixed date header above the grid: a left gutter spacer (aligned with the
+ * hour gutter) plus one cell per day column showing the weekday and day number,
+ * with today's number wrapped in a filled badge. Sits outside the scroll so the
+ * dates stay visible while the hours scroll.
+ */
+function ColumnHeaderRow({
+  dates,
+  today,
+  styles,
+}: {
+  dates: string[];
+  today: string;
+  styles: CalendarStyles;
+}) {
+  return (
+    <View style={styles.timeHeaderRow}>
+      <View style={styles.timeHeaderGutter} />
+      {dates.map((date, index) => {
+        const isToday = date === today;
+        const dayNumber = parseIso(date)?.day ?? 0;
+        return (
+          <View
+            key={date}
+            style={[
+              styles.timeHeaderCell,
+              index === dates.length - 1 ? styles.timeHeaderCellLast : null,
+            ]}
+            testID={`calendar-col-header-${date}`}
+          >
+            <Text style={styles.timeHeaderWeekday}>
+              {WEEKDAY_LABELS[weekdayOf(date)]}
+            </Text>
+            <View style={isToday ? styles.timeHeaderTodayBadge : null}>
+              <Text
+                style={[
+                  styles.timeHeaderDay,
+                  isToday ? styles.timeHeaderTodayDay : null,
+                ]}
+              >
+                {dayNumber}
+              </Text>
+            </View>
+          </View>
+        );
+      })}
     </View>
   );
 }

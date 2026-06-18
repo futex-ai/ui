@@ -1638,6 +1638,15 @@ test("calendar switches between month, week, and day views", async ({
   await expect(page.getByText("All-day", { exact: true })).toBeVisible();
   await expect(page.getByText("9 AM", { exact: true })).toBeVisible();
 
+  // The week view carries a date header above the columns: each column shows its
+  // weekday + day number (today's 2026-06-17 reads "Wed 17").
+  await expect(page.getByTestId("calendar-col-header-2026-06-17")).toHaveText(
+    "Wed17",
+  );
+  await expect(page.getByTestId("calendar-col-header-2026-06-15")).toHaveText(
+    "Mon15",
+  );
+
   // The day view keeps the time grid but collapses to a single column.
   await page.getByRole("radio", { name: "Day" }).click();
   await expect(page.getByRole("radio", { name: "Day" })).toBeChecked();
@@ -1730,8 +1739,15 @@ test("calendar month view creates events by click and by drag across days", asyn
     "Click a day, or drag across days, to create an event",
   );
 
+  // The grid disables text selection so a drag never blue-highlights the day
+  // numbers / event labels (the cascade reaches the day-number text too).
+  const cell = page.getByTestId("calendar-month-cell-2026-06-10");
+  expect(await cell.evaluate((el) => getComputedStyle(el).userSelect)).toBe(
+    "none",
+  );
+
   // A plain click on a day cell creates a single-day all-day event.
-  await page.getByTestId("calendar-month-cell-2026-06-10").click();
+  await cell.click();
   await expect(log).toContainText("Created 2026-06-10 – 2026-06-10");
 
   // Dragging across several day cells creates a multi-day all-day event, using

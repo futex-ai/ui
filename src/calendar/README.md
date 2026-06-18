@@ -37,8 +37,9 @@ consumers that want to render one view without the toolbar:
 - **`MonthView`** — a weeks×7 grid. Multi-day and all-day events render as
   horizontal **spanning bars** laid into lanes; once a week-row runs out of lanes
   the extra events collapse into a `+N more` affordance per day.
-- **`WeekView`** / **`DayView`** — a scrollable **time grid** (`TimeGrid`) with an
-  hour gutter, an all-day row, a now-line, and timed events positioned by start /
+- **`WeekView`** / **`DayView`** — a scrollable **time grid** (`TimeGrid`) with a
+  fixed date header (weekday + day number per column, today highlighted), an hour
+  gutter, an all-day row, a now-line, and timed events positioned by start /
   duration. Events that overlap are packed **side by side into columns**.
 - **`AgendaView`** — a chronological list grouped by day, for a compact,
   list-style read of an upcoming window.
@@ -140,8 +141,9 @@ snap. `weekStartsOn` (0=Sun..6=Sat, default 0) rotates the week/month grids and
 - `CalendarToolbar` — prev/next/today nav, view title, and the `SegmentedControl`
   view switcher (hidden when only one view is offered).
 - `MonthView`, `WeekView`, `DayView`, `AgendaView` — the standalone views.
-- `TimeGrid` — the shared scrollable time grid (columns, all-day row, now-line,
-  positioned blocks, drag-to-create) that `WeekView` / `DayView` wrap.
+- `TimeGrid` — the shared scrollable time grid (date header, columns, all-day
+  row, now-line, positioned blocks, drag-to-create) that `WeekView` / `DayView`
+  wrap.
 - `CalendarEventBlock` / `CalendarEventChip` — the rendered event block (time
   grid) and chip (month / agenda), both labelled buttons.
 - `useCalendarDragCreate` — the web/native time-grid drag-to-create hook.

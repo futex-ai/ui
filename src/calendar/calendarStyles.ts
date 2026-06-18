@@ -81,7 +81,9 @@ export function createCalendarStyles(theme: SharedUiTheme) {
     },
 
     // --- month grid --------------------------------------------------------
-    monthGrid: { flexGrow: 1 },
+    // `userSelect: none` so a drag-to-create gesture sweeps cells without the
+    // browser text-selecting the day numbers, event labels, and "+N more".
+    monthGrid: { flexGrow: 1, userSelect: "none" },
     // Weekday header row (Sun..Sat labels).
     monthWeekdayRow: {
       borderBottomColor: theme.colors.border,
@@ -207,8 +209,56 @@ export function createCalendarStyles(theme: SharedUiTheme) {
     },
 
     // --- time grid (week + day) -------------------------------------------
-    // The whole grid wrapper (all-day row + scrollable body).
-    timeGrid: { flexGrow: 1, minHeight: 0 },
+    // The whole grid wrapper (date header + all-day row + scrollable body).
+    // `userSelect: none` so a vertical drag-to-create never text-selects the
+    // hour labels / event blocks.
+    timeGrid: { flexGrow: 1, minHeight: 0, userSelect: "none" },
+    // Fixed date header above the grid: one cell per day column (weekday + day
+    // number), aligned with the columns by a left gutter spacer.
+    timeHeaderRow: {
+      borderBottomColor: theme.colors.border,
+      borderBottomWidth: 1,
+      flexDirection: "row",
+    },
+    timeHeaderGutter: {
+      borderRightColor: theme.colors.border,
+      borderRightWidth: 1,
+      width: 56,
+    },
+    timeHeaderCell: {
+      alignItems: "center",
+      borderRightColor: theme.colors.border,
+      borderRightWidth: 1,
+      flex: 1,
+      gap: 2,
+      minWidth: 0,
+      paddingVertical: 6,
+    },
+    timeHeaderCellLast: { borderRightWidth: 0 },
+    timeHeaderWeekday: {
+      ...baseText,
+      color: theme.colors.muted,
+      fontSize: 10,
+      fontWeight: "700",
+      textTransform: "uppercase",
+    },
+    timeHeaderDay: {
+      ...baseText,
+      color: theme.colors.ink,
+      fontSize: 16,
+      fontWeight: "600",
+    },
+    // A filled pill around today's number (Google's "today" circle).
+    timeHeaderTodayBadge: {
+      alignItems: "center",
+      backgroundColor: theme.colors.primary,
+      borderRadius: theme.radii.pill,
+      height: 26,
+      justifyContent: "center",
+      minWidth: 26,
+      paddingHorizontal: 5,
+    },
+    timeHeaderTodayDay: { color: theme.colors.surface },
     // Scrollable body holding the hour rows + day columns.
     timeGridBody: { flexGrow: 1 },
     // Inner content row: gutter on the left, the day columns on the right.
