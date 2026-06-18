@@ -397,6 +397,9 @@ Required behavior:
 - npm publishing must run in the same workflow invocation that creates the
   GitHub release so it does not depend on a separate `release` event emitted by
   `GITHUB_TOKEN`.
+- That workflow must remain at `.github/workflows/release-plz.yml` unless the
+  npm trusted-publisher configuration is updated at the same time; npm validates
+  the configured workflow filename during `npm publish`.
 - The same workflow must expose a manual retry path that checks out an existing
   release tag and runs the same verification and npm publish steps without
   creating a new GitHub release.

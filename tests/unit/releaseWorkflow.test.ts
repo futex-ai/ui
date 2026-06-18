@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 
 test("release workflow uses release-please for node releases", () => {
-  const workflow = readSource("../../.github/workflows/release.yml");
+  const workflow = readReleaseWorkflow();
 
   assert.match(workflow, /name: Release/);
   assert.match(workflow, /branches:\s+- main/);
@@ -24,7 +24,7 @@ test("release workflow uses release-please for node releases", () => {
 });
 
 test("release workflow publishes npm only after a release is created", () => {
-  const workflow = readSource("../../.github/workflows/release.yml");
+  const workflow = readReleaseWorkflow();
   const shouldPublish = "steps.publish-target.outputs.should_publish == 'true'";
 
   assert.match(workflow, /id: publish-target/);
@@ -63,7 +63,7 @@ test("release workflow publishes npm only after a release is created", () => {
 });
 
 test("release workflow can retry publishing an existing tag", () => {
-  const workflow = readSource("../../.github/workflows/release.yml");
+  const workflow = readReleaseWorkflow();
 
   assert.match(workflow, /workflow_dispatch:[\s\S]*publish_ref:/);
   assert.match(workflow, /required: true/);
@@ -80,16 +80,24 @@ test("release workflow can retry publishing an existing tag", () => {
   assert.match(workflow, /echo "tag=\$\{PUBLISH_REF\}"/);
 });
 
-test("release workflow no longer uses release-plz or Cargo version sync", () => {
-  const workflow = readSource("../../.github/workflows/release.yml");
+test("release workflow keeps the trusted npm publisher filename", () => {
+  assert.equal(existsSource("../../.github/workflows/release-plz.yml"), true);
+  assert.equal(existsSource("../../.github/workflows/release.yml"), false);
+});
 
-  assert.equal(existsSource("../../.github/workflows/release-plz.yml"), false);
+test("release workflow no longer uses release-plz action or Cargo version sync", () => {
+  const workflow = readReleaseWorkflow();
+
+  assert.doesNotMatch(workflow, /uses: release-plz\/action/);
   assert.equal(existsSource("../../release-plz.toml"), false);
-  assert.doesNotMatch(workflow, /release-plz/);
   assert.doesNotMatch(workflow, /firna-ui-release/);
   assert.doesNotMatch(workflow, /sync-package-version/);
   assert.doesNotMatch(workflow, /prepare-release-pr/);
 });
+
+function readReleaseWorkflow() {
+  return readSource("../../.github/workflows/release-plz.yml");
+}
 
 function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
