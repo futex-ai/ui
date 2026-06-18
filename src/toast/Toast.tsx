@@ -45,6 +45,8 @@ export function Toast({ toast, onDismiss }: ToastProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createToastStyles(theme), [theme]);
   const accent = toastToneAccent(theme, toast.tone);
+  const solid = toast.variant === "solid";
+  const solidBackground = toastSolidToneBackground(theme, toast.tone);
   const ToneIcon = TONE_ICONS[toast.tone];
   const [paused, setPaused] = useState(false);
 
@@ -90,28 +92,58 @@ export function Toast({ toast, onDismiss }: ToastProps) {
       {...(pauseHandlers as ViewProps)}
       accessibilityLiveRegion={toastLiveRegion(toast.tone)}
       role={toastRole(toast.tone)}
-      style={[styles.toast, { borderLeftColor: accent }]}
+      style={[
+        styles.toast,
+        solid
+          ? [styles.solidToast, { backgroundColor: solidBackground }]
+          : [styles.cardToast, { borderLeftColor: accent }],
+      ]}
     >
-      <View style={styles.iconWrap}>
-        <ToneIcon color={accent} size={18} />
-      </View>
-      <View style={styles.content}>
-        <Text style={styles.title}>{toast.title}</Text>
+      {solid ? null : (
+        <View style={styles.iconWrap}>
+          <ToneIcon color={accent} size={18} />
+        </View>
+      )}
+      <View style={[styles.content, solid ? styles.solidContent : null]}>
+        <Text style={[styles.title, solid ? styles.solidTitle : null]}>
+          {toast.title}
+        </Text>
         {toast.description ? (
-          <Text style={styles.description}>{toast.description}</Text>
+          <Text
+            style={[styles.description, solid ? styles.solidDescription : null]}
+          >
+            {toast.description}
+          </Text>
         ) : null}
         {toast.action ? (
-          <View style={styles.actions}>
-            <Button
-              onPress={() => {
-                toast.action?.onPress();
-                onDismiss(toast.id);
-              }}
-              size="sm"
-              tone="ghost"
-            >
-              {toast.action.label}
-            </Button>
+          <View style={[styles.actions, solid ? styles.solidActions : null]}>
+            {solid ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => {
+                  toast.action?.onPress();
+                  onDismiss(toast.id);
+                }}
+                style={({ hovered }: PressableHoverState) => [
+                  styles.solidActionButton,
+                  hovered ? styles.solidActionButtonHover : null,
+                  hideWebOutlineView,
+                ]}
+              >
+                <Text style={styles.solidActionText}>{toast.action.label}</Text>
+              </Pressable>
+            ) : (
+              <Button
+                onPress={() => {
+                  toast.action?.onPress();
+                  onDismiss(toast.id);
+                }}
+                size="sm"
+                tone="ghost"
+              >
+                {toast.action.label}
+              </Button>
+            )}
           </View>
         ) : null}
       </View>
@@ -122,11 +154,19 @@ export function Toast({ toast, onDismiss }: ToastProps) {
           onPress={() => onDismiss(toast.id)}
           style={({ hovered }: PressableHoverState) => [
             styles.closeButton,
-            hovered ? styles.closeButtonHover : null,
+            solid ? styles.solidCloseButton : null,
+            hovered
+              ? solid
+                ? styles.solidCloseButtonHover
+                : styles.closeButtonHover
+              : null,
             hideWebOutlineView,
           ]}
         >
-          <X color={theme.colors.muted} size={16} />
+          <X
+            color={solid ? theme.colors.surface : theme.colors.muted}
+            size={16}
+          />
         </Pressable>
       ) : null}
     </View>
@@ -143,6 +183,23 @@ const TONE_ICONS: Record<ToastTone, LucideIcon> = {
 
 /** Tone accent colour for the left strip and leading icon. */
 function toastToneAccent(theme: SharedUiTheme, tone: ToastTone): string {
+  switch (tone) {
+    case "error":
+      return theme.colors.rose;
+    case "success":
+      return theme.colors.primary;
+    case "warning":
+      return theme.colors.amber;
+    default:
+      return theme.colors.primaryDeep;
+  }
+}
+
+/** Filled background colour for the compact solid variant. */
+function toastSolidToneBackground(
+  theme: SharedUiTheme,
+  tone: ToastTone,
+): string {
   switch (tone) {
     case "error":
       return theme.colors.rose;

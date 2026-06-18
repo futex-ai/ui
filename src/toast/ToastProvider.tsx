@@ -1,10 +1,11 @@
 /** Provider that owns the toast queue and publishes the {@link useToast} API. */
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
 import { ToastContext } from "./ToastContext";
 import type { ToastApi } from "./ToastContext";
 import { ToastViewport } from "./ToastViewport";
+import { registerToastProviderApi } from "./toastController";
 import {
   createToastItem,
   DEFAULT_TOAST_DURATION,
@@ -63,6 +64,8 @@ export function ToastProvider({
     () => ({ dismiss, dismissAll, toast }),
     [dismiss, dismissAll, toast],
   );
+
+  useEffect(() => registerToastProviderApi(api), [api]);
 
   return (
     <ToastContext.Provider value={api}>

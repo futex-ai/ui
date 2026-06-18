@@ -10,6 +10,13 @@
 export type ToastTone = "error" | "info" | "success" | "warning";
 
 /**
+ * Visual presentation of a toast.
+ * - `card` (default) — surface card with a leading tone icon and accent strip.
+ * - `solid` — compact filled toast for short, bottom-centered feedback.
+ */
+export type ToastVariant = "card" | "solid";
+
+/**
  * Where the toast stack is pinned within the viewport. The first segment picks
  * the vertical edge and the second the horizontal alignment.
  */
@@ -37,6 +44,8 @@ export type ToastOptions = {
   description?: string;
   /** Visual + semantic tone. Defaults to `info`. */
   tone?: ToastTone;
+  /** Visual presentation. Defaults to `card`. */
+  variant?: ToastVariant;
   /**
    * Auto-dismiss delay in milliseconds. Omit to use the provider default; pass
    * `null` (or a value `<= 0`) for a sticky toast that stays until dismissed.
@@ -62,10 +71,13 @@ export type ToastItem = {
   duration: number | null;
   action?: ToastAction;
   dismissible: boolean;
+  variant: ToastVariant;
 };
 
 /** The default tone applied when a caller omits `tone`. */
 export const DEFAULT_TOAST_TONE: ToastTone = "info";
+/** The default visual presentation applied when a caller omits `variant`. */
+export const DEFAULT_TOAST_VARIANT: ToastVariant = "card";
 /** The default auto-dismiss delay, in milliseconds. */
 export const DEFAULT_TOAST_DURATION = 5000;
 /** The default cap on simultaneously visible toasts. */
@@ -111,6 +123,7 @@ export function createToastItem(
     id,
     title: options.title,
     tone: options.tone ?? DEFAULT_TOAST_TONE,
+    variant: options.variant ?? DEFAULT_TOAST_VARIANT,
   };
 }
 

@@ -13,6 +13,7 @@ import {
   DEFAULT_TOAST_MAX,
   DEFAULT_TOAST_PLACEMENT,
   DEFAULT_TOAST_TONE,
+  DEFAULT_TOAST_VARIANT,
   dequeueToast,
   enqueueToast,
   makeToastId,
@@ -24,6 +25,10 @@ import {
   toastViewportInset,
 } from "../../src/toast/toastModel";
 import type { ToastItem } from "../../src/toast/toastModel";
+import {
+  registerToastProviderApi,
+  toastController,
+} from "../../src/toast/toastController";
 
 const baseItem = (id: string): ToastItem => ({
   dismissible: true,
@@ -31,10 +36,12 @@ const baseItem = (id: string): ToastItem => ({
   id,
   title: id,
   tone: "info",
+  variant: "card",
 });
 
 test("toast defaults are stable so value drift is caught", () => {
   assert.equal(DEFAULT_TOAST_TONE, "info");
+  assert.equal(DEFAULT_TOAST_VARIANT, "card");
   assert.equal(DEFAULT_TOAST_DURATION, 5000);
   assert.equal(DEFAULT_TOAST_MAX, 4);
   assert.equal(DEFAULT_TOAST_PLACEMENT, "bottom-right");
@@ -45,6 +52,7 @@ test("toast defaults are stable so value drift is caught", () => {
     DEFAULT_TOAST_DURATION,
   );
   assert.equal(item.tone, DEFAULT_TOAST_TONE);
+  assert.equal(item.variant, DEFAULT_TOAST_VARIANT);
   assert.equal(item.duration, DEFAULT_TOAST_DURATION);
   assert.equal(item.dismissible, true);
 });
@@ -68,6 +76,7 @@ test("createToastItem fills defaults and forwards caller options", () => {
     id: "toast-0",
     title: "Saved",
     tone: "info",
+    variant: "card",
   });
 
   const action = { label: "Undo", onPress: () => undefined };
@@ -80,10 +89,12 @@ test("createToastItem fills defaults and forwards caller options", () => {
       duration: null,
       title: "Deleted",
       tone: "error",
+      variant: "solid",
     },
     5000,
   );
   assert.equal(full.tone, "error");
+  assert.equal(full.variant, "solid");
   assert.equal(full.dismissible, false);
   assert.equal(full.duration, null);
   assert.equal(full.action, action);
@@ -196,6 +207,30 @@ test("toast surface owns an auto-dismiss timer and announces itself", () => {
   assert.match(source, /role=\{toastRole/);
 });
 
+test("toast solid variant is prop-driven and owns filled styling", () => {
+  const item = createToastItem(
+    "toast-solid",
+    {
+      dismissible: false,
+      title: "Couldn't move this transaction. Try again.",
+      tone: "error",
+      variant: "solid",
+    },
+    5000,
+  );
+  const surface = readSource("../../src/toast/Toast.tsx");
+  const styles = readSource("../../src/toast/toastStyles.ts");
+
+  assert.equal(item.variant, "solid");
+  assert.equal(item.dismissible, false);
+  assert.match(surface, /toast\.variant === "solid"/);
+  assert.match(surface, /styles\.solidToast/);
+  assert.match(surface, /toastSolidToneBackground/);
+  assert.match(surface, /theme\.colors\.rose/);
+  assert.match(styles, /solidToast/);
+  assert.match(styles, /solidTitle/);
+});
+
 test("useToast throws outside a provider and the provider renders the viewport", () => {
   const context = readSource("../../src/toast/ToastContext.ts");
   const provider = readSource("../../src/toast/ToastProvider.tsx");
@@ -204,6 +239,34 @@ test("useToast throws outside a provider and the provider renders the viewport",
   assert.match(provider, /<ToastViewport/);
   assert.match(provider, /enqueueToast/);
   assert.match(provider, /dequeueToast/);
+  assert.match(provider, /registerToastProviderApi/);
+});
+
+test("toast controller delegates to the mounted provider API", () => {
+  const calls: string[] = [];
+  const unregister = registerToastProviderApi({
+    dismiss: (id) => calls.push(`dismiss:${id}`),
+    dismissAll: () => calls.push("dismissAll"),
+    toast: (options) => {
+      calls.push(`toast:${options.title}`);
+      return "toast-method";
+    },
+  });
+
+  assert.equal(toastController.toast({ title: "Method call" }), "toast-method");
+  toastController.dismiss("toast-method");
+  toastController.dismissAll();
+  unregister();
+
+  assert.deepEqual(calls, [
+    "toast:Method call",
+    "dismiss:toast-method",
+    "dismissAll",
+  ]);
+  assert.throws(
+    () => toastController.toast({ title: "Too early" }),
+    /after a <ToastProvider> has mounted/,
+  );
 });
 
 test("public toast entrypoint exports surface, provider, context, models, and layers", () => {
@@ -215,6 +278,7 @@ test("public toast entrypoint exports surface, provider, context, models, and la
   assert.match(source, /ToastViewport/);
   assert.match(source, /toastModel/);
   assert.match(source, /toastLayers/);
+  assert.match(source, /toastController/);
 });
 
 function readSource(relativePath: string) {

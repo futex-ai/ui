@@ -6,7 +6,7 @@ import type { SharedUiTheme } from "../theme";
  * Theme-driven styles for the toast surface. The viewport region's position,
  * inset, stack direction, and alignment are applied inline by the viewport
  * component (they depend on placement, not the theme); everything visual —
- * the card, the tone-tinted text, the action row, and the close control — lives
+ * the card, the solid fill, the action row, and the close control — lives
  * here so it tracks `SharedUiThemeProvider`.
  *
  * The tone accent (a left border strip and the leading icon colour) is applied
@@ -32,6 +32,12 @@ export function createToastStyles(theme: SharedUiTheme) {
     },
     closeButtonHover: { backgroundColor: theme.colors.soft },
     content: { flex: 1, gap: 2, minWidth: 0 },
+    cardToast: {
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.border,
+      borderLeftWidth: 3,
+      borderWidth: 1,
+    },
     description: {
       ...baseText,
       color: theme.colors.ink2,
@@ -39,6 +45,53 @@ export function createToastStyles(theme: SharedUiTheme) {
       lineHeight: 19,
     },
     iconWrap: { paddingTop: 1 },
+    solidActionButton: {
+      borderRadius: theme.radii.sm,
+      marginHorizontal: -6,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+    },
+    solidActionButtonHover: { backgroundColor: "rgba(255, 255, 255, 0.14)" },
+    solidActionText: {
+      ...baseText,
+      color: theme.colors.surface,
+      fontSize: 14,
+      fontWeight: "800",
+      lineHeight: 20,
+    },
+    solidActions: {
+      flexDirection: "row",
+      gap: 8,
+      marginTop: 0,
+    },
+    solidCloseButton: {
+      marginLeft: 2,
+      marginRight: -8,
+      marginTop: 0,
+    },
+    solidCloseButtonHover: { backgroundColor: "rgba(255, 255, 255, 0.14)" },
+    solidContent: { flex: 1, minWidth: 0 },
+    solidDescription: {
+      color: "rgba(255, 255, 255, 0.82)",
+      lineHeight: 20,
+      textAlign: "center",
+    },
+    solidTitle: {
+      color: theme.colors.surface,
+      fontSize: 14,
+      fontWeight: "800",
+      lineHeight: 20,
+      textAlign: "center",
+    },
+    solidToast: {
+      alignItems: "center",
+      borderRadius: theme.radii.xl,
+      boxShadow: "0 18px 44px rgba(20, 28, 22, 0.24)",
+      gap: 10,
+      maxWidth: 560,
+      paddingHorizontal: 22,
+      paddingVertical: 14,
+    },
     title: {
       ...baseText,
       color: theme.colors.ink,
@@ -46,14 +99,9 @@ export function createToastStyles(theme: SharedUiTheme) {
       fontWeight: "700",
       lineHeight: 20,
     },
-    // The resting card: surface fill, neutral hairline border, soft drop
-    // shadow, clipped corners. The left accent strip is layered in inline.
+    // Shared toast shell. Visual variants layer fill, border, and text styles.
     toast: {
-      backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.border,
-      borderLeftWidth: 3,
       borderRadius: theme.radii.lg,
-      borderWidth: 1,
       boxShadow: "0 12px 32px rgba(20, 28, 22, 0.18)",
       flexDirection: "row",
       gap: 12,

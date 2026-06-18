@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { StyleSheet, View } from "react-native";
 
-import { Button, ToastProvider, useToast } from "../index";
+import { Button, ToastProvider, toastController, useToast } from "../index";
 import type { ToastPlacement } from "../index";
 import { StorySurface } from "./sharedExamples";
 
@@ -139,6 +139,25 @@ function QueueControls() {
   );
 }
 
+function SolidMethodTrigger() {
+  return (
+    <Button
+      onPress={() =>
+        toastController.toast({
+          dismissible: false,
+          duration: null,
+          title: "Couldn't move this transaction. Try again.",
+          tone: "error",
+          variant: "solid",
+        })
+      }
+      tone="danger"
+    >
+      Show solid error
+    </Button>
+  );
+}
+
 const playground = (placement: ToastPlacement, children: React.ReactNode) => (
   <StorySurface>
     <ToastProvider placement={placement}>{children}</ToastProvider>
@@ -168,4 +187,9 @@ export const AutoDismiss: Story = {
 export const QueueAndDismissAll: Story = {
   name: "Non-dismissible and dismiss all",
   render: () => playground("bottom-right", <QueueControls />),
+};
+
+export const SolidBottomCenter: Story = {
+  name: "Solid bottom-center",
+  render: () => playground("bottom-center", <SolidMethodTrigger />),
 };
