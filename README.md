@@ -107,10 +107,13 @@ The package export map intentionally separates runtime targets:
   `package-lock.json` through release-please's `node` release type.
 - Merging the release PR lets release-please create the `vX.Y.Z` tag and GitHub
   release. Ordinary non-release pushes to `main` only update the release PR.
-- npm publishing runs in the same `.github/workflows/release.yml` invocation
+- npm publishing runs in the same `.github/workflows/release-plz.yml` invocation
   that creates the GitHub release, using npm trusted publishing. The npm package
-  must configure this repository and `.github/workflows/release.yml` as the
+  must configure this repository and `release-plz.yml` as the
   trusted publisher, with allowed action `npm publish`.
+- The workflow file keeps the historical `release-plz.yml` filename because npm
+  trusted publishing validates the workflow filename configured on npmjs.com.
+  The workflow implementation itself uses release-please.
 - The workflow falls back to `GITHUB_TOKEN` for release-please, but a
   repository secret named `RELEASE_PLEASE_TOKEN` can be added if release PRs
   need to trigger normal PR checks.

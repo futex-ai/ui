@@ -8,13 +8,16 @@ Completed.
 
 - 2026-06-18 migration: the release flow now uses release-please with
   `release-type: node`, superseding the release-plz compatibility adapter below.
-  The current workflow lives at `.github/workflows/release.yml`; release-please
-  updates `CHANGELOG.md`, `package.json`, and `package-lock.json`, creates the
-  `vX.Y.Z` tag and GitHub release, and publishes npm from the same workflow when
-  `release_created` is true. The same workflow also supports a manual
-  `publish_ref` retry for an existing `vX.Y.Z` tag if publishing fails after the
-  GitHub release is created. The release-plz milestones in this completed plan
-  are historical notes from the earlier implementation.
+  The current workflow keeps the historical
+  `.github/workflows/release-plz.yml` filename because npm trusted publishing
+  validates the configured workflow filename during `npm publish`.
+  release-please updates `CHANGELOG.md`, `package.json`, and
+  `package-lock.json`, creates the `vX.Y.Z` tag and GitHub release, and
+  publishes npm from the same workflow when `release_created` is true. The same
+  workflow also supports a manual `publish_ref` retry for an existing `vX.Y.Z`
+  tag if publishing fails after the GitHub release is created. The release-plz
+  milestones in this completed plan are historical notes from the earlier
+  implementation.
 - 2026-06-15 historical correction: before the release-please migration, the
   release-plz flow used `release_always = true` so squash-merged release PRs
   could create the `vX.Y.Z` tag and GitHub release. The older
@@ -31,7 +34,8 @@ https://github.com/futex-ai/ui` validated the earlier local release-plz
   `package.json`, and `dist/**`.
 - Before the release-please migration, post-review release automation published
   npm from the same `.github/workflows/release-plz.yml` run that created the
-  GitHub release. That design is now superseded by `.github/workflows/release.yml`.
+  GitHub release. The workflow still uses that filename, but the implementation
+  is now release-please based.
 
 ## Goal
 
