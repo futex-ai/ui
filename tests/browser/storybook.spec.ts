@@ -42,7 +42,41 @@ test("dropdown action menu opens from child trigger and closes after selection",
   ).toBeVisible();
 
   await settings.click();
+  await expect(page.getByText("Last action: Settings")).toBeVisible();
   await expect(settings).toBeHidden();
+});
+
+test("dropdown action menu preselects first row and tracks hover selection", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--dropdown-action-menu");
+
+  await page.getByRole("button", { name: "Open action menu" }).click();
+
+  const settings = page.getByRole("button", {
+    exact: true,
+    name: "Settings",
+  });
+  const remove = page.getByRole("button", { exact: true, name: "Remove" });
+  await expect(settings).toBeVisible();
+  await expect(remove).toBeVisible();
+
+  const activeBackground = await backgroundColor(settings);
+  expect(activeBackground).not.toBe("rgba(0, 0, 0, 0)");
+  expect(await backgroundColor(remove)).not.toBe(activeBackground);
+
+  await remove.hover();
+  await expect.poll(() => backgroundColor(remove)).toBe(activeBackground);
+  await expect.poll(() => backgroundColor(settings)).not.toBe(activeBackground);
+
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("Last action: Remove")).toBeVisible();
+  await expect(remove).toBeHidden();
+
+  await page.getByRole("button", { name: "Open action menu" }).click();
+  await expect(settings).toBeVisible();
+  await expect.poll(() => backgroundColor(settings)).toBe(activeBackground);
+  await expect.poll(() => backgroundColor(remove)).not.toBe(activeBackground);
 });
 
 test("dropdown hover menu opens on pointer hover and closes on hover out", async ({
@@ -205,6 +239,12 @@ async function bottomOverflowPast(
       clip.getBoundingClientRect().bottom
     );
   });
+}
+
+async function backgroundColor(locator: ReturnType<Page["getByRole"]>) {
+  return locator.evaluate(
+    (element) => getComputedStyle(element).backgroundColor,
+  );
 }
 
 test("searchable dropdown selector filters options and selects by keyboard", async ({
@@ -1721,4 +1761,22 @@ test("calendar month view creates events by click and by drag across days", asyn
   await expect(
     page.getByRole("button", { name: /New event/ }).first(),
   ).toBeVisible();
+});
+
+test("heatmap labels the months across a full-year range", async ({ page }) => {
+  await page.goto("/iframe.html?id=heatmap-examples--heatmap-year");
+
+  // A year range labels every month at the column where it begins.
+  await expect(page.getByText("Jan", { exact: true })).toBeVisible();
+  await expect(page.getByText("Jul", { exact: true })).toBeVisible();
+  await expect(page.getByText("Dec", { exact: true })).toBeVisible();
+});
+
+test("heatmap reports the pressed cell to its handler", async ({ page }) => {
+  await page.goto("/iframe.html?id=heatmap-examples--heatmap-interactive");
+
+  await expect(page.getByText("None selected")).toBeVisible();
+  // Each in-range cell is a button named by its accessible date + value label.
+  await page.getByRole("button", { name: "15 Jan 2024: 8" }).click();
+  await expect(page.getByText("Selected: 2024-01-15 (8)")).toBeVisible();
 });

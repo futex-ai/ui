@@ -70,6 +70,11 @@
       "react-native": "./dist/dropdown/index.js",
       "import": "./dist/node/dropdown/index.js"
     },
+    "./heatmap": {
+      "types": "./dist/node/heatmap/index.d.ts",
+      "react-native": "./dist/heatmap/index.js",
+      "import": "./dist/node/heatmap/index.js"
+    },
     "./input": {
       "types": "./dist/node/input/index.d.ts",
       "react-native": "./dist/input/index.js",

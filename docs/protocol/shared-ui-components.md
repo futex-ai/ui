@@ -191,13 +191,43 @@ Required behavior:
   multi-day and all-day events as spanning bars with lane overflow (`+N more`)
   in the month grid.
 - Support web drag-to-create: dragging (or clicking) an empty region of the time
-  grid yields a snapped start/end draft surfaced through a create callback, with
-  a native-safe no-op fallback for Expo platform resolution.
+  grid yields a snapped start/end draft surfaced through a create callback, and
+  dragging across month-grid day cells yields a multi-day all-day draft, each
+  with a native-safe no-op fallback for Expo platform resolution.
 - Keep view-switch segments, navigation, day cells, event blocks, and event
   chips labelled for assistive technology, and inject "today"/"now" rather than
   reading a clock inside the pure helpers.
 - Keep the pure datetime, recurrence, and layout helpers exported and covered by
   unit tests.
+
+## Heatmap Contract
+
+The heatmap family covers the calendar contribution grid: a date range laid out
+as columns of weeks with per-day intensity coloring, month labels along the top,
+and an optional weekday gutter and intensity legend.
+
+Required behavior:
+
+- Take an inclusive ISO `YYYY-MM-DD` start/end range plus a sparse list of
+  per-date values, and lay it out as column-major weeks (one column per week,
+  one row per weekday) padded so the grid stays rectangular.
+- Resolve the layout from pure, timezone-safe, unit-tested helpers that never
+  read the current date, returning an empty grid for an invalid or reversed
+  range.
+- Place a short month label above the column where each month's in-range days
+  begin, detecting the transition from in-range days so a leading partial week
+  is not mislabeled with the previous month.
+- Map each day's value to an ordered intensity ramp through ascending
+  lower-bound thresholds, deriving even bands from the data's max value by
+  default and honoring explicit thresholds for an absolute scale, with a
+  distinct empty color for days with no value.
+- Drive the cell size, gap, and corner radius, the color ramp and empty color,
+  the week start, and the month / weekday / legend chrome from props with
+  sensible defaults.
+- Use shared theme tokens for the default ramp, the empty cell, and the label
+  colors instead of consumer-local theme imports.
+- Label each in-range cell for assistive technology, hide padding cells from it,
+  and make cells focusable, pressable buttons when a press handler is supplied.
 
 ## Dropdown Contract
 
@@ -418,9 +448,9 @@ Required behavior:
   alternate primary color theme.
 - Storybook navigation must keep each example family in its own top-level
   folder, currently `Avatar/Examples`, `Button/Examples`, `Calendar/Examples`,
-  `Date/Examples`, `Dropdown/Examples`, `Input/Examples`, `Modal/Examples`,
-  `Popover/Examples`, `Radio/Examples`, `Segmented/Examples`, `Switch/Examples`,
-  `Theme/Examples`, and `Toast/Examples`.
+  `Date/Examples`, `Dropdown/Examples`, `Heatmap/Examples`, `Input/Examples`,
+  `Modal/Examples`, `Popover/Examples`, `Radio/Examples`, `Segmented/Examples`,
+  `Switch/Examples`, `Theme/Examples`, and `Toast/Examples`.
 
 ## Non-Goals
 
