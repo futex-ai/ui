@@ -1,5 +1,6 @@
 /** Pure types and helpers for the toast notification system. */
-import type { StyleProp, TextStyle } from "react-native";
+import type { ReactNode } from "react";
+import type { StyleProp, TextStyle, ViewStyle } from "react-native";
 
 /**
  * Visual + semantic tone of a toast:
@@ -14,9 +15,25 @@ export type ToastTone = "error" | "info" | "success" | "warning";
  * Visual presentation of a toast.
  * - `card` (default) — surface card with a leading tone icon and accent strip.
  * - `solid` — compact filled toast for short, bottom-centered feedback.
- * - `loading` — dark compact status toast with a spinner.
  */
-export type ToastVariant = "card" | "loading" | "solid";
+export type ToastVariant = "card" | "solid";
+
+/** Context passed to a custom toast icon render function. */
+export type ToastIconRenderContext = {
+  /** Default icon colour for the resolved variant and tone. */
+  color: string;
+  /** Default icon size in px. */
+  size: number;
+  /** Resolved toast tone. */
+  tone: ToastTone;
+  /** Resolved toast variant. */
+  variant: ToastVariant;
+};
+
+/** Custom leading visual for a toast. */
+export type ToastIcon =
+  | ReactNode
+  | ((context: ToastIconRenderContext) => ReactNode);
 
 /**
  * Where the toast stack is pinned within the viewport. The first segment picks
@@ -53,6 +70,17 @@ export type ToastOptions = {
   /** Visual presentation. Defaults to `card`. */
   variant?: ToastVariant;
   /**
+   * Optional leading visual. Omit to keep the default card tone icon and solid
+   * no-icon layout; pass `null` to hide the card default.
+   */
+  icon?: ToastIcon | null;
+  /** Optional style override for the leading icon wrapper. */
+  iconStyle?: StyleProp<ViewStyle>;
+  /** Optional foreground colour for filled toast text, icons, and controls. */
+  foregroundColor?: string;
+  /** Optional style override for the toast surface. */
+  surfaceStyle?: StyleProp<ViewStyle>;
+  /**
    * Auto-dismiss delay in milliseconds. Omit to use the provider default; pass
    * `null` (or a value `<= 0`) for a sticky toast that stays until dismissed.
    */
@@ -79,6 +107,10 @@ export type ToastItem = {
   duration: number | null;
   action?: ToastAction;
   dismissible: boolean;
+  foregroundColor?: string;
+  icon?: ToastIcon | null;
+  iconStyle?: StyleProp<ViewStyle>;
+  surfaceStyle?: StyleProp<ViewStyle>;
   variant: ToastVariant;
 };
 
@@ -129,7 +161,11 @@ export function createToastItem(
     descriptionStyle: options.descriptionStyle,
     dismissible: options.dismissible ?? true,
     duration: resolveToastDuration(options.duration, fallbackDuration),
+    foregroundColor: options.foregroundColor,
+    icon: options.icon,
+    iconStyle: options.iconStyle,
     id,
+    surfaceStyle: options.surfaceStyle,
     title: options.title,
     titleStyle: options.titleStyle,
     tone: options.tone ?? DEFAULT_TOAST_TONE,

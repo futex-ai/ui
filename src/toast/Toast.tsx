@@ -22,7 +22,12 @@ import {
 } from "./toastColors";
 import { createToastStyles } from "./toastStyles";
 import { toastLiveRegion, toastRole } from "./toastModel";
-import type { ToastItem, ToastTone } from "./toastModel";
+import type {
+  ToastIcon,
+  ToastIconRenderContext,
+  ToastItem,
+  ToastTone,
+} from "./toastModel";
 
 export type ToastProps = {
   /** The resolved toast to render. */
@@ -50,13 +55,25 @@ export function Toast({ toast, onDismiss }: ToastProps) {
   const styles = useMemo(() => createToastStyles(theme), [theme]);
   const accent = toastToneAccent(theme, toast.tone);
   const solid = toast.variant === "solid";
-  const loading = toast.variant === "loading";
-  const filled = solid || loading;
-  const filledBackground = loading
-    ? theme.colors.ink
-    : toastSolidToneBackground(theme, toast.tone);
-  const filledForeground = toastSolidToneForeground(theme, filledBackground);
+  const filled = solid;
+  const filledBackground = toastSolidToneBackground(theme, toast.tone);
+  const filledForeground =
+    toast.foregroundColor ?? toastSolidToneForeground(theme, filledBackground);
   const ToneIcon = TONE_ICONS[toast.tone];
+  const iconContext: ToastIconRenderContext = {
+    color: filled ? filledForeground : accent,
+    size: 18,
+    tone: toast.tone,
+    variant: toast.variant,
+  };
+  const icon =
+    toast.icon === undefined ? (
+      solid ? null : (
+        <ToneIcon color={accent} size={iconContext.size} />
+      )
+    ) : (
+      renderToastIcon(toast.icon, iconContext)
+    );
   const [paused, setPaused] = useState(false);
   const [filledActionFocused, setFilledActionFocused] = useState(false);
   const [closeFocused, setCloseFocused] = useState(false);
@@ -114,43 +131,27 @@ export function Toast({ toast, onDismiss }: ToastProps) {
       style={[
         styles.toast,
         filled
-          ? [
-              solid ? styles.solidToast : styles.loadingToast,
-              { backgroundColor: filledBackground },
-            ]
+          ? [styles.solidToast, { backgroundColor: filledBackground }]
           : [styles.cardToast, { borderLeftColor: accent }],
+        toast.surfaceStyle,
       ]}
     >
-      {loading ? (
-        <View style={styles.loadingIconWrap}>
-          <View
-            style={[
-              styles.loadingSpinner,
-              {
-                borderColor: filledForeground,
-                borderRightColor: "rgba(255, 255, 255, 0.34)",
-              },
-            ]}
-          />
+      {shouldRenderToastIcon(icon) ? (
+        <View
+          style={[
+            styles.iconWrap,
+            solid ? styles.solidIconWrap : null,
+            toast.iconStyle,
+          ]}
+        >
+          {icon}
         </View>
       ) : null}
-      {filled ? null : (
-        <View style={styles.iconWrap}>
-          <ToneIcon color={accent} size={18} />
-        </View>
-      )}
-      <View
-        style={
-          loading
-            ? styles.loadingContent
-            : [styles.content, solid ? styles.solidContent : null]
-        }
-      >
+      <View style={solid ? styles.solidContent : styles.content}>
         <Text
           style={[
             styles.title,
             solid ? [styles.solidTitle, { color: filledForeground }] : null,
-            loading ? [styles.loadingTitle, { color: filledForeground }] : null,
             toast.titleStyle,
           ]}
         >
@@ -162,9 +163,6 @@ export function Toast({ toast, onDismiss }: ToastProps) {
               styles.description,
               solid
                 ? [styles.solidDescription, { color: filledForeground }]
-                : null,
-              loading
-                ? [styles.loadingDescription, { color: filledForeground }]
                 : null,
               toast.descriptionStyle,
             ]}
@@ -244,3 +242,14 @@ const TONE_ICONS: Record<ToastTone, LucideIcon> = {
   success: CircleCheck,
   warning: TriangleAlert,
 };
+
+function renderToastIcon(
+  icon: ToastIcon | null,
+  context: ToastIconRenderContext,
+) {
+  return typeof icon === "function" ? icon(context) : icon;
+}
+
+function shouldRenderToastIcon(icon: ReturnType<typeof renderToastIcon>) {
+  return icon !== null && icon !== undefined && icon !== false;
+}

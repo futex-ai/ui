@@ -2,8 +2,14 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 
-import { Button, ToastProvider, toastController, useToast } from "../index";
-import type { ToastPlacement } from "../index";
+import {
+  Button,
+  ToastProvider,
+  toastController,
+  useSharedUiTheme,
+  useToast,
+} from "../index";
+import type { ToastIconRenderContext, ToastPlacement } from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -15,6 +21,17 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const styles = StyleSheet.create({
+  progressIcon: {
+    borderRadius: 999,
+    borderWidth: 3,
+    height: 28,
+    opacity: 0.92,
+    width: 28,
+  },
+  progressIconWrap: {
+    height: 30,
+    width: 30,
+  },
   row: { flexDirection: "row", flexWrap: "wrap", gap: 12, minWidth: 320 },
 });
 
@@ -204,36 +221,67 @@ function SolidVariantTriggers() {
   );
 }
 
-function LoadingVariantTrigger() {
+function SavingStatusTrigger() {
+  const theme = useSharedUiTheme();
   return (
     <Button
       onPress={() =>
         toastController.toast({
           dismissible: false,
           duration: null,
+          foregroundColor: theme.colors.surface,
+          icon: SavingProgressIcon,
+          iconStyle: styles.progressIconWrap,
+          surfaceStyle: {
+            backgroundColor: theme.colors.ink,
+            gap: 16,
+            maxWidth: 640,
+            minHeight: 64,
+            paddingHorizontal: 28,
+            paddingVertical: 17,
+          },
           title: "Saving payslips to your device • 3 of 5",
-          variant: "loading",
+          titleStyle: {
+            fontSize: 15,
+            fontWeight: "800",
+            lineHeight: 22,
+            textAlign: "left",
+          },
+          variant: "solid",
         })
       }
       tone="primary"
     >
-      Show loading
+      Show saving status
     </Button>
   );
 }
 
 function ControllerOnMountTrigger() {
   useEffect(() => {
-    const id = toastController.toast({
+    toastController.toast({
       dismissible: false,
       duration: null,
       title: "Mounted through controller",
-      variant: "loading",
+      variant: "solid",
     });
-    return () => toastController.dismiss(id);
   }, []);
 
   return null;
+}
+
+function SavingProgressIcon({ color }: ToastIconRenderContext) {
+  return (
+    <View
+      style={[
+        styles.progressIcon,
+        {
+          borderColor: color,
+          borderRightColor: "rgba(255, 255, 255, 0.34)",
+        },
+      ]}
+    />
+  );
 }
 
 const playground = (placement: ToastPlacement, children: React.ReactNode) => (
@@ -272,9 +320,9 @@ export const SolidBottomCenter: Story = {
   render: () => playground("bottom-center", <SolidVariantTriggers />),
 };
 
-export const LoadingBottomCenter: Story = {
-  name: "Loading bottom-center",
-  render: () => playground("bottom-center", <LoadingVariantTrigger />),
+export const IconBottomCenter: Story = {
+  name: "Icon bottom-center",
+  render: () => playground("bottom-center", <SavingStatusTrigger />),
 };
 
 export const ControllerOnMount: Story = {

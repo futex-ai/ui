@@ -1642,12 +1642,12 @@ test("solid toast variant can be triggered through the controller", async ({
   await expect(closeToast).toBeHidden();
 });
 
-test("loading toast variant matches the compact dark progress surface", async ({
+test("solid toast accepts a custom icon for compact progress feedback", async ({
   page,
 }) => {
-  await page.goto("/iframe.html?id=toast-examples--loading-bottom-center");
+  await page.goto("/iframe.html?id=toast-examples--icon-bottom-center");
 
-  await page.getByRole("button", { name: "Show loading" }).click();
+  await page.getByRole("button", { name: "Show saving status" }).click();
   const toast = page
     .getByRole("status")
     .filter({ hasText: "Saving payslips to your device • 3 of 5" });

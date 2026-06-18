@@ -45,7 +45,7 @@ The package name is `@firna/ui`. Public exports are available from:
   tokens, the Juno token preset, and `createSharedUiTheme`.
 - `@firna/ui/toast` for the toast provider, the `useToast` hook, the
   `toastController` method API, and transient notification toasts including
-  card, solid, and loading variants.
+  card and solid variants with optional custom leading icons.
 
 ## Installation
 

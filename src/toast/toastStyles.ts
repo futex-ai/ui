@@ -6,8 +6,8 @@ import type { SharedUiTheme } from "../theme";
  * Theme-driven styles for the toast surface. The viewport region's position,
  * inset, stack direction, and alignment are applied inline by the viewport
  * component (they depend on placement, not the theme); everything visual —
- * the card, the solid fill, the action row, and the close control — lives
- * here so it tracks `SharedUiThemeProvider`.
+ * the card, the solid fill, custom leading icons, the action row, and the
+ * close control — lives here so it tracks `SharedUiThemeProvider`.
  *
  * The tone accent (a left border strip and the leading icon colour) is applied
  * inline by {@link Toast} because it depends on the tone, mirroring how
@@ -45,45 +45,6 @@ export function createToastStyles(theme: SharedUiTheme) {
       lineHeight: 19,
     },
     iconWrap: { paddingTop: 1 },
-    loadingContent: {
-      gap: 2,
-      flexGrow: 0,
-      flexShrink: 1,
-      minWidth: 0,
-    },
-    loadingDescription: {
-      lineHeight: 20,
-      textAlign: "left",
-    },
-    loadingIconWrap: {
-      alignItems: "center",
-      height: 30,
-      justifyContent: "center",
-      width: 30,
-    },
-    loadingSpinner: {
-      borderRadius: 999,
-      borderWidth: 3,
-      height: 28,
-      opacity: 0.92,
-      width: 28,
-    },
-    loadingTitle: {
-      fontSize: 15,
-      fontWeight: "800",
-      lineHeight: 22,
-      textAlign: "left",
-    },
-    loadingToast: {
-      alignItems: "center",
-      borderRadius: theme.radii.xl,
-      boxShadow: "0 18px 44px rgba(20, 28, 22, 0.24)",
-      gap: 16,
-      maxWidth: 640,
-      minHeight: 64,
-      paddingHorizontal: 28,
-      paddingVertical: 17,
-    },
     solidActionButton: {
       borderRadius: theme.radii.sm,
       marginHorizontal: -6,
@@ -108,10 +69,19 @@ export function createToastStyles(theme: SharedUiTheme) {
       marginTop: 0,
     },
     solidCloseButtonHover: { backgroundColor: "rgba(255, 255, 255, 0.14)" },
-    solidContent: { flex: 1, minWidth: 0 },
+    solidContent: {
+      flexGrow: 0,
+      flexShrink: 1,
+      gap: 2,
+      minWidth: 0,
+    },
     solidDescription: {
       lineHeight: 20,
       textAlign: "center",
+    },
+    solidIconWrap: {
+      alignItems: "center",
+      justifyContent: "center",
     },
     solidTitle: {
       fontSize: 14,

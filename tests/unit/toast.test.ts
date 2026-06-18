@@ -74,7 +74,11 @@ test("createToastItem fills defaults and forwards caller options", () => {
     descriptionStyle: undefined,
     dismissible: true,
     duration: 5000,
+    foregroundColor: undefined,
+    icon: undefined,
+    iconStyle: undefined,
     id: "toast-0",
+    surfaceStyle: undefined,
     title: "Saved",
     titleStyle: undefined,
     tone: "info",
@@ -83,6 +87,9 @@ test("createToastItem fills defaults and forwards caller options", () => {
 
   const action = { label: "Undo", onPress: () => undefined };
   const descriptionStyle = { fontSize: 12 };
+  const icon = () => "icon";
+  const iconStyle = { height: 30 };
+  const surfaceStyle = { backgroundColor: "#1c1f1d" };
   const titleStyle = { fontWeight: "900" as const };
   const full = createToastItem(
     "toast-1",
@@ -92,6 +99,10 @@ test("createToastItem fills defaults and forwards caller options", () => {
       descriptionStyle,
       dismissible: false,
       duration: null,
+      foregroundColor: "#ffffff",
+      icon,
+      iconStyle,
+      surfaceStyle,
       title: "Deleted",
       titleStyle,
       tone: "error",
@@ -106,6 +117,10 @@ test("createToastItem fills defaults and forwards caller options", () => {
   assert.equal(full.action, action);
   assert.equal(full.description, "Removed invoice");
   assert.equal(full.descriptionStyle, descriptionStyle);
+  assert.equal(full.foregroundColor, "#ffffff");
+  assert.equal(full.icon, icon);
+  assert.equal(full.iconStyle, iconStyle);
+  assert.equal(full.surfaceStyle, surfaceStyle);
   assert.equal(full.titleStyle, titleStyle);
 });
 
@@ -243,29 +258,39 @@ test("toast solid variant is prop-driven and owns filled styling", () => {
   assert.match(styles, /solidTitle/);
 });
 
-test("toast loading variant is prop-driven and owns spinner styling", () => {
+test("toast custom icons are prop-driven instead of a loading variant", () => {
+  const icon = () => "Saving icon";
   const item = createToastItem(
-    "toast-loading",
+    "toast-icon",
     {
       dismissible: false,
       duration: null,
+      foregroundColor: "#ffffff",
+      icon,
+      iconStyle: { height: 30, width: 30 },
+      surfaceStyle: { backgroundColor: "#1c1f1d" },
       title: "Saving payslips to your device • 3 of 5",
-      variant: "loading",
+      variant: "solid",
     },
     5000,
   );
+  const model = readSource("../../src/toast/toastModel.ts");
   const surface = readSource("../../src/toast/Toast.tsx");
   const styles = readSource("../../src/toast/toastStyles.ts");
 
-  assert.equal(item.variant, "loading");
+  assert.equal(item.variant, "solid");
   assert.equal(item.dismissible, false);
   assert.equal(item.duration, null);
-  assert.match(surface, /toast\.variant === "loading"/);
-  assert.match(surface, /styles\.loadingSpinner/);
-  assert.match(surface, /styles\.loadingToast/);
-  assert.match(styles, /loadingIconWrap/);
-  assert.match(styles, /loadingSpinner/);
-  assert.match(styles, /loadingTitle/);
+  assert.equal(item.foregroundColor, "#ffffff");
+  assert.equal(item.icon, icon);
+  assert.match(model, /export type ToastVariant = "card" \| "solid"/);
+  assert.match(model, /export type ToastIcon/);
+  assert.match(surface, /renderToastIcon\(toast\.icon, iconContext\)/);
+  assert.match(surface, /toast\.foregroundColor/);
+  assert.match(surface, /toast\.surfaceStyle/);
+  assert.match(surface, /toast\.iconStyle/);
+  assert.doesNotMatch(surface, /variant === "loading"/);
+  assert.doesNotMatch(styles, /loadingSpinner|loadingToast|loadingTitle/);
 });
 
 test("toast text styles are caller-overridable", () => {

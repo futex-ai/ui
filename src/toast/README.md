@@ -19,8 +19,10 @@ screen.
 - Carry tone (`info` / `success` / `warning` / `error`) as colour, leading
   icon, and screen-reader semantics: errors announce assertively as an `alert`,
   everything else politely as a `status`.
-- Offer `solid` and `loading` visual variants for compact filled feedback,
-  while keeping the default `card` variant unchanged.
+- Offer a `solid` visual variant for compact filled feedback while keeping the
+  default `card` variant unchanged.
+- Let callers replace, add, or hide the leading icon so progress and branded
+  feedback can reuse the same toast surface.
 - Offer an optional action button (e.g. "Undo") and a close control.
 - On web, float above every other overlay — modals, nested dropdowns, and the
   consent banner — so a confirmation or error stays visible. On native the
@@ -90,22 +92,28 @@ toastController.toast({
 });
 ```
 
-- Pass `variant: "loading"` for a compact dark in-progress toast with a spinner.
-  To match the payslip-saving status toast, mount the provider with
+- Pass `icon` to add a custom leading visual. The icon can be a React node or a
+  render function that receives the resolved foreground colour, size, tone, and
+  variant. To match the payslip-saving status toast, mount the provider with
   `placement="bottom-center"` and call:
 
 ```tsx
 toastController.toast({
   dismissible: false,
   duration: null,
+  foregroundColor: "#fff",
+  icon: ({ color }) => <ActivityIndicator color={color} />,
+  surfaceStyle: { backgroundColor: "#1c1f1d", gap: 16 },
   title: "Saving payslips to your device • 3 of 5",
-  variant: "loading",
+  variant: "solid",
 });
 ```
 
 - Pass `titleStyle` and `descriptionStyle` to override the text styles for one
   toast. These style props layer after the built-in variant title and
   description styles.
+- Pass `surfaceStyle` to override the toast surface and `foregroundColor` to
+  override filled-toast text, icon, action, and close-control colour.
 - Pass `action={{ label: "Undo", onPress }}` to add an action; pressing it runs
   `onPress` and dismisses the toast.
 - `dismiss(id)` removes one toast (the id is returned from `toast()`),
@@ -122,8 +130,7 @@ toastController.toast({
 Toasts read colours, fonts, and radii from `SharedUiThemeProvider`. Tone accents
 map to theme tokens: `success` → `primary`, `warning` → `amber`, `error` →
 `rose`, and `info` → `primaryDeep`. The `solid` variant uses the same tone map
-as its filled background; the `loading` variant uses the theme `ink` colour for
-its filled background.
+as its filled background unless callers override the surface style.
 
 ## Development
 

@@ -343,9 +343,10 @@ Required behavior:
 - Support a compact `solid` variant that uses the tone color as the filled
   background, hides the default card icon/accent strip, and can match the
   bottom-center transaction-error style through props.
-- Support a compact `loading` variant that uses a dark filled background,
-  renders a left spinner, and can match bottom-center in-progress status toasts
-  through props.
+- Support caller-provided leading icons for toast surfaces so in-progress,
+  branded, or feature-specific visuals do not require new visual variants.
+- Allow per-toast surface and filled-foreground overrides so compact solid
+  toasts can match dark in-progress status surfaces through props.
 - Allow per-toast title and description text style overrides that layer after
   the built-in variant text styles.
 - Support an optional action button that runs its handler and then dismisses the
