@@ -2,10 +2,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View } from "react-native";
 
-import {
-  DragSelectableContext,
-  emptyDragSelectableState,
-} from "./DragSelectableContext";
+import { announce } from "../announcer";
+import { DragSelectableContext } from "./DragSelectableContext";
 import {
   dragSelectableBoundsForBox,
   dragSelectableBox,
@@ -53,12 +51,21 @@ const emptySelection: DragSelectableSelection = {
   selectedTargets: [],
 };
 
+function defaultSelectionAnnouncement(count: number): string {
+  return count === 0
+    ? "Selection cleared"
+    : `${count} item${count === 1 ? "" : "s"} selected`;
+}
+
 export function DragSelectableProvider({
+  accessibilityLabel,
   children,
   disabled = false,
   minimumDragDistance,
   onSelectionChange,
   overlayZIndex,
+  role = "group",
+  selectionAnnouncement,
   selectionLabel,
   style,
 }: DragSelectableProviderProps) {
@@ -66,11 +73,17 @@ export function DragSelectableProvider({
   const targetsRef = useRef(
     new Map<string, DragSelectableTargetRegistration>(),
   );
+  const [registeredTargets, setRegisteredTargets] = useState<
+    ReadonlyMap<string, DragSelectableTargetRegistration>
+  >(targetsRef.current);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const listenersRef = useRef(new Set<DragSelectableChangeListener>());
   const dragSessionRef = useRef<DragSession | null>(null);
   const removeDragListenersRef = useRef<(() => void) | null>(null);
   const onSelectionChangeRef = useRef(onSelectionChange);
   onSelectionChangeRef.current = onSelectionChange;
+  const selectionAnnouncementRef = useRef(selectionAnnouncement);
+  selectionAnnouncementRef.current = selectionAnnouncement;
   const disabledRef = useRef(disabled);
   disabledRef.current = disabled;
   const [selection, setSelection] =
@@ -82,30 +95,51 @@ export function DragSelectableProvider({
     null,
   );
 
+  // Publish a fresh snapshot so consumers re-derive roving tabIndex / a11y
+  // props when the set of registered targets (or their disabled flags) changes.
+  const publishTargets = useCallback(() => {
+    setRegisteredTargets(new Map(targetsRef.current));
+  }, []);
+
   const registerTarget = useCallback(
     (target: DragSelectableTargetRegistration) => {
       targetsRef.current.set(target.id, target);
+      publishTargets();
       return () => {
         if (targetsRef.current.get(target.id)?.node !== target.node) {
           return;
         }
         targetsRef.current.delete(target.id);
+        publishTargets();
       };
     },
-    [],
+    [publishTargets],
   );
 
-  const updateTarget = useCallback((target: DragSelectableTargetOptions) => {
-    const current = targetsRef.current.get(target.id);
-    if (!current) {
-      return;
-    }
-    const next = { ...current, ...target };
-    if (current.data === next.data && current.disabled === next.disabled) {
-      return;
-    }
-    targetsRef.current.set(target.id, next);
-  }, []);
+  const updateTarget = useCallback(
+    (target: DragSelectableTargetOptions) => {
+      const current = targetsRef.current.get(target.id);
+      if (!current) {
+        return;
+      }
+      const next = { ...current, ...target };
+      if (
+        current.data === next.data &&
+        current.disabled === next.disabled &&
+        current.label === next.label &&
+        current.order === next.order
+      ) {
+        return;
+      }
+      targetsRef.current.set(target.id, next);
+      // Only `disabled` / `order` changes affect navigation order; republish so
+      // roving tabIndex stays correct, but skip pure data churn.
+      if (current.disabled !== next.disabled || current.order !== next.order) {
+        publishTargets();
+      }
+    },
+    [publishTargets],
+  );
 
   const matchingTargets = activeDrag?.matchedTargets ?? emptyMatchingTargets;
   const state: DragSelectableState = useMemo(
@@ -147,12 +181,76 @@ export function DragSelectableProvider({
     }
     notifiedSelectedIdsRef.current = [...selection.selectedIds];
     onSelectionChangeRef.current?.(selection);
+    // Announce the new selection count to assistive tech without moving focus
+    // (WCAG 2.1 — 4.1.3 Status Messages, AA). The live count badge lives in a
+    // `pointerEvents: none` overlay, so it is invisible to screen readers.
+    const message = (
+      selectionAnnouncementRef.current ?? defaultSelectionAnnouncement
+    )(selection.selectedCount, selection);
+    announce(message);
   }, [selection]);
 
   const clearSelection = useCallback(() => {
     setSelection((current) =>
       current.selectedIds.length === 0 ? current : emptySelection,
     );
+  }, []);
+
+  // Keyboard selection: build a fresh selection object from a set of ids by
+  // reading current target metadata so `selectedTargets` snapshots stay valid.
+  const selectionForIds = useCallback(
+    (ids: readonly string[]): DragSelectableSelection => {
+      const selectedTargets: DragSelectableTargetSnapshot[] = ids.map((id) => {
+        const target = targetsRef.current.get(id);
+        return { data: target?.data, id };
+      });
+      return {
+        selectedCount: ids.length,
+        selectedIds: [...ids],
+        selectedTargets,
+      };
+    },
+    [],
+  );
+
+  const setSelectionToIds = useCallback(
+    (ids: string[]) => {
+      if (disabledRef.current) {
+        return;
+      }
+      setSelection((current) =>
+        dragSelectableIdsEqual(current.selectedIds, ids)
+          ? current
+          : selectionForIds(ids),
+      );
+    },
+    [selectionForIds],
+  );
+
+  const toggleSelection = useCallback(
+    (id: string) => {
+      if (disabledRef.current || targetsRef.current.get(id)?.disabled) {
+        return;
+      }
+      setSelection((current) => {
+        const next = current.selectedIds.includes(id)
+          ? current.selectedIds.filter((selectedId) => selectedId !== id)
+          : [...current.selectedIds, id];
+        return selectionForIds(next);
+      });
+    },
+    [selectionForIds],
+  );
+
+  const focusTarget = useCallback((id: string) => {
+    setActiveId(id);
+    if (typeof document === "undefined") {
+      return;
+    }
+    const node = targetsRef.current.get(id)?.node as unknown as
+      | { focus?: () => void }
+      | undefined;
+    node?.focus?.();
   }, []);
 
   const cancelDrag = useCallback(() => {
@@ -316,28 +414,47 @@ export function DragSelectableProvider({
 
   const context = useMemo(
     () => ({
+      activeId,
       clearSelection,
+      focusTarget,
       matchedIdSet,
+      registeredTargets,
       registerTarget,
       selectedIdSet,
+      setSelection: setSelectionToIds,
       state,
       subscribe,
+      toggleSelection,
       updateTarget,
     }),
     [
+      activeId,
       clearSelection,
+      focusTarget,
       matchedIdSet,
+      registeredTargets,
       registerTarget,
       selectedIdSet,
+      setSelectionToIds,
       state,
       subscribe,
+      toggleSelection,
       updateTarget,
     ],
   );
 
   return (
     <DragSelectableContext.Provider value={context}>
-      <View onPointerDown={beginDrag} style={style}>
+      <View
+        accessibilityLabel={accessibilityLabel}
+        // RNW forwards the literal `role` prop to the DOM; the base RN
+        // `accessibilityRole` type omits `"group"`, so use `role` (matching the
+        // heatmap legend) to expose the selectable collection (WCAG 2.1 — 1.3.1
+        // Info & Relationships, A).
+        onPointerDown={beginDrag}
+        role={role}
+        style={style}
+      >
         {children}
       </View>
       <DragSelectableOverlay

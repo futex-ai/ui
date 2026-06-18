@@ -32,13 +32,13 @@ test("dropdown action menu opens from child trigger and closes after selection",
   await expect(trigger).toHaveAttribute("aria-haspopup", "menu");
   await trigger.click();
 
-  const settings = page.getByRole("button", {
+  const settings = page.getByRole("menuitem", {
     exact: true,
     name: "Settings",
   });
   await expect(settings).toBeVisible();
   await expect(
-    page.getByRole("button", { exact: true, name: "Remove" }),
+    page.getByRole("menuitem", { exact: true, name: "Remove" }),
   ).toBeVisible();
 
   await settings.click();
@@ -53,11 +53,11 @@ test("dropdown action menu preselects first row and tracks hover selection", asy
 
   await page.getByRole("button", { name: "Open action menu" }).click();
 
-  const settings = page.getByRole("button", {
+  const settings = page.getByRole("menuitem", {
     exact: true,
     name: "Settings",
   });
-  const remove = page.getByRole("button", { exact: true, name: "Remove" });
+  const remove = page.getByRole("menuitem", { exact: true, name: "Remove" });
   await expect(settings).toBeVisible();
   await expect(remove).toBeVisible();
 
@@ -85,7 +85,7 @@ test("dropdown hover menu opens on pointer hover and closes on hover out", async
   await page.goto("/iframe.html?id=dropdown-examples--dropdown-hover-menu");
 
   const trigger = page.getByRole("button", { name: "Open hover menu" });
-  const profile = page.getByRole("button", { exact: true, name: "Profile" });
+  const profile = page.getByRole("menuitem", { exact: true, name: "Profile" });
 
   await trigger.hover();
   await expect(profile).toBeVisible();
@@ -103,7 +103,7 @@ test("dropdown long-press menu opens on press-and-hold, not a plain tap", async 
   );
 
   const trigger = page.getByRole("button", { name: "Open long-press menu" });
-  const rename = page.getByRole("button", { exact: true, name: "Rename" });
+  const rename = page.getByRole("menuitem", { exact: true, name: "Rename" });
 
   // A quick tap must not open a long-press menu.
   await trigger.click();
@@ -128,7 +128,7 @@ test("dropdown context menu opens on right-click, not on a left click", async ({
   await page.goto("/iframe.html?id=dropdown-examples--dropdown-context-menu");
 
   const trigger = page.getByRole("button", { name: "Open context menu" });
-  const copy = page.getByRole("button", { exact: true, name: "Copy" });
+  const copy = page.getByRole("menuitem", { exact: true, name: "Copy" });
 
   // A left click must not open a context menu.
   await trigger.click();
@@ -145,7 +145,7 @@ test("dropdown keyboard navigation keeps the active option in view", async ({
 
   await page.getByRole("button", { name: "Long list, Long option 01" }).click();
   await expect(
-    page.getByRole("button", { exact: true, name: "Long option 01" }),
+    page.getByRole("option", { exact: true, name: "Long option 01" }),
   ).toBeVisible();
 
   for (let step = 0; step < 15; step += 1) {
@@ -170,11 +170,13 @@ test("dropdown selector pins header and footer while options scroll", async ({
   await page.getByRole("button", { name: "Scheme, Long option 01" }).click();
 
   const header = page.getByText("Choose a scheme");
+  // The footer is a custom action control (the story renders it as a
+  // `role="button"`), not a selectable listbox option, so target it by button.
   const footer = page.getByRole("button", { name: "Add scheme" });
   await expect(header).toBeVisible();
   await expect(footer).toBeVisible();
 
-  const option = page.getByRole("button", {
+  const option = page.getByRole("option", {
     exact: true,
     name: "Long option 03",
   });
@@ -266,10 +268,8 @@ test("searchable dropdown selector filters options and selects by keyboard", asy
     const input = document.querySelector('input[placeholder="Search options"]');
     const field = input?.parentElement ?? null;
     const selectedRow =
-      Array.from(document.querySelectorAll('[role="button"]')).find(
-        (element) =>
-          element.textContent?.trim() === "US Dollar" &&
-          !element.hasAttribute("aria-expanded"),
+      Array.from(document.querySelectorAll('[role="option"]')).find(
+        (element) => element.textContent?.trim() === "US Dollar",
       ) ?? null;
     if (!field || !selectedRow) {
       return null;
@@ -287,10 +287,10 @@ test("searchable dropdown selector filters options and selects by keyboard", asy
 
   await search.pressSequentially("new z");
   await expect(
-    page.getByRole("button", { exact: true, name: "New Zealand Dollar" }),
+    page.getByRole("option", { exact: true, name: "New Zealand Dollar" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { exact: true, name: "US Dollar" }),
+    page.getByRole("option", { exact: true, name: "US Dollar" }),
   ).toBeHidden();
   await expect(search).toBeFocused();
 
@@ -307,9 +307,13 @@ test("searchable dropdown selector filters options and selects by keyboard", asy
     .getByRole("button", { name: "Currency, New Zealand Dollar" })
     .click();
   await page.getByPlaceholder("Search options").fill("zzz");
-  await expect(page.getByText("No matching options")).toBeVisible();
+  // The shared aria-live region echoes the empty-state copy for screen readers
+  // (WCAG 4.1.3), so scope to the visible listbox to skip the announced node.
   await expect(
-    page.getByRole("button", { exact: true, name: "Euro" }),
+    page.getByRole("listbox").getByText("No matching options"),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("option", { exact: true, name: "Euro" }),
   ).toBeHidden();
 });
 
@@ -324,7 +328,12 @@ test("combobox keeps input focus while filtering options", async ({ page }) => {
   await expect(input).toBeFocused();
 
   await input.fill("zz");
-  await expect(page.getByText("No matching options")).toBeVisible();
+  // The shared aria-live region echoes the empty-state copy for screen readers
+  // (WCAG 4.1.3), so scope to the visible listbox to skip the announced node.
+  await expect(
+    page.getByRole("listbox").getByText("No matching options"),
+  ).toBeVisible();
+  await expect(input).toBeFocused();
   await expect(
     page.getByText("Only active books can be selected."),
   ).toBeVisible();
@@ -343,7 +352,7 @@ test("dropdown placement flips above the trigger near the bottom edge", async ({
   await bottomTrigger.click();
   const bottomTriggerBox = await bottomTrigger.boundingBox();
   const upwardOption = await page
-    .getByRole("button", { exact: true, name: "Long option 02" })
+    .getByRole("option", { exact: true, name: "Long option 02" })
     .boundingBox();
   expect(bottomTriggerBox).not.toBeNull();
   expect(upwardOption).not.toBeNull();
@@ -357,7 +366,7 @@ test("dropdown placement flips above the trigger near the bottom edge", async ({
   await topTrigger.click();
   const topTriggerBox = await topTrigger.boundingBox();
   const downwardOption = await page
-    .getByRole("button", { exact: true, name: "Long option 02" })
+    .getByRole("option", { exact: true, name: "Long option 02" })
     .boundingBox();
   expect(topTriggerBox).not.toBeNull();
   expect(downwardOption).not.toBeNull();
@@ -378,7 +387,7 @@ test("dropdown placement clamps a wide menu inside the side edges", async ({
   await rightTrigger.click();
   const rightTriggerBox = await rightTrigger.boundingBox();
   const rightOption = await page
-    .getByRole("button", { exact: true, name: "British Pound" })
+    .getByRole("menuitem", { exact: true, name: "British Pound" })
     .boundingBox();
   expect(rightTriggerBox).not.toBeNull();
   expect(rightOption).not.toBeNull();
@@ -393,7 +402,7 @@ test("dropdown placement clamps a wide menu inside the side edges", async ({
   // The left-edge menu stays pinned at the left margin (never off-screen).
   await page.getByRole("button", { name: "Open left edge menu" }).click();
   const leftOption = await page
-    .getByRole("button", { exact: true, name: "British Pound" })
+    .getByRole("menuitem", { exact: true, name: "British Pound" })
     .boundingBox();
   expect(leftOption).not.toBeNull();
   expect(leftOption?.x ?? -1).toBeGreaterThanOrEqual(0);
@@ -408,7 +417,7 @@ test("dropdown placement end-aligns a wide menu to the trigger edge", async ({
   await trigger.click();
   const triggerBox = await trigger.boundingBox();
   const option = await page
-    .getByRole("button", { exact: true, name: "British Pound" })
+    .getByRole("menuitem", { exact: true, name: "British Pound" })
     .boundingBox();
   expect(triggerBox).not.toBeNull();
   expect(option).not.toBeNull();
@@ -430,7 +439,7 @@ test("dropdown placement grid flips and stays on screen at the bottom corner", a
   await trigger.click();
   const triggerBox = await trigger.boundingBox();
   const option = await page
-    .getByRole("button", { exact: true, name: "Region 02" })
+    .getByRole("option", { exact: true, name: "Region 02" })
     .boundingBox();
   expect(triggerBox).not.toBeNull();
   expect(option).not.toBeNull();
@@ -777,7 +786,13 @@ test("date field opens the calendar, navigates months, and picks a day", async (
 }) => {
   await page.goto("/iframe.html?id=date-examples--single-date-field");
 
-  const input = page.getByLabel("Year ends");
+  // The open calendar popover is role="dialog" labelled by the field, so it
+  // shares the "Year ends" accessible name with the input; target the textbox
+  // explicitly. The visible month title also lives inside the dialog, while the
+  // shared aria-live region announces the month on navigation (WCAG 4.1.3), so
+  // scope month-text assertions to the dialog to skip the announced copy.
+  const input = page.getByRole("textbox", { name: "Year ends" });
+  const dialog = page.getByRole("dialog", { name: "Year ends" });
   await expect(input).toHaveValue("31 Mar 2026");
   // Clear is opt-in: the default field shows no clear button even with a value.
   await expect(
@@ -786,15 +801,15 @@ test("date field opens the calendar, navigates months, and picks a day", async (
 
   // Focusing the input opens the calendar on the value's month.
   await input.click();
-  await expect(page.getByText("March 2026")).toBeVisible();
+  await expect(dialog.getByText("March 2026")).toBeVisible();
   await page.getByRole("button", { name: "15 Mar 2026" }).click();
   await expect(input).toHaveValue("15 Mar 2026");
-  await expect(page.getByText("March 2026")).toBeHidden();
+  await expect(dialog).toBeHidden();
 
   // Reopen and step to the previous month, then pick a day there.
   await input.click();
   await page.getByRole("button", { name: "Previous month" }).click();
-  await expect(page.getByText("February 2026")).toBeVisible();
+  await expect(dialog.getByText("February 2026")).toBeVisible();
   await page.getByRole("button", { name: "10 Feb 2026" }).click();
   await expect(input).toHaveValue("10 Feb 2026");
 });
@@ -831,9 +846,13 @@ test("date field jumps to a far year through the header year picker", async ({
 }) => {
   await page.goto("/iframe.html?id=date-examples--single-date-field");
 
-  const input = page.getByLabel("Year ends");
+  // The open popover shares the "Year ends" name with the input (it is a
+  // role="dialog" labelled by the field), so address the textbox by role; the
+  // visible month title lives inside that dialog.
+  const input = page.getByRole("textbox", { name: "Year ends" });
+  const dialog = page.getByRole("dialog", { name: "Year ends" });
   await input.click();
-  await expect(page.getByText("March 2026")).toBeVisible();
+  await expect(dialog.getByText("March 2026")).toBeVisible();
 
   // Clicking the month/year title swaps the day grid for a year picker, where
   // the current year is shown selected and the day grid is gone.
@@ -855,7 +874,7 @@ test("date field jumps to a far year through the header year picker", async ({
   // Picking a year in view jumps straight to it, keeps the month, and returns to
   // the day grid — without committing a date yet.
   await page.getByRole("button", { exact: true, name: "2018" }).click();
-  await expect(page.getByText("March 2018")).toBeVisible();
+  await expect(dialog.getByText("March 2018")).toBeVisible();
   await expect(input).toHaveValue("31 Mar 2026");
 
   // Reopen the picker and page whole blocks forwards and backwards with the
@@ -879,10 +898,10 @@ test("date field jumps to a far year through the header year picker", async ({
 
   // Choosing a year there, then a day, commits as usual and closes the calendar.
   await page.getByRole("button", { exact: true, name: "2010" }).click();
-  await expect(page.getByText("March 2010")).toBeVisible();
+  await expect(dialog.getByText("March 2010")).toBeVisible();
   await page.getByRole("button", { name: "15 Mar 2010" }).click();
   await expect(input).toHaveValue("15 Mar 2010");
-  await expect(page.getByText("March 2010")).toBeHidden();
+  await expect(dialog).toBeHidden();
 });
 
 test("year picker returns to the day grid via the title and keeps keyboard focus", async ({
@@ -890,7 +909,10 @@ test("year picker returns to the day grid via the title and keeps keyboard focus
 }) => {
   await page.goto("/iframe.html?id=date-examples--single-date-field");
 
-  const input = page.getByLabel("Year ends");
+  // The open popover (role="dialog") shares the field's "Year ends" name, so
+  // target the input by its textbox role; the month title lives in the dialog.
+  const input = page.getByRole("textbox", { name: "Year ends" });
+  const dialog = page.getByRole("dialog", { name: "Year ends" });
   await input.click();
 
   // Clicking the title again (now "back to month") returns to the day grid
@@ -900,7 +922,7 @@ test("year picker returns to the day grid via the title and keeps keyboard focus
     page.getByRole("button", { exact: true, name: "2026" }),
   ).toBeVisible();
   await page.getByRole("button", { name: /back to month/ }).click();
-  await expect(page.getByText("March 2026")).toBeVisible();
+  await expect(dialog.getByText("March 2026")).toBeVisible();
   await expect(input).toHaveValue("31 Mar 2026");
 
   // Selecting a year by keyboard moves focus to the relabelled title button
@@ -908,7 +930,7 @@ test("year picker returns to the day grid via the title and keeps keyboard focus
   await page.getByRole("button", { name: "March 2026, change year" }).click();
   await page.getByRole("button", { exact: true, name: "2024" }).focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByText("March 2024")).toBeVisible();
+  await expect(dialog.getByText("March 2024")).toBeVisible();
   await expect(
     page.getByRole("button", { name: "March 2024, change year" }),
   ).toBeFocused();
@@ -1029,7 +1051,9 @@ test("date field clear button is keyboard reachable and restores focus", async (
 }) => {
   await page.goto("/iframe.html?id=date-examples--clearable-date-field");
 
-  const input = page.getByLabel("Year ends", { exact: true });
+  // The open calendar is role="dialog" labelled "Year ends" too, so name the
+  // input by its textbox role to avoid matching both.
+  const input = page.getByRole("textbox", { name: "Year ends", exact: true });
   const clear = page.getByRole("button", { name: "Clear Year ends" });
 
   // Tabbing from the input reaches the clear button (the calendar icon is
@@ -1063,9 +1087,10 @@ test("wheel date field stages a draft and commits the clamped date on Done", asy
   await expect(page.getByRole("button", { name: "Year 2026" })).toBeVisible();
 
   // Spinning to February clamps the 31st down to the month's last valid day,
-  // and the draft is not committed until Done (the trigger keeps its value).
+  // and the draft is not committed until Done: the modal sheet stays open
+  // (it does not auto-commit and close), so the trigger keeps its value.
   await page.getByRole("button", { name: "Month Feb" }).click();
-  await expect(trigger).toBeVisible();
+  await expect(sheet).toBeVisible();
 
   await page.getByRole("button", { name: "Done" }).click();
   await expect(sheet).toBeHidden();
@@ -1174,7 +1199,9 @@ test("date clear button tracks the committed value, not the typed buffer", async
 }) => {
   await page.goto("/iframe.html?id=date-examples--clearable-date-field");
 
-  const input = page.getByLabel("Year ends", { exact: true });
+  // The open calendar is role="dialog" labelled "Year ends" too, so name the
+  // input by its textbox role to avoid matching both.
+  const input = page.getByRole("textbox", { name: "Year ends", exact: true });
   const clear = page.getByRole("button", { name: "Clear Year ends" });
   await expect(input).toHaveValue("31 Mar 2026");
 
@@ -1264,7 +1291,7 @@ test("avatar renders initials and sizes the disc from the size prop", async ({
   await expect(page.getByText("PR", { exact: true })).toBeVisible();
   await expect(page.getByText("AR", { exact: true })).toHaveCSS(
     "color",
-    "rgb(148, 103, 39)",
+    "rgb(116, 81, 31)",
   );
   await expect(page.locator('[aria-label="Accounts Receivable"]')).toHaveCSS(
     "background-color",
@@ -1502,8 +1529,10 @@ test("segmented control sizes step the control height across the shared scale", 
 });
 
 async function dropdownScrollState(page: Page, label: string) {
+  // The selector's scrollable rows are listbox options (`role="option"`), not
+  // buttons; the row element itself is the scroll-into-view target.
   return page
-    .getByRole("button", { exact: true, name: label })
+    .getByRole("option", { exact: true, name: label })
     .evaluate((element) => {
       let scrollParent = element.parentElement;
       while (scrollParent) {
@@ -1549,14 +1578,20 @@ test("toast appears on trigger, announces its tone, and dismisses on close", asy
   // The close control dismisses just its own toast.
   await page.getByRole("button", { name: "Dismiss Saved" }).click();
   await expect(success).toBeHidden();
-  await expect(page.getByText("Save failed")).toBeVisible();
+  await expect(
+    page
+      .getByRole("region", { name: "Notifications" })
+      .getByText("Save failed"),
+  ).toBeVisible();
 });
 
 test("toast action runs and dismisses the toast", async ({ page }) => {
   await page.goto("/iframe.html?id=toast-examples--with-action");
 
   await page.getByRole("button", { name: "Delete invoice" }).click();
-  const toast = page.getByText("Invoice deleted");
+  const toast = page
+    .getByRole("region", { name: "Notifications" })
+    .getByText("Invoice deleted");
   await expect(toast).toBeVisible();
 
   await page.getByRole("button", { name: "Undo" }).click();
@@ -1569,7 +1604,9 @@ test("toast auto-dismisses after its duration elapses", async ({ page }) => {
   await page.getByRole("button", { name: "Copy link" }).click();
   // Move the pointer off the toast so hover does not pause the countdown.
   await page.mouse.move(0, 0);
-  const toast = page.getByText("Copied to clipboard");
+  const toast = page
+    .getByRole("region", { name: "Notifications" })
+    .getByText("Copied to clipboard");
   await expect(toast).toBeVisible();
   // Duration is 2s; allow margin for the auto-dismiss to fire.
   await expect(toast).toBeHidden({ timeout: 5000 });
@@ -1590,7 +1627,9 @@ test("hovering a toast pauses its auto-dismiss countdown", async ({ page }) => {
   await page.goto("/iframe.html?id=toast-examples--auto-dismiss");
 
   await page.getByRole("button", { name: "Copy link" }).click();
-  const toast = page.getByText("Copied to clipboard");
+  const toast = page
+    .getByRole("region", { name: "Notifications" })
+    .getByText("Copied to clipboard");
   await expect(toast).toBeVisible();
 
   // Hold the pointer over the 2s toast well past its duration; the pause keeps
@@ -1611,7 +1650,9 @@ test("non-dismissible toast has no close control and dismissAll clears the queue
 
   await page.getByRole("button", { name: "Start upload" }).click();
   await page.getByRole("button", { name: "Start upload" }).click();
-  const uploading = page.getByText("Uploading…");
+  const uploading = page
+    .getByRole("region", { name: "Notifications" })
+    .getByText("Uploading…");
   await expect(uploading.first()).toBeVisible();
   // A non-dismissible toast renders no close control.
   await expect(
@@ -1619,7 +1660,9 @@ test("non-dismissible toast has no close control and dismissAll clears the queue
   ).toHaveCount(0);
 
   await page.getByRole("button", { name: "Dismiss all" }).click();
-  await expect(page.getByText("Uploading…")).toHaveCount(0);
+  await expect(
+    page.getByRole("region", { name: "Notifications" }).getByText("Uploading…"),
+  ).toHaveCount(0);
 });
 
 test("heatmap labels the months across a full-year range", async ({ page }) => {
@@ -1636,6 +1679,6 @@ test("heatmap reports the pressed cell to its handler", async ({ page }) => {
 
   await expect(page.getByText("None selected")).toBeVisible();
   // Each in-range cell is a button named by its accessible date + value label.
-  await page.getByRole("button", { name: "15 Jan 2024: 8" }).click();
+  await page.getByRole("button", { name: "15 Jan 2024: 8 (high)" }).click();
   await expect(page.getByText("Selected: 2024-01-15 (8)")).toBeVisible();
 });

@@ -40,7 +40,12 @@ export const HeatmapYear: Story = {
   name: "Full year",
   render: () => (
     <StorySurface>
-      <Heatmap endDate="2024-12-31" startDate="2024-01-01" values={data2024} />
+      <Heatmap
+        accessibilityLabel="Activity in 2024"
+        endDate="2024-12-31"
+        startDate="2024-01-01"
+        values={data2024}
+      />
     </StorySurface>
   ),
 };
@@ -50,6 +55,7 @@ export const HeatmapCustom: Story = {
   render: () => (
     <StorySurface>
       <Heatmap
+        accessibilityLabel="Activity in 2024, Monday-first"
         cellGap={4}
         cellRadius={3}
         cellSize={15}
@@ -80,6 +86,9 @@ function HeatmapInteractiveExample() {
   const [selected, setSelected] = useState("None selected");
   return (
     <View style={{ gap: 12 }}>
+      {/* Tab moves into the grid once (a single roving tab stop); Arrow keys
+          move the focused cell, Home/End jump within a week, and PageUp/PageDown
+          jump across weeks. Enter or Space activates the focused cell. */}
       <Heatmap
         accessibilityLabel="Daily activity, January to March 2024"
         endDate="2024-03-31"

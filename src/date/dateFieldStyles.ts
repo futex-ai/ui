@@ -31,9 +31,11 @@ export function createDateFieldStyles(
     hint: chrome.hint,
     required: chrome.required,
     trigger: {
+      // The native trigger is an interactive control box; its resting edge needs
+      // the ≥3:1 control-boundary token, not decorative `border2` (WCAG 2.1 1.4.11).
       alignItems: "center",
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.border2,
+      borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.md,
       borderWidth: 1,
       flexDirection: "row",
@@ -60,8 +62,10 @@ export function createDateFieldStyles(
     triggerOpen: { flex: 1 },
     triggerInvalid: { borderColor: theme.colors.rose },
     triggerPlaceholder: {
+      // Placeholder text conveys the field's purpose, so use the ≥4.5:1
+      // `placeholder` token rather than the faint decorative one (WCAG 2.1 1.4.3).
       ...baseText,
-      color: theme.colors.faint,
+      color: theme.colors.placeholder,
       flexShrink: 1,
       fontSize: sizing.inputFontSize,
     },

@@ -192,8 +192,23 @@ test("toast surface owns an auto-dismiss timer and announces itself", () => {
   // resumes from the time still owed rather than restarting on resume.
   assert.match(source, /remainingRef\.current === null \|\| paused/);
   assert.match(source, /remainingRef\.current = remaining - \(Date\.now\(\)/);
-  assert.match(source, /accessibilityLiveRegion=\{toastLiveRegion/);
+  // The surface keeps its status/alert role for identification but suppresses
+  // its own implicit live announcement; the announcement is owned by the
+  // persistent ToastLiveRegion so a region born empty announces reliably
+  // (WCAG 2.1 — 4.1.3 Status Messages, AA).
   assert.match(source, /role=\{toastRole/);
+  assert.match(source, /aria-live="off"/);
+});
+
+test("the persistent live region announces toasts at tone politeness", () => {
+  const source = readSource("../../src/toast/ToastLiveRegion.tsx");
+
+  // A persistent, initially-empty region pair owns the announcement: errors
+  // are assertive (interrupt), everything else polite (WCAG 2.1 — 4.1.3, AA).
+  assert.match(source, /accessibilityLiveRegion="polite"/);
+  assert.match(source, /accessibilityLiveRegion="assertive"/);
+  assert.match(source, /"aria-live": "polite"/);
+  assert.match(source, /"aria-live": "assertive"/);
 });
 
 test("useToast throws outside a provider and the provider renders the viewport", () => {

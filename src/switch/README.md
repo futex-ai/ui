@@ -31,6 +31,34 @@ import { Switch } from "@firna/ui/switch";
 Omitting `onValueChange` renders the switch as read-only. Passing `disabled`
 also dims the visual track and reports the disabled accessibility state.
 
+## Accessibility
+
+- **Accessible name (required).** A switch must have a name. Pass
+  `accessibilityLabel`, or — for the common row-label pattern — give the visible
+  label a `nativeID` and point `aria-labelledby` at it so the accessible name
+  matches the visible text (WCAG 2.5.3 Label in Name). One of the two is
+  required; in development the component warns if neither is provided.
+
+  ```tsx
+  <Text nativeID="analytics-cookies-label">Analytics cookies</Text>
+  <Switch
+    aria-labelledby="analytics-cookies-label"
+    onValueChange={setEnabled}
+    value={enabled}
+  />
+  ```
+
+- **Role + state.** Renders `role="switch"` with `aria-checked` and the disabled
+  state.
+- **Keyboard.** Space (and Enter) toggle the switch when focused.
+- **Focus visible.** A keyboard focus ring (an inset `outline`) is drawn on the
+  track (WCAG 2.4.7).
+- **Contrast.** The off-track and the white knob carry a `controlBorder`-tinted
+  edge so the resting boundary and the knob position cue stay perceivable
+  (WCAG 1.4.11 Non-text Contrast, 1.4.1 Use of Color).
+- **Reduced motion.** The knob slide is suppressed when the user prefers reduced
+  motion.
+
 ### Sizes
 
 `size` takes the shared `ControlSize` (`sm` / `md` / `lg`); `md` is the default
@@ -50,5 +78,6 @@ up with the inputs and buttons in the same row.
 ## Theming
 
 Switches read colors and radii from `SharedUiThemeProvider`. The off track uses
-`colors.border2`, the on track uses the active theme `colors.primary`, and the
+`colors.border2` with a `colors.controlBorder` edge, the on track uses the active
+theme `colors.primary`, the knob carries a `colors.controlBorder` edge, and the
 track radius uses `radii.pill`.

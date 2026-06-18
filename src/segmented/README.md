@@ -63,6 +63,23 @@ the same density as the inputs and buttons beside it.
 />
 ```
 
+## Accessibility
+
+The control follows the WAI-ARIA radio-group pattern:
+
+- The group is a single Tab stop. The selected option carries `tabIndex 0`; the
+  others are `-1` (roving tabindex). Tab moves into the group at the selected
+  option and out to the next control.
+- `ArrowLeft` / `ArrowRight` (plus `Home` / `End`) move a roving focus between
+  enabled options and select the focused option as focus lands on it. Disabled
+  options are skipped.
+- Name the group with `accessibilityLabel`, or a visible `label` (which becomes
+  the accessible name when no `accessibilityLabel` is given).
+- `error` / `hint` text is associated with the group via `aria-describedby`
+  (`error` wins when both are present), and `error` sets `aria-invalid`.
+- Focus is shown with a geometry-bearing ring (works on the borderless pill,
+  inset so the rounded track does not clip it).
+
 ## Theming
 
 Segmented controls read colors, fonts, and radii from

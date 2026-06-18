@@ -34,7 +34,7 @@ export function createDropdownSelectorStyles(
     input: {
       alignItems: "center",
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.border2,
+      borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.md,
       borderWidth: 1,
       flexDirection: "row",
@@ -63,7 +63,9 @@ export function createDropdownSelectorStyles(
     map: {
       alignItems: "center",
       backgroundColor: theme.colors.primarySoft,
-      borderColor: theme.colors.primaryBorder,
+      // `primaryBorder` is ~1.13:1 on `primarySoft`; `primary` clears the 3:1
+      // non-text contrast floor for the control boundary (WCAG 1.4.11).
+      borderColor: theme.colors.primary,
       borderRadius: theme.radii.sm,
       borderWidth: 1,
       flexDirection: "row",
@@ -89,7 +91,7 @@ export function createDropdownSelectorStyles(
     mobilePeriod: {
       alignItems: "center",
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.border,
+      borderColor: theme.colors.controlBorder,
       borderRadius: 9,
       borderWidth: 1,
       flexDirection: "row",
@@ -109,7 +111,7 @@ export function createDropdownSelectorStyles(
       alignItems: "center",
       alignSelf: "flex-start",
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.border2,
+      borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.sm,
       borderWidth: 1,
       flexDirection: "row",
@@ -124,13 +126,13 @@ export function createDropdownSelectorStyles(
       fontWeight: "600",
       lineHeight: 18,
     },
-    placeholder: { color: theme.colors.faint },
+    placeholder: { color: theme.colors.placeholder },
     readOnly: { opacity: 1 },
     required: { color: theme.colors.rose },
     searchField: {
       alignItems: "center",
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.border2,
+      borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.md,
       borderWidth: 1,
       flexDirection: "row",

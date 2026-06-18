@@ -1,5 +1,5 @@
 /** Branded single-date input with a calendar picker. */
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useMemo, useState } from "react";
 import { Platform, Text, View } from "react-native";
 
 import type { ControlSize } from "../controlSize";
@@ -84,11 +84,25 @@ export function DateField({
     [zIndex],
   );
   const invalid = Boolean(error);
+  // Stable ids so the trigger can point `aria-describedby`/`aria-errormessage`
+  // at the visible error/hint text (RNW does not map `accessibilityHint` to
+  // `aria-describedby` on web) — WCAG 2.1 3.3.1 / 3.3.2 / 1.3.1.
+  const errorId = useId();
+  const hintId = useId();
+  // Concatenate both, so the error and hint are read together rather than the
+  // single `accessibilityHint` slot being overloaded by one of them.
+  const describedBy =
+    [error ? errorId : null, hint ? hintId : null].filter(Boolean).join(" ") ||
+    undefined;
   return (
     <View style={[styles.field, open ? openLayer : null]}>
       <FieldLabel label={label} required={required} />
       <DateInput
         clearable={clearable}
+        describedById={describedBy}
+        errorId={error ? errorId : undefined}
+        errorText={error ?? undefined}
+        hintText={hint}
         invalid={invalid}
         label={label}
         max={max}
@@ -102,8 +116,22 @@ export function DateField({
         variant={variant}
         zIndex={zIndex}
       />
-      {error ? <Text style={styles.fieldError}>{error}</Text> : null}
-      {hint ? <Text style={styles.hint}>{hint}</Text> : null}
+      {/* The error is a polite live region so a newly-shown validation message is
+          announced without moving focus (WCAG 2.1 4.1.3 Status Messages, AA). */}
+      {error ? (
+        <Text
+          accessibilityLiveRegion="polite"
+          nativeID={errorId}
+          style={styles.fieldError}
+        >
+          {error}
+        </Text>
+      ) : null}
+      {hint ? (
+        <Text nativeID={hintId} style={styles.hint}>
+          {hint}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -138,6 +166,17 @@ export type DateInputProps = {
   size?: ControlSize;
   /** z-index for the open calendar wrappers and web popover frame. */
   zIndex?: number;
+  /**
+   * Space-separated id list of the error/hint text describing this field, wired
+   * to the trigger as a literal `aria-describedby` (WCAG 2.1 3.3.1 / 3.3.2).
+   */
+  describedById?: string;
+  /** Id of the error-message element, wired as `aria-errormessage`. */
+  errorId?: string;
+  /** Error message text, also folded into the native `accessibilityHint`. */
+  errorText?: string;
+  /** Helper text, also folded into the native `accessibilityHint`. */
+  hintText?: string;
 };
 
 /**
@@ -161,6 +200,10 @@ export function DateInput({
   variant = "calendar",
   size = "md",
   zIndex,
+  describedById,
+  errorId,
+  errorText,
+  hintText,
 }: DateInputProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(
@@ -200,6 +243,8 @@ export function DateInput({
       {Platform.OS === "web" && variant === "calendar" ? (
         <WebTrigger
           clearable={clearable}
+          describedById={describedById}
+          errorId={errorId}
           field={field}
           invalid={invalid}
           label={label}
@@ -211,7 +256,11 @@ export function DateInput({
       ) : (
         <NativeTrigger
           clearable={clearable}
+          describedById={describedById}
+          errorId={errorId}
+          errorText={errorText}
           field={field}
+          hintText={hintText}
           invalid={invalid}
           label={label}
           placeholder={placeholder}

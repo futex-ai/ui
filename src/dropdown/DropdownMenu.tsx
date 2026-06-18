@@ -3,6 +3,7 @@ import {
   cloneElement,
   isValidElement,
   useCallback,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -24,6 +25,7 @@ import {
 } from "./dropdownMenuModel";
 import type {
   DropdownMenuTriggerElementProps,
+  DropdownMenuTriggerKeyEvent,
   DropdownMenuTriggerMode,
   DropdownMenuTriggerProps,
 } from "./dropdownMenuModel";
@@ -59,6 +61,8 @@ export type DropdownMenuTrigger =
 
 /** Props for `DropdownMenu`. */
 export type DropdownMenuProps = DropdownPlacementOptions & {
+  /** Accessible name for the menu surface (WCAG 4.1.2). Defaults to "Menu". */
+  accessibilityLabel?: string;
   /** Parent-owned keyboard active row id. */
   activeId?: string | null;
   /** Trigger element, or a render function for advanced state access. */
@@ -97,6 +101,7 @@ export type DropdownMenuProps = DropdownPlacementOptions & {
  * `DropdownList` directly when a custom picker needs to own those pieces.
  */
 export function DropdownMenu({
+  accessibilityLabel = "Menu",
   activeId,
   align,
   children,
@@ -120,6 +125,7 @@ export function DropdownMenu({
   zIndex,
 }: DropdownMenuProps) {
   const anchorRef = useRef<View>(null);
+  const listId = useId();
   const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
   const { controlled, open } = resolveDropdownMenuOpen(
     openProp,
@@ -175,13 +181,39 @@ export function DropdownMenu({
     onClose: close,
     onOpen: openMenu,
   });
+  const isWeb = Platform.OS === "web";
   const triggerProps = resolveDropdownMenuTriggerProps(open, toggle, trigger, {
     hoverProps: hover.triggerHoverProps,
-    isWeb: Platform.OS === "web",
+    isWeb,
   });
+  // Link the trigger to its menu surface (WCAG 4.1.2). `aria-controls` is allowed
+  // on the `role=button` trigger; `aria-activedescendant` is not (it is invalid
+  // on a button), so the active menuitem is conveyed visually instead. Web-only
+  // literal ids; native uses the RN a11y state.
+  // `press`/`hover` triggers open via the trigger's own `onPress`, so RNW's
+  // Enter/Space synthesis (for role=button) already opens them. `longPress`/
+  // `contextMenu` wire no `onPress`, so a keyboard user has no pointer gesture
+  // to reach — Enter/Space (and ArrowDown via the nav hook) must open the menu
+  // (WCAG 2.1.1 Keyboard). Compose an opener after the nav handler runs.
+  const opensViaPress = trigger === "press" || trigger === "hover";
+  const handleTriggerKeyDown = useCallback(
+    (event: DropdownMenuTriggerKeyEvent) => {
+      const handled = navigationKeyProps.onKeyDown?.(event);
+      if (handled || opensViaPress || open) {
+        return;
+      }
+      const key = event.nativeEvent?.key ?? event.key ?? "";
+      if (key === "Enter" || key === " ") {
+        event.preventDefault?.();
+        openMenu();
+      }
+    },
+    [navigationKeyProps, open, openMenu, opensViaPress],
+  );
   const menuTriggerProps = {
     ...triggerProps,
-    ...navigationKeyProps,
+    ...(isWeb && open ? { "aria-controls": listId } : {}),
+    onKeyDown: handleTriggerKeyDown,
   };
   const portalSurfaceHoverProps =
     trigger === "hover"
@@ -213,6 +245,9 @@ export function DropdownMenu({
             entries={menuEntries}
             footer={footer}
             header={header}
+            label={accessibilityLabel}
+            listId={listId}
+            listRole="menu"
             maxHeight={placement.maxHeight}
             onActiveIdChange={setActiveRowId}
             onClose={close}

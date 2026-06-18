@@ -49,6 +49,15 @@ export const BoundedDateField: Story = {
   ),
 };
 
+export const ValidatedDateField: Story = {
+  name: "Validated single date field",
+  render: () => (
+    <StorySurface>
+      <ValidatedDateExample />
+    </StorySurface>
+  ),
+};
+
 export const CalendarLayering: Story = {
   name: "Calendar layering",
   render: () => (
@@ -155,6 +164,30 @@ function BoundedDateExample() {
         max="2027-12-31"
         min="2024-01-01"
         onChange={setValue}
+        value={value}
+      />
+    </View>
+  );
+}
+
+function ValidatedDateExample() {
+  // A future-dated value drives a visible, programmatically-associated error so
+  // the error/label wiring (aria-describedby / aria-errormessage / role=alert)
+  // is exercised — WCAG 2.1 3.3.1 / 1.3.1 / 4.1.3.
+  const [value, setValue] = useState("2027-01-01");
+  const error =
+    value && value > "2026-12-31"
+      ? "Choose a date on or before 31 Dec 2026."
+      : null;
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <DateField
+        error={error}
+        hint="The year end must fall within the current period."
+        label="Year ends"
+        max="2026-12-31"
+        onChange={setValue}
+        required
         value={value}
       />
     </View>

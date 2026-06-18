@@ -7,10 +7,25 @@ export type SharedUiColors = {
   bg2: string;
   border: string;
   border2: string;
+  /**
+   * Boundary color for interactive controls (inputs, the date trigger, the
+   * dropdown selector, secondary buttons, segmented cells, radio cards, the
+   * switch track). Unlike `border`/`border2`, which are decorative dividers and
+   * are exempt from contrast rules, this is held to WCAG 2.1 — 1.4.11 Non-text
+   * Contrast (AA): ≥3:1 against both the surface and the page background so the
+   * edge of a control is perceivable.
+   */
+  controlBorder: string;
   faint: string;
   ink: string;
   ink2: string;
   muted: string;
+  /**
+   * Placeholder / faint-but-meaningful text color. Held to WCAG 2.1 — 1.4.3
+   * Contrast Minimum (AA): ≥4.5:1 on `surface`. Use this instead of `faint`
+   * (which stays light for decorative use) wherever the text conveys meaning.
+   */
+  placeholder: string;
   primary: string;
   primaryBorder: string;
   primaryDeep: string;
@@ -55,10 +70,12 @@ export const defaultSharedUiTheme: SharedUiTheme = {
     bg2: "#ecede7",
     border: "#e5e8e0",
     border2: "#d3d8cd",
+    controlBorder: "#868d86",
     faint: "#a8aea7",
     ink: "#1c1f1d",
     ink2: "#3e4540",
-    muted: "#737b75",
+    muted: "#69706a",
+    placeholder: "#6c736c",
     primary: "#4f7864",
     primaryBorder: "#d1e2d7",
     primaryDeep: "#2f5945",
@@ -121,10 +138,12 @@ export const junoSharedUiTheme = createSharedUiTheme({
     bg2: "#F5F5F5",
     border: "#EBEBEB",
     border2: "#D8D8D8",
+    controlBorder: "#8A8796",
     faint: "#93919E",
     ink: "#15131F",
     ink2: "#3D3A4E",
-    muted: "#6B6880",
+    muted: "#65627A",
+    placeholder: "#6F6C7E",
     primary: "#6F5BD0",
     primaryBorder: "#E2DAF5",
     primaryDeep: "#5A47BD",

@@ -66,6 +66,9 @@ function LabelledExample() {
   const [value, setValue] = useState("");
   return (
     <Input
+      // 1.3.5 Identify Input Purpose (AA): declare the field's purpose so the
+      // browser/AT can autofill it. RNW forwards `autoComplete → autocomplete`.
+      autoComplete="name"
       hint="As it appears on official documents."
       label="Full name"
       onChangeText={setValue}
@@ -80,7 +83,11 @@ function ValidatedExample() {
   const valid = /.+@.+\..+/.test(value);
   return (
     <Input
+      // 1.3.5 Identify Input Purpose (AA): an email field declares both its
+      // autofill token and the email keyboard/input mode.
+      autoComplete="email"
       error={valid ? undefined : "Enter a valid email address"}
+      inputMode="email"
       label="Email"
       onChangeText={setValue}
       placeholder="you@example.com"
@@ -95,7 +102,14 @@ function WithIconsExample() {
   const [value, setValue] = useState("250.00");
   return (
     <Input
-      hint="Amount in the account currency."
+      // 1.3.5 Identify Input Purpose (AA): a currency amount is decimal entry.
+      inputMode="decimal"
+      // 1.1.1 (A): both icons are decorative (hidden from AT). The leading
+      // `$` purpose is already in the visible label/hint, and the trailing
+      // `Check` is an affirmation the hint states in words — never the only
+      // carrier of meaning. A *meaningful* trailing icon must instead be a
+      // labelled, pressable suffix (see the password story's show/hide toggle).
+      hint="Looks good — amount is in the account currency."
       label="Opening balance"
       onChangeText={setValue}
       prefixIcon={DollarSign}
@@ -125,6 +139,8 @@ function PasswordExample() {
   const [visible, setVisible] = useState(false);
   return (
     <Input
+      // 1.3.5 Identify Input Purpose (AA): a sign-in password field.
+      autoComplete="current-password"
       label="Password"
       onChangeText={setValue}
       onSuffixIconPress={() => setVisible((current) => !current)}

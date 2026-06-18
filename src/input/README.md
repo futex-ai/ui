@@ -88,12 +88,40 @@ The framed input exposes two style props, which **differ from the accounting
 open without the input being focused (the date field uses it while the calendar
 is open).
 
+## Accessibility
+
+- **Name (2.5.3 Label in Name / 1.3.1, A).** The visible `label` is tied to the
+  `TextInput` with `aria-labelledby` (the label `<Text>` carries a generated
+  `nativeID`), so the accessible name _is_ the visible text — not a separate
+  `aria-label` copy. An explicit `accessibilityLabel` still overrides it (use it
+  for the bare, label-less variant).
+- **Errors and hints (3.3.1 / 3.3.2, A).** `error` and `hint` text get generated
+  ids and are referenced from the input via `aria-describedby`; the error is also
+  pointed to by `aria-errormessage` and paired with `aria-invalid`. RNW does
+  **not** map `accessibilityHint` to `aria-describedby`, so this is wired with
+  literal `aria-*` attributes (native still receives `accessibilityHint`).
+- **Live errors (4.1.3, AA).** The error message renders in an assertive live
+  region (`role="alert"` / `accessibilityLiveRegion`), so a newly-shown
+  validation message is announced without moving focus.
+- **Input purpose (1.3.5, AA).** Pass the standard `autoComplete` token (and,
+  where useful, `inputMode`) so the field's purpose is programmatically
+  determinable and the browser/AT can autofill it — e.g. `autoComplete="email"`
+  - `inputMode="email"`, or `autoComplete="current-password"`. These forward
+    straight through to the underlying `TextInput`.
+- **Required (3.3.2, A).** `required` wires `aria-required`; the visible `*` is
+  marked `aria-hidden` so it does not leak into the accessible name.
+- **Focus (2.4.7, AA).** The box shows a geometry-bearing focus ring (a real
+  outline, not just a border recolor) on keyboard/pointer focus, visible even on
+  an invalid (rose-bordered) field.
+
 ## Theming
 
 Inputs read colors and radii from `SharedUiThemeProvider`: the box uses
-`colors.surface` / `colors.border2`, the focus ring and active border use
-`colors.primary`, the invalid border and required `*` use `colors.rose`, and the
-box radius uses `radii.md`.
+`colors.surface` / `colors.controlBorder` (a ≥3:1 control-boundary token —
+WCAG 2.1 1.4.11, AA), the focus ring and active border use `colors.primary`, the
+invalid border and required `*` use `colors.rose`, the placeholder and hint text
+use `colors.placeholder` (≥4.5:1 — 1.4.3, AA), and the box radius uses
+`radii.md`.
 
 ## Used by
 
