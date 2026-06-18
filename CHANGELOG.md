@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1](https://github.com/futex-ai/ui/compare/v0.2.0...v0.2.1) - 2026-06-18
+
+### Added
+
+- *(heatmap)* add configurable calendar heatmap component ([#40](https://github.com/futex-ai/ui/pull/40))
+- *(dropdown)* add configurable trigger options to DropdownMenu ([#37](https://github.com/futex-ai/ui/pull/37))
+
+### Fixed
+
+- *(dropdown)* wire menu hover navigation ([#38](https://github.com/futex-ai/ui/pull/38))
+- format changelog release notes ([#34](https://github.com/futex-ai/ui/pull/34))
+
+### Other
+
+- Fix missed Firna release recovery ([#35](https://github.com/futex-ai/ui/pull/35))
+
 ## [0.2.0](https://github.com/futex-ai/ui/compare/v0.1.1...v0.2.0) - 2026-06-16
 
 ### Added
