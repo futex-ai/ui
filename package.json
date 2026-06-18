@@ -1,6 +1,6 @@
 {
   "name": "@firna/ui",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Shared React Native and React Native Web UI primitives for Firna apps.",
   "private": false,
   "type": "module",
@@ -49,6 +49,11 @@
       "types": "./dist/node/button/index.d.ts",
       "react-native": "./dist/button/index.js",
       "import": "./dist/node/button/index.js"
+    },
+    "./calendar": {
+      "types": "./dist/node/calendar/index.d.ts",
+      "react-native": "./dist/calendar/index.js",
+      "import": "./dist/node/calendar/index.js"
     },
     "./date": {
       "types": "./dist/node/date/index.d.ts",

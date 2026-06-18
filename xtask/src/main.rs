@@ -4,9 +4,7 @@ mod check;
 mod cli;
 mod command;
 mod error;
-mod prepare_release_pr;
 mod review;
-mod sync_package_version;
 
 fn main() -> std::process::ExitCode {
     cli::main()

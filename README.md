@@ -6,8 +6,9 @@ surfaces. The first consumers are the accounting app and the Juno app.
 ## Key Features
 
 - Shared dropdown menu, selector, combobox, drag-select, segmented control,
-  radio card, switch, button, labelled input, modal, toast, avatar, and calendar
-  heatmap primitives.
+  radio card, switch, button, labelled input, modal, toast, avatar, calendar
+  heatmap, and full event-calendar (month/week/day/agenda, recurring events,
+  drag-to-create) primitives.
 - A shared `sm` / `md` / `lg` size scale (`ControlSize`) across the interactive
   controls — buttons, inputs, dropdown selectors, date fields, segmented
   controls, and switches.
@@ -16,8 +17,8 @@ surfaces. The first consumers are the accounting app and the Juno app.
   for custom consumer stacking contexts.
 - Expo and React Native Web compatible platform files.
 - Focused unit tests, browser interaction tests, and package export checks.
-- Storybook previews for visual review on every PR.
-- Release-plz release PRs and npm trusted publishing for `@firna/ui`.
+- Storybook previews for visual review on same-repository non-release PRs.
+- Release-please release PRs and npm trusted publishing for `@firna/ui`.
 
 ## User-Facing Interface
 
@@ -26,6 +27,8 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui` for all public components and helpers.
 - `@firna/ui/avatar` for the themed circular initials avatar.
 - `@firna/ui/button` for the themed button with tone, size, and block variants.
+- `@firna/ui/calendar` for the full event calendar (month, week, day, and agenda
+  views, recurring events, and drag-to-create).
 - `@firna/ui/date` for single-date and date-range fields.
 - `@firna/ui/drag-select` for web drag-selection providers, target hooks, and
   geometry helpers.
@@ -98,33 +101,30 @@ The package export map intentionally separates runtime targets:
 
 ## Package Releases
 
-- release-plz opens and updates the release PR for `@firna/ui`.
-- Generated release PR files are normalized with
-  `cargo xtask prepare-release-pr`, which syncs npm metadata and formats the
-  changelog before CI validates the branch.
-- When release-plz reports no release PR changes, the workflow exits
-  successfully without checking out a release branch or syncing npm metadata.
-- The release flow uses `release_always = true` so squash-merged release PRs
-  still trigger the `vX.Y.Z` tag, GitHub release, and npm publish flow. The
-  automatic release path first verifies that the `main` commit is associated
-  with a `release-plz-*` PR, so ordinary pushes do not create releases or
-  publish npm packages.
-- If release-plz reports no new release after a merged release PR has already
-  bumped the Cargo version, the workflow creates the missing GitHub release
-  from the checked-out `firna-ui-release` version and changelog section.
-- npm publishing runs in the same release-plz workflow invocation that prepares
-  the GitHub release, using npm trusted publishing. The publish job syncs
-  `package.json` and `package-lock.json` from the Cargo version before
-  verification and publishing. The npm package must configure this repository
-  and `.github/workflows/release-plz.yml` as the trusted publisher, with allowed
-  action `npm publish`.
-- The release-plz workflow can also be manually dispatched with `publish_ref`
-  set to a checked `vX.Y.Z` tag if the automatic publish job needs to be
-  retried.
-- To recover a missed automatic release, manually dispatch the workflow with
-  `release_ref` set to the missed release PR merge commit SHA. The workflow
-  still verifies that the commit came from a `release-plz-*` PR before creating
-  the GitHub release and publishing npm.
+- Release-please opens and updates the release PR for `@firna/ui` from
+  Conventional Commits.
+- The release PR updates `CHANGELOG.md`, `package.json`, and
+  `package-lock.json` through release-please's `node` release type.
+- Merging the release PR lets release-please create the `vX.Y.Z` tag and GitHub
+  release. Ordinary non-release pushes to `main` only update the release PR.
+- npm publishing runs in the same `.github/workflows/release-plz.yml` invocation
+  that creates the GitHub release, using npm trusted publishing. The npm package
+  must configure this repository and `release-plz.yml` as the
+  trusted publisher, with allowed action `npm publish`.
+- The workflow file keeps the historical `release-plz.yml` filename because npm
+  trusted publishing validates the workflow filename configured on npmjs.com.
+  The workflow implementation itself uses release-please.
+- The workflow falls back to `GITHUB_TOKEN` for release-please, but a
+  repository secret named `RELEASE_PLEASE_TOKEN` can be added if release PRs
+  need to trigger normal PR checks.
+- Before publishing, the release workflow installs dependencies, installs the
+  Playwright browser, verifies the release tag matches `package.json`, runs
+  `cargo xtask check`, and skips publishing if the version already exists on
+  npm.
+- If publish fails after the GitHub release was created, manually dispatch the
+  release workflow with `publish_ref` set to the existing `vX.Y.Z` tag. The
+  retry path checks out that tag and runs the same verification and publish
+  steps.
 - Scoped npm packages default to private, so `publishConfig.access` is set to
   `public`.
 
@@ -133,16 +133,19 @@ The package export map intentionally separates runtime targets:
 - Main branch Storybook deploys to Cloudflare Pages project
   `futex-ui-storybook`.
 - Main URL: `https://futex-ui-storybook.pages.dev`.
-- PR previews deploy to Cloudflare branch `pr-<number>`.
+- Same-repository non-release PR previews deploy to Cloudflare branch
+  `pr-<number>`.
 - PR preview URL shape:
   `https://pr-<number>.futex-ui-storybook.pages.dev`.
 - PR previews are posted through a sticky comment marked
   `<!-- futex-ui-storybook-preview -->`.
+- Release Please PRs are skipped by the Storybook preview deploy job; their
+  component changes were already previewed in the source PRs.
 - Closing a same-repository PR marks the sticky comment inactive and attempts
   to delete aliased preview deployments for that PR branch; if Cloudflare
   cleanup cannot complete safely, the comment reports the retained reason.
 - Storybook examples are grouped under one top-level folder per family:
-  `Avatar/Examples`, `Button/Examples`, `Date/Examples`,
+  `Avatar/Examples`, `Button/Examples`, `Calendar/Examples`, `Date/Examples`,
   `Drag Select/Examples`, `Dropdown/Examples`, `Heatmap/Examples`,
   `Input/Examples`, `Modal/Examples`, `Popover/Examples`, `Radio/Examples`,
   `Segmented/Examples`, `Switch/Examples`, `Theme/Examples`, and
@@ -157,6 +160,7 @@ The package export map intentionally separates runtime targets:
 - Avatar component: [src/avatar/README.md](src/avatar/README.md)
 - Shared control-size scale: [src/controlSize.ts](src/controlSize.ts)
 - Button component: [src/button/README.md](src/button/README.md)
+- Calendar component: [src/calendar/README.md](src/calendar/README.md)
 - Input component: [src/input/README.md](src/input/README.md)
 - Dropdown components: [src/dropdown/README.md](src/dropdown/README.md)
 - Drag-select components:
@@ -170,8 +174,6 @@ The package export map intentionally separates runtime targets:
 - Toast component: [src/toast/README.md](src/toast/README.md)
 - Browser tests: [tests/browser/storybook.spec.ts](tests/browser/storybook.spec.ts)
 - Repository automation: [xtask/README.md](xtask/README.md)
-- Release metadata crate:
-  [crates/firna-ui-release/README.md](crates/firna-ui-release/README.md)
 - Shared component protocol:
   [docs/protocol/shared-ui-components.md](docs/protocol/shared-ui-components.md)
 - Consumer migration handoff: [docs/consumer-migration.md](docs/consumer-migration.md)

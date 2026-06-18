@@ -151,6 +151,7 @@ export const CircleCheck = Icon;
 export const CircleX = Icon;
 export const Info = Icon;
 export const LoaderCircle = Icon;
+export const Plus = Icon;
 export const Search = Icon;
 export const TriangleAlert = Icon;
 export const X = Icon;
@@ -220,6 +221,7 @@ export type AccessibilityRole = string;
 export interface AccessibilityState {
   [key: string]: unknown;
 }
+export type DimensionValue = number | string | null | undefined;
 export interface TextInputProps {
   [key: string]: unknown;
 }

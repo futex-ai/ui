@@ -3,8 +3,8 @@
 ## Status
 
 Implemented contract for the dropdown, drag-select, segmented control, radio
-card, switch, button, modal, toast, and avatar extraction, including the shared
-control-size scale for buttons and inputs.
+card, switch, button, modal, toast, avatar, and event-calendar extraction,
+including the shared control-size scale for buttons and inputs.
 
 ## Purpose
 
@@ -169,6 +169,36 @@ Required behavior:
   the calendar escapes sibling stacking contexts.
 - Keep day cells, navigation buttons, and the clear button labelled for
   assistive technology, and include the field label in those accessible names.
+
+## Calendar Contract
+
+The calendar family covers a full event calendar (Google-Calendar-style) built
+on the shared datetime helpers, distinct from the date-field pickers.
+
+Required behavior:
+
+- Render month, week, day, and agenda views from a single controlled event list,
+  using timezone-naive ISO datetimes (`YYYY-MM-DDTHH:mm`) for timed events and
+  ISO dates (`YYYY-MM-DD`) for all-day events.
+- Let consumers either enforce one fixed view (no in-app switcher) or expose a
+  switcher across an allowed subset of views, with controlled or uncontrolled
+  view and focused-date state plus prev/next/today navigation.
+- Expand recurring events through a pragmatic RRULE subset — daily, weekly (with
+  by-weekday), monthly, and yearly frequencies, with interval, count, until, and
+  per-date exceptions — into concrete occurrences intersecting the view window,
+  preserving each instance's duration, behind a hard iteration cap.
+- Lay timed events that overlap into side-by-side columns within a day, and lay
+  multi-day and all-day events as spanning bars with lane overflow (`+N more`)
+  in the month grid.
+- Support web drag-to-create: dragging (or clicking) an empty region of the time
+  grid yields a snapped start/end draft surfaced through a create callback, and
+  dragging across month-grid day cells yields a multi-day all-day draft, each
+  with a native-safe no-op fallback for Expo platform resolution.
+- Keep view-switch segments, navigation, day cells, event blocks, and event
+  chips labelled for assistive technology, and inject "today"/"now" rather than
+  reading a clock inside the pure helpers.
+- Keep the pure datetime, recurrence, and layout helpers exported and covered by
+  unit tests.
 
 ## Heatmap Contract
 
@@ -356,27 +386,25 @@ Required behavior:
   imports and re-exports.
 - The `react-native` export condition must continue to point at the normal
   `dist/**` build so React Native platform resolution can choose platform files.
-- `package.json` and `package-lock.json` versions must match the root
-  `firna-ui-release` Cargo package version before a release PR is merged.
-- Generated release PR files must be prepared with
-  `cargo xtask prepare-release-pr`, which syncs npm metadata and formats
-  `CHANGELOG.md`, `package.json`, and `package-lock.json` before CI validates
-  the branch.
-- release-plz owns changelog updates, release PR creation, `vX.Y.Z` Git tags,
-  and GitHub releases.
-- release-plz must use `release_always = true` so squash-merged release PRs
-  create tags and GitHub releases, and the release workflow must verify the
-  `main` commit is associated with a `release-plz-*` PR before creating a
-  release. Ordinary pushes to `main` must not create releases or publish npm
-  packages.
+- release-please owns release PR creation, changelog updates, npm metadata
+  version updates, `vX.Y.Z` Git tags, and GitHub releases.
+- release-please must use the `node` release type so release PRs update
+  `CHANGELOG.md`, `package.json`, and `package-lock.json` together.
+- Ordinary pushes to `main` must not publish npm packages; publishing must only
+  run when release-please reports that a GitHub release was created from a
+  merged release PR, or when a maintainer manually dispatches a publish retry
+  for an existing `vX.Y.Z` tag.
 - npm publishing must run in the same workflow invocation that creates the
   GitHub release so it does not depend on a separate `release` event emitted by
   `GITHUB_TOKEN`.
+- That workflow must remain at `.github/workflows/release-plz.yml` unless the
+  npm trusted-publisher configuration is updated at the same time; npm validates
+  the configured workflow filename during `npm publish`.
+- The same workflow must expose a manual retry path that checks out an existing
+  release tag and runs the same verification and npm publish steps without
+  creating a new GitHub release.
 - npm publishing must use npm trusted publishing with `id-token: write` and
   must guard against republishing an already-published version.
-- The same workflow may expose a manually dispatched fallback that publishes a
-  checked release tag when a maintainer needs to retry a failed npm publish
-  without creating a new release.
 - Scoped package publishing must use public access.
 
 ## CI And Preview Contract
@@ -386,15 +414,20 @@ Required behavior:
 - The stable main Storybook deploy uses the Cloudflare Pages production branch
   `main` and the default production URL
   `https://futex-ui-storybook.pages.dev`, unless a custom domain is added later.
-- PR Storybook previews deploy the static Storybook build to Cloudflare Pages
-  with branch name `pr-<number>`, producing a predictable preview URL such as
+- Same-repository non-release PR Storybook previews deploy the static Storybook
+  build to Cloudflare Pages with branch name `pr-<number>`, producing a
+  predictable preview URL such as
   `https://pr-123.futex-ui-storybook.pages.dev`.
 - Every PR must run `cargo xtask check` after dependency installation. The
   xtask check runs the JavaScript verification suite: formatting, unit tests,
   typecheck, package build, package tarball smoke test, Storybook build, and
   browser interaction tests.
 - The main branch must publish a stable default Storybook deployment.
-- Every PR must publish an isolated Storybook preview deployment.
+- Every same-repository non-release PR must publish an isolated Storybook
+  preview deployment.
+- Release Please PRs, identified by a `release-please--` head branch or an
+  `autorelease:` label, must skip the Storybook preview deploy job because they
+  only update release metadata for changes already previewed in source PRs.
 - The PR Storybook URL must be posted back to the pull request through a sticky
   comment with marker `<!-- futex-ui-storybook-preview -->`, matching the
   preview-comment pattern used by accounting and Juno.
@@ -413,13 +446,14 @@ Required behavior:
 - Storybook previews must include at least the shared dropdown selector,
   dropdown action menu, input-backed combobox, chip multi-select, segmented
   control variants, radio card group, switch toggle, button tones and sizes,
-  user avatars, centered web modal, bottom-sheet web modal, toast tones and an
-  action toast, default accounting theme, and alternate primary color theme.
+  user avatars, a month event calendar, centered web modal, bottom-sheet web
+  modal, toast tones and an action toast, default accounting theme, and
+  alternate primary color theme.
 - Storybook navigation must keep each example family in its own top-level
-  folder, currently `Avatar/Examples`, `Button/Examples`, `Date/Examples`,
-  `Dropdown/Examples`, `Heatmap/Examples`, `Input/Examples`, `Modal/Examples`,
-  `Popover/Examples`, `Radio/Examples`, `Segmented/Examples`, `Switch/Examples`,
-  `Theme/Examples`, and `Toast/Examples`.
+  folder, currently `Avatar/Examples`, `Button/Examples`, `Calendar/Examples`,
+  `Date/Examples`, `Dropdown/Examples`, `Heatmap/Examples`, `Input/Examples`,
+  `Modal/Examples`, `Popover/Examples`, `Radio/Examples`, `Segmented/Examples`,
+  `Switch/Examples`, `Theme/Examples`, and `Toast/Examples`.
 
 ## Non-Goals
 

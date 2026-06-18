@@ -67,7 +67,11 @@ jobs:
     if: >-
       github.event_name == 'pull_request' &&
       github.event.action != 'closed' &&
-      github.event.pull_request.head.repo.full_name == github.repository
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      !(
+        startsWith(github.event.pull_request.head.ref, 'release-please--') ||
+        contains(join(github.event.pull_request.labels.*.name, ','), 'autorelease:')
+      )
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -278,13 +282,6 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 comment_id: existing.id,
-                body
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.payload.pull_request.number,
                 body
               });
             }
