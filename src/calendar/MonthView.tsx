@@ -29,8 +29,12 @@ import {
   type CalendarMonthDragCreate,
 } from "./useCalendarMonthDragCreate";
 
-/** Vertical room reserved above the bar lanes for the day-number header. */
-const HEADER_HEIGHT = 22;
+/**
+ * Vertical room reserved above the bar lanes for the day-number header. Must
+ * clear the cell's top padding (4) plus the today pill (22) with a gap, so the
+ * green today marker never bleeds into a green spanning bar in lane 0.
+ */
+const HEADER_HEIGHT = 30;
 /** Height of one spanning bar lane (bar + gap). */
 const LANE_HEIGHT = 18;
 
