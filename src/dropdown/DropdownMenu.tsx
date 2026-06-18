@@ -27,6 +27,7 @@ import type {
   DropdownMenuTriggerMode,
   DropdownMenuTriggerProps,
 } from "./dropdownMenuModel";
+import { useDropdownSelectorNavigation } from "./useDropdownSelectorNavigation";
 import { useDropdownHover } from "./useDropdownHover";
 import type { DropdownHoverProps } from "./useDropdownHover";
 
@@ -146,6 +147,27 @@ export function DropdownMenu({
     () => closeDropdownMenuEntries(rawEntries, close, closeOnSelect),
     [close, closeOnSelect, rawEntries],
   );
+  const {
+    activeId: navigationActiveId,
+    keyProps: navigationKeyProps,
+    setActiveId: setNavigationActiveId,
+  } = useDropdownSelectorNavigation({
+    entries: menuEntries,
+    interactive: hasSelectableDropdownMenuEntry(menuEntries),
+    onClose: close,
+    onOpen: openMenu,
+    open,
+    resetOnOpen: true,
+    typeahead: Boolean(search),
+  });
+  const activeRowId = activeId === undefined ? navigationActiveId : activeId;
+  const setActiveRowId = useCallback(
+    (id: string | null) => {
+      setNavigationActiveId(id);
+      onActiveIdChange?.(id);
+    },
+    [onActiveIdChange, setNavigationActiveId],
+  );
   // Hover-open is auto-wired for `trigger="hover"` and inert otherwise. The hook
   // runs every render (rules of hooks) but no-ops while disabled.
   const hover = useDropdownHover({
@@ -157,6 +179,10 @@ export function DropdownMenu({
     hoverProps: hover.triggerHoverProps,
     isWeb: Platform.OS === "web",
   });
+  const menuTriggerProps = {
+    ...triggerProps,
+    ...navigationKeyProps,
+  };
   const portalSurfaceHoverProps =
     trigger === "hover"
       ? mergeDropdownSurfaceHoverProps(
@@ -167,7 +193,7 @@ export function DropdownMenu({
 
   return (
     <View ref={anchorRef} style={[styles.anchor, style]}>
-      {dropdownMenuTriggerNode(children, menuState, triggerProps)}
+      {dropdownMenuTriggerNode(children, menuState, menuTriggerProps)}
       <DropdownPortal
         align={align}
         anchorRef={anchorRef}
@@ -183,12 +209,12 @@ export function DropdownMenu({
       >
         {(placement) => (
           <DropdownList
-            activeId={activeId}
+            activeId={activeRowId}
             entries={menuEntries}
             footer={footer}
             header={header}
             maxHeight={placement.maxHeight}
-            onActiveIdChange={onActiveIdChange}
+            onActiveIdChange={setActiveRowId}
             onClose={close}
             search={search}
           />
@@ -212,6 +238,13 @@ function dropdownMenuTriggerNode(
   return cloneElement(
     trigger,
     mergeDropdownMenuTriggerProps(trigger.props, triggerProps),
+  );
+}
+
+function hasSelectableDropdownMenuEntry(entries: DropdownListEntry[]): boolean {
+  return entries.some(
+    (entry) =>
+      (entry.type === "item" || entry.type === "footer") && !entry.disabled,
   );
 }
 

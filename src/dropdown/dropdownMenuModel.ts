@@ -2,6 +2,14 @@
 import type { DropdownListEntry } from "./DropdownList";
 import type { DropdownHoverProps } from "./useDropdownHover";
 
+/** Keyboard event shape handled by dropdown menu triggers. */
+export type DropdownMenuTriggerKeyEvent = {
+  key?: string;
+  nativeEvent?: { key?: string };
+  preventDefault?: () => void;
+  stopPropagation?: () => void;
+};
+
 /**
  * How the child trigger opens the menu.
  *
@@ -27,6 +35,7 @@ export type DropdownMenuTriggerMode =
 export type DropdownMenuTriggerProps = {
   "aria-expanded": boolean;
   "aria-haspopup": "menu";
+  onKeyDown?: (event: DropdownMenuTriggerKeyEvent) => boolean | void;
   onPress?: () => void;
   onHoverIn?: () => void;
   onHoverOut?: () => void;
@@ -41,6 +50,7 @@ export type DropdownMenuTriggerElementProps = {
   onPress?: (event: unknown) => void;
   onHoverIn?: (event: unknown) => void;
   onHoverOut?: (event: unknown) => void;
+  onKeyDown?: (event: DropdownMenuTriggerKeyEvent) => void;
   onLongPress?: (event: unknown) => void;
   onContextMenu?: (event: { preventDefault?: () => void }) => void;
 };
@@ -138,7 +148,7 @@ export function resolveDropdownMenuTriggerProps(
 
 function composeTriggerHandler<E>(
   original: ((event: E) => void) | undefined,
-  added: (event: E) => void,
+  added: (event: E) => boolean | void,
 ): (event: E) => void {
   return (event: E) => {
     original?.(event);
@@ -176,6 +186,12 @@ export function mergeDropdownMenuTriggerProps(
     merged.onHoverOut = composeTriggerHandler(
       childProps.onHoverOut,
       triggerProps.onHoverOut,
+    );
+  }
+  if (triggerProps.onKeyDown) {
+    merged.onKeyDown = composeTriggerHandler(
+      childProps.onKeyDown,
+      triggerProps.onKeyDown,
     );
   }
   if (triggerProps.onLongPress) {
