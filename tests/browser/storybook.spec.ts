@@ -1282,6 +1282,39 @@ test("avatar renders initials and sizes the disc from the size prop", async ({
   expect(box?.height).toBeLessThanOrEqual(49);
 });
 
+test("spinner renders an accessible, continuously rotating loading indicator", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=spinner-examples--loading-states");
+
+  const spinner = page.getByRole("progressbar", { name: "Loading" }).first();
+  await expect(spinner).toBeVisible();
+  await expect(spinner).toHaveAttribute("aria-busy", "true");
+
+  // The default md spinner is a 24px ring. Its box stays stable because only the
+  // inner ring rotates, not the labelled container (a rotating square's
+  // axis-aligned box would otherwise oscillate).
+  const box = await spinner.boundingBox();
+  expect(box?.width).toBeGreaterThanOrEqual(23);
+  expect(box?.width).toBeLessThanOrEqual(25);
+
+  // The leading arc is a distinct SVG stroke painted in the theme primary, not a
+  // uniform ring, so the moving segment stays visible (also on native).
+  await expect(
+    spinner.locator('circle[stroke="#4f7864"]').first(),
+  ).toBeAttached();
+
+  // The ring genuinely spins: its transform matrix keeps advancing, so a later
+  // sample differs from the first one.
+  const readRingTransform = () =>
+    spinner.evaluate((node) => {
+      const ring = node.firstElementChild as HTMLElement | null;
+      return ring ? getComputedStyle(ring).transform : "none";
+    });
+  const firstTransform = await readRingTransform();
+  await expect.poll(readRingTransform).not.toBe(firstTransform);
+});
+
 test("button reflects press and disabled state", async ({ page }) => {
   await page.goto("/iframe.html?id=button-examples--interactive");
 
