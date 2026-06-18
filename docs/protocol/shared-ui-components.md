@@ -362,10 +362,14 @@ Required behavior:
   `CHANGELOG.md`, `package.json`, and `package-lock.json` together.
 - Ordinary pushes to `main` must not publish npm packages; publishing must only
   run when release-please reports that a GitHub release was created from a
-  merged release PR.
+  merged release PR, or when a maintainer manually dispatches a publish retry
+  for an existing `vX.Y.Z` tag.
 - npm publishing must run in the same workflow invocation that creates the
   GitHub release so it does not depend on a separate `release` event emitted by
   `GITHUB_TOKEN`.
+- The same workflow must expose a manual retry path that checks out an existing
+  release tag and runs the same verification and npm publish steps without
+  creating a new GitHub release.
 - npm publishing must use npm trusted publishing with `id-token: write` and
   must guard against republishing an already-published version.
 - Scoped package publishing must use public access.

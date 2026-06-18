@@ -11,7 +11,9 @@ Completed.
   The current workflow lives at `.github/workflows/release.yml`; release-please
   updates `CHANGELOG.md`, `package.json`, and `package-lock.json`, creates the
   `vX.Y.Z` tag and GitHub release, and publishes npm from the same workflow when
-  `release_created` is true. The release-plz milestones in this completed plan
+  `release_created` is true. The same workflow also supports a manual
+  `publish_ref` retry for an existing `vX.Y.Z` tag if publishing fails after the
+  GitHub release is created. The release-plz milestones in this completed plan
   are historical notes from the earlier implementation.
 - 2026-06-15 historical correction: before the release-please migration, the
   release-plz flow used `release_always = true` so squash-merged release PRs

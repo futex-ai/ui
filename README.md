@@ -115,6 +115,10 @@ The package export map intentionally separates runtime targets:
   Playwright browser, verifies the release tag matches `package.json`, runs
   `cargo xtask check`, and skips publishing if the version already exists on
   npm.
+- If publish fails after the GitHub release was created, manually dispatch the
+  release workflow with `publish_ref` set to the existing `vX.Y.Z` tag. The
+  retry path checks out that tag and runs the same verification and publish
+  steps.
 - Scoped npm packages default to private, so `publishConfig.access` is set to
   `public`.
 

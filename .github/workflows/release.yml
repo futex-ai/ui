@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      publish_ref:
+        description: Existing vX.Y.Z tag to publish.
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -23,43 +29,83 @@ jobs:
       cancel-in-progress: false
     steps:
       - name: Run release-please
+        if: github.event_name == 'push'
         id: release
         uses: googleapis/release-please-action@v4
         with:
           release-type: node
           token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
 
+      - name: Resolve publish target
+        id: publish-target
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUBLISH_REF: ${{ github.event.inputs.publish_ref || '' }}
+          RELEASE_CREATED: ${{ steps.release.outputs.release_created }}
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag_name }}
+        run: |
+          set -euo pipefail
+
+          if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
+            if [ -z "${PUBLISH_REF}" ]; then
+              echo "::error title=Missing publish ref::Provide an existing vX.Y.Z tag."
+              exit 1
+            fi
+            if [[ ! "${PUBLISH_REF}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "::error title=Invalid publish ref::Expected an existing vX.Y.Z tag, got ${PUBLISH_REF}."
+              exit 1
+            fi
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+            echo "ref=${PUBLISH_REF}" >> "$GITHUB_OUTPUT"
+            echo "tag=${PUBLISH_REF}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "${RELEASE_CREATED}" = "true" ]; then
+            if [ -z "${RELEASE_SHA}" ] || [ -z "${RELEASE_TAG}" ]; then
+              echo "::error title=Missing release target::release-please did not return a release SHA and tag."
+              exit 1
+            fi
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+            echo "ref=${RELEASE_SHA}" >> "$GITHUB_OUTPUT"
+            echo "tag=${RELEASE_TAG}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "should_publish=false" >> "$GITHUB_OUTPUT"
+
       - name: Check out repository
-        if: steps.release.outputs.release_created == 'true'
+        if: steps.publish-target.outputs.should_publish == 'true'
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.release.outputs.sha }}
+          ref: ${{ steps.publish-target.outputs.ref }}
 
       - name: Set up Node
-        if: steps.release.outputs.release_created == 'true'
+        if: steps.publish-target.outputs.should_publish == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
 
       - name: Ensure npm supports trusted publishing
-        if: steps.release.outputs.release_created == 'true'
+        if: steps.publish-target.outputs.should_publish == 'true'
         run: npm install --global npm@11.7.0
 
       - name: Set up Rust
-        if: steps.release.outputs.release_created == 'true'
+        if: steps.publish-target.outputs.should_publish == 'true'
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install dependencies
-        if: steps.release.outputs.release_created == 'true'
+        if: steps.publish-target.outputs.should_publish == 'true'
         run: npm ci
 
       - name: Install Playwright browser
-        if: steps.release.outputs.release_created == 'true'
+        if: steps.publish-target.outputs.should_publish == 'true'
         run: npx playwright install --with-deps chromium
 
       - name: Verify release version
-        if: steps.release.outputs.release_created == 'true'
+        if: steps.publish-target.outputs.should_publish == 'true'
         id: version
         run: |
           package_version="$(node -p "JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version")"
@@ -69,14 +115,14 @@ jobs:
           fi
           echo "version=${package_version}" >> "$GITHUB_OUTPUT"
         env:
-          RELEASE_TAG: ${{ steps.release.outputs.tag_name }}
+          RELEASE_TAG: ${{ steps.publish-target.outputs.tag }}
 
       - name: Run repository checks
-        if: steps.release.outputs.release_created == 'true'
+        if: steps.publish-target.outputs.should_publish == 'true'
         run: cargo xtask check
 
       - name: Skip if version is already published
-        if: steps.release.outputs.release_created == 'true'
+        if: steps.publish-target.outputs.should_publish == 'true'
         id: published
         run: |
           if npm view "@firna/ui@${PACKAGE_VERSION}" version --registry "https://registry.npmjs.org/" >/dev/null 2>&1; then
@@ -89,5 +135,5 @@ jobs:
           PACKAGE_VERSION: ${{ steps.version.outputs.version }}
 
       - name: Publish package
-        if: steps.release.outputs.release_created == 'true' && steps.published.outputs.published != 'true'
+        if: steps.publish-target.outputs.should_publish == 'true' && steps.published.outputs.published != 'true'
         run: npm publish --access public
