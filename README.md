@@ -81,8 +81,11 @@ Run the same read-only AI review wrapper used by the accounting repo with:
 cargo xtask review
 ```
 
-Browser interaction tests start Storybook automatically through Playwright.
-Storybook is built to `storybook-static`. `npm run test:package` builds a
+Browser interaction tests start Storybook automatically through Playwright on a
+deterministic workspace-specific port to avoid collisions with parallel local
+workspaces. Override it with `PLAYWRIGHT_STORYBOOK_PORT` when a fixed port is
+needed for debugging. Storybook is built to `storybook-static`.
+`npm run test:package` builds a
 packed tarball, installs it into temporary consumers, imports every public
 package subpath with Node's native ESM resolver, typechecks those subpaths with
 TypeScript's NodeNext resolver, and then verifies the same subpaths through a
@@ -122,9 +125,10 @@ The package export map intentionally separates runtime targets:
   `cargo xtask check`, and skips publishing if the version already exists on
   npm.
 - If publish fails after the GitHub release was created, manually dispatch the
-  release workflow with `publish_ref` set to the existing `vX.Y.Z` tag. The
-  retry path checks out that tag and runs the same verification and publish
-  steps.
+  release workflow with `publish_ref` set to the exact existing `vX.Y.Z` tag for
+  the package version, including a zero major version when applicable. The retry
+  path validates the tag exists before checkout, then runs the same verification
+  and publish steps.
 - Scoped npm packages default to private, so `publishConfig.access` is set to
   `public`.
 

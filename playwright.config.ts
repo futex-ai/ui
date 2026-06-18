@@ -1,4 +1,13 @@
+import { createHash } from "node:crypto";
+
 import { defineConfig, devices } from "@playwright/test";
+
+const STORYBOOK_PORT_BASE = 16_000;
+const STORYBOOK_PORT_SPAN = 20_000;
+
+const storybookPort =
+  process.env.PLAYWRIGHT_STORYBOOK_PORT ?? workspaceStorybookPort();
+const storybookUrl = `http://127.0.0.1:${storybookPort}`;
 
 export default defineConfig({
   expect: {
@@ -6,14 +15,14 @@ export default defineConfig({
   },
   testDir: "tests/browser",
   use: {
-    baseURL: "http://127.0.0.1:6006",
+    baseURL: storybookUrl,
     trace: "retain-on-failure",
   },
   webServer: {
-    command: "npm run storybook -- --ci --host 127.0.0.1",
-    reuseExistingServer: !process.env.CI,
+    command: `npm run storybook -- --ci --host 127.0.0.1 --port ${storybookPort}`,
+    reuseExistingServer: false,
     timeout: 120_000,
-    url: "http://127.0.0.1:6006",
+    url: storybookUrl,
   },
   projects: [
     {
@@ -22,3 +31,10 @@ export default defineConfig({
     },
   ],
 });
+
+function workspaceStorybookPort() {
+  const digest = createHash("sha256").update(process.cwd()).digest();
+  return String(
+    STORYBOOK_PORT_BASE + (digest.readUInt16BE(0) % STORYBOOK_PORT_SPAN),
+  );
+}

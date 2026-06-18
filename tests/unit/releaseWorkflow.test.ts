@@ -80,6 +80,20 @@ test("release workflow can retry publishing an existing tag", () => {
   assert.match(workflow, /echo "tag=\$\{PUBLISH_REF\}"/);
 });
 
+test("release workflow validates manual retry tags before checkout", () => {
+  const workflow = readReleaseWorkflow();
+
+  assert.match(workflow, /GH_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}/);
+  assert.match(workflow, /GH_API_URL: \$\{\{ github\.api_url \}\}/);
+  assert.match(
+    workflow,
+    /repos\/\$\{REPOSITORY\}\/git\/ref\/tags\/\$\{PUBLISH_REF\}/,
+  );
+  assert.match(workflow, /Publish tag not found/);
+  assert.match(workflow, /Tag \$\{PUBLISH_REF\} does not exist/);
+  assert.match(workflow, /exit 1/);
+});
+
 test("release workflow keeps the trusted npm publisher filename", () => {
   assert.equal(existsSource("../../.github/workflows/release-plz.yml"), true);
   assert.equal(existsSource("../../.github/workflows/release.yml"), false);
