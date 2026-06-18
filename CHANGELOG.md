@@ -11,12 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- *(heatmap)* add configurable calendar heatmap component ([#40](https://github.com/futex-ai/ui/pull/40))
-- *(dropdown)* add configurable trigger options to DropdownMenu ([#37](https://github.com/futex-ai/ui/pull/37))
+- _(heatmap)_ add configurable calendar heatmap component ([#40](https://github.com/futex-ai/ui/pull/40))
+- _(dropdown)_ add configurable trigger options to DropdownMenu ([#37](https://github.com/futex-ai/ui/pull/37))
 
 ### Fixed
 
-- *(dropdown)* wire menu hover navigation ([#38](https://github.com/futex-ai/ui/pull/38))
+- _(dropdown)_ wire menu hover navigation ([#38](https://github.com/futex-ai/ui/pull/38))
 - format changelog release notes ([#34](https://github.com/futex-ai/ui/pull/34))
 
 ### Other
