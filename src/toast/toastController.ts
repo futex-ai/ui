@@ -1,18 +1,19 @@
 /** Module-level toast controller backed by the mounted provider. */
 import type { ToastApi } from "./ToastContext";
 
-let currentToastApi: ToastApi | null = null;
+const toastApiStack: ToastApi[] = [];
 
 /**
  * Registers the provider's current API for module-level calls. The returned
- * cleanup only clears the active API when it is still the same provider API,
- * which keeps nested or remounted providers from unregistering each other.
+ * cleanup removes only that provider API, so nested or remounted providers
+ * reveal the previously-mounted provider when they unmount.
  */
 export function registerToastProviderApi(api: ToastApi): () => void {
-  currentToastApi = api;
+  toastApiStack.push(api);
   return () => {
-    if (currentToastApi === api) {
-      currentToastApi = null;
+    const index = toastApiStack.lastIndexOf(api);
+    if (index >= 0) {
+      toastApiStack.splice(index, 1);
     }
   };
 }
@@ -25,10 +26,11 @@ export const toastController: ToastApi = {
 };
 
 function activeToastApi(): ToastApi {
-  if (currentToastApi === null) {
+  const api = toastApiStack.at(-1);
+  if (!api) {
     throw new Error(
       "toastController must be used after a <ToastProvider> has mounted.",
     );
   }
-  return currentToastApi;
+  return api;
 }

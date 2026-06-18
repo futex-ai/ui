@@ -71,23 +71,29 @@ test("createToastItem fills defaults and forwards caller options", () => {
   assert.deepEqual(minimal, {
     action: undefined,
     description: undefined,
+    descriptionStyle: undefined,
     dismissible: true,
     duration: 5000,
     id: "toast-0",
     title: "Saved",
+    titleStyle: undefined,
     tone: "info",
     variant: "card",
   });
 
   const action = { label: "Undo", onPress: () => undefined };
+  const descriptionStyle = { fontSize: 12 };
+  const titleStyle = { fontWeight: "900" as const };
   const full = createToastItem(
     "toast-1",
     {
       action,
       description: "Removed invoice",
+      descriptionStyle,
       dismissible: false,
       duration: null,
       title: "Deleted",
+      titleStyle,
       tone: "error",
       variant: "solid",
     },
@@ -99,6 +105,8 @@ test("createToastItem fills defaults and forwards caller options", () => {
   assert.equal(full.duration, null);
   assert.equal(full.action, action);
   assert.equal(full.description, "Removed invoice");
+  assert.equal(full.descriptionStyle, descriptionStyle);
+  assert.equal(full.titleStyle, titleStyle);
 });
 
 test("enqueueToast appends and trims the oldest beyond the cap", () => {
@@ -218,6 +226,7 @@ test("toast solid variant is prop-driven and owns filled styling", () => {
     },
     5000,
   );
+  const colors = readSource("../../src/toast/toastColors.ts");
   const surface = readSource("../../src/toast/Toast.tsx");
   const styles = readSource("../../src/toast/toastStyles.ts");
 
@@ -225,10 +234,35 @@ test("toast solid variant is prop-driven and owns filled styling", () => {
   assert.equal(item.dismissible, false);
   assert.match(surface, /toast\.variant === "solid"/);
   assert.match(surface, /styles\.solidToast/);
-  assert.match(surface, /toastSolidToneBackground/);
-  assert.match(surface, /theme\.colors\.rose/);
+  assert.match(colors, /toastSolidToneBackground/);
+  assert.match(colors, /toastSolidToneForeground/);
+  assert.match(colors, /toastContrastRatio/);
+  assert.match(colors, /theme\.colors\.ink/);
+  assert.match(colors, /theme\.colors\.rose/);
   assert.match(styles, /solidToast/);
   assert.match(styles, /solidTitle/);
+});
+
+test("toast text styles are caller-overridable", () => {
+  const source = readSource("../../src/toast/Toast.tsx");
+  const item = createToastItem(
+    "toast-styled",
+    {
+      description: "Styled description",
+      descriptionStyle: { fontFamily: "Test Description" },
+      title: "Styled title",
+      titleStyle: { fontFamily: "Test Title" },
+      variant: "solid",
+    },
+    5000,
+  );
+
+  assert.deepEqual(item.titleStyle, { fontFamily: "Test Title" });
+  assert.deepEqual(item.descriptionStyle, {
+    fontFamily: "Test Description",
+  });
+  assert.match(source, /toast\.titleStyle/);
+  assert.match(source, /toast\.descriptionStyle/);
 });
 
 test("useToast throws outside a provider and the provider renders the viewport", () => {
@@ -267,6 +301,33 @@ test("toast controller delegates to the mounted provider API", () => {
     () => toastController.toast({ title: "Too early" }),
     /after a <ToastProvider> has mounted/,
   );
+});
+
+test("toast controller restores the outer provider after nested cleanup", () => {
+  const calls: string[] = [];
+  const unregisterOuter = registerToastProviderApi({
+    dismiss: () => undefined,
+    dismissAll: () => undefined,
+    toast: (options) => {
+      calls.push(`outer:${options.title}`);
+      return "outer";
+    },
+  });
+  const unregisterInner = registerToastProviderApi({
+    dismiss: () => undefined,
+    dismissAll: () => undefined,
+    toast: (options) => {
+      calls.push(`inner:${options.title}`);
+      return "inner";
+    },
+  });
+
+  assert.equal(toastController.toast({ title: "First" }), "inner");
+  unregisterInner();
+  assert.equal(toastController.toast({ title: "Second" }), "outer");
+  unregisterOuter();
+
+  assert.deepEqual(calls, ["inner:First", "outer:Second"]);
 });
 
 test("public toast entrypoint exports surface, provider, context, models, and layers", () => {

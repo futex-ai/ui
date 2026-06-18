@@ -139,22 +139,67 @@ function QueueControls() {
   );
 }
 
-function SolidMethodTrigger() {
+function SolidVariantTriggers() {
   return (
-    <Button
-      onPress={() =>
-        toastController.toast({
-          dismissible: false,
-          duration: null,
-          title: "Couldn't move this transaction. Try again.",
-          tone: "error",
-          variant: "solid",
-        })
-      }
-      tone="danger"
-    >
-      Show solid error
-    </Button>
+    <View style={styles.row}>
+      <Button
+        onPress={() =>
+          toastController.toast({
+            dismissible: false,
+            duration: null,
+            title: "Couldn't move this transaction. Try again.",
+            tone: "error",
+            variant: "solid",
+          })
+        }
+        tone="danger"
+      >
+        Show solid error
+      </Button>
+      <Button
+        onPress={() =>
+          toastController.toast({
+            description: "Check the category and try again.",
+            dismissible: false,
+            duration: null,
+            title: "Transaction not moved",
+            tone: "error",
+            variant: "solid",
+          })
+        }
+        tone="danger"
+      >
+        Show description
+      </Button>
+      <Button
+        onPress={() =>
+          toastController.toast({
+            action: { label: "Retry", onPress: () => undefined },
+            dismissible: false,
+            duration: null,
+            title: "Move failed",
+            tone: "error",
+            variant: "solid",
+          })
+        }
+        tone="danger"
+      >
+        Show action
+      </Button>
+      <Button
+        onPress={() =>
+          toastController.toast({
+            duration: null,
+            title: "Saved as draft",
+            tone: "success",
+            variant: "solid",
+          })
+        }
+        tone="primary"
+      >
+        Show close
+      </Button>
+    </View>
   );
 }
 
@@ -191,5 +236,5 @@ export const QueueAndDismissAll: Story = {
 
 export const SolidBottomCenter: Story = {
   name: "Solid bottom-center",
-  render: () => playground("bottom-center", <SolidMethodTrigger />),
+  render: () => playground("bottom-center", <SolidVariantTriggers />),
 };

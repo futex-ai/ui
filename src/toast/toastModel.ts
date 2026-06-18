@@ -1,4 +1,5 @@
 /** Pure types and helpers for the toast notification system. */
+import type { StyleProp, TextStyle } from "react-native";
 
 /**
  * Visual + semantic tone of a toast:
@@ -40,8 +41,12 @@ export type ToastAction = {
 export type ToastOptions = {
   /** Bold headline line. */
   title: string;
+  /** Optional style override layered after the built-in title style. */
+  titleStyle?: StyleProp<TextStyle>;
   /** Optional secondary line beneath the title. */
   description?: string;
+  /** Optional style override layered after the built-in description style. */
+  descriptionStyle?: StyleProp<TextStyle>;
   /** Visual + semantic tone. Defaults to `info`. */
   tone?: ToastTone;
   /** Visual presentation. Defaults to `card`. */
@@ -65,7 +70,9 @@ export type ToastOptions = {
 export type ToastItem = {
   id: string;
   title: string;
+  titleStyle?: StyleProp<TextStyle>;
   description?: string;
+  descriptionStyle?: StyleProp<TextStyle>;
   tone: ToastTone;
   /** Resolved auto-dismiss delay in ms, or `null` when sticky. */
   duration: number | null;
@@ -118,10 +125,12 @@ export function createToastItem(
   return {
     action: options.action,
     description: options.description,
+    descriptionStyle: options.descriptionStyle,
     dismissible: options.dismissible ?? true,
     duration: resolveToastDuration(options.duration, fallbackDuration),
     id,
     title: options.title,
+    titleStyle: options.titleStyle,
     tone: options.tone ?? DEFAULT_TOAST_TONE,
     variant: options.variant ?? DEFAULT_TOAST_VARIANT,
   };

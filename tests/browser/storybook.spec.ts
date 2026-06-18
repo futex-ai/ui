@@ -1616,6 +1616,30 @@ test("solid toast variant can be triggered through the controller", async ({
     expect(Math.abs(toastCenter - viewport.width / 2)).toBeLessThan(20);
     expect(box.y + box.height).toBeGreaterThan(viewport.height - 48);
   }
+
+  await page.getByRole("button", { name: "Show description" }).click();
+  const descriptionToast = page
+    .getByRole("alert")
+    .filter({ hasText: "Transaction not moved" });
+  await expect(descriptionToast).toContainText(
+    "Check the category and try again.",
+  );
+
+  await page.getByRole("button", { name: "Show action" }).click();
+  const actionToast = page
+    .getByRole("alert")
+    .filter({ hasText: "Move failed" });
+  await expect(actionToast).toBeVisible();
+  await page.getByRole("button", { name: "Retry" }).click();
+  await expect(actionToast).toBeHidden();
+
+  await page.getByRole("button", { name: "Show close" }).click();
+  const closeToast = page
+    .getByRole("status")
+    .filter({ hasText: "Saved as draft" });
+  await expect(closeToast).toBeVisible();
+  await page.getByRole("button", { name: "Dismiss Saved as draft" }).click();
+  await expect(closeToast).toBeHidden();
 });
 
 test("hovering a toast pauses its auto-dismiss countdown", async ({ page }) => {

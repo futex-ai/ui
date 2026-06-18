@@ -54,7 +54,6 @@ export function createToastStyles(theme: SharedUiTheme) {
     solidActionButtonHover: { backgroundColor: "rgba(255, 255, 255, 0.14)" },
     solidActionText: {
       ...baseText,
-      color: theme.colors.surface,
       fontSize: 14,
       fontWeight: "800",
       lineHeight: 20,
@@ -72,12 +71,10 @@ export function createToastStyles(theme: SharedUiTheme) {
     solidCloseButtonHover: { backgroundColor: "rgba(255, 255, 255, 0.14)" },
     solidContent: { flex: 1, minWidth: 0 },
     solidDescription: {
-      color: "rgba(255, 255, 255, 0.82)",
       lineHeight: 20,
       textAlign: "center",
     },
     solidTitle: {
-      color: theme.colors.surface,
       fontSize: 14,
       fontWeight: "800",
       lineHeight: 20,

@@ -90,6 +90,9 @@ toastController.toast({
 });
 ```
 
+- Pass `titleStyle` and `descriptionStyle` to override the text styles for one
+  toast. These style props layer after the built-in card/solid title and
+  description styles.
 - Pass `action={{ label: "Undo", onPress }}` to add an action; pressing it runs
   `onPress` and dismisses the toast.
 - `dismiss(id)` removes one toast (the id is returned from `toast()`),

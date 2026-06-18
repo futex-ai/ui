@@ -14,8 +14,12 @@ import type { ViewProps } from "react-native";
 import { Button } from "../button";
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
-import type { SharedUiTheme } from "../theme";
 
+import {
+  toastSolidToneBackground,
+  toastSolidToneForeground,
+  toastToneAccent,
+} from "./toastColors";
 import { createToastStyles } from "./toastStyles";
 import { toastLiveRegion, toastRole } from "./toastModel";
 import type { ToastItem, ToastTone } from "./toastModel";
@@ -47,8 +51,19 @@ export function Toast({ toast, onDismiss }: ToastProps) {
   const accent = toastToneAccent(theme, toast.tone);
   const solid = toast.variant === "solid";
   const solidBackground = toastSolidToneBackground(theme, toast.tone);
+  const solidForeground = toastSolidToneForeground(theme, solidBackground);
   const ToneIcon = TONE_ICONS[toast.tone];
   const [paused, setPaused] = useState(false);
+  const [solidActionFocused, setSolidActionFocused] = useState(false);
+  const [closeFocused, setCloseFocused] = useState(false);
+  const solidControlFocusRing = {
+    boxShadow: `0 0 0 2px ${solidForeground}`,
+  };
+  const closeControlFocusRing = solid
+    ? solidControlFocusRing
+    : {
+        boxShadow: `0 0 0 2px ${theme.colors.surface}, 0 0 0 4px ${theme.colors.primary}`,
+      };
 
   // Decouple the dismiss callback from the timer effect so a new callback
   // identity does not restart the countdown (mirrors the modal's onCloseRef).
@@ -105,12 +120,24 @@ export function Toast({ toast, onDismiss }: ToastProps) {
         </View>
       )}
       <View style={[styles.content, solid ? styles.solidContent : null]}>
-        <Text style={[styles.title, solid ? styles.solidTitle : null]}>
+        <Text
+          style={[
+            styles.title,
+            solid ? [styles.solidTitle, { color: solidForeground }] : null,
+            toast.titleStyle,
+          ]}
+        >
           {toast.title}
         </Text>
         {toast.description ? (
           <Text
-            style={[styles.description, solid ? styles.solidDescription : null]}
+            style={[
+              styles.description,
+              solid
+                ? [styles.solidDescription, { color: solidForeground }]
+                : null,
+              toast.descriptionStyle,
+            ]}
           >
             {toast.description}
           </Text>
@@ -120,6 +147,8 @@ export function Toast({ toast, onDismiss }: ToastProps) {
             {solid ? (
               <Pressable
                 accessibilityRole="button"
+                onBlur={() => setSolidActionFocused(false)}
+                onFocus={() => setSolidActionFocused(true)}
                 onPress={() => {
                   toast.action?.onPress();
                   onDismiss(toast.id);
@@ -127,10 +156,15 @@ export function Toast({ toast, onDismiss }: ToastProps) {
                 style={({ hovered }: PressableHoverState) => [
                   styles.solidActionButton,
                   hovered ? styles.solidActionButtonHover : null,
+                  solidActionFocused ? solidControlFocusRing : null,
                   hideWebOutlineView,
                 ]}
               >
-                <Text style={styles.solidActionText}>{toast.action.label}</Text>
+                <Text
+                  style={[styles.solidActionText, { color: solidForeground }]}
+                >
+                  {toast.action.label}
+                </Text>
               </Pressable>
             ) : (
               <Button
@@ -151,6 +185,8 @@ export function Toast({ toast, onDismiss }: ToastProps) {
         <Pressable
           accessibilityLabel={`Dismiss ${toast.title}`}
           accessibilityRole="button"
+          onBlur={() => setCloseFocused(false)}
+          onFocus={() => setCloseFocused(true)}
           onPress={() => onDismiss(toast.id)}
           style={({ hovered }: PressableHoverState) => [
             styles.closeButton,
@@ -160,13 +196,11 @@ export function Toast({ toast, onDismiss }: ToastProps) {
                 ? styles.solidCloseButtonHover
                 : styles.closeButtonHover
               : null,
+            closeFocused ? closeControlFocusRing : null,
             hideWebOutlineView,
           ]}
         >
-          <X
-            color={solid ? theme.colors.surface : theme.colors.muted}
-            size={16}
-          />
+          <X color={solid ? solidForeground : theme.colors.muted} size={16} />
         </Pressable>
       ) : null}
     </View>
@@ -180,34 +214,3 @@ const TONE_ICONS: Record<ToastTone, LucideIcon> = {
   success: CircleCheck,
   warning: TriangleAlert,
 };
-
-/** Tone accent colour for the left strip and leading icon. */
-function toastToneAccent(theme: SharedUiTheme, tone: ToastTone): string {
-  switch (tone) {
-    case "error":
-      return theme.colors.rose;
-    case "success":
-      return theme.colors.primary;
-    case "warning":
-      return theme.colors.amber;
-    default:
-      return theme.colors.primaryDeep;
-  }
-}
-
-/** Filled background colour for the compact solid variant. */
-function toastSolidToneBackground(
-  theme: SharedUiTheme,
-  tone: ToastTone,
-): string {
-  switch (tone) {
-    case "error":
-      return theme.colors.rose;
-    case "success":
-      return theme.colors.primary;
-    case "warning":
-      return theme.colors.amber;
-    default:
-      return theme.colors.primaryDeep;
-  }
-}
