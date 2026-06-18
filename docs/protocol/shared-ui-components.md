@@ -3,8 +3,8 @@
 ## Status
 
 Implemented contract for the dropdown, drag-select, segmented control, radio
-card, switch, button, modal, toast, and avatar extraction, including the shared
-control-size scale for buttons and inputs.
+card, switch, button, modal, toast, avatar, and event-calendar extraction,
+including the shared control-size scale for buttons and inputs.
 
 ## Purpose
 
@@ -169,6 +169,36 @@ Required behavior:
   the calendar escapes sibling stacking contexts.
 - Keep day cells, navigation buttons, and the clear button labelled for
   assistive technology, and include the field label in those accessible names.
+
+## Calendar Contract
+
+The calendar family covers a full event calendar (Google-Calendar-style) built
+on the shared datetime helpers, distinct from the date-field pickers.
+
+Required behavior:
+
+- Render month, week, day, and agenda views from a single controlled event list,
+  using timezone-naive ISO datetimes (`YYYY-MM-DDTHH:mm`) for timed events and
+  ISO dates (`YYYY-MM-DD`) for all-day events.
+- Let consumers either enforce one fixed view (no in-app switcher) or expose a
+  switcher across an allowed subset of views, with controlled or uncontrolled
+  view and focused-date state plus prev/next/today navigation.
+- Expand recurring events through a pragmatic RRULE subset — daily, weekly (with
+  by-weekday), monthly, and yearly frequencies, with interval, count, until, and
+  per-date exceptions — into concrete occurrences intersecting the view window,
+  preserving each instance's duration, behind a hard iteration cap.
+- Lay timed events that overlap into side-by-side columns within a day, and lay
+  multi-day and all-day events as spanning bars with lane overflow (`+N more`)
+  in the month grid.
+- Support web drag-to-create: dragging (or clicking) an empty region of the time
+  grid yields a snapped start/end draft surfaced through a create callback, and
+  dragging across month-grid day cells yields a multi-day all-day draft, each
+  with a native-safe no-op fallback for Expo platform resolution.
+- Keep view-switch segments, navigation, day cells, event blocks, and event
+  chips labelled for assistive technology, and inject "today"/"now" rather than
+  reading a clock inside the pure helpers.
+- Keep the pure datetime, recurrence, and layout helpers exported and covered by
+  unit tests.
 
 ## Heatmap Contract
 
@@ -408,13 +438,14 @@ Required behavior:
 - Storybook previews must include at least the shared dropdown selector,
   dropdown action menu, input-backed combobox, chip multi-select, segmented
   control variants, radio card group, switch toggle, button tones and sizes,
-  user avatars, centered web modal, bottom-sheet web modal, toast tones and an
-  action toast, default accounting theme, and alternate primary color theme.
+  user avatars, a month event calendar, centered web modal, bottom-sheet web
+  modal, toast tones and an action toast, default accounting theme, and
+  alternate primary color theme.
 - Storybook navigation must keep each example family in its own top-level
-  folder, currently `Avatar/Examples`, `Button/Examples`, `Date/Examples`,
-  `Dropdown/Examples`, `Heatmap/Examples`, `Input/Examples`, `Modal/Examples`,
-  `Popover/Examples`, `Radio/Examples`, `Segmented/Examples`, `Switch/Examples`,
-  `Theme/Examples`, and `Toast/Examples`.
+  folder, currently `Avatar/Examples`, `Button/Examples`, `Calendar/Examples`,
+  `Date/Examples`, `Dropdown/Examples`, `Heatmap/Examples`, `Input/Examples`,
+  `Modal/Examples`, `Popover/Examples`, `Radio/Examples`, `Segmented/Examples`,
+  `Switch/Examples`, `Theme/Examples`, and `Toast/Examples`.
 
 ## Non-Goals
 
