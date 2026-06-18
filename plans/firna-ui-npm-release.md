@@ -6,33 +6,40 @@ Completed.
 
 ## Implementation Notes
 
-- 2026-06-15 correction: the release flow now uses
-  `release_always = true` so squash-merged release PRs can create the
-  `vX.Y.Z` tag and GitHub release. The workflow verifies the `main` commit is
-  associated with a `release-plz-*` PR before creating the release or
-  publishing npm. The older `release_always = false` references in this
-  completed plan's original strategy and milestone checklists are historical
-  planning notes; the current contract lives in `README.md` and
-  `docs/protocol/shared-ui-components.md`.
-- `release-plz update --allow-dirty --repo-url https://github.com/futex-ai/ui`
-  validated the local release-plz configuration without publishing. A real
-  `release-pr` run still requires GitHub credentials, so the workflow uses the
-  release-plz action's documented JSON output contract.
+- 2026-06-18 migration: the release flow now uses release-please with
+  `release-type: node`, superseding the release-plz compatibility adapter below.
+  The current workflow lives at `.github/workflows/release.yml`; release-please
+  updates `CHANGELOG.md`, `package.json`, and `package-lock.json`, creates the
+  `vX.Y.Z` tag and GitHub release, and publishes npm from the same workflow when
+  `release_created` is true. The same workflow also supports a manual
+  `publish_ref` retry for an existing `vX.Y.Z` tag if publishing fails after the
+  GitHub release is created. The release-plz milestones in this completed plan
+  are historical notes from the earlier implementation.
+- 2026-06-15 historical correction: before the release-please migration, the
+  release-plz flow used `release_always = true` so squash-merged release PRs
+  could create the `vX.Y.Z` tag and GitHub release. The older
+  `release_always = false` references in this completed plan's original
+  strategy and milestone checklists are historical planning notes; the current
+  contract lives in `README.md` and `docs/protocol/shared-ui-components.md`.
+- Historical validation: `release-plz update --allow-dirty --repo-url
+https://github.com/futex-ai/ui` validated the earlier local release-plz
+  configuration without publishing. A real `release-pr` run still required
+  GitHub credentials, so the old workflow used the release-plz action's
+  documented JSON output contract.
 - `npm pack --dry-run --json` after the Node-compatible ESM build produced
   `@firna/ui@0.1.0` with 530 entries and no files outside `README.md`,
   `package.json`, and `dist/**`.
-- Post-review release automation now publishes npm from the same
-  `.github/workflows/release-plz.yml` run that creates the GitHub release. The
-  same workflow has a manual `publish_ref` retry path so the npm package only
-  needs one trusted publisher configuration and the automatic publish path does
-  not depend on a `release` event created by `GITHUB_TOKEN`.
+- Before the release-please migration, post-review release automation published
+  npm from the same `.github/workflows/release-plz.yml` run that created the
+  GitHub release. That design is now superseded by `.github/workflows/release.yml`.
 
 ## Goal
 
 Turn this package into the public npm library `@firna/ui` under the Firna npm
 organization, with verified package contents, consumer documentation, and an
-automated release path that uses release-plz wherever it can safely own the
-version, changelog, tag, and GitHub release flow.
+automated release path. This plan originally used release-plz where it could
+safely own the version, changelog, tag, and GitHub release flow; the current
+implementation uses release-please instead.
 
 ## Investigation Summary
 
@@ -55,10 +62,11 @@ Reference docs:
 
 - <https://release-plz.dev/docs/config>
 - <https://release-plz.dev/docs/github/quickstart>
+- <https://github.com/googleapis/release-please-action>
 - <https://docs.npmjs.com/trusted-publishers/>
 - <https://docs.npmjs.com/creating-and-publishing-scoped-public-packages/>
 
-## Release Strategy To Validate
+## Original Release-Plz Strategy To Validate
 
 The preferred implementation is a manual-merge release flow: release-plz opens a
 release PR, a maintainer reviews and merges that PR when ready, and npm trusted

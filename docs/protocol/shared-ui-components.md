@@ -356,27 +356,22 @@ Required behavior:
   imports and re-exports.
 - The `react-native` export condition must continue to point at the normal
   `dist/**` build so React Native platform resolution can choose platform files.
-- `package.json` and `package-lock.json` versions must match the root
-  `firna-ui-release` Cargo package version before a release PR is merged.
-- Generated release PR files must be prepared with
-  `cargo xtask prepare-release-pr`, which syncs npm metadata and formats
-  `CHANGELOG.md`, `package.json`, and `package-lock.json` before CI validates
-  the branch.
-- release-plz owns changelog updates, release PR creation, `vX.Y.Z` Git tags,
-  and GitHub releases.
-- release-plz must use `release_always = true` so squash-merged release PRs
-  create tags and GitHub releases, and the release workflow must verify the
-  `main` commit is associated with a `release-plz-*` PR before creating a
-  release. Ordinary pushes to `main` must not create releases or publish npm
-  packages.
+- release-please owns release PR creation, changelog updates, npm metadata
+  version updates, `vX.Y.Z` Git tags, and GitHub releases.
+- release-please must use the `node` release type so release PRs update
+  `CHANGELOG.md`, `package.json`, and `package-lock.json` together.
+- Ordinary pushes to `main` must not publish npm packages; publishing must only
+  run when release-please reports that a GitHub release was created from a
+  merged release PR, or when a maintainer manually dispatches a publish retry
+  for an existing `vX.Y.Z` tag.
 - npm publishing must run in the same workflow invocation that creates the
   GitHub release so it does not depend on a separate `release` event emitted by
   `GITHUB_TOKEN`.
+- The same workflow must expose a manual retry path that checks out an existing
+  release tag and runs the same verification and npm publish steps without
+  creating a new GitHub release.
 - npm publishing must use npm trusted publishing with `id-token: write` and
   must guard against republishing an already-published version.
-- The same workflow may expose a manually dispatched fallback that publishes a
-  checked release tag when a maintainer needs to retry a failed npm publish
-  without creating a new release.
 - Scoped package publishing must use public access.
 
 ## CI And Preview Contract
