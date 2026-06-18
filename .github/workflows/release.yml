@@ -1,0 +1,93 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Release @firna/ui
+    if: github.repository == 'futex-ai/ui'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      issues: write
+      pull-requests: write
+    concurrency:
+      group: release-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          release-type: node
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Check out repository
+        if: steps.release.outputs.release_created == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.release.outputs.sha }}
+
+      - name: Set up Node
+        if: steps.release.outputs.release_created == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Ensure npm supports trusted publishing
+        if: steps.release.outputs.release_created == 'true'
+        run: npm install --global npm@11.7.0
+
+      - name: Set up Rust
+        if: steps.release.outputs.release_created == 'true'
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        if: steps.release.outputs.release_created == 'true'
+        run: npm ci
+
+      - name: Install Playwright browser
+        if: steps.release.outputs.release_created == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify release version
+        if: steps.release.outputs.release_created == 'true'
+        id: version
+        run: |
+          package_version="$(node -p "JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version")"
+          if [ "${RELEASE_TAG}" != "v${package_version}" ]; then
+            echo "::error title=Tag/version mismatch::Expected tag v${package_version}, got ${RELEASE_TAG}."
+            exit 1
+          fi
+          echo "version=${package_version}" >> "$GITHUB_OUTPUT"
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag_name }}
+
+      - name: Run repository checks
+        if: steps.release.outputs.release_created == 'true'
+        run: cargo xtask check
+
+      - name: Skip if version is already published
+        if: steps.release.outputs.release_created == 'true'
+        id: published
+        run: |
+          if npm view "@firna/ui@${PACKAGE_VERSION}" version --registry "https://registry.npmjs.org/" >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "@firna/ui@${PACKAGE_VERSION} is already published."
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+
+      - name: Publish package
+        if: steps.release.outputs.release_created == 'true' && steps.published.outputs.published != 'true'
+        run: npm publish --access public

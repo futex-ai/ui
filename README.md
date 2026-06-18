@@ -17,7 +17,7 @@ surfaces. The first consumers are the accounting app and the Juno app.
 - Expo and React Native Web compatible platform files.
 - Focused unit tests, browser interaction tests, and package export checks.
 - Storybook previews for visual review on every PR.
-- Release-plz release PRs and npm trusted publishing for `@firna/ui`.
+- Release-please release PRs and npm trusted publishing for `@firna/ui`.
 
 ## User-Facing Interface
 
@@ -98,37 +98,23 @@ The package export map intentionally separates runtime targets:
 
 ## Package Releases
 
-- release-plz opens and updates the release PR for `@firna/ui`.
-- Generated release PR files are normalized with
-  `cargo xtask prepare-release-pr`, which syncs npm metadata and formats the
-  changelog before CI validates the branch.
-- When release-plz reports no release PR changes, the workflow exits
-  successfully without checking out a release branch or syncing npm metadata.
-- The release flow uses `release_always = true` so squash-merged release PRs
-  still trigger the `vX.Y.Z` tag, GitHub release, and npm publish flow. The
-  automatic release path first verifies that the `main` commit is associated
-  with a `release-plz-*` PR, so ordinary pushes do not create releases or
-  publish npm packages.
-- The release job checks out the repository default branch, then attaches the
-  target commit SHA to that local branch before running release-plz. This keeps
-  release-plz on a branch with an `origin/main` upstream while still releasing
-  the exact push commit or manual recovery commit.
-- If release-plz reports no new release after a merged release PR has already
-  bumped the Cargo version, the workflow creates the missing GitHub release
-  from the checked-out `firna-ui-release` version and changelog section.
-- npm publishing runs in the same release-plz workflow invocation that prepares
-  the GitHub release, using npm trusted publishing. The publish job syncs
-  `package.json` and `package-lock.json` from the Cargo version before
-  verification and publishing. The npm package must configure this repository
-  and `.github/workflows/release-plz.yml` as the trusted publisher, with allowed
-  action `npm publish`.
-- The release-plz workflow can also be manually dispatched with `publish_ref`
-  set to a checked `vX.Y.Z` tag if the automatic publish job needs to be
-  retried.
-- To recover a missed automatic release, manually dispatch the workflow with
-  `release_ref` set to the missed release PR merge commit SHA. The workflow
-  still verifies that the commit came from a `release-plz-*` PR before creating
-  the GitHub release and publishing npm.
+- Release-please opens and updates the release PR for `@firna/ui` from
+  Conventional Commits.
+- The release PR updates `CHANGELOG.md`, `package.json`, and
+  `package-lock.json` through release-please's `node` release type.
+- Merging the release PR lets release-please create the `vX.Y.Z` tag and GitHub
+  release. Ordinary non-release pushes to `main` only update the release PR.
+- npm publishing runs in the same `.github/workflows/release.yml` invocation
+  that creates the GitHub release, using npm trusted publishing. The npm package
+  must configure this repository and `.github/workflows/release.yml` as the
+  trusted publisher, with allowed action `npm publish`.
+- The workflow falls back to `GITHUB_TOKEN` for release-please, but a
+  repository secret named `RELEASE_PLEASE_TOKEN` can be added if release PRs
+  need to trigger normal PR checks.
+- Before publishing, the release workflow installs dependencies, installs the
+  Playwright browser, verifies the release tag matches `package.json`, runs
+  `cargo xtask check`, and skips publishing if the version already exists on
+  npm.
 - Scoped npm packages default to private, so `publishConfig.access` is set to
   `public`.
 
@@ -174,8 +160,6 @@ The package export map intentionally separates runtime targets:
 - Toast component: [src/toast/README.md](src/toast/README.md)
 - Browser tests: [tests/browser/storybook.spec.ts](tests/browser/storybook.spec.ts)
 - Repository automation: [xtask/README.md](xtask/README.md)
-- Release metadata crate:
-  [crates/firna-ui-release/README.md](crates/firna-ui-release/README.md)
 - Shared component protocol:
   [docs/protocol/shared-ui-components.md](docs/protocol/shared-ui-components.md)
 - Consumer migration handoff: [docs/consumer-migration.md](docs/consumer-migration.md)
