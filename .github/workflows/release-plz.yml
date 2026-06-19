@@ -36,6 +36,73 @@ jobs:
           release-type: node
           token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
 
+      - name: Resolve release PR branch
+        if: github.event_name == 'push' && steps.release.outputs.prs_created == 'true'
+        id: release-pr
+        env:
+          RELEASE_PR: ${{ steps.release.outputs.pr }}
+          RELEASE_PRS: ${{ steps.release.outputs.prs }}
+        run: |
+          set -euo pipefail
+
+          branch="$(
+            node <<'NODE'
+          const singlePr = process.env.RELEASE_PR;
+          const releasePrs = process.env.RELEASE_PRS;
+          const parsedPr = singlePr
+            ? JSON.parse(singlePr)
+            : JSON.parse(releasePrs || "[]")[0];
+
+          if (!parsedPr?.headBranchName) {
+            throw new Error("release-please did not return a release PR head branch");
+          }
+
+          console.log(parsedPr.headBranchName);
+          NODE
+          )"
+
+          echo "branch=${branch}" >> "$GITHUB_OUTPUT"
+
+      - name: Check out release PR branch
+        if: github.event_name == 'push' && steps.release.outputs.prs_created == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.release-pr.outputs.branch }}
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node for release PR formatting
+        if: github.event_name == 'push' && steps.release.outputs.prs_created == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install release PR dependencies
+        if: github.event_name == 'push' && steps.release.outputs.prs_created == 'true'
+        run: npm ci
+
+      - name: Format release PR
+        if: github.event_name == 'push' && steps.release.outputs.prs_created == 'true'
+        run: npm run format
+
+      - name: Commit formatted release PR
+        if: github.event_name == 'push' && steps.release.outputs.prs_created == 'true'
+        env:
+          RELEASE_PR_BRANCH: ${{ steps.release-pr.outputs.branch }}
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet; then
+            echo "Release PR already matches repository formatting."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: format release PR"
+          git push origin "HEAD:${RELEASE_PR_BRANCH}"
+
       - name: Resolve publish target
         id: publish-target
         env:
@@ -56,9 +123,11 @@ jobs:
               echo "::error title=Invalid publish ref::Expected an existing vX.Y.Z tag, got ${PUBLISH_REF}."
               exit 1
             fi
-            echo "should_publish=true" >> "$GITHUB_OUTPUT"
-            echo "ref=${PUBLISH_REF}" >> "$GITHUB_OUTPUT"
-            echo "tag=${PUBLISH_REF}" >> "$GITHUB_OUTPUT"
+            {
+              echo "should_publish=true"
+              echo "ref=${PUBLISH_REF}"
+              echo "tag=${PUBLISH_REF}"
+            } >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -67,9 +136,11 @@ jobs:
               echo "::error title=Missing release target::release-please did not return a release SHA and tag."
               exit 1
             fi
-            echo "should_publish=true" >> "$GITHUB_OUTPUT"
-            echo "ref=${RELEASE_SHA}" >> "$GITHUB_OUTPUT"
-            echo "tag=${RELEASE_TAG}" >> "$GITHUB_OUTPUT"
+            {
+              echo "should_publish=true"
+              echo "ref=${RELEASE_SHA}"
+              echo "tag=${RELEASE_TAG}"
+            } >> "$GITHUB_OUTPUT"
             exit 0
           fi
 

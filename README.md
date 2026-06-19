@@ -110,6 +110,10 @@ The package export map intentionally separates runtime targets:
   Conventional Commits.
 - The release PR updates `CHANGELOG.md`, `package.json`, and
   `package-lock.json` through release-please's `node` release type.
+- When release-please creates or updates a release PR, the release workflow
+  checks out that generated PR branch, runs `npm run format`, and pushes a
+  `chore: format release PR` commit only if the generated files need Prettier
+  cleanup.
 - Merging the release PR lets release-please create the `vX.Y.Z` tag and GitHub
   release. Ordinary non-release pushes to `main` only update the release PR.
 - npm publishing runs in the same `.github/workflows/release-plz.yml` invocation

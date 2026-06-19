@@ -62,6 +62,35 @@ test("release workflow publishes npm only after a release is created", () => {
   assert.match(workflow, /npm publish --access public/);
 });
 
+test("release workflow formats generated release PRs", () => {
+  const workflow = readReleaseWorkflow();
+  const packageJson = JSON.parse(readSource("../../package.json"));
+  const releasePrCreated =
+    "github.event_name == 'push' && steps.release.outputs.prs_created == 'true'";
+
+  assert.equal(
+    packageJson.scripts.format,
+    'prettier --write "**/*.{ts,tsx,js,json,md,yml,yaml}"',
+  );
+  assert.match(workflow, /RELEASE_PR: \$\{\{ steps\.release\.outputs\.pr \}\}/);
+  assert.match(
+    workflow,
+    /RELEASE_PRS: \$\{\{ steps\.release\.outputs\.prs \}\}/,
+  );
+  assert.match(workflow, /headBranchName/);
+  assert.match(workflow, /ref: \$\{\{ steps\.release-pr\.outputs\.branch \}\}/);
+  assert.match(
+    workflow,
+    /token: \$\{\{ secrets\.RELEASE_PLEASE_TOKEN \|\| secrets\.GITHUB_TOKEN \}\}/,
+  );
+  assert.match(workflow, /node-version: "24"/);
+  assert.match(workflow, /npm run format/);
+  assert.match(workflow, /git diff --quiet/);
+  assert.match(workflow, /git commit -m "chore: format release PR"/);
+  assert.match(workflow, /git push origin "HEAD:\$\{RELEASE_PR_BRANCH\}"/);
+  assert.ok(countOccurrences(workflow, releasePrCreated) >= 6);
+});
+
 test("release workflow can retry publishing an existing tag", () => {
   const workflow = readReleaseWorkflow();
 
