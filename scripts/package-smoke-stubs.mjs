@@ -132,7 +132,10 @@ export function useWindowDimensions() {
     "package.json": JSON.stringify({ name: "react-native", type: "module" }),
   });
   await writeStubPackage(consumerRoot, "react-native-svg", {
-    "index.js": `export default "Svg";
+    "index.js": `export const Circle = "Circle";
+export const Path = "Path";
+export const Svg = "Svg";
+export default Svg;
 `,
     "package.json": JSON.stringify({
       name: "react-native-svg",

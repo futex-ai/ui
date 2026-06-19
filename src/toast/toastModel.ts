@@ -1,4 +1,6 @@
 /** Pure types and helpers for the toast notification system. */
+import type { ReactNode } from "react";
+import type { StyleProp, TextStyle, ViewStyle } from "react-native";
 
 /**
  * Visual + semantic tone of a toast:
@@ -8,6 +10,30 @@
  * - `error` — a failure notice, rose accent; announced assertively.
  */
 export type ToastTone = "error" | "info" | "success" | "warning";
+
+/**
+ * Visual presentation of a toast.
+ * - `card` (default) — surface card with a leading tone icon and accent strip.
+ * - `solid` — compact filled toast for short, bottom-centered feedback.
+ */
+export type ToastVariant = "card" | "solid";
+
+/** Context passed to a custom toast icon render function. */
+export type ToastIconRenderContext = {
+  /** Default icon colour for the resolved variant and tone. */
+  color: string;
+  /** Default icon size in px. */
+  size: number;
+  /** Resolved toast tone. */
+  tone: ToastTone;
+  /** Resolved toast variant. */
+  variant: ToastVariant;
+};
+
+/** Custom leading visual for a toast. */
+export type ToastIcon =
+  | ReactNode
+  | ((context: ToastIconRenderContext) => ReactNode);
 
 /**
  * Where the toast stack is pinned within the viewport. The first segment picks
@@ -33,10 +59,27 @@ export type ToastAction = {
 export type ToastOptions = {
   /** Bold headline line. */
   title: string;
+  /** Optional style override layered after the built-in title style. */
+  titleStyle?: StyleProp<TextStyle>;
   /** Optional secondary line beneath the title. */
   description?: string;
+  /** Optional style override layered after the built-in description style. */
+  descriptionStyle?: StyleProp<TextStyle>;
   /** Visual + semantic tone. Defaults to `info`. */
   tone?: ToastTone;
+  /** Visual presentation. Defaults to `card`. */
+  variant?: ToastVariant;
+  /**
+   * Optional leading visual. Omit to keep the default card tone icon and solid
+   * no-icon layout; pass `null` to hide the card default.
+   */
+  icon?: ToastIcon | null;
+  /** Optional style override for the leading icon wrapper. */
+  iconStyle?: StyleProp<ViewStyle>;
+  /** Optional foreground colour for filled toast text, icons, and controls. */
+  foregroundColor?: string;
+  /** Optional style override for the toast surface. */
+  surfaceStyle?: StyleProp<ViewStyle>;
   /**
    * Auto-dismiss delay in milliseconds. Omit to use the provider default; pass
    * `null` (or a value `<= 0`) for a sticky toast that stays until dismissed.
@@ -56,16 +99,25 @@ export type ToastOptions = {
 export type ToastItem = {
   id: string;
   title: string;
+  titleStyle?: StyleProp<TextStyle>;
   description?: string;
+  descriptionStyle?: StyleProp<TextStyle>;
   tone: ToastTone;
   /** Resolved auto-dismiss delay in ms, or `null` when sticky. */
   duration: number | null;
   action?: ToastAction;
   dismissible: boolean;
+  foregroundColor?: string;
+  icon?: ToastIcon | null;
+  iconStyle?: StyleProp<ViewStyle>;
+  surfaceStyle?: StyleProp<ViewStyle>;
+  variant: ToastVariant;
 };
 
 /** The default tone applied when a caller omits `tone`. */
 export const DEFAULT_TOAST_TONE: ToastTone = "info";
+/** The default visual presentation applied when a caller omits `variant`. */
+export const DEFAULT_TOAST_VARIANT: ToastVariant = "card";
 /** The default auto-dismiss delay, in milliseconds. */
 export const DEFAULT_TOAST_DURATION = 5000;
 /** The default cap on simultaneously visible toasts. */
@@ -106,11 +158,18 @@ export function createToastItem(
   return {
     action: options.action,
     description: options.description,
+    descriptionStyle: options.descriptionStyle,
     dismissible: options.dismissible ?? true,
     duration: resolveToastDuration(options.duration, fallbackDuration),
+    foregroundColor: options.foregroundColor,
+    icon: options.icon,
+    iconStyle: options.iconStyle,
     id,
+    surfaceStyle: options.surfaceStyle,
     title: options.title,
+    titleStyle: options.titleStyle,
     tone: options.tone ?? DEFAULT_TOAST_TONE,
+    variant: options.variant ?? DEFAULT_TOAST_VARIANT,
   };
 }
 

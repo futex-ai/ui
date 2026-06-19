@@ -12,17 +12,22 @@ import { Platform, Pressable, Text, View } from "react-native";
 import type { ViewProps } from "react-native";
 
 import { Button } from "../button";
-import {
-  hideWebOutlineView,
-  PressableHoverState,
-  useFocusRing,
-} from "../focusRing";
+import { hideWebOutlineView, PressableHoverState } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
-import type { SharedUiTheme } from "../theme";
 
+import {
+  toastSolidToneBackground,
+  toastSolidToneForeground,
+  toastToneAccent,
+} from "./toastColors";
 import { createToastStyles } from "./toastStyles";
 import { toastRole } from "./toastModel";
-import type { ToastItem, ToastTone } from "./toastModel";
+import type {
+  ToastIcon,
+  ToastIconRenderContext,
+  ToastItem,
+  ToastTone,
+} from "./toastModel";
 
 export type ToastProps = {
   /** The resolved toast to render. */
@@ -49,7 +54,26 @@ export function Toast({ toast, onDismiss }: ToastProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createToastStyles(theme), [theme]);
   const accent = toastToneAccent(theme, toast.tone);
+  const solid = toast.variant === "solid";
+  const filled = solid;
+  const filledBackground = toastSolidToneBackground(theme, toast.tone);
+  const filledForeground =
+    toast.foregroundColor ?? toastSolidToneForeground(theme, filledBackground);
   const ToneIcon = TONE_ICONS[toast.tone];
+  const iconContext: ToastIconRenderContext = {
+    color: filled ? filledForeground : accent,
+    size: 18,
+    tone: toast.tone,
+    variant: toast.variant,
+  };
+  const icon =
+    toast.icon === undefined ? (
+      solid ? null : (
+        <ToneIcon color={accent} size={iconContext.size} />
+      )
+    ) : (
+      renderToastIcon(toast.icon, iconContext)
+    );
   const [paused, setPaused] = useState(false);
   // Also pause while the tab is hidden so a backgrounded toast does not silently
   // time out before the user (or a screen-reader virtual cursor that never moves
@@ -64,12 +88,19 @@ export function Toast({ toast, onDismiss }: ToastProps) {
     document.addEventListener("visibilitychange", sync);
     return () => document.removeEventListener("visibilitychange", sync);
   }, []);
-  // Keyboard focus on the close button shows a geometry-bearing ring; the close
-  // control hides the UA outline, so without this the keyboard user gets no
-  // focus indicator (WCAG 2.1 — 2.4.7 Focus Visible, AA). The ring is inset
-  // (`offset: -2`) because the toast card clips overflow, which would otherwise
-  // crop an outset outline on this near-edge control.
-  const closeFocus = useFocusRing({ offset: -2 });
+  const [filledActionFocused, setFilledActionFocused] = useState(false);
+  const [closeFocused, setCloseFocused] = useState(false);
+  const filledControlFocusRing = {
+    boxShadow: `0 0 0 2px ${filledForeground}`,
+  };
+  // The close control's focus ring adapts to the variant so it stays visible
+  // (WCAG 2.1 — 2.4.7 Focus Visible, AA): the filled foreground on a solid
+  // toast, or a surface+primary ring on a card toast.
+  const closeControlFocusRing = filled
+    ? filledControlFocusRing
+    : {
+        boxShadow: `0 0 0 2px ${theme.colors.surface}, 0 0 0 4px ${theme.colors.primary}`,
+      };
   // The toast container, so dismissing a focused toast can hand focus to a
   // sibling toast instead of dropping it to <body> (2.1.2 / 2.4.3, A).
   const containerRef = useRef<View>(null);
@@ -132,30 +163,87 @@ export function Toast({ toast, onDismiss }: ToastProps) {
       aria-live="off"
       ref={containerRef}
       role={toastRole(toast.tone)}
-      style={[styles.toast, { borderLeftColor: accent }]}
+      style={[
+        styles.toast,
+        filled
+          ? [styles.solidToast, { backgroundColor: filledBackground }]
+          : [styles.cardToast, { borderLeftColor: accent }],
+        toast.surfaceStyle,
+      ]}
     >
-      {/* Tone icon is decorative — its meaning is carried by the toast copy and
-          the assistive-tech announcement, so hide it from AT (1.1.1, A). */}
-      <View aria-hidden style={styles.iconWrap}>
-        <ToneIcon color={accent} size={18} />
-      </View>
-      <View style={styles.content}>
-        <Text style={styles.title}>{toast.title}</Text>
+      {/* The leading/tone icon is decorative — its meaning is carried by the
+          toast copy and the assistive-tech announcement, so hide it (1.1.1, A). */}
+      {shouldRenderToastIcon(icon) ? (
+        <View
+          aria-hidden
+          style={[
+            styles.iconWrap,
+            solid ? styles.solidIconWrap : null,
+            toast.iconStyle,
+          ]}
+        >
+          {icon}
+        </View>
+      ) : null}
+      <View style={solid ? styles.solidContent : styles.content}>
+        <Text
+          style={[
+            styles.title,
+            solid ? [styles.solidTitle, { color: filledForeground }] : null,
+            toast.titleStyle,
+          ]}
+        >
+          {toast.title}
+        </Text>
         {toast.description ? (
-          <Text style={styles.description}>{toast.description}</Text>
+          <Text
+            style={[
+              styles.description,
+              solid
+                ? [styles.solidDescription, { color: filledForeground }]
+                : null,
+              toast.descriptionStyle,
+            ]}
+          >
+            {toast.description}
+          </Text>
         ) : null}
         {toast.action ? (
-          <View style={styles.actions}>
-            <Button
-              onPress={() => {
-                toast.action?.onPress();
-                onDismiss(toast.id);
-              }}
-              size="sm"
-              tone="ghost"
-            >
-              {toast.action.label}
-            </Button>
+          <View style={[styles.actions, filled ? styles.solidActions : null]}>
+            {filled ? (
+              <Pressable
+                accessibilityRole="button"
+                onBlur={() => setFilledActionFocused(false)}
+                onFocus={() => setFilledActionFocused(true)}
+                onPress={() => {
+                  toast.action?.onPress();
+                  onDismiss(toast.id);
+                }}
+                style={({ hovered }: PressableHoverState) => [
+                  styles.solidActionButton,
+                  hovered ? styles.solidActionButtonHover : null,
+                  filledActionFocused ? filledControlFocusRing : null,
+                  hideWebOutlineView,
+                ]}
+              >
+                <Text
+                  style={[styles.solidActionText, { color: filledForeground }]}
+                >
+                  {toast.action.label}
+                </Text>
+              </Pressable>
+            ) : (
+              <Button
+                onPress={() => {
+                  toast.action?.onPress();
+                  onDismiss(toast.id);
+                }}
+                size="sm"
+                tone="ghost"
+              >
+                {toast.action.label}
+              </Button>
+            )}
           </View>
         ) : null}
       </View>
@@ -163,22 +251,28 @@ export function Toast({ toast, onDismiss }: ToastProps) {
         <Pressable
           accessibilityLabel={`Dismiss ${toast.title}`}
           accessibilityRole="button"
-          onBlur={closeFocus.onBlur}
-          onFocus={closeFocus.onFocus}
+          onBlur={() => setCloseFocused(false)}
+          onFocus={() => setCloseFocused(true)}
           onPress={dismissFromClose}
           style={({ hovered }: PressableHoverState) => [
             styles.closeButton,
-            hovered ? styles.closeButtonHover : null,
-            // Suppress the UA default outline first, then layer the shared
-            // focus ring last so its `outline` is the one that wins when
-            // focused (the ring would otherwise be clobbered by the reset).
+            filled ? styles.solidCloseButton : null,
+            hovered
+              ? filled
+                ? styles.solidCloseButtonHover
+                : styles.closeButtonHover
+              : null,
+            closeFocused ? closeControlFocusRing : null,
             hideWebOutlineView,
-            closeFocus.focused ? closeFocus.focusRingStyle : null,
           ]}
         >
           {/* The "×" glyph is decorative; the Pressable's label carries the
               name ("Dismiss {title}"), so hide the icon from AT (1.1.1, A). */}
-          <X aria-hidden color={theme.colors.muted} size={16} />
+          <X
+            aria-hidden
+            color={filled ? filledForeground : theme.colors.muted}
+            size={16}
+          />
         </Pressable>
       ) : null}
     </View>
@@ -226,16 +320,13 @@ const TONE_ICONS: Record<ToastTone, LucideIcon> = {
   warning: TriangleAlert,
 };
 
-/** Tone accent colour for the left strip and leading icon. */
-function toastToneAccent(theme: SharedUiTheme, tone: ToastTone): string {
-  switch (tone) {
-    case "error":
-      return theme.colors.rose;
-    case "success":
-      return theme.colors.primary;
-    case "warning":
-      return theme.colors.amber;
-    default:
-      return theme.colors.primaryDeep;
-  }
+function renderToastIcon(
+  icon: ToastIcon | null,
+  context: ToastIconRenderContext,
+) {
+  return typeof icon === "function" ? icon(context) : icon;
+}
+
+function shouldRenderToastIcon(icon: ReturnType<typeof renderToastIcon>) {
+  return icon !== null && icon !== undefined && icon !== false;
 }

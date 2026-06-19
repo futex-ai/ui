@@ -1,10 +1,19 @@
 /** Provider that owns the toast queue and publishes the {@link useToast} API. */
-import { useCallback, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { ReactNode } from "react";
 
 import { ToastContext } from "./ToastContext";
 import type { ToastApi } from "./ToastContext";
 import { ToastViewport } from "./ToastViewport";
+import { registerToastProviderApi } from "./toastController";
 import {
   createToastItem,
   DEFAULT_TOAST_DURATION,
@@ -15,6 +24,8 @@ import {
   makeToastId,
 } from "./toastModel";
 import type { ToastItem, ToastOptions, ToastPlacement } from "./toastModel";
+
+const ToastProviderDepthContext = createContext(0);
 
 export type ToastProviderProps = {
   /** The subtree that can call {@link useToast}. */
@@ -41,6 +52,8 @@ export function ToastProvider({
 }: ToastProviderProps) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const seqRef = useRef(0);
+  const parentDepth = useContext(ToastProviderDepthContext);
+  const depth = parentDepth + 1;
 
   const dismiss = useCallback((id: string) => {
     setToasts((list) => dequeueToast(list, id));
@@ -64,14 +77,18 @@ export function ToastProvider({
     [dismiss, dismissAll, toast],
   );
 
+  useLayoutEffect(() => registerToastProviderApi(api, depth), [api, depth]);
+
   return (
-    <ToastContext.Provider value={api}>
-      {children}
-      <ToastViewport
-        onDismiss={dismiss}
-        placement={placement}
-        toasts={toasts}
-      />
-    </ToastContext.Provider>
+    <ToastProviderDepthContext.Provider value={depth}>
+      <ToastContext.Provider value={api}>
+        {children}
+        <ToastViewport
+          onDismiss={dismiss}
+          placement={placement}
+          toasts={toasts}
+        />
+      </ToastContext.Provider>
+    </ToastProviderDepthContext.Provider>
   );
 }

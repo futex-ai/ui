@@ -1309,6 +1309,39 @@ test("avatar renders initials and sizes the disc from the size prop", async ({
   expect(box?.height).toBeLessThanOrEqual(49);
 });
 
+test("spinner renders an accessible, continuously rotating loading indicator", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=spinner-examples--loading-states");
+
+  const spinner = page.getByRole("progressbar", { name: "Loading" }).first();
+  await expect(spinner).toBeVisible();
+  await expect(spinner).toHaveAttribute("aria-busy", "true");
+
+  // The default md spinner is a 24px ring. Its box stays stable because only the
+  // inner ring rotates, not the labelled container (a rotating square's
+  // axis-aligned box would otherwise oscillate).
+  const box = await spinner.boundingBox();
+  expect(box?.width).toBeGreaterThanOrEqual(23);
+  expect(box?.width).toBeLessThanOrEqual(25);
+
+  // The leading arc is a distinct SVG stroke painted in the theme primary, not a
+  // uniform ring, so the moving segment stays visible (also on native).
+  await expect(
+    spinner.locator('circle[stroke="#4f7864"]').first(),
+  ).toBeAttached();
+
+  // The ring genuinely spins: its transform matrix keeps advancing, so a later
+  // sample differs from the first one.
+  const readRingTransform = () =>
+    spinner.evaluate((node) => {
+      const ring = node.firstElementChild as HTMLElement | null;
+      return ring ? getComputedStyle(ring).transform : "none";
+    });
+  const firstTransform = await readRingTransform();
+  await expect.poll(readRingTransform).not.toBe(firstTransform);
+});
+
 test("button reflects press and disabled state", async ({ page }) => {
   await page.goto("/iframe.html?id=button-examples--interactive");
 
@@ -1621,6 +1654,105 @@ test("top-center toast pins to the top of the viewport", async ({ page }) => {
   const box = await heading.boundingBox();
   expect(box).not.toBeNull();
   expect(box?.y ?? Number.MAX_SAFE_INTEGER).toBeLessThan(200);
+});
+
+test("solid toast variant can be triggered through the controller", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=toast-examples--solid-bottom-center");
+
+  await page.getByRole("button", { name: "Show solid error" }).click();
+  const toast = page
+    .getByRole("alert")
+    .filter({ hasText: "Couldn't move this transaction. Try again." });
+  await expect(toast).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Dismiss Couldn't move/ }),
+  ).toHaveCount(0);
+
+  const background = await toast.evaluate(
+    (node) => window.getComputedStyle(node as HTMLElement).backgroundColor,
+  );
+  expect(background).toBe("rgb(168, 79, 69)");
+
+  const box = await toast.boundingBox();
+  const viewport = page.viewportSize();
+  expect(box).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  if (box && viewport) {
+    const toastCenter = box.x + box.width / 2;
+    expect(box.width).toBeGreaterThan(260);
+    expect(box.height).toBeLessThan(80);
+    expect(Math.abs(toastCenter - viewport.width / 2)).toBeLessThan(20);
+    expect(box.y + box.height).toBeGreaterThan(viewport.height - 48);
+  }
+
+  await page.getByRole("button", { name: "Show description" }).click();
+  const descriptionToast = page
+    .getByRole("alert")
+    .filter({ hasText: "Transaction not moved" });
+  await expect(descriptionToast).toContainText(
+    "Check the category and try again.",
+  );
+
+  await page.getByRole("button", { name: "Show action" }).click();
+  const actionToast = page
+    .getByRole("alert")
+    .filter({ hasText: "Move failed" });
+  await expect(actionToast).toBeVisible();
+  await page.getByRole("button", { name: "Retry" }).click();
+  await expect(actionToast).toBeHidden();
+
+  await page.getByRole("button", { name: "Show close" }).click();
+  const closeToast = page
+    .getByRole("status")
+    .filter({ hasText: "Saved as draft" });
+  await expect(closeToast).toBeVisible();
+  await page.getByRole("button", { name: "Dismiss Saved as draft" }).click();
+  await expect(closeToast).toBeHidden();
+});
+
+test("solid toast accepts a custom icon for compact progress feedback", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=toast-examples--icon-bottom-center");
+
+  await page.getByRole("button", { name: "Show saving status" }).click();
+  const toast = page
+    .getByRole("status")
+    .filter({ hasText: "Saving payslips to your device • 3 of 5" });
+  await expect(toast).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Dismiss Saving payslips/ }),
+  ).toHaveCount(0);
+
+  const background = await toast.evaluate(
+    (node) => window.getComputedStyle(node as HTMLElement).backgroundColor,
+  );
+  expect(background).toBe("rgb(28, 31, 29)");
+
+  const box = await toast.boundingBox();
+  const viewport = page.viewportSize();
+  expect(box).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  if (box && viewport) {
+    const toastCenter = box.x + box.width / 2;
+    expect(box.width).toBeGreaterThan(360);
+    expect(box.height).toBeGreaterThanOrEqual(60);
+    expect(Math.abs(toastCenter - viewport.width / 2)).toBeLessThan(20);
+    expect(box.y + box.height).toBeGreaterThan(viewport.height - 48);
+  }
+});
+
+test("toast controller is registered before descendant mount effects", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=toast-examples--controller-on-mount");
+
+  const toast = page
+    .getByRole("status")
+    .filter({ hasText: "Mounted through controller" });
+  await expect(toast).toBeVisible();
 });
 
 test("hovering a toast pauses its auto-dismiss countdown", async ({ page }) => {

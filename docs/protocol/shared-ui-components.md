@@ -3,8 +3,8 @@
 ## Status
 
 Implemented contract for the dropdown, drag-select, segmented control, radio
-card, switch, button, modal, toast, avatar, and event-calendar extraction,
-including the shared control-size scale for buttons and inputs.
+card, switch, spinner, button, modal, toast, avatar, and event-calendar
+extraction, including the shared control-size scale for buttons and inputs.
 
 ## Purpose
 
@@ -76,6 +76,26 @@ Required behavior:
   and pill radius.
 - Keep a `trackStyle` override available for non-default surfaces without
   requiring consumers to fork the component.
+
+## Spinner Contract
+
+The spinner family covers the indeterminate loading indicator: a ring whose
+accent arc rotates continuously while content is loading.
+
+Required behavior:
+
+- Render a circular ring sized by the shared `ControlSize` scale (`sm` / `md` /
+  `lg`, with `md` as the default) or by an explicit pixel diameter, deriving the
+  ring stroke thickness from the diameter.
+- Animate a continuous rotation through React Native's `Animated` API so the
+  same component spins on native and web, and stop the loop on unmount.
+- Expose `progressbar` accessibility semantics with a busy state and an
+  accessible name that defaults to a loading label.
+- Use shared theme tokens for the accent arc (`primary`) and the ring track
+  (`border2`), and allow per-instance `color` and `trackColor` overrides for
+  alternate surfaces without forking the component.
+- Keep only the inner ring rotating so the labelled container keeps a stable box
+  for layout and assistive technology.
 
 ## Radio Card Contract
 
@@ -322,12 +342,13 @@ imperative API rather than rendered declaratively at a call site.
 Required behavior:
 
 - Provide a `ToastProvider` that owns a capped, ordered queue and publishes an
-  imperative API (`toast`, `dismiss`, `dismissAll`) through a `useToast` hook;
-  the hook must throw when used outside a provider.
+  imperative API (`toast`, `dismiss`, `dismissAll`) through a `useToast` hook
+  and a module-level `toastController`; the hook must throw when used outside a
+  provider, and the controller must throw before a provider is mounted.
 - `toast()` must return an id usable with `dismiss`, default the tone to `info`,
   and default the auto-dismiss delay to the provider default while accepting a
   per-toast `duration` override and a `null`/non-positive duration for sticky
-  toasts.
+  toasts. Toasts must also accept a `variant` prop that defaults to `card`.
 - Cap simultaneously visible toasts at a provider-configurable `max` (default 4)
   by dropping the oldest entries.
 - Render toasts in a viewport pinned to one of six placements (top/bottom ×
@@ -339,6 +360,15 @@ Required behavior:
 - Carry tone (`info`, `success`, `warning`, `error`) as a left accent strip,
   leading icon, and screen-reader semantics: errors announce assertively with
   the `alert` role, other tones politely with the `status` role.
+- Support a compact `solid` variant that uses the tone color as the filled
+  background, hides the default card icon/accent strip, and can match the
+  bottom-center transaction-error style through props.
+- Support caller-provided leading icons for toast surfaces so in-progress,
+  branded, or feature-specific visuals do not require new visual variants.
+- Allow per-toast surface and filled-foreground overrides so compact solid
+  toasts can match dark in-progress status surfaces through props.
+- Allow per-toast title and description text style overrides that layer after
+  the built-in variant text styles.
 - Support an optional action button that runs its handler and then dismisses the
   toast, and an optional close control that dismisses only its own toast.
 - Use shared theme tokens for the surface, border, accent colors, text, fonts,
@@ -453,7 +483,8 @@ Required behavior:
   folder, currently `Avatar/Examples`, `Button/Examples`, `Calendar/Examples`,
   `Date/Examples`, `Dropdown/Examples`, `Heatmap/Examples`, `Input/Examples`,
   `Modal/Examples`, `Popover/Examples`, `Radio/Examples`, `Segmented/Examples`,
-  `Switch/Examples`, `Theme/Examples`, and `Toast/Examples`.
+  `Spinner/Examples`, `Switch/Examples`, `Theme/Examples`, and
+  `Toast/Examples`.
 
 ## Non-Goals
 

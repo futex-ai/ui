@@ -13,6 +13,7 @@ import {
   DEFAULT_TOAST_MAX,
   DEFAULT_TOAST_PLACEMENT,
   DEFAULT_TOAST_TONE,
+  DEFAULT_TOAST_VARIANT,
   dequeueToast,
   enqueueToast,
   makeToastId,
@@ -24,6 +25,10 @@ import {
   toastViewportInset,
 } from "../../src/toast/toastModel";
 import type { ToastItem } from "../../src/toast/toastModel";
+import {
+  registerToastProviderApi,
+  toastController,
+} from "../../src/toast/toastController";
 
 const baseItem = (id: string): ToastItem => ({
   dismissible: true,
@@ -31,10 +36,12 @@ const baseItem = (id: string): ToastItem => ({
   id,
   title: id,
   tone: "info",
+  variant: "card",
 });
 
 test("toast defaults are stable so value drift is caught", () => {
   assert.equal(DEFAULT_TOAST_TONE, "info");
+  assert.equal(DEFAULT_TOAST_VARIANT, "card");
   assert.equal(DEFAULT_TOAST_DURATION, 5000);
   assert.equal(DEFAULT_TOAST_MAX, 4);
   assert.equal(DEFAULT_TOAST_PLACEMENT, "bottom-right");
@@ -45,6 +52,7 @@ test("toast defaults are stable so value drift is caught", () => {
     DEFAULT_TOAST_DURATION,
   );
   assert.equal(item.tone, DEFAULT_TOAST_TONE);
+  assert.equal(item.variant, DEFAULT_TOAST_VARIANT);
   assert.equal(item.duration, DEFAULT_TOAST_DURATION);
   assert.equal(item.dismissible, true);
 });
@@ -63,31 +71,57 @@ test("createToastItem fills defaults and forwards caller options", () => {
   assert.deepEqual(minimal, {
     action: undefined,
     description: undefined,
+    descriptionStyle: undefined,
     dismissible: true,
     duration: 5000,
+    foregroundColor: undefined,
+    icon: undefined,
+    iconStyle: undefined,
     id: "toast-0",
+    surfaceStyle: undefined,
     title: "Saved",
+    titleStyle: undefined,
     tone: "info",
+    variant: "card",
   });
 
   const action = { label: "Undo", onPress: () => undefined };
+  const descriptionStyle = { fontSize: 12 };
+  const icon = () => "icon";
+  const iconStyle = { height: 30 };
+  const surfaceStyle = { backgroundColor: "#1c1f1d" };
+  const titleStyle = { fontWeight: "900" as const };
   const full = createToastItem(
     "toast-1",
     {
       action,
       description: "Removed invoice",
+      descriptionStyle,
       dismissible: false,
       duration: null,
+      foregroundColor: "#ffffff",
+      icon,
+      iconStyle,
+      surfaceStyle,
       title: "Deleted",
+      titleStyle,
       tone: "error",
+      variant: "solid",
     },
     5000,
   );
   assert.equal(full.tone, "error");
+  assert.equal(full.variant, "solid");
   assert.equal(full.dismissible, false);
   assert.equal(full.duration, null);
   assert.equal(full.action, action);
   assert.equal(full.description, "Removed invoice");
+  assert.equal(full.descriptionStyle, descriptionStyle);
+  assert.equal(full.foregroundColor, "#ffffff");
+  assert.equal(full.icon, icon);
+  assert.equal(full.iconStyle, iconStyle);
+  assert.equal(full.surfaceStyle, surfaceStyle);
+  assert.equal(full.titleStyle, titleStyle);
 });
 
 test("enqueueToast appends and trims the oldest beyond the cap", () => {
@@ -211,14 +245,189 @@ test("the persistent live region announces toasts at tone politeness", () => {
   assert.match(source, /"aria-live": "assertive"/);
 });
 
+test("toast solid variant is prop-driven and owns filled styling", () => {
+  const item = createToastItem(
+    "toast-solid",
+    {
+      dismissible: false,
+      title: "Couldn't move this transaction. Try again.",
+      tone: "error",
+      variant: "solid",
+    },
+    5000,
+  );
+  const colors = readSource("../../src/toast/toastColors.ts");
+  const surface = readSource("../../src/toast/Toast.tsx");
+  const styles = readSource("../../src/toast/toastStyles.ts");
+
+  assert.equal(item.variant, "solid");
+  assert.equal(item.dismissible, false);
+  assert.match(surface, /toast\.variant === "solid"/);
+  assert.match(surface, /styles\.solidToast/);
+  assert.match(colors, /toastSolidToneBackground/);
+  assert.match(colors, /toastSolidToneForeground/);
+  assert.match(colors, /toastContrastRatio/);
+  assert.match(colors, /theme\.colors\.ink/);
+  assert.match(colors, /theme\.colors\.rose/);
+  assert.match(styles, /solidToast/);
+  assert.match(styles, /solidTitle/);
+});
+
+test("toast custom icons are prop-driven instead of a loading variant", () => {
+  const icon = () => "Saving icon";
+  const item = createToastItem(
+    "toast-icon",
+    {
+      dismissible: false,
+      duration: null,
+      foregroundColor: "#ffffff",
+      icon,
+      iconStyle: { height: 30, width: 30 },
+      surfaceStyle: { backgroundColor: "#1c1f1d" },
+      title: "Saving payslips to your device • 3 of 5",
+      variant: "solid",
+    },
+    5000,
+  );
+  const model = readSource("../../src/toast/toastModel.ts");
+  const surface = readSource("../../src/toast/Toast.tsx");
+  const styles = readSource("../../src/toast/toastStyles.ts");
+
+  assert.equal(item.variant, "solid");
+  assert.equal(item.dismissible, false);
+  assert.equal(item.duration, null);
+  assert.equal(item.foregroundColor, "#ffffff");
+  assert.equal(item.icon, icon);
+  assert.match(model, /export type ToastVariant = "card" \| "solid"/);
+  assert.match(model, /export type ToastIcon/);
+  assert.match(surface, /renderToastIcon\(toast\.icon, iconContext\)/);
+  assert.match(surface, /toast\.foregroundColor/);
+  assert.match(surface, /toast\.surfaceStyle/);
+  assert.match(surface, /toast\.iconStyle/);
+  assert.doesNotMatch(surface, /variant === "loading"/);
+  assert.doesNotMatch(styles, /loadingSpinner|loadingToast|loadingTitle/);
+});
+
+test("toast text styles are caller-overridable", () => {
+  const source = readSource("../../src/toast/Toast.tsx");
+  const item = createToastItem(
+    "toast-styled",
+    {
+      description: "Styled description",
+      descriptionStyle: { fontFamily: "Test Description" },
+      title: "Styled title",
+      titleStyle: { fontFamily: "Test Title" },
+      variant: "solid",
+    },
+    5000,
+  );
+
+  assert.deepEqual(item.titleStyle, { fontFamily: "Test Title" });
+  assert.deepEqual(item.descriptionStyle, {
+    fontFamily: "Test Description",
+  });
+  assert.match(source, /toast\.titleStyle/);
+  assert.match(source, /toast\.descriptionStyle/);
+});
+
 test("useToast throws outside a provider and the provider renders the viewport", () => {
   const context = readSource("../../src/toast/ToastContext.ts");
   const provider = readSource("../../src/toast/ToastProvider.tsx");
 
   assert.match(context, /must be used within a <ToastProvider>/);
+  assert.match(provider, /useLayoutEffect/);
+  assert.match(provider, /ToastProviderDepthContext/);
   assert.match(provider, /<ToastViewport/);
   assert.match(provider, /enqueueToast/);
   assert.match(provider, /dequeueToast/);
+  assert.match(provider, /registerToastProviderApi/);
+});
+
+test("toast controller delegates to the mounted provider API", () => {
+  const calls: string[] = [];
+  const unregister = registerToastProviderApi({
+    dismiss: (id) => calls.push(`dismiss:${id}`),
+    dismissAll: () => calls.push("dismissAll"),
+    toast: (options) => {
+      calls.push(`toast:${options.title}`);
+      return "toast-method";
+    },
+  });
+
+  assert.equal(toastController.toast({ title: "Method call" }), "toast-method");
+  toastController.dismiss("toast-method");
+  toastController.dismissAll();
+  unregister();
+
+  assert.deepEqual(calls, [
+    "toast:Method call",
+    "dismiss:toast-method",
+    "dismissAll",
+  ]);
+  assert.throws(
+    () => toastController.toast({ title: "Too early" }),
+    /after a <ToastProvider> has mounted/,
+  );
+});
+
+test("toast controller restores the outer provider after nested cleanup", () => {
+  const calls: string[] = [];
+  const unregisterOuter = registerToastProviderApi({
+    dismiss: () => undefined,
+    dismissAll: () => undefined,
+    toast: (options) => {
+      calls.push(`outer:${options.title}`);
+      return "outer";
+    },
+  });
+  const unregisterInner = registerToastProviderApi({
+    dismiss: () => undefined,
+    dismissAll: () => undefined,
+    toast: (options) => {
+      calls.push(`inner:${options.title}`);
+      return "inner";
+    },
+  });
+
+  assert.equal(toastController.toast({ title: "First" }), "inner");
+  unregisterInner();
+  assert.equal(toastController.toast({ title: "Second" }), "outer");
+  unregisterOuter();
+
+  assert.deepEqual(calls, ["inner:First", "outer:Second"]);
+});
+
+test("toast controller prefers deeper providers regardless of registration order", () => {
+  const calls: string[] = [];
+  const unregisterInner = registerToastProviderApi(
+    {
+      dismiss: () => undefined,
+      dismissAll: () => undefined,
+      toast: (options) => {
+        calls.push(`inner:${options.title}`);
+        return "inner";
+      },
+    },
+    2,
+  );
+  const unregisterOuter = registerToastProviderApi(
+    {
+      dismiss: () => undefined,
+      dismissAll: () => undefined,
+      toast: (options) => {
+        calls.push(`outer:${options.title}`);
+        return "outer";
+      },
+    },
+    1,
+  );
+
+  assert.equal(toastController.toast({ title: "First" }), "inner");
+  unregisterInner();
+  assert.equal(toastController.toast({ title: "Second" }), "outer");
+  unregisterOuter();
+
+  assert.deepEqual(calls, ["inner:First", "outer:Second"]);
 });
 
 test("public toast entrypoint exports surface, provider, context, models, and layers", () => {
@@ -230,6 +439,7 @@ test("public toast entrypoint exports surface, provider, context, models, and la
   assert.match(source, /ToastViewport/);
   assert.match(source, /toastModel/);
   assert.match(source, /toastLayers/);
+  assert.match(source, /toastController/);
 });
 
 function readSource(relativePath: string) {
