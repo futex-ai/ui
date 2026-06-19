@@ -10,10 +10,12 @@ export type SharedUiColors = {
   /**
    * Boundary color for interactive controls (inputs, the date trigger, the
    * dropdown selector, secondary buttons, segmented cells, radio cards, the
-   * switch track). Unlike `border`/`border2`, which are decorative dividers and
-   * are exempt from contrast rules, this is held to WCAG 2.1 — 1.4.11 Non-text
-   * Contrast (AA): ≥3:1 against both the surface and the page background so the
-   * edge of a control is perceivable.
+   * switch track). Tuned to read as a light, unobtrusive edge on a white
+   * `surface` (#fff) — controls are assumed to sit on the surface, not the
+   * grayer page background. This is intentionally softer than a WCAG 2.1 —
+   * 1.4.11 Non-text Contrast (AA) border (≈2.1:1 on white rather than ≥3:1),
+   * trading a hard, dark outline for a calmer edge. `border`/`border2` remain
+   * the even lighter decorative dividers.
    */
   controlBorder: string;
   faint: string;
@@ -70,7 +72,7 @@ export const defaultSharedUiTheme: SharedUiTheme = {
     bg2: "#ecede7",
     border: "#e5e8e0",
     border2: "#d3d8cd",
-    controlBorder: "#8b908b",
+    controlBorder: "#aeb4ad",
     faint: "#a8aea7",
     ink: "#1c1f1d",
     ink2: "#3e4540",
@@ -138,7 +140,7 @@ export const junoSharedUiTheme = createSharedUiTheme({
     bg2: "#F5F5F5",
     border: "#EBEBEB",
     border2: "#D8D8D8",
-    controlBorder: "#939099",
+    controlBorder: "#B1AFB6",
     faint: "#93919E",
     ink: "#15131F",
     ink2: "#3D3A4E",
