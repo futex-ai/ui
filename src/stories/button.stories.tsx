@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Check, Plus, Trash2 } from "lucide-react-native";
+import { Check, Pencil, Plus, Settings, Trash2 } from "lucide-react-native";
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
@@ -74,6 +74,36 @@ export const WithIcons: Story = {
     ),
 };
 
+export const IconOnly: Story = {
+  name: "Icon only",
+  render: () =>
+    row(
+      <>
+        {/* An icon-only button has no visible text, so `accessibilityLabel` is
+            required (and type-enforced) to give it an accessible name
+            (WCAG 2.1 — 1.1.1 / 4.1.2). */}
+        <Button
+          accessibilityLabel="Settings"
+          icon={Settings}
+          onPress={noop}
+          tone="ghost"
+        />
+        <Button accessibilityLabel="Edit" icon={Pencil} onPress={noop} />
+        <Button
+          accessibilityLabel="Delete"
+          icon={Trash2}
+          onPress={noop}
+          tone="danger"
+        />
+      </>,
+    ),
+};
+
+export const Busy: Story = {
+  name: "Busy",
+  render: () => <BusyExample />,
+};
+
 export const BlockAndDisabled: Story = {
   name: "Block and disabled",
   render: () => (
@@ -114,6 +144,30 @@ function InteractiveExample() {
         Unavailable
       </Button>
     </View>
+  );
+}
+
+function BusyExample() {
+  const [busy, setBusy] = useState(false);
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        {/* While busy the button keeps its label and focus, announces
+            `aria-busy`, swaps the leading icon for a spinner, and ignores
+            presses (WCAG 2.1 — 4.1.2 Name, Role, Value). */}
+        <Button
+          busy={busy}
+          icon={Check}
+          onPress={() => setBusy(true)}
+          tone="primary"
+        >
+          {busy ? "Saving" : "Save"}
+        </Button>
+        <Button busy onPress={noop}>
+          Loading
+        </Button>
+      </View>
+    </StorySurface>
   );
 }
 

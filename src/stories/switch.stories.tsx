@@ -64,11 +64,15 @@ function PrivacyToggleExample() {
   return (
     <View style={styles.row}>
       <View style={styles.copy}>
-        <Text style={styles.label}>Analytics cookies</Text>
+        <Text nativeID="analytics-cookies-label" style={styles.label}>
+          Analytics cookies
+        </Text>
         <Text style={styles.description}>Share product usage signals</Text>
       </View>
+      {/* Associate the visible row label as the switch's name so the
+          accessible name matches the visible text (2.5.3 Label in Name). */}
       <Switch
-        accessibilityLabel="Analytics cookies"
+        aria-labelledby="analytics-cookies-label"
         onValueChange={setEnabled}
         value={enabled}
       />
@@ -83,7 +87,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   description: {
-    color: "#737b75",
+    color: "#69706a",
     fontSize: 12,
     lineHeight: 18,
   },

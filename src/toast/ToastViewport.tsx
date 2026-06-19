@@ -2,6 +2,7 @@
 import { View } from "react-native";
 
 import { Toast } from "./Toast";
+import { ToastLiveRegion } from "./ToastLiveRegion";
 import {
   toastStackAlign,
   toastStackDirection,
@@ -29,24 +30,28 @@ export function ToastViewport({
   toasts,
   onDismiss,
 }: ToastViewportProps) {
-  if (toasts.length === 0) {
-    return null;
-  }
-
+  // The live region stays mounted even when the stack is empty so toast text is
+  // injected into an already-existing region (WCAG 2.1 — 4.1.3, AA). On native
+  // it drives `AccessibilityInfo` announcements via `accessibilityLiveRegion`.
   return (
-    <View
-      pointerEvents="box-none"
-      style={{
-        alignItems: toastStackAlign(placement),
-        flexDirection: toastStackDirection(placement),
-        gap: 12,
-        position: "absolute",
-        ...toastViewportInset(placement),
-      }}
-    >
-      {toasts.map((toast) => (
-        <Toast key={toast.id} onDismiss={onDismiss} toast={toast} />
-      ))}
-    </View>
+    <>
+      <ToastLiveRegion toasts={toasts} />
+      {toasts.length > 0 ? (
+        <View
+          pointerEvents="box-none"
+          style={{
+            alignItems: toastStackAlign(placement),
+            flexDirection: toastStackDirection(placement),
+            gap: 12,
+            position: "absolute",
+            ...toastViewportInset(placement),
+          }}
+        >
+          {toasts.map((toast) => (
+            <Toast key={toast.id} onDismiss={onDismiss} toast={toast} />
+          ))}
+        </View>
+      ) : null}
+    </>
   );
 }

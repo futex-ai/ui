@@ -33,6 +33,8 @@ export type DropdownMenuTriggerMode =
  * DropdownMenuTriggerMode}.
  */
 export type DropdownMenuTriggerProps = {
+  /** Menu container DOM id, for `aria-controls` while open (WCAG 4.1.2). */
+  "aria-controls"?: string;
   "aria-expanded": boolean;
   "aria-haspopup": "menu";
   onKeyDown?: (event: DropdownMenuTriggerKeyEvent) => boolean | void;
@@ -45,6 +47,7 @@ export type DropdownMenuTriggerProps = {
 
 /** Subset of a trigger element's props that the menu composes with. */
 export type DropdownMenuTriggerElementProps = {
+  "aria-controls"?: string;
   "aria-expanded"?: boolean;
   "aria-haspopup"?: "menu";
   onPress?: (event: unknown) => void;
@@ -167,6 +170,7 @@ export function mergeDropdownMenuTriggerProps(
 ): DropdownMenuTriggerElementProps {
   const merged: DropdownMenuTriggerElementProps = {
     ...childProps,
+    "aria-controls": triggerProps["aria-controls"],
     "aria-expanded": triggerProps["aria-expanded"],
     "aria-haspopup": triggerProps["aria-haspopup"],
   };

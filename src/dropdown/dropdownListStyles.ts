@@ -53,7 +53,14 @@ export function createDropdownListStyles(theme: SharedUiTheme) {
       paddingHorizontal: 10,
       paddingVertical: 8,
     },
-    itemActive: { backgroundColor: theme.colors.soft },
+    // The `soft` fill alone is ~1.13:1 against the surface, so the active row
+    // also carries a primary left-accent bar (an inset box-shadow, so it adds
+    // no layout shift) to keep the highlight perceivable at ≥3:1 for low-vision
+    // users (WCAG 1.4.11) — a label-color shift alone is insufficient.
+    itemActive: {
+      backgroundColor: theme.colors.soft,
+      boxShadow: `inset 3px 0 0 0 ${theme.colors.primary}`,
+    },
     itemDisabled: { opacity: 0.5 },
     itemLabel: {
       ...baseText,

@@ -7,9 +7,10 @@
  *   ({@link WebModalFrame}); spinning stages a draft that Cancel discards and
  *   Done commits, matching the native sheet.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
 import { WebModalFrame } from "../modal";
 import { useSharedUiTheme } from "../theme";
 
@@ -46,8 +47,10 @@ export function DatePickerOverlay({
   }
   return (
     <CalendarPopover
+      label={label}
       max={max}
       min={min}
+      onClose={onClose}
       onSelect={onSelect}
       today={today}
       value={value}
@@ -62,16 +65,42 @@ function CalendarPopover({
   min,
   max,
   onSelect,
+  onClose,
+  label,
   zIndex,
 }: Pick<
   DatePickerOverlayProps,
-  "value" | "today" | "min" | "max" | "onSelect" | "zIndex"
+  | "value"
+  | "today"
+  | "min"
+  | "max"
+  | "onSelect"
+  | "onClose"
+  | "label"
+  | "zIndex"
 >) {
   const theme = useSharedUiTheme();
   const s = useMemo(() => createWebCalendarStyles(theme), [theme]);
+  // Escape dismisses the popover through the shared layer stack, so a calendar
+  // opened inside a modal/dropdown closes itself first and the surface beneath
+  // it stays open (WCAG 2.1 2.1.2 No Keyboard Trap / 1.4.13 Content on Focus).
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  useEffect(() => {
+    const layer = { onEscape: () => onCloseRef.current?.() };
+    pushEscapeLayer(layer);
+    return () => removeEscapeLayer(layer);
+  }, []);
   return (
+    // Named `dialog` rather than a bare anonymous container, so the popover is
+    // announced and its boundary is programmatically discoverable. The trigger
+    // (the editable text input) keeps focus for type-or-pick, so this is an
+    // anchored, non-trapping popover: Tab moves into the day grid (a single
+    // roving Tab stop) and Escape closes it (WCAG 2.1 4.1.2 Name/Role/Value).
     <View
+      accessibilityLabel={label ?? "Choose date"}
       accessibilityViewIsModal
+      role="dialog"
       style={[s.pop, { zIndex: dateFieldZIndex(zIndex) }]}
     >
       <CalendarMonth

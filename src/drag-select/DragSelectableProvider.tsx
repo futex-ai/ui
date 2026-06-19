@@ -14,9 +14,12 @@ import type {
 } from "./dragSelectableTypes";
 
 const emptySet = new Set<string>();
+const emptyMap = new Map<string, DragSelectableTargetRegistration>();
 
 export function DragSelectableProvider({
+  accessibilityLabel,
   children,
+  role = "group",
   style,
 }: DragSelectableProviderProps) {
   const listenersRef = useRef(new Set<DragSelectableChangeListener>());
@@ -26,13 +29,18 @@ export function DragSelectableProvider({
   }, []);
   const context = useMemo(
     () => ({
+      activeId: null,
       clearSelection: () => undefined,
+      focusTarget: (_id: string) => undefined,
       matchedIdSet: emptySet,
+      registeredTargets: emptyMap,
       registerTarget: (_target: DragSelectableTargetRegistration) => () =>
         undefined,
       selectedIdSet: emptySet,
+      setSelection: (_ids: string[]) => undefined,
       state: emptyDragSelectableState,
       subscribe,
+      toggleSelection: (_id: string) => undefined,
       updateTarget: (_target: DragSelectableTargetOptions) => undefined,
     }),
     [subscribe],
@@ -40,7 +48,9 @@ export function DragSelectableProvider({
 
   return (
     <DragSelectableContext.Provider value={context}>
-      <View style={style}>{children}</View>
+      <View accessibilityLabel={accessibilityLabel} role={role} style={style}>
+        {children}
+      </View>
     </DragSelectableContext.Provider>
   );
 }

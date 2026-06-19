@@ -55,6 +55,15 @@ export const SelectorSizes: Story = {
   ),
 };
 
+export const SelectorValidation: Story = {
+  name: "Selector with label, hint, and error",
+  render: () => (
+    <StorySurface>
+      <SelectorValidationExample />
+    </StorySurface>
+  ),
+};
+
 export const LongDropdownSelector: Story = {
   name: "Long dropdown selector",
   render: () => (
@@ -165,6 +174,30 @@ export const PlacementPlayground: Story = {
   parameters: { layout: "fullscreen" },
   render: () => <PlacementPlaygroundExample />,
 };
+
+function SelectorValidationExample() {
+  // A required selector that surfaces a programmatically associated hint and
+  // error: the trigger advertises the popup listbox (`aria-haspopup`,
+  // `aria-controls`), reflects `aria-required`/`aria-invalid`, and references
+  // its hint/error Text by id via `aria-describedby` (WCAG 3.3.1 / 1.3.1 /
+  // 4.1.2). Leaving the value empty keeps the error on screen so the
+  // association is demonstrable.
+  const [scheme, setScheme] = useState("");
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <DropdownSelector
+        error={scheme ? undefined : "Choose a VAT scheme to continue."}
+        hint="This determines how VAT is calculated on invoices."
+        label="VAT scheme"
+        onValueChange={setScheme}
+        options={sizeOptions}
+        placeholder="Select a scheme"
+        required
+        value={scheme}
+      />
+    </View>
+  );
+}
 
 function SelectorSizesExample() {
   const [small, setSmall] = useState("standard");

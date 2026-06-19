@@ -50,7 +50,7 @@ test("web modal uses a document body portal with Escape and focus handling", () 
   assert.match(portalSource, /document\.body/);
   assert.match(source, /WebModalPortal/);
   assert.match(source, /document\.addEventListener\("keydown"/);
-  assert.match(source, /webModalEventTargetsSurface/);
+  assert.match(source, /surface\.contains\(activeElement\)/);
   assert.match(source, /previousFocusRef/);
   assert.match(source, /trapWebModalFocus/);
   assert.match(source, /event\.key === "Tab"/);

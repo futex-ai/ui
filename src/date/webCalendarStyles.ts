@@ -32,8 +32,9 @@ export function createWebCalendarStyles(theme: SharedUiTheme) {
       borderWidth: 1,
     },
     dow: {
+      // 10px weekday headers need a darker token to clear 4.5:1 (WCAG 2.1 1.4.3).
       ...baseText,
-      color: theme.colors.muted,
+      color: theme.colors.ink2,
       fontSize: 10,
       fontWeight: "700",
       textAlign: "center",
@@ -45,8 +46,9 @@ export function createWebCalendarStyles(theme: SharedUiTheme) {
       marginBottom: 2,
     },
     foot: {
+      // 11px footnote text uses the darker `ink2` to clear 4.5:1 (WCAG 2.1 1.4.3).
       ...baseText,
-      color: theme.colors.muted,
+      color: theme.colors.ink2,
       fontSize: 11,
       marginTop: 8,
       textAlign: "center",
@@ -58,8 +60,10 @@ export function createWebCalendarStyles(theme: SharedUiTheme) {
       marginBottom: 8,
     },
     nav: {
+      // The chevron is an interactive control, so its resting edge needs the
+      // ≥3:1 control-boundary token, not the decorative `border` (WCAG 2.1 1.4.11).
       alignItems: "center",
-      borderColor: theme.colors.border,
+      borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.sm,
       borderWidth: 1,
       height: 26,
@@ -67,8 +71,10 @@ export function createWebCalendarStyles(theme: SharedUiTheme) {
       width: 26,
     },
     pop: {
+      // The popover is an interactive surface; give its edge the ≥3:1 control
+      // boundary token so it is perceivable against the page (WCAG 2.1 1.4.11).
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.border2,
+      borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.xl,
       borderWidth: 1,
       boxShadow: "0 14px 40px rgba(20, 28, 22, 0.1)",

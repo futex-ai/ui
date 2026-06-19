@@ -18,6 +18,17 @@ import { useSharedUiTheme } from "../theme";
 import { createInputStyles, inputIconSize } from "./inputStyles";
 
 export type InputFrameProps = Omit<TextInputProps, "style"> & {
+  /**
+   * Space-separated id list of the element(s) describing this input (hint /
+   * error text). RNW forwards it as a literal `aria-describedby` on the DOM
+   * input — RNW does NOT map `accessibilityHint` to it. (WCAG 2.1 3.3.1 / 3.3.2)
+   */
+  "aria-describedby"?: string;
+  /**
+   * Id of the error-message element. Forwarded as a literal `aria-errormessage`;
+   * only meaningful while `invalid` (which sets `aria-invalid`). (WCAG 2.1 3.3.1)
+   */
+  "aria-errormessage"?: string;
   /** Renders the rose invalid border (independent of any message). */
   invalid?: boolean;
   /** Control density: `sm`, `md` (default), or `lg`. */
@@ -127,6 +138,12 @@ export function InputFrame({
         styles.box,
         invalid ? styles.boxInvalid : borderActive ? styles.boxActive : null,
         style,
+        // The focus ring (a geometry-bearing outline, not just a border
+        // recolor) goes last so it survives a caller `style` override and is
+        // visible even on an invalid (rose-bordered) field — WCAG 2.1 2.4.7
+        // Focus Visible (AA). Only paints when the input itself is focused
+        // (not for the `active`/popover-open border).
+        focus.focused ? focus.focusRingStyle : null,
       ]}
     >
       {PrefixIcon ? (
@@ -138,7 +155,9 @@ export function InputFrame({
         ref={setInputRef}
         aria-invalid={invalid}
         aria-required={required}
-        placeholderTextColor={theme.colors.faint}
+        // `placeholder` clears 4.5:1 on surface (WCAG 2.1 1.4.3, AA); `faint`
+        // was only ~2.26:1. A placeholder is never the only label (3.3.2 A).
+        placeholderTextColor={theme.colors.placeholder}
         {...props}
         onBlur={(event) => {
           focus.onBlur();

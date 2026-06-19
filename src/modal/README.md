@@ -13,8 +13,16 @@ picker views instead of this component.
 - Support a centered dialog (`placement="center"`, the default) or a bottom
   sheet (`placement="bottom-sheet"`) pinned full-width to the viewport bottom.
 - Keep web focus behavior in one place: focus enters the close control while a
-  modal is open, Tab stays inside the modal, and focus returns to the
+  modal is open, Tab stays inside the modal (the trap re-engages on every Tab,
+  so focus that escapes to `<body>` is pulled back in), and focus returns to the
   previously focused element on close.
+- Expose correct dialog semantics: the surface is a `role="dialog"` with
+  `aria-modal` and is named by its title via `aria-labelledby` (the title is a
+  `role="heading"`). Background page content is made `inert`/`aria-hidden` while
+  the modal is open and restored on close, since RNW does not emit `inert` for
+  `accessibilityViewIsModal`. The backdrop is a mouse-only dismiss target hidden
+  from assistive tech and the tab order (Escape is the accessible close path).
+  The close button shows a focus-visible ring on keyboard focus.
 - Keep web close behavior explicit: Escape, backdrop press, close button, and
   request-close all use the same policy. Escape is routed through the shared
   escape-layer stack (`src/escapeLayer.ts`), so a dropdown, popover, or nested

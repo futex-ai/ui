@@ -54,9 +54,9 @@ export function buttonIconSize(size: ControlSize) {
 
 /**
  * Build the button's themed styles for a given size. The base `button` carries
- * the secondary (default) look — surface fill, `border2` outline, `radii.md` —
- * and the tone styles layer over it. The label colour is applied inline by the
- * component because it depends on the tone.
+ * the secondary (default) look — surface fill, `controlBorder` outline,
+ * `radii.md` — and the tone styles layer over it. The label colour is applied
+ * inline by the component because it depends on the tone.
  */
 export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
@@ -66,7 +66,12 @@ export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
     button: {
       alignItems: "center",
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.border2,
+      // The secondary button's resting edge is a control boundary, so it uses
+      // the dedicated `controlBorder` token (≥3:1 vs surface and page) rather
+      // than the low-contrast decorative `border2` (WCAG 2.1 — 1.4.11
+      // Non-text Contrast, AA). The ghost tone overrides this to transparent;
+      // its label-as-affordance is intentional (no resting border or fill).
+      borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.md,
       borderWidth: 1,
       flexDirection: "row",

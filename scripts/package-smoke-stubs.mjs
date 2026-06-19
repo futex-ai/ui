@@ -13,9 +13,16 @@ export function cloneElement(element, props) {
 export function isValidElement(element) {
   return Boolean(element && typeof element === "object" && "props" in element);
 }
+export function forwardRef(render) {
+  return render;
+}
 export function useCallback(callback) {
   return callback;
 }
+export function useId() {
+  return "stub-id";
+}
+export function useImperativeHandle() {}
 export function useContext(context) {
   return context?._currentValue;
 }
@@ -34,10 +41,13 @@ export default {
   Fragment,
   cloneElement,
   createContext,
+  forwardRef,
   isValidElement,
   useCallback,
   useContext,
   useEffect,
+  useId,
+  useImperativeHandle,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -73,13 +83,23 @@ export const ScrollView = "ScrollView";
 export const Text = "Text";
 export const TextInput = "TextInput";
 export const View = "View";
-export const Animated = {
-  View: "Animated.View",
-  Value: class AnimatedValue {
-    interpolate() {
-      return "0deg";
-    }
+export const AccessibilityInfo = {
+  announceForAccessibility() {},
+  isReduceMotionEnabled() {
+    return Promise.resolve(false);
   },
+  addEventListener() {
+    return { remove() {} };
+  },
+};
+class AnimatedValue {
+  interpolate() {
+    return "0deg";
+  }
+}
+export const Animated = {
+  Value: AnimatedValue,
+  View: "Animated.View",
   loop() {
     return { start() {}, stop() {} };
   },
@@ -87,7 +107,9 @@ export const Animated = {
     return { start() {}, stop() {} };
   },
 };
-export const Easing = { linear: (value) => value };
+export const Easing = {
+  linear: (t) => t,
+};
 export const Platform = {
   OS: "web",
   select(values) {
@@ -131,6 +153,7 @@ export const CircleAlert = Icon;
 export const CircleCheck = Icon;
 export const CircleX = Icon;
 export const Info = Icon;
+export const LoaderCircle = Icon;
 export const Plus = Icon;
 export const Search = Icon;
 export const TriangleAlert = Icon;
@@ -197,6 +220,10 @@ export declare const Fragment: unique symbol;
   });
   await writeStubPackage(consumerRoot, "react-native", {
     "index.d.ts": `export type StyleProp<T> = T | readonly T[] | false | null | undefined;
+export type AccessibilityRole = string;
+export interface AccessibilityState {
+  [key: string]: unknown;
+}
 export type DimensionValue = number | string | null | undefined;
 export interface TextInputProps {
   [key: string]: unknown;

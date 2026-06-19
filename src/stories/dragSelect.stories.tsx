@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from "react-native";
 import type { DragSelectableState } from "../index";
 import {
   DragSelectableProvider,
+  hideWebOutlineView,
   useDragSelectableChanges,
   useDragSelectableTarget,
 } from "../index";
@@ -69,6 +70,11 @@ export const DisabledDuringDrag: Story = {
 function LedgerRowsExample() {
   return (
     <DragSelectableProvider
+      accessibilityLabel="Transactions"
+      role="group"
+      selectionAnnouncement={(count) =>
+        `${transactionCountLabel(count)} selected`
+      }
       selectionLabel={(count) => transactionCountLabel(count)}
       style={styles.shell}
     >
@@ -85,6 +91,7 @@ function LedgerRowsExample() {
 function PageContentAreaExample() {
   return (
     <DragSelectableProvider
+      accessibilityLabel="Transactions"
       selectionLabel={(count) => transactionCountLabel(count)}
       style={[styles.shell, styles.pageArea]}
     >
@@ -107,7 +114,9 @@ function PageContentAreaExample() {
 function LargerMinimumDragExample() {
   return (
     <DragSelectableProvider
+      accessibilityLabel="Transactions"
       minimumDragDistance={24}
+      role="group"
       selectionLabel={(count) => transactionCountLabel(count)}
       style={styles.shell}
     >
@@ -125,7 +134,9 @@ function DisabledDuringDragExample() {
   const [disabled, setDisabled] = useState(false);
   return (
     <DragSelectableProvider
+      accessibilityLabel="Transactions"
       disabled={disabled}
+      role="group"
       selectionLabel={(count) => transactionCountLabel(count)}
       style={styles.shell}
     >
@@ -176,20 +187,50 @@ function LedgerRow({ row }: { row: (typeof rows)[number] }) {
   const target = useDragSelectableTarget({
     data: row,
     id: row.id,
+    // The visible row label doubles as the accessible name so the keyboard
+    // checkbox is announced meaningfully (WCAG 2.1 — 4.1.2 / 2.5.3).
+    label: `${row.label}, ${row.amount}`,
   });
   return (
     <View
+      {...target.a11yProps}
       ref={target.ref}
       style={[
         styles.row,
         target.matching ? styles.rowMatching : null,
         target.selected ? styles.rowSelected : null,
+        // Geometry-bearing keyboard-focus ring, applied last so it is never
+        // clobbered by the selection background (WCAG 2.1 — 2.4.7, AA).
+        target.focused ? target.focusRingStyle : null,
+        hideWebOutlineView,
       ]}
       testID={`drag-target-${row.id}`}
     >
-      <View>
-        <Text style={styles.rowTitle}>{row.label}</Text>
-        <Text style={styles.rowMeta}>{row.id}</Text>
+      <View style={styles.rowMain}>
+        {/* Non-color selection affordance: a check glyph marks the selected
+            row so the state does not rely on background color alone (WCAG 2.1
+            — 1.4.1 Use of Color, A). State is exposed to AT via `aria-checked`,
+            so the glyph is hidden from assistive tech. */}
+        <View
+          style={[
+            styles.checkBox,
+            target.selected ? styles.checkBoxSelected : null,
+          ]}
+        >
+          {target.selected ? (
+            <Text
+              aria-hidden
+              importantForAccessibility="no"
+              style={styles.checkGlyph}
+            >
+              {"✓"}
+            </Text>
+          ) : null}
+        </View>
+        <View>
+          <Text style={styles.rowTitle}>{row.label}</Text>
+          <Text style={styles.rowMeta}>{row.id}</Text>
+        </View>
       </View>
       <Text style={styles.amount}>{row.amount}</Text>
     </View>
@@ -201,6 +242,25 @@ const styles = StyleSheet.create({
     color: "#1c1f1d",
     fontSize: 13,
     fontWeight: "800",
+  },
+  checkBox: {
+    alignItems: "center",
+    borderColor: "#868d86",
+    borderRadius: 4,
+    borderWidth: 1.5,
+    height: 18,
+    justifyContent: "center",
+    width: 18,
+  },
+  checkBoxSelected: {
+    backgroundColor: "#2f5945",
+    borderColor: "#2f5945",
+  },
+  checkGlyph: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "800",
+    lineHeight: 14,
   },
   list: {
     borderColor: "#d3d8cd",
@@ -241,11 +301,16 @@ const styles = StyleSheet.create({
     minHeight: 52,
     paddingHorizontal: 12,
   },
+  rowMain: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 10,
+  },
   rowMatching: {
     backgroundColor: "#eef2ed",
   },
   rowMeta: {
-    color: "#737b75",
+    color: "#69706a",
     fontSize: 11,
     fontWeight: "700",
     marginTop: 2,
@@ -271,7 +336,7 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   statusMeta: {
-    color: "#737b75",
+    color: "#69706a",
     fontSize: 12,
     fontWeight: "700",
   },

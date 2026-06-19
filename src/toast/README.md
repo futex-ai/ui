@@ -17,8 +17,13 @@ screen.
   the pointer or keyboard focus is over a toast, and support sticky toasts that
   stay until dismissed.
 - Carry tone (`info` / `success` / `warning` / `error`) as colour, leading
-  icon, and screen-reader semantics: errors announce assertively as an `alert`,
-  everything else politely as a `status`.
+  icon, and screen-reader semantics. The toast text is announced through a
+  persistent, always-mounted live region (errors `aria-live="assertive"`,
+  everything else `aria-live="polite"`, `aria-atomic` so title + description
+  read as one unit) rather than from a region born with its content, which some
+  screen readers skip (WCAG 2.1 — 4.1.3 Status Messages, AA). The visible toast
+  keeps its `status` / `alert` role for identification but suppresses its own
+  live announcement (`aria-live="off"`) so it is announced exactly once.
 - Offer a `solid` visual variant for compact filled feedback while keeping the
   default `card` variant unchanged.
 - Let callers replace, add, or hide the leading icon so progress and branded
@@ -148,8 +153,12 @@ npm run test:browser
 - `ToastProvider.tsx` — owns the queue and renders the viewport.
 - `ToastContext.ts` — context and the `useToast` hook.
 - `toastController.ts` — method-call API backed by the mounted provider.
-- `Toast.tsx` — toast surface, tone accent, and auto-dismiss/pause timer.
-- `ToastViewport.web.tsx` — DOM-portalled, fixed web viewport.
+- `Toast.tsx` — toast surface, tone accent, auto-dismiss/pause timer, close
+  control with a keyboard focus ring, and focus hand-off on dismiss.
+- `ToastLiveRegion.tsx` — persistent, always-mounted polite/assertive live
+  region that announces toast text (4.1.3 AA).
+- `ToastViewport.web.tsx` — DOM-portalled, fixed web viewport; mounts the live
+  region and a labelled `region` landmark around the stack.
 - `ToastViewport.tsx` — native absolute-overlay viewport.
 - `toastModel.ts` — pure types, queue, duration, a11y, and placement helpers.
 - `toastStyles.ts` — theme-driven surface styles.

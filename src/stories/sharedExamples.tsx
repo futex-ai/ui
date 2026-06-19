@@ -745,6 +745,7 @@ function PlacementPlaygroundBody() {
         >
           <DropdownList
             entries={playgroundEntries()}
+            label="Placement preview"
             maxHeight={placement.maxHeight}
             onClose={() => undefined}
           />
@@ -958,7 +959,7 @@ const styles = StyleSheet.create({
     bottom: 6,
   },
   playEdgeLabel: {
-    color: "#aeb4a5",
+    color: "#69706a",
     fontSize: 11,
     fontWeight: "700",
     left: 0,

@@ -1,5 +1,5 @@
 /** Keyboard state for input-backed combobox result lists. */
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   DropdownListEntry,
@@ -18,6 +18,12 @@ type ComboboxNavigationOptions = {
   onClose: () => void;
   onOpen: () => void;
   open: boolean;
+};
+
+type ComboboxKeyboardEvent = {
+  key?: string;
+  nativeEvent?: { key?: string };
+  preventDefault?: () => void;
 };
 
 export function useComboboxNavigation({
@@ -40,46 +46,70 @@ export function useComboboxNavigation({
     setActiveId(selectedOrFirstId(navItems, selectedId));
   }, [navKey, selectedId]);
 
-  const keyProps = {
-    onKeyDown: (event: {
-      key?: string;
-      nativeEvent?: { key?: string };
-      preventDefault?: () => void;
-    }) => {
+  const handleKeyDown = useCallback(
+    (event: ComboboxKeyboardEvent): boolean => {
       const action = dropdownKeyAction(
         event.nativeEvent?.key ?? event.key ?? "",
       );
+      // Space must reach the input as typed text (the combobox filters as you
+      // type), so the toggle action is never consumed here.
       if (!action || action === "toggle") {
-        return;
+        return false;
       }
       event.preventDefault?.();
       if (action === "close") {
         onClose();
-        return;
+        return true;
       }
       if (action === "moveDown" || action === "moveUp") {
         if (!open) {
           onOpen();
         }
-        setActiveId((current) =>
+        setActiveId(
           nextSelectableId(
             navItems,
-            open ? current : null,
+            open ? activeId : null,
             action === "moveDown" ? 1 : -1,
           ),
         );
-        return;
+        return true;
       }
       if (!open) {
         onOpen();
-        return;
+        return true;
       }
       const active = entries.find((entry) => entry.id === activeId);
       if (active && "onPress" in active && !active.disabled) {
         active.onPress?.();
       }
+      return true;
     },
-  };
+    [activeId, entries, navItems, onClose, onOpen, open],
+  );
 
-  return { activeId, keyProps, setActiveId };
+  // React Native Web's `TextInput` replaces a forwarded `onKeyDown` with its
+  // internal handler, so a key handler spread onto the input never fires
+  // (WCAG 2.1.1 Keyboard). Arrow/Enter/Escape navigation therefore runs through
+  // a document-level capture listener while the result list is open, the same
+  // approach `useDropdownSelectorNavigation` uses. The `onKeyDown` in `keyProps`
+  // is kept only so a non-`TextInput` consumer (or native) still works.
+  useEffect(() => {
+    if (!open || typeof document === "undefined") {
+      return;
+    }
+    const handleDocumentKeyDown = (event: KeyboardEvent) => {
+      if (handleKeyDown(event)) {
+        event.stopPropagation();
+      }
+    };
+    document.addEventListener("keydown", handleDocumentKeyDown, true);
+    return () =>
+      document.removeEventListener("keydown", handleDocumentKeyDown, true);
+  }, [handleKeyDown, open]);
+
+  return {
+    activeId,
+    keyProps: { onKeyDown: handleKeyDown },
+    setActiveId,
+  };
 }

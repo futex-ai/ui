@@ -1,16 +1,21 @@
 /** Single-value selector and read-only selector input surfaces. */
 import { ChevronDown, Search } from "lucide-react-native";
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { ReactNode, useEffect, useId, useMemo, useRef, useState } from "react";
+import { Platform, Pressable, Text, TextInput, View } from "react-native";
 
+import { announce } from "../announcer";
 import type { ControlSize } from "../controlSize";
 import { hideWebOutline, hideWebOutlineView, useFocusRing } from "../focusRing";
 import { inputIconSize } from "../input";
 import { useSharedUiTheme } from "../theme";
 
-import { DropdownList, DropdownListEntry } from "./DropdownList";
+import {
+  DropdownList,
+  DropdownListEntry,
+  dropdownRowDomId,
+} from "./DropdownList";
 import { DropdownPortal } from "./DropdownPortal";
-import { filterComboboxSections } from "./comboboxModel";
+import { comboboxInputA11y, filterComboboxSections } from "./comboboxModel";
 import {
   createDropdownSelectorStyles,
   dropdownMinWidth,
@@ -140,6 +145,39 @@ function DropdownSelectorView({
     label,
     display || placeholder,
   );
+
+  // Stable ids tie the trigger to its option list, its active option, and its
+  // error/hint text. RNW does not map `accessibilityHint` to `aria-describedby`
+  // (WCAG 3.3.1 / 1.3.1), so the visible Text nodes are referenced by id below.
+  const reactId = useId();
+  const listId = `${reactId}-list`;
+  const errorId = `${reactId}-error`;
+  const hintId = `${reactId}-hint`;
+  const describedBy =
+    [error ? errorId : null, hint ? hintId : null].filter(Boolean).join(" ") ||
+    undefined;
+  const activeDescendant =
+    open && navigation.activeId
+      ? dropdownRowDomId(listId, navigation.activeId)
+      : undefined;
+
+  // Announce the searchable result count so screen readers hear matches change
+  // without focus moving off the search input (WCAG 4.1.3 Status Messages).
+  const matchCount = searchable
+    ? optionEntries.filter(
+        (entry) => entry.type === "item" || entry.type === "footer",
+      ).length
+    : null;
+  useEffect(() => {
+    if (!open || !searchable || matchCount === null || !query.trim()) {
+      return;
+    }
+    announce(
+      matchCount === 0
+        ? "No matching options"
+        : `${matchCount} ${matchCount === 1 ? "option" : "options"} available`,
+    );
+  }, [matchCount, open, query, searchable]);
   const searchField = searchable ? (
     <View style={styles.searchField}>
       <Search color={theme.colors.muted} size={15} />
@@ -148,9 +186,17 @@ function DropdownSelectorView({
         autoFocus
         onChangeText={setQuery}
         placeholder={searchPlaceholder}
-        placeholderTextColor={theme.colors.faint}
+        placeholderTextColor={theme.colors.placeholder}
         style={[styles.searchInput, hideWebOutline]}
         value={query}
+        // The search input is the combobox text field: it filters the listbox
+        // and points `aria-activedescendant` at the active result so arrow keys
+        // announce without the input losing focus (WCAG 1.3.1 / 4.1.2 / 2.1.1).
+        {...comboboxInputA11y({
+          activeDescendant,
+          controls: listId,
+          open,
+        })}
       />
     </View>
   ) : null;
@@ -167,7 +213,6 @@ function DropdownSelectorView({
         accessibilityState={{ disabled: !interactive }}
         aria-expanded={interactive ? open : undefined}
         aria-invalid={invalid}
-        aria-required={required}
         disabled={!interactive}
         onBlur={focus.onBlur}
         onFocus={focus.onFocus}
@@ -181,6 +226,17 @@ function DropdownSelectorView({
           !interactive ? styles.readOnly : null,
           hideWebOutlineView,
         ]}
+        // The trigger owns the popup option list (WCAG 4.1.2): it advertises the
+        // listbox and links to its id while open. These literal aria props are
+        // web-only; native uses the RN a11y state above. They are passed via a
+        // cast object because RNW's bundled types omit `aria-haspopup` /
+        // `aria-controls`.
+        {...selectorTriggerA11y({
+          controls: listId,
+          describedBy,
+          interactive,
+          open,
+        })}
         {...navigation.keyProps}
       >
         <Text
@@ -198,8 +254,16 @@ function DropdownSelectorView({
           size={variant === "field" ? inputIconSize(size) : 13}
         />
       </Pressable>
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      {hint ? <Text style={styles.hint}>{hint}</Text> : null}
+      {error ? (
+        <Text nativeID={errorId} style={styles.error}>
+          {error}
+        </Text>
+      ) : null}
+      {hint ? (
+        <Text nativeID={hintId} style={styles.hint}>
+          {hint}
+        </Text>
+      ) : null}
       <DropdownPortal
         anchorRef={anchorRef}
         minWidth={dropdownMinWidth(variant)}
@@ -212,9 +276,16 @@ function DropdownSelectorView({
             entries={entries}
             footer={footer}
             header={header}
+            label={accessibleLabel}
+            listId={listId}
+            listRole="listbox"
             maxHeight={placement.maxHeight}
             onActiveIdChange={navigation.setActiveId}
             onClose={() => setOpen(false)}
+            // The popup listbox is the choice the required field must be filled
+            // from, so it carries `aria-required` (a valid attribute on
+            // `role="listbox"`, unlike on the `button` trigger) (WCAG 4.1.2).
+            required={required}
             search={searchField}
           />
         )}
@@ -262,6 +333,38 @@ export function ReadOnlySelector({
       </View>
     </View>
   );
+}
+
+/**
+ * Web-only ARIA props for the select-only `button` trigger: it advertises the
+ * popup listbox (`aria-haspopup`) and, while open, links to the list container
+ * (`aria-controls`). `aria-activedescendant` is deliberately omitted — it is not
+ * an allowed attribute on `role=button` (the active option is still conveyed
+ * visually and via the option's `aria-selected`). RNW's bundled types omit these
+ * literal attributes, so they are built as a cast object (RNW forwards them at
+ * runtime; native keeps the RN `accessibilityRole`/`accessibilityState` above).
+ */
+function selectorTriggerA11y({
+  controls,
+  describedBy,
+  interactive,
+  open,
+}: {
+  controls: string;
+  describedBy?: string;
+  interactive: boolean;
+  open: boolean;
+}): object {
+  if (Platform.OS !== "web" || !interactive) {
+    return describedBy
+      ? ({ "aria-describedby": describedBy } as unknown as object)
+      : {};
+  }
+  return {
+    "aria-controls": open ? controls : undefined,
+    "aria-describedby": describedBy,
+    "aria-haspopup": "listbox",
+  } as unknown as object;
 }
 
 function selectorAccessibleLabel(label: string | undefined, value: string) {

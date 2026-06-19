@@ -83,9 +83,30 @@ events or 300.
 
 Supplying `onCellPress` turns every in-range cell into a focusable button that
 reports the pressed {@link HeatmapCell} (`date`, `value`, and ramp `level`).
-Each in-range cell carries its own accessible label — `"4 Mar 2024: 5"` by
-default — which `cellAccessibilityLabel` can override. Padding cells outside the
+Each in-range cell carries its own accessible label — `"4 Mar 2024: 5 (high)"`
+by default, folding in a qualitative intensity tier (`none`/`low`/`medium`/
+`high`/`highest`) so the signal the color carries reaches screen-reader users
+too — which `cellAccessibilityLabel` can override. Padding cells outside the
 range are hidden from assistive technology.
+
+- **Single tab stop, arrow navigation.** When `onCellPress` is set the grid is
+  one Tab stop (a roving tabindex). On web, Arrow keys move the focused cell,
+  Home/End jump to the ends of the focused week column, PageUp/PageDown jump to
+  the first/last week in the focused row, and Ctrl+Home / Ctrl+End jump to the
+  first/last cell. Enter or Space activates the focused cell. This replaces the
+  ~365-tab-stop flat list a year-long range would otherwise produce (WCAG 2.1 —
+  2.1.1 Keyboard, A; 2.4.3 Focus Order, A).
+- **Grid semantics.** On web the grid emits `role="grid"`, each week column is a
+  `row`, and cells are `gridcell`s (WCAG 2.1 — 1.3.1, A). Native keeps the
+  per-cell labels rather than these web-only roles.
+- **Named region and legend.** Passing `accessibilityLabel` names the whole
+  heatmap as a `group`; the Less→More legend is its own labelled `group` with
+  the color swatches hidden from assistive tech (WCAG 2.1 — 4.1.2, A).
+- **Non-color cues.** Every cell carries a hairline border so adjacent intensity
+  buckets are distinguishable for low-vision users without relying on color
+  alone, and the keyboard focus ring is a contrast-independent outline offset
+  onto the page background so it stays visible on the darkest cell (WCAG 2.1 —
+  1.4.1 Use of Color, A; 1.4.11 Non-text Contrast, AA; 2.4.7 Focus Visible, AA).
 
 ## Theming
 

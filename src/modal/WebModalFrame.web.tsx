@@ -1,6 +1,6 @@
 /** Portal-backed modal frame for Expo web surfaces. */
 import { X } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef } from "react";
 import type { ReactNode, RefObject } from "react";
 import {
   Pressable,
@@ -13,6 +13,7 @@ import {
 } from "react-native";
 
 import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
+import { useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { createWebModalFrameStyles } from "./webModalFrameStyles";
@@ -91,6 +92,8 @@ export function WebModalFrame({
 }: WebModalFrameProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createWebModalFrameStyles(theme), [theme]);
+  const titleId = useId();
+  const closeRing = useFocusRing();
   const closeButtonRef = useRef<View>(null);
   const closePolicyRef = useRef<ClosePolicyRef>({
     closeDisabled,
@@ -111,24 +114,73 @@ export function WebModalFrame({
     }
   }, []);
 
+  // RNW does not emit `inert`/`aria-hidden` for `accessibilityViewIsModal`, so
+  // the background stays in the AT tree and tab order. Imperatively mark every
+  // sibling of the modal's portal root inert while the modal is open, then
+  // restore each node's prior state on close. `inert` also removes the
+  // background from sequential focus, reinforcing the JS focus trap below.
+  //
+  // This effect is declared *before* the focus-restore effect on purpose: React
+  // runs cleanups in declaration order, so the background is un-inerted here
+  // first, before the focus effect's cleanup tries to restore focus to a
+  // previously-focused background element (focusing an `inert` node is a no-op).
   useEffect(() => {
     if (!visible || typeof document === "undefined") {
       return;
     }
+    // Capture the trigger element here, before `inert` is applied below — marking
+    // its container inert blurs it to `<body>`, so we must snapshot it first so
+    // focus can be restored to it on close.
     previousFocusRef.current =
       document.activeElement instanceof HTMLElement
         ? document.activeElement
         : null;
-    const focusTimer = setTimeout(() => {
-      const focusTarget =
-        initialFocusTargetRef.current?.current ??
-        (showCloseButtonRef.current
-          ? closeButtonRef.current
-          : surfaceRef.current);
-      focusWebModalElement(focusTarget);
-    }, 0);
+    const surface = surfaceRef.current as unknown;
+    const root =
+      surface instanceof HTMLElement ? webModalPortalRoot(surface) : null;
+    const body = document.body;
+    const siblings = Array.from(body.children).filter(
+      (node): node is HTMLElement =>
+        node instanceof HTMLElement && node !== root,
+    );
+    const restorers = siblings.map((node) => {
+      const hadInert = node.hasAttribute("inert");
+      const prevAriaHidden = node.getAttribute("aria-hidden");
+      node.setAttribute("inert", "");
+      node.setAttribute("aria-hidden", "true");
+      return () => {
+        if (!hadInert) {
+          node.removeAttribute("inert");
+        }
+        if (prevAriaHidden === null) {
+          node.removeAttribute("aria-hidden");
+        } else {
+          node.setAttribute("aria-hidden", prevAriaHidden);
+        }
+      };
+    });
     return () => {
-      clearTimeout(focusTimer);
+      for (const restore of restorers) {
+        restore();
+      }
+    };
+  }, [visible]);
+
+  useEffect(() => {
+    if (!visible || typeof document === "undefined") {
+      return;
+    }
+    // The trigger to restore on close is captured by the inertness effect above
+    // (which runs first, before `inert` blurs it). The portal children are
+    // committed before this effect runs, so the refs are populated and focus can
+    // move into the surface synchronously (no `setTimeout(0)` race).
+    const focusTarget =
+      initialFocusTargetRef.current?.current ??
+      (showCloseButtonRef.current
+        ? closeButtonRef.current
+        : surfaceRef.current);
+    focusWebModalElement(focusTarget);
+    return () => {
       focusWebModalElement(previousFocusRef.current);
       previousFocusRef.current = null;
     };
@@ -154,10 +206,11 @@ export function WebModalFrame({
       return;
     }
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.key === "Tab" &&
-        webModalEventTargetsSurface(event, surfaceRef)
-      ) {
+      // Trap on every Tab while the modal is visible — not only when focus is
+      // already inside the surface — so focus that escaped to <body> (e.g. after
+      // a click on the inert backdrop) is pulled back in on the next Tab. The
+      // trap helper already handles the focus-outside case.
+      if (event.key === "Tab") {
         trapWebModalFocus(event, surfaceRef);
       }
     };
@@ -175,19 +228,28 @@ export function WebModalFrame({
   const sheet = placement === "bottom-sheet";
   const modal = (
     <View style={styles.layer} pointerEvents="box-none">
+      {/* Backdrop is a mouse-only dismiss target: hidden from assistive tech and
+          skipped by the keyboard (Escape already provides the accessible close
+          path), so it never injects a full-viewport "Close" control into the AT
+          tree or the modal's tab order. */}
       <Pressable
-        accessibilityLabel={closeLabel ?? `Close ${title}`}
-        disabled={closeDisabled || !dismissible}
-        onPress={() => requestClose("backdrop")}
+        aria-hidden
+        focusable={false}
+        importantForAccessibility="no-hide-descendants"
+        onPress={() =>
+          closeDisabled || !dismissible ? undefined : requestClose("backdrop")
+        }
         style={styles.backdrop}
+        tabIndex={-1}
       />
       <View
         pointerEvents="box-none"
         style={[styles.center, sheet ? styles.centerSheet : null]}
       >
         <View
-          accessibilityLabel={title}
           accessibilityViewIsModal
+          aria-labelledby={titleId}
+          aria-modal
           ref={surfaceRef}
           role="dialog"
           style={[
@@ -200,7 +262,14 @@ export function WebModalFrame({
           {sheet ? <View style={styles.grip} /> : null}
           <View style={[styles.header, headerStyle]}>
             <View style={styles.titleBlock}>
-              <Text style={[styles.title, titleStyle]}>{title}</Text>
+              <Text
+                accessibilityRole="header"
+                aria-level={1}
+                nativeID={titleId}
+                style={[styles.title, titleStyle]}
+              >
+                {title}
+              </Text>
               {subtitle ? (
                 <Text style={[styles.subtitle, subtitleStyle]}>{subtitle}</Text>
               ) : null}
@@ -211,14 +280,17 @@ export function WebModalFrame({
                 accessibilityRole="button"
                 accessibilityState={{ disabled: closeDisabled }}
                 disabled={closeDisabled}
+                onBlur={closeRing.onBlur}
+                onFocus={closeRing.onFocus}
                 onPress={() => requestClose("closeButton")}
                 ref={closeButtonRef}
                 style={[
                   styles.closeButton,
                   closeDisabled ? styles.disabled : null,
+                  closeRing.focused ? closeRing.focusRingStyle : null,
                 ]}
               >
-                <X color={theme.colors.muted} size={18} />
+                <X aria-hidden color={theme.colors.ink2} size={18} />
               </Pressable>
             ) : null}
           </View>
@@ -291,16 +363,19 @@ function webModalSurfaceElement(
   return surface instanceof HTMLElement ? surface : null;
 }
 
-function webModalEventTargetsSurface(
-  event: KeyboardEvent,
-  surfaceRef: RefObject<View | null>,
-): boolean {
-  const surface = webModalSurfaceElement(surfaceRef);
-  return (
-    surface !== null &&
-    event.target instanceof Node &&
-    surface.contains(event.target)
-  );
+/**
+ * The surface lives inside the portal subtree mounted on `document.body`. Walk
+ * up from the surface to find the direct child of `body` that roots this modal,
+ * so the background-inertness effect can skip it (and only it) when hiding the
+ * rest of the page.
+ */
+function webModalPortalRoot(surface: HTMLElement): HTMLElement | null {
+  const body = surface.ownerDocument.body;
+  let node: HTMLElement | null = surface;
+  while (node && node.parentElement !== body) {
+    node = node.parentElement;
+  }
+  return node;
 }
 
 function focusWebModalElement(target: Focusable | null | undefined): void {

@@ -6,23 +6,25 @@ accounting app's shared `RadioCard` primitive.
 ## Responsibilities
 
 - Render a titled option card with optional supporting body copy.
-- Expose `radio` semantics with checked and disabled state.
+- Expose `radio` semantics with checked and disabled state, plus a non-color
+  (check-glyph) selection affordance.
 - Treat missing `onPress` as a read-only disabled card.
 - Use shared theme colors, fonts, and radii instead of consumer-local theme
   imports.
-- Keep keyboard focus visible on web without relying on the browser default
-  outline.
+- Keep keyboard focus visible on web with a geometry-bearing ring (not just a
+  border recolor) so it stays visible on already-bordered checked cards.
 
 ## Usage
 
-Group related cards under a labelled `radiogroup` owned by the consuming form:
+Wrap related cards in `RadioCardGroup`. The group owns the `radiogroup` role and
+name, behaves as a **single Tab stop**, and moves a roving focus between cards
+with `ArrowUp`/`ArrowDown`/`Home`/`End` (disabled cards are skipped). Each card
+still toggles with `Space`.
 
 ```tsx
-import { View } from "react-native";
+import { RadioCard, RadioCardGroup } from "@firna/ui/radio";
 
-import { RadioCard } from "@firna/ui/radio";
-
-<View accessibilityLabel="Accounting basis" accessibilityRole="radiogroup">
+<RadioCardGroup accessibilityLabel="Accounting basis" required>
   <RadioCard
     body="Record income and expenses when money moves."
     checked={basis === "cash"}
@@ -35,8 +37,14 @@ import { RadioCard } from "@firna/ui/radio";
     onPress={() => setBasis("accrual")}
     title="Accrual basis"
   />
-</View>;
+</RadioCardGroup>;
 ```
+
+`RadioCardGroup` accepts `label` (visible heading; doubles as the accessible
+name), `accessibilityLabel`, `required` (→ `aria-required`), and `invalid`
+(→ `aria-invalid`). A standalone `RadioCard` outside a group remains individually
+focusable and `Space`-activatable, but consumers should always own a labelled
+`radiogroup` (use `RadioCardGroup`) for a complete ARIA pattern.
 
 Omitting `onPress` renders the card as read-only. Passing `disabled` also dims
 the card and reports the disabled accessibility state.

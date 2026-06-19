@@ -122,7 +122,11 @@ test("heatmap defaults its ramp and empty cell to shared theme tokens", () => {
 test("heatmap exposes accessible, optionally pressable cells", () => {
   const source = readSource("../../src/heatmap/Heatmap.tsx");
 
-  assert.match(source, /onCellPress \?/);
+  // Cells are pressable only when `onCellPress` is supplied: the render branch
+  // short-circuits to a static, accessible cell otherwise, and the interactive
+  // path mounts the dedicated pressable cell.
+  assert.match(source, /if \(!onCellPress\)/);
+  assert.match(source, /<HeatmapPressableCell/);
   assert.match(source, /accessibilityRole="button"/);
   assert.match(source, /accessibilityLabel=\{label\}/);
   // Padding cells outside the range are hidden from assistive technology.

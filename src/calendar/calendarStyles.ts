@@ -396,7 +396,8 @@ export function createCalendarStyles(theme: SharedUiTheme) {
       ...baseText,
       color: theme.colors.surface,
       fontSize: 10,
-      opacity: 0.9,
+      // Full-opacity white keeps the time text ≥4.5:1 on the primary event fill
+      // (WCAG 2.1 — 1.4.3 Contrast). White at 0.9 composites to ~4.41:1.
     },
 
     // --- drag ghost (in-progress drag-to-create) ---------------------------

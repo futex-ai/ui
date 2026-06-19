@@ -159,10 +159,33 @@ it:
 In every mode the trigger advertises its menu to assistive tech with
 `aria-haspopup="menu"` and reflects the open state with `aria-expanded`.
 `longPress` and `contextMenu` are secondary-gesture triggers, so they never
-hijack a tap; pair them with another affordance when keyboard-only users must
-reach the menu (right-click is keyboard-reachable on web via the context-menu
-key). For per-platform behavior, drive the prop yourself, for example
+hijack a tap; Enter/Space and ArrowDown open the menu from the keyboard in every
+mode, so keyboard-only users can always reach it (right-click is also
+keyboard-reachable on web via the context-menu key). For per-platform behavior,
+drive the prop yourself, for example
 `trigger={Platform.OS === "web" ? "hover" : "longPress"}`.
+
+## Accessibility
+
+On web the option surface is a real ARIA composite (WCAG 4.1.2 Name/Role/Value):
+
+- `DropdownMenu` exposes its surface as `role="menu"` with `role="menuitem"`
+  rows; the selector and combobox surfaces are `role="listbox"` with
+  `role="option"` rows (so the selected option carries `aria-selected`). Pass
+  `accessibilityLabel` to name a menu surface.
+- The trigger/input links to its surface with `aria-controls` and tracks the
+  keyboard-active row with `aria-activedescendant`, so Arrow navigation is
+  announced without moving DOM focus off the trigger.
+- Searchable selectors and `ComboboxMultiSelect` mark their text field as
+  `role="combobox"` with `aria-autocomplete="list"`/`aria-expanded`, and
+  announce the filtered result count through a polite live region (WCAG 4.1.3).
+- `DropdownSelector` associates a visible `error`/`hint` with the trigger via
+  `aria-describedby` (and `accessibilityHint` on native) and reflects
+  `aria-invalid`/`aria-required`, since RNW does not map `accessibilityHint` to
+  `aria-describedby` (WCAG 3.3.1 / 1.3.1).
+
+These ARIA roles/attributes are emitted on web only; native keeps the tappable
+`button` row role and `accessibilityState` so OS screen readers are unaffected.
 
 Use `DropdownPortal` plus `DropdownList` directly for custom pickers that need
 to own the anchor ref, surface body, or list wiring.

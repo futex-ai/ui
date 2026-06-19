@@ -168,11 +168,27 @@ documents and unit-tests this rule.
   `accessibilityState` selected/disabled — tapping a row selects it without
   needing a fling, so the wheel is reachable by pointer and keyboard, not only by
   scroll. Out-of-bounds rows are disabled.
-- Web dismissal: the calendar popover closes on selection or on an outside press
-  (`useOutsideClose`). The native sheet and the web wheel sheet close on Cancel,
-  Done, or backdrop press; the web wheel sheet (`WebModalFrame`) also closes on
-  Escape and traps/restores focus. Escape dismissal of the calendar popover is
-  not yet implemented.
+- Web dismissal: the calendar popover closes on selection, on an outside press
+  (`useOutsideClose`), or on **Escape** (registered with the shared
+  `escapeLayer`, so a calendar opened inside a modal/dropdown closes itself first
+  and the surface beneath stays open). The native sheet and the web wheel sheet
+  close on Cancel, Done, or backdrop press; the web wheel sheet (`WebModalFrame`)
+  also closes on Escape and traps/restores focus.
+- The web calendar popover is a labelled `role="dialog"` (named by the field
+  label). It is an anchored, non-trapping popover: the editable trigger keeps
+  focus for type-or-pick, and Tab moves into the day grid, which is a single
+  roving Tab stop.
+- The day grid is an APG date grid on web (`role="grid"` / `row` /
+  `columnheader`, with each day button inside a `gridcell`). It is keyboard
+  navigable: Arrow keys move a roving focus across days (skipping non-selectable
+  ones), Home/End jump to the first/last selectable day in the week, and
+  PageUp/PageDown page whole months. Paging the month announces the new month to
+  screen readers via a polite live region without moving focus.
+- The wheel rows are keyboard operable: a focused row has a visible focus ring,
+  and ArrowUp/ArrowDown step the column to the previous/next selectable row.
+- Validation: the error text is programmatically associated with the trigger via
+  `aria-describedby` + `aria-errormessage` (web) and the `accessibilityHint`
+  (native), and is a polite live region so a newly-shown error is announced.
 
 ## Locale
 

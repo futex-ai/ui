@@ -1,15 +1,20 @@
 /** Input-backed chip multi-select for combobox forms. */
 import { Check } from "lucide-react-native";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { announce } from "../announcer";
 import { hideWebOutline } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 import type { SharedUiTheme } from "../theme";
 
 import { ComboboxPopover } from "./ComboboxPopover";
-import { DropdownList, DropdownListEntry } from "./DropdownList";
-import { filterComboboxOptions } from "./comboboxModel";
+import {
+  DropdownList,
+  DropdownListEntry,
+  dropdownRowDomId,
+} from "./DropdownList";
+import { comboboxInputA11y, filterComboboxOptions } from "./comboboxModel";
 import { useComboboxNavigation } from "./useComboboxNavigation";
 
 export type ComboboxMultiSelectOption = {
@@ -62,6 +67,27 @@ export function ComboboxMultiSelect({
     open,
   });
 
+  const reactId = useId();
+  const listId = `${reactId}-list`;
+  const activeDescendant =
+    open && navigation.activeId
+      ? dropdownRowDomId(listId, navigation.activeId)
+      : undefined;
+
+  // Announce the result count so screen readers hear matches change as the
+  // query filters, without focus leaving the input (WCAG 4.1.3).
+  const matchCount = filtered.length;
+  useEffect(() => {
+    if (!open || !query.trim()) {
+      return;
+    }
+    announce(
+      matchCount === 0
+        ? "No matching options"
+        : `${matchCount} ${matchCount === 1 ? "option" : "options"} available`,
+    );
+  }, [matchCount, open, query]);
+
   return (
     <View ref={anchorRef} style={styles.wrap}>
       <Pressable onPress={() => setOpen(true)} style={styles.control}>
@@ -72,12 +98,18 @@ export function ComboboxMultiSelect({
             </Text>
             <Pressable
               accessibilityLabel={`Remove ${option.label}`}
+              accessibilityRole="button"
               onPress={() =>
                 onChange(values.filter((value) => value !== option.value))
               }
               style={styles.chipRemove}
             >
-              <Text style={styles.chipRemoveText}>x</Text>
+              {/* The visible "x" is decorative — the Pressable's name is
+                  "Remove {label}". Hide it from AT so the name is not polluted
+                  by the glyph (WCAG 2.5.3 Label in Name). */}
+              <Text aria-hidden style={styles.chipRemoveText}>
+                x
+              </Text>
             </Pressable>
           </View>
         ))}
@@ -85,9 +117,10 @@ export function ComboboxMultiSelect({
           onChangeText={setQuery}
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
-          placeholderTextColor={theme.colors.faint}
+          placeholderTextColor={theme.colors.placeholder}
           style={[styles.input, hideWebOutline]}
           value={query}
+          {...comboboxInputA11y({ activeDescendant, controls: listId, open })}
           {...navigation.keyProps}
         />
       </Pressable>
@@ -100,6 +133,9 @@ export function ComboboxMultiSelect({
           <DropdownList
             activeId={navigation.activeId}
             entries={entries}
+            label={placeholder}
+            listId={listId}
+            listRole="listbox"
             maxHeight={placement.maxHeight}
             onActiveIdChange={navigation.setActiveId}
             onClose={() => setOpen(false)}
@@ -202,7 +238,7 @@ function createComboboxMultiSelectStyles(theme: SharedUiTheme) {
     control: {
       alignItems: "center",
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.border2,
+      borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.md,
       borderWidth: 1,
       flexDirection: "row",

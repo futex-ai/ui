@@ -19,12 +19,15 @@ all driven by shared theme tokens.
 - Expose `button` accessibility semantics with a disabled state, and treat a
   missing `onPress` as a read-only disabled control (matching the library's
   other pressables).
+- Support an in-progress `busy` state that stays focusable and announces
+  `aria-busy`, blocks the press handler, and swaps the leading icon for a
+  spinner.
 
 ## Usage
 
 ```tsx
 import { Button } from "@firna/ui/button";
-import { Plus } from "lucide-react-native";
+import { Plus, Settings } from "lucide-react-native";
 
 <Button icon={Plus} onPress={addAccount} tone="primary">
   Add account
@@ -38,6 +41,14 @@ import { Plus } from "lucide-react-native";
 
 <Button onPress={remove} size="sm" tone="danger">
   Delete
+</Button>
+
+{/* Icon-only: no visible text, so `accessibilityLabel` is required. */}
+<Button accessibilityLabel="Settings" icon={Settings} onPress={openSettings} />
+
+{/* In-progress: blocks the press, shows a spinner, announces `aria-busy`. */}
+<Button busy={saving} onPress={save} tone="primary">
+  {saving ? "Saving" : "Save"}
 </Button>
 ```
 
@@ -66,10 +77,34 @@ form actions and bottom sheets.
 ring, and the disabled treatment are applied by the component; `style` layers on
 top for one-off layout tweaks (e.g. margins).
 
+## Accessibility
+
+- **Accessible name (WCAG 1.1.1 / 4.1.2, A).** A button with visible text uses
+  that text as its name; pass `accessibilityLabel` only to override it (keep the
+  visible text a substring so it still satisfies 2.5.3 Label in Name). An
+  **icon-only** button (no children) **requires** `accessibilityLabel` — this is
+  type-enforced, and a `__DEV__` warning fires if a name can't be resolved.
+- **Decorative icon (1.1.1, A).** The leading icon is hidden from assistive
+  technology (`aria-hidden` on web), so the button is announced once by its name
+  rather than by the raw glyph.
+- **Busy state (4.1.2, A).** `busy` sets `aria-busy`, blocks the press handler,
+  and swaps the icon for a spinner while keeping the button focusable and
+  announced. It is distinct from `disabled` (which removes the control from the
+  tab order). The spinner stops animating under `prefers-reduced-motion`.
+- **Keyboard (2.1.1, A).** Enter/Space activation is delegated to React Native
+  Web's `role="button"` synthesis (no explicit `onKeyDown` is wired); a
+  Playwright test asserts both keys still activate to catch RNW regressions.
+- **Focus visible (2.4.7, AA).** A geometry-bearing box-shadow ring is shown on
+  focus for every tone (including `primary`, where a border-colour ring would be
+  invisible), and the browser's default outline is suppressed.
+- **Non-text contrast (1.4.11, AA).** The secondary button's resting border uses
+  the ≥3:1 `controlBorder` token. The `ghost` tone intentionally has no resting
+  border or fill: its `primaryDeep` label is the affordance.
+
 ## Theming
 
 Buttons read colours and radii from `SharedUiThemeProvider`: the primary tone
 uses `colors.primary`, the ghost label uses `colors.primaryDeep`, the danger
-border/label uses `colors.roseSoft` / `colors.rose`, the secondary fill/border
-uses `colors.surface` / `colors.border2`, the focus ring uses `colors.primary`,
-and the corner radius uses `radii.md`.
+border/label uses `colors.roseSoft` / `colors.rose`, the secondary fill uses
+`colors.surface` with the `colors.controlBorder` boundary, the focus ring uses
+`colors.primary`, and the corner radius uses `radii.md`.

@@ -4,6 +4,7 @@ import { View } from "react-native";
 import type { ViewStyle } from "react-native";
 
 import { Toast } from "./Toast";
+import { ToastLiveRegion } from "./ToastLiveRegion";
 import { TOAST_LAYERS } from "./toastLayers";
 import {
   toastStackAlign,
@@ -33,26 +34,37 @@ export function ToastViewport({
   toasts,
   onDismiss,
 }: ToastViewportProps) {
-  if (typeof document === "undefined" || toasts.length === 0) {
+  if (typeof document === "undefined") {
     return null;
   }
 
+  // The live region is portalled even when the stack is empty so it is a
+  // persistent, initially-empty region — screen readers announce text injected
+  // into an existing region far more reliably than a region born with content
+  // (WCAG 2.1 — 4.1.3 Status Messages, AA).
   const region = (
-    <View
-      pointerEvents="box-none"
-      style={{
-        alignItems: toastStackAlign(placement),
-        flexDirection: toastStackDirection(placement),
-        gap: 12,
-        position: fixedPosition,
-        zIndex: TOAST_LAYERS.viewport,
-        ...toastViewportInset(placement),
-      }}
-    >
-      {toasts.map((toast) => (
-        <Toast key={toast.id} onDismiss={onDismiss} toast={toast} />
-      ))}
-    </View>
+    <>
+      <ToastLiveRegion toasts={toasts} />
+      {toasts.length > 0 ? (
+        <View
+          aria-label="Notifications"
+          pointerEvents="box-none"
+          role="region"
+          style={{
+            alignItems: toastStackAlign(placement),
+            flexDirection: toastStackDirection(placement),
+            gap: 12,
+            position: fixedPosition,
+            zIndex: TOAST_LAYERS.viewport,
+            ...toastViewportInset(placement),
+          }}
+        >
+          {toasts.map((toast) => (
+            <Toast key={toast.id} onDismiss={onDismiss} toast={toast} />
+          ))}
+        </View>
+      ) : null}
+    </>
   );
 
   return createPortal(region, document.body);

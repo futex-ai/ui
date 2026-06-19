@@ -67,7 +67,7 @@ export function createSegmentedControlStyles(
   return StyleSheet.create({
     cell: {
       alignItems: "center",
-      borderColor: theme.colors.border,
+      borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.md,
       borderWidth: 1,
       justifyContent: "center",
@@ -81,7 +81,7 @@ export function createSegmentedControlStyles(
     },
     cellText: {
       ...baseText,
-      color: theme.colors.muted,
+      color: theme.colors.ink2,
       fontSize: sizing.cellFontSize,
       fontWeight: "700",
       minWidth: 0,
@@ -118,7 +118,9 @@ export function createSegmentedControlStyles(
     },
     pill: {
       alignItems: "center",
+      borderColor: "transparent",
       borderRadius: theme.radii.md,
+      borderWidth: 1,
       justifyContent: "center",
       minWidth: 0,
       paddingHorizontal: sizing.pillPaddingHorizontal,
@@ -126,11 +128,14 @@ export function createSegmentedControlStyles(
     },
     pillActive: {
       backgroundColor: theme.colors.surface,
+      // ≥3:1 boundary so the selected pill is perceivable against the track,
+      // not conveyed by the ~1.13:1 surface/soft fill alone (WCAG 1.4.1 / 1.4.11).
+      borderColor: theme.colors.controlBorder,
       boxShadow: "0 1px 2px rgba(20, 28, 22, 0.06)",
     },
     pillText: {
       ...baseText,
-      color: theme.colors.muted,
+      color: theme.colors.ink2,
       fontSize: sizing.pillFontSize,
       fontWeight: "700",
       lineHeight: sizing.pillLineHeight,

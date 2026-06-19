@@ -16,6 +16,12 @@ const sourceOptions = [
   { label: "Retail", value: "retail" },
 ];
 
+const periodOptions = [
+  { label: "Monthly", value: "monthly" },
+  { label: "Quarterly", value: "quarterly" },
+  { disabled: true, label: "Yearly", value: "yearly" },
+];
+
 const meta = {
   title: "Segmented/Examples",
 } satisfies Meta;
@@ -50,6 +56,39 @@ export const Sizing: Story = {
     </StorySurface>
   ),
 };
+
+export const States: Story = {
+  name: "Label, required, error & hint",
+  render: () => (
+    <StorySurface>
+      <StatesExample />
+    </StorySurface>
+  ),
+};
+
+function StatesExample() {
+  const [period, setPeriod] = useState("monthly");
+  const [basis, setBasis] = useState("pl");
+  return (
+    <View style={{ gap: 18, minWidth: 320 }}>
+      <SegmentedControl
+        hint="Yearly reporting opens after close."
+        label="Reporting period"
+        onChange={setPeriod}
+        options={periodOptions}
+        required
+        value={period}
+      />
+      <SegmentedControl
+        error="Choose a statement to continue."
+        label="Statement"
+        onChange={setBasis}
+        options={reportOptions}
+        value={basis}
+      />
+    </View>
+  );
+}
 
 function SizingExample() {
   const [content, setContent] = useState("pl");

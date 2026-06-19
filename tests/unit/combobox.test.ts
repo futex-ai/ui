@@ -86,7 +86,7 @@ test("combobox multi-select uses theme-driven selected chip colors", () => {
   assert.match(source, /useSharedUiTheme/);
   assert.match(source, /primarySoft/);
   assert.match(source, /primaryDeep/);
-  assert.match(source, /placeholderTextColor=\{theme\.colors\.faint\}/);
+  assert.match(source, /placeholderTextColor=\{theme\.colors\.placeholder\}/);
 });
 
 test("combobox empty state renders before optional footer rows", () => {
