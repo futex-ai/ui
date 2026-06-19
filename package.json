@@ -80,6 +80,11 @@
       "react-native": "./dist/input/index.js",
       "import": "./dist/node/input/index.js"
     },
+    "./list": {
+      "types": "./dist/node/list/index.d.ts",
+      "react-native": "./dist/list/index.js",
+      "import": "./dist/node/list/index.js"
+    },
     "./modal": {
       "types": "./dist/node/modal/index.d.ts",
       "react-native": "./dist/modal/index.js",
