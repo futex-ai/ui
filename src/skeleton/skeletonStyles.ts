@@ -2,24 +2,15 @@ import { StyleSheet } from "react-native";
 
 import type { SharedUiRadii, SharedUiTheme } from "../theme";
 
-/**
- * Opacity bounds the placeholder breathes between while pulsing. The fill stays
- * fully opaque at the top of the breath and fades to {@link SKELETON_OPACITY_MIN}
- * at the bottom, so the placeholder reads as a calm "loading" shimmer rather than
- * a hard blink.
- */
-export const SKELETON_OPACITY_MAX = 1;
-export const SKELETON_OPACITY_MIN = 0.45;
-
-/** Milliseconds for one full breathe (fade out and back in). */
-export const SKELETON_PULSE_DURATION = 1200;
+/** Milliseconds for one full left-to-right sheen sweep across a placeholder. */
+export const SKELETON_SWEEP_DURATION = 1300;
 
 /**
- * Opacity shown when the user prefers reduced motion: a clear, static placeholder
- * (still an obvious "loading" affordance) instead of an animated pulse — best
- * practice for WCAG 2.1 — 2.3.3 Animation from Interactions (AAA).
+ * Peak opacity of the white sheen that sweeps over the placeholder. The sheen is
+ * a horizontal `transparent → white → transparent` gradient, so only its centre
+ * reaches this opacity as it crosses.
  */
-export const SKELETON_STATIC_OPACITY = SKELETON_OPACITY_MAX;
+export const SKELETON_SHEEN_OPACITY = 0.65;
 
 /** A shared radii token (`sm` / `md` / `lg` / `pill` / …) or an explicit pixel radius. */
 export type SkeletonRadius = keyof SharedUiRadii | number;
@@ -33,15 +24,16 @@ export function resolveSkeletonRadius(
 }
 
 /**
- * Build the skeleton's themed styles. The placeholder fill uses the decorative
- * `border2` neutral: it is visible on a surface yet, like the list separator and
- * the spinner track, carries no content, so it is exempt from text-contrast
- * rules (WCAG 2.1 — 1.4.3 / 1.4.11). The pulse is layered as an animated
- * `opacity` by the components, not baked into the stylesheet.
+ * Build the skeleton's themed styles. The placeholder base uses the decorative
+ * `soft` neutral — the same faint fill the mockups use — with `overflow: hidden`
+ * so the white sheen sweep is clipped to the placeholder's rounded shape. Like
+ * the list separator and the spinner track, the fill carries no content, so it
+ * is exempt from text-contrast rules (WCAG 2.1 — 1.4.3 / 1.4.11). The sweep is
+ * layered as an animated child by the components, not baked into the stylesheet.
  */
 export function createSkeletonStyles(theme: SharedUiTheme) {
   return StyleSheet.create({
-    placeholder: { backgroundColor: theme.colors.border2 },
+    placeholder: { backgroundColor: theme.colors.soft, overflow: "hidden" },
   });
 }
 

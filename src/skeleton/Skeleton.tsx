@@ -1,32 +1,39 @@
 /**
- * Content-shaped loading placeholders: a pulsing {@link SkeletonBar} and
+ * Content-shaped loading placeholders: a shimmering {@link SkeletonBar} and
  * {@link SkeletonCircle} leaf, a {@link SkeletonGroup} layout helper, and the
- * {@link SkeletonPulseProvider} that lets a whole skeleton breathe off one
+ * {@link SkeletonPulseProvider} that lets a whole skeleton sweep off one
  * animation.
  *
  * Use these to mirror the *shape* of content that has not loaded yet — a row of
  * text lines, an avatar, a card — instead of a generic {@link Spinner}, so the
- * layout does not jump when the real content arrives. The placeholder breathes
- * with an opacity pulse (not a gradient sweep) so it renders identically on iOS,
- * Android, and web, and honours `prefers-reduced-motion`.
+ * layout does not jump when the real content arrives. A faint base fill carries
+ * a translucent white sheen that sweeps left-to-right; the sweep is drawn with
+ * `react-native-svg` and driven by an `Animated` transform, so it renders
+ * identically on iOS, Android, and web (the same approach the `Spinner` uses for
+ * its arc), and honours `prefers-reduced-motion`.
  */
 import {
   createContext,
   ReactNode,
   useContext,
   useEffect,
+  useId,
   useMemo,
   useRef,
+  useState,
 } from "react";
 import {
   Animated,
   DimensionValue,
   Easing,
+  LayoutChangeEvent,
   Platform,
   StyleProp,
+  StyleSheet,
   View,
   ViewStyle,
 } from "react-native";
+import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 
 import { useSharedUiTheme } from "../theme";
 import { useReducedMotion } from "../useReducedMotion";
@@ -35,47 +42,46 @@ import {
   createSkeletonStyles,
   resolveSkeletonRadius,
   SkeletonRadius,
-  SKELETON_OPACITY_MAX,
-  SKELETON_OPACITY_MIN,
-  SKELETON_PULSE_DURATION,
-  SKELETON_STATIC_OPACITY,
+  SKELETON_SHEEN_OPACITY,
+  SKELETON_SWEEP_DURATION,
 } from "./skeletonStyles";
 
 /**
- * A shared pulse driver supplied by a {@link SkeletonPulseProvider} (or
- * {@link SkeletonGroup}). When present, every descendant placeholder breathes in
- * unison off this one `Animated.Value` instead of each running its own loop.
- * `null` means there is no shared driver — a standalone placeholder animates
- * itself — and is also what the provider supplies under reduced motion.
+ * A shared sweep driver supplied by a {@link SkeletonPulseProvider} (or
+ * {@link SkeletonGroup}). When present, every descendant placeholder sweeps in
+ * unison off this one `Animated.Value` (a 0 → 1 progress) instead of each running
+ * its own loop. `null` means there is no shared driver — a standalone placeholder
+ * animates itself — and is also what the provider supplies under reduced motion.
  */
 const SkeletonPulseContext = createContext<Animated.Value | null>(null);
 
-/** Start the looping fade (0 → 1 → 0) that drives the placeholder "breathe". */
-function startPulse(progress: Animated.Value) {
-  const half = {
-    duration: SKELETON_PULSE_DURATION / 2,
-    easing: Easing.inOut(Easing.ease),
-    // The native driver is unavailable in the web renderer; opacity can run on
-    // the native thread on iOS/Android and falls back to the JS driver on web.
-    useNativeDriver: Platform.OS !== "web",
-  };
+/**
+ * Start the looping 0 → 1 progress that drives the sheen sweep. It resets to 0
+ * each iteration (a sawtooth); the sheen sits fully off either edge at 0 and 1,
+ * so the reset is invisible.
+ */
+function startSweep(progress: Animated.Value) {
   const loop = Animated.loop(
-    Animated.sequence([
-      Animated.timing(progress, { ...half, toValue: 1 }),
-      Animated.timing(progress, { ...half, toValue: 0 }),
-    ]),
+    Animated.timing(progress, {
+      duration: SKELETON_SWEEP_DURATION,
+      easing: Easing.inOut(Easing.ease),
+      toValue: 1,
+      // `transform` is a non-layout property, so it can run on the native driver
+      // on iOS/Android; the web renderer falls back to the JS driver.
+      useNativeDriver: Platform.OS !== "web",
+    }),
   );
   loop.start();
   return loop;
 }
 
 /**
- * Resolve the opacity a placeholder should render with: the shared pulse if a
- * provider supplies one, a static value when motion is reduced, or a self-run
- * local pulse for a standalone placeholder. Only animates locally when there is
- * no shared driver, so a grouped skeleton uses exactly one loop.
+ * Resolve the sweep driver a placeholder should use: the shared progress if a
+ * provider supplies one, otherwise a self-run local progress. Only animates
+ * locally when there is no shared driver (so a grouped skeleton uses one loop)
+ * and never under reduced motion.
  */
-function useSkeletonOpacity() {
+function useSkeletonSweep() {
   const shared = useContext(SkeletonPulseContext);
   const reducedMotion = useReducedMotion();
   const localProgress = useRef(new Animated.Value(0)).current;
@@ -85,23 +91,75 @@ function useSkeletonOpacity() {
     if (shared || reducedMotion) {
       return;
     }
-    const loop = startPulse(localProgress);
+    const loop = startSweep(localProgress);
     return () => loop.stop();
   }, [shared, reducedMotion, localProgress]);
 
-  const progress = shared ?? localProgress;
-  const opacity = useMemo(
+  return { animate: !reducedMotion, progress: shared ?? localProgress };
+}
+
+/**
+ * The shared placeholder body: a faint base fill, clipped to its rounded shape,
+ * with a white sheen that sweeps across while animating. Decorative on every
+ * platform — the loading state is announced by the surrounding container's
+ * `aria-busy`, not by the placeholder.
+ */
+function Placeholder({ shape }: { shape: StyleProp<ViewStyle> }) {
+  const theme = useSharedUiTheme();
+  const styles = useMemo(() => createSkeletonStyles(theme), [theme]);
+  const { animate, progress } = useSkeletonSweep();
+  const [width, setWidth] = useState(0);
+  // A stable, collision-free gradient id (sanitised of `useId`'s colons so it is
+  // a valid `url(#…)` reference on web).
+  const gradientId = `skeleton-sheen-${useId().replace(/:/g, "")}`;
+
+  const translateX = useMemo(
     () =>
       progress.interpolate({
         inputRange: [0, 1],
-        outputRange: [SKELETON_OPACITY_MAX, SKELETON_OPACITY_MIN],
+        outputRange: [-width, width],
       }),
-    [progress],
+    [progress, width],
   );
 
-  // A shared driver only exists when motion is on, so the static branch only
-  // applies to a standalone, reduced-motion placeholder.
-  return reducedMotion && !shared ? SKELETON_STATIC_OPACITY : opacity;
+  const onLayout = (event: LayoutChangeEvent) => {
+    setWidth(event.nativeEvent.layout.width);
+  };
+
+  return (
+    <View
+      // Purely decorative; keep it off the accessibility tree on web, iOS, and
+      // Android so assistive tech never reads a placeholder as content.
+      aria-hidden
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      onLayout={onLayout}
+      style={[styles.placeholder, shape]}
+    >
+      {animate && width > 0 ? (
+        <Animated.View
+          aria-hidden
+          pointerEvents="none"
+          style={[StyleSheet.absoluteFill, { transform: [{ translateX }] }]}
+        >
+          <Svg height="100%" width="100%">
+            <Defs>
+              <LinearGradient id={gradientId} x1="0" x2="1" y1="0" y2="0">
+                <Stop offset={0} stopColor="#ffffff" stopOpacity={0} />
+                <Stop
+                  offset={0.5}
+                  stopColor="#ffffff"
+                  stopOpacity={SKELETON_SHEEN_OPACITY}
+                />
+                <Stop offset={1} stopColor="#ffffff" stopOpacity={0} />
+              </LinearGradient>
+            </Defs>
+            <Rect fill={`url(#${gradientId})`} height="100%" width="100%" />
+          </Svg>
+        </Animated.View>
+      ) : null}
+    </View>
+  );
 }
 
 export type SkeletonBarProps = {
@@ -122,10 +180,8 @@ export type SkeletonBarProps = {
 
 /**
  * A rectangular placeholder standing in for a line of text, a label, or a chip.
- * Pulses on its own when used standalone, or in unison with its siblings inside
- * a {@link SkeletonGroup} / {@link SkeletonPulseProvider}. Decorative on every
- * platform — the loading state is announced by the surrounding container's
- * `aria-busy`, not by the bar.
+ * Sweeps on its own when used standalone, or in unison with its siblings inside
+ * a {@link SkeletonGroup} / {@link SkeletonPulseProvider}.
  */
 export function SkeletonBar({
   flex,
@@ -135,21 +191,13 @@ export function SkeletonBar({
   width = "100%",
 }: SkeletonBarProps) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(() => createSkeletonStyles(theme), [theme]);
-  const opacity = useSkeletonOpacity();
   const sizing: ViewStyle =
     flex !== undefined ? { flex, minWidth: 0 } : { width };
   return (
-    <Animated.View
-      // Purely decorative; keep it off the accessibility tree on web, iOS, and
-      // Android so assistive tech never reads a placeholder bar as content.
-      aria-hidden
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-      style={[
-        styles.placeholder,
+    <Placeholder
+      shape={[
         sizing,
-        { borderRadius: resolveSkeletonRadius(theme, radius), height, opacity },
+        { borderRadius: resolveSkeletonRadius(theme, radius), height },
         style,
       ]}
     />
@@ -165,26 +213,14 @@ export type SkeletonCircleProps = {
 
 /**
  * A circular placeholder standing in for an avatar, icon, or any round element.
- * Shares the pulse and the decorative-on-every-platform treatment of
+ * Shares the sheen sweep and the decorative-on-every-platform treatment of
  * {@link SkeletonBar}.
  */
 export function SkeletonCircle({ diameter, style }: SkeletonCircleProps) {
-  const theme = useSharedUiTheme();
-  const styles = useMemo(() => createSkeletonStyles(theme), [theme]);
-  const opacity = useSkeletonOpacity();
   return (
-    <Animated.View
-      aria-hidden
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-      style={[
-        styles.placeholder,
-        {
-          borderRadius: diameter / 2,
-          height: diameter,
-          opacity,
-          width: diameter,
-        },
+    <Placeholder
+      shape={[
+        { borderRadius: diameter / 2, height: diameter, width: diameter },
         style,
       ]}
     />
@@ -196,8 +232,8 @@ export type SkeletonPulseProviderProps = {
 };
 
 /**
- * Drives every descendant placeholder from a single pulse loop, so a skeleton
- * built from many bars and circles breathes in unison (and runs one animation,
+ * Drives every descendant placeholder from a single sweep loop, so a skeleton
+ * built from many bars and circles shimmers in unison (and runs one animation,
  * not one per element). Honours reduced motion by supplying no driver, which
  * makes descendants render static. The {@link List} and {@link Table} loading
  * states wrap their placeholder rows in this; reach for it directly when you
@@ -213,7 +249,7 @@ export function SkeletonPulseProvider({
     if (reducedMotion) {
       return;
     }
-    const loop = startPulse(progress);
+    const loop = startSweep(progress);
     return () => loop.stop();
   }, [reducedMotion, progress]);
 
@@ -238,7 +274,7 @@ export type SkeletonGroupProps = {
 
 /**
  * A convenience layout wrapper that arranges placeholders in a flex `row`
- * (default) or `column` and shares one pulse across them (it is a
+ * (default) or `column` and shares one sweep across them (it is a
  * {@link SkeletonPulseProvider}). Compose a row of placeholders — e.g. an avatar
  * circle plus a flexing title bar plus a trailing chip — to mirror a piece of
  * content.
