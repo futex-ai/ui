@@ -14,11 +14,20 @@ import type { ViewProps } from "react-native";
 import { Button } from "../button";
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
-import type { SharedUiTheme } from "../theme";
 
+import {
+  toastSolidToneBackground,
+  toastSolidToneForeground,
+  toastToneAccent,
+} from "./toastColors";
 import { createToastStyles } from "./toastStyles";
 import { toastLiveRegion, toastRole } from "./toastModel";
-import type { ToastItem, ToastTone } from "./toastModel";
+import type {
+  ToastIcon,
+  ToastIconRenderContext,
+  ToastItem,
+  ToastTone,
+} from "./toastModel";
 
 export type ToastProps = {
   /** The resolved toast to render. */
@@ -45,8 +54,37 @@ export function Toast({ toast, onDismiss }: ToastProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createToastStyles(theme), [theme]);
   const accent = toastToneAccent(theme, toast.tone);
+  const solid = toast.variant === "solid";
+  const filled = solid;
+  const filledBackground = toastSolidToneBackground(theme, toast.tone);
+  const filledForeground =
+    toast.foregroundColor ?? toastSolidToneForeground(theme, filledBackground);
   const ToneIcon = TONE_ICONS[toast.tone];
+  const iconContext: ToastIconRenderContext = {
+    color: filled ? filledForeground : accent,
+    size: 18,
+    tone: toast.tone,
+    variant: toast.variant,
+  };
+  const icon =
+    toast.icon === undefined ? (
+      solid ? null : (
+        <ToneIcon color={accent} size={iconContext.size} />
+      )
+    ) : (
+      renderToastIcon(toast.icon, iconContext)
+    );
   const [paused, setPaused] = useState(false);
+  const [filledActionFocused, setFilledActionFocused] = useState(false);
+  const [closeFocused, setCloseFocused] = useState(false);
+  const filledControlFocusRing = {
+    boxShadow: `0 0 0 2px ${filledForeground}`,
+  };
+  const closeControlFocusRing = filled
+    ? filledControlFocusRing
+    : {
+        boxShadow: `0 0 0 2px ${theme.colors.surface}, 0 0 0 4px ${theme.colors.primary}`,
+      };
 
   // Decouple the dismiss callback from the timer effect so a new callback
   // identity does not restart the countdown (mirrors the modal's onCloseRef).
@@ -90,28 +128,84 @@ export function Toast({ toast, onDismiss }: ToastProps) {
       {...(pauseHandlers as ViewProps)}
       accessibilityLiveRegion={toastLiveRegion(toast.tone)}
       role={toastRole(toast.tone)}
-      style={[styles.toast, { borderLeftColor: accent }]}
+      style={[
+        styles.toast,
+        filled
+          ? [styles.solidToast, { backgroundColor: filledBackground }]
+          : [styles.cardToast, { borderLeftColor: accent }],
+        toast.surfaceStyle,
+      ]}
     >
-      <View style={styles.iconWrap}>
-        <ToneIcon color={accent} size={18} />
-      </View>
-      <View style={styles.content}>
-        <Text style={styles.title}>{toast.title}</Text>
+      {shouldRenderToastIcon(icon) ? (
+        <View
+          style={[
+            styles.iconWrap,
+            solid ? styles.solidIconWrap : null,
+            toast.iconStyle,
+          ]}
+        >
+          {icon}
+        </View>
+      ) : null}
+      <View style={solid ? styles.solidContent : styles.content}>
+        <Text
+          style={[
+            styles.title,
+            solid ? [styles.solidTitle, { color: filledForeground }] : null,
+            toast.titleStyle,
+          ]}
+        >
+          {toast.title}
+        </Text>
         {toast.description ? (
-          <Text style={styles.description}>{toast.description}</Text>
+          <Text
+            style={[
+              styles.description,
+              solid
+                ? [styles.solidDescription, { color: filledForeground }]
+                : null,
+              toast.descriptionStyle,
+            ]}
+          >
+            {toast.description}
+          </Text>
         ) : null}
         {toast.action ? (
-          <View style={styles.actions}>
-            <Button
-              onPress={() => {
-                toast.action?.onPress();
-                onDismiss(toast.id);
-              }}
-              size="sm"
-              tone="ghost"
-            >
-              {toast.action.label}
-            </Button>
+          <View style={[styles.actions, filled ? styles.solidActions : null]}>
+            {filled ? (
+              <Pressable
+                accessibilityRole="button"
+                onBlur={() => setFilledActionFocused(false)}
+                onFocus={() => setFilledActionFocused(true)}
+                onPress={() => {
+                  toast.action?.onPress();
+                  onDismiss(toast.id);
+                }}
+                style={({ hovered }: PressableHoverState) => [
+                  styles.solidActionButton,
+                  hovered ? styles.solidActionButtonHover : null,
+                  filledActionFocused ? filledControlFocusRing : null,
+                  hideWebOutlineView,
+                ]}
+              >
+                <Text
+                  style={[styles.solidActionText, { color: filledForeground }]}
+                >
+                  {toast.action.label}
+                </Text>
+              </Pressable>
+            ) : (
+              <Button
+                onPress={() => {
+                  toast.action?.onPress();
+                  onDismiss(toast.id);
+                }}
+                size="sm"
+                tone="ghost"
+              >
+                {toast.action.label}
+              </Button>
+            )}
           </View>
         ) : null}
       </View>
@@ -119,14 +213,22 @@ export function Toast({ toast, onDismiss }: ToastProps) {
         <Pressable
           accessibilityLabel={`Dismiss ${toast.title}`}
           accessibilityRole="button"
+          onBlur={() => setCloseFocused(false)}
+          onFocus={() => setCloseFocused(true)}
           onPress={() => onDismiss(toast.id)}
           style={({ hovered }: PressableHoverState) => [
             styles.closeButton,
-            hovered ? styles.closeButtonHover : null,
+            filled ? styles.solidCloseButton : null,
+            hovered
+              ? filled
+                ? styles.solidCloseButtonHover
+                : styles.closeButtonHover
+              : null,
+            closeFocused ? closeControlFocusRing : null,
             hideWebOutlineView,
           ]}
         >
-          <X color={theme.colors.muted} size={16} />
+          <X color={filled ? filledForeground : theme.colors.muted} size={16} />
         </Pressable>
       ) : null}
     </View>
@@ -141,16 +243,13 @@ const TONE_ICONS: Record<ToastTone, LucideIcon> = {
   warning: TriangleAlert,
 };
 
-/** Tone accent colour for the left strip and leading icon. */
-function toastToneAccent(theme: SharedUiTheme, tone: ToastTone): string {
-  switch (tone) {
-    case "error":
-      return theme.colors.rose;
-    case "success":
-      return theme.colors.primary;
-    case "warning":
-      return theme.colors.amber;
-    default:
-      return theme.colors.primaryDeep;
-  }
+function renderToastIcon(
+  icon: ToastIcon | null,
+  context: ToastIconRenderContext,
+) {
+  return typeof icon === "function" ? icon(context) : icon;
+}
+
+function shouldRenderToastIcon(icon: ReturnType<typeof renderToastIcon>) {
+  return icon !== null && icon !== undefined && icon !== false;
 }
