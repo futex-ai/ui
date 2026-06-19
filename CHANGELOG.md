@@ -7,22 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.0](https://github.com/futex-ai/ui/compare/v0.3.0...v0.4.0) (2026-06-19)
 
-
 ### Features
 
-* **a11y:** WCAG 2.1 AA support across components + axe gate ([#46](https://github.com/futex-ai/ui/issues/46)) ([2bd294b](https://github.com/futex-ai/ui/commit/2bd294b6d6f7efee5b5785c7a683bf08959494a4))
-* **list:** vertical list with between-item separators and ListItem row ([#52](https://github.com/futex-ai/ui/issues/52)) ([11211bf](https://github.com/futex-ai/ui/commit/11211bfd444884d108313cbd363cab8de8d707c1))
-* **spinner:** add spinning loading indicator ([#49](https://github.com/futex-ai/ui/issues/49)) ([d9d141f](https://github.com/futex-ai/ui/commit/d9d141f025948e9397e39b966a5177ec6b84f844))
-* **table:** data table with optional headers and clickable rows ([#48](https://github.com/futex-ai/ui/issues/48)) ([0f93b19](https://github.com/futex-ai/ui/commit/0f93b19e59d4c2d932b089d00638b1ea62ffd8a7))
-* **toast:** add solid variant controller ([#47](https://github.com/futex-ai/ui/issues/47)) ([2ae282e](https://github.com/futex-ai/ui/commit/2ae282e0d818b4cbc4518969eae01c3dfa8429d6))
-* **typography:** add H1–H5 heading and text component family ([#53](https://github.com/futex-ai/ui/issues/53)) ([406a825](https://github.com/futex-ai/ui/commit/406a8251e7326c682225d11f774d4e3503ef632d))
-
+- **a11y:** WCAG 2.1 AA support across components + axe gate ([#46](https://github.com/futex-ai/ui/issues/46)) ([2bd294b](https://github.com/futex-ai/ui/commit/2bd294b6d6f7efee5b5785c7a683bf08959494a4))
+- **list:** vertical list with between-item separators and ListItem row ([#52](https://github.com/futex-ai/ui/issues/52)) ([11211bf](https://github.com/futex-ai/ui/commit/11211bfd444884d108313cbd363cab8de8d707c1))
+- **spinner:** add spinning loading indicator ([#49](https://github.com/futex-ai/ui/issues/49)) ([d9d141f](https://github.com/futex-ai/ui/commit/d9d141f025948e9397e39b966a5177ec6b84f844))
+- **table:** data table with optional headers and clickable rows ([#48](https://github.com/futex-ai/ui/issues/48)) ([0f93b19](https://github.com/futex-ai/ui/commit/0f93b19e59d4c2d932b089d00638b1ea62ffd8a7))
+- **toast:** add solid variant controller ([#47](https://github.com/futex-ai/ui/issues/47)) ([2ae282e](https://github.com/futex-ai/ui/commit/2ae282e0d818b4cbc4518969eae01c3dfa8429d6))
+- **typography:** add H1–H5 heading and text component family ([#53](https://github.com/futex-ai/ui/issues/53)) ([406a825](https://github.com/futex-ai/ui/commit/406a8251e7326c682225d11f774d4e3503ef632d))
 
 ### Bug Fixes
 
-* restore npm trusted workflow filename ([#44](https://github.com/futex-ai/ui/issues/44)) ([6211e69](https://github.com/futex-ai/ui/commit/6211e696d0f6fd439ad206118f50ca59dfbc70c8))
-* **segmented:** default to pill variant, keep outline as opt-in ([#50](https://github.com/futex-ai/ui/issues/50)) ([efbd712](https://github.com/futex-ai/ui/commit/efbd712b366da68b7e8d5ef1da0dc06ed8bbab8d))
-* **table:** meet WCAG AA text contrast in example story colors ([#51](https://github.com/futex-ai/ui/issues/51)) ([fa5d743](https://github.com/futex-ai/ui/commit/fa5d74378a32b244e5a563755f32656f74270d08))
+- restore npm trusted workflow filename ([#44](https://github.com/futex-ai/ui/issues/44)) ([6211e69](https://github.com/futex-ai/ui/commit/6211e696d0f6fd439ad206118f50ca59dfbc70c8))
+- **segmented:** default to pill variant, keep outline as opt-in ([#50](https://github.com/futex-ai/ui/issues/50)) ([efbd712](https://github.com/futex-ai/ui/commit/efbd712b366da68b7e8d5ef1da0dc06ed8bbab8d))
+- **table:** meet WCAG AA text contrast in example story colors ([#51](https://github.com/futex-ai/ui/issues/51)) ([fa5d743](https://github.com/futex-ai/ui/commit/fa5d74378a32b244e5a563755f32656f74270d08))
 
 ## [0.3.0](https://github.com/futex-ai/ui/compare/v0.2.1...v0.3.0) (2026-06-18)
 
