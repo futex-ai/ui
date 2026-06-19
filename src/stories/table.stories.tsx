@@ -354,7 +354,9 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   badgeAmber: { backgroundColor: "#f4ecd8" },
-  badgeAmberText: { color: "#946727" },
+  // Darkened from the #946727 amber token (4.22:1 on the cream badge) to clear
+  // the 4.5:1 AA text-contrast floor (#74511f ≈ 6.07:1), matching avatar.stories.
+  badgeAmberText: { color: "#74511f" },
   badgeBlue: { backgroundColor: "#dbe7f3" },
   badgeBlueText: { color: "#315f96" },
   badgeSage: { backgroundColor: "#e3eee6" },
@@ -368,7 +370,8 @@ const styles = StyleSheet.create({
     width: 520,
   },
   hint: {
-    color: "#737b75",
+    // Aligned to the muted token (#69706a ≈ 5.09:1); #737b75 was 4.36:1 on white.
+    color: "#69706a",
     fontSize: 12,
   },
   nameCell: {
@@ -383,7 +386,8 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   nameSecondary: {
-    color: "#737b75",
+    // Aligned to the muted token (#69706a ≈ 5.09:1); #737b75 was 4.36:1 on white.
+    color: "#69706a",
     fontSize: 12,
     lineHeight: 16,
   },
