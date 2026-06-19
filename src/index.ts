@@ -14,5 +14,6 @@ export * from "./radio";
 export * from "./segmented";
 export * from "./spinner";
 export * from "./switch";
+export * from "./table";
 export * from "./theme";
 export * from "./toast";

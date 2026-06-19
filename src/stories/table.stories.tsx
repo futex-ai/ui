@@ -1,0 +1,421 @@
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
+
+import { Avatar, Button, Table, TableCell, type TableColumn } from "../index";
+import { StorySurface } from "./sharedExamples";
+
+const meta = {
+  title: "Table/Examples",
+} satisfies Meta;
+
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+type Invoice = {
+  amount: string;
+  id: string;
+  issued: string;
+  number: string;
+  status: "Draft" | "Overdue" | "Paid";
+};
+
+const invoices: Invoice[] = [
+  {
+    amount: "£1,240.00",
+    id: "inv_1",
+    issued: "1 Jun",
+    number: "INV-0007",
+    status: "Paid",
+  },
+  {
+    amount: "£480.00",
+    id: "inv_2",
+    issued: "4 Jun",
+    number: "INV-0008",
+    status: "Overdue",
+  },
+  {
+    amount: "£3,015.50",
+    id: "inv_3",
+    issued: "9 Jun",
+    number: "INV-0009",
+    status: "Draft",
+  },
+];
+
+const columns: TableColumn[] = [
+  { flex: 2, key: "number", label: "Invoice" },
+  { key: "issued", label: "Issued", width: 90 },
+  { key: "status", label: "Status", width: 110 },
+  { align: "right", key: "amount", label: "Amount", width: 120 },
+];
+
+function invoiceCell(row: Invoice, key: string) {
+  if (key === "number") return <TableCell>{row.number}</TableCell>;
+  if (key === "issued") return <TableCell muted>{row.issued}</TableCell>;
+  if (key === "status") return <StatusPill status={row.status} />;
+  return <TableCell numeric>{row.amount}</TableCell>;
+}
+
+export const WithHeaders: Story = {
+  name: "With headers",
+  render: () => (
+    <StorySurface>
+      <View style={styles.card}>
+        <Table<Invoice>
+          accessibilityLabel="Invoices"
+          cell={invoiceCell}
+          columns={columns}
+          rowKey={(row) => row.id}
+          rows={invoices}
+        />
+      </View>
+    </StorySurface>
+  ),
+};
+
+export const Headless: Story = {
+  name: "Headless",
+  render: () => (
+    <StorySurface>
+      <View style={styles.card}>
+        <Table<Invoice>
+          cell={invoiceCell}
+          columns={columns}
+          headless
+          rowKey={(row) => row.id}
+          rows={invoices}
+        />
+      </View>
+    </StorySurface>
+  ),
+};
+
+export const ClickableRows: Story = {
+  name: "Clickable rows",
+  render: () => (
+    <StorySurface>
+      <ClickableExample />
+    </StorySurface>
+  ),
+};
+
+function ClickableExample() {
+  const [opened, setOpened] = useState<string | null>(null);
+  return (
+    <View style={styles.stack}>
+      <Text style={styles.status}>
+        {opened
+          ? `Opened ${opened}`
+          : "Click or focus + Enter a row to open it"}
+      </Text>
+      <View style={styles.card}>
+        <Table<Invoice>
+          cell={invoiceCell}
+          columns={columns}
+          onRowPress={(row) => setOpened(row.number)}
+          rowDisabled={(row) => row.status === "Draft"}
+          rowKey={(row) => row.id}
+          rowLabel={(row) => `Open invoice ${row.number}`}
+          rows={invoices}
+        />
+      </View>
+      <Text style={styles.hint}>
+        The draft row is disabled and cannot be opened.
+      </Text>
+    </View>
+  );
+}
+
+export const Sizes: Story = {
+  name: "Sizes",
+  render: () => (
+    <StorySurface>
+      <View style={styles.stack}>
+        {(["sm", "md", "lg"] as const).map((size) => (
+          <View key={size}>
+            <Text style={styles.status}>{size}</Text>
+            <View style={styles.card}>
+              <Table<Invoice>
+                cell={invoiceCell}
+                columns={columns}
+                rowKey={(row) => row.id}
+                rows={invoices}
+                size={size}
+              />
+            </View>
+          </View>
+        ))}
+      </View>
+    </StorySurface>
+  ),
+};
+
+type EmployeeStatus = { label: string; tone: "active" | "leaving" | "new" };
+
+type Employee = {
+  avatarColor: string;
+  gross: string;
+  id: string;
+  initials: string;
+  name: string;
+  niCat: string;
+  payrollId: string;
+  role: string;
+  status: EmployeeStatus;
+  taxCode: string;
+};
+
+const employees: Employee[] = [
+  {
+    avatarColor: "#4f7864",
+    gross: "£6,250.00",
+    id: "emp_1",
+    initials: "MO",
+    name: "Maya Okafor",
+    niCat: "A",
+    payrollId: "GS-001",
+    role: "Director",
+    status: { label: "Active", tone: "active" },
+    taxCode: "Tax code 1257L",
+  },
+  {
+    avatarColor: "#a84f45",
+    gross: "£4,583.33",
+    id: "emp_2",
+    initials: "PA",
+    name: "Priya Anand",
+    niCat: "A",
+    payrollId: "GS-004",
+    role: "Senior Engineer",
+    status: { label: "Active", tone: "active" },
+    taxCode: "Tax code 1257L",
+  },
+  {
+    avatarColor: "#315f96",
+    gross: "£3,750.00",
+    id: "emp_3",
+    initials: "TW",
+    name: "Tom Whitfield",
+    niCat: "A",
+    payrollId: "GS-007",
+    role: "Product Designer",
+    status: { label: "Active", tone: "active" },
+    taxCode: "Tax code 1257L",
+  },
+  {
+    avatarColor: "#946727",
+    gross: "£1,600.00",
+    id: "emp_4",
+    initials: "JL",
+    name: "Jordan Lee",
+    niCat: "H",
+    payrollId: "GS-009",
+    role: "Apprentice Developer",
+    status: { label: "New starter", tone: "new" },
+    taxCode: "Tax code 1257L",
+  },
+  {
+    avatarColor: "#6f5bd0",
+    gross: "£3,333.33",
+    id: "emp_5",
+    initials: "SM",
+    name: "Sofia Marenco",
+    niCat: "A",
+    payrollId: "GS-006",
+    role: "Marketing Lead",
+    status: { label: "Leaving 31 May", tone: "leaving" },
+    taxCode: "Tax code 1257L",
+  },
+];
+
+const employeeColumns: TableColumn[] = [
+  { flex: 2, key: "name", label: "Name" },
+  { flex: 1.5, key: "role", label: "Role" },
+  { key: "payrollId", label: "Payroll ID", width: 110 },
+  { key: "niCat", label: "NI Cat", width: 70 },
+  { key: "status", label: "Status", width: 130 },
+  { align: "right", key: "gross", label: "Monthly gross", width: 140 },
+  { align: "right", key: "action", width: 80 },
+];
+
+function employeeCell(
+  row: Employee,
+  key: string,
+  onOpen: (name: string) => void,
+) {
+  if (key === "name") return <NameCell employee={row} />;
+  if (key === "role") return <TableCell>{row.role}</TableCell>;
+  if (key === "payrollId") return <TableCell muted>{row.payrollId}</TableCell>;
+  if (key === "niCat") return <TableCell muted>{row.niCat}</TableCell>;
+  if (key === "status") return <StatusBadge status={row.status} />;
+  if (key === "gross") return <TableCell numeric>{row.gross}</TableCell>;
+  return (
+    <Button
+      accessibilityLabel={`Open ${row.name}`}
+      onPress={() => onOpen(row.name)}
+      size="sm"
+      tone="ghost"
+    >
+      Open
+    </Button>
+  );
+}
+
+export const RichCells: Story = {
+  name: "Rich cells",
+  render: () => (
+    <StorySurface>
+      <RichCellsExample />
+    </StorySurface>
+  ),
+};
+
+function RichCellsExample() {
+  const [opened, setOpened] = useState<string | null>(null);
+  return (
+    <View style={styles.stack}>
+      <Text style={styles.status}>
+        {opened ? `Opened ${opened}` : "Each row has an Open action."}
+      </Text>
+      <View style={styles.wideCard}>
+        <Table<Employee>
+          accessibilityLabel="Employees"
+          cell={(row, key) => employeeCell(row, key, setOpened)}
+          columns={employeeColumns}
+          rowKey={(row) => row.id}
+          rows={employees}
+        />
+      </View>
+    </View>
+  );
+}
+
+/** A two-line name cell: a coloured initials avatar beside the name + tax code. */
+function NameCell({ employee }: { employee: Employee }) {
+  return (
+    <View style={styles.nameCell}>
+      <Avatar
+        accessibilityLabel={employee.name}
+        label={employee.initials}
+        size={34}
+        style={{ backgroundColor: employee.avatarColor }}
+        textColor="#fff"
+      />
+      <View style={styles.nameText}>
+        <Text style={styles.namePrimary}>{employee.name}</Text>
+        <Text style={styles.nameSecondary}>{employee.taxCode}</Text>
+      </View>
+    </View>
+  );
+}
+
+function StatusBadge({ status }: { status: EmployeeStatus }) {
+  const tone =
+    status.tone === "active"
+      ? styles.badgeSage
+      : status.tone === "new"
+        ? styles.badgeBlue
+        : styles.badgeAmber;
+  const text =
+    status.tone === "active"
+      ? styles.badgeSageText
+      : status.tone === "new"
+        ? styles.badgeBlueText
+        : styles.badgeAmberText;
+  return (
+    <View style={[styles.badge, tone]}>
+      <Text style={[styles.badgeText, text]}>{status.label}</Text>
+    </View>
+  );
+}
+
+function StatusPill({ status }: { status: Invoice["status"] }) {
+  const tone =
+    status === "Paid"
+      ? styles.pillPaid
+      : status === "Overdue"
+        ? styles.pillOverdue
+        : styles.pillDraft;
+  return (
+    <View style={[styles.pill, tone]}>
+      <Text style={styles.pillText}>{status}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  badge: {
+    alignSelf: "flex-start",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+  },
+  badgeAmber: { backgroundColor: "#f4ecd8" },
+  badgeAmberText: { color: "#946727" },
+  badgeBlue: { backgroundColor: "#dbe7f3" },
+  badgeBlueText: { color: "#315f96" },
+  badgeSage: { backgroundColor: "#e3eee6" },
+  badgeSageText: { color: "#2f5945" },
+  badgeText: { fontSize: 11, fontWeight: "700" },
+  card: {
+    borderColor: "#e5e8e0",
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: "hidden",
+    width: 520,
+  },
+  hint: {
+    color: "#737b75",
+    fontSize: 12,
+  },
+  nameCell: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 12,
+  },
+  namePrimary: {
+    color: "#1c1f1d",
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 18,
+  },
+  nameSecondary: {
+    color: "#737b75",
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  nameText: { flex: 1, minWidth: 0 },
+  pill: {
+    alignSelf: "flex-start",
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  pillDraft: { backgroundColor: "#eef2ed" },
+  pillOverdue: { backgroundColor: "#f4e3df" },
+  pillPaid: { backgroundColor: "#e3eee6" },
+  pillText: {
+    color: "#3e4540",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  stack: {
+    gap: 12,
+  },
+  status: {
+    color: "#3e4540",
+    fontSize: 13,
+    fontWeight: "700",
+    marginBottom: 6,
+  },
+  wideCard: {
+    borderColor: "#e5e8e0",
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: "hidden",
+    width: 820,
+  },
+});

@@ -110,6 +110,11 @@
       "react-native": "./dist/switch/index.js",
       "import": "./dist/node/switch/index.js"
     },
+    "./table": {
+      "types": "./dist/node/table/index.d.ts",
+      "react-native": "./dist/table/index.js",
+      "import": "./dist/node/table/index.js"
+    },
     "./theme": {
       "types": "./dist/node/theme.d.ts",
       "react-native": "./dist/theme.js",

@@ -3,17 +3,18 @@
 ## Status
 
 Implemented contract for the dropdown, drag-select, segmented control, radio
-card, switch, spinner, button, modal, toast, avatar, and event-calendar
-extraction, including the shared control-size scale for buttons and inputs.
+card, switch, spinner, button, data table, modal, toast, avatar, and
+event-calendar extraction, including the shared control-size scale for buttons
+and inputs.
 
 ## Purpose
 
 This repository provides shared React Native and React Native Web UI primitives
 for Firna apps. The first consumers are the accounting app and the Juno app.
 The first shared component families are the dropdown components, drag-select
-provider, segmented control patterns, radio-option cards, switch primitive, web
-modal components, transient notification toasts, and the circular user avatar
-currently implemented in the accounting app.
+provider, segmented control patterns, radio-option cards, switch primitive, data
+table, web modal components, transient notification toasts, and the circular
+user avatar currently implemented in the accounting app.
 
 ## Package Boundary
 
@@ -249,6 +250,28 @@ Required behavior:
 - Label each in-range cell for assistive technology, hide padding cells from it,
   and make cells focusable, pressable buttons when a press handler is supplied.
 
+## Table Contract
+
+The table family covers the lightweight data table the accounting mockups model
+as `.table`: a header row over flex rows that share their column definitions
+(React Native has no native `<table>`).
+
+Required behavior:
+
+- Render rows from a column definition and a per-cell render callback, so a cell
+  can hold plain text, tags, buttons, or any node, with a text helper for the
+  default cell typography (including muted and tabular-numeric variants).
+- Size each column by a fixed width or a flex share, and align its header and
+  cells left, center, or right.
+- Make the header row optional for continuation tables and headerless layouts.
+- Make rows optionally pressable: a pressable row exposes `button` accessibility
+  semantics with a disabled state, owns the shared hover, focus ring, and pressed
+  treatment, hides the browser's default outline, and is keyboard operable; a
+  table without a row press handler renders plain static rows.
+- Use shared theme tokens for the header fill, row separators, cell and header
+  text, the hover and pressed fills, disabled opacity, and the focus ring, and
+  size with the shared control-size scale.
+
 ## Dropdown Contract
 
 The dropdown family covers three related surfaces:
@@ -395,8 +418,9 @@ Required behavior:
   have unit tests.
 - Component source contracts that protect web/native boundaries must have tests.
 - Browser interaction tests must cover opening, keyboard navigation, outside
-  dismissal, segmented selection, switch toggling, focus retention/restoration,
-  and portal layering for dropdowns, comboboxes, and web modals.
+  dismissal, segmented selection, switch toggling, table row press (click and
+  keyboard), focus retention/restoration, and portal layering for dropdowns,
+  comboboxes, and web modals.
 - The package must typecheck and build before it is used by accounting or Juno.
 - `npm run test:package` must pack the built library, install the tarball into a
   temporary consumer, import every public package subpath with Node's native ESM
@@ -476,15 +500,15 @@ Required behavior:
 - Storybook previews must include at least the shared dropdown selector,
   dropdown action menu, input-backed combobox, chip multi-select, segmented
   control variants, radio card group, switch toggle, button tones and sizes,
-  user avatars, a month event calendar, centered web modal, bottom-sheet web
-  modal, toast tones and an action toast, default accounting theme, and
-  alternate primary color theme.
+  user avatars, a month event calendar, a data table with clickable rows,
+  centered web modal, bottom-sheet web modal, toast tones and an action toast,
+  default accounting theme, and alternate primary color theme.
 - Storybook navigation must keep each example family in its own top-level
   folder, currently `Avatar/Examples`, `Button/Examples`, `Calendar/Examples`,
   `Date/Examples`, `Dropdown/Examples`, `Heatmap/Examples`, `Input/Examples`,
   `Modal/Examples`, `Popover/Examples`, `Radio/Examples`, `Segmented/Examples`,
-  `Spinner/Examples`, `Switch/Examples`, `Theme/Examples`, and
-  `Toast/Examples`.
+  `Spinner/Examples`, `Switch/Examples`, `Table/Examples`,
+  `Theme/Examples`, and `Toast/Examples`.
 
 ## Non-Goals
 
