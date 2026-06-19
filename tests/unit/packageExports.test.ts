@@ -21,6 +21,7 @@ test("package exposes every documented public subpath", () => {
   assert.deepEqual(Object.keys(packageJson.exports), [
     ".",
     "./avatar",
+    "./badge",
     "./button",
     "./calendar",
     "./date",
