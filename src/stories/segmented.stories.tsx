@@ -156,7 +156,6 @@ function ProfitLossSegmentedExample() {
         options={reportOptions}
         sizing="content"
         value={report}
-        variant="pill"
       />
       <SegmentedControl
         accessibilityLabel="Income source"
@@ -164,6 +163,7 @@ function ProfitLossSegmentedExample() {
         options={sourceOptions}
         sizing="content"
         value={source}
+        variant="outline"
         wrap
       />
     </View>

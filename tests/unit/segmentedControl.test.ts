@@ -22,7 +22,10 @@ test("segmented control keeps report and filter variants", () => {
 
   assert.match(source, /"outline" \| "pill"/);
   assert.match(source, /"content" \| "equal"/);
-  // Segments hug their labels by default; equal-width is opt-in.
+  // The pill (tab-track) variant is the default; the outline filter-pill
+  // variant is opt-in. Segments hug their labels by default; equal-width is
+  // opt-in.
+  assert.match(source, /variant = "pill"/);
   assert.match(source, /sizing = "content"/);
   for (const key of [
     "cellSelected",
