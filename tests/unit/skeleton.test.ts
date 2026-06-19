@@ -25,10 +25,13 @@ test("skeleton sweeps a white sheen drawn with react-native-svg", () => {
   assert.match(source, /<LinearGradient id=\{gradientId\}/);
   assert.match(source, /stopOpacity=\{SKELETON_SHEEN_OPACITY\}/);
   assert.match(source, /fill=\{`url\(#\$\{gradientId\}\)`\}/);
-  // The sheen is translated across the placeholder's measured width.
+  // The sheen is translated across the placeholder's measured width, and the
+  // SVG is given explicit pixel dimensions (percentage sizing is unreliable on
+  // iOS/Android).
   assert.match(source, /onLayout/);
   assert.match(source, /transform: \[\{ translateX \}\]/);
-  assert.match(source, /outputRange: \[-width, width\]/);
+  assert.match(source, /outputRange: \[-size\.width, size\.width\]/);
+  assert.match(source, /<Svg height=\{size\.height\} width=\{size\.width\}>/);
 });
 
 test("skeleton runs an Animated sweep loop and stops it on unmount", () => {
@@ -51,7 +54,7 @@ test("skeleton honours reduced motion with a static placeholder", () => {
   assert.match(source, /if \(shared \|\| reducedMotion\) \{/);
   assert.match(source, /animate: !reducedMotion/);
   assert.match(source, /const value = reducedMotion \? null : progress/);
-  assert.match(source, /animate && width > 0 \?/);
+  assert.match(source, /animate && size\.width > 0 \?/);
 });
 
 test("skeleton shares one sweep across a group via context", () => {

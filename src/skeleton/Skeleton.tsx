@@ -108,7 +108,9 @@ function Placeholder({ shape }: { shape: StyleProp<ViewStyle> }) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createSkeletonStyles(theme), [theme]);
   const { animate, progress } = useSkeletonSweep();
-  const [width, setWidth] = useState(0);
+  // Measured in px so the sheen translates by the real width and the SVG gets
+  // explicit dimensions — percentage SVG sizing is unreliable on iOS/Android.
+  const [size, setSize] = useState({ height: 0, width: 0 });
   // A stable, collision-free gradient id (sanitised of `useId`'s colons so it is
   // a valid `url(#…)` reference on web).
   const gradientId = `skeleton-sheen-${useId().replace(/:/g, "")}`;
@@ -117,13 +119,16 @@ function Placeholder({ shape }: { shape: StyleProp<ViewStyle> }) {
     () =>
       progress.interpolate({
         inputRange: [0, 1],
-        outputRange: [-width, width],
+        outputRange: [-size.width, size.width],
       }),
-    [progress, width],
+    [progress, size.width],
   );
 
   const onLayout = (event: LayoutChangeEvent) => {
-    setWidth(event.nativeEvent.layout.width);
+    const { height, width } = event.nativeEvent.layout;
+    setSize((prev) =>
+      prev.width === width && prev.height === height ? prev : { height, width },
+    );
   };
 
   return (
@@ -136,13 +141,13 @@ function Placeholder({ shape }: { shape: StyleProp<ViewStyle> }) {
       onLayout={onLayout}
       style={[styles.placeholder, shape]}
     >
-      {animate && width > 0 ? (
+      {animate && size.width > 0 ? (
         <Animated.View
           aria-hidden
           pointerEvents="none"
           style={[StyleSheet.absoluteFill, { transform: [{ translateX }] }]}
         >
-          <Svg height="100%" width="100%">
+          <Svg height={size.height} width={size.width}>
             <Defs>
               <LinearGradient id={gradientId} x1="0" x2="1" y1="0" y2="0">
                 <Stop offset={0} stopColor="#ffffff" stopOpacity={0} />
@@ -154,7 +159,11 @@ function Placeholder({ shape }: { shape: StyleProp<ViewStyle> }) {
                 <Stop offset={1} stopColor="#ffffff" stopOpacity={0} />
               </LinearGradient>
             </Defs>
-            <Rect fill={`url(#${gradientId})`} height="100%" width="100%" />
+            <Rect
+              fill={`url(#${gradientId})`}
+              height={size.height}
+              width={size.width}
+            />
           </Svg>
         </Animated.View>
       ) : null}
