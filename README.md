@@ -6,9 +6,9 @@ surfaces. The first consumers are the accounting app and the Juno app.
 ## Key Features
 
 - Shared dropdown menu, selector, combobox, drag-select, segmented control,
-  radio card, switch, spinner, button, labelled input, modal, toast, avatar,
-  calendar heatmap, and full event-calendar (month/week/day/agenda, recurring
-  events, drag-to-create) primitives.
+  radio card, switch, spinner, button, labelled input, modal, toast
+  provider/controller, avatar, calendar heatmap, and full event-calendar
+  (month/week/day/agenda, recurring events, drag-to-create) primitives.
 - A shared `sm` / `md` / `lg` size scale (`ControlSize`) across the interactive
   controls — buttons, inputs, dropdown selectors, date fields, segmented
   controls, and switches.
@@ -44,8 +44,9 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/switch` for themed binary on/off switches.
 - `@firna/ui/theme` for `SharedUiThemeProvider`, default accounting-style
   tokens, the Juno token preset, and `createSharedUiTheme`.
-- `@firna/ui/toast` for the toast provider, the `useToast` hook, and transient
-  notification toasts.
+- `@firna/ui/toast` for the toast provider, the `useToast` hook, the
+  `toastController` method API, and transient notification toasts including
+  card and solid variants with optional custom leading icons.
 
 ## Installation
 

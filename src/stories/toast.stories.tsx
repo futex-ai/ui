@@ -1,8 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 
-import { Button, ToastProvider, useToast } from "../index";
-import type { ToastPlacement } from "../index";
+import {
+  Button,
+  ToastProvider,
+  toastController,
+  useSharedUiTheme,
+  useToast,
+} from "../index";
+import type { ToastIconRenderContext, ToastPlacement } from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -14,6 +21,17 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const styles = StyleSheet.create({
+  progressIcon: {
+    borderRadius: 999,
+    borderWidth: 3,
+    height: 28,
+    opacity: 0.92,
+    width: 28,
+  },
+  progressIconWrap: {
+    height: 30,
+    width: 30,
+  },
   row: { flexDirection: "row", flexWrap: "wrap", gap: 12, minWidth: 320 },
 });
 
@@ -139,6 +157,133 @@ function QueueControls() {
   );
 }
 
+function SolidVariantTriggers() {
+  return (
+    <View style={styles.row}>
+      <Button
+        onPress={() =>
+          toastController.toast({
+            dismissible: false,
+            duration: null,
+            title: "Couldn't move this transaction. Try again.",
+            tone: "error",
+            variant: "solid",
+          })
+        }
+        tone="danger"
+      >
+        Show solid error
+      </Button>
+      <Button
+        onPress={() =>
+          toastController.toast({
+            description: "Check the category and try again.",
+            dismissible: false,
+            duration: null,
+            title: "Transaction not moved",
+            tone: "error",
+            variant: "solid",
+          })
+        }
+        tone="danger"
+      >
+        Show description
+      </Button>
+      <Button
+        onPress={() =>
+          toastController.toast({
+            action: { label: "Retry", onPress: () => undefined },
+            dismissible: false,
+            duration: null,
+            title: "Move failed",
+            tone: "error",
+            variant: "solid",
+          })
+        }
+        tone="danger"
+      >
+        Show action
+      </Button>
+      <Button
+        onPress={() =>
+          toastController.toast({
+            duration: null,
+            title: "Saved as draft",
+            tone: "success",
+            variant: "solid",
+          })
+        }
+        tone="primary"
+      >
+        Show close
+      </Button>
+    </View>
+  );
+}
+
+function SavingStatusTrigger() {
+  const theme = useSharedUiTheme();
+  return (
+    <Button
+      onPress={() =>
+        toastController.toast({
+          dismissible: false,
+          duration: null,
+          foregroundColor: theme.colors.surface,
+          icon: SavingProgressIcon,
+          iconStyle: styles.progressIconWrap,
+          surfaceStyle: {
+            backgroundColor: theme.colors.ink,
+            gap: 16,
+            maxWidth: 640,
+            minHeight: 64,
+            paddingHorizontal: 28,
+            paddingVertical: 17,
+          },
+          title: "Saving payslips to your device • 3 of 5",
+          titleStyle: {
+            fontSize: 15,
+            fontWeight: "800",
+            lineHeight: 22,
+            textAlign: "left",
+          },
+          variant: "solid",
+        })
+      }
+      tone="primary"
+    >
+      Show saving status
+    </Button>
+  );
+}
+
+function ControllerOnMountTrigger() {
+  useEffect(() => {
+    toastController.toast({
+      dismissible: false,
+      duration: null,
+      title: "Mounted through controller",
+      variant: "solid",
+    });
+  }, []);
+
+  return null;
+}
+
+function SavingProgressIcon({ color }: ToastIconRenderContext) {
+  return (
+    <View
+      style={[
+        styles.progressIcon,
+        {
+          borderColor: color,
+          borderRightColor: "rgba(255, 255, 255, 0.34)",
+        },
+      ]}
+    />
+  );
+}
+
 const playground = (placement: ToastPlacement, children: React.ReactNode) => (
   <StorySurface>
     <ToastProvider placement={placement}>{children}</ToastProvider>
@@ -168,4 +313,19 @@ export const AutoDismiss: Story = {
 export const QueueAndDismissAll: Story = {
   name: "Non-dismissible and dismiss all",
   render: () => playground("bottom-right", <QueueControls />),
+};
+
+export const SolidBottomCenter: Story = {
+  name: "Solid bottom-center",
+  render: () => playground("bottom-center", <SolidVariantTriggers />),
+};
+
+export const IconBottomCenter: Story = {
+  name: "Icon bottom-center",
+  render: () => playground("bottom-center", <SavingStatusTrigger />),
+};
+
+export const ControllerOnMount: Story = {
+  name: "Controller on mount",
+  render: () => playground("bottom-center", <ControllerOnMountTrigger />),
 };

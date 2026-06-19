@@ -342,12 +342,13 @@ imperative API rather than rendered declaratively at a call site.
 Required behavior:
 
 - Provide a `ToastProvider` that owns a capped, ordered queue and publishes an
-  imperative API (`toast`, `dismiss`, `dismissAll`) through a `useToast` hook;
-  the hook must throw when used outside a provider.
+  imperative API (`toast`, `dismiss`, `dismissAll`) through a `useToast` hook
+  and a module-level `toastController`; the hook must throw when used outside a
+  provider, and the controller must throw before a provider is mounted.
 - `toast()` must return an id usable with `dismiss`, default the tone to `info`,
   and default the auto-dismiss delay to the provider default while accepting a
   per-toast `duration` override and a `null`/non-positive duration for sticky
-  toasts.
+  toasts. Toasts must also accept a `variant` prop that defaults to `card`.
 - Cap simultaneously visible toasts at a provider-configurable `max` (default 4)
   by dropping the oldest entries.
 - Render toasts in a viewport pinned to one of six placements (top/bottom ×
@@ -359,6 +360,15 @@ Required behavior:
 - Carry tone (`info`, `success`, `warning`, `error`) as a left accent strip,
   leading icon, and screen-reader semantics: errors announce assertively with
   the `alert` role, other tones politely with the `status` role.
+- Support a compact `solid` variant that uses the tone color as the filled
+  background, hides the default card icon/accent strip, and can match the
+  bottom-center transaction-error style through props.
+- Support caller-provided leading icons for toast surfaces so in-progress,
+  branded, or feature-specific visuals do not require new visual variants.
+- Allow per-toast surface and filled-foreground overrides so compact solid
+  toasts can match dark in-progress status surfaces through props.
+- Allow per-toast title and description text style overrides that layer after
+  the built-in variant text styles.
 - Support an optional action button that runs its handler and then dismisses the
   toast, and an optional close control that dismisses only its own toast.
 - Use shared theme tokens for the surface, border, accent colors, text, fonts,
