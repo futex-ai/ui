@@ -129,6 +129,11 @@
       "types": "./dist/node/toast/index.d.ts",
       "react-native": "./dist/toast/index.js",
       "import": "./dist/node/toast/index.js"
+    },
+    "./typography": {
+      "types": "./dist/node/typography/index.d.ts",
+      "react-native": "./dist/typography/index.js",
+      "import": "./dist/node/typography/index.js"
     }
   },
   "scripts": {
