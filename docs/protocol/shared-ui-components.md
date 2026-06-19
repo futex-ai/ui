@@ -3,8 +3,8 @@
 ## Status
 
 Implemented contract for the dropdown, drag-select, segmented control, radio
-card, switch, button, modal, toast, avatar, and event-calendar extraction,
-including the shared control-size scale for buttons and inputs.
+card, switch, spinner, button, modal, toast, avatar, and event-calendar
+extraction, including the shared control-size scale for buttons and inputs.
 
 ## Purpose
 
@@ -76,6 +76,26 @@ Required behavior:
   and pill radius.
 - Keep a `trackStyle` override available for non-default surfaces without
   requiring consumers to fork the component.
+
+## Spinner Contract
+
+The spinner family covers the indeterminate loading indicator: a ring whose
+accent arc rotates continuously while content is loading.
+
+Required behavior:
+
+- Render a circular ring sized by the shared `ControlSize` scale (`sm` / `md` /
+  `lg`, with `md` as the default) or by an explicit pixel diameter, deriving the
+  ring stroke thickness from the diameter.
+- Animate a continuous rotation through React Native's `Animated` API so the
+  same component spins on native and web, and stop the loop on unmount.
+- Expose `progressbar` accessibility semantics with a busy state and an
+  accessible name that defaults to a loading label.
+- Use shared theme tokens for the accent arc (`primary`) and the ring track
+  (`border2`), and allow per-instance `color` and `trackColor` overrides for
+  alternate surfaces without forking the component.
+- Keep only the inner ring rotating so the labelled container keeps a stable box
+  for layout and assistive technology.
 
 ## Radio Card Contract
 
@@ -463,7 +483,8 @@ Required behavior:
   folder, currently `Avatar/Examples`, `Button/Examples`, `Calendar/Examples`,
   `Date/Examples`, `Dropdown/Examples`, `Heatmap/Examples`, `Input/Examples`,
   `Modal/Examples`, `Popover/Examples`, `Radio/Examples`, `Segmented/Examples`,
-  `Switch/Examples`, `Theme/Examples`, and `Toast/Examples`.
+  `Spinner/Examples`, `Switch/Examples`, `Theme/Examples`, and
+  `Toast/Examples`.
 
 ## Non-Goals
 
