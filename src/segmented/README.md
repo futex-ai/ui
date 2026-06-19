@@ -47,7 +47,7 @@ Pass `variant="outline"` for rows of separate bordered filter-pill cells:
   value={source}
   variant="outline"
   wrap
-/>;
+/>
 ```
 
 `sizing` defaults to `"content"`, so each segment hugs its label and the track
