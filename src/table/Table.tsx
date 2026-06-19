@@ -17,9 +17,16 @@ import {
   PressableHoverState,
   useFocusRing,
 } from "../focusRing";
+import { SkeletonBar, SkeletonPulseProvider } from "../skeleton";
 import { useSharedUiTheme } from "../theme";
 
 import { createTableStyles, type TableStyles } from "./tableStyles";
+
+/**
+ * Placeholder bar widths cycled across a skeleton row's cells (by row + column
+ * index) so the loading table reads as varied content rather than a rigid grid.
+ */
+const SKELETON_BAR_WIDTHS = ["72%", "56%", "84%", "64%"] as const;
 
 export type TableColumnAlign = "center" | "left" | "right";
 
@@ -45,6 +52,14 @@ export type TableProps<Row> = {
   columns: TableColumn[];
   /** Hide the header row, e.g. a continuation table stacked under another. */
   headless?: boolean;
+  /**
+   * Show placeholder skeleton rows instead of `rows` while the data loads. The
+   * table announces `aria-busy` and the placeholder rows are non-interactive and
+   * hidden from assistive technology.
+   */
+  loading?: boolean;
+  /** Number of skeleton rows to render while `loading`. Defaults to 6. */
+  loadingRowCount?: number;
   /** Press handler per row. Providing it makes every row a pressable button. */
   onRowPress?: (row: Row, index: number) => void;
   /** Mark a specific row as non-pressable (only relevant with `onRowPress`). */
@@ -74,6 +89,8 @@ export function Table<Row>({
   cell,
   columns,
   headless = false,
+  loading = false,
+  loadingRowCount = 6,
   onRowPress,
   rowDisabled,
   rowKey,
@@ -86,7 +103,15 @@ export function Table<Row>({
   const styles = useMemo(() => createTableStyles(theme, size), [theme, size]);
 
   return (
-    <View accessibilityLabel={accessibilityLabel} style={[styles.table, style]}>
+    <View
+      accessibilityLabel={accessibilityLabel}
+      // While loading, announce the table as busy (matching the Spinner / busy
+      // Button) so assistive tech says "loading" rather than reading the empty
+      // placeholder rows.
+      accessibilityState={loading ? { busy: true } : undefined}
+      aria-busy={loading || undefined}
+      style={[styles.table, style]}
+    >
       {headless ? null : (
         <View style={styles.headRow}>
           {columns.map((col) => (
@@ -103,32 +128,64 @@ export function Table<Row>({
           ))}
         </View>
       )}
-      {rows.map((row, index) => {
-        const last = index === rows.length - 1;
-        const children = renderCells(row, columns, cell, styles);
-        if (onRowPress) {
+      {loading ? (
+        <SkeletonPulseProvider>
+          {Array.from({ length: loadingRowCount }).map((_, index) => {
+            const last = index === loadingRowCount - 1;
+            return (
+              // The placeholder row is decorative; the busy table announces the
+              // loading state, so keep the row off the accessibility tree.
+              <View
+                aria-hidden
+                key={`skeleton-${index}`}
+                style={[styles.row, last ? styles.rowLast : null]}
+              >
+                {columns.map((col, colIndex) => (
+                  <View
+                    key={col.key}
+                    style={[colStyle(col), cellAlignStyle(col.align, styles)]}
+                  >
+                    <SkeletonBar
+                      width={
+                        SKELETON_BAR_WIDTHS[
+                          (index + colIndex) % SKELETON_BAR_WIDTHS.length
+                        ]
+                      }
+                    />
+                  </View>
+                ))}
+              </View>
+            );
+          })}
+        </SkeletonPulseProvider>
+      ) : (
+        rows.map((row, index) => {
+          const last = index === rows.length - 1;
+          const children = renderCells(row, columns, cell, styles);
+          if (onRowPress) {
+            return (
+              <PressableTableRow
+                disabled={rowDisabled?.(row, index) ?? false}
+                key={rowKey(row, index)}
+                label={rowLabel?.(row, index)}
+                last={last}
+                onPress={() => onRowPress(row, index)}
+                styles={styles}
+              >
+                {children}
+              </PressableTableRow>
+            );
+          }
           return (
-            <PressableTableRow
-              disabled={rowDisabled?.(row, index) ?? false}
+            <View
               key={rowKey(row, index)}
-              label={rowLabel?.(row, index)}
-              last={last}
-              onPress={() => onRowPress(row, index)}
-              styles={styles}
+              style={[styles.row, last ? styles.rowLast : null]}
             >
               {children}
-            </PressableTableRow>
+            </View>
           );
-        }
-        return (
-          <View
-            key={rowKey(row, index)}
-            style={[styles.row, last ? styles.rowLast : null]}
-          >
-            {children}
-          </View>
-        );
-      })}
+        })
+      )}
     </View>
   );
 }

@@ -105,6 +105,11 @@
       "react-native": "./dist/segmented/index.js",
       "import": "./dist/node/segmented/index.js"
     },
+    "./skeleton": {
+      "types": "./dist/node/skeleton/index.d.ts",
+      "react-native": "./dist/skeleton/index.js",
+      "import": "./dist/node/skeleton/index.js"
+    },
     "./spinner": {
       "types": "./dist/node/spinner/index.d.ts",
       "react-native": "./dist/spinner/index.js",

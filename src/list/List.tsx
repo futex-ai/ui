@@ -21,9 +21,20 @@ import {
   PressableHoverState,
   useFocusRing,
 } from "../focusRing";
+import {
+  SkeletonBar,
+  SkeletonCircle,
+  SkeletonPulseProvider,
+} from "../skeleton";
 import { useSharedUiTheme } from "../theme";
 
 import { createListStyles, type ListStyles } from "./listStyles";
+
+/** Leading-circle diameter for a skeleton item, matching a typical list avatar. */
+const SKELETON_AVATAR_DIAMETER = 40;
+/** Title / description placeholder widths cycled by item index for natural variety. */
+const SKELETON_TITLE_WIDTHS = ["48%", "62%", "40%"] as const;
+const SKELETON_DESCRIPTION_WIDTHS = ["82%", "70%", "90%"] as const;
 
 export type ListProps<Item> = {
   /** Accessible label for the whole list. */
@@ -36,6 +47,14 @@ export type ListProps<Item> = {
   itemLabel?: (item: Item, index: number) => string;
   /** The data items. */
   items: Item[];
+  /**
+   * Show placeholder skeleton items instead of `items` while the data loads. The
+   * list announces `aria-busy` and the placeholder items are non-interactive and
+   * hidden from assistive technology.
+   */
+  loading?: boolean;
+  /** Number of skeleton items to render while `loading`. Defaults to 6. */
+  loadingItemCount?: number;
   /** Press handler per item. Providing it makes every item a pressable button. */
   onItemPress?: (item: Item, index: number) => void;
   /** Renders the content for a given item. */
@@ -69,6 +88,8 @@ export function List<Item>({
   itemKey,
   itemLabel,
   items,
+  loading = false,
+  loadingItemCount = 6,
   onItemPress,
   renderItem,
   separators = true,
@@ -78,6 +99,61 @@ export function List<Item>({
 }: ListProps<Item>) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createListStyles(theme, size), [theme, size]);
+
+  if (loading) {
+    return (
+      <View
+        accessibilityLabel={accessibilityLabel}
+        // The busy list announces the loading state; the placeholder items below
+        // are decorative and kept off the accessibility tree.
+        accessibilityState={{ busy: true }}
+        aria-busy
+        role="list"
+        style={[styles.list, style]}
+      >
+        <SkeletonPulseProvider>
+          {Array.from({ length: loadingItemCount }).map((_, index) => {
+            const last = index === loadingItemCount - 1;
+            return (
+              <Fragment key={`skeleton-${index}`}>
+                <View aria-hidden style={styles.item}>
+                  <View style={styles.itemRow}>
+                    <View style={styles.itemLeading}>
+                      <SkeletonCircle diameter={SKELETON_AVATAR_DIAMETER} />
+                    </View>
+                    <View style={styles.itemMain}>
+                      <SkeletonBar
+                        height={14}
+                        width={
+                          SKELETON_TITLE_WIDTHS[
+                            index % SKELETON_TITLE_WIDTHS.length
+                          ]
+                        }
+                      />
+                      <SkeletonBar
+                        height={11}
+                        width={
+                          SKELETON_DESCRIPTION_WIDTHS[
+                            index % SKELETON_DESCRIPTION_WIDTHS.length
+                          ]
+                        }
+                      />
+                    </View>
+                    <View style={styles.itemTrailing}>
+                      <SkeletonBar height={12} radius="pill" width={56} />
+                    </View>
+                  </View>
+                </View>
+                {separators && !last ? (
+                  <Separator inset={separatorInset} styles={styles} />
+                ) : null}
+              </Fragment>
+            );
+          })}
+        </SkeletonPulseProvider>
+      </View>
+    );
+  }
 
   return (
     <View

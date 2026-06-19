@@ -95,6 +95,24 @@ test("table styles are driven by shared theme tokens", () => {
   );
 });
 
+test("table renders busy skeleton rows while loading", () => {
+  const source = readSource("../../src/table/Table.tsx");
+
+  assert.match(source, /loading = false/);
+  assert.match(source, /loadingRowCount = 6/);
+  // The busy state is announced on the container (aria-busy + accessibilityState).
+  assert.match(source, /aria-busy=\{loading \|\| undefined\}/);
+  assert.match(
+    source,
+    /accessibilityState=\{loading \? \{ busy: true \} : undefined\}/,
+  );
+  // Placeholder rows render skeleton bars per column, sharing one pulse, and are
+  // hidden from assistive technology.
+  assert.match(source, /<SkeletonPulseProvider>/);
+  assert.match(source, /<SkeletonBar/);
+  assert.match(source, /Array\.from\(\{ length: loadingRowCount \}\)/);
+});
+
 test("table has public root and subpath exports", () => {
   const rootSource = readSource("../../src/index.ts");
   const tableSource = readSource("../../src/table/index.ts");
