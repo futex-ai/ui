@@ -117,6 +117,27 @@ test("list styles are driven by shared theme tokens", () => {
   assert.match(stylesSource, /itemFocused: \{[\s\S]*?theme\.colors\.primary/);
 });
 
+test("list renders busy skeleton items while loading", () => {
+  const source = readSource("../../src/list/List.tsx");
+
+  assert.match(source, /loading = false/);
+  assert.match(source, /loadingItemCount = 6/);
+  // The loading branch is a busy list of decorative placeholder items.
+  assert.match(source, /if \(loading\) \{/);
+  assert.match(source, /aria-busy/);
+  assert.match(source, /accessibilityState=\{\{ busy: true \}\}/);
+  // Each placeholder item mirrors the ListItem anatomy (leading circle, title /
+  // description bars, trailing chip) and shares one pulse.
+  assert.match(source, /<SkeletonPulseProvider>/);
+  assert.match(
+    source,
+    /<SkeletonCircle diameter=\{SKELETON_AVATAR_DIAMETER\} \/>/,
+  );
+  assert.match(source, /Array\.from\(\{ length: loadingItemCount \}\)/);
+  // The separator rule still holds between placeholder items.
+  assert.match(source, /separators && !last \?/);
+});
+
 test("list has public root and subpath exports", () => {
   const rootSource = readSource("../../src/index.ts");
   const listSource = readSource("../../src/list/index.ts");

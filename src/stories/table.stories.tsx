@@ -93,6 +93,24 @@ export const Headless: Story = {
   ),
 };
 
+export const Loading: Story = {
+  name: "Loading",
+  render: () => (
+    <StorySurface>
+      <View style={styles.card}>
+        <Table<Invoice>
+          accessibilityLabel="Invoices"
+          cell={invoiceCell}
+          columns={columns}
+          loading
+          rowKey={(row) => row.id}
+          rows={[]}
+        />
+      </View>
+    </StorySurface>
+  ),
+};
+
 export const ClickableRows: Story = {
   name: "Clickable rows",
   render: () => (

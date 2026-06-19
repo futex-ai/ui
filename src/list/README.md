@@ -71,6 +71,26 @@ non-pressable. Without `onItemPress`, items render as plain static rows.
 />
 ```
 
+### Loading
+
+Pass `loading` to render content-shaped placeholder items (built from the
+[`Skeleton`](../skeleton/README.md) primitives) instead of `items` while data is
+fetching, so the layout does not jump when it arrives. Each placeholder mirrors
+the `ListItem` anatomy — a leading avatar circle, title and description bars, and
+a trailing chip — and the items breathe in unison off one pulse. The list
+announces `aria-busy`, the placeholders are non-interactive and hidden from
+assistive technology, and the separator rule still holds between them.
+`loadingItemCount` sets how many to show (defaults to 6).
+
+```tsx
+<List<Person>
+  itemKey={(person) => person.id}
+  items={people}
+  loading={isLoading}
+  renderItem={(person) => <ListItem title={person.name} />}
+/>
+```
+
 ### ListItem
 
 `ListItem` is the default row: an optional `leading` node (e.g. an `Avatar`), a

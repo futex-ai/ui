@@ -15,6 +15,7 @@ export * from "./modal";
 export * from "./popover";
 export * from "./radio";
 export * from "./segmented";
+export * from "./skeleton";
 export * from "./spinner";
 export * from "./switch";
 export * from "./table";

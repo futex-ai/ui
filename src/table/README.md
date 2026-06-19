@@ -82,6 +82,26 @@ accessible name, and `rowDisabled` to make individual rows non-pressable. Withou
 />
 ```
 
+### Loading
+
+Pass `loading` to render content-shaped placeholder rows (built from the
+[`Skeleton`](../skeleton/README.md) primitives) instead of `rows` while data is
+fetching, so the layout does not jump when it arrives. The table announces
+`aria-busy` while loading, and the placeholder rows are non-interactive and
+hidden from assistive technology. `loadingRowCount` sets how many placeholder
+rows to show (defaults to 6); the placeholder bars mirror each column's width.
+
+```tsx
+<Table
+  columns={columns}
+  cell={cell}
+  loading={isLoading}
+  loadingRowCount={6}
+  rowKey={(row) => row.id}
+  rows={rows}
+/>
+```
+
 ### Cells
 
 `cell` can return any node, so columns can mix text, tags, avatars, and buttons.

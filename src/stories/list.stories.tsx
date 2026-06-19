@@ -112,6 +112,23 @@ export const InsetSeparators: Story = {
   ),
 };
 
+export const Loading: Story = {
+  name: "Loading",
+  render: () => (
+    <StorySurface>
+      <View style={styles.card}>
+        <List<Person>
+          accessibilityLabel="People on payroll"
+          itemKey={(person) => person.id}
+          items={[]}
+          loading
+          renderItem={personItem}
+        />
+      </View>
+    </StorySurface>
+  ),
+};
+
 export const ClickableItems: Story = {
   name: "Clickable items",
   render: () => (
