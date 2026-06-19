@@ -19,15 +19,11 @@ export const MONTH_LABEL_HEIGHT = 16;
 export function createHeatmapStyles(theme: SharedUiTheme) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
   return StyleSheet.create({
-    // A hairline boundary on every cell so adjacent intensity buckets are
-    // distinguishable for low-vision users even when their fills are close in
-    // luminance (WCAG 2.1 — 1.4.1 Use of Color, A; 1.4.11 Non-text Contrast,
-    // AA). A translucent ink overlay sits inside the cell so it reads as a
-    // darkening edge on every bucket — it never changes the cell's box size and
-    // works on any custom ramp.
-    cell: {
-      boxShadow: "inset 0 0 0 1px rgba(0, 0, 0, 0.16)",
-    },
+    // Cells are intentionally borderless for a clean contribution-graph look;
+    // the intensity ramp plus the legend convey the scale. (Non-text contrast of
+    // the buckets, 1.4.11, is a graphics/data-viz judgement rather than a hard
+    // requirement, and the accessible per-cell label carries the exact value.)
+    cell: {},
     // A contrast-independent focus ring: a width-bearing outline that contrasts
     // with the page, not the cell underneath, so it stays visible on the darkest
     // bucket (WCAG 2.1 — 2.4.7 Focus Visible, AA; reconciles the old 2px ink

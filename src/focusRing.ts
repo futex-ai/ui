@@ -35,16 +35,17 @@ export type FocusRingOptions = {
  *
  * Older callers relied on `focusRingStyle` only recoloring an existing border,
  * which left borderless controls (the switch track, the segmented pill) with no
- * visible keyboard-focus indicator. This now layers a real `outline` ring on top
- * of the border recolor so every control — bordered or not — satisfies WCAG 2.1
- * Focus Visible (2.4.7, AA). `outline` is painted outside the layout box, so it
- * adds no layout shift; on native the `outline*` props are inert and the OS
- * focus affordance applies instead.
+ * visible keyboard-focus indicator. This uses a real `outline` ring so every
+ * control — bordered or not — gets a single, clean focus indicator (WCAG 2.1
+ * Focus Visible, 2.4.7, AA). It deliberately does NOT also recolor the border:
+ * on a bordered control that produced a heavy double ring (green border + green
+ * outline); the resting border simply stays put and the outline sits around it.
+ * `outline` is painted outside the layout box, so it adds no layout shift; on
+ * native the `outline*` props are inert and the OS focus affordance applies.
  */
 export function focusRingStyleFor(options: FocusRingOptions): ViewStyle {
   const { color, width = 2, offset = 2 } = options;
   return {
-    borderColor: color,
     outlineStyle: "solid",
     outlineColor: color,
     outlineWidth: width,

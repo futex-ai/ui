@@ -4,8 +4,6 @@ import type { ReactNode, RefObject } from "react";
 import { View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
 
-import { useFocusRing } from "../focusRing";
-
 import type { PopoverSurfaceRole } from "./popoverModel";
 
 type Focusable = { focus?: () => void };
@@ -52,10 +50,11 @@ function asFocusable(value: unknown): Focusable | null {
  * - On close it returns focus to the recorded element (the trigger), so the
  *   keyboard does not drop to `<body>`.
  *
- * The surface is focusable (`tabIndex=-1`) and shows a `useFocusRing` indicator
- * when it itself holds focus (WCAG 2.4.7). The ring is inset (`offset: -2`)
- * because the portal surface clips overflow, which would otherwise crop an
- * outset outline.
+ * The surface is focusable (`tabIndex=-1`) only so focus can LAND inside it on
+ * open; it is not in the Tab order and is not an interactive control, so it does
+ * not paint its own focus ring (that would draw a heavy outline around the whole
+ * popover the moment it opens). Interactive controls inside the surface keep
+ * their own focus indicators (WCAG 2.4.7).
  */
 export function PopoverSurface({
   children,
@@ -74,7 +73,6 @@ export function PopoverSurface({
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const initialFocusTargetRef = useRef(initialFocusRef);
   initialFocusTargetRef.current = initialFocusRef;
-  const focus = useFocusRing({ offset: -2 });
 
   useEffect(() => {
     if (!shouldManageFocus || typeof document === "undefined") {
@@ -102,11 +100,9 @@ export function PopoverSurface({
     <View
       accessibilityLabel={named ? label : undefined}
       nativeID={nativeID}
-      onBlur={focus.onBlur}
-      onFocus={focus.onFocus}
       ref={surfaceRef}
       role={named ? surfaceRole : undefined}
-      style={[style, focus.focused ? focus.focusRingStyle : null]}
+      style={style}
       tabIndex={shouldManageFocus ? -1 : undefined}
     >
       {children}
