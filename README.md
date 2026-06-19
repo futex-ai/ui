@@ -36,6 +36,8 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/heatmap` for the calendar contribution heatmap and its pure layout
   and color-scale helpers.
 - `@firna/ui/input` for the labelled text input and bare input frame.
+- `@firna/ui/list` for the vertical list with between-item separators, optional
+  clickable items, and the `ListItem` row.
 - `@firna/ui/modal` for web modal frame, portal, model, and layer helpers.
 - `@firna/ui/popover` for generic anchored popovers.
 - `@firna/ui/radio` for themed titled radio-option cards.
@@ -150,7 +152,8 @@ The package export map intentionally separates runtime targets:
 - Storybook examples are grouped under one top-level folder per family:
   `Avatar/Examples`, `Button/Examples`, `Calendar/Examples`, `Date/Examples`,
   `Drag Select/Examples`, `Dropdown/Examples`, `Heatmap/Examples`,
-  `Input/Examples`, `Modal/Examples`, `Popover/Examples`, `Radio/Examples`,
+  `Input/Examples`, `List/Examples`, `Modal/Examples`, `Popover/Examples`,
+  `Radio/Examples`,
   `Segmented/Examples`, `Spinner/Examples`, `Switch/Examples`,
   `Table/Examples`, `Theme/Examples`, and `Toast/Examples`.
 - Required repository variable: `CLOUDFLARE_ACCOUNT_ID`.
@@ -165,6 +168,7 @@ The package export map intentionally separates runtime targets:
 - Button component: [src/button/README.md](src/button/README.md)
 - Calendar component: [src/calendar/README.md](src/calendar/README.md)
 - Input component: [src/input/README.md](src/input/README.md)
+- List component: [src/list/README.md](src/list/README.md)
 - Dropdown components: [src/dropdown/README.md](src/dropdown/README.md)
 - Drag-select components:
   [src/drag-select/README.md](src/drag-select/README.md)
