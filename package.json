@@ -100,6 +100,11 @@
       "react-native": "./dist/segmented/index.js",
       "import": "./dist/node/segmented/index.js"
     },
+    "./spinner": {
+      "types": "./dist/node/spinner/index.d.ts",
+      "react-native": "./dist/spinner/index.js",
+      "import": "./dist/node/spinner/index.js"
+    },
     "./switch": {
       "types": "./dist/node/switch/index.d.ts",
       "react-native": "./dist/switch/index.js",

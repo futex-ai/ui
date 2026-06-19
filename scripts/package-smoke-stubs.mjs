@@ -73,6 +73,21 @@ export const ScrollView = "ScrollView";
 export const Text = "Text";
 export const TextInput = "TextInput";
 export const View = "View";
+export const Animated = {
+  View: "Animated.View",
+  Value: class AnimatedValue {
+    interpolate() {
+      return "0deg";
+    }
+  },
+  loop() {
+    return { start() {}, stop() {} };
+  },
+  timing() {
+    return { start() {}, stop() {} };
+  },
+};
+export const Easing = { linear: (value) => value };
 export const Platform = {
   OS: "web",
   select(values) {
@@ -95,7 +110,10 @@ export function useWindowDimensions() {
     "package.json": JSON.stringify({ name: "react-native", type: "module" }),
   });
   await writeStubPackage(consumerRoot, "react-native-svg", {
-    "index.js": `export default "Svg";
+    "index.js": `export const Circle = "Circle";
+export const Path = "Path";
+export const Svg = "Svg";
+export default Svg;
 `,
     "package.json": JSON.stringify({
       name: "react-native-svg",
