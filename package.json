@@ -134,6 +134,7 @@
   "scripts": {
     "build": "rm -rf dist && tsc --project tsconfig.build.json && node scripts/prepare-node-esm.mjs",
     "clean": "rm -rf dist storybook-static playwright-report test-results",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md,yml,yaml}\"",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build",
