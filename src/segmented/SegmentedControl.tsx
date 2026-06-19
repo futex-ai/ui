@@ -41,6 +41,11 @@ export type SegmentedControlProps<T extends string> = {
   /** Width strategy: `content` (default) hugs each label; `equal` shares width evenly. */
   sizing?: SegmentedControlSizing;
   value: T;
+  /**
+   * Visual style: `pill` (default) renders a tab-like track with the selected
+   * option as a raised surface; `outline` renders separate bordered cells, the
+   * right fit for rows of filter pills.
+   */
   variant?: SegmentedControlVariant;
   wrap?: boolean;
 };
@@ -64,7 +69,7 @@ export function SegmentedControl<T extends string>({
   size = "md",
   sizing = "content",
   value,
-  variant = "outline",
+  variant = "pill",
   wrap = false,
 }: SegmentedControlProps<T>) {
   const theme = useSharedUiTheme();

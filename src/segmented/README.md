@@ -9,8 +9,8 @@ used around Profit & loss reporting.
 
 - Render one selected option from a small set of choices.
 - Expose `radiogroup` and `radio` semantics with checked and disabled state.
-- Support outline cells for filter pills and pill-track tabs for report-style
-  segmented controls.
+- Default to pill-track tabs for report-style segmented controls, with an
+  opt-in `variant="outline"` for rows of separate filter-pill cells.
 - Size the control with the shared `ControlSize` scale (`sm` / `md` / `lg`),
   scaling the segment padding, the label type scale, and the track gaps.
 - Use shared theme colors, fonts, and radii instead of consumer-local theme
@@ -20,7 +20,8 @@ used around Profit & loss reporting.
 ## Usage
 
 Use `SegmentedControl` for compact selectors where all options should stay
-visible:
+visible. `variant` defaults to `"pill"` — a tab-like track with the selected
+option raised as a surface, the right fit for report-style switches:
 
 ```tsx
 import { SegmentedControl } from "@firna/ui/segmented";
@@ -33,14 +34,26 @@ import { SegmentedControl } from "@firna/ui/segmented";
     { label: "Balance sheet", value: "bs" },
   ]}
   value={report}
-  variant="pill"
+/>;
+```
+
+Pass `variant="outline"` for rows of separate bordered filter-pill cells:
+
+```tsx
+<SegmentedControl
+  accessibilityLabel="Income source"
+  onChange={setSource}
+  options={sourceOptions}
+  value={source}
+  variant="outline"
+  wrap
 />;
 ```
 
 `sizing` defaults to `"content"`, so each segment hugs its label and the track
-sits flush to the start — the right fit for report-style `variant="pill"` tabs
-and for rows of filter pills (pair with `wrap` when they may flow onto another
-line). Pass `sizing="equal"` to share width evenly across segments, e.g. for a
+sits flush to the start — the right fit for both the default pill tabs and for
+rows of filter pills (pair with `wrap` when they may flow onto another line).
+Pass `sizing="equal"` to share width evenly across segments, e.g. for a
 full-width two-up toggle.
 
 > `sizing` is the **width** strategy (equal vs content-hugging); `size` is the
