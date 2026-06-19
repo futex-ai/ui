@@ -444,6 +444,10 @@ Required behavior:
   version updates, `vX.Y.Z` Git tags, and GitHub releases.
 - release-please must use the `node` release type so release PRs update
   `CHANGELOG.md`, `package.json`, and `package-lock.json` together.
+- Generated release PRs must be normalized by the release workflow before they
+  are considered ready for merge: the workflow checks out the release PR branch,
+  runs the repository formatter, and pushes a bot commit only when formatting
+  changed generated files.
 - Ordinary pushes to `main` must not publish npm packages; publishing must only
   run when release-please reports that a GitHub release was created from a
   merged release PR, or when a maintainer manually dispatches a publish retry
