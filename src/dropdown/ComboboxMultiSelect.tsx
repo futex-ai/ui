@@ -14,6 +14,7 @@ import {
   DropdownListEntry,
   dropdownRowDomId,
 } from "./DropdownList";
+import type { DropdownHighlightVariant } from "./DropdownList";
 import { comboboxInputA11y, filterComboboxOptions } from "./comboboxModel";
 import { useComboboxNavigation } from "./useComboboxNavigation";
 
@@ -26,12 +27,15 @@ export type ComboboxMultiSelectOption = {
 
 export function ComboboxMultiSelect({
   footer,
+  highlightVariant,
   onChange,
   options,
   placeholder = "Search to add...",
   values,
 }: {
   footer?: string;
+  /** How the keyboard-focused row is highlighted. Defaults to `"solid"`. */
+  highlightVariant?: DropdownHighlightVariant;
   onChange: (values: string[]) => void;
   options: ComboboxMultiSelectOption[];
   placeholder?: string;
@@ -133,6 +137,7 @@ export function ComboboxMultiSelect({
           <DropdownList
             activeId={navigation.activeId}
             entries={entries}
+            highlightVariant={highlightVariant}
             label={placeholder}
             listId={listId}
             listRole="listbox"

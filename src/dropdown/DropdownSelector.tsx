@@ -14,6 +14,7 @@ import {
   DropdownListEntry,
   dropdownRowDomId,
 } from "./DropdownList";
+import type { DropdownHighlightVariant } from "./DropdownList";
 import { DropdownPortal } from "./DropdownPortal";
 import { comboboxInputA11y, filterComboboxSections } from "./comboboxModel";
 import {
@@ -45,6 +46,8 @@ type DropdownSelectorProps = {
   error?: string | null;
   footer?: ReactNode;
   header?: ReactNode;
+  /** How focused/selected option rows are highlighted. Defaults to `"solid"`. */
+  highlightVariant?: DropdownHighlightVariant;
   hint?: string;
   invalid?: boolean;
   label?: string;
@@ -77,6 +80,7 @@ function DropdownSelectorView({
   focus,
   footer,
   header,
+  highlightVariant,
   hint,
   invalid: invalidProp = false,
   label,
@@ -276,6 +280,7 @@ function DropdownSelectorView({
             entries={entries}
             footer={footer}
             header={header}
+            highlightVariant={highlightVariant}
             label={accessibleLabel}
             listId={listId}
             listRole="listbox"

@@ -1,12 +1,20 @@
 /** Branded dropdown list rows with shared hover and keyboard state. */
-import { LucideIcon } from "lucide-react-native";
+import { Check, LucideIcon } from "lucide-react-native";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { Platform, Pressable, ScrollView, Text, View } from "react-native";
 
+import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
 
-import { createDropdownListStyles } from "./dropdownListStyles";
-import type { DropdownListStyles } from "./dropdownListStyles";
+import {
+  DEFAULT_DROPDOWN_HIGHLIGHT,
+  createDropdownListStyles,
+  dropdownRowHighlight,
+} from "./dropdownListStyles";
+import type {
+  DropdownHighlightVariant,
+  DropdownListStyles,
+} from "./dropdownListStyles";
 import {
   dropdownListNavigationItems,
   selectedDropdownListEntryId,
@@ -25,6 +33,7 @@ export {
   dropdownListNavigationItems,
   selectedDropdownListEntryId,
 } from "./dropdownListModel";
+export type { DropdownHighlightVariant } from "./dropdownListStyles";
 
 /** How the option list and its rows are exposed to assistive tech. */
 export type DropdownListRole = "listbox" | "menu";
@@ -65,6 +74,11 @@ type DropdownListProps = {
   entries: DropdownListEntry[];
   footer?: ReactNode;
   header?: ReactNode;
+  /**
+   * How focused/selected rows are highlighted. Defaults to `"solid"`. See
+   * {@link DropdownHighlightVariant}.
+   */
+  highlightVariant?: DropdownHighlightVariant;
   /** Accessible name for the option container (WCAG 4.1.2). */
   label?: string;
   /**
@@ -92,6 +106,7 @@ export function DropdownList({
   entries,
   footer,
   header,
+  highlightVariant = DEFAULT_DROPDOWN_HIGHLIGHT,
   label,
   listId,
   listRole = "listbox",
@@ -211,6 +226,7 @@ export function DropdownList({
         <DropdownRow
           active={entry.id === activeId}
           entry={entry}
+          highlightVariant={highlightVariant}
           isWeb={isWeb}
           itemRole={itemRole}
           key={entry.id}
@@ -218,6 +234,7 @@ export function DropdownList({
           onRowRef={setRowRef(entry.id)}
           rowDomId={dropdownRowDomId(listId, entry.id)}
           styles={styles}
+          theme={theme}
         />
       ))}
     </ScrollView>
@@ -243,21 +260,25 @@ export function DropdownList({
 function DropdownRow({
   active,
   entry,
+  highlightVariant,
   isWeb,
   itemRole,
   onHover,
   onRowRef,
   rowDomId,
   styles,
+  theme,
 }: {
   active: boolean;
   entry: DropdownListEntry;
+  highlightVariant: DropdownHighlightVariant;
   isWeb: boolean;
   itemRole: "menuitem" | "option";
   onHover: () => void;
   onRowRef: (node: View | null) => void;
   rowDomId?: string;
   styles: DropdownListStyles;
+  theme: SharedUiTheme;
 }) {
   if (entry.type === "section") {
     return <Text style={styles.section}>{entry.label}</Text>;
@@ -267,6 +288,19 @@ function DropdownRow({
   }
   const danger = entry.tone === "danger";
   const amber = entry.tone === "amber";
+  const highlight = dropdownRowHighlight(styles, theme, highlightVariant, {
+    active,
+    disabled: Boolean(entry.disabled),
+    selected: Boolean(entry.selected),
+  });
+  // Selected options are marked with a trailing checkmark so the choice reads
+  // independently of which row is keyboard-focused. Only for `option` rows
+  // (a `menuitem` has no selected state), and only when the row has no custom
+  // `right` node to preserve (e.g. the combobox supplies its own check).
+  const selectedCheck =
+    itemRole === "option" && highlight.showCheck && !entry.right ? (
+      <Check color={highlight.checkColor} size={16} strokeWidth={2.5} />
+    ) : null;
   // On web, expose the correct ARIA list-item role (`option`/`menuitem`) via
   // the literal `role` prop, because `option` is missing from the bundled RN
   // `AccessibilityRole` type (RNW forwards `role` at runtime). On native, keep
@@ -296,11 +330,15 @@ function DropdownRow({
       style={[
         styles.item,
         entry.type === "footer" ? styles.footer : null,
-        active && !entry.disabled ? styles.itemActive : null,
-        entry.selected ? styles.itemSelected : null,
+        highlight.rowStyle,
         entry.disabled ? styles.itemDisabled : null,
       ]}
     >
+      {highlight.showDotSlot ? (
+        <View style={styles.itemDotSlot}>
+          {highlight.showDot ? <View style={styles.itemDot} /> : null}
+        </View>
+      ) : null}
       {entry.leading ? (
         <View style={styles.leading}>{entry.leading}</View>
       ) : null}
@@ -308,7 +346,7 @@ function DropdownRow({
         <Text
           style={[
             styles.itemLabel,
-            active && !entry.disabled ? styles.itemLabelActive : null,
+            highlight.labelStyle,
             danger ? styles.dangerText : null,
             amber ? styles.amberText : null,
           ]}
@@ -319,7 +357,11 @@ function DropdownRow({
           <Text style={styles.secondary}>{entry.secondary}</Text>
         ) : null}
       </View>
-      {entry.right ? <View style={styles.right}>{entry.right}</View> : null}
+      {entry.right ? (
+        <View style={styles.right}>{entry.right}</View>
+      ) : selectedCheck ? (
+        <View style={styles.right}>{selectedCheck}</View>
+      ) : null}
     </Pressable>
   );
 }
