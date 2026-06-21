@@ -62,9 +62,9 @@ export function createSwitchStyles(
   const knobOn = sizing.knobOn - BORDER;
   return StyleSheet.create({
     knob: {
-      // The knob carries a subtle border so its edge keeps a ≥3:1 boundary
-      // against the white surface and the off-track fill (WCAG 2.1 — 1.4.11
-      // Non-text Contrast, AA; reinforces the 1.4.1 position cue).
+      // The knob carries a subtle `controlBorder` edge against the white surface
+      // and the off-track fill (a soft translucent-ink line that reinforces the
+      // 1.4.1 position cue).
       backgroundColor: "#fff",
       borderColor: theme.colors.controlBorder,
       borderRadius: sizing.knobSize / 2,
@@ -84,8 +84,9 @@ export function createSwitchStyles(
       width: sizing.touchTarget,
     },
     track: {
-      // Off-track keeps a ≥3:1 boundary so the control's resting edge is
-      // perceivable on the surface (WCAG 2.1 — 1.4.11 Non-text Contrast, AA).
+      // Off-track carries a `controlBorder` edge so the control's resting shape
+      // stays perceivable on the surface (soft translucent-ink line; the tint
+      // composites a touch firmer over this grey fill than over white).
       backgroundColor: theme.colors.border2,
       borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.pill,

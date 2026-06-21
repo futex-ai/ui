@@ -117,8 +117,9 @@ export function createInputStyles(
     box: {
       alignItems: "center",
       backgroundColor: theme.colors.surface,
-      // `controlBorder` (≥3:1) draws the resting edge of an interactive control
-      // — WCAG 2.1 1.4.11 Non-text Contrast (AA). `border2` was only ~1.45:1.
+      // `controlBorder` (a translucent ink tint) draws the resting edge of an
+      // interactive control — a soft, light line (≈1.4:1 on white, intentionally
+      // below the 1.4.11 ≥3:1 floor) rather than the decorative `border2`.
       borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.md,
       borderWidth: 1,

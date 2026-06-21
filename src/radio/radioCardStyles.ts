@@ -11,8 +11,8 @@ export function createRadioCardStyles(theme: SharedUiTheme) {
     },
     radio: {
       alignItems: "flex-start",
-      // ≥3:1 control boundary so the resting card edge is perceivable
-      // (WCAG 2.1 — 1.4.11 Non-text Contrast, AA).
+      // The `controlBorder` token gives the resting card edge a soft, light
+      // boundary (translucent ink; intentionally below the 1.4.11 ≥3:1 floor).
       borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.lg,
       borderWidth: 1,
@@ -45,8 +45,8 @@ export function createRadioCardStyles(theme: SharedUiTheme) {
     radioDisabled: { opacity: 0.6 },
     radioDot: {
       alignItems: "center",
-      // ≥3:1 boundary on the empty ring so the unchecked state reads as a
-      // control affordance (WCAG 2.1 — 1.4.11, AA).
+      // A `controlBorder` boundary on the empty ring so the unchecked state
+      // still reads as a control affordance (soft translucent-ink edge).
       borderColor: theme.colors.controlBorder,
       borderRadius: 8,
       borderWidth: 2,

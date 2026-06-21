@@ -128,8 +128,8 @@ export function createSegmentedControlStyles(
     },
     pillActive: {
       backgroundColor: theme.colors.surface,
-      // ≥3:1 boundary so the selected pill is perceivable against the track,
-      // not conveyed by the ~1.13:1 surface/soft fill alone (WCAG 1.4.1 / 1.4.11).
+      // A `controlBorder` edge so the selected pill is perceivable against the
+      // track, not conveyed by the ~1.13:1 surface/soft fill alone (WCAG 1.4.1).
       borderColor: theme.colors.controlBorder,
       boxShadow: "0 1px 2px rgba(20, 28, 22, 0.06)",
     },

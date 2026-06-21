@@ -44,9 +44,11 @@ on Windows).
 
 ### Vision / display
 
-- [ ] Text contrast ≥ 4.5:1 (≥ 3:1 for large text); control boundaries, state
-      indicators and focus rings ≥ 3:1 — in **both** the default and Juno themes
-      (1.4.3 Contrast, AA; 1.4.11 Non-text Contrast, AA).
+- [ ] Text contrast ≥ 4.5:1 (≥ 3:1 for large text); state indicators and focus
+      rings ≥ 3:1 — in **both** the default and Juno themes (1.4.3 Contrast, AA;
+      1.4.11 Non-text Contrast, AA). Exception: the resting `controlBorder` edge
+      is an intentional sub-3:1 soft, translucent-ink line (it blends rather than
+      outlines); the active/invalid borders and focus rings still clear 3:1.
 - [ ] State is never conveyed by color alone — there is a shape/text/position cue
       too (1.4.1 Use of Color, A).
 - [ ] At 200% browser zoom and 320 px width nothing is clipped or overlaps; the

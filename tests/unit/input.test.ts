@@ -124,8 +124,8 @@ test("input styles are driven by shared theme tokens", () => {
   const source = readSource("../../src/input/inputStyles.ts");
 
   assert.match(source, /backgroundColor: theme\.colors\.surface/);
-  // The resting box edge uses `controlBorder` (≥3:1 against surface) rather than
-  // the decorative `border2` (~1.45:1) — WCAG 2.1 1.4.11 Non-text Contrast (AA).
+  // The resting box edge uses `controlBorder` (a soft translucent-ink line)
+  // rather than the decorative `border2`.
   assert.match(source, /borderColor: theme\.colors\.controlBorder/);
   assert.match(source, /borderRadius: theme\.radii\.md/);
   assert.match(source, /boxActive: \{ borderColor: theme\.colors\.primary \}/);
