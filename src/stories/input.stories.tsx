@@ -10,7 +10,7 @@ import {
 import { useState } from "react";
 import { View } from "react-native";
 
-import { Input } from "../index";
+import { Input, Textarea } from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -45,6 +45,11 @@ export const WithIcons: Story = {
 export const ClearableField: Story = {
   name: "Clearable field",
   render: () => surface(<ClearableExample />),
+};
+
+export const TextareaField: Story = {
+  name: "Textarea field",
+  render: () => surface(<TextareaExample />),
 };
 
 export const PasswordField: Story = {
@@ -129,6 +134,22 @@ function ClearableExample() {
       onChangeText={setValue}
       placeholder="Search documents"
       prefixIcon={Search}
+      value={value}
+    />
+  );
+}
+
+function TextareaExample() {
+  const [value, setValue] = useState(
+    "Initial scope notes\nFollow up with implementation details",
+  );
+  return (
+    <Textarea
+      clearable
+      hint="Use multiple lines for notes, comments, or descriptions."
+      label="Project notes"
+      onChangeText={setValue}
+      placeholder="Add useful context"
       value={value}
     />
   );

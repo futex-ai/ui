@@ -76,8 +76,9 @@ export type InputFrameProps = Omit<TextInputProps, "style"> & {
  * The bordered box around a `TextInput`, with optional leading/trailing icons
  * and an accessible clear button. Owns the sage focus ring, the rose invalid
  * border, and the `aria-invalid` / `aria-required` wiring, but renders no label
- * or messages — embed it directly (e.g. inside the date field's trigger) or use
- * {@link Input} for the full labelled field.
+ * or messages — embed it directly (e.g. inside the date field's trigger), use
+ * {@link Input} for the full labelled field, or pass `multiline` for textarea
+ * geometry.
  */
 export function InputFrame({
   active = false,
@@ -102,6 +103,7 @@ export function InputFrame({
   const styles = useMemo(() => createInputStyles(theme, size), [theme, size]);
   const iconSize = inputIconSize(size);
   const focus = useFocusRing();
+  const multiline = Boolean(props.multiline);
   const showClear = clearable && (clearVisible ?? Boolean(props.value));
   const borderActive = focus.focused || active;
   const clearLabel =
@@ -136,6 +138,7 @@ export function InputFrame({
     <View
       style={[
         styles.box,
+        multiline ? styles.boxMultiline : null,
         invalid ? styles.boxInvalid : borderActive ? styles.boxActive : null,
         style,
         // The focus ring (a geometry-bearing outline, not just a border
@@ -167,7 +170,11 @@ export function InputFrame({
           focus.onFocus();
           props.onFocus?.(event);
         }}
-        style={[styles.input, hideWebOutline, inputStyle]}
+        style={[
+          multiline ? styles.textareaInput : styles.input,
+          hideWebOutline,
+          inputStyle,
+        ]}
       />
       {/* The clear button is a distinct action with no keyboard equivalent on the
           input, so it stays an accessible button (in the tab order and a11y

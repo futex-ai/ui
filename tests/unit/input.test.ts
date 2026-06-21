@@ -64,6 +64,24 @@ test("input frame supports the shared size scale", () => {
   assert.match(stylesSource, /lg: \{[\s\S]*?boxHeight: 48/);
 });
 
+test("input frame supports multiline textarea geometry", () => {
+  const source = readSource("../../src/input/InputFrame.tsx");
+  const stylesSource = readSource("../../src/input/inputStyles.ts");
+
+  assert.match(source, /multiline = Boolean\(props\.multiline\)/);
+  assert.match(source, /multiline \? styles\.boxMultiline : null/);
+  assert.match(source, /multiline \? styles\.textareaInput : styles\.input/);
+  assert.match(
+    stylesSource,
+    /boxMultiline: \{[\s\S]*?alignItems: "flex-start"/,
+  );
+  assert.match(
+    stylesSource,
+    /textareaInput: \{[\s\S]*?minHeight: sizing\.textareaInputMinHeight/,
+  );
+  assert.match(stylesSource, /textAlignVertical: "top"/);
+});
+
 test("a pressable suffix icon without a label is a mouse-only affordance", () => {
   const source = readSource("../../src/input/InputFrame.tsx");
 
@@ -120,6 +138,14 @@ test("input composes the frame with a label, error, and hint", () => {
   );
 });
 
+test("textarea composes the labelled input as multiline", () => {
+  const source = readSource("../../src/input/Textarea.tsx");
+
+  assert.match(source, /Omit<InputProps, "multiline">/);
+  assert.match(source, /numberOfLines = 4/);
+  assert.match(source, /<Input multiline numberOfLines=\{numberOfLines\}/);
+});
+
 test("input styles are driven by shared theme tokens", () => {
   const source = readSource("../../src/input/inputStyles.ts");
 
@@ -140,6 +166,7 @@ test("input has public root and subpath exports", () => {
   assert.match(rootSource, /export \* from "\.\/input"/);
   assert.match(inputSource, /Input/);
   assert.match(inputSource, /InputFrame/);
+  assert.match(inputSource, /Textarea/);
   assert.match(packageJson, /"\.\/input"/);
 });
 

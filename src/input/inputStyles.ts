@@ -20,6 +20,8 @@ const INPUT_SIZES: Record<
     inputFontSize: number;
     inputHeight: number;
     paddingHorizontal: number;
+    textareaInputMinHeight: number;
+    textareaPaddingVertical: number;
   }
 > = {
   sm: {
@@ -29,6 +31,8 @@ const INPUT_SIZES: Record<
     inputFontSize: 13,
     inputHeight: 30,
     paddingHorizontal: 10,
+    textareaInputMinHeight: 72,
+    textareaPaddingVertical: 8,
   },
   md: {
     boxHeight: 40,
@@ -37,6 +41,8 @@ const INPUT_SIZES: Record<
     inputFontSize: 14,
     inputHeight: 38,
     paddingHorizontal: 12,
+    textareaInputMinHeight: 88,
+    textareaPaddingVertical: 10,
   },
   lg: {
     boxHeight: 48,
@@ -45,6 +51,8 @@ const INPUT_SIZES: Record<
     inputFontSize: 16,
     inputHeight: 46,
     paddingHorizontal: 14,
+    textareaInputMinHeight: 104,
+    textareaPaddingVertical: 12,
   },
 };
 
@@ -132,6 +140,10 @@ export function createInputStyles(
     },
     boxActive: { borderColor: theme.colors.primary },
     boxInvalid: { borderColor: theme.colors.rose },
+    boxMultiline: {
+      alignItems: "flex-start",
+      paddingVertical: sizing.textareaPaddingVertical,
+    },
     // `minWidth: 0` lets the web <input> shrink below its intrinsic size so the
     // trailing icons stay inside the box in narrow layouts.
     input: {
@@ -141,6 +153,17 @@ export function createInputStyles(
       fontSize: sizing.inputFontSize,
       height: sizing.inputHeight,
       minWidth: 0,
+    },
+    textareaInput: {
+      ...baseText,
+      color: theme.colors.ink,
+      flex: 1,
+      fontSize: sizing.inputFontSize,
+      minHeight: sizing.textareaInputMinHeight,
+      minWidth: 0,
+      paddingBottom: 0,
+      paddingTop: 0,
+      textAlignVertical: "top",
     },
     // Decorative icon wrapper (centred so it lines up with the input baseline).
     icon: { alignItems: "center", justifyContent: "center" },
