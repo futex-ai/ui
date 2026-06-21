@@ -7,12 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.6.0](https://github.com/futex-ai/ui/compare/v0.5.0...v0.6.0) (2026-06-21)
 
-
 ### Features
 
-* **input:** add textarea field ([#63](https://github.com/futex-ai/ui/issues/63)) ([8e58891](https://github.com/futex-ai/ui/commit/8e58891909e1b1f7350e6c4edb1dd442b730099f))
-* **table:** add rowStyle hook and bold TableCell variant ([#64](https://github.com/futex-ai/ui/issues/64)) ([b087700](https://github.com/futex-ai/ui/commit/b08770099a42d7aa75e5650aa9d2e5803d4cc2cf))
-* **theme:** use translucent ink for control borders so they blend & lighten ([#61](https://github.com/futex-ai/ui/issues/61)) ([de51edc](https://github.com/futex-ai/ui/commit/de51edcc5d38a9cc3f434a4e783bea33270be620))
+- **input:** add textarea field ([#63](https://github.com/futex-ai/ui/issues/63)) ([8e58891](https://github.com/futex-ai/ui/commit/8e58891909e1b1f7350e6c4edb1dd442b730099f))
+- **table:** add rowStyle hook and bold TableCell variant ([#64](https://github.com/futex-ai/ui/issues/64)) ([b087700](https://github.com/futex-ai/ui/commit/b08770099a42d7aa75e5650aa9d2e5803d4cc2cf))
+- **theme:** use translucent ink for control borders so they blend & lighten ([#61](https://github.com/futex-ai/ui/issues/61)) ([de51edc](https://github.com/futex-ai/ui/commit/de51edcc5d38a9cc3f434a4e783bea33270be620))
 
 ## [0.5.0](https://github.com/futex-ai/ui/compare/v0.4.0...v0.5.0) (2026-06-21)
 
