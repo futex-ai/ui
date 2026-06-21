@@ -308,9 +308,12 @@ Required behavior:
 
 - Render rows from a column definition and a per-cell render callback, so a cell
   can hold plain text, tags, buttons, or any node, with a text helper for the
-  default cell typography (including muted and tabular-numeric variants).
+  default cell typography (including bold, muted, and tabular-numeric variants).
 - Size each column by a fixed width or a flex share, and align its header and
   cells left, center, or right.
+- Allow a per-row container style override, merged over the base row style and
+  under the interactive states, so grouped tables can shade section-header and
+  subtotal bands (e.g. a balance sheet).
 - Make the header row optional for continuation tables and headerless layouts.
 - Make rows optionally pressable: a pressable row exposes `button` accessibility
   semantics with a disabled state, owns the shared hover, focus ring, and pressed

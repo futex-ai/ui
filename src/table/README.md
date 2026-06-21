@@ -17,6 +17,8 @@ flexible per-cell rendering, optionally pressable rows, and the shared
 - Make rows pressable via `onRowPress`, with the shared hover wash, sage focus
   ring, pressed and disabled states, `button` semantics, and keyboard
   activation — or render plain static rows when no handler is given.
+- Shade individual rows via `rowStyle`, for grouped tables such as a balance
+  sheet's section-header and subtotal bands.
 - Size the table with the shared `ControlSize` scale (`sm` / `md` / `lg`),
   scaling the row padding and the header / cell type scale.
 - Use shared theme colours, fonts, and radii instead of consumer-local theme.
@@ -106,7 +108,30 @@ rows to show (defaults to 6); the placeholder bars mirror each column's width.
 
 `cell` can return any node, so columns can mix text, tags, avatars, and buttons.
 For the common text cell, `TableCell` applies the table's default typography:
-`muted` greys secondary text and `numeric` gives tabular figures for amounts.
+`bold` weights a label (e.g. a subtotal), `muted` greys secondary text, and
+`numeric` gives bold, right-aligned tabular figures for amounts.
+
+### Sectioned and grouped rows
+
+`rowStyle` returns a container style for a given row, merged over the base row
+style — use it to shade grouped rows such as a balance sheet's section-header
+and subtotal bands. It pairs with the flexible `cell` callback: render a section
+header as a single label (returning `null` for the other columns) and a subtotal
+with a `<TableCell bold>` label beside `<TableCell numeric>` amounts. For
+pressable rows the hover, pressed, and focus treatments still layer on top of
+`rowStyle`.
+
+```tsx
+<Table<BalanceRow>
+  columns={columns}
+  cell={cell}
+  rowKey={(row) => row.id}
+  rowStyle={(row) =>
+    row.kind === "section" || row.kind === "total" ? styles.band : undefined
+  }
+  rows={rows}
+/>
+```
 
 ### Sizes
 
@@ -118,9 +143,10 @@ cell type scale, so a table reads at the same density as the controls beside it.
 ## Styling
 
 `style` extends the table container (`ViewStyle`) — layer a card border, radius,
-and `overflow: "hidden"` on top to frame the table. Column layout, alignment,
-the header, the pressable-row treatments, and the disabled state are applied by
-the component.
+and `overflow: "hidden"` on top to frame the table. `rowStyle` extends an
+individual row's container (`ViewStyle`), merged over the base row style and
+under the interactive states. Column layout, alignment, the header, the
+pressable-row treatments, and the disabled state are applied by the component.
 
 ## Theming
 

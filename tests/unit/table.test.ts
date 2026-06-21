@@ -27,10 +27,28 @@ test("table renders plain static rows without an onRowPress", () => {
   const source = readSource("../../src/table/Table.tsx");
 
   assert.match(source, /if \(onRowPress\) \{/);
-  // The non-pressable branch is a plain View carrying the last-row border reset.
+  // The non-pressable branch is a plain View carrying the last-row border reset
+  // and the optional per-row style override.
   assert.match(
     source,
-    /style=\{\[styles\.row, last \? styles\.rowLast : null\]\}/,
+    /styles\.row,\s*last \? styles\.rowLast : null,\s*rowStyle\?\.\(row, index\),/,
+  );
+});
+
+test("table applies an optional per-row style to both row kinds", () => {
+  const source = readSource("../../src/table/Table.tsx");
+
+  // The documented per-row container style hook.
+  assert.match(
+    source,
+    /rowStyle\?: \(row: Row, index: number\) => StyleProp<ViewStyle>/,
+  );
+  // Pressable rows receive it as customStyle, layered under the interactive
+  // states (hover / pressed / focus) so press feedback still wins.
+  assert.match(source, /customStyle=\{rowStyle\?\.\(row, index\)\}/);
+  assert.match(
+    source,
+    /last \? styles\.rowLast : null,\s*customStyle,\s*hovered && !disabled/,
   );
 });
 
@@ -54,12 +72,15 @@ test("table makes rows pressable buttons when given onRowPress", () => {
   assert.match(source, /disabled \? styles\.rowDisabled : null/);
 });
 
-test("table cell text helper supports muted and numeric variants", () => {
+test("table cell text helper supports bold, muted, and numeric variants", () => {
   const source = readSource("../../src/table/Table.tsx");
+  const stylesSource = readSource("../../src/table/tableStyles.ts");
 
   assert.match(source, /export function TableCell/);
+  assert.match(source, /bold \? styles\.tdBold : null/);
   assert.match(source, /muted \? styles\.tdMuted : null/);
   assert.match(source, /numeric \? styles\.tdNumeric : null/);
+  assert.match(stylesSource, /tdBold: \{ fontWeight: "700" \}/);
 });
 
 test("table supports the shared size scale", () => {

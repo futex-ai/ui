@@ -364,6 +364,145 @@ function StatusPill({ status }: { status: Invoice["status"] }) {
   );
 }
 
+// A balance sheet groups its lines under section headers and closes each group
+// with a shaded subtotal — the kind of sectioned, banded table the Table
+// primitive supports via the `rowStyle` hook (the bands) and `TableCell bold`
+// (the totals), with the section headers rendered as plain nodes.
+type BalanceRow =
+  | { id: string; kind: "section"; label: string }
+  | {
+      current: string;
+      id: string;
+      kind: "data" | "total";
+      label: string;
+      prior: string;
+    };
+
+const balanceColumns: TableColumn[] = [
+  { flex: 1, key: "line", label: "Line" },
+  { align: "right", key: "current", label: "5 Apr 2026", width: 120 },
+  { align: "right", key: "prior", label: "5 Apr 2025", width: 120 },
+];
+
+const balanceRows: BalanceRow[] = [
+  { id: "assets", kind: "section", label: "Assets" },
+  {
+    current: "£21,640.00",
+    id: "hsbc",
+    kind: "data",
+    label: "Cash — HSBC current",
+    prior: "£16,420.00",
+  },
+  {
+    current: "£8,420.00",
+    id: "letting",
+    kind: "data",
+    label: "Cash — letting account",
+    prior: "£6,120.00",
+  },
+  {
+    current: "£2,400.00",
+    id: "rent",
+    kind: "data",
+    label: "Rent receivable",
+    prior: "£1,200.00",
+  },
+  {
+    current: "£9,720.00",
+    id: "equipment",
+    kind: "data",
+    label: "Office equipment",
+    prior: "£10,800.00",
+  },
+  {
+    current: "£42,180.00",
+    id: "total-assets",
+    kind: "total",
+    label: "Total assets",
+    prior: "£34,540.00",
+  },
+  { id: "liabilities", kind: "section", label: "Liabilities" },
+  {
+    current: "£1,840.00",
+    id: "payables",
+    kind: "data",
+    label: "Trade payables",
+    prior: "£980.00",
+  },
+  {
+    current: "£2,400.00",
+    id: "deposits",
+    kind: "data",
+    label: "Tenant deposits held",
+    prior: "£2,400.00",
+  },
+  {
+    current: "£2,000.00",
+    id: "vat",
+    kind: "data",
+    label: "VAT owed",
+    prior: "£1,640.00",
+  },
+  {
+    current: "£6,240.00",
+    id: "total-liabilities",
+    kind: "total",
+    label: "Total liabilities",
+    prior: "£5,020.00",
+  },
+  {
+    current: "£35,940.00",
+    id: "capital",
+    kind: "total",
+    label: "Capital account",
+    prior: "£29,520.00",
+  },
+];
+
+function balanceCell(row: BalanceRow, key: string) {
+  // Section headers ("Assets" / "Liabilities") show a single uppercase label;
+  // the amount columns render nothing. The Table uppercases column headers but
+  // not body cells, so this mirrors the header treatment with a plain node.
+  if (row.kind === "section") {
+    return key === "line" ? (
+      <Text style={styles.sectionLabel}>{row.label}</Text>
+    ) : null;
+  }
+  // Totals get a bold label; data-row labels are plain. Amounts are always the
+  // bold, right-aligned, tabular-figure numeric cell.
+  if (key === "line") {
+    return <TableCell bold={row.kind === "total"}>{row.label}</TableCell>;
+  }
+  return (
+    <TableCell numeric>{key === "current" ? row.current : row.prior}</TableCell>
+  );
+}
+
+/** Shade the section-header and subtotal rows; data rows keep the default fill. */
+function balanceRowStyle(row: BalanceRow) {
+  return row.kind === "section" || row.kind === "total"
+    ? styles.bandRow
+    : undefined;
+}
+
+export const BalanceSheet: Story = {
+  name: "Balance sheet (sectioned)",
+  render: () => (
+    <StorySurface>
+      <View style={styles.card}>
+        <Table<BalanceRow>
+          accessibilityLabel="Balance sheet"
+          cell={balanceCell}
+          columns={balanceColumns}
+          rowKey={(row) => row.id}
+          rows={balanceRows}
+          rowStyle={balanceRowStyle}
+        />
+      </View>
+    </StorySurface>
+  ),
+};
+
 const styles = StyleSheet.create({
   badge: {
     alignSelf: "flex-start",
@@ -380,6 +519,9 @@ const styles = StyleSheet.create({
   badgeSage: { backgroundColor: "#e3eee6" },
   badgeSageText: { color: "#2f5945" },
   badgeText: { fontSize: 11, fontWeight: "700" },
+  // The shaded band behind section headers and subtotal rows. Light enough that
+  // the bold black totals (and the darker-than-muted section label) clear AA.
+  bandRow: { backgroundColor: "#eef2ed" },
   card: {
     borderColor: "#e5e8e0",
     borderRadius: 12,
@@ -423,6 +565,15 @@ const styles = StyleSheet.create({
     color: "#3e4540",
     fontSize: 11,
     fontWeight: "700",
+  },
+  sectionLabel: {
+    // Darker than the muted token (#69706a ≈ 4.5:1 on the band — borderline) so
+    // the uppercase section label clears the 4.5:1 AA floor (#5e645e ≈ 5.3:1).
+    color: "#5e645e",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
   },
   stack: {
     gap: 12,
