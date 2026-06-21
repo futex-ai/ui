@@ -6,10 +6,10 @@ surfaces. The first consumers are the accounting app and the Juno app.
 ## Key Features
 
 - Shared dropdown menu, selector, combobox, drag-select, segmented control,
-  radio card, switch, spinner, button, labelled input, data table, modal, toast
-  provider/controller, avatar, status badge, calendar heatmap, and full
-  event-calendar (month/week/day/agenda, recurring events, drag-to-create)
-  primitives.
+  radio card, switch, spinner, button, labelled input/textarea, data table,
+  modal, toast provider/controller, avatar, status badge, calendar heatmap, and
+  full event-calendar (month/week/day/agenda, recurring events,
+  drag-to-create) primitives.
 - A shared `sm` / `md` / `lg` size scale (`ControlSize`) across the interactive
   controls — buttons, inputs, dropdown selectors, date fields, segmented
   controls, and switches.
@@ -38,7 +38,8 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/dropdown` for dropdown menu, selector, combobox, and layer helpers.
 - `@firna/ui/heatmap` for the calendar contribution heatmap and its pure layout
   and color-scale helpers.
-- `@firna/ui/input` for the labelled text input and bare input frame.
+- `@firna/ui/input` for the labelled text input, textarea, and bare input
+  frame.
 - `@firna/ui/list` for the vertical list with between-item separators, optional
   clickable items, and the `ListItem` row.
 - `@firna/ui/modal` for web modal frame, portal, model, and layer helpers.
@@ -176,7 +177,7 @@ The package export map intentionally separates runtime targets:
 - Shared control-size scale: [src/controlSize.ts](src/controlSize.ts)
 - Button component: [src/button/README.md](src/button/README.md)
 - Calendar component: [src/calendar/README.md](src/calendar/README.md)
-- Input component: [src/input/README.md](src/input/README.md)
+- Input and textarea components: [src/input/README.md](src/input/README.md)
 - List component: [src/list/README.md](src/list/README.md)
 - Dropdown components: [src/dropdown/README.md](src/dropdown/README.md)
 - Drag-select components:

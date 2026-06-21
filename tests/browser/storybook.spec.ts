@@ -1360,6 +1360,30 @@ test("input clear button is keyboard reachable and restores focus", async ({
   await expect(clear).toBeHidden();
 });
 
+test("textarea field renders multiline input and clears back to focus", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=input-examples--textarea-field");
+
+  const textarea = page.getByLabel("Project notes", { exact: true });
+  const clear = page.getByRole("button", { name: "Clear Project notes" });
+  await expect(textarea).toHaveJSProperty("tagName", "TEXTAREA");
+  await expect(textarea).toHaveValue(
+    "Initial scope notes\nFollow up with implementation details",
+  );
+  await expect(clear).toBeVisible();
+
+  await textarea.fill("Line one\nLine two");
+  await expect(textarea).toHaveValue("Line one\nLine two");
+  await textarea.focus();
+  await textarea.press("Tab");
+  await expect(clear).toBeFocused();
+  await clear.press("Enter");
+  await expect(textarea).toHaveValue("");
+  await expect(textarea).toBeFocused();
+  await expect(clear).toBeHidden();
+});
+
 test("input password suffix toggles between show and hide", async ({
   page,
 }) => {

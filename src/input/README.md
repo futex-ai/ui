@@ -1,14 +1,15 @@
 # Input
 
-Shared labelled text input for React Native and React Native Web, adapted from
-the accounting app's `Field` primitive and extended with the icon/clear chrome
-that the date field already used. It is the single text-input primitive for the
-library — other framed inputs (e.g. the date field's web trigger) build on it.
+Shared labelled text input and textarea primitives for React Native and React
+Native Web, adapted from the accounting app's `Field` primitive and extended
+with the icon/clear chrome that the date field already used. This is the single
+text-entry family for the library — other framed inputs (e.g. the date field's
+web trigger) build on it.
 
 ## Responsibilities
 
-- Render a labelled text field: label (+ required `*`), a bordered input box, and
-  the error / hint messages below it.
+- Render labelled text fields and textareas: label (+ required `*`), a bordered
+  input box, and the error / hint messages below it.
 - Highlight validation state — an `error` message turns the border rose and is
   announced via `aria-invalid`; `required` wires `aria-required` and the `*`.
 - Show optional leading (`prefixIcon`) and trailing (`suffixIcon`) icons inside
@@ -16,15 +17,18 @@ library — other framed inputs (e.g. the date field's web trigger) build on it.
 - Own the sage focus ring on the whole box and hide the browser's default
   outline, using shared theme colors and radii.
 - Size the field with the shared `ControlSize` scale (`sm` / `md` / `lg`),
-  scaling the box height, padding, text, and icons together.
-- Expose a bare box ({@link InputFrame}) so callers that own their own
-  label/messages or popover (like the date field) can embed just the framed
-  input.
+  scaling the box height, textarea minimum height, padding, text, and icons
+  together.
+- Expose a textarea ({@link Textarea}) and a bare box ({@link InputFrame}) so
+  callers can choose a multiline field or embed just the framed input when they
+  own their own label/messages or popover.
 
 ## Components
 
 - `Input` — the full labelled field (label + box + messages). The default
   choice. Omit `label` for a bare variant that still renders messages.
+- `Textarea` — the full labelled multiline field. It shares `Input`'s props,
+  forces multiline mode, and defaults to four visible rows.
 - `InputFrame` — just the bordered box (icons, input, clear button, focus ring),
   with no label or messages. Embed it inside custom layouts or controls.
 
@@ -44,6 +48,19 @@ import { Search } from "lucide-react-native";
   prefixIcon={Search}
   required
   value={email}
+/>;
+```
+
+```tsx
+import { Textarea } from "@firna/ui/input";
+
+<Textarea
+  clearable
+  hint="Add the context reviewers need."
+  label="Project notes"
+  onChangeText={setNotes}
+  placeholder="Scope, constraints, open questions..."
+  value={notes}
 />;
 ```
 
@@ -68,11 +85,11 @@ date field does this).
 ### Sizes
 
 `size` takes the shared `ControlSize` (`sm` / `md` / `lg`); `md` is the default
-and matches the original 40px box. The size scales the box height, padding, the
-input text, and the prefix/suffix/clear icons together. The label, hint, and
-error messages keep a constant scale so dense and roomy fields read the same.
-Buttons share this scale, so a field and its submit button can be sized to
-match.
+and matches the original 40px single-line box. The size scales the box height,
+padding, input text, textarea minimum height, and prefix/suffix/clear icons
+together. The label, hint, and error messages keep a constant scale so dense and
+roomy fields read the same. Buttons share this scale, so a field and its submit
+button can be sized to match.
 
 ## Styling
 
@@ -116,11 +133,11 @@ is open).
 
 ## Theming
 
-Inputs read colors and radii from `SharedUiThemeProvider`: the box uses
-`colors.surface` / `colors.controlBorder` (a soft, translucent-ink
-control-boundary token), the focus ring and active border use `colors.primary`, the
-invalid border and required `*` use `colors.rose`, the placeholder and hint text
-use `colors.placeholder` (≥4.5:1 — 1.4.3, AA), and the box radius uses
+Inputs and textareas read colors and radii from `SharedUiThemeProvider`: the box
+uses `colors.surface` / `colors.controlBorder` (a soft, translucent-ink
+control-boundary token), the focus ring and active border use `colors.primary`,
+the invalid border and required `*` use `colors.rose`, the placeholder and hint
+text use `colors.placeholder` (≥4.5:1 — 1.4.3, AA), and the box radius uses
 `radii.md`.
 
 ## Used by

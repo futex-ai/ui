@@ -5,7 +5,7 @@
 Implemented contract for the dropdown, drag-select, segmented control, radio
 card, switch, spinner, button, data table, modal, toast, avatar, status badge,
 and event-calendar extraction, including the shared control-size scale for
-buttons and inputs.
+buttons, inputs, and textareas.
 
 ## Purpose
 
@@ -14,7 +14,8 @@ for Firna apps. The first consumers are the accounting app and the Juno app.
 The first shared component families are the dropdown components, drag-select
 provider, segmented control patterns, radio-option cards, switch primitive, data
 table, web modal components, transient notification toasts, and the circular
-user avatar currently implemented in the accounting app.
+user avatar currently implemented in the accounting app, plus labelled text
+inputs and textareas for shared forms.
 
 ## Package Boundary
 
@@ -143,14 +144,34 @@ their buttons from a single vocabulary.
 Required behavior:
 
 - Expose `sm`, `md` (default), and `lg` sizes through a shared `ControlSize`
-  type used by the button and the input/field.
+  type used by the button, input/field, and textarea.
 - The button scales its height, horizontal padding, label type scale, and icon
   with the size.
-- The input/field scales its box height, padding, input text, and prefix /
-  suffix / clear icons with the size, while keeping the label, hint, and error
-  messages at a constant scale.
+- The input/field scales its box height, padding, input text, textarea minimum
+  height, and prefix / suffix / clear icons with the size, while keeping the
+  label, hint, and error messages at a constant scale.
 - `md` preserves the established defaults (the 38px button and the 40px input
   box) so existing call sites are unchanged when no size is supplied.
+
+## Input Contract
+
+The input family covers labelled single-line text fields, labelled multiline
+textareas, and a bare framed input box for controls that own their own label or
+popover.
+
+Required behavior:
+
+- Render a visible label, required marker, framed text entry surface, hint text,
+  and validation error without depending on consumer-local form components.
+- Associate labels, hints, and errors with the underlying `TextInput` through
+  generated ids and literal ARIA attributes on web, while preserving native
+  accessibility hints.
+- Treat `Input` as the default single-line field and `Textarea` as the multiline
+  field; `Textarea` must force multiline mode and default to four visible rows.
+- Use the same validation border, focus ring, placeholder color, clear button,
+  icons, and `ControlSize` scaling for single-line and multiline fields.
+- Keep `InputFrame` available as the shared bare box so date fields and other
+  custom controls can reuse the chrome without duplicating it.
 
 ## Avatar Contract
 
