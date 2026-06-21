@@ -95,6 +95,28 @@ export function LongSelectorExample() {
   );
 }
 
+export function ScrollTrackingSelectorExample() {
+  // A trigger near the top of a tall, scrollable page. The web menu renders in
+  // a `position: fixed` portal, so this exercises that the surface re-measures
+  // and follows the trigger as the page scrolls instead of floating away.
+  const [value, setValue] = useState("standard");
+  return (
+    <View style={styles.scrollTrackingPage}>
+      <Text style={styles.placementHintText}>
+        Open the selector, then scroll the page — the menu stays anchored to its
+        trigger instead of detaching.
+      </Text>
+      <DropdownSelector
+        label="Scroll field"
+        onValueChange={setValue}
+        options={selectorOptions}
+        value={value}
+      />
+      <View style={styles.scrollTrackingFiller} />
+    </View>
+  );
+}
+
 export function SelectorWithHeaderFooterExample() {
   const [value, setValue] = useState("long-01");
   return (
@@ -1041,6 +1063,8 @@ const styles = StyleSheet.create({
     color: "#b9c6bd",
     fontSize: 13,
   },
+  scrollTrackingFiller: { flex: 1 },
+  scrollTrackingPage: { gap: 16, minHeight: 1600, padding: 24 },
   stage: {
     backgroundColor: "#eef1ea",
     overflow: "hidden",

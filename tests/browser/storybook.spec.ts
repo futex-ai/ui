@@ -249,6 +249,59 @@ async function backgroundColor(locator: ReturnType<Page["getByRole"]>) {
   );
 }
 
+test("open dropdown surface follows the trigger when the page scrolls", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=dropdown-examples--selector-scroll-tracking",
+  );
+
+  const trigger = page.getByRole("button", { name: "Scroll field, Standard" });
+  await trigger.click();
+
+  const listbox = page.getByRole("listbox");
+  await expect(listbox).toBeVisible();
+
+  // The menu opens a fixed gutter below the trigger.
+  const before = await triggerSurfaceAlignment(trigger, listbox);
+  expect(before.gap).toBeGreaterThanOrEqual(0);
+  expect(before.gap).toBeLessThan(30);
+
+  // Scroll the page while the menu is open. The web surface lives in a
+  // `position: fixed` portal; without re-measuring on scroll it would stay
+  // pinned to its stale viewport coordinates and detach from the moved trigger.
+  await page.evaluate(() => window.scrollTo(0, 320));
+
+  // The surface re-measures on the next frame and keeps the same offset from
+  // the trigger, so the menu stays anchored as the page scrolls.
+  await expect
+    .poll(async () => {
+      const now = await triggerSurfaceAlignment(trigger, listbox);
+      return Math.abs(now.gap - before.gap);
+    })
+    .toBeLessThanOrEqual(2);
+
+  // The trigger genuinely scrolled up, so the gap-stability check above is a
+  // real test of tracking rather than a no-op.
+  const after = await triggerSurfaceAlignment(trigger, listbox);
+  expect(before.triggerTop - after.triggerTop).toBeGreaterThan(100);
+});
+
+async function triggerSurfaceAlignment(
+  trigger: ReturnType<Page["getByRole"]>,
+  surface: ReturnType<Page["getByRole"]>,
+) {
+  const triggerBox = await trigger.boundingBox();
+  const surfaceBox = await surface.boundingBox();
+  if (!triggerBox || !surfaceBox) {
+    return { gap: Number.NaN, triggerTop: Number.NaN };
+  }
+  return {
+    gap: surfaceBox.y - (triggerBox.y + triggerBox.height),
+    triggerTop: triggerBox.y,
+  };
+}
+
 test("searchable dropdown selector filters options and selects by keyboard", async ({
   page,
 }) => {

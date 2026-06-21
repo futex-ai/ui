@@ -17,6 +17,7 @@ import {
   LongPressMenuExample,
   LongSelectorExample,
   PlacementPlaygroundExample,
+  ScrollTrackingSelectorExample,
   SearchableSelectorExample,
   SelectorExample,
   SelectorWithHeaderFooterExample,
@@ -89,6 +90,12 @@ export const SearchableSelector: Story = {
       <SearchableSelectorExample />
     </StorySurface>
   ),
+};
+
+export const SelectorScrollTracking: Story = {
+  name: "Placement · follows the trigger on scroll",
+  parameters: { layout: "fullscreen" },
+  render: () => <ScrollTrackingSelectorExample />,
 };
 
 export const DropdownActionMenu: Story = {
