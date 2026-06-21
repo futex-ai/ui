@@ -18,12 +18,14 @@ export type SharedUiColors = {
   /**
    * Boundary color for interactive controls (inputs, the date trigger, the
    * dropdown selector, secondary buttons, segmented cells, radio cards, the
-   * switch track). Tuned to read as a light, unobtrusive edge on a white
-   * `surface` (#fff) — controls are assumed to sit on the surface, not the
-   * grayer page background. This is intentionally softer than a WCAG 2.1 —
-   * 1.4.11 Non-text Contrast (AA) border (≈2.1:1 on white rather than ≥3:1),
-   * trading a hard, dark outline for a calmer edge. `border`/`border2` remain
-   * the even lighter decorative dividers.
+   * switch track). A translucent tint of the theme's `ink` (≈27% opacity)
+   * rather than a fixed grey: the edge composites with whatever sits behind it,
+   * so it reads as a light, unobtrusive line on the white `surface` (≈1.4:1 on
+   * #fff) and stays proportionate — lifting gently over the grayer page or a
+   * tinted fill instead of floating as a hard grey outline. Kept in sync by
+   * hand with `ink`. Intentionally below the WCAG 2.1 — 1.4.11 Non-text
+   * Contrast (AA) ≥3:1 floor: a calmer, blended edge is the deliberate trade.
+   * `border`/`border2` remain the even lighter decorative dividers.
    */
   controlBorder: string;
   faint: string;
@@ -89,7 +91,7 @@ export const defaultSharedUiTheme: SharedUiTheme = {
     bg2: "#ecede7",
     border: "#e5e8e0",
     border2: "#d3d8cd",
-    controlBorder: "#aeb4ad",
+    controlBorder: "rgba(28, 31, 29, 0.27)", // ink (#1c1f1d) @ 27% — translucent control edge
     faint: "#a8aea7",
     ink: "#1c1f1d",
     ink2: "#3e4540",
@@ -159,7 +161,7 @@ export const junoSharedUiTheme = createSharedUiTheme({
     bg2: "#F5F5F5",
     border: "#EBEBEB",
     border2: "#D8D8D8",
-    controlBorder: "#B1AFB6",
+    controlBorder: "rgba(21, 19, 31, 0.27)", // ink (#15131F) @ 27% — translucent control edge
     faint: "#93919E",
     ink: "#15131F",
     ink2: "#3D3A4E",

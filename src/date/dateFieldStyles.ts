@@ -31,8 +31,8 @@ export function createDateFieldStyles(
     hint: chrome.hint,
     required: chrome.required,
     trigger: {
-      // The native trigger is an interactive control box; its resting edge needs
-      // the ≥3:1 control-boundary token, not decorative `border2` (WCAG 2.1 1.4.11).
+      // The native trigger is an interactive control box; its resting edge uses
+      // the `controlBorder` token (soft translucent-ink edge), not `border2`.
       alignItems: "center",
       backgroundColor: theme.colors.surface,
       borderColor: theme.colors.controlBorder,

@@ -134,10 +134,10 @@ is open).
 ## Theming
 
 Inputs and textareas read colors and radii from `SharedUiThemeProvider`: the box
-uses `colors.surface` / `colors.controlBorder` (a ≥3:1 control-boundary token —
-WCAG 2.1 1.4.11, AA), the focus ring and active border use `colors.primary`, the
-invalid border and required `*` use `colors.rose`, the placeholder and hint text
-use `colors.placeholder` (≥4.5:1 — 1.4.3, AA), and the box radius uses
+uses `colors.surface` / `colors.controlBorder` (a soft, translucent-ink
+control-boundary token), the focus ring and active border use `colors.primary`,
+the invalid border and required `*` use `colors.rose`, the placeholder and hint
+text use `colors.placeholder` (≥4.5:1 — 1.4.3, AA), and the box radius uses
 `radii.md`.
 
 ## Used by
