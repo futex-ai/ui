@@ -13,7 +13,10 @@ import { Platform, StyleSheet, View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
 
 import { DropdownList } from "./DropdownList";
-import type { DropdownListEntry } from "./DropdownList";
+import type {
+  DropdownHighlightVariant,
+  DropdownListEntry,
+} from "./DropdownList";
 import { DropdownPortal } from "./DropdownPortal";
 import type { DropdownPlacementOptions } from "./dropdownGeometry";
 import {
@@ -77,6 +80,8 @@ export type DropdownMenuProps = DropdownPlacementOptions & {
   footer?: ReactNode;
   /** Content pinned above the scrollable row list. */
   header?: ReactNode;
+  /** How the keyboard-focused row is highlighted. Defaults to `"solid"`. */
+  highlightVariant?: DropdownHighlightVariant;
   /** Notified when the keyboard active row changes. */
   onActiveIdChange?: (id: string | null) => void;
   /** Notified whenever the menu wants to open or close. */
@@ -111,6 +116,7 @@ export function DropdownMenu({
   footer,
   gutter,
   header,
+  highlightVariant,
   margin,
   maxHeight,
   minHeight,
@@ -245,6 +251,7 @@ export function DropdownMenu({
             entries={menuEntries}
             footer={footer}
             header={header}
+            highlightVariant={highlightVariant}
             label={accessibilityLabel}
             listId={listId}
             listRole="menu"

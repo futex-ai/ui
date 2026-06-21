@@ -3,6 +3,7 @@ import { useState } from "react";
 import { View } from "react-native";
 
 import { DropdownSelector } from "../index";
+import type { DropdownHighlightVariant } from "../index";
 
 import {
   ActionMenuExample,
@@ -51,6 +52,15 @@ export const SelectorSizes: Story = {
   render: () => (
     <StorySurface>
       <SelectorSizesExample />
+    </StorySurface>
+  ),
+};
+
+export const SelectorHighlightVariants: Story = {
+  name: "Selector highlight variants",
+  render: () => (
+    <StorySurface>
+      <SelectorHighlightVariantsExample />
     </StorySurface>
   ),
 };
@@ -196,6 +206,49 @@ function SelectorValidationExample() {
         value={scheme}
       />
     </View>
+  );
+}
+
+const highlightVariantOptions: {
+  label: string;
+  variant: DropdownHighlightVariant;
+}[] = [
+  { label: "Solid fill (default)", variant: "solid" },
+  { label: "Outline ring", variant: "ring" },
+  { label: "Outline + light fill", variant: "ringFill" },
+  { label: "Leading dot", variant: "dot" },
+];
+
+function SelectorHighlightVariantsExample() {
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      {highlightVariantOptions.map(({ label, variant }) => (
+        <HighlightVariantSelector
+          key={variant}
+          label={label}
+          variant={variant}
+        />
+      ))}
+    </View>
+  );
+}
+
+function HighlightVariantSelector({
+  label,
+  variant,
+}: {
+  label: string;
+  variant: DropdownHighlightVariant;
+}) {
+  const [value, setValue] = useState("standard");
+  return (
+    <DropdownSelector
+      highlightVariant={variant}
+      label={label}
+      onValueChange={setValue}
+      options={sizeOptions}
+      value={value}
+    />
   );
 }
 
