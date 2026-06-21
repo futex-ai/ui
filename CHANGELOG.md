@@ -7,18 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.0](https://github.com/futex-ai/ui/compare/v0.4.0...v0.5.0) (2026-06-21)
 
-
 ### Features
 
-* **badge:** add status badge with tone, variant, and size ([#58](https://github.com/futex-ai/ui/issues/58)) ([f1065fb](https://github.com/futex-ai/ui/commit/f1065fb3d1a15977a1b6983f8ca6cac8f31fe4b2))
-* **dropdown:** add selectable option-highlight variants (solid default) ([#60](https://github.com/futex-ai/ui/issues/60)) ([22904b8](https://github.com/futex-ai/ui/commit/22904b81746b24c3fe69e7b5c8d41358490d18fa))
-* **skeleton:** add loading skeleton primitives and Table/List loading states ([#55](https://github.com/futex-ai/ui/issues/55)) ([ac599d5](https://github.com/futex-ai/ui/commit/ac599d5d500b5df0cbc934bb158ba72ef8d84e5d))
-
+- **badge:** add status badge with tone, variant, and size ([#58](https://github.com/futex-ai/ui/issues/58)) ([f1065fb](https://github.com/futex-ai/ui/commit/f1065fb3d1a15977a1b6983f8ca6cac8f31fe4b2))
+- **dropdown:** add selectable option-highlight variants (solid default) ([#60](https://github.com/futex-ai/ui/issues/60)) ([22904b8](https://github.com/futex-ai/ui/commit/22904b81746b24c3fe69e7b5c8d41358490d18fa))
+- **skeleton:** add loading skeleton primitives and Table/List loading states ([#55](https://github.com/futex-ai/ui/issues/55)) ([ac599d5](https://github.com/futex-ai/ui/commit/ac599d5d500b5df0cbc934bb158ba72ef8d84e5d))
 
 ### Bug Fixes
 
-* **dropdown:** reposition open menu surface on scroll ([#59](https://github.com/futex-ai/ui/issues/59)) ([752519d](https://github.com/futex-ai/ui/commit/752519defee9f95c0b48ca16b795f0436e90997c))
-* **theme:** lighten control border for white backgrounds ([#56](https://github.com/futex-ai/ui/issues/56)) ([7393f2f](https://github.com/futex-ai/ui/commit/7393f2fd03fc99b1139ea7d397c79b4f46ade740))
+- **dropdown:** reposition open menu surface on scroll ([#59](https://github.com/futex-ai/ui/issues/59)) ([752519d](https://github.com/futex-ai/ui/commit/752519defee9f95c0b48ca16b795f0436e90997c))
+- **theme:** lighten control border for white backgrounds ([#56](https://github.com/futex-ai/ui/issues/56)) ([7393f2f](https://github.com/futex-ai/ui/commit/7393f2fd03fc99b1139ea7d397c79b4f46ade740))
 
 ## [0.4.0](https://github.com/futex-ai/ui/compare/v0.3.0...v0.4.0) (2026-06-19)
 
