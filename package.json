@@ -45,6 +45,11 @@
       "react-native": "./dist/avatar/index.js",
       "import": "./dist/node/avatar/index.js"
     },
+    "./badge": {
+      "types": "./dist/node/badge/index.d.ts",
+      "react-native": "./dist/badge/index.js",
+      "import": "./dist/node/badge/index.js"
+    },
     "./button": {
       "types": "./dist/node/button/index.d.ts",
       "react-native": "./dist/button/index.js",

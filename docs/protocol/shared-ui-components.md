@@ -3,9 +3,9 @@
 ## Status
 
 Implemented contract for the dropdown, drag-select, segmented control, radio
-card, switch, spinner, button, data table, modal, toast, avatar, and
-event-calendar extraction, including the shared control-size scale for buttons
-and inputs.
+card, switch, spinner, button, data table, modal, toast, avatar, status badge,
+and event-calendar extraction, including the shared control-size scale for
+buttons and inputs.
 
 ## Purpose
 
@@ -37,6 +37,10 @@ user avatar currently implemented in the accounting app.
 - Shared semantic tokens must also cover surface, text, muted text, borders,
   danger, warning, radii, and fonts so copied components do not depend on a
   consumer theme module.
+- The warning and danger accents must ship a deep variant (`amberDeep`,
+  `roseDeep`, mirroring `primaryDeep`) so a tinted status fill can carry
+  AA-contrast accent text; the lighter `amber` / `rose` accents fall below the
+  4.5:1 text minimum on their own soft tints.
 - Focus rings use the active theme primary color.
 - Consumer theme overrides must be shallow and predictable; unspecified tokens
   fall back to the default shared theme.
@@ -166,6 +170,29 @@ Required behavior:
   requiring consumers to fork the component.
 - Accept an optional initials color override so consumer-provided palette discs
   can keep matching palette-specific foreground colors.
+
+## Badge Contract
+
+The badge family covers the compact, non-interactive status pill that labels a
+status (e.g. `Active`, `Pending`, `Overdue`) with a themed tone.
+
+Required behavior:
+
+- Render a content-hugging, fully-rounded pill around one short label, sized on
+  the shared `ControlSize` scale (`sm` / `md` (default) / `lg`).
+- Carry a semantic status `tone` — `neutral` (default), `primary`, `warning`,
+  and `danger` — in a `soft` (tinted fill, deep accent text) or `solid` (filled
+  accent, white text) variant. There is no `success` or `info` tone, because the
+  shared theme exposes no green or blue accent distinct from the brand
+  `primary`; a status badge maps onto the existing accent families.
+- Keep every tone/variant pair at the WCAG 1.4.3 AA text-contrast minimum
+  (≥4.5:1) on its own fill in both shipped themes, using the deep
+  `amberDeep` / `roseDeep` accents for the warning and danger tones.
+- Keep the visible label text as the status channel so the tone color reinforces
+  rather than solely conveys the meaning, with an optional accessibility-label
+  override for abbreviated or numeric labels.
+- Use shared theme tokens for the fills, the label color, the font, and the pill
+  radius, with no consumer-local theme imports.
 
 ## Date Contract
 
@@ -508,7 +535,8 @@ Required behavior:
   centered web modal, bottom-sheet web modal, toast tones and an action toast,
   default accounting theme, and alternate primary color theme.
 - Storybook navigation must keep each example family in its own top-level
-  folder, currently `Avatar/Examples`, `Button/Examples`, `Calendar/Examples`,
+  folder, currently `Avatar/Examples`, `Badge/Examples`, `Button/Examples`,
+  `Calendar/Examples`,
   `Date/Examples`, `Dropdown/Examples`, `Heatmap/Examples`, `Input/Examples`,
   `Modal/Examples`, `Popover/Examples`, `Radio/Examples`, `Segmented/Examples`,
   `Spinner/Examples`, `Switch/Examples`, `Table/Examples`,

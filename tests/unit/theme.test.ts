@@ -30,6 +30,16 @@ test("juno theme maps the purple primary family", () => {
   assert.equal(junoSharedUiTheme.colors.primarySoft, "#F0EBFA");
 });
 
+test("both themes define the deep amber/rose accents for badge tones", () => {
+  // The deep accents back the warning/danger badge tones; the lighter
+  // amber/rose accents fall below AA on their own soft tints, so these mirror
+  // the existing primaryDeep precedent.
+  assert.equal(defaultSharedUiTheme.colors.amberDeep, "#75531a");
+  assert.equal(defaultSharedUiTheme.colors.roseDeep, "#8f3a30");
+  assert.equal(junoSharedUiTheme.colors.amberDeep, "#80561c");
+  assert.equal(junoSharedUiTheme.colors.roseDeep, "#9a4138");
+});
+
 test("focus ring uses the active shared theme primary color", () => {
   const source = readFileSync(
     new URL("../../src/focusRing.ts", import.meta.url),

@@ -2,6 +2,14 @@ import { createContext, ReactNode, useContext, useMemo } from "react";
 
 export type SharedUiColors = {
   amber: string;
+  /**
+   * Deep amber for the warning tone: the badge's `soft` warning text on
+   * `amberSoft` and the `solid` warning fill under white text. Held to WCAG
+   * 2.1 — 1.4.3 (AA): ≥4.5:1 on `amberSoft` and as a fill under white in both
+   * shipped themes, since the lighter `amber` accent falls below AA on its own
+   * soft tint. Mirrors `primaryDeep`.
+   */
+  amberDeep: string;
   amberSoft: string;
   bg: string;
   bg2: string;
@@ -33,6 +41,14 @@ export type SharedUiColors = {
   primaryDeep: string;
   primarySoft: string;
   rose: string;
+  /**
+   * Deep rose for the danger tone: the badge's `soft` danger text on `roseSoft`
+   * and the `solid` danger fill under white text. Held to WCAG 2.1 — 1.4.3
+   * (AA): ≥4.5:1 on `roseSoft` and as a fill under white in both shipped
+   * themes, since the lighter `rose` accent falls below AA on its own soft
+   * tint. Mirrors `primaryDeep`.
+   */
+  roseDeep: string;
   roseSoft: string;
   soft: string;
   surface: string;
@@ -67,6 +83,7 @@ export type SharedUiThemeOverrides = {
 export const defaultSharedUiTheme: SharedUiTheme = {
   colors: {
     amber: "#946727",
+    amberDeep: "#75531a",
     amberSoft: "#f4ecd8",
     bg: "#f7f7f3",
     bg2: "#ecede7",
@@ -83,6 +100,7 @@ export const defaultSharedUiTheme: SharedUiTheme = {
     primaryDeep: "#2f5945",
     primarySoft: "#e3eee6",
     rose: "#a84f45",
+    roseDeep: "#8f3a30",
     roseSoft: "#f4e3df",
     soft: "#eef2ed",
     surface: "#ffffff",
@@ -135,6 +153,7 @@ export function useSharedUiTheme(): SharedUiTheme {
 export const junoSharedUiTheme = createSharedUiTheme({
   colors: {
     amber: "#C28C3A",
+    amberDeep: "#80561c",
     amberSoft: "#FBF1DC",
     bg: "#FAFAFA",
     bg2: "#F5F5F5",
@@ -151,6 +170,7 @@ export const junoSharedUiTheme = createSharedUiTheme({
     primaryDeep: "#5A47BD",
     primarySoft: "#F0EBFA",
     rose: "#B85555",
+    roseDeep: "#9a4138",
     roseSoft: "#FFF1F1",
     soft: "#F5F5F5",
     surface: "#FFFFFF",

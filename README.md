@@ -7,8 +7,9 @@ surfaces. The first consumers are the accounting app and the Juno app.
 
 - Shared dropdown menu, selector, combobox, drag-select, segmented control,
   radio card, switch, spinner, button, labelled input, data table, modal, toast
-  provider/controller, avatar, calendar heatmap, and full event-calendar
-  (month/week/day/agenda, recurring events, drag-to-create) primitives.
+  provider/controller, avatar, status badge, calendar heatmap, and full
+  event-calendar (month/week/day/agenda, recurring events, drag-to-create)
+  primitives.
 - A shared `sm` / `md` / `lg` size scale (`ControlSize`) across the interactive
   controls — buttons, inputs, dropdown selectors, date fields, segmented
   controls, and switches.
@@ -26,6 +27,8 @@ The package name is `@firna/ui`. Public exports are available from:
 
 - `@firna/ui` for all public components and helpers.
 - `@firna/ui/avatar` for the themed circular initials avatar.
+- `@firna/ui/badge` for the themed status badge pill with tone, variant, and
+  size variants.
 - `@firna/ui/button` for the themed button with tone, size, and block variants.
 - `@firna/ui/calendar` for the full event calendar (month, week, day, and agenda
   views, recurring events, and drag-to-create).
@@ -154,7 +157,8 @@ The package export map intentionally separates runtime targets:
   to delete aliased preview deployments for that PR branch; if Cloudflare
   cleanup cannot complete safely, the comment reports the retained reason.
 - Storybook examples are grouped under one top-level folder per family:
-  `Avatar/Examples`, `Button/Examples`, `Calendar/Examples`, `Date/Examples`,
+  `Avatar/Examples`, `Badge/Examples`, `Button/Examples`, `Calendar/Examples`,
+  `Date/Examples`,
   `Drag Select/Examples`, `Dropdown/Examples`, `Heatmap/Examples`,
   `Input/Examples`, `List/Examples`, `Modal/Examples`, `Popover/Examples`,
   `Radio/Examples`,
@@ -168,6 +172,7 @@ The package export map intentionally separates runtime targets:
 
 - Shared theme boundary: [src/theme.tsx](src/theme.tsx)
 - Avatar component: [src/avatar/README.md](src/avatar/README.md)
+- Badge component: [src/badge/README.md](src/badge/README.md)
 - Shared control-size scale: [src/controlSize.ts](src/controlSize.ts)
 - Button component: [src/button/README.md](src/button/README.md)
 - Calendar component: [src/calendar/README.md](src/calendar/README.md)
