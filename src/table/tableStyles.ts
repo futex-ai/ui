@@ -95,6 +95,7 @@ export function createTableStyles(
       fontSize: sizing.cellFontSize,
       lineHeight: sizing.cellLineHeight,
     },
+    tdBold: { fontWeight: "700" },
     tdCenter: { textAlign: "center" },
     tdLeft: { textAlign: "left" },
     tdMuted: { color: theme.colors.muted },

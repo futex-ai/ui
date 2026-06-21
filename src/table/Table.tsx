@@ -70,6 +70,13 @@ export type TableProps<Row> = {
   rowLabel?: (row: Row, index: number) => string;
   /** The data rows. */
   rows: Row[];
+  /**
+   * Per-row container style, merged over the base row style — use it to shade
+   * grouped rows such as a balance sheet's section-header and subtotal bands.
+   * Returning a falsy value leaves the row at its default. For pressable rows
+   * the interactive states (hover, pressed, focus) still layer on top.
+   */
+  rowStyle?: (row: Row, index: number) => StyleProp<ViewStyle>;
   /** Control density: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
   /** Extra style for the table container (e.g. a card border + radius). */
@@ -96,6 +103,7 @@ export function Table<Row>({
   rowKey,
   rowLabel,
   rows,
+  rowStyle,
   size = "md",
   style,
 }: TableProps<Row>) {
@@ -165,6 +173,7 @@ export function Table<Row>({
           if (onRowPress) {
             return (
               <PressableTableRow
+                customStyle={rowStyle?.(row, index)}
                 disabled={rowDisabled?.(row, index) ?? false}
                 key={rowKey(row, index)}
                 label={rowLabel?.(row, index)}
@@ -179,7 +188,11 @@ export function Table<Row>({
           return (
             <View
               key={rowKey(row, index)}
-              style={[styles.row, last ? styles.rowLast : null]}
+              style={[
+                styles.row,
+                last ? styles.rowLast : null,
+                rowStyle?.(row, index),
+              ]}
             >
               {children}
             </View>
@@ -194,6 +207,8 @@ export function Table<Row>({
 export type TableCellProps = {
   /** Override the text alignment within the cell. */
   align?: TableColumnAlign;
+  /** Render the text bold, e.g. a subtotal / total label. (`numeric` is already bold.) */
+  bold?: boolean;
   children: ReactNode;
   /** Render as secondary / muted text. */
   muted?: boolean;
@@ -212,6 +227,7 @@ export type TableCellProps = {
  */
 export function TableCell({
   align,
+  bold,
   children,
   muted,
   numeric,
@@ -223,6 +239,7 @@ export function TableCell({
     <Text
       style={[
         styles.td,
+        bold ? styles.tdBold : null,
         muted ? styles.tdMuted : null,
         numeric ? styles.tdNumeric : null,
         align === "left" ? styles.tdLeft : null,
@@ -245,6 +262,7 @@ export function TableCell({
  */
 function PressableTableRow({
   children,
+  customStyle,
   disabled,
   label,
   last,
@@ -252,6 +270,7 @@ function PressableTableRow({
   styles,
 }: {
   children: ReactNode;
+  customStyle?: StyleProp<ViewStyle>;
   disabled: boolean;
   label?: string;
   last: boolean;
@@ -272,6 +291,7 @@ function PressableTableRow({
         styles.row,
         styles.rowPressable,
         last ? styles.rowLast : null,
+        customStyle,
         hovered && !disabled ? styles.rowHover : null,
         pressed && !disabled ? styles.rowPressed : null,
         focus.focused ? styles.rowFocused : null,
