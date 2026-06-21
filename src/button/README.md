@@ -97,9 +97,11 @@ top for one-off layout tweaks (e.g. margins).
 - **Focus visible (2.4.7, AA).** A geometry-bearing box-shadow ring is shown on
   focus for every tone (including `primary`, where a border-colour ring would be
   invisible), and the browser's default outline is suppressed.
-- **Non-text contrast (1.4.11, AA).** The secondary button's resting border uses
-  the ≥3:1 `controlBorder` token. The `ghost` tone intentionally has no resting
-  border or fill: its `primaryDeep` label is the affordance.
+- **Resting border.** The secondary button's resting edge uses the
+  `controlBorder` token — a soft, translucent-ink line (intentionally below the
+  1.4.11 ≥3:1 non-text-contrast floor, for a calmer edge). The `ghost` tone
+  intentionally has no resting border or fill: its `primaryDeep` label is the
+  affordance.
 
 ## Theming
 

@@ -38,8 +38,8 @@ test("radio card handles space key activation on web", () => {
 test("radio card visuals are driven by shared theme tokens", () => {
   const stylesSource = readSource("../../src/radio/radioCardStyles.ts");
 
-  // ≥3:1 control boundary token (WCAG 2.1 — 1.4.11) for the card edge and the
-  // empty radio ring; replaces the decorative `border` divider token.
+  // `controlBorder` token (a soft translucent-ink line) for the card edge and
+  // the empty radio ring; replaces the decorative `border` divider token.
   assert.match(stylesSource, /theme\.colors\.controlBorder/);
   assert.match(stylesSource, /theme\.colors\.primarySoft/);
   assert.match(stylesSource, /theme\.colors\.primary/);

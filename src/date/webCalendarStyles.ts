@@ -60,8 +60,8 @@ export function createWebCalendarStyles(theme: SharedUiTheme) {
       marginBottom: 8,
     },
     nav: {
-      // The chevron is an interactive control, so its resting edge needs the
-      // ≥3:1 control-boundary token, not the decorative `border` (WCAG 2.1 1.4.11).
+      // The chevron is an interactive control, so its resting edge uses the
+      // `controlBorder` token (soft translucent-ink edge), not decorative `border`.
       alignItems: "center",
       borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.sm,
@@ -71,8 +71,8 @@ export function createWebCalendarStyles(theme: SharedUiTheme) {
       width: 26,
     },
     pop: {
-      // The popover is an interactive surface; give its edge the ≥3:1 control
-      // boundary token so it is perceivable against the page (WCAG 2.1 1.4.11).
+      // The popover is an interactive surface; give its edge the `controlBorder`
+      // token (soft translucent-ink edge) so it is perceivable against the page.
       backgroundColor: theme.colors.surface,
       borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.xl,

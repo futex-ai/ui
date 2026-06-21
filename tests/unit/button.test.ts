@@ -125,8 +125,8 @@ test("button styles are driven by shared theme tokens", () => {
 
   assert.match(stylesSource, /backgroundColor: theme\.colors\.surface/);
   // The resting edge of the (secondary/default) control uses the dedicated
-  // `controlBorder` token (≥3:1 vs surface and page) rather than the decorative
-  // low-contrast `border2`, per WCAG 2.1 — 1.4.11 Non-text Contrast (AA).
+  // `controlBorder` token (a soft translucent-ink line) rather than the
+  // decorative low-contrast `border2`.
   assert.match(stylesSource, /borderColor: theme\.colors\.controlBorder/);
   assert.match(stylesSource, /borderRadius: theme\.radii\.md/);
   assert.match(

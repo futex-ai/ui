@@ -67,10 +67,10 @@ export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
       alignItems: "center",
       backgroundColor: theme.colors.surface,
       // The secondary button's resting edge is a control boundary, so it uses
-      // the dedicated `controlBorder` token (≥3:1 vs surface and page) rather
-      // than the low-contrast decorative `border2` (WCAG 2.1 — 1.4.11
-      // Non-text Contrast, AA). The ghost tone overrides this to transparent;
-      // its label-as-affordance is intentional (no resting border or fill).
+      // the dedicated `controlBorder` token — a translucent ink tint that reads
+      // as a soft, light edge (≈1.4:1 on white, intentionally below the 1.4.11
+      // ≥3:1 floor) rather than the decorative `border2`. The ghost tone
+      // overrides this to transparent; its label-as-affordance is intentional.
       borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.md,
       borderWidth: 1,
