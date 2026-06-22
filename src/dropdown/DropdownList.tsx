@@ -63,6 +63,14 @@ export type DropdownListEntry =
       leading?: ReactNode;
       onPress?: () => void;
       right?: ReactNode;
+      /**
+       * Trailing text (e.g. an account code) rendered in the right slot — the
+       * string companion to `right`. Library-styled, so it inverts to white on
+       * the solid active fill instead of vanishing as muted grey. Prefer this
+       * over a hand-colored `right` node for trailing text; `right` takes
+       * precedence and suppresses the selection check when both are set.
+       */
+      rightText?: string;
       secondary?: string;
       selected?: boolean;
       tone?: "amber" | "danger" | "default" | "muted";
@@ -306,10 +314,14 @@ function DropdownRow({
         : null;
   // Selected options are marked with a trailing checkmark so the choice reads
   // independently of which row is keyboard-focused. Only for `option` rows
-  // (a `menuitem` has no selected state), and only when the row has no custom
-  // `right` node to preserve (e.g. the combobox supplies its own check).
+  // (a `menuitem` has no selected state), and only when the row's trailing slot
+  // is free — a custom `right` node or a `rightText` string occupies it instead
+  // (e.g. the combobox supplies its own check).
   const selectedCheck =
-    itemRole === "option" && highlight.showCheck && !entry.right ? (
+    itemRole === "option" &&
+    highlight.showCheck &&
+    !entry.right &&
+    !entry.rightText ? (
       <Check color={highlight.checkColor} size={16} strokeWidth={2.5} />
     ) : null;
   // On web, expose the correct ARIA list-item role (`option`/`menuitem`) via
@@ -365,6 +377,12 @@ function DropdownRow({
       </View>
       {entry.right ? (
         <View style={styles.right}>{entry.right}</View>
+      ) : entry.rightText ? (
+        <View style={styles.right}>
+          <Text style={[styles.rightText, highlight.secondaryStyle]}>
+            {entry.rightText}
+          </Text>
+        </View>
       ) : selectedCheck ? (
         <View style={styles.right}>{selectedCheck}</View>
       ) : null}

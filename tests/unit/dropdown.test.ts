@@ -359,6 +359,27 @@ test("dropdown danger row uses a red solid highlight with inverted text", () => 
   assert.match(list, /highlight\.invertText\s*\?\s*null/);
 });
 
+test("dropdown row renders trailing rightText that inverts on the solid fill", () => {
+  const list = readSource("../../src/dropdown/DropdownList.tsx");
+  const stylesSource = readSource("../../src/dropdown/dropdownListStyles.ts");
+  const selector = readSource("../../src/dropdown/DropdownSelector.tsx");
+
+  // The trailing text is library-rendered (like `secondary`) over the base muted
+  // style, so it reuses the active-row inversion instead of staying muted grey
+  // (~1.2:1) on the `primary` fill.
+  assert.match(list, /styles\.rightText, highlight\.secondaryStyle/);
+  assert.match(
+    stylesSource,
+    /rightText: \{[\s\S]*?color: theme\.colors\.muted[\s\S]*?\}/,
+  );
+  // The rightText occupies the trailing slot like a custom `right` node, so it
+  // suppresses the redundant selection check rather than doubling up.
+  assert.match(list, /!entry\.right\s*&&\s*!entry\.rightText/);
+  // The selector forwards an option's `rightText` straight through to the row.
+  assert.match(selector, /rightText\?: string;/);
+  assert.match(selector, /rightText: option\.rightText/);
+});
+
 function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
 }

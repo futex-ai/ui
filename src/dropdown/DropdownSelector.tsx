@@ -31,6 +31,8 @@ export type DropdownSelectorOption = {
   disabled?: boolean;
   label: string;
   right?: ReactNode;
+  /** Trailing text (e.g. an account code); see {@link DropdownListEntry}. */
+  rightText?: string;
   secondary?: string;
   value: string;
 };
@@ -399,6 +401,7 @@ function selectorEntries(
         label: option.label,
         onPress: () => onSelect(option.value),
         right: option.right,
+        rightText: option.rightText,
         secondary: option.secondary,
         selected: option.value === value,
         type: "item" as const,

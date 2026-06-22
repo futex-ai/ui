@@ -104,6 +104,18 @@ export function createDropdownListStyles(theme: SharedUiTheme) {
     itemText: { flex: 1, minWidth: 0 },
     leading: { alignItems: "center", justifyContent: "center" },
     right: { alignItems: "center", justifyContent: "center" },
+    // Trailing text (e.g. an account code). Muted grey at rest like the subtext;
+    // on the solid active fill it picks up the highlight's secondary override
+    // (white) so it stays legible instead of fading to ~1.2:1. Tabular figures
+    // keep numeric codes aligned column-to-column down the list.
+    rightText: {
+      ...baseText,
+      color: theme.colors.muted,
+      fontSize: 13,
+      fontVariant: ["tabular-nums"],
+      fontWeight: "600",
+      lineHeight: 18,
+    },
     scroll: { flexGrow: 0, flexShrink: 1, minHeight: 0 },
     // No horizontal padding so the search field's border spans the full
     // content width and lines up with the option rows' (selected) backgrounds.
