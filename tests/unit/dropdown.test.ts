@@ -311,6 +311,54 @@ test("dropdown selector sizes the field variant from the shared input scale", ()
   assert.match(stylesSource, /paddingHorizontal: sizing\.paddingHorizontal/);
 });
 
+test("dropdown row inverts its subtext on the solid active fill", () => {
+  const list = readSource("../../src/dropdown/DropdownList.tsx");
+  const stylesSource = readSource("../../src/dropdown/dropdownListStyles.ts");
+
+  // The subtext line picks up the highlight's secondary override on top of the
+  // base muted style, so an active solid row's subtext is recolored rather than
+  // left at the muted grey that vanishes against the `primary` fill.
+  assert.match(list, /styles\.secondary, highlight\.secondaryStyle/);
+  // The solid active row maps the subtext to `surface` (white), mirroring the
+  // inverted label, and the highlight shape exposes that override.
+  assert.match(
+    stylesSource,
+    /itemSecondaryOnSolid: \{ color: theme\.colors\.surface \}/,
+  );
+  assert.match(stylesSource, /secondaryStyle: object \| null;/);
+  // Only the solid active branch sets the override; every other state leaves it
+  // null so light fills keep the muted subtext.
+  assert.match(
+    stylesSource,
+    /solidActiveFill\(styles, state\.tone\);\s*labelStyle = styles\.itemLabelOnSolid;\s*secondaryStyle = styles\.itemSecondaryOnSolid;/,
+  );
+});
+
+test("dropdown danger row uses a red solid highlight with inverted text", () => {
+  const list = readSource("../../src/dropdown/DropdownList.tsx");
+  const stylesSource = readSource("../../src/dropdown/dropdownListStyles.ts");
+
+  // The solid active fill is tone-aware: danger/amber rows take their deep
+  // accents so the fill itself carries the tone under white text.
+  assert.match(
+    stylesSource,
+    /itemActiveSolidDanger: \{ backgroundColor: theme\.colors\.roseDeep \}/,
+  );
+  assert.match(
+    stylesSource,
+    /itemActiveSolidWarning: \{ backgroundColor: theme\.colors\.amberDeep \}/,
+  );
+  assert.match(
+    stylesSource,
+    /tone === "danger"[\s\S]*?return styles\.itemActiveSolidDanger/,
+  );
+  // The highlight reports the inverted (solid active) row, and DropdownList uses
+  // that to drop the tone accent so the white label wins instead of red-on-fill.
+  assert.match(stylesSource, /invertText/);
+  assert.match(list, /tone: entry\.tone/);
+  assert.match(list, /highlight\.invertText\s*\?\s*null/);
+});
+
 function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
 }

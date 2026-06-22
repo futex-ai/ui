@@ -66,6 +66,13 @@ export function createDropdownListStyles(theme: SharedUiTheme) {
       boxShadow: `inset 0 0 0 1.5px ${theme.colors.primary}`,
     },
     itemActiveSolid: { backgroundColor: theme.colors.primary },
+    // Tone-colored solid fills for the active danger/amber rows. The deep
+    // accents (`roseDeep`/`amberDeep`) clear AA under white text — matching the
+    // badge's solid tones — so a destructive/cautionary row reads as red/amber
+    // beneath the inverted white label instead of an unreadable accent on the
+    // green `primary` fill.
+    itemActiveSolidDanger: { backgroundColor: theme.colors.roseDeep },
+    itemActiveSolidWarning: { backgroundColor: theme.colors.amberDeep },
     itemDisabled: { opacity: 0.5 },
     itemDot: {
       backgroundColor: theme.colors.primary,
@@ -87,6 +94,12 @@ export function createDropdownListStyles(theme: SharedUiTheme) {
     // White label for the solid-fill active row (`solid` variant); `surface`
     // (white) clears AA text contrast on the `primary` fill.
     itemLabelOnSolid: { color: theme.colors.surface },
+    // Subtext color for the solid-fill active row. The muted grey all but
+    // vanishes on the `primary` fill (~1.2:1), so the secondary line flips to
+    // `surface` (white) like the label. No dimmer tint clears AA on `primary`
+    // (even `primarySoft` is only ~4.2:1), so hierarchy here leans on the
+    // subtext's smaller size/weight rather than a lighter color.
+    itemSecondaryOnSolid: { color: theme.colors.surface },
     itemSelectedFill: { backgroundColor: theme.colors.primarySoft },
     itemText: { flex: 1, minWidth: 0 },
     leading: { alignItems: "center", justifyContent: "center" },
@@ -137,13 +150,23 @@ export type DropdownHighlightVariant = "dot" | "ring" | "ringFill" | "solid";
 
 export const DEFAULT_DROPDOWN_HIGHLIGHT: DropdownHighlightVariant = "solid";
 
+/** Tone accent for a dropdown row, mirroring `DropdownListEntry["tone"]`. */
+export type DropdownRowTone = "amber" | "danger" | "default" | "muted";
+
 export type DropdownRowHighlight = {
   /** Color for the trailing selection checkmark. */
   checkColor: string;
+  /**
+   * Whether the row's text is inverted to white over a solid fill. When set,
+   * the caller suppresses the tone accent so the inverted label/subtext wins.
+   */
+  invertText: boolean;
   /** Label color override for the row, or `null` to keep the base label. */
   labelStyle: object | null;
   /** Background/ring style for the row, or `null` when it stays flat. */
   rowStyle: object | null;
+  /** Subtext color override for the row, or `null` to keep the muted subtext. */
+  secondaryStyle: object | null;
   /** Whether a trailing selection checkmark should be shown. */
   showCheck: boolean;
   /** Whether the `dot` marker itself is shown (focused rows only). */
@@ -161,15 +184,27 @@ export function dropdownRowHighlight(
   styles: DropdownListStyles,
   theme: SharedUiTheme,
   variant: DropdownHighlightVariant,
-  state: { active: boolean; disabled: boolean; selected: boolean },
+  state: {
+    active: boolean;
+    disabled: boolean;
+    selected: boolean;
+    tone?: DropdownRowTone;
+  },
 ): DropdownRowHighlight {
   const isActive = state.active && !state.disabled;
+  // The solid fill paints the active row in a saturated color, so its text is
+  // inverted to white. A danger/amber row swaps the fill for its deep accent
+  // (instead of recoloring the text) so the tone reads as red/amber while
+  // staying legible; the caller suppresses the tone text on these rows.
+  const invertText = isActive && variant === "solid";
   let rowStyle: object | null = null;
   let labelStyle: object | null = null;
+  let secondaryStyle: object | null = null;
   if (isActive) {
     if (variant === "solid") {
-      rowStyle = styles.itemActiveSolid;
+      rowStyle = solidActiveFill(styles, state.tone);
       labelStyle = styles.itemLabelOnSolid;
+      secondaryStyle = styles.itemSecondaryOnSolid;
     } else if (variant === "ring") {
       rowStyle = styles.itemActiveRing;
       labelStyle = styles.itemLabelActive;
@@ -187,14 +222,28 @@ export function dropdownRowHighlight(
     labelStyle = styles.itemLabelActive;
   }
   return {
-    checkColor:
-      variant === "solid" && isActive
-        ? theme.colors.surface
-        : theme.colors.primary,
+    checkColor: invertText ? theme.colors.surface : theme.colors.primary,
+    invertText,
     labelStyle,
     rowStyle,
+    secondaryStyle,
     showCheck: state.selected,
     showDot: variant === "dot" && isActive,
     showDotSlot: variant === "dot",
   };
+}
+
+/**
+ * Solid active-row fill keyed by tone: danger/amber rows take their deep accent
+ * (`roseDeep`/`amberDeep`) so the fill carries the tone under white text, while
+ * every other tone uses the `primary` fill.
+ */
+function solidActiveFill(styles: DropdownListStyles, tone?: DropdownRowTone) {
+  if (tone === "danger") {
+    return styles.itemActiveSolidDanger;
+  }
+  if (tone === "amber") {
+    return styles.itemActiveSolidWarning;
+  }
+  return styles.itemActiveSolid;
 }

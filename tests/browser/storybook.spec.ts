@@ -61,13 +61,18 @@ test("dropdown action menu preselects first row and tracks hover selection", asy
   await expect(settings).toBeVisible();
   await expect(remove).toBeVisible();
 
-  const activeBackground = await backgroundColor(settings);
-  expect(activeBackground).not.toBe("rgba(0, 0, 0, 0)");
-  expect(await backgroundColor(remove)).not.toBe(activeBackground);
+  // Settings (default tone) is preselected, so it carries the primary green
+  // solid fill while the resting danger row stays flat (transparent).
+  const settingsFill = await backgroundColor(settings);
+  expect(settingsFill).not.toBe("rgba(0, 0, 0, 0)");
+  expect(await backgroundColor(remove)).toBe("rgba(0, 0, 0, 0)");
 
   await remove.hover();
-  await expect.poll(() => backgroundColor(remove)).toBe(activeBackground);
-  await expect.poll(() => backgroundColor(settings)).not.toBe(activeBackground);
+  // Hover moves the highlight to the danger row, which fills with the deep-rose
+  // danger color (rgb(143, 58, 48)) rather than the primary green, and Settings
+  // falls back to flat.
+  await expect.poll(() => backgroundColor(remove)).toBe("rgb(143, 58, 48)");
+  await expect.poll(() => backgroundColor(settings)).toBe("rgba(0, 0, 0, 0)");
 
   await page.keyboard.press("Enter");
   await expect(page.getByText("Last action: Remove")).toBeVisible();
@@ -75,8 +80,60 @@ test("dropdown action menu preselects first row and tracks hover selection", asy
 
   await page.getByRole("button", { name: "Open action menu" }).click();
   await expect(settings).toBeVisible();
-  await expect.poll(() => backgroundColor(settings)).toBe(activeBackground);
-  await expect.poll(() => backgroundColor(remove)).not.toBe(activeBackground);
+  await expect.poll(() => backgroundColor(settings)).toBe(settingsFill);
+  await expect.poll(() => backgroundColor(remove)).toBe("rgba(0, 0, 0, 0)");
+});
+
+test("dropdown action menu keeps row subtext legible on the solid highlight", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=dropdown-examples--dropdown-action-menu-subtext",
+  );
+
+  await page.getByRole("button", { name: "Open settings menu" }).click();
+
+  const activeSubtext = page.getByText("Members, roles & billing");
+  const restingSubtext = page.getByText("Permanently delete this workspace");
+  await expect(activeSubtext).toBeVisible();
+  await expect(restingSubtext).toBeVisible();
+
+  // The first row is preselected, so it carries the solid `primary` fill. Its
+  // subtext must invert to the surface white (rgb(255, 255, 255)) — the muted
+  // grey it otherwise inherits all but vanishes against the fill. The resting
+  // row keeps the muted grey (rgb(105, 112, 106)) on the plain surface.
+  await expect.poll(() => textColor(activeSubtext)).toBe("rgb(255, 255, 255)");
+  expect(await textColor(restingSubtext)).toBe("rgb(105, 112, 106)");
+
+  // Moving the highlight to the resting row inverts its subtext and lets the
+  // previously active row's subtext fall back to the muted grey.
+  await page.getByRole("menuitem", { name: /Remove business/ }).hover();
+  await expect.poll(() => textColor(restingSubtext)).toBe("rgb(255, 255, 255)");
+  await expect.poll(() => textColor(activeSubtext)).toBe("rgb(105, 112, 106)");
+});
+
+test("dropdown danger row highlights red with legible text when active", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=dropdown-examples--dropdown-action-menu-subtext",
+  );
+
+  await page.getByRole("button", { name: "Open settings menu" }).click();
+
+  const removeRow = page.getByRole("menuitem", { name: /Remove business/ });
+  const removeLabel = page.getByText("Remove business", { exact: true });
+
+  // Resting: the danger row carries its rose accent label on the plain surface.
+  expect(await textColor(removeLabel)).toBe("rgb(168, 79, 69)");
+
+  await removeRow.hover();
+
+  // Active: the highlight swaps to the deep-rose danger fill (rgb(143, 58, 48))
+  // rather than the primary green, and the label inverts to white so the
+  // destructive action stays legible instead of red-on-green.
+  await expect.poll(() => backgroundColor(removeRow)).toBe("rgb(143, 58, 48)");
+  await expect.poll(() => textColor(removeLabel)).toBe("rgb(255, 255, 255)");
 });
 
 test("dropdown hover menu opens on pointer hover and closes on hover out", async ({
@@ -247,6 +304,10 @@ async function backgroundColor(locator: ReturnType<Page["getByRole"]>) {
   return locator.evaluate(
     (element) => getComputedStyle(element).backgroundColor,
   );
+}
+
+async function textColor(locator: ReturnType<Page["getByText"]>) {
+  return locator.evaluate((element) => getComputedStyle(element).color);
 }
 
 test("open dropdown surface follows the trigger when the page scrolls", async ({

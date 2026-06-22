@@ -292,7 +292,18 @@ function DropdownRow({
     active,
     disabled: Boolean(entry.disabled),
     selected: Boolean(entry.selected),
+    tone: entry.tone,
   });
+  // The solid active fill carries the tone (a red/amber fill) under an inverted
+  // white label, so the tone accent text yields there — the accent would be
+  // unreadable on the fill. Off the inverted row the accent colors the label.
+  const toneLabel = highlight.invertText
+    ? null
+    : danger
+      ? styles.dangerText
+      : amber
+        ? styles.amberText
+        : null;
   // Selected options are marked with a trailing checkmark so the choice reads
   // independently of which row is keyboard-focused. Only for `option` rows
   // (a `menuitem` has no selected state), and only when the row has no custom
@@ -343,18 +354,13 @@ function DropdownRow({
         <View style={styles.leading}>{entry.leading}</View>
       ) : null}
       <View style={styles.itemText}>
-        <Text
-          style={[
-            styles.itemLabel,
-            highlight.labelStyle,
-            danger ? styles.dangerText : null,
-            amber ? styles.amberText : null,
-          ]}
-        >
+        <Text style={[styles.itemLabel, highlight.labelStyle, toneLabel]}>
           {entry.label}
         </Text>
         {entry.secondary ? (
-          <Text style={styles.secondary}>{entry.secondary}</Text>
+          <Text style={[styles.secondary, highlight.secondaryStyle]}>
+            {entry.secondary}
+          </Text>
         ) : null}
       </View>
       {entry.right ? (
