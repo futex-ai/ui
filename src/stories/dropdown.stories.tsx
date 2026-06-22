@@ -9,6 +9,7 @@ import {
   ActionMenuExample,
   ActionMenuSubtextExample,
   BottomEdgeFlipExample,
+  CategorySelectExample,
   ChipMultiSelectExample,
   ContextMenuExample,
   EdgePlacementGridExample,
@@ -81,6 +82,15 @@ export const LongDropdownSelector: Story = {
   render: () => (
     <StorySurface>
       <LongSelectorExample />
+    </StorySurface>
+  ),
+};
+
+export const CategorySelect: Story = {
+  name: "Selector with trailing codes",
+  render: () => (
+    <StorySurface>
+      <CategorySelectExample />
     </StorySurface>
   ),
 };

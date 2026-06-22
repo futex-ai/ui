@@ -83,6 +83,43 @@ export function SelectorExample() {
   );
 }
 
+const categorySections = [
+  {
+    options: [
+      { label: "Sales", rightText: "4000", value: "4000" },
+      { label: "Consultancy income", rightText: "4010", value: "4010" },
+      { label: "Rental income", rightText: "4020", value: "4020" },
+      { label: "Bank interest", rightText: "4030", value: "4030" },
+      { label: "Other income", rightText: "4090", value: "4090" },
+    ],
+    title: "Income",
+  },
+  {
+    options: [
+      { label: "General expenses", rightText: "5000", value: "5000" },
+      { label: "Software and tools", rightText: "5010", value: "5010" },
+      { label: "Office costs", rightText: "5020", value: "5020" },
+    ],
+    title: "Expenses",
+  },
+];
+
+export function CategorySelectExample() {
+  // A category picker whose rows carry a trailing account code as `rightText`.
+  // The selected row is preselected on open and takes the solid `primary` fill —
+  // its code must invert to white rather than fade into the fill as muted grey.
+  const [value, setValue] = useState("4020");
+  return (
+    <DropdownSelector
+      label="Category"
+      onValueChange={setValue}
+      options={[]}
+      sections={categorySections}
+      value={value}
+    />
+  );
+}
+
 export function LongSelectorExample() {
   const [value, setValue] = useState("long-01");
   return (

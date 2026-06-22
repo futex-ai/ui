@@ -136,6 +136,32 @@ test("dropdown danger row highlights red with legible text when active", async (
   await expect.poll(() => textColor(removeLabel)).toBe("rgb(255, 255, 255)");
 });
 
+test("dropdown selector keeps trailing codes legible on the solid highlight", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--category-select");
+
+  await page.getByRole("button", { name: "Category, Rental income" }).click();
+
+  const activeMeta = page.getByText("4020");
+  const restingMeta = page.getByText("4000");
+  await expect(activeMeta).toBeVisible();
+  await expect(restingMeta).toBeVisible();
+
+  // The selected row ("Rental income") is preselected, so it carries the solid
+  // `primary` fill. Its trailing code must invert to surface white
+  // (rgb(255, 255, 255)) — the muted grey it otherwise keeps all but vanishes
+  // against the fill (~1.2:1). A resting row stays muted (rgb(105, 112, 106)).
+  await expect.poll(() => textColor(activeMeta)).toBe("rgb(255, 255, 255)");
+  expect(await textColor(restingMeta)).toBe("rgb(105, 112, 106)");
+
+  // Moving the highlight to a resting row inverts its code and lets the
+  // previously active row's code fall back to the muted grey.
+  await page.getByRole("option", { name: /Sales/ }).hover();
+  await expect.poll(() => textColor(restingMeta)).toBe("rgb(255, 255, 255)");
+  await expect.poll(() => textColor(activeMeta)).toBe("rgb(105, 112, 106)");
+});
+
 test("dropdown hover menu opens on pointer hover and closes on hover out", async ({
   page,
 }) => {
