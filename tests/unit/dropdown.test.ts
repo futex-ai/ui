@@ -311,6 +311,29 @@ test("dropdown selector sizes the field variant from the shared input scale", ()
   assert.match(stylesSource, /paddingHorizontal: sizing\.paddingHorizontal/);
 });
 
+test("dropdown row inverts its subtext on the solid active fill", () => {
+  const list = readSource("../../src/dropdown/DropdownList.tsx");
+  const stylesSource = readSource("../../src/dropdown/dropdownListStyles.ts");
+
+  // The subtext line picks up the highlight's secondary override on top of the
+  // base muted style, so an active solid row's subtext is recolored rather than
+  // left at the muted grey that vanishes against the `primary` fill.
+  assert.match(list, /styles\.secondary, highlight\.secondaryStyle/);
+  // The solid active row maps the subtext to `surface` (white), mirroring the
+  // inverted label, and the highlight shape exposes that override.
+  assert.match(
+    stylesSource,
+    /itemSecondaryOnSolid: \{ color: theme\.colors\.surface \}/,
+  );
+  assert.match(stylesSource, /secondaryStyle: object \| null;/);
+  // Only the solid active branch sets the override; every other state leaves it
+  // null so light fills keep the muted subtext.
+  assert.match(
+    stylesSource,
+    /itemActiveSolid;\s*labelStyle = styles\.itemLabelOnSolid;\s*secondaryStyle = styles\.itemSecondaryOnSolid;/,
+  );
+});
+
 function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
 }

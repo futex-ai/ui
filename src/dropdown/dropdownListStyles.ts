@@ -87,6 +87,12 @@ export function createDropdownListStyles(theme: SharedUiTheme) {
     // White label for the solid-fill active row (`solid` variant); `surface`
     // (white) clears AA text contrast on the `primary` fill.
     itemLabelOnSolid: { color: theme.colors.surface },
+    // Subtext color for the solid-fill active row. The muted grey all but
+    // vanishes on the `primary` fill (~1.2:1), so the secondary line flips to
+    // `surface` (white) like the label. No dimmer tint clears AA on `primary`
+    // (even `primarySoft` is only ~4.2:1), so hierarchy here leans on the
+    // subtext's smaller size/weight rather than a lighter color.
+    itemSecondaryOnSolid: { color: theme.colors.surface },
     itemSelectedFill: { backgroundColor: theme.colors.primarySoft },
     itemText: { flex: 1, minWidth: 0 },
     leading: { alignItems: "center", justifyContent: "center" },
@@ -144,6 +150,8 @@ export type DropdownRowHighlight = {
   labelStyle: object | null;
   /** Background/ring style for the row, or `null` when it stays flat. */
   rowStyle: object | null;
+  /** Subtext color override for the row, or `null` to keep the muted subtext. */
+  secondaryStyle: object | null;
   /** Whether a trailing selection checkmark should be shown. */
   showCheck: boolean;
   /** Whether the `dot` marker itself is shown (focused rows only). */
@@ -166,10 +174,12 @@ export function dropdownRowHighlight(
   const isActive = state.active && !state.disabled;
   let rowStyle: object | null = null;
   let labelStyle: object | null = null;
+  let secondaryStyle: object | null = null;
   if (isActive) {
     if (variant === "solid") {
       rowStyle = styles.itemActiveSolid;
       labelStyle = styles.itemLabelOnSolid;
+      secondaryStyle = styles.itemSecondaryOnSolid;
     } else if (variant === "ring") {
       rowStyle = styles.itemActiveRing;
       labelStyle = styles.itemLabelActive;
@@ -193,6 +203,7 @@ export function dropdownRowHighlight(
         : theme.colors.primary,
     labelStyle,
     rowStyle,
+    secondaryStyle,
     showCheck: state.selected,
     showDot: variant === "dot" && isActive,
     showDotSlot: variant === "dot",

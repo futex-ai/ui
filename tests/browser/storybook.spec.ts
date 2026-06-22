@@ -79,6 +79,34 @@ test("dropdown action menu preselects first row and tracks hover selection", asy
   await expect.poll(() => backgroundColor(remove)).not.toBe(activeBackground);
 });
 
+test("dropdown action menu keeps row subtext legible on the solid highlight", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=dropdown-examples--dropdown-action-menu-subtext",
+  );
+
+  await page.getByRole("button", { name: "Open settings menu" }).click();
+
+  const activeSubtext = page.getByText("Members, roles & billing");
+  const restingSubtext = page.getByText("Permanently delete this workspace");
+  await expect(activeSubtext).toBeVisible();
+  await expect(restingSubtext).toBeVisible();
+
+  // The first row is preselected, so it carries the solid `primary` fill. Its
+  // subtext must invert to the surface white (rgb(255, 255, 255)) — the muted
+  // grey it otherwise inherits all but vanishes against the fill. The resting
+  // row keeps the muted grey (rgb(105, 112, 106)) on the plain surface.
+  await expect.poll(() => textColor(activeSubtext)).toBe("rgb(255, 255, 255)");
+  expect(await textColor(restingSubtext)).toBe("rgb(105, 112, 106)");
+
+  // Moving the highlight to the resting row inverts its subtext and lets the
+  // previously active row's subtext fall back to the muted grey.
+  await page.getByRole("menuitem", { name: /Remove business/ }).hover();
+  await expect.poll(() => textColor(restingSubtext)).toBe("rgb(255, 255, 255)");
+  await expect.poll(() => textColor(activeSubtext)).toBe("rgb(105, 112, 106)");
+});
+
 test("dropdown hover menu opens on pointer hover and closes on hover out", async ({
   page,
 }) => {
@@ -247,6 +275,10 @@ async function backgroundColor(locator: ReturnType<Page["getByRole"]>) {
   return locator.evaluate(
     (element) => getComputedStyle(element).backgroundColor,
   );
+}
+
+async function textColor(locator: ReturnType<Page["getByText"]>) {
+  return locator.evaluate((element) => getComputedStyle(element).color);
 }
 
 test("open dropdown surface follows the trigger when the page scrolls", async ({

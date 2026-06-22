@@ -354,7 +354,9 @@ function DropdownRow({
           {entry.label}
         </Text>
         {entry.secondary ? (
-          <Text style={styles.secondary}>{entry.secondary}</Text>
+          <Text style={[styles.secondary, highlight.secondaryStyle]}>
+            {entry.secondary}
+          </Text>
         ) : null}
       </View>
       {entry.right ? (

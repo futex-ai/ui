@@ -190,6 +190,44 @@ export function ActionMenuExample() {
   );
 }
 
+export function ActionMenuSubtextExample() {
+  const [lastAction, setLastAction] = useState("None");
+  const entries: DropdownListEntry[] = [
+    {
+      id: "settings",
+      label: "Settings",
+      leading: <DropdownIconBox Icon={Settings} />,
+      onPress: () => setLastAction("Settings"),
+      secondary: "Members, roles & billing",
+      type: "item",
+    },
+    {
+      id: "delete",
+      label: "Remove business",
+      leading: <DropdownIconBox Icon={Trash2} tone="danger" />,
+      onPress: () => setLastAction("Remove"),
+      secondary: "Permanently delete this workspace",
+      tone: "danger",
+      type: "item",
+    },
+  ];
+
+  return (
+    <View style={styles.actionMenuExample}>
+      <DropdownMenu entries={entries} minWidth={240}>
+        <Pressable
+          accessibilityLabel="Open settings menu"
+          accessibilityRole="button"
+          style={styles.iconButton}
+        >
+          <MoreHorizontal color="#3e4540" size={18} />
+        </Pressable>
+      </DropdownMenu>
+      <Text style={styles.actionMenuStatus}>Last action: {lastAction}</Text>
+    </View>
+  );
+}
+
 export function HoverMenuExample() {
   const entries: DropdownListEntry[] = [
     { id: "profile", label: "Profile", onPress: () => undefined, type: "item" },
