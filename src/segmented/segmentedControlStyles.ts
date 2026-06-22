@@ -125,6 +125,10 @@ export function createSegmentedControlStyles(
       minWidth: 0,
       paddingHorizontal: sizing.pillPaddingHorizontal,
       paddingVertical: sizing.paddingVertical,
+      // Sit above the sliding thumb (zIndex 0) so the label and focus ring stay
+      // on top while the raised surface glides behind it.
+      position: "relative",
+      zIndex: 1,
     },
     pillActive: {
       backgroundColor: theme.colors.surface,
@@ -132,6 +136,15 @@ export function createSegmentedControlStyles(
       // track, not conveyed by the ~1.13:1 surface/soft fill alone (WCAG 1.4.1).
       borderColor: theme.colors.controlBorder,
       boxShadow: "0 1px 2px rgba(20, 28, 22, 0.06)",
+    },
+    // The sliding selection thumb: an absolutely-positioned surface that carries
+    // the `pillActive` look and is translated to the selected pill's measured
+    // box, so switching tabs glides the raised surface instead of snapping it.
+    pillThumb: {
+      borderRadius: theme.radii.md,
+      borderWidth: 1,
+      position: "absolute",
+      zIndex: 0,
     },
     pillText: {
       ...baseText,
@@ -152,6 +165,8 @@ export function createSegmentedControlStyles(
       flexDirection: "row",
       gap: sizing.trackGap,
       padding: sizing.trackPadding,
+      // The containing block for the absolutely-positioned sliding thumb.
+      position: "relative",
     },
   });
 }

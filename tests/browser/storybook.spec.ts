@@ -539,6 +539,82 @@ test("segmented control toggles report and source choices", async ({
   await expect(page.getByRole("radio", { name: "Combined" })).toBeChecked();
   await page.getByRole("radio", { name: "Consulting" }).click();
   await expect(page.getByRole("radio", { name: "Consulting" })).toBeChecked();
+
+  // The outline (filter-pill) variant keeps its instant per-cell selection — it
+  // draws no sliding thumb.
+  await expect(
+    page
+      .getByRole("radiogroup", { name: "Income source" })
+      .getByTestId("segmentedThumb"),
+  ).toHaveCount(0);
+});
+
+test("segmented pill thumb slides over the selected tab and resizes to it", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=segmented-examples--animated-tabs");
+
+  const group = page.getByRole("radiogroup", {
+    exact: true,
+    name: "Calendar view",
+  });
+  const thumb = group.getByTestId("segmentedThumb");
+  const day = group.getByRole("radio", { name: "Day" });
+  const quarter = group.getByRole("radio", { name: "Quarter" });
+
+  // The thumb is a single raised surface that glides — it carries a real
+  // left/width CSS transition rather than snapping.
+  await expect(thumb).toHaveCSS("transition-property", /left|width/);
+
+  // At rest it overlays the selected pill (sub-pixel: allow a 2px tolerance).
+  const near = (a?: number, b?: number, tol = 2) =>
+    a !== undefined && b !== undefined && Math.abs(a - b) <= tol;
+  const dayBox = await day.boundingBox();
+  await expect
+    .poll(async () => near((await thumb.boundingBox())?.x, dayBox?.x))
+    .toBe(true);
+
+  // Switching tabs moves the thumb to — and resizes it to fit — "Quarter",
+  // which is wider than "Day".
+  await quarter.click();
+  const quarterBox = await quarter.boundingBox();
+  await expect
+    .poll(async () => {
+      const box = await thumb.boundingBox();
+      return near(box?.x, quarterBox?.x) && near(box?.width, quarterBox?.width);
+    })
+    .toBe(true);
+  expect(quarterBox?.width ?? 0).toBeGreaterThan(dayBox?.width ?? 0);
+});
+
+test("segmented animated={false} snaps the thumb without a slide transition", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=segmented-examples--animated-tabs");
+
+  const group = page.getByRole("radiogroup", {
+    exact: true,
+    name: "Static calendar view",
+  });
+  const thumb = group.getByTestId("segmentedThumb");
+
+  // No left/width transition — the thumb is placed, not animated.
+  await expect(thumb).not.toHaveCSS("transition-property", /left|width/);
+
+  // It still tracks selection: one frame after the click it is already over the
+  // newly selected pill (no mid-slide), confirming the thumb snaps.
+  const quarter = group.getByRole("radio", { name: "Quarter" });
+  await quarter.click();
+  const quarterBox = await quarter.boundingBox();
+  await expect
+    .poll(
+      async () => {
+        const box = await thumb.boundingBox();
+        return Math.abs((box?.x ?? 0) - (quarterBox?.x ?? 0)) <= 2;
+      },
+      { timeout: 1000 },
+    )
+    .toBe(true);
 });
 
 test("radio cards expose checked and disabled option states", async ({

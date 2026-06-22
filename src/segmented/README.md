@@ -76,6 +76,28 @@ the same density as the inputs and buttons beside it.
 />
 ```
 
+## Motion
+
+The default `pill` (tab-track) variant animates selection: the raised surface
+slides from the old option to the new one, growing or shrinking to fit each
+label as it travels. The thumb is a single absolutely-positioned surface placed
+over the selected option's measured box, so the slide is one moving element
+rather than a fill that jumps between pills.
+
+Following the `Switch` knob, the glide is a web-only CSS transition (~200ms);
+native renders the move instantly. It honours `prefers-reduced-motion` /
+`isReduceMotionEnabled` — under reduced motion the thumb snaps without sliding
+(AAA 2.3.3). Until the first layout measurement lands, the selected option keeps
+its own fill, so the selection never flickers off on first paint. The `outline`
+filter-pill variant has no thumb and keeps its instant per-cell selection.
+
+Pass `animated={false}` to turn the slide off and snap the thumb into place —
+the thumb still tracks the selected option, it just does not transition:
+
+```tsx
+<SegmentedControl animated={false} onChange={setView} options={...} value={view} />
+```
+
 ## Accessibility
 
 The control follows the WAI-ARIA radio-group pattern:

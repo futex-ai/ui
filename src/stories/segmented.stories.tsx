@@ -22,6 +22,13 @@ const periodOptions = [
   { disabled: true, label: "Yearly", value: "yearly" },
 ];
 
+const viewOptions = [
+  { label: "Day", value: "day" },
+  { label: "Week", value: "week" },
+  { label: "Month", value: "month" },
+  { label: "Quarter", value: "quarter" },
+];
+
 const meta = {
   title: "Segmented/Examples",
 } satisfies Meta;
@@ -35,6 +42,15 @@ export const ProfitLossSegmentedControl: Story = {
   render: () => (
     <StorySurface>
       <ProfitLossSegmentedExample />
+    </StorySurface>
+  ),
+};
+
+export const AnimatedTabs: Story = {
+  name: "Animated tab switch",
+  render: () => (
+    <StorySurface>
+      <AnimatedTabsExample />
     </StorySurface>
   ),
 };
@@ -85,6 +101,39 @@ function StatesExample() {
         onChange={setBasis}
         options={reportOptions}
         value={basis}
+      />
+    </View>
+  );
+}
+
+function AnimatedTabsExample() {
+  const [view, setView] = useState("day");
+  const [equalView, setEqualView] = useState("day");
+  const [staticView, setStaticView] = useState("day");
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <SegmentedControl
+        accessibilityLabel="Calendar view"
+        label="Content — the raised tab glides and resizes to each label"
+        onChange={setView}
+        options={viewOptions}
+        value={view}
+      />
+      <SegmentedControl
+        accessibilityLabel="Calendar view, equal width"
+        label="Equal — the tab glides across same-width segments"
+        onChange={setEqualView}
+        options={viewOptions}
+        sizing="equal"
+        value={equalView}
+      />
+      <SegmentedControl
+        accessibilityLabel="Static calendar view"
+        animated={false}
+        label="animated={false} — the tab snaps into place, no slide"
+        onChange={setStaticView}
+        options={viewOptions}
+        value={staticView}
       />
     </View>
   );
