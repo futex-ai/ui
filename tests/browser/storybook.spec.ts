@@ -1630,6 +1630,29 @@ test("spinner renders an accessible, continuously rotating loading indicator", a
   await expect.poll(readRingTransform).not.toBe(firstTransform);
 });
 
+test("animated border renders a continuously moving SVG trail", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=animatedborder-examples--active-icon");
+
+  // The decorative border overlay is keyed by testID (RNW → data-testid).
+  const border = page.locator('[data-testid="animated-border"]').first();
+  await expect(border).toBeAttached();
+
+  // The trail is real SVG geometry stroked in the theme primary, not a CSS
+  // border — so it follows the rounded-rect corner on native and web alike.
+  await expect(border.locator('rect[stroke="#4f7864"]').first()).toBeAttached();
+
+  // It genuinely animates: the leading rect's stroke-dashoffset keeps advancing,
+  // so a later sample differs from the first. This also guards the regression
+  // where the array `style` that `Animated.createAnimatedComponent` injects
+  // crashed the render with "Indexed property setter is not supported".
+  const readOffset = () =>
+    border.locator("rect").first().getAttribute("stroke-dashoffset");
+  const firstOffset = await readOffset();
+  await expect.poll(readOffset).not.toBe(firstOffset);
+});
+
 test("button reflects press and disabled state", async ({ page }) => {
   await page.goto("/iframe.html?id=button-examples--interactive");
 

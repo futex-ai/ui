@@ -40,6 +40,11 @@
       "react-native": "./dist/index.js",
       "import": "./dist/node/index.js"
     },
+    "./animated-border": {
+      "types": "./dist/node/animated-border/index.d.ts",
+      "react-native": "./dist/animated-border/index.js",
+      "import": "./dist/node/animated-border/index.js"
+    },
     "./avatar": {
       "types": "./dist/node/avatar/index.d.ts",
       "react-native": "./dist/avatar/index.js",
