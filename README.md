@@ -7,9 +7,9 @@ surfaces. The first consumers are the accounting app and the Juno app.
 
 - Shared dropdown menu, selector, combobox, drag-select, segmented control,
   radio card, switch, spinner, button, labelled input/textarea, data table,
-  modal, toast provider/controller, avatar, status badge, calendar heatmap, and
-  full event-calendar (month/week/day/agenda, recurring events,
-  drag-to-create) primitives.
+  modal, toast provider/controller, avatar, status badge, animated comet-trail
+  border, calendar heatmap, and full event-calendar (month/week/day/agenda,
+  recurring events, drag-to-create) primitives.
 - A shared `sm` / `md` / `lg` size scale (`ControlSize`) across the interactive
   controls — buttons, inputs, dropdown selectors, date fields, segmented
   controls, and switches.
@@ -26,6 +26,8 @@ surfaces. The first consumers are the accounting app and the Juno app.
 The package name is `@firna/ui`. Public exports are available from:
 
 - `@firna/ui` for all public components and helpers.
+- `@firna/ui/animated-border` for the animated comet-trail border that traces a
+  rounded-rectangle perimeter to highlight an element.
 - `@firna/ui/avatar` for the themed circular initials avatar.
 - `@firna/ui/badge` for the themed status badge pill with tone, variant, and
   size variants.
@@ -172,6 +174,8 @@ The package export map intentionally separates runtime targets:
 ## Key Code Jumping Points
 
 - Shared theme boundary: [src/theme.tsx](src/theme.tsx)
+- Animated border component:
+  [src/animated-border/README.md](src/animated-border/README.md)
 - Avatar component: [src/avatar/README.md](src/avatar/README.md)
 - Badge component: [src/badge/README.md](src/badge/README.md)
 - Shared control-size scale: [src/controlSize.ts](src/controlSize.ts)

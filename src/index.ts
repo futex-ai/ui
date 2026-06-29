@@ -1,3 +1,4 @@
+export * from "./animated-border";
 export * from "./announcer";
 export * from "./avatar";
 export * from "./badge";

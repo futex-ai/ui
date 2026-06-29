@@ -20,6 +20,7 @@ test("package metadata targets the public Firna npm package", () => {
 test("package exposes every documented public subpath", () => {
   assert.deepEqual(Object.keys(packageJson.exports), [
     ".",
+    "./animated-border",
     "./avatar",
     "./badge",
     "./button",
