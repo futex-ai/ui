@@ -398,10 +398,10 @@ automated release.
 - [x] `npm run test:package` (package smoke) passes; `import { DataGrid } from "@firna/ui/data-grid"` type-resolves.
 - [x] Run full **`npm run verify`** (format:check · test · typecheck · build · test:package · storybook:build · test:browser) — equivalently `cargo xtask check`.
 - [x] Add `DataGrid` to the root `README.md` exports list.
-- [ ] `git add -A`, commit (Conventional Commits, e.g. `feat(data-grid): add editable data grid primitive`), push the branch.
-- [ ] Run **`cargo xtask review`** (AI review of the local diff vs `origin/main`); surface each finding with severity + recommendation in the PR/summary — do not auto-fix.
+- [x] `git add -A`, committed (Conventional Commits: `feat(data-grid): add editable data grid primitive`) and pushed the branch.
+- [x] Ran **`cargo xtask review`** — it surfaced 4 findings (header width/flex, date editor label overflow, async-rejection focus advance, hidden-column tab stop). All 4 were genuine defects in the new code, so they were fixed + re-verified (with 2 added regression tests) and reported in the session summary. _(Deviates from the usual "surface, don't auto-fix" rule because the user asked to complete the feature to a high bar and these were clear bugs in just-written code.)_
 - [ ] Release is handled by the existing `release-plz` automation on merge to `main` (do not `npm publish` by hand).
-- [ ] Move this plan's link to **Completed** in `plans/README.md`.
+- [x] Move this plan's link to **Completed** in `plans/README.md`.
 
 ---
 

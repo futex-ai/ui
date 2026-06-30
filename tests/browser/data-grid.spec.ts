@@ -214,6 +214,34 @@ test("column menu hides + sorts a field, and add column / add row work", async (
   await expect(status).toContainText("add row");
 });
 
+test("a rejected commit keeps the editor open and does not move", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=datagrid-examples--rejecting-edit");
+
+  await page.getByText("Why we moved every workflow").dblclick();
+  const input = page.locator("input").first();
+  await expect(input).toBeVisible();
+  await input.fill("should not save");
+  await page.keyboard.press("Enter");
+
+  // onCellChange rejected → the editor stays open and nothing is committed.
+  await expect(page.locator("input").first()).toBeVisible();
+  await expect(page.getByText("should not save")).toHaveCount(0);
+});
+
+test("hiding the active column keeps a keyboard tab stop", async ({ page }) => {
+  await page.goto("/iframe.html?id=datagrid-examples--full-featured");
+
+  // Select a Status cell (makes it active), then hide the Status column.
+  await page.getByText("Approved").first().click();
+  await page.getByRole("button", { name: "Status field options" }).click();
+  await page.getByRole("menuitem", { name: "Hide field" }).click();
+
+  // The grid must still expose exactly one roving Tab stop.
+  await expect(page.locator('[role="gridcell"][tabindex="0"]')).toHaveCount(1);
+});
+
 test("collapses to a card stack below the breakpoint", async ({ page }) => {
   await page.setViewportSize({ width: 1000, height: 720 });
   await page.goto("/iframe.html?id=datagrid-examples--responsive");

@@ -264,6 +264,22 @@ export const FullFeatured: Story = {
   render: () => <FullFeaturedExample />,
 };
 
+export const RejectingEdit: Story = {
+  name: "Editing (rejected save)",
+  render: () => (
+    <StorySurface>
+      <View style={styles.frame}>
+        <DataGrid
+          accessibilityLabel="Content"
+          columns={contentColumns}
+          onCellChange={() => Promise.reject(new Error("save failed"))}
+          rows={contentRows}
+        />
+      </View>
+    </StorySurface>
+  ),
+};
+
 export const Responsive: Story = {
   name: "Responsive (cards on mobile)",
   parameters: { layout: "fullscreen" },

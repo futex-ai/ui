@@ -150,8 +150,13 @@ export function DataGrid({
           onChange={(next) => {
             void onCellChange?.(ref, next);
           }}
-          onCommit={(next, moveNext) => {
-            void editing.commitEdit(ref, next);
+          onCommit={async (next, moveNext) => {
+            // Only advance/refocus once the commit actually succeeds — a rejected
+            // onCellChange keeps the editor open (see useDataGridEditing).
+            const committed = await editing.commitEdit(ref, next);
+            if (!committed) {
+              return;
+            }
             if (moveNext) {
               controller.moveActiveDown();
             } else if (typeof requestAnimationFrame !== "undefined") {

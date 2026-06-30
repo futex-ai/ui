@@ -11,7 +11,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 
-import { DateField } from "../date";
+import { DateInput } from "../date";
 import {
   ComboboxMultiSelect,
   DropdownMenu,
@@ -180,9 +180,12 @@ function NumberEditor({ value, onCommit, onCancel, theme }: CellEditorProps) {
 
 function DateEditor({ column, value, onCommit, onCancel }: CellEditorProps) {
   // Escape exits the editor; picking a date in the wheel commits + closes.
+  // DateInput is the label-less trigger (DateField would render a field label
+  // that overflows the fixed-height cell).
   useEscapeKey(onCancel);
   return (
-    <DateField
+    <DateInput
+      invalid={false}
       label={column.label}
       onChange={(iso) => onCommit(iso === "" ? null : iso, false)}
       size="sm"

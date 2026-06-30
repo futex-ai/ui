@@ -89,7 +89,14 @@ export function useDataGridController({
         : null,
     [rowIds, columnIds],
   );
-  const tabStop = activeCell ?? firstCell;
+  // Fall back to the first cell when the active cell is no longer visible (its
+  // row filtered out or its column hidden/deleted) so the grid always keeps a
+  // keyboard-reachable Tab stop.
+  const activeVisible =
+    activeCell !== null &&
+    rowIds.includes(activeCell.rowId) &&
+    columnIds.includes(activeCell.columnId);
+  const tabStop = activeVisible ? activeCell : firstCell;
 
   // Roving focus + drag hit-testing: each rendered cell registers its host node
   // (with its ref) so the controller can move DOM focus to the next active cell

@@ -62,6 +62,7 @@ export function DataGridHeader({
             {...(sortProps || {})}
             style={[
               styles.headerCell,
+              columnLayoutStyle(column),
               align === "right" ? { justifyContent: "flex-end" } : null,
             ]}
           >
