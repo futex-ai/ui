@@ -1,0 +1,292 @@
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { useMemo, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
+
+import {
+  DataGrid,
+  dataGridSelectionModel,
+  type DataGridSelection,
+} from "../index";
+import { StorySurface } from "./sharedExamples";
+import {
+  contentColumns,
+  contentRows,
+  makeManyRows,
+} from "./dataGridSampleData";
+
+const meta = {
+  title: "DataGrid/Examples",
+} satisfies Meta;
+
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+export const Basic: Story = {
+  name: "Basic",
+  render: () => (
+    <StorySurface>
+      <View style={styles.frame}>
+        <DataGrid
+          accessibilityLabel="Content"
+          columns={contentColumns}
+          footerText="7 of 128 records · 0 filters · sorted by Created"
+          rows={contentRows}
+        />
+      </View>
+    </StorySurface>
+  ),
+};
+
+const rowIds = contentRows.map((row) => row.id);
+const columnIds = contentColumns.map((column) => column.id);
+
+function SelectionExample() {
+  const [selection, setSelection] = useState<DataGridSelection>({
+    anchor: null,
+    focus: null,
+  });
+  const count = dataGridSelectionModel.selectionCount(
+    selection,
+    rowIds,
+    columnIds,
+  );
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        <Text style={styles.status} testID="selection-status">
+          {count} cell{count === 1 ? "" : "s"} selected
+        </Text>
+        <View style={styles.frame}>
+          <DataGrid
+            accessibilityLabel="Content"
+            columns={contentColumns}
+            onSelectionChange={setSelection}
+            rows={contentRows}
+            selection={selection}
+          />
+        </View>
+        <Text style={styles.hint}>
+          Click a cell, then use the arrow keys to move. Hold Shift to extend
+          the selection; press Ctrl/Cmd+A to select all.
+        </Text>
+      </View>
+    </StorySurface>
+  );
+}
+
+export const Selection: Story = {
+  name: "Selection & keyboard",
+  render: () => <SelectionExample />,
+};
+
+const manyRows = makeManyRows(1000);
+
+export const Virtualized: Story = {
+  name: "Virtualized (1000 rows)",
+  render: () => (
+    <StorySurface>
+      <View style={styles.frame}>
+        <DataGrid
+          accessibilityLabel="Content"
+          columns={contentColumns}
+          footerText="1000 records"
+          maxHeight={380}
+          rows={manyRows}
+        />
+      </View>
+    </StorySurface>
+  ),
+};
+
+function InfiniteScrollExample() {
+  const [total, setTotal] = useState(30);
+  const [loading, setLoading] = useState(false);
+  const rows = useMemo(() => makeManyRows(total), [total]);
+  const loadMore = () => {
+    if (loading || total >= 300) {
+      return;
+    }
+    setLoading(true);
+    setTimeout(() => {
+      setTotal((current) => Math.min(300, current + 30));
+      setLoading(false);
+    }, 250);
+  };
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        <Text style={styles.status} testID="row-count">
+          {rows.length} rows
+        </Text>
+        <View style={styles.frame}>
+          <DataGrid
+            accessibilityLabel="Content"
+            columns={contentColumns}
+            loadingMore={loading}
+            maxHeight={360}
+            onEndReached={loadMore}
+            rows={rows}
+          />
+        </View>
+      </View>
+    </StorySurface>
+  );
+}
+
+export const InfiniteScroll: Story = {
+  name: "Infinite scroll",
+  render: () => <InfiniteScrollExample />,
+};
+
+function EditableExample() {
+  const [rows, setRows] = useState(contentRows);
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        <Text style={styles.hint}>
+          Double-click a cell to edit. Enter commits and moves down; Escape
+          cancels. Numbers reject non-numeric input.
+        </Text>
+        <View style={styles.frame}>
+          <DataGrid
+            accessibilityLabel="Content"
+            columns={contentColumns}
+            onCellChange={(ref, value) =>
+              setRows((current) =>
+                current.map((row) =>
+                  row.id === ref.rowId
+                    ? { ...row, cells: { ...row.cells, [ref.columnId]: value } }
+                    : row,
+                ),
+              )
+            }
+            rows={rows}
+          />
+        </View>
+      </View>
+    </StorySurface>
+  );
+}
+
+export const Editable: Story = {
+  name: "Editable cells",
+  render: () => <EditableExample />,
+};
+
+function FullFeaturedExample() {
+  const [columns, setColumns] = useState(contentColumns);
+  const [rows, setRows] = useState(contentRows);
+  const [lastAction, setLastAction] = useState("none");
+
+  const visibleCount = columns.filter((column) => !column.hidden).length;
+
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        <Text style={styles.status} testID="chrome-status">
+          {visibleCount} fields · {rows.length} rows · last: {lastAction}
+        </Text>
+        <View style={styles.frame}>
+          <DataGrid
+            accessibilityLabel="Content"
+            columns={columns}
+            onAddColumn={(fieldType) => {
+              setColumns((current) => [
+                ...current,
+                {
+                  id: `field-${current.length + 1}`,
+                  label: "New field",
+                  fieldType,
+                  width: 130,
+                },
+              ]);
+              setLastAction(`add ${fieldType}`);
+            }}
+            onAddRow={() => {
+              setRows((current) => [
+                ...current,
+                { id: `new-${current.length + 1}`, cells: {} },
+              ]);
+              setLastAction("add row");
+            }}
+            onCellChange={(ref, value) =>
+              setRows((current) =>
+                current.map((row) =>
+                  row.id === ref.rowId
+                    ? { ...row, cells: { ...row.cells, [ref.columnId]: value } }
+                    : row,
+                ),
+              )
+            }
+            onColumnMenuAction={(columnId, action) => {
+              setLastAction(`${action} ${columnId}`);
+              if (action === "delete") {
+                setColumns((current) =>
+                  current.filter((column) => column.id !== columnId),
+                );
+                return;
+              }
+              setColumns((current) =>
+                current.map((column) =>
+                  column.id === columnId
+                    ? {
+                        ...column,
+                        hidden: action === "hide" ? true : column.hidden,
+                        sortDirection:
+                          action === "sortAsc"
+                            ? "asc"
+                            : action === "sortDesc"
+                              ? "desc"
+                              : action === "clearSort"
+                                ? null
+                                : column.sortDirection,
+                      }
+                    : column,
+                ),
+              );
+            }}
+            rows={rows}
+          />
+        </View>
+        <Text style={styles.hint}>
+          Click a column's caret to sort/hide/delete it, the + header to add a
+          field, and the bottom row to add a record. Double-click the Tags
+          column to edit a multi-select.
+        </Text>
+      </View>
+    </StorySurface>
+  );
+}
+
+export const FullFeatured: Story = {
+  name: "Column menu, add column & row",
+  render: () => <FullFeaturedExample />,
+};
+
+export const Responsive: Story = {
+  name: "Responsive (cards on mobile)",
+  parameters: { layout: "fullscreen" },
+  render: () => (
+    <StorySurface>
+      <View style={styles.responsive}>
+        <DataGrid
+          accessibilityLabel="Content"
+          cardBreakpoint={700}
+          columns={contentColumns}
+          footerText="7 of 128 records"
+          onRowExpand={() => undefined}
+          rows={contentRows}
+        />
+      </View>
+    </StorySurface>
+  ),
+};
+
+const styles = StyleSheet.create({
+  frame: { width: 940 },
+  hint: { color: "#69706a", fontSize: 12 },
+  responsive: { padding: 16, width: "100%" },
+  stack: { gap: 10 },
+  status: { color: "#3e4540", fontSize: 13, fontWeight: "700" },
+});

@@ -7,6 +7,7 @@ surfaces. The first consumers are the accounting app and the Juno app.
 
 - Shared dropdown menu, selector, combobox, drag-select, segmented control,
   radio card, switch, spinner, button, labelled input/textarea, data table,
+  editable data grid (Airtable/Notion-style),
   modal, toast provider/controller, avatar, status badge, animated comet-trail
   border, calendar heatmap, and full event-calendar (month/week/day/agenda,
   recurring events, drag-to-create) primitives.
@@ -34,6 +35,9 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/button` for the themed button with tone, size, and block variants.
 - `@firna/ui/calendar` for the full event calendar (month, week, day, and agenda
   views, recurring events, and drag-to-create).
+- `@firna/ui/data-grid` for the editable Airtable/Notion-style data grid
+  (cell-range selection, keyboard nav, virtualized infinite scroll, typed
+  editable cells, column menus, and a responsive card stack).
 - `@firna/ui/date` for single-date and date-range fields.
 - `@firna/ui/drag-select` for web drag-selection providers, target hooks, and
   geometry helpers.
