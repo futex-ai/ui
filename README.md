@@ -8,8 +8,9 @@ surfaces. The first consumers are the accounting app and the Juno app.
 - Shared dropdown menu, selector, combobox, drag-select, segmented control,
   radio card, switch, spinner, button, labelled input/textarea, data table,
   modal, toast provider/controller, avatar, status badge, animated comet-trail
-  border, calendar heatmap, and full event-calendar (month/week/day/agenda,
-  recurring events, drag-to-create) primitives.
+  border, calendar heatmap, full event-calendar (month/week/day/agenda,
+  recurring events, drag-to-create), and branching workflow-builder step-graph
+  primitives.
 - A shared `sm` / `md` / `lg` size scale (`ControlSize`) across the interactive
   controls — buttons, inputs, dropdown selectors, date fields, segmented
   controls, and switches.
@@ -56,6 +57,9 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/toast` for the toast provider, the `useToast` hook, the
   `toastController` method API, and transient notification toasts including
   card and solid variants with optional custom leading icons.
+- `@firna/ui/workflow` for the branching workflow builder — a step-graph canvas
+  (color-coded nodes, tinted edge labels, forks, legend, add-step) for
+  constructing automation workflows.
 
 ## Installation
 
@@ -197,6 +201,7 @@ The package export map intentionally separates runtime targets:
 - Switch component: [src/switch/README.md](src/switch/README.md)
 - Table component: [src/table/README.md](src/table/README.md)
 - Toast component: [src/toast/README.md](src/toast/README.md)
+- Workflow builder component: [src/workflow/README.md](src/workflow/README.md)
 - Browser tests: [tests/browser/storybook.spec.ts](tests/browser/storybook.spec.ts)
 - Repository automation: [xtask/README.md](xtask/README.md)
 - Shared component protocol:

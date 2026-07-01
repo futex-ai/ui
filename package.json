@@ -154,6 +154,11 @@
       "types": "./dist/node/typography/index.d.ts",
       "react-native": "./dist/typography/index.js",
       "import": "./dist/node/typography/index.js"
+    },
+    "./workflow": {
+      "types": "./dist/node/workflow/index.d.ts",
+      "react-native": "./dist/workflow/index.js",
+      "import": "./dist/node/workflow/index.js"
     }
   },
   "scripts": {

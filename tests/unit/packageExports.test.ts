@@ -43,6 +43,7 @@ test("package exposes every documented public subpath", () => {
     "./theme",
     "./toast",
     "./typography",
+    "./workflow",
   ]);
 
   for (const [subpath, exportConfig] of Object.entries(packageJson.exports)) {
