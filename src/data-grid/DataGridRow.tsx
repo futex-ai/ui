@@ -1,12 +1,13 @@
 /** One grid row: the left gutter (row number + expand) followed by typed cells. */
 import { Maximize2 } from "lucide-react-native";
 import { memo } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "react-native";
 
 import { hideWebOutlineView, type PressableHoverState } from "../focusRing";
 import type { SharedUiTheme } from "../theme";
 
 import { DataGridCell } from "./DataGridCell";
+import { isInteractiveDragTarget } from "./dataGridDragDom";
 import { gridcellRole, stickyGutterStyle } from "./dataGridLayout";
 import { cellRefEquals, rectContains } from "./dataGridSelectionModel";
 import type { DataGridRangeRect } from "./dataGridSelectionModel";
@@ -42,6 +43,13 @@ export type DataGridRowProps = {
   onRowExpand?: (rowId: string) => void;
   /** Trailing empty cell width matching the add-column (+) header (0 = none). */
   trailingWidth: number;
+  /** Start a whole-row drag selection from the gutter (web). */
+  onBeginRowDrag: (rowId: string, event: unknown) => void;
+  /** Register the gutter node for drag hit-testing. */
+  registerGutterNode: (
+    rowId: string,
+    node: { contains?: (n: Node) => boolean } | null,
+  ) => void;
 };
 
 function DataGridRowComponent({
@@ -65,11 +73,38 @@ function DataGridRowComponent({
   registerNode,
   onRowExpand,
   trailingWidth,
+  onBeginRowDrag,
+  registerGutterNode,
 }: DataGridRowProps) {
+  const gutterWebProps =
+    Platform.OS === "web"
+      ? ({
+          onPointerDown: (event: unknown) => {
+            if (!isInteractiveDragTarget(event)) {
+              onBeginRowDrag(row.id, event);
+            }
+          },
+        } as Record<string, unknown>)
+      : {};
   return (
     <View role="row" style={styles.bodyRow}>
       {showGutter ? (
-        <View role="rowheader" style={[styles.gutterCell, stickyGutterStyle]}>
+        <View
+          ref={
+            Platform.OS === "web"
+              ? (node) =>
+                  registerGutterNode(
+                    row.id,
+                    node as unknown as {
+                      contains?: (n: Node) => boolean;
+                    } | null,
+                  )
+              : undefined
+          }
+          role="rowheader"
+          {...gutterWebProps}
+          style={[styles.gutterCell, stickyGutterStyle]}
+        >
           <Text style={styles.gutterNumber}>{rowIndex + 1}</Text>
           {onRowExpand ? (
             <Pressable

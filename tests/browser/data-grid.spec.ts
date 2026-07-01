@@ -81,13 +81,77 @@ test("pointer drag paints a rectangular cell range", async ({ page }) => {
   await page.mouse.move(end.x + end.width / 2, end.y + end.height / 2, {
     steps: 10,
   });
-  // The range updates live during the drag (3 rows × 3 columns = 9 cells).
+  // The range updates live during the drag (3 rows × 3 columns = 9 cells) and a
+  // marquee box is drawn over the selection.
   await expect(status).toHaveText("9 cells selected");
   await expect(
     page.locator('[role="gridcell"][aria-selected="true"]'),
   ).toHaveCount(9);
+  await expect(page.getByTestId("data-grid-marquee")).toBeVisible();
   await page.mouse.up();
   await expect(status).toHaveText("9 cells selected");
+  await expect(page.getByTestId("data-grid-marquee")).toHaveCount(0);
+});
+
+test("gutter drag selects whole rows (no marquee)", async ({ page }) => {
+  await page.goto("/iframe.html?id=datagrid-examples--selection");
+  const status = page.getByTestId("selection-status");
+
+  const g2 = await page.getByText("2", { exact: true }).first().boundingBox();
+  const g4 = await page.getByText("4", { exact: true }).first().boundingBox();
+  if (!g2 || !g4) {
+    throw new Error("gutter cells not found");
+  }
+  await page.mouse.move(g2.x + g2.width / 2, g2.y + g2.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(g4.x + g4.width / 2, g4.y + g4.height / 2, {
+    steps: 6,
+  });
+  // Rows 2–4 × 7 columns = 21 cells, and no marquee box for a row drag.
+  await expect(status).toHaveText("21 cells selected");
+  await expect(page.getByTestId("data-grid-marquee")).toHaveCount(0);
+  await page.mouse.up();
+});
+
+test("header drag selects whole columns", async ({ page }) => {
+  await page.goto("/iframe.html?id=datagrid-examples--full-featured");
+
+  const status = page.getByRole("columnheader").filter({ hasText: "Status" });
+  const channel = page.getByRole("columnheader").filter({ hasText: "Channel" });
+  const hs = await status.boundingBox();
+  const hc = await channel.boundingBox();
+  if (!hs || !hc) {
+    throw new Error("headers not found");
+  }
+  await page.mouse.move(hs.x + 30, hs.y + hs.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(hc.x + 30, hc.y + hc.height / 2, { steps: 6 });
+  // Status..Channel across all 7 rows = 21 cells.
+  await expect(
+    page.locator('[role="gridcell"][aria-selected="true"]'),
+  ).toHaveCount(21);
+  await page.mouse.up();
+});
+
+test("dragging past the bottom edge auto-scrolls and extends", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=datagrid-examples--virtualized");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  const first = await page.getByText("Record 1:").first().boundingBox();
+  const grid = await page.getByRole("grid").boundingBox();
+  if (!first || !grid) {
+    throw new Error("grid not found");
+  }
+  await page.mouse.move(first.x + 20, first.y + first.height / 2);
+  await page.mouse.down();
+  // Hold in the bottom edge zone; the body auto-scrolls far rows into view.
+  await page.mouse.move(first.x + 20, grid.y + grid.height - 8, { steps: 4 });
+  await expect(page.getByText(/Record 2[0-9]:/).first()).toBeVisible({
+    timeout: 5000,
+  });
+  await page.mouse.up();
 });
 
 async function scrollGridToBottom(page: import("@playwright/test").Page) {

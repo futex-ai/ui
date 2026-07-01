@@ -23,6 +23,7 @@ import { useSharedUiTheme } from "../theme";
 
 import { DataGridAddRow } from "./DataGridAddRow";
 import { DataGridCardStack } from "./DataGridCardStack";
+import { DataGridMarquee } from "./DataGridMarquee";
 import { DataGridBody } from "./DataGridBody";
 import { DataGridAddColumn, DataGridColumnMenu } from "./DataGridColumnMenu";
 import { resolveColumnWidths } from "./dataGridColumnWidths";
@@ -202,7 +203,14 @@ export function DataGrid({
   }
 
   return (
-    <View onLayout={onGridLayout} style={styles.grid} testID={testID}>
+    <View
+      onLayout={onGridLayout}
+      ref={(node) =>
+        controller.registerGridNode(node as unknown as Element | null)
+      }
+      style={styles.grid}
+      testID={testID}
+    >
       <ScrollView
         horizontal
         // Fixed content width overflows the viewport → horizontal scroll; the
@@ -247,6 +255,8 @@ export function DataGrid({
                   )
                 : undefined
             }
+            onBeginColumnDrag={controller.beginColumnDrag}
+            registerHeaderNode={controller.registerHeaderNode}
             showGutter={showGutter}
             styles={styles}
             theme={theme}
@@ -280,6 +290,7 @@ export function DataGrid({
           />
         </View>
       </ScrollView>
+      <DataGridMarquee box={controller.dragBox} styles={styles} />
       {footerText ? (
         <DataGridFooter footerText={footerText} styles={styles} />
       ) : null}

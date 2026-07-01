@@ -1,10 +1,11 @@
 /** The grid's sticky header row: typed column headers, sort state, and chrome. */
 import { type ReactNode } from "react";
-import { Text, View } from "react-native";
+import { Platform, Text, View } from "react-native";
 
 import type { SharedUiTheme } from "../theme";
 
 import { fieldTypeIcon } from "./dataGridCellContent";
+import { isInteractiveDragTarget } from "./dataGridDragDom";
 import {
   columnLayoutStyle,
   resolveColumnAlign,
@@ -23,6 +24,13 @@ export type DataGridHeaderProps = {
   renderColumnMenuButton?: (column: DataGridColumn) => ReactNode;
   /** Trailing add-column (+) header cell. */
   renderAddColumn?: () => ReactNode;
+  /** Start a whole-column drag selection from a header (web). */
+  onBeginColumnDrag: (columnId: string, event: unknown) => void;
+  /** Register a header node for drag hit-testing. */
+  registerHeaderNode: (
+    columnId: string,
+    node: { contains?: (n: Node) => boolean } | null,
+  ) => void;
 };
 
 /** A small ↑/↓ glyph for a sorted column. */
@@ -44,7 +52,10 @@ export function DataGridHeader({
   theme,
   renderColumnMenuButton,
   renderAddColumn,
+  onBeginColumnDrag,
+  registerHeaderNode,
 }: DataGridHeaderProps) {
+  const web = Platform.OS === "web";
   return (
     <View role="row" style={styles.headerRow}>
       {showGutter ? (
@@ -55,17 +66,40 @@ export function DataGridHeader({
         const align = resolveColumnAlign(column);
         const glyph = sortGlyph(column.sortDirection);
         // RN's prop types omit `aria-sort`; forward it as a literal web attribute.
-        const sortProps =
-          column.sortDirection &&
-          ({
-            "aria-sort":
-              column.sortDirection === "asc" ? "ascending" : "descending",
-          } as Record<string, unknown>);
+        // `onPointerDown` starts a whole-column drag (unless on the caret menu).
+        const webProps = web
+          ? ({
+              ...(column.sortDirection
+                ? {
+                    "aria-sort":
+                      column.sortDirection === "asc"
+                        ? "ascending"
+                        : "descending",
+                  }
+                : {}),
+              onPointerDown: (event: unknown) => {
+                if (!isInteractiveDragTarget(event)) {
+                  onBeginColumnDrag(column.id, event);
+                }
+              },
+            } as Record<string, unknown>)
+          : {};
         return (
           <View
             key={column.id}
+            ref={
+              web
+                ? (node) =>
+                    registerHeaderNode(
+                      column.id,
+                      node as unknown as {
+                        contains?: (n: Node) => boolean;
+                      } | null,
+                    )
+                : undefined
+            }
             role="columnheader"
-            {...(sortProps || {})}
+            {...webProps}
             style={[
               styles.headerCell,
               columnLayoutStyle(column),

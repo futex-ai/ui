@@ -106,9 +106,12 @@ The grid is one Tab stop (roving tabindex). With a cell focused:
 | `Enter`             | Edit the active cell                                    |
 | `Escape`            | Cancel the current edit                                 |
 
-On web, a pointer drag paints a rectangle (the selected cells are the marquee).
-Pass `selection` + `onSelectionChange` to control it, or let the grid manage it
-internally. Selection and navigation are announced to a polite live region.
+On web, a pointer drag selects: from a **cell** it paints a rectangle with a
+marquee box; from the **row-number gutter** it selects whole rows; from a
+**column header** it selects whole columns. Dragging into a top/bottom/side edge
+auto-scrolls the body and keeps extending. Pass `selection` + `onSelectionChange`
+to control the selection, or let the grid manage it internally. Selection and
+navigation are announced to a polite live region.
 Copy (`Ctrl/Cmd-C`) serializes the selection to TSV; paste (`Ctrl/Cmd-V`) fills
 cells from the active cell, coercing each value to its column's field type
 (numbers parsed, select options matched by label or id).

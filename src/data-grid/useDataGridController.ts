@@ -11,7 +11,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 
 import { announceGrid } from "./dataGridAnnounce";
 
-import type { DataGridCellNode } from "./dataGridDragDom";
+import type { DataGridCellNode, DataGridNodeMap } from "./dataGridDragDom";
 import {
   cellKey,
   cellRefEquals,
@@ -19,7 +19,7 @@ import {
   selectionCount,
   singleCell,
 } from "./dataGridSelectionModel";
-import { useDataGridDrag } from "./useDataGridDrag";
+import { useDataGridDrag, type DataGridDragBox } from "./useDataGridDrag";
 import { useDataGridKeyboard } from "./useDataGridKeyboard";
 import type {
   DataGridCellRef,
@@ -108,6 +108,11 @@ export function useDataGridController({
   // (with its ref) so the controller can move DOM focus to the next active cell
   // and resolve the cell under a drag pointer via `elementFromPoint`.
   const cellNodesRef = useRef(new Map<string, DataGridCellNode>());
+  const gutterNodesRef = useRef<DataGridNodeMap>(new Map());
+  const headerNodesRef = useRef<DataGridNodeMap>(new Map());
+  const gridNodeRef = useRef<Element | null>(null);
+  const [dragBox, setDragBox] = useState<DataGridDragBox | null>(null);
+
   const registerCellNode = useCallback(
     (ref: DataGridCellRef, node: { focus?: () => void } | null) => {
       const key = cellKey(ref);
@@ -119,6 +124,29 @@ export function useDataGridController({
     },
     [],
   );
+  const registerGutterNode = useCallback(
+    (rowId: string, node: { contains?: (n: Node) => boolean } | null) => {
+      if (node) {
+        gutterNodesRef.current.set(rowId, node);
+      } else {
+        gutterNodesRef.current.delete(rowId);
+      }
+    },
+    [],
+  );
+  const registerHeaderNode = useCallback(
+    (columnId: string, node: { contains?: (n: Node) => boolean } | null) => {
+      if (node) {
+        headerNodesRef.current.set(columnId, node);
+      } else {
+        headerNodesRef.current.delete(columnId);
+      }
+    },
+    [],
+  );
+  const registerGridNode = useCallback((node: Element | null) => {
+    gridNodeRef.current = node;
+  }, []);
   const focusCell = useCallback((ref: DataGridCellRef) => {
     cellNodesRef.current.get(cellKey(ref))?.node?.focus?.();
   }, []);
@@ -159,13 +187,17 @@ export function useDataGridController({
     [announceActive, columnIds, rowIds, selection.anchor, setSelection],
   );
 
-  const beginDrag = useDataGridDrag({
+  const { beginCellDrag, beginRowDrag, beginColumnDrag } = useDataGridDrag({
     cellNodesRef,
+    gutterNodesRef,
+    headerNodesRef,
+    gridNodeRef,
     setSelection,
     selectionAnchor: selection.anchor,
     rowIds,
     columnIds,
     announceActive,
+    onDragBox: setDragBox,
   });
 
   const refAt = useCallback(
@@ -203,13 +235,19 @@ export function useDataGridController({
     activeCell,
     tabStop,
     rect,
+    dragBox,
     activate,
-    beginDrag,
+    beginDrag: beginCellDrag,
+    beginRowDrag,
+    beginColumnDrag,
     moveActiveDown,
     requestEdit,
     setSelection,
     handleCellKeyDown,
     registerCellNode,
+    registerGutterNode,
+    registerHeaderNode,
+    registerGridNode,
     focusCell,
     isActiveCell: (ref: DataGridCellRef) => cellRefEquals(ref, activeCell),
     isTabStop: (ref: DataGridCellRef) => cellRefEquals(ref, tabStop),

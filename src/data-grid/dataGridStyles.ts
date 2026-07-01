@@ -190,6 +190,14 @@ export function createDataGridStyles(
       justifyContent: "center",
     },
     loadingText: { ...baseText, color: theme.colors.muted, fontSize: 12 },
+    // The drag-selection marquee: a primary-bordered box over the selected cells.
+    marquee: {
+      borderColor: theme.colors.primary,
+      borderRadius: 3,
+      borderWidth: 2,
+      position: "absolute",
+      zIndex: 5,
+    },
     footer: {
       borderTopColor: theme.colors.border,
       borderTopWidth: 1,

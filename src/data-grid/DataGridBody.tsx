@@ -83,9 +83,11 @@ export function DataGridBody({
       onActivate={controller.activate}
       onBeginDrag={controller.beginDrag}
       onBeginEdit={controller.requestEdit}
+      onBeginRowDrag={controller.beginRowDrag}
       onKeyDown={controller.handleCellKeyDown}
       onRowExpand={onRowExpand}
       rect={controller.rect}
+      registerGutterNode={controller.registerGutterNode}
       registerNode={controller.registerCellNode}
       renderEditor={renderEditor}
       row={row}
