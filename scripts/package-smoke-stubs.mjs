@@ -148,6 +148,7 @@ export default Svg;
   });
   await writeStubPackage(consumerRoot, "lucide-react-native", {
     "index.js": `const Icon = () => null;
+export const Brain = Icon;
 export const CalendarDays = Icon;
 export const Check = Icon;
 export const ChevronDown = Icon;
@@ -156,12 +157,17 @@ export const ChevronRight = Icon;
 export const CircleAlert = Icon;
 export const CircleCheck = Icon;
 export const CircleX = Icon;
+export const GitBranch = Icon;
+export const Inbox = Icon;
 export const Info = Icon;
+export const LayoutGrid = Icon;
 export const LoaderCircle = Icon;
 export const Plus = Icon;
 export const Search = Icon;
+export const SquareTerminal = Icon;
 export const TriangleAlert = Icon;
 export const X = Icon;
+export const Zap = Icon;
 `,
     "package.json": JSON.stringify({
       name: "lucide-react-native",
