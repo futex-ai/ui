@@ -155,6 +155,7 @@ export default Svg;
     "index.js": `const Icon = () => null;
 export const ArrowDownAZ = Icon;
 export const ArrowUpAZ = Icon;
+export const Brain = Icon;
 export const Calendar = Icon;
 export const CalendarDays = Icon;
 export const Check = Icon;
@@ -165,18 +166,23 @@ export const CircleAlert = Icon;
 export const CircleCheck = Icon;
 export const CircleX = Icon;
 export const EyeOff = Icon;
+export const GitBranch = Icon;
 export const Hash = Icon;
+export const Inbox = Icon;
 export const Info = Icon;
+export const LayoutGrid = Icon;
 export const List = Icon;
 export const LoaderCircle = Icon;
 export const Maximize2 = Icon;
 export const Plus = Icon;
 export const Search = Icon;
+export const SquareTerminal = Icon;
 export const Tags = Icon;
 export const TriangleAlert = Icon;
 export const Trash2 = Icon;
 export const Type = Icon;
 export const X = Icon;
+export const Zap = Icon;
 `,
     "package.json": JSON.stringify({
       name: "lucide-react-native",

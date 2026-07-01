@@ -3,9 +3,9 @@
 ## Status
 
 Implemented contract for the dropdown, drag-select, segmented control, radio
-card, switch, spinner, button, data table, modal, toast, avatar, status badge,
-and event-calendar extraction, including the shared control-size scale for
-buttons, inputs, and textareas.
+card, switch, spinner, button, data table, workflow builder, modal, toast,
+avatar, status badge, and event-calendar extraction, including the shared
+control-size scale for buttons, inputs, and textareas.
 
 ## Purpose
 
@@ -13,9 +13,9 @@ This repository provides shared React Native and React Native Web UI primitives
 for Firna apps. The first consumers are the accounting app and the Juno app.
 The first shared component families are the dropdown components, drag-select
 provider, segmented control patterns, radio-option cards, switch primitive, data
-table, web modal components, transient notification toasts, and the circular
-user avatar currently implemented in the accounting app, plus labelled text
-inputs and textareas for shared forms.
+table, workflow-builder step graph, web modal components, transient notification
+toasts, and the circular user avatar currently implemented in the accounting
+app, plus labelled text inputs and textareas for shared forms.
 
 ## Package Boundary
 
@@ -323,6 +323,49 @@ Required behavior:
   text, the hover and pressed fills, disabled opacity, and the focus ring, and
   size with the shared control-size scale.
 
+## Kanban Contract
+
+The kanban family covers the horizontally-scrolling status board the table
+mockups model as `.tb-kanban`: the same records the table shows as rows, grouped
+by a single-select field into one fixed-width column per status.
+
+Required behavior:
+
+- Group a flat cards array into columns by a `cardColumnId` accessor (the table
+  rows / list items pattern), with a stable card key and a per-card render
+  callback, so a card can be the standard card layout or any node; a card whose
+  column id matches no column is omitted.
+- Render each column as a header — a status chip whose color comes from a
+  semantic tone or a literal color override, a card count, and an optional add
+  button — above a vertical stack of cards, with an optional placeholder for an
+  empty column.
+- Provide a convenience card layout: a wrapping title, an optional wrapping row
+  of chips, and an optional footer built from avatar / metadata / date slots or
+  a custom footer node.
+- Provide a chip primitive distinct from the badge pill: a small (`radii.sm`)
+  rounded tag whose fill resolves from a tone, a literal color, or a fill-less
+  plain variant for inline icon + count metadata, with a decorative leading icon
+  hidden from assistive technology.
+- Make cards optionally pressable: a pressable card exposes `button` semantics
+  with a disabled state, owns the shared hover, inset focus ring, and pressed
+  treatment, hides the browser's default outline, and is keyboard operable; a
+  board without a card press handler renders plain static cards.
+- Label the board and each column as accessibility groups, fold the card count
+  into the column's group name (hiding the redundant visible count from
+  assistive technology), and announce the board busy while showing skeleton
+  placeholder cards during loading.
+- Make cards draggable between and within columns via `onCardMove`, by pointer
+  and by keyboard (Space grabs, arrows move, Space/Enter drops, Escape cancels,
+  each step announced). The dragged card is lifted out of its column — a
+  translucent clone follows the pointer (the keyboard leaves the card dimmed in
+  place) — and a translucent preview of the card marks the target slot. The board
+  stays controlled: the drag reports a move (`{ cardKey, fromColumnId, fromIndex,
+toColumnId, toIndex }`, `toIndex` in dragged-removed semantics) for the consumer
+  to apply; it never mutates the cards. Dragging is a web gesture, so the native
+  drag is an inert no-op.
+- Scroll the columns horizontally on both web and phone, and size with the
+  shared control-size scale.
+
 ## Dropdown Contract
 
 The dropdown family covers three related surfaces:
@@ -449,6 +492,45 @@ Required behavior:
   and radii, with no consumer-local theme imports.
 - Float the toast viewport above modal surfaces, nested overlays, and the
   consent banner, and export the layer token for consumers.
+
+## Workflow Builder Contract
+
+The workflow-builder family covers the branching step-graph canvas the
+workflow-builder and table-automation mockups model as `.wf-*`: a trigger-rooted
+vertical spine of step cards used to construct automation workflows.
+
+Required behavior:
+
+- Render a typed graph model (`WorkflowGraph`) of steps along a spine, where each
+  step is either a node (`trigger`, `code`, `agent`, `branch`, `app`, `outcome`)
+  or a fork that splits into parallel branches, each branch carrying its own
+  condition label and sub-spine (rendered recursively).
+- Link steps with 2px connectors and route transitions through tinted edge-label
+  pills whose tone (`success`, `failure`, `condition`, `always`, `neutral`) maps
+  onto the theme's accent families — the same philosophy as the badge, with no
+  invented green/blue token — so the visible text carries the meaning and color
+  only reinforces it.
+- Render a fork as a connector rail: a horizontal line spanning the branch
+  centers with a vertical drop into each branch column, so the spine visibly
+  splits into each branch rather than stacking disconnected columns.
+- Optionally render each transition as a round `+` insert button in place of the
+  edge labels (insert mode), reporting the branch and index where a new step is
+  inserted, with a trailing button that appends after the last step.
+- Color-code the six node kinds with a white-glyph icon chip from a fixed,
+  overridable decorative category palette (like avatar colors), and surface a
+  per-node run-status dot (`ok`, `running`, `waiting`, `error`, `skipped`) with a
+  spoken text alternative; the `running` dot pulses unless reduced motion.
+- Make nodes optionally pressable: a pressable node exposes `button`
+  accessibility semantics with the selected state, owns the shared hover, focus
+  ring, and pressed treatment, hides the browser's default outline, and is
+  keyboard operable; a static node lets its text and status dot announce
+  naturally. Offer an optional trailing add-step button and an edge-tone legend.
+- Keep decorative rules (connectors) and the dotted graph-paper canvas out of the
+  accessibility tree on both platforms, and paint the dotted background as a
+  web-only enhancement (React Native has no CSS background-image).
+- Use shared theme tokens for the card surface, border, connectors, edge fills
+  and text, status colors, and the selected / focus rings, and size with the
+  shared control-size scale.
 
 ## Layering Contract
 
