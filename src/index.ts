@@ -11,6 +11,7 @@ export * from "./dropdown";
 export * from "./focusRing";
 export * from "./heatmap";
 export * from "./input";
+export * from "./kanban";
 export * from "./keyboardNavigation";
 export * from "./list";
 export * from "./modal";
