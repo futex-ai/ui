@@ -92,11 +92,14 @@ export function DataGridColumnMenu({
   });
 
   return (
+    // `DropdownMenu`'s anchor defaults to `alignSelf: flex-start`; center it so
+    // the caret sits mid-height in the header cell instead of pinned to the top.
     <DropdownMenu
       accessibilityLabel={`${column.label} field options`}
       entries={entries}
       highlightVariant="ring"
       minWidth={200}
+      style={{ alignSelf: "center" }}
     >
       <Pressable
         accessibilityLabel={`${column.label} field options`}
@@ -135,21 +138,23 @@ export function DataGridAddColumn({
       type: "item",
     };
   });
-  // Wrapped in a columnheader so the button is valid inside the header row.
+  // Wrapped in a columnheader (valid grid a11y) that owns the cell dimensions;
+  // the centered DropdownMenu keeps the (+) mid-height like the column carets.
   return (
-    <View role="columnheader">
+    <View role="columnheader" style={styles.addColumnCell}>
       <DropdownMenu
         accessibilityLabel="Add field"
         entries={entries}
         highlightVariant="ring"
         minWidth={200}
+        style={{ alignSelf: "center" }}
       >
         <Pressable
           accessibilityLabel="Add field"
           accessibilityRole="button"
           style={({ hovered }: PressableHoverState) => [
-            styles.addColumnCell,
-            hovered ? styles.addColumnHover : null,
+            styles.headerMenuButton,
+            hovered ? styles.headerMenuButtonHover : null,
             hideWebOutlineView,
           ]}
         >

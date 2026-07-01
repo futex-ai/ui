@@ -29,6 +29,9 @@ export function dataGridMetrics(size: ControlSize = "md"): DataGridMetrics {
   return { rowHeight: DATA_GRID_ROW_HEIGHT[size], ...DATA_GRID_SIZES[size] };
 }
 
+/** Width (px) of the trailing add-column (+) cell, reserved in header + body. */
+export const ADD_COLUMN_WIDTH = 44;
+
 /**
  * Build the grid's themed styles for a size. Cells carry a right + bottom hairline
  * so the body reads as a real grid; the gutter, header, selection wash, active-cell
@@ -51,6 +54,9 @@ export function createDataGridStyles(
       userSelect: "none",
       width: "100%",
     },
+    // The role="grid" wrapper inside the horizontal scroller fills the resolved
+    // content width so the header and body rows share one width.
+    gridContent: { width: "100%" },
     headerRow: {
       backgroundColor: theme.colors.bg,
       borderBottomColor: theme.colors.border2,
@@ -69,7 +75,8 @@ export function createDataGridStyles(
     headerLabel: {
       ...baseText,
       color: theme.colors.muted,
-      flexShrink: 1,
+      // Grow to fill so the caret menu is pushed to the cell's right edge.
+      flex: 1,
       fontSize: metrics.fontSize - 1,
       fontWeight: "700",
       letterSpacing: 0.4,

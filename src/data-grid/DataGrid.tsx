@@ -10,8 +10,13 @@
  * `DateField`, `DropdownMenu`, `ComboboxMultiSelect`, `Badge`) and lets those own
  * their portals; the grid adds the selection model, keyboard model, and chrome.
  */
-import { useCallback, useMemo, useRef } from "react";
-import { useWindowDimensions, View } from "react-native";
+import { useCallback, useMemo, useRef, useState } from "react";
+import {
+  type LayoutChangeEvent,
+  ScrollView,
+  useWindowDimensions,
+  View,
+} from "react-native";
 
 import type { ControlSize } from "../controlSize";
 import { useSharedUiTheme } from "../theme";
@@ -21,8 +26,13 @@ import { DataGridCardStack } from "./DataGridCardStack";
 import { CellEditor } from "./dataGridCellEditors";
 import { DataGridBody } from "./DataGridBody";
 import { DataGridAddColumn, DataGridColumnMenu } from "./DataGridColumnMenu";
+import { resolveColumnWidths } from "./dataGridColumnWidths";
 import { DataGridHeader } from "./DataGridHeader";
-import { createDataGridStyles, dataGridMetrics } from "./dataGridStyles";
+import {
+  ADD_COLUMN_WIDTH,
+  createDataGridStyles,
+  dataGridMetrics,
+} from "./dataGridStyles";
 import { useDataGridController } from "./useDataGridController";
 import { useDataGridEditing } from "./useDataGridEditing";
 import { DataGridFooter } from "./DataGridFooter";
@@ -106,6 +116,16 @@ export function DataGrid({
   const { width: windowWidth } = useWindowDimensions();
   const asCards = cardBreakpoint !== undefined && windowWidth < cardBreakpoint;
 
+  // Measure the grid width so flex columns resolve to concrete pixel widths that
+  // the header and every body row share (keeps them aligned, incl. the add-column
+  // reserve), and so the total content width can overflow → horizontal scroll.
+  const [measuredWidth, setMeasuredWidth] = useState(0);
+  const onGridLayout = useCallback((event: LayoutChangeEvent) => {
+    const next = event.nativeEvent.layout.width;
+    setMeasuredWidth((prev) => (Math.abs(prev - next) > 0.5 ? next : prev));
+  }, []);
+  const hasAddColumn = onAddColumn !== undefined;
+
   // Keyboard nav scrolls the active row into view via the body's FlatList.
   const scrollToRowRef = useRef<((rowIndex: number) => void) | null>(null);
   const navigateToRow = useCallback((rowIndex: number) => {
@@ -171,6 +191,25 @@ export function DataGrid({
     [columns, controller, editing, metrics.fontSize, onCellChange, rows, theme],
   );
 
+  // Resolve flex columns to pixels once the width is measured; before that, fall
+  // back to flex sizing (width: 100%) for a clean first paint.
+  const chromeWidth =
+    (showGutter ? metrics.gutterWidth : 0) +
+    (hasAddColumn ? ADD_COLUMN_WIDTH : 0);
+  const layoutReady = measuredWidth > 0;
+  const resolved = useMemo(
+    () =>
+      resolveColumnWidths(
+        controller.visibleColumns,
+        Math.max(0, measuredWidth - 2),
+        chromeWidth,
+      ),
+    [controller.visibleColumns, measuredWidth, chromeWidth],
+  );
+  const renderColumns = layoutReady
+    ? resolved.columns
+    : controller.visibleColumns;
+
   if (asCards) {
     return (
       <View testID={testID}>
@@ -188,66 +227,84 @@ export function DataGrid({
   }
 
   return (
-    <View style={styles.grid} testID={testID}>
-      <View accessibilityLabel={accessibilityLabel} role="grid">
-        <DataGridHeader
-          columns={controller.visibleColumns}
-          iconSize={metrics.iconSize}
-          renderAddColumn={
-            onAddColumn
-              ? () => (
-                  <DataGridAddColumn
-                    iconSize={metrics.iconSize}
-                    onAddColumn={onAddColumn}
-                    styles={styles}
-                    theme={theme}
-                  />
-                )
-              : undefined
-          }
-          renderColumnMenuButton={
-            onColumnMenuAction
-              ? (column) => (
-                  <DataGridColumnMenu
-                    column={column}
-                    iconSize={metrics.iconSize}
-                    onAction={(action) => onColumnMenuAction(column.id, action)}
-                    styles={styles}
-                    theme={theme}
-                  />
-                )
-              : undefined
-          }
-          showGutter={showGutter}
-          styles={styles}
-          theme={theme}
-        />
-        <DataGridBody
-          addRow={
-            onAddRow ? (
-              <DataGridAddRow
-                iconSize={metrics.iconSize}
-                onPress={onAddRow}
-                styles={styles}
-                theme={theme}
-              />
-            ) : undefined
-          }
-          controller={controller}
-          editingCell={editing.editingCell}
-          loadingMore={loadingMore}
-          maxHeight={maxHeight}
-          metrics={metrics}
-          onEndReached={onEndReached}
-          onRegisterScroll={registerScroll}
-          onRowExpand={onRowExpand}
-          renderEditor={renderEditor}
-          rows={rows}
-          showGutter={showGutter}
-          styles={styles}
-          theme={theme}
-        />
-      </View>
+    <View onLayout={onGridLayout} style={styles.grid} testID={testID}>
+      <ScrollView
+        horizontal
+        // Fixed content width overflows the viewport → horizontal scroll; the
+        // header scrolls in lockstep with the body since both live in here.
+        contentContainerStyle={
+          layoutReady ? { width: resolved.contentWidth } : { minWidth: "100%" }
+        }
+        showsHorizontalScrollIndicator
+      >
+        <View
+          accessibilityLabel={accessibilityLabel}
+          role="grid"
+          style={styles.gridContent}
+        >
+          <DataGridHeader
+            columns={renderColumns}
+            iconSize={metrics.iconSize}
+            renderAddColumn={
+              onAddColumn
+                ? () => (
+                    <DataGridAddColumn
+                      iconSize={metrics.iconSize}
+                      onAddColumn={onAddColumn}
+                      styles={styles}
+                      theme={theme}
+                    />
+                  )
+                : undefined
+            }
+            renderColumnMenuButton={
+              onColumnMenuAction
+                ? (column) => (
+                    <DataGridColumnMenu
+                      column={column}
+                      iconSize={metrics.iconSize}
+                      onAction={(action) =>
+                        onColumnMenuAction(column.id, action)
+                      }
+                      styles={styles}
+                      theme={theme}
+                    />
+                  )
+                : undefined
+            }
+            showGutter={showGutter}
+            styles={styles}
+            theme={theme}
+          />
+          <DataGridBody
+            addRow={
+              onAddRow ? (
+                <DataGridAddRow
+                  iconSize={metrics.iconSize}
+                  onPress={onAddRow}
+                  styles={styles}
+                  theme={theme}
+                />
+              ) : undefined
+            }
+            columns={renderColumns}
+            controller={controller}
+            editingCell={editing.editingCell}
+            loadingMore={loadingMore}
+            maxHeight={maxHeight}
+            metrics={metrics}
+            onEndReached={onEndReached}
+            onRegisterScroll={registerScroll}
+            onRowExpand={onRowExpand}
+            renderEditor={renderEditor}
+            rows={rows}
+            showGutter={showGutter}
+            styles={styles}
+            theme={theme}
+            trailingWidth={hasAddColumn ? ADD_COLUMN_WIDTH : 0}
+          />
+        </View>
+      </ScrollView>
       {footerText ? (
         <DataGridFooter footerText={footerText} styles={styles} />
       ) : null}

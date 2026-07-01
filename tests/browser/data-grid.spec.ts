@@ -242,6 +242,60 @@ test("hiding the active column keeps a keyboard tab stop", async ({ page }) => {
   await expect(page.locator('[role="gridcell"][tabindex="0"]')).toHaveCount(1);
 });
 
+test("scrolls horizontally when the columns overflow the container", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 900, height: 700 });
+  await page.goto("/iframe.html?id=datagrid-examples--basic");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  // Some element inside the grid overflows horizontally and is scrollable.
+  const overflow = await page.evaluate(() => {
+    const scroller = [...document.querySelectorAll('[role="grid"] *')]
+      .map((element) => element as HTMLElement)
+      .find((element) => element.scrollWidth > element.clientWidth + 5);
+    return scroller
+      ? { scrollWidth: scroller.scrollWidth, clientWidth: scroller.clientWidth }
+      : null;
+  });
+  expect(overflow).not.toBeNull();
+  expect(overflow!.scrollWidth).toBeGreaterThan(overflow!.clientWidth);
+});
+
+test("header and body columns share the same left edges, incl. after hiding", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await page.goto("/iframe.html?id=datagrid-examples--full-featured");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  const lefts = () =>
+    page.evaluate(() => {
+      const round = (n: number) => Math.round(n);
+      const heads = [...document.querySelectorAll('[role="columnheader"]')].map(
+        (el) => round(el.getBoundingClientRect().left),
+      );
+      const row = document.querySelector('[role="rowgroup"] [role="row"]');
+      const cells = [...(row?.querySelectorAll('[role="gridcell"]') ?? [])].map(
+        (el) => round(el.getBoundingClientRect().left),
+      );
+      return { heads, cells };
+    });
+
+  const assertAligned = async () => {
+    const { heads, cells } = await lefts();
+    expect(heads.length).toBe(cells.length);
+    heads.forEach((left, i) =>
+      expect(Math.abs(left - cells[i])).toBeLessThanOrEqual(1),
+    );
+  };
+
+  await assertAligned();
+  await page.getByRole("button", { name: "Score field options" }).click();
+  await page.getByRole("menuitem", { name: "Hide field" }).click();
+  await assertAligned();
+});
+
 test("collapses to a card stack below the breakpoint", async ({ page }) => {
   await page.setViewportSize({ width: 1000, height: 720 });
   await page.goto("/iframe.html?id=datagrid-examples--responsive");

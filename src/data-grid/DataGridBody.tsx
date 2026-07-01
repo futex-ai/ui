@@ -14,10 +14,18 @@ import { DataGridRow } from "./DataGridRow";
 import { gridcellRole } from "./dataGridLayout";
 import type { DataGridMetrics, DataGridStyles } from "./dataGridStyles";
 import type { DataGridController } from "./useDataGridController";
-import type { DataGridCellRef, DataGridRow as DataGridRowData } from "./types";
+import type {
+  DataGridCellRef,
+  DataGridColumn,
+  DataGridRow as DataGridRowData,
+} from "./types";
 
 export type DataGridBodyProps = {
   rows: DataGridRowData[];
+  /** Columns resolved to pixel widths (shared with the header for alignment). */
+  columns: DataGridColumn[];
+  /** Trailing spacer width matching the add-column (+) header cell. */
+  trailingWidth: number;
   controller: DataGridController;
   styles: DataGridStyles;
   theme: SharedUiTheme;
@@ -37,6 +45,8 @@ export type DataGridBodyProps = {
 
 export function DataGridBody({
   rows,
+  columns,
+  trailingWidth,
   controller,
   styles,
   theme,
@@ -65,7 +75,7 @@ export function DataGridBody({
   const renderRow = (row: DataGridRowData, rowIndex: number) => (
     <DataGridRow
       activeCell={controller.activeCell}
-      columns={controller.visibleColumns}
+      columns={columns}
       editingCell={editingCell}
       fontSize={metrics.fontSize}
       iconSize={metrics.iconSize}
@@ -84,6 +94,7 @@ export function DataGridBody({
       styles={styles}
       tabStopCell={controller.tabStop}
       theme={theme}
+      trailingWidth={trailingWidth}
     />
   );
 

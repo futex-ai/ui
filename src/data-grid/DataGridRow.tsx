@@ -7,6 +7,7 @@ import { hideWebOutlineView, type PressableHoverState } from "../focusRing";
 import type { SharedUiTheme } from "../theme";
 
 import { DataGridCell } from "./DataGridCell";
+import { gridcellRole } from "./dataGridLayout";
 import { cellRefEquals, rectContains } from "./dataGridSelectionModel";
 import type { DataGridRangeRect } from "./dataGridSelectionModel";
 import type { DataGridStyles } from "./dataGridStyles";
@@ -39,6 +40,8 @@ export type DataGridRowProps = {
     node: { focus?: () => void } | null,
   ) => void;
   onRowExpand?: (rowId: string) => void;
+  /** Trailing empty cell width matching the add-column (+) header (0 = none). */
+  trailingWidth: number;
 };
 
 function DataGridRowComponent({
@@ -61,6 +64,7 @@ function DataGridRowComponent({
   onKeyDown,
   registerNode,
   onRowExpand,
+  trailingWidth,
 }: DataGridRowProps) {
   return (
     <View role="row" style={styles.bodyRow}>
@@ -110,6 +114,13 @@ function DataGridRowComponent({
           />
         );
       })}
+      {trailingWidth > 0 ? (
+        <View
+          {...gridcellRole()}
+          aria-hidden
+          style={[styles.cell, { width: trailingWidth }]}
+        />
+      ) : null}
     </View>
   );
 }
