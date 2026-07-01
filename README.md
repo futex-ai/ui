@@ -163,7 +163,8 @@ The package export map intentionally separates runtime targets:
   `Avatar/Examples`, `Badge/Examples`, `Button/Examples`, `Calendar/Examples`,
   `Date/Examples`,
   `Drag Select/Examples`, `Dropdown/Examples`, `Heatmap/Examples`,
-  `Input/Examples`, `List/Examples`, `Modal/Examples`, `Popover/Examples`,
+  `Input/Examples`, `Kanban/Examples`, `List/Examples`, `Modal/Examples`,
+  `Popover/Examples`,
   `Radio/Examples`,
   `Segmented/Examples`, `Spinner/Examples`, `Switch/Examples`,
   `Table/Examples`, `Theme/Examples`, and `Toast/Examples`.
@@ -182,6 +183,7 @@ The package export map intentionally separates runtime targets:
 - Button component: [src/button/README.md](src/button/README.md)
 - Calendar component: [src/calendar/README.md](src/calendar/README.md)
 - Input and textarea components: [src/input/README.md](src/input/README.md)
+- Kanban component: [src/kanban/README.md](src/kanban/README.md)
 - List component: [src/list/README.md](src/list/README.md)
 - Dropdown components: [src/dropdown/README.md](src/dropdown/README.md)
 - Drag-select components:

@@ -90,6 +90,11 @@
       "react-native": "./dist/input/index.js",
       "import": "./dist/node/input/index.js"
     },
+    "./kanban": {
+      "types": "./dist/node/kanban/index.d.ts",
+      "react-native": "./dist/kanban/index.js",
+      "import": "./dist/node/kanban/index.js"
+    },
     "./list": {
       "types": "./dist/node/list/index.d.ts",
       "react-native": "./dist/list/index.js",

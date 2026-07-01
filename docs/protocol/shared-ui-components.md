@@ -323,6 +323,49 @@ Required behavior:
   text, the hover and pressed fills, disabled opacity, and the focus ring, and
   size with the shared control-size scale.
 
+## Kanban Contract
+
+The kanban family covers the horizontally-scrolling status board the table
+mockups model as `.tb-kanban`: the same records the table shows as rows, grouped
+by a single-select field into one fixed-width column per status.
+
+Required behavior:
+
+- Group a flat cards array into columns by a `cardColumnId` accessor (the table
+  rows / list items pattern), with a stable card key and a per-card render
+  callback, so a card can be the standard card layout or any node; a card whose
+  column id matches no column is omitted.
+- Render each column as a header — a status chip whose color comes from a
+  semantic tone or a literal color override, a card count, and an optional add
+  button — above a vertical stack of cards, with an optional placeholder for an
+  empty column.
+- Provide a convenience card layout: a wrapping title, an optional wrapping row
+  of chips, and an optional footer built from avatar / metadata / date slots or
+  a custom footer node.
+- Provide a chip primitive distinct from the badge pill: a small (`radii.sm`)
+  rounded tag whose fill resolves from a tone, a literal color, or a fill-less
+  plain variant for inline icon + count metadata, with a decorative leading icon
+  hidden from assistive technology.
+- Make cards optionally pressable: a pressable card exposes `button` semantics
+  with a disabled state, owns the shared hover, inset focus ring, and pressed
+  treatment, hides the browser's default outline, and is keyboard operable; a
+  board without a card press handler renders plain static cards.
+- Label the board and each column as accessibility groups, fold the card count
+  into the column's group name (hiding the redundant visible count from
+  assistive technology), and announce the board busy while showing skeleton
+  placeholder cards during loading.
+- Make cards draggable between and within columns via `onCardMove`, by pointer
+  and by keyboard (Space grabs, arrows move, Space/Enter drops, Escape cancels,
+  each step announced). The dragged card is lifted out of its column — a
+  translucent clone follows the pointer (the keyboard leaves the card dimmed in
+  place) — and a translucent preview of the card marks the target slot. The board
+  stays controlled: the drag reports a move (`{ cardKey, fromColumnId, fromIndex,
+toColumnId, toIndex }`, `toIndex` in dragged-removed semantics) for the consumer
+  to apply; it never mutates the cards. Dragging is a web gesture, so the native
+  drag is an inert no-op.
+- Scroll the columns horizontally on both web and phone, and size with the
+  shared control-size scale.
+
 ## Dropdown Contract
 
 The dropdown family covers three related surfaces:
