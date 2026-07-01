@@ -16,6 +16,9 @@ export function isValidElement(element) {
 export function forwardRef(render) {
   return render;
 }
+export function memo(component) {
+  return component;
+}
 export function useCallback(callback) {
   return callback;
 }
@@ -43,6 +46,7 @@ export default {
   createContext,
   forwardRef,
   isValidElement,
+  memo,
   useCallback,
   useContext,
   useEffect,
@@ -77,7 +81,8 @@ export const jsxs = jsx;
     "package.json": JSON.stringify({ name: "react-dom", type: "module" }),
   });
   await writeStubPackage(consumerRoot, "react-native", {
-    "index.js": `export const Modal = "Modal";
+    "index.js": `export const FlatList = "FlatList";
+export const Modal = "Modal";
 export const Pressable = "Pressable";
 export const ScrollView = "ScrollView";
 export const Text = "Text";
@@ -148,7 +153,10 @@ export default Svg;
   });
   await writeStubPackage(consumerRoot, "lucide-react-native", {
     "index.js": `const Icon = () => null;
+export const ArrowDownAZ = Icon;
+export const ArrowUpAZ = Icon;
 export const Brain = Icon;
+export const Calendar = Icon;
 export const CalendarDays = Icon;
 export const Check = Icon;
 export const ChevronDown = Icon;
@@ -157,15 +165,22 @@ export const ChevronRight = Icon;
 export const CircleAlert = Icon;
 export const CircleCheck = Icon;
 export const CircleX = Icon;
+export const EyeOff = Icon;
 export const GitBranch = Icon;
+export const Hash = Icon;
 export const Inbox = Icon;
 export const Info = Icon;
 export const LayoutGrid = Icon;
+export const List = Icon;
 export const LoaderCircle = Icon;
+export const Maximize2 = Icon;
 export const Plus = Icon;
 export const Search = Icon;
 export const SquareTerminal = Icon;
+export const Tags = Icon;
 export const TriangleAlert = Icon;
+export const Trash2 = Icon;
+export const Type = Icon;
 export const X = Icon;
 export const Zap = Icon;
 `,

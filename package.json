@@ -65,6 +65,11 @@
       "react-native": "./dist/calendar/index.js",
       "import": "./dist/node/calendar/index.js"
     },
+    "./data-grid": {
+      "types": "./dist/node/data-grid/index.d.ts",
+      "react-native": "./dist/data-grid/index.js",
+      "import": "./dist/node/data-grid/index.js"
+    },
     "./date": {
       "types": "./dist/node/date/index.d.ts",
       "react-native": "./dist/date/index.js",

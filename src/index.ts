@@ -5,6 +5,7 @@ export * from "./badge";
 export * from "./button";
 export * from "./calendar";
 export * from "./controlSize";
+export * from "./data-grid";
 export * from "./date";
 export * from "./drag-select";
 export * from "./dropdown";

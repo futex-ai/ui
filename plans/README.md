@@ -6,5 +6,6 @@
 
 ## Completed
 
+- [Data Grid component](data-grid-component.md) — delivered: the Airtable/Notion-style editable `DataGrid` primitive (cell-range drag + keyboard selection, virtualized infinite scroll, column menus, add column/row, typed editable cells, responsive card stack). M1–M9 complete and `npm run verify` green; the on-device native pass (M7) is the one deferred manual item.
 - [Firna UI Npm Release](firna-ui-npm-release.md)
 - [Shared Dropdown And Modal Library](shared-dropdown-modal-library.md)
