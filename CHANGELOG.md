@@ -7,18 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.8.0](https://github.com/futex-ai/ui/compare/v0.7.0...v0.8.0) (2026-07-01)
 
-
 ### Features
 
-* **animated-border:** add animated comet-trail border primitive ([#70](https://github.com/futex-ai/ui/issues/70)) ([d82e469](https://github.com/futex-ai/ui/commit/d82e469b381fe021136afb6fba3158d41d1456f8))
-* **data-grid:** editable Airtable-style DataGrid primitive ([#73](https://github.com/futex-ai/ui/issues/73)) ([b4e61b8](https://github.com/futex-ai/ui/commit/b4e61b8b6926e528f3d1da40f3d2958054a6fa92))
-* **kanban:** add drag-and-drop board component ([#71](https://github.com/futex-ai/ui/issues/71)) ([c6df6be](https://github.com/futex-ai/ui/commit/c6df6be3745f817ee53bc97820f8ac9864ca522d))
-* **workflow:** add branching workflow builder ([#72](https://github.com/futex-ai/ui/issues/72)) ([fc33199](https://github.com/futex-ai/ui/commit/fc33199f3046dbd6e66b4105e69e95a29b2f8171))
-
+- **animated-border:** add animated comet-trail border primitive ([#70](https://github.com/futex-ai/ui/issues/70)) ([d82e469](https://github.com/futex-ai/ui/commit/d82e469b381fe021136afb6fba3158d41d1456f8))
+- **data-grid:** editable Airtable-style DataGrid primitive ([#73](https://github.com/futex-ai/ui/issues/73)) ([b4e61b8](https://github.com/futex-ai/ui/commit/b4e61b8b6926e528f3d1da40f3d2958054a6fa92))
+- **kanban:** add drag-and-drop board component ([#71](https://github.com/futex-ai/ui/issues/71)) ([c6df6be](https://github.com/futex-ai/ui/commit/c6df6be3745f817ee53bc97820f8ac9864ca522d))
+- **workflow:** add branching workflow builder ([#72](https://github.com/futex-ai/ui/issues/72)) ([fc33199](https://github.com/futex-ai/ui/commit/fc33199f3046dbd6e66b4105e69e95a29b2f8171))
 
 ### Bug Fixes
 
-* **dropdown:** add legible trailing `rightText` for the solid active fill ([#68](https://github.com/futex-ai/ui/issues/68)) ([d073fc6](https://github.com/futex-ai/ui/commit/d073fc619fd25e23d9422032e86d0337bd48108f))
+- **dropdown:** add legible trailing `rightText` for the solid active fill ([#68](https://github.com/futex-ai/ui/issues/68)) ([d073fc6](https://github.com/futex-ai/ui/commit/d073fc619fd25e23d9422032e86d0337bd48108f))
 
 ## [0.7.0](https://github.com/futex-ai/ui/compare/v0.6.0...v0.7.0) (2026-06-22)
 
