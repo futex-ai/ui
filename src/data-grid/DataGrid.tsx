@@ -23,7 +23,6 @@ import { useSharedUiTheme } from "../theme";
 
 import { DataGridAddRow } from "./DataGridAddRow";
 import { DataGridCardStack } from "./DataGridCardStack";
-import { CellEditor } from "./dataGridCellEditors";
 import { DataGridBody } from "./DataGridBody";
 import { DataGridAddColumn, DataGridColumnMenu } from "./DataGridColumnMenu";
 import { resolveColumnWidths } from "./dataGridColumnWidths";
@@ -33,8 +32,10 @@ import {
   createDataGridStyles,
   dataGridMetrics,
 } from "./dataGridStyles";
+import { useDataGridClipboard } from "./useDataGridClipboard";
 import { useDataGridController } from "./useDataGridController";
 import { useDataGridEditing } from "./useDataGridEditing";
+import { useDataGridEditorRenderer } from "./useDataGridEditorRenderer";
 import { DataGridFooter } from "./DataGridFooter";
 import type {
   DataGridCellRef,
@@ -138,6 +139,10 @@ export function DataGrid({
     [],
   );
 
+  // Copy/paste: stable handlers wired to the controller; `bind` (below) supplies
+  // the latest state each render, since the handlers are created before it.
+  const clipboard = useDataGridClipboard();
+
   const editing = useDataGridEditing({ columns, onCellChange });
   const controller = useDataGridController({
     columns,
@@ -146,50 +151,20 @@ export function DataGrid({
     onSelectionChange,
     onRequestEdit: editing.beginEdit,
     onNavigateToRow: navigateToRow,
+    onCopy: clipboard.onCopy,
+    onPaste: clipboard.onPaste,
   });
+  clipboard.bind({ controller, rows, onCellChange });
 
-  const renderEditor = useCallback(
-    (ref: DataGridCellRef) => {
-      const column = columns.find((col) => col.id === ref.columnId);
-      if (!column) {
-        return null;
-      }
-      const value = rows.find((row) => row.id === ref.rowId)?.cells[
-        ref.columnId
-      ];
-      return (
-        <CellEditor
-          column={column}
-          fontSize={metrics.fontSize}
-          onCancel={() => {
-            editing.cancelEdit();
-            if (typeof requestAnimationFrame !== "undefined") {
-              requestAnimationFrame(() => controller.focusCell(ref));
-            }
-          }}
-          onChange={(next) => {
-            void onCellChange?.(ref, next);
-          }}
-          onCommit={async (next, moveNext) => {
-            // Only advance/refocus once the commit actually succeeds — a rejected
-            // onCellChange keeps the editor open (see useDataGridEditing).
-            const committed = await editing.commitEdit(ref, next);
-            if (!committed) {
-              return;
-            }
-            if (moveNext) {
-              controller.moveActiveDown();
-            } else if (typeof requestAnimationFrame !== "undefined") {
-              requestAnimationFrame(() => controller.focusCell(ref));
-            }
-          }}
-          theme={theme}
-          value={value ?? null}
-        />
-      );
-    },
-    [columns, controller, editing, metrics.fontSize, onCellChange, rows, theme],
-  );
+  const renderEditor = useDataGridEditorRenderer({
+    columns,
+    rows,
+    controller,
+    editing,
+    onCellChange,
+    fontSize: metrics.fontSize,
+    theme,
+  });
 
   // Resolve flex columns to pixels once the width is measured; before that, fall
   // back to flex sizing (width: 100%) for a clean first paint.

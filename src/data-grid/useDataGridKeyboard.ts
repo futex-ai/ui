@@ -40,6 +40,8 @@ export type UseDataGridKeyboardOptions = {
   focusCell: (ref: DataGridCellRef) => void;
   onRequestEdit?: (ref: DataGridCellRef) => void;
   onNavigateToRow?: (rowIndex: number) => void;
+  onCopy?: () => void;
+  onPaste?: () => void;
 };
 
 export function useDataGridKeyboard({
@@ -53,6 +55,8 @@ export function useDataGridKeyboard({
   focusCell,
   onRequestEdit,
   onNavigateToRow,
+  onCopy,
+  onPaste,
 }: UseDataGridKeyboardOptions) {
   // Focus a cell, scrolling its row into view (virtualized body) and re-focusing
   // next frame for a cell the scroll just mounted.
@@ -109,6 +113,16 @@ export function useDataGridKeyboard({
         );
         return;
       }
+      if (ctrl && (key === "c" || key === "C")) {
+        event.preventDefault?.();
+        onCopy?.();
+        return;
+      }
+      if (ctrl && (key === "v" || key === "V")) {
+        event.preventDefault?.();
+        onPaste?.();
+        return;
+      }
 
       // Navigate from the active cell, or the fallback Tab stop when the grid was
       // tabbed into without a selection.
@@ -156,6 +170,8 @@ export function useDataGridKeyboard({
       activeCell,
       columnIds,
       focusWithScroll,
+      onCopy,
+      onPaste,
       onRequestEdit,
       refAt,
       rowIds,

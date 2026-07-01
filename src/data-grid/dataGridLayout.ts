@@ -12,6 +12,16 @@ export function gridcellRole(): Record<string, unknown> {
   return Platform.OS === "web" ? { role: "gridcell" } : {};
 }
 
+/**
+ * Freeze the gutter (row-number) column to the left while the data columns scroll
+ * horizontally. `position: sticky` is web-only (RN's types omit it); on native
+ * the gutter scrolls with the content.
+ */
+export const stickyGutterStyle: ViewStyle =
+  Platform.OS === "web"
+    ? ({ position: "sticky", left: 0, zIndex: 2 } as unknown as ViewStyle)
+    : {};
+
 /** A fixed `width` wins; otherwise the column shares space by `flex`. */
 export function columnLayoutStyle(column: DataGridColumn): ViewStyle {
   if (column.width !== undefined) {

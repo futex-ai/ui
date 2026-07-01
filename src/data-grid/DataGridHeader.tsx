@@ -5,7 +5,11 @@ import { Text, View } from "react-native";
 import type { SharedUiTheme } from "../theme";
 
 import { fieldTypeIcon } from "./dataGridCellContent";
-import { columnLayoutStyle, resolveColumnAlign } from "./dataGridLayout";
+import {
+  columnLayoutStyle,
+  resolveColumnAlign,
+  stickyGutterStyle,
+} from "./dataGridLayout";
 import type { DataGridStyles } from "./dataGridStyles";
 import type { DataGridColumn } from "./types";
 
@@ -43,7 +47,9 @@ export function DataGridHeader({
 }: DataGridHeaderProps) {
   return (
     <View role="row" style={styles.headerRow}>
-      {showGutter ? <View style={styles.gutterHeaderCell} /> : null}
+      {showGutter ? (
+        <View style={[styles.gutterHeaderCell, stickyGutterStyle]} />
+      ) : null}
       {columns.map((column) => {
         const Icon = fieldTypeIcon(column.fieldType);
         const align = resolveColumnAlign(column);

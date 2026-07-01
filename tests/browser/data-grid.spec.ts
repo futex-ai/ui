@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
 
+// Clipboard access for the copy/paste test (harmless for the others).
+test.use({ permissions: ["clipboard-read", "clipboard-write"] });
+
 test("data grid renders typed columns, pills, dates, and a footer", async ({
   page,
 }) => {
@@ -294,6 +297,45 @@ test("header and body columns share the same left edges, incl. after hiding", as
   await page.getByRole("button", { name: "Score field options" }).click();
   await page.getByRole("menuitem", { name: "Hide field" }).click();
   await assertAligned();
+});
+
+test("keeps the row-number gutter pinned while scrolling horizontally", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1000, height: 760 });
+  await page.goto("/iframe.html?id=datagrid-examples--full-featured");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  const gutterLeft = async () =>
+    (await page.getByText("3", { exact: true }).first().boundingBox())?.x ?? 0;
+  const before = await gutterLeft();
+  await page.evaluate(() => {
+    const scroller = [...document.querySelectorAll('[role="grid"] *')].find(
+      (element) => element.scrollWidth > element.clientWidth + 5,
+    );
+    if (scroller) {
+      scroller.scrollLeft = 300;
+    }
+  });
+  await page.waitForTimeout(150);
+  const after = await gutterLeft();
+  // Sticky gutter: the row number stays put while data columns scroll away.
+  expect(Math.abs(after - before)).toBeLessThanOrEqual(2);
+});
+
+test("copies the selection and pastes it into another cell", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=datagrid-examples--editable");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  await page.getByText("0.81").first().click(); // select row 1 Score
+  await page.keyboard.press("Control+c");
+  await page.getByText("0.55").first().click(); // active = row 4 Score
+  await page.keyboard.press("Control+v");
+
+  // The value pasted into row 4, so "0.81" now appears twice.
+  await expect(page.getByText("0.81")).toHaveCount(2);
 });
 
 test("collapses to a card stack below the breakpoint", async ({ page }) => {

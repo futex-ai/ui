@@ -39,6 +39,10 @@ export type DataGridControllerOptions = {
   onRequestEdit?: (ref: DataGridCellRef) => void;
   /** Scroll a row index into view (wired to the virtualized body on keyboard nav). */
   onNavigateToRow?: (rowIndex: number) => void;
+  /** Copy the current selection to the clipboard (Ctrl/Cmd+C). */
+  onCopy?: () => void;
+  /** Paste clipboard content from the active cell (Ctrl/Cmd+V). */
+  onPaste?: () => void;
 };
 
 export function useDataGridController({
@@ -48,6 +52,8 @@ export function useDataGridController({
   onSelectionChange,
   onRequestEdit,
   onNavigateToRow,
+  onCopy,
+  onPaste,
 }: DataGridControllerOptions) {
   const visibleColumns = useMemo(
     () => columns.filter((column) => !column.hidden),
@@ -185,6 +191,8 @@ export function useDataGridController({
     focusCell,
     onRequestEdit,
     onNavigateToRow,
+    onCopy,
+    onPaste,
   });
 
   return {

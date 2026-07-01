@@ -101,12 +101,25 @@ The grid is one Tab stop (roving tabindex). With a cell focused:
 | `Home` / `End`      | First / last column of the row (`Ctrl`+ = grid corners) |
 | `Tab` / `Shift+Tab` | Walk cells in reading order                             |
 | `Ctrl/Cmd-A`        | Select all cells                                        |
+| `Ctrl/Cmd-C`        | Copy the selection (TSV — pastes into spreadsheets)     |
+| `Ctrl/Cmd-V`        | Paste from the active cell (coerced to each field type) |
 | `Enter`             | Edit the active cell                                    |
 | `Escape`            | Cancel the current edit                                 |
 
 On web, a pointer drag paints a rectangle (the selected cells are the marquee).
 Pass `selection` + `onSelectionChange` to control it, or let the grid manage it
 internally. Selection and navigation are announced to a polite live region.
+Copy (`Ctrl/Cmd-C`) serializes the selection to TSV; paste (`Ctrl/Cmd-V`) fills
+cells from the active cell, coercing each value to its column's field type
+(numbers parsed, select options matched by label or id).
+
+### Layout
+
+Columns size with a fixed `width` or a `flex` share (clamped to `minWidth`); the
+grid resolves them to pixel widths from its measured container so the header and
+every body row stay aligned. When the columns are wider than the container it
+scrolls horizontally, and the row-number gutter stays pinned to the left (frozen
+column, web only).
 
 ### Editing
 

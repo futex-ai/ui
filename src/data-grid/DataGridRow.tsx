@@ -7,7 +7,7 @@ import { hideWebOutlineView, type PressableHoverState } from "../focusRing";
 import type { SharedUiTheme } from "../theme";
 
 import { DataGridCell } from "./DataGridCell";
-import { gridcellRole } from "./dataGridLayout";
+import { gridcellRole, stickyGutterStyle } from "./dataGridLayout";
 import { cellRefEquals, rectContains } from "./dataGridSelectionModel";
 import type { DataGridRangeRect } from "./dataGridSelectionModel";
 import type { DataGridStyles } from "./dataGridStyles";
@@ -69,7 +69,7 @@ function DataGridRowComponent({
   return (
     <View role="row" style={styles.bodyRow}>
       {showGutter ? (
-        <View role="rowheader" style={styles.gutterCell}>
+        <View role="rowheader" style={[styles.gutterCell, stickyGutterStyle]}>
           <Text style={styles.gutterNumber}>{rowIndex + 1}</Text>
           {onRowExpand ? (
             <Pressable
