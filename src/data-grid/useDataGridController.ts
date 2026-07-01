@@ -84,6 +84,10 @@ export function useDataGridController({
     () => rangeRect(selection, rowIds, columnIds),
     [selection, rowIds, columnIds],
   );
+  // Only a single-cell selection shows the active-cell ring; a range/row/column
+  // selection is conveyed by the fill alone (no extra border on one cell).
+  const singleSelection =
+    rect !== null && rect.minRow === rect.maxRow && rect.minCol === rect.maxCol;
   const activeCell = selection.focus;
   // The first visible cell is the fallback Tab stop so the grid is keyboard
   // reachable before anything is selected; once a cell is active it becomes the
@@ -235,6 +239,7 @@ export function useDataGridController({
     activeCell,
     tabStop,
     rect,
+    singleSelection,
     dragBox,
     activate,
     beginDrag: beginCellDrag,

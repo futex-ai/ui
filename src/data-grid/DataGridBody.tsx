@@ -93,6 +93,7 @@ export function DataGridBody({
       row={row}
       rowIndex={rowIndex}
       showGutter={showGutter}
+      singleSelection={controller.singleSelection}
       styles={styles}
       tabStopCell={controller.tabStop}
       theme={theme}

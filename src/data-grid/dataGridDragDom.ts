@@ -183,15 +183,17 @@ export function attachDataGridDragListeners(
     handlers.onMove(event.clientX, event.clientY);
   };
   const end = () => handlers.onEnd();
-  const cancel = () => handlers.onEnd();
   document.addEventListener("pointermove", move, true);
   document.addEventListener("pointerup", end, true);
-  document.addEventListener("pointercancel", cancel, true);
-  window.addEventListener("blur", cancel, true);
+  document.addEventListener("pointercancel", end, true);
+  // The window `blur` listener must NOT be capture — a capture listener also
+  // catches element blur events, which fire when a drag's pointer-down focuses a
+  // new cell (blurring the previously-focused one), cancelling the drag.
+  window.addEventListener("blur", end, false);
   return () => {
     document.removeEventListener("pointermove", move, true);
     document.removeEventListener("pointerup", end, true);
-    document.removeEventListener("pointercancel", cancel, true);
-    window.removeEventListener("blur", cancel, true);
+    document.removeEventListener("pointercancel", end, true);
+    window.removeEventListener("blur", end, false);
   };
 }

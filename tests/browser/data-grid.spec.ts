@@ -133,6 +133,60 @@ test("header drag selects whole columns", async ({ page }) => {
   await page.mouse.up();
 });
 
+test("a new drag after an existing selection still extends", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=datagrid-examples--selection");
+  const status = page.getByTestId("selection-status");
+
+  const a = await page.getByText("We shipped per-step").boundingBox();
+  const b = await page.getByText("0.78").boundingBox();
+  if (!a || !b) {
+    throw new Error("cells not found");
+  }
+  await page.mouse.move(a.x + 10, a.y + a.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 5 });
+  await page.mouse.up();
+  await expect(status).toHaveText("6 cells selected");
+
+  // A second drag from a different cell must paint a new range, not get stuck
+  // on the start cell (regression: element blur cancelled the drag).
+  const x = await page.getByText("5 things we learned").boundingBox();
+  const y = await page.getByText("0.88").boundingBox();
+  if (!x || !y) {
+    throw new Error("cells not found");
+  }
+  await page.mouse.move(x.x + 10, x.y + x.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(y.x + y.width / 2, y.y + y.height / 2, { steps: 5 });
+  await expect(status).toHaveText("3 cells selected");
+  await page.mouse.up();
+});
+
+test("the active-cell ring shows only for a single-cell selection", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=datagrid-examples--selection");
+  const ringCount = () =>
+    page.evaluate(
+      () =>
+        [...document.querySelectorAll('[role="gridcell"]')].filter(
+          (element) => {
+            const shadow = getComputedStyle(element).boxShadow;
+            return shadow !== "" && shadow !== "none";
+          },
+        ).length,
+    );
+
+  await page.getByText("Approved").first().click();
+  await expect.poll(ringCount).toBe(1);
+
+  // Extending to a multi-cell range drops the individual active-cell ring.
+  await page.keyboard.press("Shift+ArrowRight");
+  await expect.poll(ringCount).toBe(0);
+});
+
 test("dragging past the bottom edge auto-scrolls and extends", async ({
   page,
 }) => {

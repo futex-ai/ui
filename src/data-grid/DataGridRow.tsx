@@ -25,6 +25,8 @@ export type DataGridRowProps = {
   rect: DataGridRangeRect | null;
   activeCell: DataGridCellRef | null;
   tabStopCell: DataGridCellRef | null;
+  /** Whether the current selection is exactly one cell (shows the active ring). */
+  singleSelection: boolean;
   editingCell: DataGridCellRef | null;
   renderEditor?: (ref: DataGridCellRef) => React.ReactNode;
   showGutter: boolean;
@@ -59,6 +61,7 @@ function DataGridRowComponent({
   rect,
   activeCell,
   tabStopCell,
+  singleSelection,
   editingCell,
   renderEditor,
   showGutter,
@@ -130,7 +133,7 @@ function DataGridRowComponent({
         const editing = cellRefEquals(cellRef, editingCell);
         return (
           <DataGridCell
-            active={cellRefEquals(cellRef, activeCell)}
+            active={singleSelection && cellRefEquals(cellRef, activeCell)}
             cellRef={cellRef}
             column={column}
             editor={editing ? renderEditor?.(cellRef) : undefined}
