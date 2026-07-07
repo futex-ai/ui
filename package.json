@@ -173,6 +173,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md,yml,yaml}\"",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build",
+    "storybook:native": "npm run build && cd storybook-native && npm start -- --clear",
     "test": "node --import tsx --test tests/unit/*.test.ts",
     "test:browser": "playwright test",
     "test:package": "node scripts/package-smoke.mjs",
@@ -180,15 +181,30 @@
     "verify": "npm run format:check && npm run test && npm run typecheck && npm run build && npm run test:package && npm run storybook:build && npm run test:browser"
   },
   "peerDependencies": {
+    "@gorhom/bottom-sheet": ">=5 <6",
     "lucide-react-native": ">=0.560.0 <1",
     "react": ">=19 <20",
     "react-dom": ">=19 <20",
     "react-native": ">=0.83 <0.86",
+    "react-native-gesture-handler": ">=2.20 <3",
+    "react-native-reanimated": ">=3.16 <5",
     "react-native-svg": ">=15 <16",
     "react-native-web": ">=0.21 <0.22"
   },
+  "peerDependenciesMeta": {
+    "@gorhom/bottom-sheet": {
+      "optional": true
+    },
+    "react-native-gesture-handler": {
+      "optional": true
+    },
+    "react-native-reanimated": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
+    "@gorhom/bottom-sheet": "^5.2.14",
     "@playwright/test": "^1.57.0",
     "@storybook/addon-a11y": "^10.4.6",
     "@storybook/react-vite": "^10.1.6",
@@ -201,8 +217,11 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.85.3",
+    "react-native-gesture-handler": "^2.31.2",
+    "react-native-reanimated": "4.3.1",
     "react-native-svg": "^15.15.5",
     "react-native-web": "^0.21.2",
+    "react-native-worklets": "0.8.3",
     "storybook": "^10.1.6",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",

@@ -1,16 +1,8 @@
 /** Portal-backed modal frame for Expo web surfaces. */
 import { X } from "lucide-react-native";
 import { useCallback, useEffect, useId, useMemo, useRef } from "react";
-import type { ReactNode, RefObject } from "react";
-import {
-  Pressable,
-  ScrollView,
-  StyleProp,
-  Text,
-  TextStyle,
-  View,
-  ViewStyle,
-} from "react-native";
+import type { RefObject } from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
 import { useFocusRing } from "../focusRing";
@@ -19,39 +11,9 @@ import { useSharedUiTheme } from "../theme";
 import { createWebModalFrameStyles } from "./webModalFrameStyles";
 import { WebModalPortal } from "./WebModalPortal";
 import { webModalCanClose, webModalMaxWidth } from "./webModalModel";
-import type {
-  WebModalCloseSource,
-  WebModalPlacement,
-  WebModalSize,
-} from "./webModalModel";
+import type { WebModalCloseSource } from "./webModalModel";
+import type { Focusable, WebModalFrameProps } from "./types";
 
-export type WebModalFrameProps = {
-  body?: ReactNode;
-  children?: ReactNode;
-  closeDisabled?: boolean;
-  closeLabel?: string;
-  dismissible?: boolean;
-  footer?: ReactNode;
-  bodyStyle?: StyleProp<ViewStyle>;
-  footerStyle?: StyleProp<ViewStyle>;
-  headerStyle?: StyleProp<ViewStyle>;
-  initialFocusRef?: RefObject<Focusable | null>;
-  onClose: () => void;
-  /** `center` (default) or `bottom-sheet` (pinned full-width to the bottom). */
-  placement?: WebModalPlacement;
-  scroll?: boolean;
-  showCloseButton?: boolean;
-  size?: WebModalSize;
-  subtitleStyle?: StyleProp<TextStyle>;
-  surfaceStyle?: StyleProp<ViewStyle>;
-  /** Header subtitle; a node so callers can embed inline links. */
-  subtitle?: ReactNode;
-  title: string;
-  titleStyle?: StyleProp<TextStyle>;
-  visible?: boolean;
-};
-
-type Focusable = { focus?: () => void };
 type ClosePolicyRef = {
   closeDisabled: boolean;
   dismissible: boolean;

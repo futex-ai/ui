@@ -6,3 +6,7 @@ test-results/
 .wrangler/
 target/
 .DS_Store
+.expo/
+storybook-native/.rnstorybook/storybook.requires.ts
+storybook-native/ios/
+storybook-native/android/
