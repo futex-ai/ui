@@ -5,3 +5,7 @@ playwright-report/
 storybook-static/
 test-results/
 target/
+.expo/
+storybook-native/.rnstorybook/storybook.requires.ts
+storybook-native/ios/
+storybook-native/android/
