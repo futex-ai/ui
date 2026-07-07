@@ -16,6 +16,12 @@ const sourceOptions = [
   { label: "Retail", value: "retail" },
 ];
 
+const dateModeOptions = [
+  { label: "Auto", value: "auto" },
+  { accessibilityLabel: "Custom start date", label: "Custom", value: "start" },
+  { accessibilityLabel: "Custom end date", label: "Custom", value: "end" },
+];
+
 const meta = {
   title: "Segmented/Examples",
 } satisfies Meta;
@@ -41,6 +47,30 @@ export const Sizes: Story = {
     </StorySurface>
   ),
 };
+
+export const DuplicateLabels: Story = {
+  name: "Duplicate segment labels",
+  render: () => (
+    <StorySurface>
+      <DuplicateLabelsExample />
+    </StorySurface>
+  ),
+};
+
+function DuplicateLabelsExample() {
+  const [mode, setMode] = useState("auto");
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <SegmentedControl
+        accessibilityLabel="Date mode"
+        onChange={setMode}
+        options={dateModeOptions}
+        sizing="content"
+        value={mode}
+      />
+    </View>
+  );
+}
 
 function SizesExample() {
   const [small, setSmall] = useState("pl");

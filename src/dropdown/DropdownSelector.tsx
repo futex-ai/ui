@@ -22,6 +22,12 @@ import type { DropdownSelectorStyles } from "./dropdownSelectorStyles";
 import { useDropdownSelectorNavigation } from "./useDropdownSelectorNavigation";
 
 export type DropdownSelectorOption = {
+  /**
+   * Overridable accessible name for the option row. Defaults to `label`. Set it
+   * to disambiguate duplicate visible labels or pin a locale-stable name for
+   * `getByRole("option", { name })`.
+   */
+  accessibilityLabel?: string;
   disabled?: boolean;
   label: string;
   right?: ReactNode;
@@ -53,6 +59,13 @@ type DropdownSelectorProps = {
   sections?: DropdownSelectorSection[];
   /** Control density of the default `field` variant: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
+  /**
+   * Stable, value-independent accessible name for the trigger. When set, the
+   * trigger name stays constant as the selected value changes (the value moves
+   * to `aria-valuetext`), so `getByRole("button", { name })` keeps resolving.
+   * Defaults to the composed `"{label}, {value}"` name.
+   */
+  triggerLabel?: string;
   value: string;
   variant?: SelectorVariant;
 };
@@ -85,6 +98,7 @@ function DropdownSelectorView({
   sections,
   size = "md",
   styles,
+  triggerLabel,
   value,
   variant = "field",
 }: DropdownSelectorProps & {
@@ -140,6 +154,7 @@ function DropdownSelectorView({
     label,
     display || placeholder,
   );
+  const triggerName = selectorTriggerName(triggerLabel, accessibleLabel);
   const searchField = searchable ? (
     <View style={styles.searchField}>
       <Search color={theme.colors.muted} size={15} />
@@ -162,12 +177,13 @@ function DropdownSelectorView({
       ) : null}
       <Pressable
         accessibilityHint={error ?? hint}
-        accessibilityLabel={accessibleLabel}
+        accessibilityLabel={triggerName}
         accessibilityRole={interactive ? "button" : undefined}
         accessibilityState={{ disabled: !interactive }}
         aria-expanded={interactive ? open : undefined}
         aria-invalid={invalid}
         aria-required={required}
+        aria-valuetext={display || placeholder}
         disabled={!interactive}
         onBlur={focus.onBlur}
         onFocus={focus.onFocus}
@@ -268,6 +284,16 @@ function selectorAccessibleLabel(label: string | undefined, value: string) {
   return label ? `${label}, ${value}` : value;
 }
 
+// Prefer an explicit, value-independent `triggerLabel` when the caller wants a
+// stable test/automation handle; otherwise fall back to the composed
+// `"{label}, {value}"` name so existing selectors keep resolving.
+function selectorTriggerName(
+  triggerLabel: string | undefined,
+  fallback: string,
+) {
+  return triggerLabel ?? fallback;
+}
+
 function selectorEntries(
   sections: DropdownSelectorSection[],
   value: string,
@@ -286,11 +312,13 @@ function selectorEntries(
     return [
       ...sectionRows,
       ...section.options.map((option) => ({
+        accessibilityLabel: option.accessibilityLabel,
         disabled: option.disabled,
         id: option.value,
         label: option.label,
         onPress: () => onSelect(option.value),
         right: option.right,
+        role: "option" as const,
         secondary: option.secondary,
         selected: option.value === value,
         type: "item" as const,

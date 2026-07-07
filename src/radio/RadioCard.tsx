@@ -23,6 +23,11 @@ type RadioCardKeyboardEvent = {
 
 export type RadioCardProps = {
   accessibilityHint?: string;
+  /**
+   * Overridable accessible name. Defaults to `title` (not the title+body
+   * concatenation), so `getByRole("radio", { name: title })` resolves exactly.
+   * Set it to disambiguate duplicate titles or pin a locale-stable name.
+   */
   accessibilityLabel?: string;
   body?: string;
   checked?: boolean;
@@ -60,7 +65,7 @@ export function RadioCard({
   return (
     <Pressable
       accessibilityHint={accessibilityHint}
-      accessibilityLabel={accessibilityLabel}
+      accessibilityLabel={accessibilityLabel ?? title}
       accessibilityRole="radio"
       accessibilityState={{ checked, disabled: disabledState }}
       aria-checked={checked}

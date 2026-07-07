@@ -29,7 +29,7 @@ test("dropdown keyboard navigation keeps the active option in view", async ({
 
   await page.getByRole("button", { name: "Long list, Long option 01" }).click();
   await expect(
-    page.getByRole("button", { exact: true, name: "Long option 01" }),
+    page.getByRole("option", { exact: true, name: "Long option 01" }),
   ).toBeVisible();
 
   for (let step = 0; step < 15; step += 1) {
@@ -58,7 +58,7 @@ test("dropdown selector pins header and footer while options scroll", async ({
   await expect(header).toBeVisible();
   await expect(footer).toBeVisible();
 
-  const option = page.getByRole("button", {
+  const option = page.getByRole("option", {
     exact: true,
     name: "Long option 03",
   });
@@ -144,10 +144,8 @@ test("searchable dropdown selector filters options and selects by keyboard", asy
     const input = document.querySelector('input[placeholder="Search options"]');
     const field = input?.parentElement ?? null;
     const selectedRow =
-      Array.from(document.querySelectorAll('[role="button"]')).find(
-        (element) =>
-          element.textContent?.trim() === "US Dollar" &&
-          !element.hasAttribute("aria-expanded"),
+      Array.from(document.querySelectorAll('[role="option"]')).find(
+        (element) => element.textContent?.trim() === "US Dollar",
       ) ?? null;
     if (!field || !selectedRow) {
       return null;
@@ -165,10 +163,10 @@ test("searchable dropdown selector filters options and selects by keyboard", asy
 
   await search.pressSequentially("new z");
   await expect(
-    page.getByRole("button", { exact: true, name: "New Zealand Dollar" }),
+    page.getByRole("option", { exact: true, name: "New Zealand Dollar" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { exact: true, name: "US Dollar" }),
+    page.getByRole("option", { exact: true, name: "US Dollar" }),
   ).toBeHidden();
   await expect(search).toBeFocused();
 
@@ -187,7 +185,7 @@ test("searchable dropdown selector filters options and selects by keyboard", asy
   await page.getByPlaceholder("Search options").fill("zzz");
   await expect(page.getByText("No matching options")).toBeVisible();
   await expect(
-    page.getByRole("button", { exact: true, name: "Euro" }),
+    page.getByRole("option", { exact: true, name: "Euro" }),
   ).toBeHidden();
 });
 
@@ -196,6 +194,8 @@ test("combobox keeps input focus while filtering options", async ({ page }) => {
 
   const input = page.getByPlaceholder("Search to add...");
   await input.click();
+  // The search input carries an accessible name, so it is reachable by label.
+  await expect(page.getByLabel("Search to add...")).toBeFocused();
   await input.fill("pay");
 
   await expect(page.getByText("Payroll Reserve")).toBeVisible();
@@ -206,6 +206,85 @@ test("combobox keeps input focus while filtering options", async ({ page }) => {
   await expect(
     page.getByText("Only active books can be selected."),
   ).toBeVisible();
+});
+
+test("dropdown selector rows are options with assertable selected state", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=dropdown-examples--dropdown-selector-default",
+  );
+
+  await page.getByRole("button", { name: "Scheme, Standard" }).click();
+
+  const standard = page.getByRole("option", { exact: true, name: "Standard" });
+  const cash = page.getByRole("option", {
+    exact: true,
+    name: "Cash accounting",
+  });
+  await expect(cash).toBeVisible();
+  await expect(standard).toHaveAttribute("aria-selected", "true");
+  await expect(cash).toHaveAttribute("aria-selected", "false");
+  // Disabled options stay assertable via aria-disabled.
+  await expect(
+    page.getByRole("option", { exact: true, name: "Flat rate" }),
+  ).toHaveAttribute("aria-disabled", "true");
+
+  // Selecting flips aria-selected on reopen — no CSS/background inspection.
+  await cash.click();
+  await page.getByRole("button", { name: "Scheme, Cash accounting" }).click();
+  await expect(
+    page.getByRole("option", { exact: true, name: "Cash accounting" }),
+  ).toHaveAttribute("aria-selected", "true");
+  await expect(
+    page.getByRole("option", { exact: true, name: "Standard" }),
+  ).toHaveAttribute("aria-selected", "false");
+});
+
+test("dropdown action menu rows expose the menuitem role", async ({ page }) => {
+  await page.goto("/iframe.html?id=dropdown-examples--dropdown-action-menu");
+
+  await page.getByRole("button", { name: "Open action menu" }).click();
+  await expect(page.getByRole("menuitem", { name: "Settings" })).toBeVisible();
+
+  const remove = page.getByRole("menuitem", { name: "Remove" });
+  await expect(remove).toBeVisible();
+  await remove.click();
+  await expect(page.getByRole("menuitem", { name: "Settings" })).toBeHidden();
+});
+
+test("combobox chip remove control is a named button", async ({ page }) => {
+  await page.goto("/iframe.html?id=dropdown-examples--chip-multi-select");
+
+  const remove = page.getByRole("button", {
+    name: "Remove Greenhouse Studio",
+  });
+  await expect(remove).toBeVisible();
+  await remove.click();
+  await expect(remove).toBeHidden();
+});
+
+test("selector trigger keeps a value-independent name and exposes the value", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--explicit-selector");
+
+  const trigger = page.getByRole("button", { exact: true, name: "Scheme" });
+  await expect(trigger).toHaveAttribute("aria-valuetext", "Standard");
+
+  await trigger.click();
+  // Duplicate visible labels ("Custom") are disambiguated by per-option
+  // accessibilityLabel, so each option resolves by a distinct name.
+  await expect(
+    page.getByRole("option", { name: "Custom start date" }),
+  ).toBeVisible();
+  await page.getByRole("option", { name: "Custom end date" }).click();
+
+  // The trigger name stays "Scheme" across selection; the value moves to
+  // aria-valuetext rather than the accessible name.
+  await expect(
+    page.getByRole("button", { exact: true, name: "Scheme" }),
+  ).toHaveAttribute("aria-valuetext", "Custom");
 });
 
 test("segmented control toggles report and source choices", async ({
@@ -235,9 +314,16 @@ test("radio cards expose checked and disabled option states", async ({
     "/iframe.html?id=radio-examples--accounting-basis-radio-cards",
   );
 
-  const cash = page.getByRole("radio", { name: /Cash basis/ });
-  const accrual = page.getByRole("radio", { name: /Accrual basis/ });
-  const flatRate = page.getByRole("radio", { name: /Flat rate VAT/ });
+  // Names default to the title exactly (body copy no longer leaks in).
+  const cash = page.getByRole("radio", { exact: true, name: "Cash basis" });
+  const accrual = page.getByRole("radio", {
+    exact: true,
+    name: "Accrual basis",
+  });
+  const flatRate = page.getByRole("radio", {
+    exact: true,
+    name: "Flat rate VAT",
+  });
 
   await expect(cash).toBeChecked();
   await accrual.click();
@@ -248,6 +334,42 @@ test("radio cards expose checked and disabled option states", async ({
   await expect(cash).toBeChecked();
   await expect(accrual).not.toBeChecked();
   await expect(flatRate).toBeDisabled();
+});
+
+test("radio card names default to the title and accept overrides", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=radio-examples--distinguishable-radio-cards",
+  );
+
+  const recommended = page.getByRole("radio", {
+    name: "Cash basis (recommended)",
+  });
+  const plain = page.getByRole("radio", { exact: true, name: "Cash basis" });
+  await expect(recommended).toBeVisible();
+  await expect(plain).toBeVisible();
+  await expect(recommended).toBeChecked();
+  await plain.click();
+  await expect(plain).toBeChecked();
+  await expect(recommended).not.toBeChecked();
+});
+
+test("segmented control disambiguates duplicate labels by name", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=segmented-examples--duplicate-labels");
+
+  const start = page.getByRole("radio", { name: "Custom start date" });
+  const end = page.getByRole("radio", { name: "Custom end date" });
+  const auto = page.getByRole("radio", { exact: true, name: "Auto" });
+  await expect(auto).toBeChecked();
+  await start.click();
+  await expect(start).toBeChecked();
+  await expect(end).not.toBeChecked();
+  await end.click();
+  await expect(end).toBeChecked();
+  await expect(start).not.toBeChecked();
 });
 
 test("switch toggles a binary setting", async ({ page }) => {
@@ -988,7 +1110,7 @@ test("segmented control sizes step the control height across the shared scale", 
 
 async function dropdownScrollState(page: Page, label: string) {
   return page
-    .getByRole("button", { exact: true, name: label })
+    .getByRole("option", { exact: true, name: label })
     .evaluate((element) => {
       let scrollParent = element.parentElement;
       while (scrollParent) {

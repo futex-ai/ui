@@ -7,6 +7,7 @@ import { DropdownSelector } from "../index";
 import {
   ActionMenuExample,
   ChipMultiSelectExample,
+  ExplicitSelectorExample,
   InputBackedComboboxExample,
   LongSelectorExample,
   SearchableSelectorExample,
@@ -43,6 +44,15 @@ export const SelectorSizes: Story = {
   render: () => (
     <StorySurface>
       <SelectorSizesExample />
+    </StorySurface>
+  ),
+};
+
+export const ExplicitSelector: Story = {
+  name: "Selector with explicit options",
+  render: () => (
+    <StorySurface>
+      <ExplicitSelectorExample />
     </StorySurface>
   ),
 };

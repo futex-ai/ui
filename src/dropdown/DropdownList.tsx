@@ -21,12 +21,25 @@ export type DropdownListEntry =
   | { id: string; label: string; type: "divider" }
   | { id: string; label: string; type: "section" }
   | {
+      /**
+       * Overridable accessible name for the row. Defaults to `label`, so the
+       * on-screen text stays the test/automation handle. Set it to disambiguate
+       * duplicate labels or pin a locale-stable name without changing the
+       * visible copy.
+       */
+      accessibilityLabel?: string;
       disabled?: boolean;
       id: string;
       label: string;
       leading?: ReactNode;
       onPress?: () => void;
       right?: ReactNode;
+      /**
+       * Accessibility role for the row. Defaults to `option` for selectable
+       * lists (use `menuitem` for action menus); footer rows default to
+       * `button`. Drives `getByRole("option" | "menuitem" | "button", { name })`.
+       */
+      role?: "button" | "menuitem" | "option";
       secondary?: string;
       selected?: boolean;
       tone?: "amber" | "danger" | "default" | "muted";
@@ -206,13 +219,21 @@ function DropdownRow({
   }
   const danger = entry.tone === "danger";
   const amber = entry.tone === "amber";
+  // Default selectable rows to `option` and footer action rows to `button`.
+  // RNW does not surface `accessibilityState.selected` on the DOM, so emit an
+  // explicit `aria-selected` on options (mirroring Switch/RadioCard's explicit
+  // `aria-checked`) to keep selected state assertable in tests.
+  const role = entry.role ?? (entry.type === "footer" ? "button" : "option");
   return (
     <Pressable
-      accessibilityRole="button"
+      accessibilityLabel={entry.accessibilityLabel ?? entry.label}
       accessibilityState={{
         disabled: entry.disabled,
         selected: entry.selected,
       }}
+      role={role}
+      aria-disabled={entry.disabled || undefined}
+      aria-selected={role === "option" ? Boolean(entry.selected) : undefined}
       disabled={entry.disabled}
       onHoverIn={entry.disabled ? undefined : onHover}
       onPress={entry.onPress}

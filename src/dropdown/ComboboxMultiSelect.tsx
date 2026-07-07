@@ -24,12 +24,15 @@ export function ComboboxMultiSelect({
   onChange,
   options,
   placeholder = "Search to add...",
+  searchLabel,
   values,
 }: {
   footer?: string;
   onChange: (values: string[]) => void;
   options: ComboboxMultiSelectOption[];
   placeholder?: string;
+  /** Accessible name for the search input. Defaults to `placeholder`. */
+  searchLabel?: string;
   values: string[];
 }) {
   const theme = useSharedUiTheme();
@@ -72,6 +75,7 @@ export function ComboboxMultiSelect({
             </Text>
             <Pressable
               accessibilityLabel={`Remove ${option.label}`}
+              accessibilityRole="button"
               onPress={() =>
                 onChange(values.filter((value) => value !== option.value))
               }
@@ -82,6 +86,7 @@ export function ComboboxMultiSelect({
           </View>
         ))}
         <TextInput
+          accessibilityLabel={searchLabel ?? placeholder}
           onChangeText={setQuery}
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
@@ -129,6 +134,7 @@ function entriesForOptions(
       right: selected ? (
         <Check color={theme.colors.primaryDeep} size={15} />
       ) : null,
+      role: "option" as const,
       selected,
       type: "item",
     };

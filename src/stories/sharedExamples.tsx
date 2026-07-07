@@ -65,6 +65,37 @@ export function SelectorExample() {
   );
 }
 
+const explicitSelectorOptions = [
+  {
+    accessibilityLabel: "Standard scheme",
+    label: "Standard",
+    value: "standard",
+  },
+  {
+    accessibilityLabel: "Custom start date",
+    label: "Custom",
+    value: "custom-start",
+  },
+  {
+    accessibilityLabel: "Custom end date",
+    label: "Custom",
+    value: "custom-end",
+  },
+];
+
+export function ExplicitSelectorExample() {
+  const [value, setValue] = useState("standard");
+  return (
+    <DropdownSelector
+      label="Scheme"
+      onValueChange={setValue}
+      options={explicitSelectorOptions}
+      triggerLabel="Scheme"
+      value={value}
+    />
+  );
+}
+
 export function LongSelectorExample() {
   const [value, setValue] = useState("long-01");
   return (
@@ -122,6 +153,7 @@ export function ActionMenuExample() {
       label: "Settings",
       leading: <DropdownIconBox Icon={Settings} />,
       onPress: () => setOpen(false),
+      role: "menuitem",
       type: "item",
     },
     { id: "divider", label: "divider", type: "divider" },
@@ -130,6 +162,7 @@ export function ActionMenuExample() {
       label: "Remove",
       leading: <DropdownIconBox Icon={Trash2} tone="danger" />,
       onPress: () => setOpen(false),
+      role: "menuitem",
       tone: "danger",
       type: "item",
     },

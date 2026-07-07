@@ -2,7 +2,7 @@
 
 ## Active
 
-None.
+- [Easier Component Testing Without Test Ids](easier-component-testing-without-testid.md)
 
 ## Completed
 
