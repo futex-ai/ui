@@ -64,6 +64,31 @@ import { Textarea } from "@firna/ui/input";
 />;
 ```
 
+### Auto-growing textarea
+
+Pass `maxLines` (above `numberOfLines`) to make a textarea grow with its content:
+it opens at `numberOfLines` rows — the minimum it shrinks back to — grows one
+line at a time as the caller types, and stops at `maxLines` rows, after which it
+scrolls. Omit `maxLines` for a fixed-height textarea.
+
+```tsx
+<Textarea
+  label="Release notes"
+  // Start at two rows, grow up to six, then scroll.
+  maxLines={6}
+  numberOfLines={2}
+  onChangeText={setNotes}
+  value={notes}
+/>
+```
+
+`maxLines` also works on the bare `Input`/`InputFrame` when `multiline` is set.
+Row counts convert to pixels through the size's line height, so the field grows
+by whole lines and scales with `size`. The growth is measured platform-specifically:
+native reads the multiline `TextInput`'s `onContentSizeChange`, while web resets
+the underlying `<textarea>` to its natural height and re-measures on every change
+— so on web an auto-growing field must be **controlled** (drive `value`).
+
 ### Icons
 
 `prefixIcon` and `suffixIcon` take a `lucide-react-native` icon component and are

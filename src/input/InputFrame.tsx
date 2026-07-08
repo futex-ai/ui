@@ -15,7 +15,12 @@ import type { ControlSize } from "../controlSize";
 import { hideWebOutline, hideWebOutlineView, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
-import { createInputStyles, inputIconSize } from "./inputStyles";
+import {
+  autoGrowTextareaBounds,
+  createInputStyles,
+  inputIconSize,
+} from "./inputStyles";
+import { useAutoGrowTextarea } from "./useAutoGrowTextarea";
 
 export type InputFrameProps = Omit<TextInputProps, "style"> & {
   /**
@@ -33,6 +38,14 @@ export type InputFrameProps = Omit<TextInputProps, "style"> & {
   invalid?: boolean;
   /** Control density: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
+  /**
+   * Opt a `multiline` field into auto-grow: it starts at `numberOfLines` rows
+   * (the min) and grows one line at a time as content is added, up to `maxLines`
+   * rows, after which it scrolls. Ignored on a single-line field, or when
+   * `maxLines` is not greater than `numberOfLines`. On web this needs a
+   * controlled `value` — growth is measured whenever `value` changes.
+   */
+  maxLines?: number;
   /** Force the active (primary) border, e.g. while an attached popover is open. */
   active?: boolean;
   /** Marks the input required (wires `aria-required`). */
@@ -88,6 +101,7 @@ export function InputFrame({
   inputRef,
   inputStyle,
   invalid = false,
+  maxLines,
   onClear,
   onSuffixIconPress,
   prefixIcon: PrefixIcon,
@@ -123,6 +137,20 @@ export function InputFrame({
     },
     [inputRef],
   );
+  // Auto-grow: a multiline field with a `maxLines` cap above its `numberOfLines`
+  // floor grows with content between the two row-derived pixel bounds. The floor
+  // defaults to two rows when the caller sets no `numberOfLines`.
+  const minRows = props.numberOfLines ?? 2;
+  const autoGrowEnabled = multiline && maxLines != null && maxLines > minRows;
+  const bounds = autoGrowTextareaBounds(size, minRows, maxLines ?? minRows);
+  const autoGrow = useAutoGrowTextarea({
+    enabled: autoGrowEnabled,
+    lineHeight: bounds.lineHeight,
+    maxHeight: bounds.maxHeight,
+    minHeight: bounds.minHeight,
+    nodeRef: internalRef,
+    value: typeof props.value === "string" ? props.value : undefined,
+  });
   const handleClear = () => {
     if (onClear) {
       onClear();
@@ -166,12 +194,20 @@ export function InputFrame({
           focus.onBlur();
           props.onBlur?.(event);
         }}
+        onContentSizeChange={(event) => {
+          // Native measures its height here; the caller's handler still fires.
+          autoGrow.onContentSizeChange?.(event);
+          props.onContentSizeChange?.(event);
+        }}
         onFocus={(event) => {
           focus.onFocus();
           props.onFocus?.(event);
         }}
         style={[
           multiline ? styles.textareaInput : styles.input,
+          // The auto-grow bounds (min/max/height + line height) override the
+          // fixed textarea min-height; a caller `inputStyle` still wins.
+          autoGrow.style,
           hideWebOutline,
           inputStyle,
         ]}

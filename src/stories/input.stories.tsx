@@ -52,6 +52,11 @@ export const TextareaField: Story = {
   render: () => surface(<TextareaExample />),
 };
 
+export const AutoGrowingTextarea: Story = {
+  name: "Auto-growing textarea",
+  render: () => surface(<AutoGrowingExample />),
+};
+
 export const PasswordField: Story = {
   name: "Password with show/hide",
   render: () => surface(<PasswordExample />),
@@ -150,6 +155,22 @@ function TextareaExample() {
       label="Project notes"
       onChangeText={setValue}
       placeholder="Add useful context"
+      value={value}
+    />
+  );
+}
+
+function AutoGrowingExample() {
+  const [value, setValue] = useState("Two lines to start.\nDelete to shrink.");
+  return (
+    <Textarea
+      hint="Starts at two rows, grows with content up to six, then scrolls."
+      label="Release notes"
+      // Start at two rows (the min it shrinks back to) and grow up to six rows.
+      maxLines={6}
+      numberOfLines={2}
+      onChangeText={setValue}
+      placeholder="Type a few lines..."
       value={value}
     />
   );
