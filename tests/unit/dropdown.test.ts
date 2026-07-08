@@ -3,13 +3,15 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
-  DROPDOWN_LAYERS,
-  dropdownPortalClearsContent,
-} from "../../src/dropdown/dropdownLayers";
-import {
   dropdownPlacement,
   dropdownPointWithinRects,
 } from "../../src/dropdown/dropdownGeometry";
+import {
+  DROPDOWN_LAYERS,
+  dropdownPortalClearsContent,
+  dropdownPortalZIndex,
+} from "../../src/dropdown/dropdownLayers";
+import { dropdownListNavigationItems } from "../../src/dropdown/dropdownListModel";
 import {
   dropdownKeyAction,
   dropdownTriggerKeyAction,
@@ -57,6 +59,21 @@ test("dropdown navigation skips disabled and structural rows", () => {
   assert.equal(nextSelectableId(items, "a", 1), "c");
   assert.equal(nextSelectableId(items, "c", 1), "a");
   assert.equal(nextSelectableId(items, "a", -1), "c");
+});
+
+test("dropdown list navigation keeps action rows enabled by default", () => {
+  const navItems = dropdownListNavigationItems([
+    { id: "section", label: "Menu", type: "section" },
+    { id: "settings", label: "Settings", type: "item" },
+    { disabled: true, id: "remove", label: "Remove", type: "item" },
+  ]);
+
+  assert.deepEqual(navItems, [
+    { disabled: true, id: "section", selectable: false },
+    { disabled: undefined, id: "settings", selectable: true },
+    { disabled: true, id: "remove", selectable: true },
+  ]);
+  assert.equal(firstSelectableId(navItems), "settings");
 });
 
 test("dropdown navigation falls back from missing selection to first selectable row", () => {
@@ -127,6 +144,14 @@ test("dropdown portal layer clears ordinary app content", () => {
     dropdownPortalClearsContent(DROPDOWN_LAYERS.portal, DROPDOWN_LAYERS.base),
     true,
   );
+});
+
+test("dropdown portal uses a high default layer with an explicit override", () => {
+  assert.ok(DROPDOWN_LAYERS.portal >= 1_000_000);
+  assert.equal(DROPDOWN_LAYERS.surface > DROPDOWN_LAYERS.portal, true);
+  assert.equal(dropdownPortalZIndex(), DROPDOWN_LAYERS.portal);
+  assert.equal(dropdownPortalZIndex(4_200), 4_200);
+  assert.equal(dropdownPortalZIndex(0), 0);
 });
 
 test("dropdown point containment matches trigger and surface rects", () => {
@@ -284,6 +309,75 @@ test("dropdown selector sizes the field variant from the shared input scale", ()
   assert.match(stylesSource, /const sizing = inputSizeTokens\(size\)/);
   assert.match(stylesSource, /height: sizing\.boxHeight/);
   assert.match(stylesSource, /paddingHorizontal: sizing\.paddingHorizontal/);
+});
+
+test("dropdown row inverts its subtext on the solid active fill", () => {
+  const list = readSource("../../src/dropdown/DropdownList.tsx");
+  const stylesSource = readSource("../../src/dropdown/dropdownListStyles.ts");
+
+  // The subtext line picks up the highlight's secondary override on top of the
+  // base muted style, so an active solid row's subtext is recolored rather than
+  // left at the muted grey that vanishes against the `primary` fill.
+  assert.match(list, /styles\.secondary, highlight\.secondaryStyle/);
+  // The solid active row maps the subtext to `surface` (white), mirroring the
+  // inverted label, and the highlight shape exposes that override.
+  assert.match(
+    stylesSource,
+    /itemSecondaryOnSolid: \{ color: theme\.colors\.surface \}/,
+  );
+  assert.match(stylesSource, /secondaryStyle: object \| null;/);
+  // Only the solid active branch sets the override; every other state leaves it
+  // null so light fills keep the muted subtext.
+  assert.match(
+    stylesSource,
+    /solidActiveFill\(styles, state\.tone\);\s*labelStyle = styles\.itemLabelOnSolid;\s*secondaryStyle = styles\.itemSecondaryOnSolid;/,
+  );
+});
+
+test("dropdown danger row uses a red solid highlight with inverted text", () => {
+  const list = readSource("../../src/dropdown/DropdownList.tsx");
+  const stylesSource = readSource("../../src/dropdown/dropdownListStyles.ts");
+
+  // The solid active fill is tone-aware: danger/amber rows take their deep
+  // accents so the fill itself carries the tone under white text.
+  assert.match(
+    stylesSource,
+    /itemActiveSolidDanger: \{ backgroundColor: theme\.colors\.roseDeep \}/,
+  );
+  assert.match(
+    stylesSource,
+    /itemActiveSolidWarning: \{ backgroundColor: theme\.colors\.amberDeep \}/,
+  );
+  assert.match(
+    stylesSource,
+    /tone === "danger"[\s\S]*?return styles\.itemActiveSolidDanger/,
+  );
+  // The highlight reports the inverted (solid active) row, and DropdownList uses
+  // that to drop the tone accent so the white label wins instead of red-on-fill.
+  assert.match(stylesSource, /invertText/);
+  assert.match(list, /tone: entry\.tone/);
+  assert.match(list, /highlight\.invertText\s*\?\s*null/);
+});
+
+test("dropdown row renders trailing rightText that inverts on the solid fill", () => {
+  const list = readSource("../../src/dropdown/DropdownList.tsx");
+  const stylesSource = readSource("../../src/dropdown/dropdownListStyles.ts");
+  const selector = readSource("../../src/dropdown/DropdownSelector.tsx");
+
+  // The trailing text is library-rendered (like `secondary`) over the base muted
+  // style, so it reuses the active-row inversion instead of staying muted grey
+  // (~1.2:1) on the `primary` fill.
+  assert.match(list, /styles\.rightText, highlight\.secondaryStyle/);
+  assert.match(
+    stylesSource,
+    /rightText: \{[\s\S]*?color: theme\.colors\.muted[\s\S]*?\}/,
+  );
+  // The rightText occupies the trailing slot like a custom `right` node, so it
+  // suppresses the redundant selection check rather than doubling up.
+  assert.match(list, /!entry\.right\s*&&\s*!entry\.rightText/);
+  // The selector forwards an option's `rightText` straight through to the row.
+  assert.match(selector, /rightText\?: string;/);
+  assert.match(selector, /rightText: option\.rightText/);
 });
 
 function readSource(relativePath: string) {

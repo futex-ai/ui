@@ -20,17 +20,31 @@ test("package metadata targets the public Firna npm package", () => {
 test("package exposes every documented public subpath", () => {
   assert.deepEqual(Object.keys(packageJson.exports), [
     ".",
+    "./animated-border",
     "./avatar",
+    "./badge",
     "./button",
+    "./calendar",
+    "./data-grid",
     "./date",
+    "./drag-select",
     "./dropdown",
+    "./heatmap",
     "./input",
+    "./kanban",
+    "./list",
     "./modal",
     "./popover",
     "./radio",
     "./segmented",
+    "./skeleton",
+    "./spinner",
     "./switch",
+    "./table",
     "./theme",
+    "./toast",
+    "./typography",
+    "./workflow",
   ]);
 
   for (const [subpath, exportConfig] of Object.entries(packageJson.exports)) {

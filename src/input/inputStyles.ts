@@ -20,6 +20,8 @@ const INPUT_SIZES: Record<
     inputFontSize: number;
     inputHeight: number;
     paddingHorizontal: number;
+    textareaInputMinHeight: number;
+    textareaPaddingVertical: number;
   }
 > = {
   sm: {
@@ -29,6 +31,8 @@ const INPUT_SIZES: Record<
     inputFontSize: 13,
     inputHeight: 30,
     paddingHorizontal: 10,
+    textareaInputMinHeight: 72,
+    textareaPaddingVertical: 8,
   },
   md: {
     boxHeight: 40,
@@ -37,6 +41,8 @@ const INPUT_SIZES: Record<
     inputFontSize: 14,
     inputHeight: 38,
     paddingHorizontal: 12,
+    textareaInputMinHeight: 88,
+    textareaPaddingVertical: 10,
   },
   lg: {
     boxHeight: 48,
@@ -45,6 +51,8 @@ const INPUT_SIZES: Record<
     inputFontSize: 16,
     inputHeight: 46,
     paddingHorizontal: 14,
+    textareaInputMinHeight: 104,
+    textareaPaddingVertical: 12,
   },
 };
 
@@ -91,7 +99,9 @@ export function fieldChromeTokens(theme: SharedUiTheme) {
     },
     hint: {
       ...baseText,
-      color: theme.colors.muted,
+      // `placeholder` clears 4.5:1 on surface at this small size; `muted` was
+      // borderline (~4.06:1) for ≤11px secondary text — WCAG 2.1 1.4.3 (AA).
+      color: theme.colors.placeholder,
       fontSize: 11,
       lineHeight: 16.5,
     },
@@ -115,16 +125,26 @@ export function createInputStyles(
     box: {
       alignItems: "center",
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.border2,
+      // `controlBorder` (a translucent ink tint) draws the resting edge of an
+      // interactive control — a soft, light line (≈1.4:1 on white, intentionally
+      // below the 1.4.11 ≥3:1 floor) rather than the decorative `border2`.
+      borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.md,
       borderWidth: 1,
       flexDirection: "row",
       gap: sizing.gap,
-      height: sizing.boxHeight,
+      // `minHeight` (over a fixed `height`) lets the box grow rather than clip
+      // its contents when text spacing/size is increased — WCAG 2.1 1.4.12 Text
+      // Spacing (AA). At the default scale it renders the same boxHeight.
+      minHeight: sizing.boxHeight,
       paddingHorizontal: sizing.paddingHorizontal,
     },
     boxActive: { borderColor: theme.colors.primary },
     boxInvalid: { borderColor: theme.colors.rose },
+    boxMultiline: {
+      alignItems: "flex-start",
+      paddingVertical: sizing.textareaPaddingVertical,
+    },
     // `minWidth: 0` lets the web <input> shrink below its intrinsic size so the
     // trailing icons stay inside the box in narrow layouts.
     input: {
@@ -134,6 +154,17 @@ export function createInputStyles(
       fontSize: sizing.inputFontSize,
       height: sizing.inputHeight,
       minWidth: 0,
+    },
+    textareaInput: {
+      ...baseText,
+      color: theme.colors.ink,
+      flex: 1,
+      fontSize: sizing.inputFontSize,
+      minHeight: sizing.textareaInputMinHeight,
+      minWidth: 0,
+      paddingBottom: 0,
+      paddingTop: 0,
+      textAlignVertical: "top",
     },
     // Decorative icon wrapper (centred so it lines up with the input baseline).
     icon: { alignItems: "center", justifyContent: "center" },

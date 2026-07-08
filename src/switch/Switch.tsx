@@ -3,7 +3,10 @@ import { useMemo } from "react";
 import { Platform, Pressable, StyleProp, View, ViewStyle } from "react-native";
 
 import type { ControlSize } from "../controlSize";
+import { devWarn } from "../devWarn";
+import { hideWebOutlineView, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
+import { useReducedMotion } from "../useReducedMotion";
 
 import { createSwitchStyles } from "./switchStyles";
 
@@ -15,7 +18,18 @@ type SwitchKeyboardEvent = {
 };
 
 export type SwitchProps = {
+  /**
+   * Accessible name for the switch. Required unless `aria-labelledby` points at
+   * a visible label (the row-label pattern), so the control is never announced
+   * anonymously (WCAG 2.1 — 4.1.2 Name, Role, Value, A).
+   */
   accessibilityLabel?: string;
+  /**
+   * `nativeID` of a visible label element that names this switch. Prefer this
+   * over `accessibilityLabel` when a visible row label exists, so the accessible
+   * name matches the visible text (WCAG 2.1 — 2.5.3 Label in Name, A).
+   */
+  "aria-labelledby"?: string;
   disabled?: boolean;
   onValueChange?: (value: boolean) => void;
   /** Control density: `sm`, `md` (default), or `lg`. */
@@ -24,13 +38,9 @@ export type SwitchProps = {
   value: boolean;
 };
 
-const knobTransition =
-  Platform.OS === "web"
-    ? ({ transition: "left 0.15s ease" } as unknown as ViewStyle)
-    : null;
-
 export function Switch({
   accessibilityLabel,
+  "aria-labelledby": ariaLabelledBy,
   disabled = false,
   onValueChange,
   size = "md",
@@ -39,11 +49,20 @@ export function Switch({
 }: SwitchProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createSwitchStyles(theme, size), [theme, size]);
+  const reducedMotion = useReducedMotion();
+  // Draw the focus ring just outside the track so its contrast is measured
+  // against the page surface, not the track fill. The Pressable padding leaves
+  // clearance and sets no `overflow: hidden`, so the outset ring is not clipped
+  // and stays ≥3:1 in both the off (light) and on (primary) states (2.4.7 AA).
+  const focus = useFocusRing();
   const disabledState = disabled || !onValueChange;
   const toggle = () => onValueChange?.(!value);
   const handleKeyDown = (event: SwitchKeyboardEvent) => {
     const key = event.nativeEvent?.key ?? event.key;
-    if (disabledState || (key !== " " && key !== "Spacebar")) {
+    if (
+      disabledState ||
+      (key !== " " && key !== "Spacebar" && key !== "Enter")
+    ) {
       return;
     }
     event.preventDefault?.();
@@ -52,13 +71,27 @@ export function Switch({
   };
   const keyProps = Platform.OS === "web" ? { onKeyDown: handleKeyDown } : {};
 
+  if (!accessibilityLabel && !ariaLabelledBy) {
+    devWarn(
+      "Switch: provide `accessibilityLabel` or `aria-labelledby` so the switch has an accessible name (WCAG 4.1.2).",
+    );
+  }
+
+  const knobTransition =
+    Platform.OS === "web" && !reducedMotion
+      ? ({ transition: "left 0.15s ease" } as unknown as ViewStyle)
+      : null;
+
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="switch"
       accessibilityState={{ checked: value, disabled: disabledState }}
       aria-checked={value}
+      aria-labelledby={ariaLabelledBy}
       disabled={disabledState}
+      onBlur={focus.onBlur}
+      onFocus={focus.onFocus}
       onPress={toggle}
       style={styles.pressable}
       {...keyProps}
@@ -69,6 +102,11 @@ export function Switch({
           value ? styles.trackOn : null,
           disabledState ? styles.trackDisabled : null,
           trackStyle,
+          // `hideWebOutlineView` suppresses the default UA outline; the focus
+          // ring (a width-bearing `outline`) is layered last so it survives and
+          // stays visible (WCAG 2.1 — 2.4.7 Focus Visible, AA).
+          hideWebOutlineView,
+          focus.focused ? focus.focusRingStyle : null,
         ]}
       >
         <View

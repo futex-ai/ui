@@ -18,7 +18,12 @@ dismissal. `Popover` adds only the open-state controller and the trigger props.
 - Close on outside press and Escape (web) or scrim tap / back button (native).
 - Support controlled (`open` + `onOpenChange`) and uncontrolled (`defaultOpen`)
   open state.
-- Report expanded state to assistive tech through the trigger props.
+- Report expanded state, the kind of overlay (`aria-haspopup`), and the
+  controlled surface id (`aria-controls`) to assistive tech through the trigger
+  props.
+- Name the surface (`label`) and relate it to the trigger, and — on web —
+  manage focus order: focus moves into the surface on open and back to the
+  trigger on close.
 
 ## Usage
 
@@ -69,6 +74,48 @@ const [open, setOpen] = useState(false);
 </Popover>;
 ```
 
+## Accessibility
+
+The popover is **press-triggered** and **non-modal**: it dismisses on outside
+press and Escape (`DropdownPortal` owns both), so the hover/focus-reveal rules of
+WCAG 1.4.13 do not apply to the default model.
+
+- **Name & role (4.1.2).** Pass `label` to expose the surface as a named
+  `dialog` (default) or `region`/`tooltip` via `role`. Without a `label` the
+  surface stays a plain, role-less container so an unnamed landmark is never
+  announced.
+- **Trigger relationship (1.3.1).** `triggerProps` carries `aria-expanded`,
+  `aria-haspopup` (`"dialog"` for a dialog, otherwise `"true"`), and — while open
+  — `aria-controls` pointing at the surface. Spread it onto your `Pressable`;
+  these are flat top-level props so a consumer `accessibilityState` cannot
+  clobber them.
+- **Focus order (2.4.3, web).** On open, focus moves into the surface (the
+  container, or `initialFocusRef` if given) so the keyboard and screen reader
+  land inside the popover; on close, focus returns to the trigger. The surface
+  shows a focus ring (2.4.7) when it itself holds focus. Pass
+  `manageFocus={false}` — or use `role="tooltip"` — for a supplemental hint that
+  must not steal focus.
+
+```tsx
+<Popover
+  label="Account details"
+  role="dialog"
+  minWidth={240}
+  trigger={({ open, triggerProps }) => (
+    <Pressable
+      {...triggerProps}
+      accessibilityLabel="Account details"
+      accessibilityRole="button"
+      style={[styles.button, open && styles.buttonOpen]}
+    >
+      <Text>Details</Text>
+    </Pressable>
+  )}
+>
+  {({ close }) => <AccountCard onClose={close} />}
+</Popover>
+```
+
 ## Sizing and placement
 
 The trigger is wrapped in a self-hugging `View` (`alignSelf: "flex-start"`) so a
@@ -78,6 +125,16 @@ options — `align`, `gutter`, `margin`, `maxHeight`, `minHeight`, `minWidth` �
 are forwarded straight to `DropdownPortal`. Pass `style` to change how the
 wrapper lays out (for example `alignSelf: "stretch"` to match the trigger to its
 parent width).
+
+The portal defaults to the high shared dropdown layer
+(`DROPDOWN_LAYERS.portal`, currently `1_000_000`). Pass `zIndex` to `Popover`
+when a consuming screen owns an even higher stacking context:
+
+```tsx
+<Popover minWidth={240} trigger={renderTrigger} zIndex={2_000_000}>
+  <DetailsCard />
+</Popover>
+```
 
 ## Theming
 

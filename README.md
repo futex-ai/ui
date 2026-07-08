@@ -5,34 +5,65 @@ surfaces. The first consumers are the accounting app and the Juno app.
 
 ## Key Features
 
-- Shared dropdown, selector, combobox, segmented control, radio card, switch,
-  button, labelled input, modal, and avatar primitives.
+- Shared dropdown menu, selector, combobox, drag-select, segmented control,
+  radio card, switch, spinner, button, labelled input/textarea, data table,
+  editable data grid (Airtable/Notion-style),
+  modal, toast provider/controller, avatar, status badge, animated comet-trail
+  border, calendar heatmap, full event-calendar (month/week/day/agenda,
+  recurring events, drag-to-create), and branching workflow-builder step-graph
+  primitives.
 - A shared `sm` / `md` / `lg` size scale (`ControlSize`) across the interactive
   controls — buttons, inputs, dropdown selectors, date fields, segmented
   controls, and switches.
 - Themeable visual tokens so consumers can use their own brand primary color.
+- High-layer date, dropdown, and popover overlays with z-index escape hatches
+  for custom consumer stacking contexts.
 - Expo and React Native Web compatible platform files.
 - Focused unit tests, browser interaction tests, and package export checks.
-- Storybook previews for visual review on every PR.
-- Release-plz release PRs and npm trusted publishing for `@firna/ui`.
+- Storybook previews for visual review on same-repository non-release PRs.
+- Release-please release PRs and npm trusted publishing for `@firna/ui`.
 
 ## User-Facing Interface
 
 The package name is `@firna/ui`. Public exports are available from:
 
 - `@firna/ui` for all public components and helpers.
+- `@firna/ui/animated-border` for the animated comet-trail border that traces a
+  rounded-rectangle perimeter to highlight an element.
 - `@firna/ui/avatar` for the themed circular initials avatar.
+- `@firna/ui/badge` for the themed status badge pill with tone, variant, and
+  size variants.
 - `@firna/ui/button` for the themed button with tone, size, and block variants.
+- `@firna/ui/calendar` for the full event calendar (month, week, day, and agenda
+  views, recurring events, and drag-to-create).
+- `@firna/ui/data-grid` for the editable Airtable/Notion-style data grid
+  (cell-range selection, keyboard nav, virtualized infinite scroll, typed
+  editable cells, column menus, and a responsive card stack).
 - `@firna/ui/date` for single-date and date-range fields.
-- `@firna/ui/dropdown` for dropdown, selector, combobox, and layer helpers.
-- `@firna/ui/input` for the labelled text input and bare input frame.
+- `@firna/ui/drag-select` for web drag-selection providers, target hooks, and
+  geometry helpers.
+- `@firna/ui/dropdown` for dropdown menu, selector, combobox, and layer helpers.
+- `@firna/ui/heatmap` for the calendar contribution heatmap and its pure layout
+  and color-scale helpers.
+- `@firna/ui/input` for the labelled text input, textarea, and bare input
+  frame.
+- `@firna/ui/list` for the vertical list with between-item separators, optional
+  clickable items, and the `ListItem` row.
 - `@firna/ui/modal` for web modal frame, portal, model, and layer helpers.
 - `@firna/ui/popover` for generic anchored popovers.
 - `@firna/ui/radio` for themed titled radio-option cards.
 - `@firna/ui/segmented` for themed single-select segmented controls.
+- `@firna/ui/spinner` for the themed indeterminate spinning loading indicator.
 - `@firna/ui/switch` for themed binary on/off switches.
+- `@firna/ui/table` for the data table with optional headers and clickable rows.
 - `@firna/ui/theme` for `SharedUiThemeProvider`, default accounting-style
   tokens, the Juno token preset, and `createSharedUiTheme`.
+- `@firna/ui/toast` for the toast provider, the `useToast` hook, the
+  `toastController` method API, and transient notification toasts including
+  card and solid variants with optional custom leading icons.
+- `@firna/ui/workflow` for the branching workflow builder — a step-graph canvas
+  (color-coded nodes, tinted edge labels, forks, legend, add-step) for
+  constructing automation workflows.
 
 ## Installation
 
@@ -89,21 +120,34 @@ The package export map intentionally separates runtime targets:
 
 ## Package Releases
 
-- release-plz opens and updates the release PR for `@firna/ui`.
-- When release-plz reports no release PR changes, the workflow exits
-  successfully without checking out a release branch or syncing npm metadata.
-- The release flow uses `release_always = true` so squash-merged release PRs
-  still let release-plz create the `vX.Y.Z` tag and GitHub release. The
-  automatic release path first verifies that the `main` commit is associated
-  with a `release-plz-*` PR, so ordinary pushes do not create releases or
-  publish npm packages.
-- npm publishing runs in the same release-plz workflow invocation that creates
-  the GitHub release, using npm trusted publishing. The npm package must
-  configure this repository and `.github/workflows/release-plz.yml` as the
+- Release-please opens and updates the release PR for `@firna/ui` from
+  Conventional Commits.
+- The release PR updates `CHANGELOG.md`, `package.json`, and
+  `package-lock.json` through release-please's `node` release type.
+- When release-please creates or updates a release PR, the release workflow
+  checks out that generated PR branch, runs `npm run format`, and pushes a
+  `chore: format release PR` commit only if the generated files need Prettier
+  cleanup.
+- Merging the release PR lets release-please create the `vX.Y.Z` tag and GitHub
+  release. Ordinary non-release pushes to `main` only update the release PR.
+- npm publishing runs in the same `.github/workflows/release-plz.yml` invocation
+  that creates the GitHub release, using npm trusted publishing. The npm package
+  must configure this repository and `release-plz.yml` as the
   trusted publisher, with allowed action `npm publish`.
-- The release-plz workflow can also be manually dispatched with `publish_ref`
-  set to a checked `vX.Y.Z` tag if the automatic publish job needs to be
-  retried.
+- The workflow file keeps the historical `release-plz.yml` filename because npm
+  trusted publishing validates the workflow filename configured on npmjs.com.
+  The workflow implementation itself uses release-please.
+- The workflow falls back to `GITHUB_TOKEN` for release-please, but a
+  repository secret named `RELEASE_PLEASE_TOKEN` can be added if release PRs
+  need to trigger normal PR checks.
+- Before publishing, the release workflow installs dependencies, installs the
+  Playwright browser, verifies the release tag matches `package.json`, runs
+  `cargo xtask check`, and skips publishing if the version already exists on
+  npm.
+- If publish fails after the GitHub release was created, manually dispatch the
+  release workflow with `publish_ref` set to the existing `vX.Y.Z` tag. The
+  retry path checks out that tag and runs the same verification and publish
+  steps.
 - Scoped npm packages default to private, so `publishConfig.access` is set to
   `public`.
 
@@ -112,18 +156,26 @@ The package export map intentionally separates runtime targets:
 - Main branch Storybook deploys to Cloudflare Pages project
   `futex-ui-storybook`.
 - Main URL: `https://futex-ui-storybook.pages.dev`.
-- PR previews deploy to Cloudflare branch `pr-<number>`.
+- Same-repository non-release PR previews deploy to Cloudflare branch
+  `pr-<number>`.
 - PR preview URL shape:
   `https://pr-<number>.futex-ui-storybook.pages.dev`.
 - PR previews are posted through a sticky comment marked
   `<!-- futex-ui-storybook-preview -->`.
+- Release Please PRs are skipped by the Storybook preview deploy job; their
+  component changes were already previewed in the source PRs.
 - Closing a same-repository PR marks the sticky comment inactive and attempts
   to delete aliased preview deployments for that PR branch; if Cloudflare
   cleanup cannot complete safely, the comment reports the retained reason.
 - Storybook examples are grouped under one top-level folder per family:
-  `Avatar/Examples`, `Button/Examples`, `Date/Examples`, `Dropdown/Examples`,
-  `Input/Examples`, `Modal/Examples`, `Popover/Examples`, `Radio/Examples`,
-  `Segmented/Examples`, `Switch/Examples`, and `Theme/Examples`.
+  `Avatar/Examples`, `Badge/Examples`, `Button/Examples`, `Calendar/Examples`,
+  `Date/Examples`,
+  `Drag Select/Examples`, `Dropdown/Examples`, `Heatmap/Examples`,
+  `Input/Examples`, `Kanban/Examples`, `List/Examples`, `Modal/Examples`,
+  `Popover/Examples`,
+  `Radio/Examples`,
+  `Segmented/Examples`, `Spinner/Examples`, `Switch/Examples`,
+  `Table/Examples`, `Theme/Examples`, and `Toast/Examples`.
 - Required repository variable: `CLOUDFLARE_ACCOUNT_ID`.
 - Required repository secret: `CLOUDFLARE_PAGES_API_TOKEN` or
   `CLOUDFLARE_API_TOKEN`.
@@ -131,20 +183,31 @@ The package export map intentionally separates runtime targets:
 ## Key Code Jumping Points
 
 - Shared theme boundary: [src/theme.tsx](src/theme.tsx)
+- Animated border component:
+  [src/animated-border/README.md](src/animated-border/README.md)
 - Avatar component: [src/avatar/README.md](src/avatar/README.md)
+- Badge component: [src/badge/README.md](src/badge/README.md)
 - Shared control-size scale: [src/controlSize.ts](src/controlSize.ts)
 - Button component: [src/button/README.md](src/button/README.md)
-- Input component: [src/input/README.md](src/input/README.md)
+- Calendar component: [src/calendar/README.md](src/calendar/README.md)
+- Input and textarea components: [src/input/README.md](src/input/README.md)
+- Kanban component: [src/kanban/README.md](src/kanban/README.md)
+- List component: [src/list/README.md](src/list/README.md)
 - Dropdown components: [src/dropdown/README.md](src/dropdown/README.md)
+- Drag-select components:
+  [src/drag-select/README.md](src/drag-select/README.md)
+- Heatmap component: [src/heatmap/README.md](src/heatmap/README.md)
 - Modal components: [src/modal/README.md](src/modal/README.md)
 - Radio card component: [src/radio/README.md](src/radio/README.md)
 - Segmented control component:
   [src/segmented/README.md](src/segmented/README.md)
+- Spinner component: [src/spinner/README.md](src/spinner/README.md)
 - Switch component: [src/switch/README.md](src/switch/README.md)
+- Table component: [src/table/README.md](src/table/README.md)
+- Toast component: [src/toast/README.md](src/toast/README.md)
+- Workflow builder component: [src/workflow/README.md](src/workflow/README.md)
 - Browser tests: [tests/browser/storybook.spec.ts](tests/browser/storybook.spec.ts)
 - Repository automation: [xtask/README.md](xtask/README.md)
-- Release metadata crate:
-  [crates/firna-ui-release/README.md](crates/firna-ui-release/README.md)
 - Shared component protocol:
   [docs/protocol/shared-ui-components.md](docs/protocol/shared-ui-components.md)
 - Consumer migration handoff: [docs/consumer-migration.md](docs/consumer-migration.md)

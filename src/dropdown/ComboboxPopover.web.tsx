@@ -25,8 +25,10 @@ type ComboboxPopoverProps = DropdownPlacementOptions & {
 
 /**
  * Result surface for autocomplete inputs. The surface is a plain `View`, not a
- * focusable control, so the backing input keeps focus while results are open;
- * Escape stays owned by the input's own keyboard handling.
+ * focusable control, so the backing input keeps focus while results are open.
+ * Escape closes the results through the shared escape-layer stack that
+ * `useDropdownDismiss` registers, so an autocomplete opened inside a modal
+ * dismisses its results without also closing the modal.
  */
 export function ComboboxPopover({
   align = "start",

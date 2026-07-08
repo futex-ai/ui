@@ -4,6 +4,36 @@ export type ComboboxFilterOption = {
   label: string;
 };
 
+/**
+ * Web-only ARIA props for a combobox text input that filters a popup listbox:
+ * `role=combobox` + `aria-autocomplete=list` + `aria-expanded`, linked to the
+ * list container and its active option (WCAG 1.3.1 / 4.1.2 / 2.1.1). Returned as
+ * a cast object because React Native Web's bundled types omit these literal
+ * attributes (RNW forwards them at runtime; native gets an empty object).
+ */
+export function comboboxInputA11y({
+  activeDescendant,
+  controls,
+  open,
+}: {
+  activeDescendant?: string;
+  controls: string;
+  open: boolean;
+}): object {
+  // Keep this file pure (no `react-native` import) so it stays unit-testable;
+  // `document` is absent on native, which is the same gate as `Platform.OS`.
+  if (typeof document === "undefined") {
+    return {};
+  }
+  return {
+    "aria-activedescendant": open ? activeDescendant : undefined,
+    "aria-autocomplete": "list",
+    "aria-controls": open ? controls : undefined,
+    "aria-expanded": open,
+    role: "combobox",
+  } as unknown as object;
+}
+
 export type ComboboxFilterSection<TOption extends ComboboxFilterOption> = {
   options: TOption[];
   title?: string;

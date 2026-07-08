@@ -3,13 +3,25 @@ import { useState } from "react";
 import { View } from "react-native";
 
 import { DropdownSelector } from "../index";
+import type { DropdownHighlightVariant } from "../index";
 
 import {
   ActionMenuExample,
+  ActionMenuSubtextExample,
+  BottomEdgeFlipExample,
+  CategorySelectExample,
   ChipMultiSelectExample,
+  ContextMenuExample,
+  EdgePlacementGridExample,
+  EndAlignedMenuExample,
   ExplicitSelectorExample,
+  HorizontalEdgeClampExample,
+  HoverMenuExample,
   InputBackedComboboxExample,
+  LongPressMenuExample,
   LongSelectorExample,
+  PlacementPlaygroundExample,
+  ScrollTrackingSelectorExample,
   SearchableSelectorExample,
   SelectorExample,
   SelectorWithHeaderFooterExample,
@@ -57,11 +69,38 @@ export const ExplicitSelector: Story = {
   ),
 };
 
+export const SelectorHighlightVariants: Story = {
+  name: "Selector highlight variants",
+  render: () => (
+    <StorySurface>
+      <SelectorHighlightVariantsExample />
+    </StorySurface>
+  ),
+};
+
+export const SelectorValidation: Story = {
+  name: "Selector with label, hint, and error",
+  render: () => (
+    <StorySurface>
+      <SelectorValidationExample />
+    </StorySurface>
+  ),
+};
+
 export const LongDropdownSelector: Story = {
   name: "Long dropdown selector",
   render: () => (
     <StorySurface>
       <LongSelectorExample />
+    </StorySurface>
+  ),
+};
+
+export const CategorySelect: Story = {
+  name: "Selector with trailing codes",
+  render: () => (
+    <StorySurface>
+      <CategorySelectExample />
     </StorySurface>
   ),
 };
@@ -84,11 +123,53 @@ export const SearchableSelector: Story = {
   ),
 };
 
+export const SelectorScrollTracking: Story = {
+  name: "Placement · follows the trigger on scroll",
+  parameters: { layout: "fullscreen" },
+  render: () => <ScrollTrackingSelectorExample />,
+};
+
 export const DropdownActionMenu: Story = {
   name: "Dropdown action menu",
   render: () => (
     <StorySurface>
       <ActionMenuExample />
+    </StorySurface>
+  ),
+};
+
+export const DropdownActionMenuSubtext: Story = {
+  name: "Dropdown action menu with subtext",
+  render: () => (
+    <StorySurface>
+      <ActionMenuSubtextExample />
+    </StorySurface>
+  ),
+};
+
+export const DropdownHoverMenu: Story = {
+  name: "Trigger · hover menu",
+  render: () => (
+    <StorySurface>
+      <HoverMenuExample />
+    </StorySurface>
+  ),
+};
+
+export const DropdownLongPressMenu: Story = {
+  name: "Trigger · long-press menu",
+  render: () => (
+    <StorySurface>
+      <LongPressMenuExample />
+    </StorySurface>
+  ),
+};
+
+export const DropdownContextMenu: Story = {
+  name: "Trigger · context menu",
+  render: () => (
+    <StorySurface>
+      <ContextMenuExample />
     </StorySurface>
   ),
 };
@@ -110,6 +191,103 @@ export const ChipMultiSelect: Story = {
     </StorySurface>
   ),
 };
+
+export const EdgePlacementGrid: Story = {
+  name: "Placement · edge grid",
+  parameters: { layout: "fullscreen" },
+  render: () => <EdgePlacementGridExample />,
+};
+
+export const BottomEdgeFlip: Story = {
+  name: "Placement · flips above the bottom edge",
+  parameters: { layout: "fullscreen" },
+  render: () => <BottomEdgeFlipExample />,
+};
+
+export const HorizontalEdgeClamp: Story = {
+  name: "Placement · clamps to the side edges",
+  parameters: { layout: "fullscreen" },
+  render: () => <HorizontalEdgeClampExample />,
+};
+
+export const EndAlignedMenu: Story = {
+  name: "Placement · end-aligned menu",
+  parameters: { layout: "fullscreen" },
+  render: () => <EndAlignedMenuExample />,
+};
+
+export const PlacementPlayground: Story = {
+  name: "Placement · playground",
+  parameters: { layout: "fullscreen" },
+  render: () => <PlacementPlaygroundExample />,
+};
+
+function SelectorValidationExample() {
+  // A required selector that surfaces a programmatically associated hint and
+  // error: the trigger advertises the popup listbox (`aria-haspopup`,
+  // `aria-controls`), reflects `aria-required`/`aria-invalid`, and references
+  // its hint/error Text by id via `aria-describedby` (WCAG 3.3.1 / 1.3.1 /
+  // 4.1.2). Leaving the value empty keeps the error on screen so the
+  // association is demonstrable.
+  const [scheme, setScheme] = useState("");
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <DropdownSelector
+        error={scheme ? undefined : "Choose a VAT scheme to continue."}
+        hint="This determines how VAT is calculated on invoices."
+        label="VAT scheme"
+        onValueChange={setScheme}
+        options={sizeOptions}
+        placeholder="Select a scheme"
+        required
+        value={scheme}
+      />
+    </View>
+  );
+}
+
+const highlightVariantOptions: {
+  label: string;
+  variant: DropdownHighlightVariant;
+}[] = [
+  { label: "Solid fill (default)", variant: "solid" },
+  { label: "Outline ring", variant: "ring" },
+  { label: "Outline + light fill", variant: "ringFill" },
+  { label: "Leading dot", variant: "dot" },
+];
+
+function SelectorHighlightVariantsExample() {
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      {highlightVariantOptions.map(({ label, variant }) => (
+        <HighlightVariantSelector
+          key={variant}
+          label={label}
+          variant={variant}
+        />
+      ))}
+    </View>
+  );
+}
+
+function HighlightVariantSelector({
+  label,
+  variant,
+}: {
+  label: string;
+  variant: DropdownHighlightVariant;
+}) {
+  const [value, setValue] = useState("standard");
+  return (
+    <DropdownSelector
+      highlightVariant={variant}
+      label={label}
+      onValueChange={setValue}
+      options={sizeOptions}
+      value={value}
+    />
+  );
+}
 
 function SelectorSizesExample() {
   const [small, setSmall] = useState("standard");

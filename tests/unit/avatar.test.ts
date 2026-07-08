@@ -34,7 +34,10 @@ test("avatar sizes the disc and initials from the size prop", () => {
 test("avatar forwards accessible names and style overrides", () => {
   const source = readSource("../../src/avatar/Avatar.tsx");
 
-  assert.match(source, /accessibilityLabel=\{accessibilityLabel \?\? label\}/);
+  assert.match(
+    source,
+    /accessibilityLabel=\{\s*decorative \? undefined : \(accessibilityLabel \?\? label\)\s*\}/,
+  );
   assert.match(source, /style,\n/);
   assert.match(source, /textColor\?: TextStyle\["color"\]/);
   assert.match(

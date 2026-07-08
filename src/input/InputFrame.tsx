@@ -18,6 +18,17 @@ import { useSharedUiTheme } from "../theme";
 import { createInputStyles, inputIconSize } from "./inputStyles";
 
 export type InputFrameProps = Omit<TextInputProps, "style"> & {
+  /**
+   * Space-separated id list of the element(s) describing this input (hint /
+   * error text). RNW forwards it as a literal `aria-describedby` on the DOM
+   * input — RNW does NOT map `accessibilityHint` to it. (WCAG 2.1 3.3.1 / 3.3.2)
+   */
+  "aria-describedby"?: string;
+  /**
+   * Id of the error-message element. Forwarded as a literal `aria-errormessage`;
+   * only meaningful while `invalid` (which sets `aria-invalid`). (WCAG 2.1 3.3.1)
+   */
+  "aria-errormessage"?: string;
   /** Renders the rose invalid border (independent of any message). */
   invalid?: boolean;
   /** Control density: `sm`, `md` (default), or `lg`. */
@@ -65,8 +76,9 @@ export type InputFrameProps = Omit<TextInputProps, "style"> & {
  * The bordered box around a `TextInput`, with optional leading/trailing icons
  * and an accessible clear button. Owns the sage focus ring, the rose invalid
  * border, and the `aria-invalid` / `aria-required` wiring, but renders no label
- * or messages — embed it directly (e.g. inside the date field's trigger) or use
- * {@link Input} for the full labelled field.
+ * or messages — embed it directly (e.g. inside the date field's trigger), use
+ * {@link Input} for the full labelled field, or pass `multiline` for textarea
+ * geometry.
  */
 export function InputFrame({
   active = false,
@@ -91,6 +103,7 @@ export function InputFrame({
   const styles = useMemo(() => createInputStyles(theme, size), [theme, size]);
   const iconSize = inputIconSize(size);
   const focus = useFocusRing();
+  const multiline = Boolean(props.multiline);
   const showClear = clearable && (clearVisible ?? Boolean(props.value));
   const borderActive = focus.focused || active;
   const clearLabel =
@@ -125,8 +138,15 @@ export function InputFrame({
     <View
       style={[
         styles.box,
+        multiline ? styles.boxMultiline : null,
         invalid ? styles.boxInvalid : borderActive ? styles.boxActive : null,
         style,
+        // The focus ring (a geometry-bearing outline, not just a border
+        // recolor) goes last so it survives a caller `style` override and is
+        // visible even on an invalid (rose-bordered) field — WCAG 2.1 2.4.7
+        // Focus Visible (AA). Only paints when the input itself is focused
+        // (not for the `active`/popover-open border).
+        focus.focused ? focus.focusRingStyle : null,
       ]}
     >
       {PrefixIcon ? (
@@ -138,7 +158,9 @@ export function InputFrame({
         ref={setInputRef}
         aria-invalid={invalid}
         aria-required={required}
-        placeholderTextColor={theme.colors.faint}
+        // `placeholder` clears 4.5:1 on surface (WCAG 2.1 1.4.3, AA); `faint`
+        // was only ~2.26:1. A placeholder is never the only label (3.3.2 A).
+        placeholderTextColor={theme.colors.placeholder}
         {...props}
         onBlur={(event) => {
           focus.onBlur();
@@ -148,7 +170,11 @@ export function InputFrame({
           focus.onFocus();
           props.onFocus?.(event);
         }}
-        style={[styles.input, hideWebOutline, inputStyle]}
+        style={[
+          multiline ? styles.textareaInput : styles.input,
+          hideWebOutline,
+          inputStyle,
+        ]}
       />
       {/* The clear button is a distinct action with no keyboard equivalent on the
           input, so it stays an accessible button (in the tab order and a11y

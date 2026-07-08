@@ -16,6 +16,8 @@ themed disc.
   name without forking the component.
 - Allow palette-specific discs to override the initials' color while preserving
   the component-owned font sizing and weight.
+- Expose the disc to assistive tech as a single named image, with an opt-out for
+  decorative use beside a visible label.
 
 ## Usage
 
@@ -39,6 +41,23 @@ import { Avatar } from "@firna/ui/avatar";
 overrides the visible initials as the accessible name); omit it and the initials
 are read instead. `style` overrides the container disc for non-default surfaces.
 `textColor` overrides the initials' color for palette-specific discs.
+
+## Accessibility
+
+- The disc is exposed as a single image (`accessibilityRole="image"` →
+  `role="img"`) named by `accessibilityLabel` (falling back to the visible
+  initials). The inner initials `Text` is hidden from assistive tech
+  (`aria-hidden` on web, `importantForAccessibility="no"` on native) so the
+  avatar is announced once by its name rather than as raw initials (1.1.1,
+  4.1.2).
+- Pass `decorative` when the avatar sits beside a visible label that already
+  names the person/entity. The disc is then removed from the accessibility tree
+  (`aria-hidden` on web, `importantForAccessibility="no-hide-descendants"` /
+  `accessibilityElementsHidden` on native) so the name is not announced twice.
+- **Contrast contract:** the built-in tones (`solid`, `soft`) meet the 4.5:1 AA
+  text-contrast minimum in both shipped themes. When you override `textColor`
+  and/or the disc `backgroundColor` via `style`, you are responsible for keeping
+  the initials at ≥4.5:1 against the disc background (1.4.3).
 
 ## Theming
 

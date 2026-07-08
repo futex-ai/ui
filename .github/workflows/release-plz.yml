@@ -1,4 +1,4 @@
-name: Release-plz
+name: Release
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
     inputs:
       publish_ref:
-        description: Existing vX.Y.Z tag to publish without creating a new release.
-        required: false
+        description: Existing vX.Y.Z tag to publish.
+        required: true
         type: string
 
 permissions:
@@ -16,135 +16,184 @@ permissions:
 
 jobs:
   release:
-    name: Release From Merged Release PR
-    if: github.repository == 'futex-ai/ui' && (github.event_name != 'workflow_dispatch' || inputs.publish_ref == '')
+    name: Release @firna/ui
+    if: github.repository == 'futex-ai/ui'
     runs-on: ubuntu-latest
-    outputs:
-      releases_created: ${{ steps.release-plz.outputs.releases_created }}
-      tag: ${{ steps.release-output.outputs.tag }}
-      version: ${{ steps.release-output.outputs.version }}
     permissions:
       contents: write
-      pull-requests: read
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Verify release PR source
-        id: release-source
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_PR_BRANCH_PREFIX: release-plz-
-        run: |
-          pulls="$(gh api -H "Accept: application/vnd.github+json" "/repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls")"
-          release_pr="$(printf "%s" "${pulls}" | jq -cer --arg prefix "${RELEASE_PR_BRANCH_PREFIX}" 'map(select(.head.ref | startswith($prefix)))[0] // empty')" || {
-            echo "release_pr=false" >> "$GITHUB_OUTPUT"
-            echo "No ${RELEASE_PR_BRANCH_PREFIX} pull request is associated with ${GITHUB_SHA}; skipping release."
-            exit 0
-          }
-          number="$(printf "%s" "${release_pr}" | jq -r ".number")"
-          branch="$(printf "%s" "${release_pr}" | jq -r ".head.ref")"
-          echo "release_pr=true" >> "$GITHUB_OUTPUT"
-          echo "release_pr_number=${number}" >> "$GITHUB_OUTPUT"
-          echo "release_pr_branch=${branch}" >> "$GITHUB_OUTPUT"
-          echo "Release source is pull request #${number} from ${branch}."
-
-      - name: Run release-plz release
-        if: steps.release-source.outputs.release_pr == 'true'
-        id: release-plz
-        uses: release-plz/action@v0.5.130
-        with:
-          command: release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Resolve release output
-        if: steps.release-source.outputs.release_pr == 'true' && steps.release-plz.outputs.releases_created == 'true'
-        id: release-output
-        env:
-          RELEASES: ${{ steps.release-plz.outputs.releases }}
-        run: |
-          release="$(printf "%s" "${RELEASES}" | jq -cer 'map(select(.package_name == "firna-ui-release"))[0] // empty')" || {
-            echo "::error title=Missing release-plz release::release-plz did not return the firna-ui-release package."
-            exit 1
-          }
-          version="$(printf "%s" "${release}" | jq -r ".version")"
-          tag="$(printf "%s" "${release}" | jq -r ".tag")"
-          if [ -z "${version}" ] || [ "${version}" = "null" ]; then
-            echo "::error title=Missing release version::release-plz did not return a package version."
-            exit 1
-          fi
-          if [ -z "${tag}" ] || [ "${tag}" = "null" ]; then
-            echo "::error title=Missing release tag::release-plz did not return a release tag."
-            exit 1
-          fi
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
-          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
-
-  publish:
-    name: Publish @firna/ui
-    needs: release
-    if: always() && github.repository == 'futex-ai/ui' && (needs.release.outputs.releases_created == 'true' || (github.event_name == 'workflow_dispatch' && inputs.publish_ref != ''))
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
       id-token: write
+      issues: write
+      pull-requests: write
+    concurrency:
+      group: release-${{ github.ref }}
+      cancel-in-progress: false
     steps:
-      - name: Check out release commit
+      - name: Run release-please
+        if: github.event_name == 'push'
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          release-type: node
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Resolve release PR branch
+        if: github.event_name == 'push' && steps.release.outputs.prs_created == 'true'
+        id: release-pr
+        env:
+          RELEASE_PR: ${{ steps.release.outputs.pr }}
+          RELEASE_PRS: ${{ steps.release.outputs.prs }}
+        run: |
+          set -euo pipefail
+
+          branch="$(
+            node <<'NODE'
+          const singlePr = process.env.RELEASE_PR;
+          const releasePrs = process.env.RELEASE_PRS;
+          const parsedPr = singlePr
+            ? JSON.parse(singlePr)
+            : JSON.parse(releasePrs || "[]")[0];
+
+          if (!parsedPr?.headBranchName) {
+            throw new Error("release-please did not return a release PR head branch");
+          }
+
+          console.log(parsedPr.headBranchName);
+          NODE
+          )"
+
+          echo "branch=${branch}" >> "$GITHUB_OUTPUT"
+
+      - name: Check out release PR branch
+        if: github.event_name == 'push' && steps.release.outputs.prs_created == 'true'
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_ref != '' && inputs.publish_ref || github.sha }}
+          ref: ${{ steps.release-pr.outputs.branch }}
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node for release PR formatting
+        if: github.event_name == 'push' && steps.release.outputs.prs_created == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install release PR dependencies
+        if: github.event_name == 'push' && steps.release.outputs.prs_created == 'true'
+        run: npm ci
+
+      - name: Format release PR
+        if: github.event_name == 'push' && steps.release.outputs.prs_created == 'true'
+        run: npm run format
+
+      - name: Commit formatted release PR
+        if: github.event_name == 'push' && steps.release.outputs.prs_created == 'true'
+        env:
+          RELEASE_PR_BRANCH: ${{ steps.release-pr.outputs.branch }}
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet; then
+            echo "Release PR already matches repository formatting."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: format release PR"
+          git push origin "HEAD:${RELEASE_PR_BRANCH}"
+
+      - name: Resolve publish target
+        id: publish-target
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUBLISH_REF: ${{ github.event.inputs.publish_ref || '' }}
+          RELEASE_CREATED: ${{ steps.release.outputs.release_created }}
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag_name }}
+        run: |
+          set -euo pipefail
+
+          if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
+            if [ -z "${PUBLISH_REF}" ]; then
+              echo "::error title=Missing publish ref::Provide an existing vX.Y.Z tag."
+              exit 1
+            fi
+            if [[ ! "${PUBLISH_REF}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "::error title=Invalid publish ref::Expected an existing vX.Y.Z tag, got ${PUBLISH_REF}."
+              exit 1
+            fi
+            {
+              echo "should_publish=true"
+              echo "ref=${PUBLISH_REF}"
+              echo "tag=${PUBLISH_REF}"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "${RELEASE_CREATED}" = "true" ]; then
+            if [ -z "${RELEASE_SHA}" ] || [ -z "${RELEASE_TAG}" ]; then
+              echo "::error title=Missing release target::release-please did not return a release SHA and tag."
+              exit 1
+            fi
+            {
+              echo "should_publish=true"
+              echo "ref=${RELEASE_SHA}"
+              echo "tag=${RELEASE_TAG}"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "should_publish=false" >> "$GITHUB_OUTPUT"
+
+      - name: Check out repository
+        if: steps.publish-target.outputs.should_publish == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.publish-target.outputs.ref }}
 
       - name: Set up Node
+        if: steps.publish-target.outputs.should_publish == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
 
       - name: Ensure npm supports trusted publishing
+        if: steps.publish-target.outputs.should_publish == 'true'
         run: npm install --global npm@11.7.0
 
       - name: Set up Rust
+        if: steps.publish-target.outputs.should_publish == 'true'
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install dependencies
+        if: steps.publish-target.outputs.should_publish == 'true'
         run: npm ci
 
       - name: Install Playwright browser
+        if: steps.publish-target.outputs.should_publish == 'true'
         run: npx playwright install --with-deps chromium
 
-      - name: Verify npm metadata version
-        run: |
-          cargo xtask sync-package-version
-          git diff --exit-code -- package.json package-lock.json
-
       - name: Verify release version
+        if: steps.publish-target.outputs.should_publish == 'true'
         id: version
         run: |
           package_version="$(node -p "JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version")"
-          if [ -n "${RELEASE_VERSION}" ] && [ "${package_version}" != "${RELEASE_VERSION}" ]; then
-            echo "::error title=Package/release mismatch::Expected package.json ${RELEASE_VERSION}, got ${package_version}."
-            exit 1
-          fi
           if [ "${RELEASE_TAG}" != "v${package_version}" ]; then
             echo "::error title=Tag/version mismatch::Expected tag v${package_version}, got ${RELEASE_TAG}."
             exit 1
           fi
           echo "version=${package_version}" >> "$GITHUB_OUTPUT"
         env:
-          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_ref != '' && inputs.publish_ref || needs.release.outputs.tag }}
-          RELEASE_VERSION: ${{ needs.release.outputs.version }}
+          RELEASE_TAG: ${{ steps.publish-target.outputs.tag }}
 
       - name: Run repository checks
+        if: steps.publish-target.outputs.should_publish == 'true'
         run: cargo xtask check
 
       - name: Skip if version is already published
+        if: steps.publish-target.outputs.should_publish == 'true'
         id: published
         run: |
           if npm view "@firna/ui@${PACKAGE_VERSION}" version --registry "https://registry.npmjs.org/" >/dev/null 2>&1; then
@@ -157,76 +206,5 @@ jobs:
           PACKAGE_VERSION: ${{ steps.version.outputs.version }}
 
       - name: Publish package
-        if: steps.published.outputs.published != 'true'
+        if: steps.publish-target.outputs.should_publish == 'true' && steps.published.outputs.published != 'true'
         run: npm publish --access public
-
-  release-pr:
-    name: Update Release PR
-    if: github.repository == 'futex-ai/ui' && (github.event_name != 'workflow_dispatch' || inputs.publish_ref == '')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-    concurrency:
-      group: release-plz-${{ github.ref }}
-      cancel-in-progress: false
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Run release-plz release-pr
-        id: release-plz
-        uses: release-plz/action@v0.5.130
-        with:
-          command: release-pr
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Check out release PR branch
-        if: steps.release-plz.outputs.prs_created == 'true'
-        id: release-pr
-        env:
-          RELEASE_PR: ${{ steps.release-plz.outputs.pr }}
-        run: |
-          branch="$(printf "%s" "${RELEASE_PR}" | jq -r ".head_branch")"
-          version="$(printf "%s" "${RELEASE_PR}" | jq -r ".releases[0].version")"
-          if [ -z "${branch}" ] || [ "${branch}" = "null" ]; then
-            echo "::error title=Missing release PR branch::release-plz did not return a head branch."
-            exit 1
-          fi
-          if [ -z "${version}" ] || [ "${version}" = "null" ]; then
-            echo "::error title=Missing release version::release-plz did not return a package version."
-            exit 1
-          fi
-          git fetch origin "refs/heads/${branch}:refs/remotes/origin/${branch}"
-          git checkout -B "${branch}" "origin/${branch}"
-          echo "branch=${branch}" >> "$GITHUB_OUTPUT"
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
-
-      - name: Sync npm metadata
-        if: steps.release-plz.outputs.prs_created == 'true'
-        run: cargo xtask sync-package-version --version "${RELEASE_VERSION}"
-        env:
-          RELEASE_VERSION: ${{ steps.release-pr.outputs.version }}
-
-      - name: Commit synced npm metadata
-        if: steps.release-plz.outputs.prs_created == 'true'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_BRANCH: ${{ steps.release-pr.outputs.branch }}
-        run: |
-          if git diff --quiet -- package.json package-lock.json; then
-            echo "npm metadata already matches release-plz version."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json
-          git commit -m "chore: sync npm package version"
-          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${RELEASE_BRANCH}"

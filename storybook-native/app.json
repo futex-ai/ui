@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "Firna UI Storybook",
+    "slug": "firna-ui-storybook",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.calumfutex.firna-ui-storybook"
+    },
+    "android": {}
+  }
+}

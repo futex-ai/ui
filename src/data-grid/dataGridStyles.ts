@@ -1,0 +1,242 @@
+/** Themed styles + fixed metrics for the data grid, on the shared size scale. */
+import { StyleSheet } from "react-native";
+
+import type { ControlSize } from "../controlSize";
+import type { SharedUiTheme } from "../theme";
+
+import { DATA_GRID_ROW_HEIGHT } from "./types";
+
+/** Per-size geometry. Row height is fixed so windowing math stays exact. */
+export type DataGridMetrics = {
+  rowHeight: number;
+  gutterWidth: number;
+  paddingHorizontal: number;
+  fontSize: number;
+  iconSize: number;
+};
+
+const DATA_GRID_SIZES: Record<
+  ControlSize,
+  Omit<DataGridMetrics, "rowHeight">
+> = {
+  sm: { gutterWidth: 40, paddingHorizontal: 8, fontSize: 12, iconSize: 13 },
+  md: { gutterWidth: 48, paddingHorizontal: 10, fontSize: 13, iconSize: 15 },
+  lg: { gutterWidth: 56, paddingHorizontal: 12, fontSize: 14, iconSize: 16 },
+};
+
+/** The fixed metrics for a size, shared by layout, windowing, and hit-testing. */
+export function dataGridMetrics(size: ControlSize = "md"): DataGridMetrics {
+  return { rowHeight: DATA_GRID_ROW_HEIGHT[size], ...DATA_GRID_SIZES[size] };
+}
+
+/** Width (px) of the trailing add-column (+) cell, reserved in header + body. */
+export const ADD_COLUMN_WIDTH = 44;
+
+/**
+ * Build the grid's themed styles for a size. Cells carry a right + bottom hairline
+ * so the body reads as a real grid; the gutter, header, selection wash, active-cell
+ * ring, and chrome all read from shared theme tokens.
+ */
+export function createDataGridStyles(
+  theme: SharedUiTheme,
+  size: ControlSize = "md",
+) {
+  const metrics = dataGridMetrics(size);
+  const baseText = { fontFamily: theme.fonts.sans } as const;
+  return StyleSheet.create({
+    grid: {
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.border2,
+      borderRadius: theme.radii.lg,
+      borderWidth: 1,
+      overflow: "hidden",
+      // Dragging a cell range must not start a native text selection.
+      userSelect: "none",
+      width: "100%",
+    },
+    // The role="grid" wrapper inside the horizontal scroller fills the resolved
+    // content width so the header and body rows share one width.
+    gridContent: { width: "100%" },
+    headerRow: {
+      backgroundColor: theme.colors.bg,
+      borderBottomColor: theme.colors.border2,
+      borderBottomWidth: 1,
+      flexDirection: "row",
+    },
+    headerCell: {
+      alignItems: "center",
+      borderRightColor: theme.colors.border,
+      borderRightWidth: 1,
+      flexDirection: "row",
+      gap: 6,
+      height: metrics.rowHeight,
+      paddingHorizontal: metrics.paddingHorizontal,
+    },
+    headerLabel: {
+      ...baseText,
+      color: theme.colors.muted,
+      // Grow to fill so the caret menu is pushed to the cell's right edge.
+      flex: 1,
+      fontSize: metrics.fontSize - 1,
+      fontWeight: "700",
+      letterSpacing: 0.4,
+    },
+    headerSort: { ...baseText, color: theme.colors.muted, fontSize: 11 },
+    headerMenuButton: {
+      alignItems: "center",
+      borderRadius: theme.radii.sm,
+      height: 22,
+      justifyContent: "center",
+      marginLeft: "auto",
+      width: 22,
+    },
+    headerMenuButtonHover: { backgroundColor: theme.colors.bg2 },
+    addColumnCell: {
+      alignItems: "center",
+      borderRightColor: theme.colors.border,
+      borderRightWidth: 1,
+      height: metrics.rowHeight,
+      justifyContent: "center",
+      width: 44,
+    },
+    addColumnHover: { backgroundColor: theme.colors.bg2 },
+    bodyRow: { flexDirection: "row", height: metrics.rowHeight },
+    cell: {
+      borderBottomColor: theme.colors.border,
+      borderBottomWidth: 1,
+      borderRightColor: theme.colors.border,
+      borderRightWidth: 1,
+      height: metrics.rowHeight,
+      justifyContent: "center",
+      paddingHorizontal: metrics.paddingHorizontal,
+    },
+    cellRight: { alignItems: "flex-end" },
+    cellCenter: { alignItems: "center" },
+    cellSelected: { backgroundColor: theme.colors.primarySoft },
+    // Inset ring (like the table's focused row) so the active cell reads even
+    // with its own hairline borders; native ignores boxShadow and uses the OS
+    // focus affordance.
+    cellActive: {
+      boxShadow: `inset 0 0 0 2px ${theme.colors.primary}`,
+    },
+    cellText: {
+      ...baseText,
+      color: theme.colors.ink,
+      fontSize: metrics.fontSize,
+    },
+    cellMuted: { color: theme.colors.muted },
+    cellNumeric: { fontVariant: ["tabular-nums"], textAlign: "right" },
+    cellPlaceholder: { ...baseText, color: theme.colors.placeholder },
+    pillRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      flexWrap: "nowrap",
+      gap: 4,
+    },
+    gutterCell: {
+      alignItems: "center",
+      backgroundColor: theme.colors.bg,
+      borderBottomColor: theme.colors.border,
+      borderBottomWidth: 1,
+      borderRightColor: theme.colors.border2,
+      borderRightWidth: 1,
+      flexDirection: "row",
+      gap: 4,
+      height: metrics.rowHeight,
+      justifyContent: "space-between",
+      paddingHorizontal: 6,
+      width: metrics.gutterWidth,
+    },
+    gutterHeaderCell: {
+      backgroundColor: theme.colors.bg,
+      borderRightColor: theme.colors.border2,
+      borderRightWidth: 1,
+      height: metrics.rowHeight,
+      width: metrics.gutterWidth,
+    },
+    gutterNumber: {
+      ...baseText,
+      color: theme.colors.muted,
+      fontSize: metrics.fontSize - 2,
+      fontVariant: ["tabular-nums"],
+    },
+    gutterExpand: {
+      alignItems: "center",
+      borderRadius: theme.radii.sm,
+      height: 18,
+      justifyContent: "center",
+      width: 18,
+    },
+    gutterExpandHover: { backgroundColor: theme.colors.bg2 },
+    addRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 6,
+      height: metrics.rowHeight,
+      paddingHorizontal: metrics.paddingHorizontal,
+    },
+    addRowHover: { backgroundColor: theme.colors.soft },
+    addRowText: {
+      ...baseText,
+      color: theme.colors.muted,
+      fontSize: metrics.fontSize,
+      fontWeight: "600",
+    },
+    loadingRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 8,
+      height: metrics.rowHeight,
+      justifyContent: "center",
+    },
+    loadingText: { ...baseText, color: theme.colors.muted, fontSize: 12 },
+    // The drag-selection marquee: a primary-bordered box over the selected cells.
+    marquee: {
+      borderColor: theme.colors.primary,
+      borderRadius: 3,
+      borderWidth: 2,
+      position: "absolute",
+      zIndex: 5,
+    },
+    footer: {
+      borderTopColor: theme.colors.border,
+      borderTopWidth: 1,
+      flexDirection: "row",
+      gap: 16,
+      paddingHorizontal: metrics.paddingHorizontal,
+      paddingVertical: 6,
+    },
+    footerText: { ...baseText, color: theme.colors.muted, fontSize: 12 },
+    editorWrap: { justifyContent: "center", paddingHorizontal: 2 },
+    cardStack: { gap: 10, width: "100%" },
+    card: {
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.border2,
+      borderRadius: theme.radii.lg,
+      borderWidth: 1,
+      gap: 8,
+      padding: 12,
+    },
+    cardTitle: {
+      ...baseText,
+      color: theme.colors.ink,
+      fontSize: metrics.fontSize + 1,
+      fontWeight: "600",
+    },
+    cardField: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 10,
+      justifyContent: "space-between",
+    },
+    cardLabel: {
+      ...baseText,
+      color: theme.colors.muted,
+      flexShrink: 0,
+      fontSize: metrics.fontSize - 1,
+    },
+    cardValue: { alignItems: "flex-end", flexShrink: 1 },
+  });
+}
+
+export type DataGridStyles = ReturnType<typeof createDataGridStyles>;

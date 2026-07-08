@@ -7,9 +7,25 @@ export async function writeNodePeerStubs(consumerRoot) {
 export function createContext(defaultValue) {
   return { Provider: ({ children }) => children, _currentValue: defaultValue };
 }
+export function cloneElement(element, props) {
+  return { ...element, props: { ...(element?.props ?? {}), ...props } };
+}
+export function isValidElement(element) {
+  return Boolean(element && typeof element === "object" && "props" in element);
+}
+export function forwardRef(render) {
+  return render;
+}
+export function memo(component) {
+  return component;
+}
 export function useCallback(callback) {
   return callback;
 }
+export function useId() {
+  return "stub-id";
+}
+export function useImperativeHandle() {}
 export function useContext(context) {
   return context?._currentValue;
 }
@@ -26,10 +42,16 @@ export function useState(value) {
 }
 export default {
   Fragment,
+  cloneElement,
   createContext,
+  forwardRef,
+  isValidElement,
+  memo,
   useCallback,
   useContext,
   useEffect,
+  useId,
+  useImperativeHandle,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -59,12 +81,40 @@ export const jsxs = jsx;
     "package.json": JSON.stringify({ name: "react-dom", type: "module" }),
   });
   await writeStubPackage(consumerRoot, "react-native", {
-    "index.js": `export const Modal = "Modal";
+    "index.js": `export const FlatList = "FlatList";
+export const Modal = "Modal";
 export const Pressable = "Pressable";
 export const ScrollView = "ScrollView";
 export const Text = "Text";
 export const TextInput = "TextInput";
 export const View = "View";
+export const AccessibilityInfo = {
+  announceForAccessibility() {},
+  isReduceMotionEnabled() {
+    return Promise.resolve(false);
+  },
+  addEventListener() {
+    return { remove() {} };
+  },
+};
+class AnimatedValue {
+  interpolate() {
+    return "0deg";
+  }
+}
+export const Animated = {
+  Value: AnimatedValue,
+  View: "Animated.View",
+  loop() {
+    return { start() {}, stop() {} };
+  },
+  timing() {
+    return { start() {}, stop() {} };
+  },
+};
+export const Easing = {
+  linear: (t) => t,
+};
 export const Platform = {
   OS: "web",
   select(values) {
@@ -87,7 +137,14 @@ export function useWindowDimensions() {
     "package.json": JSON.stringify({ name: "react-native", type: "module" }),
   });
   await writeStubPackage(consumerRoot, "react-native-svg", {
-    "index.js": `export default "Svg";
+    "index.js": `export const Circle = "Circle";
+export const Defs = "Defs";
+export const LinearGradient = "LinearGradient";
+export const Path = "Path";
+export const Rect = "Rect";
+export const Stop = "Stop";
+export const Svg = "Svg";
+export default Svg;
 `,
     "package.json": JSON.stringify({
       name: "react-native-svg",
@@ -96,14 +153,36 @@ export function useWindowDimensions() {
   });
   await writeStubPackage(consumerRoot, "lucide-react-native", {
     "index.js": `const Icon = () => null;
+export const ArrowDownAZ = Icon;
+export const ArrowUpAZ = Icon;
+export const Brain = Icon;
+export const Calendar = Icon;
 export const CalendarDays = Icon;
 export const Check = Icon;
 export const ChevronDown = Icon;
 export const ChevronLeft = Icon;
 export const ChevronRight = Icon;
+export const CircleAlert = Icon;
+export const CircleCheck = Icon;
 export const CircleX = Icon;
+export const EyeOff = Icon;
+export const GitBranch = Icon;
+export const Hash = Icon;
+export const Inbox = Icon;
+export const Info = Icon;
+export const LayoutGrid = Icon;
+export const List = Icon;
+export const LoaderCircle = Icon;
+export const Maximize2 = Icon;
+export const Plus = Icon;
 export const Search = Icon;
+export const SquareTerminal = Icon;
+export const Tags = Icon;
+export const TriangleAlert = Icon;
+export const Trash2 = Icon;
+export const Type = Icon;
 export const X = Icon;
+export const Zap = Icon;
 `,
     "package.json": JSON.stringify({
       name: "lucide-react-native",
@@ -116,13 +195,30 @@ export async function writeTypePeerStubs(consumerRoot) {
   await writeStubPackage(consumerRoot, "react", {
     "index.d.ts": `export type Dispatch<T> = (value: T) => void;
 export type PropsWithChildren<P = unknown> = P & { children?: ReactNode };
+export interface ReactElement<P = unknown> {
+  key: unknown;
+  props: P;
+  type: unknown;
+}
 export type ReactNode = unknown;
 export type ReactPortal = unknown;
 export type Ref<T> = ((instance: T | null) => void) | RefObject<T | null> | null;
+export interface Context<T> {
+  Provider: unknown;
+  _currentValue?: T;
+}
 export interface RefObject<T> {
   current: T;
 }
 export type SetStateAction<T> = T | ((previous: T) => T);
+export declare function cloneElement<P>(
+  element: ReactElement<P>,
+  props?: Partial<P> & Record<string, unknown>,
+): ReactElement<P>;
+export declare function createContext<T>(defaultValue: T): Context<T>;
+export declare function isValidElement<P = unknown>(
+  value: unknown,
+): value is ReactElement<P>;
 export namespace JSX {
   export type Element = unknown;
 }
@@ -149,6 +245,11 @@ export declare const Fragment: unique symbol;
   });
   await writeStubPackage(consumerRoot, "react-native", {
     "index.d.ts": `export type StyleProp<T> = T | readonly T[] | false | null | undefined;
+export type AccessibilityRole = string;
+export interface AccessibilityState {
+  [key: string]: unknown;
+}
+export type DimensionValue = number | string | null | undefined;
 export interface TextInputProps {
   [key: string]: unknown;
 }

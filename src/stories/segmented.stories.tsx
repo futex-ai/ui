@@ -16,6 +16,19 @@ const sourceOptions = [
   { label: "Retail", value: "retail" },
 ];
 
+const periodOptions = [
+  { label: "Monthly", value: "monthly" },
+  { label: "Quarterly", value: "quarterly" },
+  { disabled: true, label: "Yearly", value: "yearly" },
+];
+
+const viewOptions = [
+  { label: "Day", value: "day" },
+  { label: "Week", value: "week" },
+  { label: "Month", value: "month" },
+  { label: "Quarter", value: "quarter" },
+];
+
 const dateModeOptions = [
   { label: "Auto", value: "auto" },
   { accessibilityLabel: "Custom start date", label: "Custom", value: "start" },
@@ -39,11 +52,38 @@ export const ProfitLossSegmentedControl: Story = {
   ),
 };
 
+export const AnimatedTabs: Story = {
+  name: "Animated tab switch",
+  render: () => (
+    <StorySurface>
+      <AnimatedTabsExample />
+    </StorySurface>
+  ),
+};
+
 export const Sizes: Story = {
   name: "Sizes",
   render: () => (
     <StorySurface>
       <SizesExample />
+    </StorySurface>
+  ),
+};
+
+export const Sizing: Story = {
+  name: "Sizing",
+  render: () => (
+    <StorySurface>
+      <SizingExample />
+    </StorySurface>
+  ),
+};
+
+export const States: Story = {
+  name: "Label, required, error & hint",
+  render: () => (
+    <StorySurface>
+      <StatesExample />
     </StorySurface>
   ),
 };
@@ -65,8 +105,88 @@ function DuplicateLabelsExample() {
         accessibilityLabel="Date mode"
         onChange={setMode}
         options={dateModeOptions}
-        sizing="content"
         value={mode}
+      />
+    </View>
+  );
+}
+
+function StatesExample() {
+  const [period, setPeriod] = useState("monthly");
+  const [basis, setBasis] = useState("pl");
+  return (
+    <View style={{ gap: 18, minWidth: 320 }}>
+      <SegmentedControl
+        hint="Yearly reporting opens after close."
+        label="Reporting period"
+        onChange={setPeriod}
+        options={periodOptions}
+        required
+        value={period}
+      />
+      <SegmentedControl
+        error="Choose a statement to continue."
+        label="Statement"
+        onChange={setBasis}
+        options={reportOptions}
+        value={basis}
+      />
+    </View>
+  );
+}
+
+function AnimatedTabsExample() {
+  const [view, setView] = useState("day");
+  const [equalView, setEqualView] = useState("day");
+  const [staticView, setStaticView] = useState("day");
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <SegmentedControl
+        accessibilityLabel="Calendar view"
+        label="Content — the raised tab glides and resizes to each label"
+        onChange={setView}
+        options={viewOptions}
+        value={view}
+      />
+      <SegmentedControl
+        accessibilityLabel="Calendar view, equal width"
+        label="Equal — the tab glides across same-width segments"
+        onChange={setEqualView}
+        options={viewOptions}
+        sizing="equal"
+        value={equalView}
+      />
+      <SegmentedControl
+        accessibilityLabel="Static calendar view"
+        animated={false}
+        label="animated={false} — the tab snaps into place, no slide"
+        onChange={setStaticView}
+        options={viewOptions}
+        value={staticView}
+      />
+    </View>
+  );
+}
+
+function SizingExample() {
+  const [content, setContent] = useState("pl");
+  const [equal, setEqual] = useState("pl");
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <SegmentedControl
+        accessibilityLabel="Content sizing (default)"
+        label="Content (default) — segments hug their labels"
+        onChange={setContent}
+        options={reportOptions}
+        value={content}
+      />
+      <SegmentedControl
+        accessibilityLabel="Equal sizing"
+        label="Equal — segments share width evenly"
+        onChange={setEqual}
+        options={reportOptions}
+        sizing="equal"
+        value={equal}
       />
     </View>
   );
@@ -114,7 +234,6 @@ function ProfitLossSegmentedExample() {
         options={reportOptions}
         sizing="content"
         value={report}
-        variant="pill"
       />
       <SegmentedControl
         accessibilityLabel="Income source"
@@ -122,6 +241,7 @@ function ProfitLossSegmentedExample() {
         options={sourceOptions}
         sizing="content"
         value={source}
+        variant="outline"
         wrap
       />
     </View>

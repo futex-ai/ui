@@ -6,7 +6,13 @@ test("button exposes button semantics and a disabled state", () => {
   const source = readSource("../../src/button/Button.tsx");
 
   assert.match(source, /accessibilityRole="button"/);
-  assert.match(source, /accessibilityState=\{\{ disabled: disabledState \}\}/);
+  // The disabled state is exposed alongside the `busy` state (which keeps the
+  // button focusable while blocking activation and announces `aria-busy`).
+  assert.match(
+    source,
+    /accessibilityState=\{\{ busy, disabled: disabledState \}\}/,
+  );
+  assert.match(source, /aria-busy=\{busy \|\| undefined\}/);
   // A button without an onPress is a read-only disabled control.
   assert.match(source, /disabledState = disabled \|\| !onPress/);
   assert.match(source, /disabled=\{disabledState\}/);
@@ -29,10 +35,17 @@ test("button renders an optional leading icon tinted and sized with the button",
   const source = readSource("../../src/button/Button.tsx");
 
   // The icon is conditional, shares the tone's label colour, and uses the
-  // per-size icon diameter.
+  // per-size icon diameter. On web the decorative glyph is hidden from
+  // assistive technology with `aria-hidden` (WCAG 2.1 — 1.1.1 decorative
+  // content): the visible label, or the required `accessibilityLabel` on an
+  // icon-only button, is the authoritative accessible name.
   assert.match(
     source,
-    /\{Icon \? <Icon color=\{labelColor\} size=\{buttonIconSize\(size\)\} \/> : null\}/,
+    /<Icon aria-hidden color=\{labelColor\} size=\{buttonIconSize\(size\)\} \/>/,
+  );
+  assert.match(
+    source,
+    /<Icon color=\{labelColor\} size=\{buttonIconSize\(size\)\} \/>/,
   );
 });
 
@@ -59,6 +72,41 @@ test("button tone and block styles layer over the base button", () => {
   assert.match(source, /block \? styles\.block : null/);
 });
 
+test("button shows a per-tone hover state, suppressed when disabled", () => {
+  const source = readSource("../../src/button/Button.tsx");
+  const stylesSource = readSource("../../src/button/buttonStyles.ts");
+
+  // The style prop is a Pressable callback reading react-native-web's hovered flag.
+  assert.match(source, /style=\{\(\{ hovered \}: PressableHoverState\) =>/);
+  // Every tone has a hover style, gated off while the button is disabled or
+  // busy (a busy button blocks activation, so its hover affordance is hidden).
+  for (const tone of ["primary", "secondary", "ghost", "danger"]) {
+    assert.match(
+      source,
+      new RegExp(`hovered && !disabledState && !busy && tone === "${tone}"`),
+    );
+  }
+  // Hover treatments are theme tokens: the filled tone deepens, the neutral and
+  // ghost tones gain a soft / accent wash, and danger firms its border to full
+  // rose (keeping its fill so the rose label stays legible).
+  assert.match(
+    stylesSource,
+    /primaryHover: \{[\s\S]*?backgroundColor: theme\.colors\.primaryDeep/,
+  );
+  assert.match(
+    stylesSource,
+    /secondaryHover: \{[\s\S]*?backgroundColor: theme\.colors\.soft/,
+  );
+  assert.match(
+    stylesSource,
+    /ghostHover: \{[\s\S]*?backgroundColor: theme\.colors\.primarySoft/,
+  );
+  assert.match(
+    stylesSource,
+    /dangerHover: \{[\s\S]*?borderColor: theme\.colors\.rose/,
+  );
+});
+
 test("button supports the shared size scale", () => {
   const source = readSource("../../src/button/Button.tsx");
   const stylesSource = readSource("../../src/button/buttonStyles.ts");
@@ -76,7 +124,10 @@ test("button styles are driven by shared theme tokens", () => {
   const stylesSource = readSource("../../src/button/buttonStyles.ts");
 
   assert.match(stylesSource, /backgroundColor: theme\.colors\.surface/);
-  assert.match(stylesSource, /borderColor: theme\.colors\.border2/);
+  // The resting edge of the (secondary/default) control uses the dedicated
+  // `controlBorder` token (a soft translucent-ink line) rather than the
+  // decorative low-contrast `border2`.
+  assert.match(stylesSource, /borderColor: theme\.colors\.controlBorder/);
   assert.match(stylesSource, /borderRadius: theme\.radii\.md/);
   assert.match(
     stylesSource,

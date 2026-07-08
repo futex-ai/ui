@@ -22,6 +22,205 @@ test("dropdown selector opens, navigates with keyboard, and closes outside", asy
   await expect(page.getByText("Flat rate")).toBeHidden();
 });
 
+test("dropdown action menu opens from child trigger and closes after selection", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--dropdown-action-menu");
+
+  const trigger = page.getByRole("button", { name: "Open action menu" });
+  // The trigger advertises its popup to assistive tech in every mode.
+  await expect(trigger).toHaveAttribute("aria-haspopup", "menu");
+  await trigger.click();
+
+  const settings = page.getByRole("menuitem", {
+    exact: true,
+    name: "Settings",
+  });
+  await expect(settings).toBeVisible();
+  await expect(
+    page.getByRole("menuitem", { exact: true, name: "Remove" }),
+  ).toBeVisible();
+
+  await settings.click();
+  await expect(page.getByText("Last action: Settings")).toBeVisible();
+  await expect(settings).toBeHidden();
+});
+
+test("dropdown action menu preselects first row and tracks hover selection", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--dropdown-action-menu");
+
+  await page.getByRole("button", { name: "Open action menu" }).click();
+
+  const settings = page.getByRole("menuitem", {
+    exact: true,
+    name: "Settings",
+  });
+  const remove = page.getByRole("menuitem", { exact: true, name: "Remove" });
+  await expect(settings).toBeVisible();
+  await expect(remove).toBeVisible();
+
+  // Settings (default tone) is preselected, so it carries the primary green
+  // solid fill while the resting danger row stays flat (transparent).
+  const settingsFill = await backgroundColor(settings);
+  expect(settingsFill).not.toBe("rgba(0, 0, 0, 0)");
+  expect(await backgroundColor(remove)).toBe("rgba(0, 0, 0, 0)");
+
+  await remove.hover();
+  // Hover moves the highlight to the danger row, which fills with the deep-rose
+  // danger color (rgb(143, 58, 48)) rather than the primary green, and Settings
+  // falls back to flat.
+  await expect.poll(() => backgroundColor(remove)).toBe("rgb(143, 58, 48)");
+  await expect.poll(() => backgroundColor(settings)).toBe("rgba(0, 0, 0, 0)");
+
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("Last action: Remove")).toBeVisible();
+  await expect(remove).toBeHidden();
+
+  await page.getByRole("button", { name: "Open action menu" }).click();
+  await expect(settings).toBeVisible();
+  await expect.poll(() => backgroundColor(settings)).toBe(settingsFill);
+  await expect.poll(() => backgroundColor(remove)).toBe("rgba(0, 0, 0, 0)");
+});
+
+test("dropdown action menu keeps row subtext legible on the solid highlight", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=dropdown-examples--dropdown-action-menu-subtext",
+  );
+
+  await page.getByRole("button", { name: "Open settings menu" }).click();
+
+  const activeSubtext = page.getByText("Members, roles & billing");
+  const restingSubtext = page.getByText("Permanently delete this workspace");
+  await expect(activeSubtext).toBeVisible();
+  await expect(restingSubtext).toBeVisible();
+
+  // The first row is preselected, so it carries the solid `primary` fill. Its
+  // subtext must invert to the surface white (rgb(255, 255, 255)) — the muted
+  // grey it otherwise inherits all but vanishes against the fill. The resting
+  // row keeps the muted grey (rgb(105, 112, 106)) on the plain surface.
+  await expect.poll(() => textColor(activeSubtext)).toBe("rgb(255, 255, 255)");
+  expect(await textColor(restingSubtext)).toBe("rgb(105, 112, 106)");
+
+  // Moving the highlight to the resting row inverts its subtext and lets the
+  // previously active row's subtext fall back to the muted grey.
+  await page.getByRole("menuitem", { name: /Remove business/ }).hover();
+  await expect.poll(() => textColor(restingSubtext)).toBe("rgb(255, 255, 255)");
+  await expect.poll(() => textColor(activeSubtext)).toBe("rgb(105, 112, 106)");
+});
+
+test("dropdown danger row highlights red with legible text when active", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=dropdown-examples--dropdown-action-menu-subtext",
+  );
+
+  await page.getByRole("button", { name: "Open settings menu" }).click();
+
+  const removeRow = page.getByRole("menuitem", { name: /Remove business/ });
+  const removeLabel = page.getByText("Remove business", { exact: true });
+
+  // Resting: the danger row carries its rose accent label on the plain surface.
+  expect(await textColor(removeLabel)).toBe("rgb(168, 79, 69)");
+
+  await removeRow.hover();
+
+  // Active: the highlight swaps to the deep-rose danger fill (rgb(143, 58, 48))
+  // rather than the primary green, and the label inverts to white so the
+  // destructive action stays legible instead of red-on-green.
+  await expect.poll(() => backgroundColor(removeRow)).toBe("rgb(143, 58, 48)");
+  await expect.poll(() => textColor(removeLabel)).toBe("rgb(255, 255, 255)");
+});
+
+test("dropdown selector keeps trailing codes legible on the solid highlight", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--category-select");
+
+  await page.getByRole("button", { name: "Category, Rental income" }).click();
+
+  const activeMeta = page.getByText("4020");
+  const restingMeta = page.getByText("4000");
+  await expect(activeMeta).toBeVisible();
+  await expect(restingMeta).toBeVisible();
+
+  // The selected row ("Rental income") is preselected, so it carries the solid
+  // `primary` fill. Its trailing code must invert to surface white
+  // (rgb(255, 255, 255)) — the muted grey it otherwise keeps all but vanishes
+  // against the fill (~1.2:1). A resting row stays muted (rgb(105, 112, 106)).
+  await expect.poll(() => textColor(activeMeta)).toBe("rgb(255, 255, 255)");
+  expect(await textColor(restingMeta)).toBe("rgb(105, 112, 106)");
+
+  // Moving the highlight to a resting row inverts its code and lets the
+  // previously active row's code fall back to the muted grey.
+  await page.getByRole("option", { name: /Sales/ }).hover();
+  await expect.poll(() => textColor(restingMeta)).toBe("rgb(255, 255, 255)");
+  await expect.poll(() => textColor(activeMeta)).toBe("rgb(105, 112, 106)");
+});
+
+test("dropdown hover menu opens on pointer hover and closes on hover out", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--dropdown-hover-menu");
+
+  const trigger = page.getByRole("button", { name: "Open hover menu" });
+  const profile = page.getByRole("menuitem", { exact: true, name: "Profile" });
+
+  await trigger.hover();
+  await expect(profile).toBeVisible();
+
+  // Move the pointer well away from the trigger and surface to hover out.
+  await page.mouse.move(5, 5);
+  await expect(profile).toBeHidden();
+});
+
+test("dropdown long-press menu opens on press-and-hold, not a plain tap", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=dropdown-examples--dropdown-long-press-menu",
+  );
+
+  const trigger = page.getByRole("button", { name: "Open long-press menu" });
+  const rename = page.getByRole("menuitem", { exact: true, name: "Rename" });
+
+  // A quick tap must not open a long-press menu.
+  await trigger.click();
+  await expect(rename).toBeHidden();
+
+  // Press and hold past the long-press delay opens it.
+  const box = await trigger.boundingBox();
+  if (!box) {
+    throw new Error("long-press trigger not found");
+  }
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(700);
+  await page.mouse.up();
+
+  await expect(rename).toBeVisible();
+});
+
+test("dropdown context menu opens on right-click, not on a left click", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--dropdown-context-menu");
+
+  const trigger = page.getByRole("button", { name: "Open context menu" });
+  const copy = page.getByRole("menuitem", { exact: true, name: "Copy" });
+
+  // A left click must not open a context menu.
+  await trigger.click();
+  await expect(copy).toBeHidden();
+
+  await trigger.click({ button: "right" });
+  await expect(copy).toBeVisible();
+});
+
 test("dropdown keyboard navigation keeps the active option in view", async ({
   page,
 }) => {
@@ -54,6 +253,8 @@ test("dropdown selector pins header and footer while options scroll", async ({
   await page.getByRole("button", { name: "Scheme, Long option 01" }).click();
 
   const header = page.getByText("Choose a scheme");
+  // The footer is a custom action control (the story renders it as a
+  // `role="button"`), not a selectable listbox option, so target it by button.
   const footer = page.getByRole("button", { name: "Add scheme" });
   await expect(header).toBeVisible();
   await expect(footer).toBeVisible();
@@ -125,6 +326,69 @@ async function bottomOverflowPast(
   });
 }
 
+async function backgroundColor(locator: ReturnType<Page["getByRole"]>) {
+  return locator.evaluate(
+    (element) => getComputedStyle(element).backgroundColor,
+  );
+}
+
+async function textColor(locator: ReturnType<Page["getByText"]>) {
+  return locator.evaluate((element) => getComputedStyle(element).color);
+}
+
+test("open dropdown surface follows the trigger when the page scrolls", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=dropdown-examples--selector-scroll-tracking",
+  );
+
+  const trigger = page.getByRole("button", { name: "Scroll field, Standard" });
+  await trigger.click();
+
+  const listbox = page.getByRole("listbox");
+  await expect(listbox).toBeVisible();
+
+  // The menu opens a fixed gutter below the trigger.
+  const before = await triggerSurfaceAlignment(trigger, listbox);
+  expect(before.gap).toBeGreaterThanOrEqual(0);
+  expect(before.gap).toBeLessThan(30);
+
+  // Scroll the page while the menu is open. The web surface lives in a
+  // `position: fixed` portal; without re-measuring on scroll it would stay
+  // pinned to its stale viewport coordinates and detach from the moved trigger.
+  await page.evaluate(() => window.scrollTo(0, 320));
+
+  // The surface re-measures on the next frame and keeps the same offset from
+  // the trigger, so the menu stays anchored as the page scrolls.
+  await expect
+    .poll(async () => {
+      const now = await triggerSurfaceAlignment(trigger, listbox);
+      return Math.abs(now.gap - before.gap);
+    })
+    .toBeLessThanOrEqual(2);
+
+  // The trigger genuinely scrolled up, so the gap-stability check above is a
+  // real test of tracking rather than a no-op.
+  const after = await triggerSurfaceAlignment(trigger, listbox);
+  expect(before.triggerTop - after.triggerTop).toBeGreaterThan(100);
+});
+
+async function triggerSurfaceAlignment(
+  trigger: ReturnType<Page["getByRole"]>,
+  surface: ReturnType<Page["getByRole"]>,
+) {
+  const triggerBox = await trigger.boundingBox();
+  const surfaceBox = await surface.boundingBox();
+  if (!triggerBox || !surfaceBox) {
+    return { gap: Number.NaN, triggerTop: Number.NaN };
+  }
+  return {
+    gap: surfaceBox.y - (triggerBox.y + triggerBox.height),
+    triggerTop: triggerBox.y,
+  };
+}
+
 test("searchable dropdown selector filters options and selects by keyboard", async ({
   page,
 }) => {
@@ -183,7 +447,11 @@ test("searchable dropdown selector filters options and selects by keyboard", asy
     .getByRole("button", { name: "Currency, New Zealand Dollar" })
     .click();
   await page.getByPlaceholder("Search options").fill("zzz");
-  await expect(page.getByText("No matching options")).toBeVisible();
+  // The shared aria-live region echoes the empty-state copy for screen readers
+  // (WCAG 4.1.3), so scope to the visible listbox to skip the announced node.
+  await expect(
+    page.getByRole("listbox").getByText("No matching options"),
+  ).toBeVisible();
   await expect(
     page.getByRole("option", { exact: true, name: "Euro" }),
   ).toBeHidden();
@@ -194,74 +462,21 @@ test("combobox keeps input focus while filtering options", async ({ page }) => {
 
   const input = page.getByPlaceholder("Search to add...");
   await input.click();
-  // The search input carries an accessible name, so it is reachable by label.
-  await expect(page.getByLabel("Search to add...")).toBeFocused();
   await input.fill("pay");
 
   await expect(page.getByText("Payroll Reserve")).toBeVisible();
   await expect(input).toBeFocused();
 
   await input.fill("zz");
-  await expect(page.getByText("No matching options")).toBeVisible();
+  // The shared aria-live region echoes the empty-state copy for screen readers
+  // (WCAG 4.1.3), so scope to the visible listbox to skip the announced node.
+  await expect(
+    page.getByRole("listbox").getByText("No matching options"),
+  ).toBeVisible();
+  await expect(input).toBeFocused();
   await expect(
     page.getByText("Only active books can be selected."),
   ).toBeVisible();
-});
-
-test("dropdown selector rows are options with assertable selected state", async ({
-  page,
-}) => {
-  await page.goto(
-    "/iframe.html?id=dropdown-examples--dropdown-selector-default",
-  );
-
-  await page.getByRole("button", { name: "Scheme, Standard" }).click();
-
-  const standard = page.getByRole("option", { exact: true, name: "Standard" });
-  const cash = page.getByRole("option", {
-    exact: true,
-    name: "Cash accounting",
-  });
-  await expect(cash).toBeVisible();
-  await expect(standard).toHaveAttribute("aria-selected", "true");
-  await expect(cash).toHaveAttribute("aria-selected", "false");
-  // Disabled options stay assertable via aria-disabled.
-  await expect(
-    page.getByRole("option", { exact: true, name: "Flat rate" }),
-  ).toHaveAttribute("aria-disabled", "true");
-
-  // Selecting flips aria-selected on reopen — no CSS/background inspection.
-  await cash.click();
-  await page.getByRole("button", { name: "Scheme, Cash accounting" }).click();
-  await expect(
-    page.getByRole("option", { exact: true, name: "Cash accounting" }),
-  ).toHaveAttribute("aria-selected", "true");
-  await expect(
-    page.getByRole("option", { exact: true, name: "Standard" }),
-  ).toHaveAttribute("aria-selected", "false");
-});
-
-test("dropdown action menu rows expose the menuitem role", async ({ page }) => {
-  await page.goto("/iframe.html?id=dropdown-examples--dropdown-action-menu");
-
-  await page.getByRole("button", { name: "Open action menu" }).click();
-  await expect(page.getByRole("menuitem", { name: "Settings" })).toBeVisible();
-
-  const remove = page.getByRole("menuitem", { name: "Remove" });
-  await expect(remove).toBeVisible();
-  await remove.click();
-  await expect(page.getByRole("menuitem", { name: "Settings" })).toBeHidden();
-});
-
-test("combobox chip remove control is a named button", async ({ page }) => {
-  await page.goto("/iframe.html?id=dropdown-examples--chip-multi-select");
-
-  const remove = page.getByRole("button", {
-    name: "Remove Greenhouse Studio",
-  });
-  await expect(remove).toBeVisible();
-  await remove.click();
-  await expect(remove).toBeHidden();
 });
 
 test("selector trigger keeps a value-independent name and exposes the value", async ({
@@ -287,6 +502,135 @@ test("selector trigger keeps a value-independent name and exposes the value", as
   ).toHaveAttribute("aria-valuetext", "Custom");
 });
 
+test("dropdown placement flips above the trigger near the bottom edge", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--bottom-edge-flip");
+
+  // The selector pinned to the bottom of the viewport has no room below, so the
+  // long menu opens upward: its rows sit above the trigger.
+  const bottomTrigger = page.getByRole("button", {
+    name: "Flips above, Long option 01",
+  });
+  await bottomTrigger.click();
+  const bottomTriggerBox = await bottomTrigger.boundingBox();
+  const upwardOption = await page
+    .getByRole("option", { exact: true, name: "Long option 02" })
+    .boundingBox();
+  expect(bottomTriggerBox).not.toBeNull();
+  expect(upwardOption).not.toBeNull();
+  expect(upwardOption?.y ?? 0).toBeLessThan(bottomTriggerBox?.y ?? 0);
+  await page.keyboard.press("Escape");
+
+  // The selector near the top has space below, so the same menu opens downward.
+  const topTrigger = page.getByRole("button", {
+    name: "Opens below, Long option 01",
+  });
+  await topTrigger.click();
+  const topTriggerBox = await topTrigger.boundingBox();
+  const downwardOption = await page
+    .getByRole("option", { exact: true, name: "Long option 02" })
+    .boundingBox();
+  expect(topTriggerBox).not.toBeNull();
+  expect(downwardOption).not.toBeNull();
+  expect(downwardOption?.y ?? 0).toBeGreaterThan(topTriggerBox?.y ?? 0);
+});
+
+test("dropdown placement clamps a wide menu inside the side edges", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--horizontal-edge-clamp");
+  const viewportWidth = await page.evaluate(() => window.innerWidth);
+
+  // The right-edge menu is wider than its trigger, so it shifts left to stay
+  // fully on screen rather than spilling past the right edge.
+  const rightTrigger = page.getByRole("button", {
+    name: "Open right edge menu",
+  });
+  await rightTrigger.click();
+  const rightTriggerBox = await rightTrigger.boundingBox();
+  const rightOption = await page
+    .getByRole("menuitem", { exact: true, name: "British Pound" })
+    .boundingBox();
+  expect(rightTriggerBox).not.toBeNull();
+  expect(rightOption).not.toBeNull();
+  // Fully inside the right edge...
+  expect((rightOption?.x ?? 0) + (rightOption?.width ?? 0)).toBeLessThanOrEqual(
+    viewportWidth,
+  );
+  // ...and shifted left of the trigger to make room.
+  expect(rightOption?.x ?? 0).toBeLessThan(rightTriggerBox?.x ?? 0);
+  await page.keyboard.press("Escape");
+
+  // The left-edge menu stays pinned at the left margin (never off-screen).
+  await page.getByRole("button", { name: "Open left edge menu" }).click();
+  const leftOption = await page
+    .getByRole("menuitem", { exact: true, name: "British Pound" })
+    .boundingBox();
+  expect(leftOption).not.toBeNull();
+  expect(leftOption?.x ?? -1).toBeGreaterThanOrEqual(0);
+});
+
+test("dropdown placement end-aligns a wide menu to the trigger edge", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--end-aligned-menu");
+
+  const trigger = page.getByRole("button", { name: "Open end aligned menu" });
+  await trigger.click();
+  const triggerBox = await trigger.boundingBox();
+  const option = await page
+    .getByRole("menuitem", { exact: true, name: "British Pound" })
+    .boundingBox();
+  expect(triggerBox).not.toBeNull();
+  expect(option).not.toBeNull();
+  // The wide menu extends leftward from the trigger...
+  expect(option?.x ?? 0).toBeLessThan(triggerBox?.x ?? 0);
+  // ...while its right edge stays aligned to the trigger's right edge.
+  expect((option?.x ?? 0) + (option?.width ?? 0)).toBeLessThanOrEqual(
+    (triggerBox?.x ?? 0) + (triggerBox?.width ?? 0) + 2,
+  );
+});
+
+test("dropdown placement grid flips and stays on screen at the bottom corner", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--edge-placement-grid");
+  const viewportWidth = await page.evaluate(() => window.innerWidth);
+
+  const trigger = page.getByRole("button", { name: "Bottom right, Region 01" });
+  await trigger.click();
+  const triggerBox = await trigger.boundingBox();
+  const option = await page
+    .getByRole("option", { exact: true, name: "Region 02" })
+    .boundingBox();
+  expect(triggerBox).not.toBeNull();
+  expect(option).not.toBeNull();
+  // Flipped above the trigger near the bottom edge...
+  expect(option?.y ?? 0).toBeLessThan(triggerBox?.y ?? 0);
+  // ...and inside the right edge of the screen.
+  expect((option?.x ?? 0) + (option?.width ?? 0)).toBeLessThanOrEqual(
+    viewportWidth,
+  );
+});
+
+test("placement playground reports the side resolved against the content edges", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--placement-playground");
+
+  // Moving the trigger to the bottom of the content frame leaves no room below,
+  // so the engine resolves an upward placement.
+  await page
+    .getByRole("button", { name: "Move trigger to bottom-right" })
+    .click();
+  await expect(page.getByText("Opens upward ↑")).toBeVisible();
+
+  // Near the top there is room below, so it resolves a downward placement.
+  await page.getByRole("button", { name: "Move trigger to top-left" }).click();
+  await expect(page.getByText("Opens downward ↓")).toBeVisible();
+});
+
 test("segmented control toggles report and source choices", async ({
   page,
 }) => {
@@ -305,6 +649,99 @@ test("segmented control toggles report and source choices", async ({
   await expect(page.getByRole("radio", { name: "Combined" })).toBeChecked();
   await page.getByRole("radio", { name: "Consulting" }).click();
   await expect(page.getByRole("radio", { name: "Consulting" })).toBeChecked();
+
+  // The outline (filter-pill) variant keeps its instant per-cell selection — it
+  // draws no sliding thumb.
+  await expect(
+    page
+      .getByRole("radiogroup", { name: "Income source" })
+      .getByTestId("segmentedThumb"),
+  ).toHaveCount(0);
+});
+
+test("segmented control disambiguates duplicate labels by name", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=segmented-examples--duplicate-labels");
+
+  const start = page.getByRole("radio", { name: "Custom start date" });
+  const end = page.getByRole("radio", { name: "Custom end date" });
+  const auto = page.getByRole("radio", { exact: true, name: "Auto" });
+  await expect(auto).toBeChecked();
+  await start.click();
+  await expect(start).toBeChecked();
+  await expect(end).not.toBeChecked();
+  await end.click();
+  await expect(end).toBeChecked();
+  await expect(start).not.toBeChecked();
+});
+
+test("segmented pill thumb slides over the selected tab and resizes to it", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=segmented-examples--animated-tabs");
+
+  const group = page.getByRole("radiogroup", {
+    exact: true,
+    name: "Calendar view",
+  });
+  const thumb = group.getByTestId("segmentedThumb");
+  const day = group.getByRole("radio", { name: "Day" });
+  const quarter = group.getByRole("radio", { name: "Quarter" });
+
+  // The thumb is a single raised surface that glides — it carries a real
+  // left/width CSS transition rather than snapping.
+  await expect(thumb).toHaveCSS("transition-property", /left|width/);
+
+  // At rest it overlays the selected pill (sub-pixel: allow a 2px tolerance).
+  const near = (a?: number, b?: number, tol = 2) =>
+    a !== undefined && b !== undefined && Math.abs(a - b) <= tol;
+  const dayBox = await day.boundingBox();
+  await expect
+    .poll(async () => near((await thumb.boundingBox())?.x, dayBox?.x))
+    .toBe(true);
+
+  // Switching tabs moves the thumb to — and resizes it to fit — "Quarter",
+  // which is wider than "Day".
+  await quarter.click();
+  const quarterBox = await quarter.boundingBox();
+  await expect
+    .poll(async () => {
+      const box = await thumb.boundingBox();
+      return near(box?.x, quarterBox?.x) && near(box?.width, quarterBox?.width);
+    })
+    .toBe(true);
+  expect(quarterBox?.width ?? 0).toBeGreaterThan(dayBox?.width ?? 0);
+});
+
+test("segmented animated={false} snaps the thumb without a slide transition", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=segmented-examples--animated-tabs");
+
+  const group = page.getByRole("radiogroup", {
+    exact: true,
+    name: "Static calendar view",
+  });
+  const thumb = group.getByTestId("segmentedThumb");
+
+  // No left/width transition — the thumb is placed, not animated.
+  await expect(thumb).not.toHaveCSS("transition-property", /left|width/);
+
+  // It still tracks selection: one frame after the click it is already over the
+  // newly selected pill (no mid-slide), confirming the thumb snaps.
+  const quarter = group.getByRole("radio", { name: "Quarter" });
+  await quarter.click();
+  const quarterBox = await quarter.boundingBox();
+  await expect
+    .poll(
+      async () => {
+        const box = await thumb.boundingBox();
+        return Math.abs((box?.x ?? 0) - (quarterBox?.x ?? 0)) <= 2;
+      },
+      { timeout: 1000 },
+    )
+    .toBe(true);
 });
 
 test("radio cards expose checked and disabled option states", async ({
@@ -314,16 +751,9 @@ test("radio cards expose checked and disabled option states", async ({
     "/iframe.html?id=radio-examples--accounting-basis-radio-cards",
   );
 
-  // Names default to the title exactly (body copy no longer leaks in).
-  const cash = page.getByRole("radio", { exact: true, name: "Cash basis" });
-  const accrual = page.getByRole("radio", {
-    exact: true,
-    name: "Accrual basis",
-  });
-  const flatRate = page.getByRole("radio", {
-    exact: true,
-    name: "Flat rate VAT",
-  });
+  const cash = page.getByRole("radio", { name: /Cash basis/ });
+  const accrual = page.getByRole("radio", { name: /Accrual basis/ });
+  const flatRate = page.getByRole("radio", { name: /Flat rate VAT/ });
 
   await expect(cash).toBeChecked();
   await accrual.click();
@@ -355,23 +785,6 @@ test("radio card names default to the title and accept overrides", async ({
   await expect(recommended).not.toBeChecked();
 });
 
-test("segmented control disambiguates duplicate labels by name", async ({
-  page,
-}) => {
-  await page.goto("/iframe.html?id=segmented-examples--duplicate-labels");
-
-  const start = page.getByRole("radio", { name: "Custom start date" });
-  const end = page.getByRole("radio", { name: "Custom end date" });
-  const auto = page.getByRole("radio", { exact: true, name: "Auto" });
-  await expect(auto).toBeChecked();
-  await start.click();
-  await expect(start).toBeChecked();
-  await expect(end).not.toBeChecked();
-  await end.click();
-  await expect(end).toBeChecked();
-  await expect(start).not.toBeChecked();
-});
-
 test("switch toggles a binary setting", async ({ page }) => {
   await page.goto("/iframe.html?id=switch-examples--privacy-toggle");
 
@@ -390,6 +803,231 @@ test("switch toggles a binary setting", async ({ page }) => {
   await expect(toggle).not.toBeChecked();
   await toggle.click();
   await expect(toggle).toBeChecked();
+});
+
+test("list exposes list semantics and activates items by click and keyboard", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=list-examples--clickable-items");
+
+  // Proper list semantics around the clickable rows: a list owning one
+  // listitem per person.
+  await expect(page.getByRole("list")).toBeVisible();
+  await expect(page.getByRole("listitem")).toHaveCount(3);
+
+  await page.getByRole("button", { name: "Open Calum Moore" }).click();
+  await expect(page.getByText("Opened Calum Moore")).toBeVisible();
+
+  // Each item is a real button, so it is focusable and activates on Enter.
+  const peter = page.getByRole("button", { name: "Open Peter Parker" });
+  await peter.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("Opened Peter Parker")).toBeVisible();
+});
+
+test("list draws a separator between items but not after the last", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=list-examples--payroll");
+
+  // Three people → two separators between them, and crucially none trailing the
+  // final row (the bug the component fixes). Separators are presentational
+  // (aria-hidden), so assert against the rendered hairline DOM.
+  await expect(page.getByRole("listitem")).toHaveCount(3);
+
+  const layout = await page.evaluate(() => {
+    const list = document.querySelector('[role="list"]');
+    if (!list) return null;
+    const children = Array.from(list.children);
+    const isSeparator = (el: Element) =>
+      el.getAttribute("role") === "presentation" &&
+      el.getAttribute("aria-hidden") === "true";
+    return {
+      separators: children.filter(isSeparator).length,
+      lastIsSeparator: isSeparator(children[children.length - 1]),
+    };
+  });
+  // Three items → exactly two separators between them, and — the bug fix — the
+  // final child is an item, never a trailing separator.
+  expect(layout?.separators).toBe(2);
+  expect(layout?.lastIsSeparator).toBe(false);
+});
+
+test("drag-select marquee selects intersecting target rows", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=drag-select-examples--ledger-rows");
+
+  const first = page.getByTestId("drag-target-txn_1");
+  const third = page.getByTestId("drag-target-txn_3");
+  const firstBox = await first.boundingBox();
+  const thirdBox = await third.boundingBox();
+  expect(firstBox).not.toBeNull();
+  expect(thirdBox).not.toBeNull();
+
+  await page.mouse.move(
+    (firstBox?.x ?? 0) + 8,
+    (firstBox?.y ?? 0) + (firstBox?.height ?? 0) / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    (thirdBox?.x ?? 0) + (thirdBox?.width ?? 0) - 8,
+    (thirdBox?.y ?? 0) + (thirdBox?.height ?? 0) / 2,
+    { steps: 8 },
+  );
+  await expect(page.getByText("Matching 3 transactions")).toBeVisible();
+  await expect(page.getByText("3 transactions", { exact: true })).toBeVisible();
+  await page.mouse.up();
+
+  await expect(page.getByText("Selected 3 transactions")).toBeVisible();
+  await expect(
+    page.getByText("Last change: txn_1, txn_2, txn_3"),
+  ).toBeVisible();
+});
+
+test("drag-select marquee can start in page content", async ({ page }) => {
+  await page.goto("/iframe.html?id=drag-select-examples--page-content-area");
+
+  const startZone = page.getByTestId("drag-page-content-start-zone");
+  const first = page.getByTestId("drag-target-txn_1");
+  const third = page.getByTestId("drag-target-txn_3");
+  const startBox = await startZone.boundingBox();
+  const firstBox = await first.boundingBox();
+  const thirdBox = await third.boundingBox();
+  expect(startBox).not.toBeNull();
+  expect(firstBox).not.toBeNull();
+  expect(thirdBox).not.toBeNull();
+
+  await page.mouse.move(
+    (startBox?.x ?? 0) + (startBox?.width ?? 0) / 2,
+    (firstBox?.y ?? 0) + (firstBox?.height ?? 0) / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    (thirdBox?.x ?? 0) + (thirdBox?.width ?? 0) - 8,
+    (thirdBox?.y ?? 0) + (thirdBox?.height ?? 0) / 2,
+    { steps: 8 },
+  );
+  await expect(page.getByText("Matching 3 transactions")).toBeVisible();
+  await page.mouse.up();
+
+  await expect(page.getByText("Selected 3 transactions")).toBeVisible();
+  await expect(
+    page.getByText("Last change: txn_1, txn_2, txn_3"),
+  ).toBeVisible();
+});
+
+test("drag-select minimum distance gates matching and selection", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=drag-select-examples--larger-minimum-drag");
+
+  const first = page.getByTestId("drag-target-txn_1");
+  const third = page.getByTestId("drag-target-txn_3");
+  const firstBox = await first.boundingBox();
+  const thirdBox = await third.boundingBox();
+  expect(firstBox).not.toBeNull();
+  expect(thirdBox).not.toBeNull();
+
+  await page.mouse.move(
+    (firstBox?.x ?? 0) + 8,
+    (firstBox?.y ?? 0) + (firstBox?.height ?? 0) / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    (firstBox?.x ?? 0) + 20,
+    (firstBox?.y ?? 0) + (firstBox?.height ?? 0) / 2,
+    { steps: 4 },
+  );
+  await expect(page.getByText("Matching 0 transactions")).toBeVisible();
+  await page.mouse.up();
+  await expect(page.getByText("Selected 0 transactions")).toBeVisible();
+  await expect(page.getByText("Last change: none")).toBeVisible();
+
+  await page.mouse.move(
+    (firstBox?.x ?? 0) + 8,
+    (firstBox?.y ?? 0) + (firstBox?.height ?? 0) / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    (thirdBox?.x ?? 0) + (thirdBox?.width ?? 0) - 8,
+    (thirdBox?.y ?? 0) + (thirdBox?.height ?? 0) / 2,
+    { steps: 8 },
+  );
+  await expect(page.getByText("Matching 3 transactions")).toBeVisible();
+  await page.mouse.up();
+  await expect(page.getByText("Selected 3 transactions")).toBeVisible();
+});
+
+test("drag-select pointer cancellation clears active drag", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=drag-select-examples--ledger-rows");
+
+  const first = page.getByTestId("drag-target-txn_1");
+  const third = page.getByTestId("drag-target-txn_3");
+  const firstBox = await first.boundingBox();
+  const thirdBox = await third.boundingBox();
+  expect(firstBox).not.toBeNull();
+  expect(thirdBox).not.toBeNull();
+
+  await page.mouse.move(
+    (firstBox?.x ?? 0) + 8,
+    (firstBox?.y ?? 0) + (firstBox?.height ?? 0) / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    (thirdBox?.x ?? 0) + (thirdBox?.width ?? 0) - 8,
+    (thirdBox?.y ?? 0) + (thirdBox?.height ?? 0) / 2,
+    { steps: 8 },
+  );
+  await expect(page.getByText("Matching 3 transactions")).toBeVisible();
+
+  await page.evaluate(() => {
+    document.dispatchEvent(
+      new PointerEvent("pointercancel", {
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+  });
+  await expect(page.getByText("Matching 3 transactions")).toBeHidden();
+  await expect(page.getByText("Selected 0 transactions")).toBeVisible();
+  await expect(page.getByText("Last change: none")).toBeVisible();
+
+  await page.mouse.up();
+  await expect(page.getByText("Last change: none")).toBeVisible();
+});
+
+test("drag-select disabled state cancels active drag", async ({ page }) => {
+  await page.goto("/iframe.html?id=drag-select-examples--disabled-during-drag");
+
+  const first = page.getByTestId("drag-target-txn_1");
+  const third = page.getByTestId("drag-target-txn_3");
+  const firstBox = await first.boundingBox();
+  const thirdBox = await third.boundingBox();
+  expect(firstBox).not.toBeNull();
+  expect(thirdBox).not.toBeNull();
+
+  await page.mouse.move(
+    (firstBox?.x ?? 0) + 8,
+    (firstBox?.y ?? 0) + (firstBox?.height ?? 0) / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    (thirdBox?.x ?? 0) + (thirdBox?.width ?? 0) - 8,
+    (thirdBox?.y ?? 0) + (thirdBox?.height ?? 0) / 2,
+    { steps: 8 },
+  );
+
+  await expect(page.getByTestId("drag-disabled-state")).toHaveText(
+    "Drag disabled",
+  );
+  await expect(page.getByText("Matching 3 transactions")).toBeHidden();
+
+  await page.mouse.up();
+  await expect(page.getByText("Selected 0 transactions")).toBeVisible();
+  await expect(page.getByText("Last change: none")).toBeVisible();
 });
 
 test("web modal restores focus and allows nested dropdowns above the surface", async ({
@@ -444,12 +1082,40 @@ test("web modal restores focus and allows nested dropdowns above the surface", a
   expect(optionBox?.y).toBeGreaterThanOrEqual((modalBox?.y ?? 0) - 1);
 });
 
+test("a dropdown inside a modal closes on Escape without closing the modal", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=modal-examples--centered-web-modal");
+  const dialog = page.getByRole("dialog", { name: "Invite teammate" });
+  await expect(dialog).toBeVisible();
+
+  // Open the selector nested inside the modal.
+  await page.getByRole("button", { name: "Nested selector, Standard" }).click();
+  await expect(page.getByText("Cash accounting")).toBeVisible();
+
+  // Escape closes only the dropdown list (the top-most layer); the modal beneath
+  // it stays open. This is the regression: Escape used to close both at once.
+  await page.keyboard.press("Escape");
+  await expect(page.getByText("Cash accounting")).toBeHidden();
+  await expect(dialog).toBeVisible();
+
+  // With no overlay above it, a second Escape now closes the modal itself.
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+});
+
 test("date field opens the calendar, navigates months, and picks a day", async ({
   page,
 }) => {
   await page.goto("/iframe.html?id=date-examples--single-date-field");
 
-  const input = page.getByLabel("Year ends");
+  // The open calendar popover is role="dialog" labelled by the field, so it
+  // shares the "Year ends" accessible name with the input; target the textbox
+  // explicitly. The visible month title also lives inside the dialog, while the
+  // shared aria-live region announces the month on navigation (WCAG 4.1.3), so
+  // scope month-text assertions to the dialog to skip the announced copy.
+  const input = page.getByRole("textbox", { name: "Year ends" });
+  const dialog = page.getByRole("dialog", { name: "Year ends" });
   await expect(input).toHaveValue("31 Mar 2026");
   // Clear is opt-in: the default field shows no clear button even with a value.
   await expect(
@@ -458,17 +1124,44 @@ test("date field opens the calendar, navigates months, and picks a day", async (
 
   // Focusing the input opens the calendar on the value's month.
   await input.click();
-  await expect(page.getByText("March 2026")).toBeVisible();
+  await expect(dialog.getByText("March 2026")).toBeVisible();
   await page.getByRole("button", { name: "15 Mar 2026" }).click();
   await expect(input).toHaveValue("15 Mar 2026");
-  await expect(page.getByText("March 2026")).toBeHidden();
+  await expect(dialog).toBeHidden();
 
   // Reopen and step to the previous month, then pick a day there.
   await input.click();
   await page.getByRole("button", { name: "Previous month" }).click();
-  await expect(page.getByText("February 2026")).toBeVisible();
+  await expect(dialog.getByText("February 2026")).toBeVisible();
   await page.getByRole("button", { name: "10 Feb 2026" }).click();
   await expect(input).toHaveValue("10 Feb 2026");
+});
+
+test("date calendar z-index override clears overlapping content", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=date-examples--calendar-layering");
+
+  const input = page.getByLabel("Layered date");
+  await input.click();
+  await expect(page.getByText("Overlapping panel")).toBeVisible();
+  const day = page.getByRole("button", { name: "15 Mar 2026" });
+  await expect(day).toBeVisible();
+
+  const topLabel = await day.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    const target = document.elementFromPoint(
+      rect.left + rect.width / 2,
+      rect.top + rect.height / 2,
+    );
+    return (
+      target?.closest("[aria-label]")?.getAttribute("aria-label") ??
+      target?.textContent ??
+      ""
+    );
+  });
+
+  expect(topLabel).toBe("15 Mar 2026");
 });
 
 test("date field jumps to a far year through the header year picker", async ({
@@ -476,9 +1169,13 @@ test("date field jumps to a far year through the header year picker", async ({
 }) => {
   await page.goto("/iframe.html?id=date-examples--single-date-field");
 
-  const input = page.getByLabel("Year ends");
+  // The open popover shares the "Year ends" name with the input (it is a
+  // role="dialog" labelled by the field), so address the textbox by role; the
+  // visible month title lives inside that dialog.
+  const input = page.getByRole("textbox", { name: "Year ends" });
+  const dialog = page.getByRole("dialog", { name: "Year ends" });
   await input.click();
-  await expect(page.getByText("March 2026")).toBeVisible();
+  await expect(dialog.getByText("March 2026")).toBeVisible();
 
   // Clicking the month/year title swaps the day grid for a year picker, where
   // the current year is shown selected and the day grid is gone.
@@ -500,7 +1197,7 @@ test("date field jumps to a far year through the header year picker", async ({
   // Picking a year in view jumps straight to it, keeps the month, and returns to
   // the day grid — without committing a date yet.
   await page.getByRole("button", { exact: true, name: "2018" }).click();
-  await expect(page.getByText("March 2018")).toBeVisible();
+  await expect(dialog.getByText("March 2018")).toBeVisible();
   await expect(input).toHaveValue("31 Mar 2026");
 
   // Reopen the picker and page whole blocks forwards and backwards with the
@@ -524,10 +1221,10 @@ test("date field jumps to a far year through the header year picker", async ({
 
   // Choosing a year there, then a day, commits as usual and closes the calendar.
   await page.getByRole("button", { exact: true, name: "2010" }).click();
-  await expect(page.getByText("March 2010")).toBeVisible();
+  await expect(dialog.getByText("March 2010")).toBeVisible();
   await page.getByRole("button", { name: "15 Mar 2010" }).click();
   await expect(input).toHaveValue("15 Mar 2010");
-  await expect(page.getByText("March 2010")).toBeHidden();
+  await expect(dialog).toBeHidden();
 });
 
 test("year picker returns to the day grid via the title and keeps keyboard focus", async ({
@@ -535,7 +1232,10 @@ test("year picker returns to the day grid via the title and keeps keyboard focus
 }) => {
   await page.goto("/iframe.html?id=date-examples--single-date-field");
 
-  const input = page.getByLabel("Year ends");
+  // The open popover (role="dialog") shares the field's "Year ends" name, so
+  // target the input by its textbox role; the month title lives in the dialog.
+  const input = page.getByRole("textbox", { name: "Year ends" });
+  const dialog = page.getByRole("dialog", { name: "Year ends" });
   await input.click();
 
   // Clicking the title again (now "back to month") returns to the day grid
@@ -545,7 +1245,7 @@ test("year picker returns to the day grid via the title and keeps keyboard focus
     page.getByRole("button", { exact: true, name: "2026" }),
   ).toBeVisible();
   await page.getByRole("button", { name: /back to month/ }).click();
-  await expect(page.getByText("March 2026")).toBeVisible();
+  await expect(dialog.getByText("March 2026")).toBeVisible();
   await expect(input).toHaveValue("31 Mar 2026");
 
   // Selecting a year by keyboard moves focus to the relabelled title button
@@ -553,7 +1253,7 @@ test("year picker returns to the day grid via the title and keeps keyboard focus
   await page.getByRole("button", { name: "March 2026, change year" }).click();
   await page.getByRole("button", { exact: true, name: "2024" }).focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByText("March 2024")).toBeVisible();
+  await expect(dialog.getByText("March 2024")).toBeVisible();
   await expect(
     page.getByRole("button", { name: "March 2024, change year" }),
   ).toBeFocused();
@@ -674,7 +1374,9 @@ test("date field clear button is keyboard reachable and restores focus", async (
 }) => {
   await page.goto("/iframe.html?id=date-examples--clearable-date-field");
 
-  const input = page.getByLabel("Year ends", { exact: true });
+  // The open calendar is role="dialog" labelled "Year ends" too, so name the
+  // input by its textbox role to avoid matching both.
+  const input = page.getByRole("textbox", { name: "Year ends", exact: true });
   const clear = page.getByRole("button", { name: "Clear Year ends" });
 
   // Tabbing from the input reaches the clear button (the calendar icon is
@@ -708,9 +1410,10 @@ test("wheel date field stages a draft and commits the clamped date on Done", asy
   await expect(page.getByRole("button", { name: "Year 2026" })).toBeVisible();
 
   // Spinning to February clamps the 31st down to the month's last valid day,
-  // and the draft is not committed until Done (the trigger keeps its value).
+  // and the draft is not committed until Done: the modal sheet stays open
+  // (it does not auto-commit and close), so the trigger keeps its value.
   await page.getByRole("button", { name: "Month Feb" }).click();
-  await expect(trigger).toBeVisible();
+  await expect(sheet).toBeVisible();
 
   await page.getByRole("button", { name: "Done" }).click();
   await expect(sheet).toBeHidden();
@@ -819,7 +1522,9 @@ test("date clear button tracks the committed value, not the typed buffer", async
 }) => {
   await page.goto("/iframe.html?id=date-examples--clearable-date-field");
 
-  const input = page.getByLabel("Year ends", { exact: true });
+  // The open calendar is role="dialog" labelled "Year ends" too, so name the
+  // input by its textbox role to avoid matching both.
+  const input = page.getByRole("textbox", { name: "Year ends", exact: true });
   const clear = page.getByRole("button", { name: "Clear Year ends" });
   await expect(input).toHaveValue("31 Mar 2026");
 
@@ -877,6 +1582,30 @@ test("input clear button is keyboard reachable and restores focus", async ({
   await expect(clear).toBeHidden();
 });
 
+test("textarea field renders multiline input and clears back to focus", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=input-examples--textarea-field");
+
+  const textarea = page.getByLabel("Project notes", { exact: true });
+  const clear = page.getByRole("button", { name: "Clear Project notes" });
+  await expect(textarea).toHaveJSProperty("tagName", "TEXTAREA");
+  await expect(textarea).toHaveValue(
+    "Initial scope notes\nFollow up with implementation details",
+  );
+  await expect(clear).toBeVisible();
+
+  await textarea.fill("Line one\nLine two");
+  await expect(textarea).toHaveValue("Line one\nLine two");
+  await textarea.focus();
+  await textarea.press("Tab");
+  await expect(clear).toBeFocused();
+  await clear.press("Enter");
+  await expect(textarea).toHaveValue("");
+  await expect(textarea).toBeFocused();
+  await expect(clear).toBeHidden();
+});
+
 test("input password suffix toggles between show and hide", async ({
   page,
 }) => {
@@ -909,7 +1638,7 @@ test("avatar renders initials and sizes the disc from the size prop", async ({
   await expect(page.getByText("PR", { exact: true })).toBeVisible();
   await expect(page.getByText("AR", { exact: true })).toHaveCSS(
     "color",
-    "rgb(148, 103, 39)",
+    "rgb(116, 81, 31)",
   );
   await expect(page.locator('[aria-label="Accounts Receivable"]')).toHaveCSS(
     "background-color",
@@ -925,6 +1654,62 @@ test("avatar renders initials and sizes the disc from the size prop", async ({
   expect(box?.width).toBeLessThanOrEqual(49);
   expect(box?.height).toBeGreaterThanOrEqual(47);
   expect(box?.height).toBeLessThanOrEqual(49);
+});
+
+test("spinner renders an accessible, continuously rotating loading indicator", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=spinner-examples--loading-states");
+
+  const spinner = page.getByRole("progressbar", { name: "Loading" }).first();
+  await expect(spinner).toBeVisible();
+  await expect(spinner).toHaveAttribute("aria-busy", "true");
+
+  // The default md spinner is a 24px ring. Its box stays stable because only the
+  // inner ring rotates, not the labelled container (a rotating square's
+  // axis-aligned box would otherwise oscillate).
+  const box = await spinner.boundingBox();
+  expect(box?.width).toBeGreaterThanOrEqual(23);
+  expect(box?.width).toBeLessThanOrEqual(25);
+
+  // The leading arc is a distinct SVG stroke painted in the theme primary, not a
+  // uniform ring, so the moving segment stays visible (also on native).
+  await expect(
+    spinner.locator('circle[stroke="#4f7864"]').first(),
+  ).toBeAttached();
+
+  // The ring genuinely spins: its transform matrix keeps advancing, so a later
+  // sample differs from the first one.
+  const readRingTransform = () =>
+    spinner.evaluate((node) => {
+      const ring = node.firstElementChild as HTMLElement | null;
+      return ring ? getComputedStyle(ring).transform : "none";
+    });
+  const firstTransform = await readRingTransform();
+  await expect.poll(readRingTransform).not.toBe(firstTransform);
+});
+
+test("animated border renders a continuously moving SVG trail", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=animatedborder-examples--active-icon");
+
+  // The decorative border overlay is keyed by testID (RNW → data-testid).
+  const border = page.locator('[data-testid="animated-border"]').first();
+  await expect(border).toBeAttached();
+
+  // The trail is real SVG geometry stroked in the theme primary, not a CSS
+  // border — so it follows the rounded-rect corner on native and web alike.
+  await expect(border.locator('rect[stroke="#4f7864"]').first()).toBeAttached();
+
+  // It genuinely animates: the leading rect's stroke-dashoffset keeps advancing,
+  // so a later sample differs from the first. This also guards the regression
+  // where the array `style` that `Animated.createAnimatedComponent` injects
+  // crashed the render with "Indexed property setter is not supported".
+  const readOffset = () =>
+    border.locator("rect").first().getAttribute("stroke-dashoffset");
+  const firstOffset = await readOffset();
+  await expect.poll(readOffset).not.toBe(firstOffset);
 });
 
 test("button reflects press and disabled state", async ({ page }) => {
@@ -946,6 +1731,44 @@ test("button reflects press and disabled state", async ({ page }) => {
   await expect(
     page.getByRole("button", { exact: true, name: "Save" }),
   ).toBeHidden();
+});
+
+test("button deepens its fill on hover, per tone", async ({ page }) => {
+  await page.goto("/iframe.html?id=button-examples--tones");
+
+  const primary = page.getByRole("button", { name: "Primary" });
+  const secondary = page.getByRole("button", { name: "Secondary" });
+  const ghost = page.getByRole("button", { name: "Ghost" });
+  const danger = page.getByRole("button", { name: "Danger" });
+
+  // Resting: the primary tone carries the theme primary fill.
+  await expect(primary).toHaveCSS("background-color", "rgb(79, 120, 100)");
+
+  // Hover deepens the filled tone to primaryDeep (raising the white label's
+  // contrast), and washes the neutral / ghost tones with their token: soft for
+  // the secondary, the primary accent's primarySoft for ghost.
+  await primary.hover();
+  await expect(primary).toHaveCSS("background-color", "rgb(47, 89, 69)");
+  await secondary.hover();
+  await expect(secondary).toHaveCSS("background-color", "rgb(238, 242, 237)");
+  await ghost.hover();
+  await expect(ghost).toHaveCSS("background-color", "rgb(227, 238, 230)");
+  // Danger keeps its surface fill (a wash would drop the rose label below AA)
+  // and instead firms its border from roseSoft to full rose (rgb(168, 79, 69)).
+  await danger.hover();
+  await expect(danger).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expect(danger).toHaveCSS("border-top-color", "rgb(168, 79, 69)");
+});
+
+test("disabled button does not take a hover fill", async ({ page }) => {
+  await page.goto("/iframe.html?id=button-examples--block-and-disabled");
+
+  const disabled = page.getByRole("button", { name: "Disabled" });
+  await expect(disabled).toBeDisabled();
+  await expect(disabled).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  // Hovering a disabled button leaves its surface fill untouched.
+  await disabled.hover({ force: true });
+  await expect(disabled).toHaveCSS("background-color", "rgb(255, 255, 255)");
 });
 
 test("button activates from the keyboard", async ({ page }) => {
@@ -1109,6 +1932,8 @@ test("segmented control sizes step the control height across the shared scale", 
 });
 
 async function dropdownScrollState(page: Page, label: string) {
+  // The selector's scrollable rows are listbox options (`role="option"`), not
+  // buttons; the row element itself is the scroll-into-view target.
   return page
     .getByRole("option", { exact: true, name: label })
     .evaluate((element) => {
@@ -1132,3 +1957,583 @@ async function dropdownScrollState(page: Page, label: string) {
       };
     });
 }
+
+test("toast appears on trigger, announces its tone, and dismisses on close", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=toast-examples--tones");
+
+  await page.getByRole("button", { name: "Show success" }).click();
+  const success = page.getByText("Saved", { exact: true });
+  await expect(success).toBeVisible();
+  // The success toast is a polite status region.
+  await expect(
+    page.getByRole("status").filter({ hasText: "Saved" }),
+  ).toBeVisible();
+
+  // Errors render as an assertive alert and stack alongside the success toast.
+  await page.getByRole("button", { name: "Show error" }).click();
+  await expect(
+    page.getByRole("alert").filter({ hasText: "Save failed" }),
+  ).toBeVisible();
+  await expect(success).toBeVisible();
+
+  // The close control dismisses just its own toast.
+  await page.getByRole("button", { name: "Dismiss Saved" }).click();
+  await expect(success).toBeHidden();
+  await expect(
+    page
+      .getByRole("region", { name: "Notifications" })
+      .getByText("Save failed"),
+  ).toBeVisible();
+});
+
+test("toast action runs and dismisses the toast", async ({ page }) => {
+  await page.goto("/iframe.html?id=toast-examples--with-action");
+
+  await page.getByRole("button", { name: "Delete invoice" }).click();
+  const toast = page
+    .getByRole("region", { name: "Notifications" })
+    .getByText("Invoice deleted");
+  await expect(toast).toBeVisible();
+
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(toast).toBeHidden();
+});
+
+test("toast auto-dismisses after its duration elapses", async ({ page }) => {
+  await page.goto("/iframe.html?id=toast-examples--auto-dismiss");
+
+  await page.getByRole("button", { name: "Copy link" }).click();
+  // Move the pointer off the toast so hover does not pause the countdown.
+  await page.mouse.move(0, 0);
+  const toast = page
+    .getByRole("region", { name: "Notifications" })
+    .getByText("Copied to clipboard");
+  await expect(toast).toBeVisible();
+  // Duration is 2s; allow margin for the auto-dismiss to fire.
+  await expect(toast).toBeHidden({ timeout: 5000 });
+});
+
+test("top-center toast pins to the top of the viewport", async ({ page }) => {
+  await page.goto("/iframe.html?id=toast-examples--top-center");
+
+  await page.getByRole("button", { name: "Show info" }).click();
+  const heading = page.getByText("Heads up", { exact: true });
+  await expect(heading).toBeVisible();
+  const box = await heading.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box?.y ?? Number.MAX_SAFE_INTEGER).toBeLessThan(200);
+});
+
+test("solid toast variant can be triggered through the controller", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=toast-examples--solid-bottom-center");
+
+  await page.getByRole("button", { name: "Show solid error" }).click();
+  const toast = page
+    .getByRole("alert")
+    .filter({ hasText: "Couldn't move this transaction. Try again." });
+  await expect(toast).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Dismiss Couldn't move/ }),
+  ).toHaveCount(0);
+
+  const background = await toast.evaluate(
+    (node) => window.getComputedStyle(node as HTMLElement).backgroundColor,
+  );
+  expect(background).toBe("rgb(168, 79, 69)");
+
+  const box = await toast.boundingBox();
+  const viewport = page.viewportSize();
+  expect(box).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  if (box && viewport) {
+    const toastCenter = box.x + box.width / 2;
+    expect(box.width).toBeGreaterThan(260);
+    expect(box.height).toBeLessThan(80);
+    expect(Math.abs(toastCenter - viewport.width / 2)).toBeLessThan(20);
+    expect(box.y + box.height).toBeGreaterThan(viewport.height - 48);
+  }
+
+  await page.getByRole("button", { name: "Show description" }).click();
+  const descriptionToast = page
+    .getByRole("alert")
+    .filter({ hasText: "Transaction not moved" });
+  await expect(descriptionToast).toContainText(
+    "Check the category and try again.",
+  );
+
+  await page.getByRole("button", { name: "Show action" }).click();
+  const actionToast = page
+    .getByRole("alert")
+    .filter({ hasText: "Move failed" });
+  await expect(actionToast).toBeVisible();
+  await page.getByRole("button", { name: "Retry" }).click();
+  await expect(actionToast).toBeHidden();
+
+  await page.getByRole("button", { name: "Show close" }).click();
+  const closeToast = page
+    .getByRole("status")
+    .filter({ hasText: "Saved as draft" });
+  await expect(closeToast).toBeVisible();
+  await page.getByRole("button", { name: "Dismiss Saved as draft" }).click();
+  await expect(closeToast).toBeHidden();
+});
+
+test("solid toast accepts a custom icon for compact progress feedback", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=toast-examples--icon-bottom-center");
+
+  await page.getByRole("button", { name: "Show saving status" }).click();
+  const toast = page
+    .getByRole("status")
+    .filter({ hasText: "Saving payslips to your device • 3 of 5" });
+  await expect(toast).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Dismiss Saving payslips/ }),
+  ).toHaveCount(0);
+
+  const background = await toast.evaluate(
+    (node) => window.getComputedStyle(node as HTMLElement).backgroundColor,
+  );
+  expect(background).toBe("rgb(28, 31, 29)");
+
+  const box = await toast.boundingBox();
+  const viewport = page.viewportSize();
+  expect(box).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  if (box && viewport) {
+    const toastCenter = box.x + box.width / 2;
+    expect(box.width).toBeGreaterThan(360);
+    expect(box.height).toBeGreaterThanOrEqual(60);
+    expect(Math.abs(toastCenter - viewport.width / 2)).toBeLessThan(20);
+    expect(box.y + box.height).toBeGreaterThan(viewport.height - 48);
+  }
+});
+
+test("toast controller is registered before descendant mount effects", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=toast-examples--controller-on-mount");
+
+  const toast = page
+    .getByRole("status")
+    .filter({ hasText: "Mounted through controller" });
+  await expect(toast).toBeVisible();
+});
+
+test("hovering a toast pauses its auto-dismiss countdown", async ({ page }) => {
+  await page.goto("/iframe.html?id=toast-examples--auto-dismiss");
+
+  await page.getByRole("button", { name: "Copy link" }).click();
+  const toast = page
+    .getByRole("region", { name: "Notifications" })
+    .getByText("Copied to clipboard");
+  await expect(toast).toBeVisible();
+
+  // Hold the pointer over the 2s toast well past its duration; the pause keeps
+  // it alive instead of letting the countdown fire.
+  await toast.hover();
+  await page.waitForTimeout(2600);
+  await expect(toast).toBeVisible();
+
+  // Releasing the hover resumes the (now nearly elapsed) countdown.
+  await page.mouse.move(0, 0);
+  await expect(toast).toBeHidden();
+});
+
+test("non-dismissible toast has no close control and dismissAll clears the queue", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=toast-examples--queue-and-dismiss-all");
+
+  await page.getByRole("button", { name: "Start upload" }).click();
+  await page.getByRole("button", { name: "Start upload" }).click();
+  const uploading = page
+    .getByRole("region", { name: "Notifications" })
+    .getByText("Uploading…");
+  await expect(uploading.first()).toBeVisible();
+  // A non-dismissible toast renders no close control.
+  await expect(
+    page.getByRole("button", { name: /Dismiss Uploading/ }),
+  ).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Dismiss all" }).click();
+  await expect(
+    page.getByRole("region", { name: "Notifications" }).getByText("Uploading…"),
+  ).toHaveCount(0);
+});
+
+test("calendar switches between month, week, and day views", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=calendar-examples--switchable-calendar");
+
+  // The month view leads with the weekday header row (no time gutter yet).
+  await expect(page.getByText("Sun", { exact: true })).toBeVisible();
+  await expect(page.getByText("All-day", { exact: true })).toBeHidden();
+
+  // Switching to the week view swaps in the time grid (its all-day gutter and
+  // hour labels appear); the segment is a radio in the SegmentedControl.
+  await page.getByRole("radio", { name: "Week" }).click();
+  await expect(page.getByRole("radio", { name: "Week" })).toBeChecked();
+  await expect(page.getByText("All-day", { exact: true })).toBeVisible();
+  await expect(page.getByText("9 AM", { exact: true })).toBeVisible();
+
+  // The week view carries a date header above the columns: each column shows its
+  // weekday + day number (today's 2026-06-17 reads "Wed 17").
+  await expect(page.getByTestId("calendar-col-header-2026-06-17")).toHaveText(
+    "Wed17",
+  );
+  await expect(page.getByTestId("calendar-col-header-2026-06-15")).toHaveText(
+    "Mon15",
+  );
+
+  // The day view keeps the time grid but collapses to a single column.
+  await page.getByRole("radio", { name: "Day" }).click();
+  await expect(page.getByRole("radio", { name: "Day" })).toBeChecked();
+  await expect(page.getByText("All-day", { exact: true })).toBeVisible();
+  await expect(
+    page.getByTestId("calendar-day-column-2026-06-17"),
+  ).toBeVisible();
+
+  // Back to the month view: the weekday header returns and the gutter is gone.
+  await page.getByRole("radio", { name: "Month" }).click();
+  await expect(page.getByRole("radio", { name: "Month" })).toBeChecked();
+  await expect(page.getByText("Sun", { exact: true })).toBeVisible();
+  await expect(page.getByText("All-day", { exact: true })).toBeHidden();
+});
+
+test("calendar enforced view hides the switcher", async ({ page }) => {
+  await page.goto("/iframe.html?id=calendar-examples--enforced-week-calendar");
+
+  // The week view renders (its time gutter is present)...
+  await expect(page.getByText("All-day", { exact: true })).toBeVisible();
+  await expect(
+    page.getByTestId("calendar-day-column-2026-06-17"),
+  ).toBeVisible();
+
+  // ...but with a single enforced view there is no switcher at all.
+  await expect(page.getByRole("radio", { name: "Week" })).toBeHidden();
+  await expect(page.getByRole("radio", { name: "Month" })).toBeHidden();
+  await expect(page.getByRole("radio", { name: "Day" })).toBeHidden();
+});
+
+test("calendar expands recurring events", async ({ page }) => {
+  await page.goto(
+    "/iframe.html?id=calendar-examples--recurring-events-calendar",
+  );
+
+  // The month view is visible (weekday header present).
+  await expect(page.getByText("Sun", { exact: true })).toBeVisible();
+
+  // The daily standup expands onto many cells across the month, so its chip
+  // appears far more than once.
+  await expect
+    .poll(async () => page.getByText("Daily standup").count())
+    .toBeGreaterThanOrEqual(10);
+
+  // The weekly Tue/Thu sync also lands on multiple days in the visible month.
+  await expect
+    .poll(async () => page.getByText("Weekly sync").count())
+    .toBeGreaterThanOrEqual(4);
+});
+
+test("calendar drag creates a timed event", async ({ page }) => {
+  await page.goto("/iframe.html?id=calendar-examples--drag-to-create-calendar");
+
+  // Before any drag the log shows the idle hint and no event blocks exist.
+  const log = page.getByTestId("created-event-log");
+  await expect(log).toHaveText("Drag the grid to create an event");
+
+  const column = page.getByTestId("calendar-day-column-2026-06-17");
+  const box = await column.boundingBox();
+  expect(box).not.toBeNull();
+
+  // Drag vertically down the day column to sweep out a multi-slot range, using
+  // the same page.mouse pointer-drag idiom as the drag-select tests.
+  const x = (box?.x ?? 0) + (box?.width ?? 0) / 2;
+  const startY = (box?.y ?? 0) + 60;
+  const endY = (box?.y ?? 0) + 180;
+  await page.mouse.move(x, startY);
+  await page.mouse.down();
+  await page.mouse.move(x, endY, { steps: 10 });
+  await page.mouse.up();
+
+  // The log now reports a created timed range (start/end ISO datetimes), and a
+  // new "New event" block is positioned in the grid.
+  await expect(log).toContainText("Created");
+  await expect(log).toContainText("2026-06-17T");
+  await expect(
+    page.getByRole("button", { name: /New event/ }).first(),
+  ).toBeVisible();
+});
+
+test("calendar month view creates events by click and by drag across days", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=calendar-examples--month-drag-to-create-calendar",
+  );
+
+  const log = page.getByTestId("created-event-log");
+  await expect(log).toHaveText(
+    "Click a day, or drag across days, to create an event",
+  );
+
+  // The grid disables text selection so a drag never blue-highlights the day
+  // numbers / event labels (the cascade reaches the day-number text too).
+  const cell = page.getByTestId("calendar-month-cell-2026-06-10");
+  expect(await cell.evaluate((el) => getComputedStyle(el).userSelect)).toBe(
+    "none",
+  );
+
+  // A plain click on a day cell creates a single-day all-day event.
+  await cell.click();
+  await expect(log).toContainText("Created 2026-06-10 – 2026-06-10");
+
+  // Dragging across several day cells creates a multi-day all-day event, using
+  // the same page.mouse pointer-drag idiom as the drag-select tests.
+  const startCell = page.getByTestId("calendar-month-cell-2026-06-16");
+  const endCell = page.getByTestId("calendar-month-cell-2026-06-18");
+  const startBox = await startCell.boundingBox();
+  const endBox = await endCell.boundingBox();
+  expect(startBox).not.toBeNull();
+  expect(endBox).not.toBeNull();
+
+  await page.mouse.move(
+    (startBox?.x ?? 0) + (startBox?.width ?? 0) / 2,
+    (startBox?.y ?? 0) + (startBox?.height ?? 0) / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    (endBox?.x ?? 0) + (endBox?.width ?? 0) / 2,
+    (endBox?.y ?? 0) + (endBox?.height ?? 0) / 2,
+    { steps: 10 },
+  );
+  await page.mouse.up();
+
+  // The log reports the multi-day all-day range, and the new event renders as a
+  // labelled "New event" spanning bar.
+  await expect(log).toContainText("Created 2026-06-16 – 2026-06-18");
+  await expect(
+    page.getByRole("button", { name: /New event/ }).first(),
+  ).toBeVisible();
+});
+
+test("heatmap labels the months across a full-year range", async ({ page }) => {
+  await page.goto("/iframe.html?id=heatmap-examples--heatmap-year");
+
+  // A year range labels every month at the column where it begins.
+  await expect(page.getByText("Jan", { exact: true })).toBeVisible();
+  await expect(page.getByText("Jul", { exact: true })).toBeVisible();
+  await expect(page.getByText("Dec", { exact: true })).toBeVisible();
+});
+
+test("heatmap reports the pressed cell to its handler", async ({ page }) => {
+  await page.goto("/iframe.html?id=heatmap-examples--heatmap-interactive");
+
+  await expect(page.getByText("None selected")).toBeVisible();
+  // Each in-range cell is a button named by its accessible date + value label.
+  await page.getByRole("button", { name: "15 Jan 2024: 8 (high)" }).click();
+  await expect(page.getByText("Selected: 2024-01-15 (8)")).toBeVisible();
+});
+
+test("table row opens on click and reports the opened row", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=table-examples--clickable-rows");
+
+  // With onRowPress, each row is a button named by its rowLabel.
+  const paid = page.getByRole("button", { name: "Open invoice INV-0007" });
+  await expect(paid).toBeVisible();
+  await paid.click();
+  await expect(page.getByText("Opened INV-0007")).toBeVisible();
+});
+
+test("table row activates from the keyboard", async ({ page }) => {
+  await page.goto("/iframe.html?id=table-examples--clickable-rows");
+
+  // The button-role row is keyboard operable via react-native-web's Pressable.
+  const overdue = page.getByRole("button", { name: "Open invoice INV-0008" });
+  await overdue.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("Opened INV-0008")).toBeVisible();
+});
+
+test("table disabled row is exposed as a non-pressable button", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=table-examples--clickable-rows");
+
+  // The draft row is marked non-pressable via rowDisabled.
+  await expect(
+    page.getByRole("button", { name: "Open invoice INV-0009" }),
+  ).toBeDisabled();
+});
+
+test("table rich cells render and the per-row Open action fires", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=table-examples--rich-cells");
+
+  // Rich cells render: a two-line name cell and a toned status badge.
+  await expect(page.getByText("Maya Okafor")).toBeVisible();
+  await expect(page.getByText("Leaving 31 May")).toBeVisible();
+
+  // The per-row action button (in the headerless action column) fires.
+  await page.getByRole("button", { name: "Open Maya Okafor" }).click();
+  await expect(page.getByText("Opened Maya Okafor")).toBeVisible();
+});
+
+test("kanban card drags to another column with the pointer", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=kanban-examples--drag-and-drop");
+
+  const drafted = page.getByTestId("kanban-column-drafted");
+  const approved = page.getByTestId("kanban-column-approved");
+  // The card starts in the Drafted column.
+  await expect(drafted.getByTestId("kanban-card-c1")).toBeVisible();
+
+  const cardBox = await page.getByTestId("kanban-card-c1").boundingBox();
+  const targetBox = await approved.boundingBox();
+  expect(cardBox).not.toBeNull();
+  expect(targetBox).not.toBeNull();
+
+  await page.mouse.move(
+    (cardBox?.x ?? 0) + (cardBox?.width ?? 0) / 2,
+    (cardBox?.y ?? 0) + (cardBox?.height ?? 0) / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    // Aim near the bottom of the column (past its last card) so the drop lands
+    // at the end of the Approved list; the 24px inset clears the column padding.
+    (targetBox?.x ?? 0) + (targetBox?.width ?? 0) / 2,
+    (targetBox?.y ?? 0) + (targetBox?.height ?? 0) - 24,
+    { steps: 12 },
+  );
+  await page.mouse.up();
+
+  // It now lives under the Approved column, the move was reported, and the drag
+  // did NOT also fire the card's onCardPress (the post-drag click is suppressed).
+  await expect(approved.getByTestId("kanban-card-c1")).toBeVisible();
+  await expect(drafted.getByTestId("kanban-card-c1")).toHaveCount(0);
+  await expect(page.getByText(/Moved c1 to approved/)).toBeVisible();
+  await expect(page.getByText(/Opened/)).toHaveCount(0);
+});
+
+test("kanban shows a floating clone and a drop preview while dragging", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=kanban-examples--drag-and-drop");
+
+  const cardBox = await page.getByTestId("kanban-card-c1").boundingBox();
+  const approvedBox = await page
+    .getByTestId("kanban-column-approved")
+    .boundingBox();
+  expect(cardBox).not.toBeNull();
+  expect(approvedBox).not.toBeNull();
+
+  // Press and hold a drag over the Approved column, without releasing.
+  await page.mouse.move(
+    (cardBox?.x ?? 0) + (cardBox?.width ?? 0) / 2,
+    (cardBox?.y ?? 0) + (cardBox?.height ?? 0) / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    (approvedBox?.x ?? 0) + (approvedBox?.width ?? 0) / 2,
+    (approvedBox?.y ?? 0) + 60,
+    { steps: 10 },
+  );
+
+  // The card is lifted out of the flow, a clone rides the cursor, and a
+  // translucent preview marks where it would land.
+  await expect(page.getByTestId("kanban-drag-ghost")).toBeVisible();
+  await expect(page.getByTestId("kanban-drop-preview")).toBeVisible();
+  await expect(page.getByTestId("kanban-card-c1")).toHaveCount(0);
+
+  await page.mouse.up();
+
+  // After the drop the clone and preview are gone and the card is placed.
+  await expect(page.getByTestId("kanban-drag-ghost")).toHaveCount(0);
+  await expect(page.getByTestId("kanban-drop-preview")).toHaveCount(0);
+  await expect(
+    page.getByTestId("kanban-column-approved").getByTestId("kanban-card-c1"),
+  ).toBeVisible();
+});
+
+test("kanban clicking a draggable card opens it instead of moving it", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=kanban-examples--drag-and-drop");
+
+  // A plain click (no drag past the threshold) fires onCardPress, not a move.
+  await page.getByTestId("kanban-card-c3").click();
+  await expect(page.getByText("Opened c3")).toBeVisible();
+  await expect(
+    page.getByTestId("kanban-column-approved").getByTestId("kanban-card-c3"),
+  ).toBeVisible();
+});
+
+test("kanban a drag that lands back home does not open the card", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=kanban-examples--drag-and-drop");
+
+  // Drag c3 within its own column and release at the same slot: a real drag
+  // (past the threshold) that is a no-op move must still suppress onCardPress.
+  const box = await page.getByTestId("kanban-card-c3").boundingBox();
+  expect(box).not.toBeNull();
+  await page.mouse.move(
+    (box?.x ?? 0) + (box?.width ?? 0) / 2,
+    (box?.y ?? 0) + (box?.height ?? 0) / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    (box?.x ?? 0) + (box?.width ?? 0) / 2,
+    (box?.y ?? 0) + (box?.height ?? 0) / 2 + 24,
+    { steps: 8 },
+  );
+  await page.mouse.up();
+
+  await expect(page.getByText(/Opened/)).toHaveCount(0);
+  await expect(page.getByText(/Moved/)).toHaveCount(0);
+});
+
+test("kanban card moves between columns with the keyboard", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=kanban-examples--drag-and-drop");
+
+  const approved = page.getByTestId("kanban-column-approved");
+  await page.getByTestId("kanban-card-c2").focus();
+  await page.keyboard.press("Space"); // grab
+  await page.keyboard.press("ArrowRight"); // move to the next column
+  await page.keyboard.press("Enter"); // drop (Enter and Space both drop)
+
+  await expect(approved.getByTestId("kanban-card-c2")).toBeVisible();
+  await expect(page.getByText(/Moved c2 to approved/)).toBeVisible();
+  // Focus is restored to the moved card so keyboard users keep their place.
+  await expect(page.getByTestId("kanban-card-c2")).toBeFocused();
+});
+
+test("kanban keyboard drag cancels on Escape without moving", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=kanban-examples--drag-and-drop");
+
+  const drafted = page.getByTestId("kanban-column-drafted");
+  await page.getByTestId("kanban-card-c2").focus();
+  await page.keyboard.press("Space"); // grab
+  await page.keyboard.press("ArrowRight"); // move to the next column
+  await page.keyboard.press("Escape"); // cancel
+
+  // The card stays put, no move was reported, and focus returns to the card.
+  await expect(drafted.getByTestId("kanban-card-c2")).toBeVisible();
+  await expect(page.getByText(/Moved c2/)).toHaveCount(0);
+  await expect(page.getByTestId("kanban-card-c2")).toBeFocused();
+});

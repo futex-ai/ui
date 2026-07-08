@@ -2,17 +2,20 @@
 
 ## Status
 
-Implemented contract for the dropdown, segmented control, radio card, switch,
-button, modal, and avatar extraction, including the shared control-size scale
-for buttons and inputs.
+Implemented contract for the dropdown, drag-select, segmented control, radio
+card, switch, spinner, button, data table, workflow builder, modal, toast,
+avatar, status badge, and event-calendar extraction, including the shared
+control-size scale for buttons, inputs, and textareas.
 
 ## Purpose
 
 This repository provides shared React Native and React Native Web UI primitives
 for Firna apps. The first consumers are the accounting app and the Juno app.
-The first shared component families are the dropdown components, segmented
-control patterns, radio-option cards, switch primitive, web modal components,
-and the circular user avatar currently implemented in the accounting app.
+The first shared component families are the dropdown components, drag-select
+provider, segmented control patterns, radio-option cards, switch primitive, data
+table, workflow-builder step graph, web modal components, transient notification
+toasts, and the circular user avatar currently implemented in the accounting
+app, plus labelled text inputs and textareas for shared forms.
 
 ## Package Boundary
 
@@ -35,6 +38,10 @@ and the circular user avatar currently implemented in the accounting app.
 - Shared semantic tokens must also cover surface, text, muted text, borders,
   danger, warning, radii, and fonts so copied components do not depend on a
   consumer theme module.
+- The warning and danger accents must ship a deep variant (`amberDeep`,
+  `roseDeep`, mirroring `primaryDeep`) so a tinted status fill can carry
+  AA-contrast accent text; the lighter `amber` / `rose` accents fall below the
+  4.5:1 text minimum on their own soft tints.
 - Focus rings use the active theme primary color.
 - Consumer theme overrides must be shallow and predictable; unspecified tokens
   fall back to the default shared theme.
@@ -75,6 +82,26 @@ Required behavior:
   and pill radius.
 - Keep a `trackStyle` override available for non-default surfaces without
   requiring consumers to fork the component.
+
+## Spinner Contract
+
+The spinner family covers the indeterminate loading indicator: a ring whose
+accent arc rotates continuously while content is loading.
+
+Required behavior:
+
+- Render a circular ring sized by the shared `ControlSize` scale (`sm` / `md` /
+  `lg`, with `md` as the default) or by an explicit pixel diameter, deriving the
+  ring stroke thickness from the diameter.
+- Animate a continuous rotation through React Native's `Animated` API so the
+  same component spins on native and web, and stop the loop on unmount.
+- Expose `progressbar` accessibility semantics with a busy state and an
+  accessible name that defaults to a loading label.
+- Use shared theme tokens for the accent arc (`primary`) and the ring track
+  (`border2`), and allow per-instance `color` and `trackColor` overrides for
+  alternate surfaces without forking the component.
+- Keep only the inner ring rotating so the labelled container keeps a stable box
+  for layout and assistive technology.
 
 ## Radio Card Contract
 
@@ -117,14 +144,34 @@ their buttons from a single vocabulary.
 Required behavior:
 
 - Expose `sm`, `md` (default), and `lg` sizes through a shared `ControlSize`
-  type used by the button and the input/field.
+  type used by the button, input/field, and textarea.
 - The button scales its height, horizontal padding, label type scale, and icon
   with the size.
-- The input/field scales its box height, padding, input text, and prefix /
-  suffix / clear icons with the size, while keeping the label, hint, and error
-  messages at a constant scale.
+- The input/field scales its box height, padding, input text, textarea minimum
+  height, and prefix / suffix / clear icons with the size, while keeping the
+  label, hint, and error messages at a constant scale.
 - `md` preserves the established defaults (the 38px button and the 40px input
   box) so existing call sites are unchanged when no size is supplied.
+
+## Input Contract
+
+The input family covers labelled single-line text fields, labelled multiline
+textareas, and a bare framed input box for controls that own their own label or
+popover.
+
+Required behavior:
+
+- Render a visible label, required marker, framed text entry surface, hint text,
+  and validation error without depending on consumer-local form components.
+- Associate labels, hints, and errors with the underlying `TextInput` through
+  generated ids and literal ARIA attributes on web, while preserving native
+  accessibility hints.
+- Treat `Input` as the default single-line field and `Textarea` as the multiline
+  field; `Textarea` must force multiline mode and default to four visible rows.
+- Use the same validation border, focus ring, placeholder color, clear button,
+  icons, and `ControlSize` scaling for single-line and multiline fields.
+- Keep `InputFrame` available as the shared bare box so date fields and other
+  custom controls can reuse the chrome without duplicating it.
 
 ## Avatar Contract
 
@@ -144,6 +191,29 @@ Required behavior:
   requiring consumers to fork the component.
 - Accept an optional initials color override so consumer-provided palette discs
   can keep matching palette-specific foreground colors.
+
+## Badge Contract
+
+The badge family covers the compact, non-interactive status pill that labels a
+status (e.g. `Active`, `Pending`, `Overdue`) with a themed tone.
+
+Required behavior:
+
+- Render a content-hugging, fully-rounded pill around one short label, sized on
+  the shared `ControlSize` scale (`sm` / `md` (default) / `lg`).
+- Carry a semantic status `tone` — `neutral` (default), `primary`, `warning`,
+  and `danger` — in a `soft` (tinted fill, deep accent text) or `solid` (filled
+  accent, white text) variant. There is no `success` or `info` tone, because the
+  shared theme exposes no green or blue accent distinct from the brand
+  `primary`; a status badge maps onto the existing accent families.
+- Keep every tone/variant pair at the WCAG 1.4.3 AA text-contrast minimum
+  (≥4.5:1) on its own fill in both shipped themes, using the deep
+  `amberDeep` / `roseDeep` accents for the warning and danger tones.
+- Keep the visible label text as the status channel so the tone color reinforces
+  rather than solely conveys the meaning, with an optional accessibility-label
+  override for abbreviated or numeric labels.
+- Use shared theme tokens for the fills, the label color, the font, and the pill
+  radius, with no consumer-local theme imports.
 
 ## Date Contract
 
@@ -168,6 +238,133 @@ Required behavior:
   the calendar escapes sibling stacking contexts.
 - Keep day cells, navigation buttons, and the clear button labelled for
   assistive technology, and include the field label in those accessible names.
+
+## Calendar Contract
+
+The calendar family covers a full event calendar (Google-Calendar-style) built
+on the shared datetime helpers, distinct from the date-field pickers.
+
+Required behavior:
+
+- Render month, week, day, and agenda views from a single controlled event list,
+  using timezone-naive ISO datetimes (`YYYY-MM-DDTHH:mm`) for timed events and
+  ISO dates (`YYYY-MM-DD`) for all-day events.
+- Let consumers either enforce one fixed view (no in-app switcher) or expose a
+  switcher across an allowed subset of views, with controlled or uncontrolled
+  view and focused-date state plus prev/next/today navigation.
+- Expand recurring events through a pragmatic RRULE subset — daily, weekly (with
+  by-weekday), monthly, and yearly frequencies, with interval, count, until, and
+  per-date exceptions — into concrete occurrences intersecting the view window,
+  preserving each instance's duration, behind a hard iteration cap.
+- Lay timed events that overlap into side-by-side columns within a day, and lay
+  multi-day and all-day events as spanning bars with lane overflow (`+N more`)
+  in the month grid.
+- Support web drag-to-create: dragging (or clicking) an empty region of the time
+  grid yields a snapped start/end draft surfaced through a create callback, and
+  dragging across month-grid day cells yields a multi-day all-day draft, each
+  with a native-safe no-op fallback for Expo platform resolution.
+- Keep view-switch segments, navigation, day cells, event blocks, and event
+  chips labelled for assistive technology, and inject "today"/"now" rather than
+  reading a clock inside the pure helpers.
+- Keep the pure datetime, recurrence, and layout helpers exported and covered by
+  unit tests.
+
+## Heatmap Contract
+
+The heatmap family covers the calendar contribution grid: a date range laid out
+as columns of weeks with per-day intensity coloring, month labels along the top,
+and an optional weekday gutter and intensity legend.
+
+Required behavior:
+
+- Take an inclusive ISO `YYYY-MM-DD` start/end range plus a sparse list of
+  per-date values, and lay it out as column-major weeks (one column per week,
+  one row per weekday) padded so the grid stays rectangular.
+- Resolve the layout from pure, timezone-safe, unit-tested helpers that never
+  read the current date, returning an empty grid for an invalid or reversed
+  range.
+- Place a short month label above the column where each month's in-range days
+  begin, detecting the transition from in-range days so a leading partial week
+  is not mislabeled with the previous month.
+- Map each day's value to an ordered intensity ramp through ascending
+  lower-bound thresholds, deriving even bands from the data's max value by
+  default and honoring explicit thresholds for an absolute scale, with a
+  distinct empty color for days with no value.
+- Drive the cell size, gap, and corner radius, the color ramp and empty color,
+  the week start, and the month / weekday / legend chrome from props with
+  sensible defaults.
+- Use shared theme tokens for the default ramp, the empty cell, and the label
+  colors instead of consumer-local theme imports.
+- Label each in-range cell for assistive technology, hide padding cells from it,
+  and make cells focusable, pressable buttons when a press handler is supplied.
+
+## Table Contract
+
+The table family covers the lightweight data table the accounting mockups model
+as `.table`: a header row over flex rows that share their column definitions
+(React Native has no native `<table>`).
+
+Required behavior:
+
+- Render rows from a column definition and a per-cell render callback, so a cell
+  can hold plain text, tags, buttons, or any node, with a text helper for the
+  default cell typography (including bold, muted, and tabular-numeric variants).
+- Size each column by a fixed width or a flex share, and align its header and
+  cells left, center, or right.
+- Allow a per-row container style override, merged over the base row style and
+  under the interactive states, so grouped tables can shade section-header and
+  subtotal bands (e.g. a balance sheet).
+- Make the header row optional for continuation tables and headerless layouts.
+- Make rows optionally pressable: a pressable row exposes `button` accessibility
+  semantics with a disabled state, owns the shared hover, focus ring, and pressed
+  treatment, hides the browser's default outline, and is keyboard operable; a
+  table without a row press handler renders plain static rows.
+- Use shared theme tokens for the header fill, row separators, cell and header
+  text, the hover and pressed fills, disabled opacity, and the focus ring, and
+  size with the shared control-size scale.
+
+## Kanban Contract
+
+The kanban family covers the horizontally-scrolling status board the table
+mockups model as `.tb-kanban`: the same records the table shows as rows, grouped
+by a single-select field into one fixed-width column per status.
+
+Required behavior:
+
+- Group a flat cards array into columns by a `cardColumnId` accessor (the table
+  rows / list items pattern), with a stable card key and a per-card render
+  callback, so a card can be the standard card layout or any node; a card whose
+  column id matches no column is omitted.
+- Render each column as a header — a status chip whose color comes from a
+  semantic tone or a literal color override, a card count, and an optional add
+  button — above a vertical stack of cards, with an optional placeholder for an
+  empty column.
+- Provide a convenience card layout: a wrapping title, an optional wrapping row
+  of chips, and an optional footer built from avatar / metadata / date slots or
+  a custom footer node.
+- Provide a chip primitive distinct from the badge pill: a small (`radii.sm`)
+  rounded tag whose fill resolves from a tone, a literal color, or a fill-less
+  plain variant for inline icon + count metadata, with a decorative leading icon
+  hidden from assistive technology.
+- Make cards optionally pressable: a pressable card exposes `button` semantics
+  with a disabled state, owns the shared hover, inset focus ring, and pressed
+  treatment, hides the browser's default outline, and is keyboard operable; a
+  board without a card press handler renders plain static cards.
+- Label the board and each column as accessibility groups, fold the card count
+  into the column's group name (hiding the redundant visible count from
+  assistive technology), and announce the board busy while showing skeleton
+  placeholder cards during loading.
+- Make cards draggable between and within columns via `onCardMove`, by pointer
+  and by keyboard (Space grabs, arrows move, Space/Enter drops, Escape cancels,
+  each step announced). The dragged card is lifted out of its column — a
+  translucent clone follows the pointer (the keyboard leaves the card dimmed in
+  place) — and a translucent preview of the card marks the target slot. The board
+  stays controlled: the drag reports a move (`{ cardKey, fromColumnId, fromIndex,
+toColumnId, toIndex }`, `toIndex` in dragged-removed semantics) for the consumer
+  to apply; it never mutates the cards. Dragging is a web gesture, so the native
+  drag is an inert no-op.
+- Scroll the columns horizontally on both web and phone, and size with the
+  shared control-size scale.
 
 ## Dropdown Contract
 
@@ -195,8 +392,47 @@ Required behavior:
 - Preserve no-match empty rows even when combobox footers are present.
 - Keep input-backed comboboxes on a non-modal web portal so text inputs retain
   focus while results are open.
+- Provide an action-menu wrapper that owns the trigger anchor, controlled or
+  uncontrolled open state, portal/list composition, and default close-after-row
+  selection behavior for common trigger-backed menus.
+- Offer selectable trigger gestures (press, hover, long-press, context menu) on
+  the action-menu wrapper, resolving hover and context-menu behavior per
+  platform and keeping press available where a gesture is unavailable.
 - Keep dropdown and combobox portal layers above modal surfaces.
 - Preserve native-safe fallbacks for Expo platform resolution.
+
+## Drag Select Contract
+
+The drag-select family covers web-only rubber-band selection for repeated rows,
+tiles, and similar rendered targets. Native platforms receive a safe provider
+fallback but no drag gesture.
+
+Required behavior:
+
+- Register selectable targets by stable id through a hook-owned ref.
+- Measure registered target bounds on drag start and select every enabled target
+  whose measured bounds intersect the marquee box on pointer up.
+- Require pointer movement to meet a provider-configurable minimum drag
+  distance before live matching, marquee rendering, or final selection starts.
+  The default minimum is `4px`; `0` starts selection immediately after movement,
+  negative values clamp to `0`, and non-finite values fall back to the default.
+- Expose final selected ids, selected target metadata, selected count, live
+  matching ids, live matching target metadata, and live matching count through
+  hooks.
+- Treat selected target metadata as a snapshot captured when selection finishes;
+  consumers that need live target data should map selected ids through their own
+  current data source.
+- Provide a provider-level selection-change callback and a hook-level listener
+  for components that need side effects when selection changes.
+- Allow the marquee badge copy to be customized from the live matching count,
+  ids, and target metadata.
+- Render the web marquee through a body-level portal using shared theme primary
+  colors, radii, and a shared layer token that clears modal and dropdown
+  surfaces while allowing an explicit provider override.
+- Ignore touch drags and nested form/menu/link controls while allowing a
+  selectable target root to start the drag.
+- Keep the pure geometry helpers exported and covered by unit tests.
+- Preserve a native-safe fallback for Expo platform resolution.
 
 ## Modal Contract
 
@@ -215,11 +451,97 @@ Required behavior:
 - Provide native-safe fallback files that return `null` rather than replacing
   iOS or Android native sheets, action sheets, OS pickers, or platform modals.
 
+## Toast Contract
+
+The toast family covers transient, non-blocking notifications driven from an
+imperative API rather than rendered declaratively at a call site.
+
+Required behavior:
+
+- Provide a `ToastProvider` that owns a capped, ordered queue and publishes an
+  imperative API (`toast`, `dismiss`, `dismissAll`) through a `useToast` hook
+  and a module-level `toastController`; the hook must throw when used outside a
+  provider, and the controller must throw before a provider is mounted.
+- `toast()` must return an id usable with `dismiss`, default the tone to `info`,
+  and default the auto-dismiss delay to the provider default while accepting a
+  per-toast `duration` override and a `null`/non-positive duration for sticky
+  toasts. Toasts must also accept a `variant` prop that defaults to `card`.
+- Cap simultaneously visible toasts at a provider-configurable `max` (default 4)
+  by dropping the oldest entries.
+- Render toasts in a viewport pinned to one of six placements (top/bottom ×
+  left/center/right), with the newest toast nearest the pinned edge, through a
+  `document.body` portal with `position: fixed` on web and an
+  absolutely-positioned, `pointerEvents="box-none"` overlay on native.
+- Auto-dismiss each toast after its resolved duration and pause the countdown
+  while the pointer or keyboard focus is over the toast.
+- Carry tone (`info`, `success`, `warning`, `error`) as a left accent strip,
+  leading icon, and screen-reader semantics: errors announce assertively with
+  the `alert` role, other tones politely with the `status` role.
+- Support a compact `solid` variant that uses the tone color as the filled
+  background, hides the default card icon/accent strip, and can match the
+  bottom-center transaction-error style through props.
+- Support caller-provided leading icons for toast surfaces so in-progress,
+  branded, or feature-specific visuals do not require new visual variants.
+- Allow per-toast surface and filled-foreground overrides so compact solid
+  toasts can match dark in-progress status surfaces through props.
+- Allow per-toast title and description text style overrides that layer after
+  the built-in variant text styles.
+- Support an optional action button that runs its handler and then dismisses the
+  toast, and an optional close control that dismisses only its own toast.
+- Use shared theme tokens for the surface, border, accent colors, text, fonts,
+  and radii, with no consumer-local theme imports.
+- Float the toast viewport above modal surfaces, nested overlays, and the
+  consent banner, and export the layer token for consumers.
+
+## Workflow Builder Contract
+
+The workflow-builder family covers the branching step-graph canvas the
+workflow-builder and table-automation mockups model as `.wf-*`: a trigger-rooted
+vertical spine of step cards used to construct automation workflows.
+
+Required behavior:
+
+- Render a typed graph model (`WorkflowGraph`) of steps along a spine, where each
+  step is either a node (`trigger`, `code`, `agent`, `branch`, `app`, `outcome`)
+  or a fork that splits into parallel branches, each branch carrying its own
+  condition label and sub-spine (rendered recursively).
+- Link steps with 2px connectors and route transitions through tinted edge-label
+  pills whose tone (`success`, `failure`, `condition`, `always`, `neutral`) maps
+  onto the theme's accent families — the same philosophy as the badge, with no
+  invented green/blue token — so the visible text carries the meaning and color
+  only reinforces it.
+- Render a fork as a connector rail: a horizontal line spanning the branch
+  centers with a vertical drop into each branch column, so the spine visibly
+  splits into each branch rather than stacking disconnected columns.
+- Optionally render each transition as a round `+` insert button in place of the
+  edge labels (insert mode), reporting the branch and index where a new step is
+  inserted, with a trailing button that appends after the last step.
+- Color-code the six node kinds with a white-glyph icon chip from a fixed,
+  overridable decorative category palette (like avatar colors), and surface a
+  per-node run-status dot (`ok`, `running`, `waiting`, `error`, `skipped`) with a
+  spoken text alternative; the `running` dot pulses unless reduced motion.
+- Make nodes optionally pressable: a pressable node exposes `button`
+  accessibility semantics with the selected state, owns the shared hover, focus
+  ring, and pressed treatment, hides the browser's default outline, and is
+  keyboard operable; a static node lets its text and status dot announce
+  naturally. Offer an optional trailing add-step button and an edge-tone legend.
+- Keep decorative rules (connectors) and the dotted graph-paper canvas out of the
+  accessibility tree on both platforms, and paint the dotted background as a
+  web-only enhancement (React Native has no CSS background-image).
+- Use shared theme tokens for the card surface, border, connectors, edge fills
+  and text, status colors, and the selected / focus rings, and size with the
+  shared control-size scale.
+
 ## Layering Contract
 
 - Ordinary content sits below dropdowns and modal portals.
 - Modal backdrop sits below modal surface.
 - Dropdowns and comboboxes opened inside modals sit above modal surfaces.
+- The toast viewport sits above modal surfaces, nested dropdown/combobox
+  overlays, and the cookie-consent banner.
+- Date calendar popovers, dropdown portals, and generic popovers use a high
+  default overlay floor and expose z-index props for consumer-owned stacking
+  contexts that sit above the shared defaults.
 - Layer tokens must be exported so consumers can align adjacent overlays
   without hard-coded numeric z-index values.
 
@@ -229,8 +551,9 @@ Required behavior:
   have unit tests.
 - Component source contracts that protect web/native boundaries must have tests.
 - Browser interaction tests must cover opening, keyboard navigation, outside
-  dismissal, segmented selection, switch toggling, focus retention/restoration,
-  and portal layering for dropdowns, comboboxes, and web modals.
+  dismissal, segmented selection, switch toggling, table row press (click and
+  keyboard), focus retention/restoration, and portal layering for dropdowns,
+  comboboxes, and web modals.
 - The package must typecheck and build before it is used by accounting or Juno.
 - `npm run test:package` must pack the built library, install the tarball into a
   temporary consumer, import every public package subpath with Node's native ESM
@@ -250,23 +573,29 @@ Required behavior:
   imports and re-exports.
 - The `react-native` export condition must continue to point at the normal
   `dist/**` build so React Native platform resolution can choose platform files.
-- `package.json` and `package-lock.json` versions must match the root
-  `firna-ui-release` Cargo package version before a release PR is merged.
-- release-plz owns changelog updates, release PR creation, `vX.Y.Z` Git tags,
-  and GitHub releases.
-- release-plz must use `release_always = true` so squash-merged release PRs
-  create tags and GitHub releases, and the release workflow must verify the
-  `main` commit is associated with a `release-plz-*` PR before creating a
-  release. Ordinary pushes to `main` must not create releases or publish npm
-  packages.
+- release-please owns release PR creation, changelog updates, npm metadata
+  version updates, `vX.Y.Z` Git tags, and GitHub releases.
+- release-please must use the `node` release type so release PRs update
+  `CHANGELOG.md`, `package.json`, and `package-lock.json` together.
+- Generated release PRs must be normalized by the release workflow before they
+  are considered ready for merge: the workflow checks out the release PR branch,
+  runs the repository formatter, and pushes a bot commit only when formatting
+  changed generated files.
+- Ordinary pushes to `main` must not publish npm packages; publishing must only
+  run when release-please reports that a GitHub release was created from a
+  merged release PR, or when a maintainer manually dispatches a publish retry
+  for an existing `vX.Y.Z` tag.
 - npm publishing must run in the same workflow invocation that creates the
   GitHub release so it does not depend on a separate `release` event emitted by
   `GITHUB_TOKEN`.
+- That workflow must remain at `.github/workflows/release-plz.yml` unless the
+  npm trusted-publisher configuration is updated at the same time; npm validates
+  the configured workflow filename during `npm publish`.
+- The same workflow must expose a manual retry path that checks out an existing
+  release tag and runs the same verification and npm publish steps without
+  creating a new GitHub release.
 - npm publishing must use npm trusted publishing with `id-token: write` and
   must guard against republishing an already-published version.
-- The same workflow may expose a manually dispatched fallback that publishes a
-  checked release tag when a maintainer needs to retry a failed npm publish
-  without creating a new release.
 - Scoped package publishing must use public access.
 
 ## CI And Preview Contract
@@ -276,15 +605,20 @@ Required behavior:
 - The stable main Storybook deploy uses the Cloudflare Pages production branch
   `main` and the default production URL
   `https://futex-ui-storybook.pages.dev`, unless a custom domain is added later.
-- PR Storybook previews deploy the static Storybook build to Cloudflare Pages
-  with branch name `pr-<number>`, producing a predictable preview URL such as
+- Same-repository non-release PR Storybook previews deploy the static Storybook
+  build to Cloudflare Pages with branch name `pr-<number>`, producing a
+  predictable preview URL such as
   `https://pr-123.futex-ui-storybook.pages.dev`.
 - Every PR must run `cargo xtask check` after dependency installation. The
   xtask check runs the JavaScript verification suite: formatting, unit tests,
   typecheck, package build, package tarball smoke test, Storybook build, and
   browser interaction tests.
 - The main branch must publish a stable default Storybook deployment.
-- Every PR must publish an isolated Storybook preview deployment.
+- Every same-repository non-release PR must publish an isolated Storybook
+  preview deployment.
+- Release Please PRs, identified by a `release-please--` head branch or an
+  `autorelease:` label, must skip the Storybook preview deploy job because they
+  only update release metadata for changes already previewed in source PRs.
 - The PR Storybook URL must be posted back to the pull request through a sticky
   comment with marker `<!-- futex-ui-storybook-preview -->`, matching the
   preview-comment pattern used by accounting and Juno.
@@ -303,13 +637,16 @@ Required behavior:
 - Storybook previews must include at least the shared dropdown selector,
   dropdown action menu, input-backed combobox, chip multi-select, segmented
   control variants, radio card group, switch toggle, button tones and sizes,
-  user avatars, centered web modal, bottom-sheet web modal, default accounting
-  theme, and alternate primary color theme.
+  user avatars, a month event calendar, a data table with clickable rows,
+  centered web modal, bottom-sheet web modal, toast tones and an action toast,
+  default accounting theme, and alternate primary color theme.
 - Storybook navigation must keep each example family in its own top-level
-  folder, currently `Avatar/Examples`, `Button/Examples`, `Date/Examples`,
-  `Dropdown/Examples`, `Input/Examples`, `Modal/Examples`, `Popover/Examples`,
-  `Radio/Examples`, `Segmented/Examples`, `Switch/Examples`, and
-  `Theme/Examples`.
+  folder, currently `Avatar/Examples`, `Badge/Examples`, `Button/Examples`,
+  `Calendar/Examples`,
+  `Date/Examples`, `Dropdown/Examples`, `Heatmap/Examples`, `Input/Examples`,
+  `Modal/Examples`, `Popover/Examples`, `Radio/Examples`, `Segmented/Examples`,
+  `Spinner/Examples`, `Switch/Examples`, `Table/Examples`,
+  `Theme/Examples`, and `Toast/Examples`.
 
 ## Non-Goals
 

@@ -52,6 +52,7 @@ export function DropdownPortal({
   onClose,
   open,
   surfaceHoverProps,
+  zIndex,
 }: DropdownPortalProps) {
   const surfaceRef = useRef<View>(null);
   const lastPointRef = useRef<DropdownPoint | null>(null);
@@ -63,7 +64,6 @@ export function DropdownPortal({
   const surfaceMounted = open && anchor !== null;
   useDropdownDismiss({
     anchorRef,
-    closeOnEscape: true,
     onClose,
     open,
     surfaceRef,
@@ -118,7 +118,7 @@ export function DropdownPortal({
       } as unknown as object)
     : {};
   return (
-    <DropdownWebLayer>
+    <DropdownWebLayer zIndex={zIndex}>
       <View
         {...surfaceMouseProps}
         onPointerEnter={surfaceHoverProps?.onHoverIn}

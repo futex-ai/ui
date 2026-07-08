@@ -1,0 +1,39 @@
+{
+  "name": "@firna/ui-storybook-native",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "STORYBOOK_ENABLED=true expo start",
+    "ios": "STORYBOOK_ENABLED=true expo start --ios",
+    "android": "STORYBOOK_ENABLED=true expo start --android",
+    "ios:dev": "npm --prefix .. run build && STORYBOOK_ENABLED=true expo run:ios",
+    "android:dev": "npm --prefix .. run build && STORYBOOK_ENABLED=true expo run:android",
+    "storybook:native": "npm --prefix .. run build && npm start -- --clear"
+  },
+  "dependencies": {
+    "@firna/ui": "file:..",
+    "@gorhom/bottom-sheet": "^5.0.0",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@storybook/addon-ondevice-actions": "^10.0.0",
+    "@storybook/addon-ondevice-backgrounds": "^10.0.0",
+    "@storybook/addon-ondevice-notes": "^10.0.0",
+    "@storybook/react-native": "^10.0.0",
+    "expo": "^56.0.0",
+    "expo-status-bar": "*",
+    "lucide-react-native": "^0.562.0",
+    "react": "19.2.3",
+    "react-native": "0.85.3",
+    "react-native-gesture-handler": "~2.31.1",
+    "react-native-reanimated": "4.3.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-svg": "15.15.4",
+    "react-native-worklets": "0.8.3",
+    "storybook": "^10.4.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@types/react": "~19.2.0",
+    "typescript": "~6.0.3"
+  }
+}

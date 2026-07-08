@@ -1,15 +1,21 @@
 /** Input-backed chip multi-select for combobox forms. */
 import { Check } from "lucide-react-native";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { announce } from "../announcer";
 import { hideWebOutline } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 import type { SharedUiTheme } from "../theme";
 
 import { ComboboxPopover } from "./ComboboxPopover";
-import { DropdownList, DropdownListEntry } from "./DropdownList";
-import { filterComboboxOptions } from "./comboboxModel";
+import {
+  DropdownList,
+  DropdownListEntry,
+  dropdownRowDomId,
+} from "./DropdownList";
+import type { DropdownHighlightVariant } from "./DropdownList";
+import { comboboxInputA11y, filterComboboxOptions } from "./comboboxModel";
 import { useComboboxNavigation } from "./useComboboxNavigation";
 
 export type ComboboxMultiSelectOption = {
@@ -21,18 +27,18 @@ export type ComboboxMultiSelectOption = {
 
 export function ComboboxMultiSelect({
   footer,
+  highlightVariant,
   onChange,
   options,
   placeholder = "Search to add...",
-  searchLabel,
   values,
 }: {
   footer?: string;
+  /** How the keyboard-focused row is highlighted. Defaults to `"solid"`. */
+  highlightVariant?: DropdownHighlightVariant;
   onChange: (values: string[]) => void;
   options: ComboboxMultiSelectOption[];
   placeholder?: string;
-  /** Accessible name for the search input. Defaults to `placeholder`. */
-  searchLabel?: string;
   values: string[];
 }) {
   const theme = useSharedUiTheme();
@@ -65,6 +71,27 @@ export function ComboboxMultiSelect({
     open,
   });
 
+  const reactId = useId();
+  const listId = `${reactId}-list`;
+  const activeDescendant =
+    open && navigation.activeId
+      ? dropdownRowDomId(listId, navigation.activeId)
+      : undefined;
+
+  // Announce the result count so screen readers hear matches change as the
+  // query filters, without focus leaving the input (WCAG 4.1.3).
+  const matchCount = filtered.length;
+  useEffect(() => {
+    if (!open || !query.trim()) {
+      return;
+    }
+    announce(
+      matchCount === 0
+        ? "No matching options"
+        : `${matchCount} ${matchCount === 1 ? "option" : "options"} available`,
+    );
+  }, [matchCount, open, query]);
+
   return (
     <View ref={anchorRef} style={styles.wrap}>
       <Pressable onPress={() => setOpen(true)} style={styles.control}>
@@ -81,18 +108,23 @@ export function ComboboxMultiSelect({
               }
               style={styles.chipRemove}
             >
-              <Text style={styles.chipRemoveText}>x</Text>
+              {/* The visible "x" is decorative — the Pressable's name is
+                  "Remove {label}". Hide it from AT so the name is not polluted
+                  by the glyph (WCAG 2.5.3 Label in Name). */}
+              <Text aria-hidden style={styles.chipRemoveText}>
+                x
+              </Text>
             </Pressable>
           </View>
         ))}
         <TextInput
-          accessibilityLabel={searchLabel ?? placeholder}
           onChangeText={setQuery}
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
-          placeholderTextColor={theme.colors.faint}
+          placeholderTextColor={theme.colors.placeholder}
           style={[styles.input, hideWebOutline]}
           value={query}
+          {...comboboxInputA11y({ activeDescendant, controls: listId, open })}
           {...navigation.keyProps}
         />
       </Pressable>
@@ -105,6 +137,10 @@ export function ComboboxMultiSelect({
           <DropdownList
             activeId={navigation.activeId}
             entries={entries}
+            highlightVariant={highlightVariant}
+            label={placeholder}
+            listId={listId}
+            listRole="listbox"
             maxHeight={placement.maxHeight}
             onActiveIdChange={navigation.setActiveId}
             onClose={() => setOpen(false)}
@@ -134,7 +170,6 @@ function entriesForOptions(
       right: selected ? (
         <Check color={theme.colors.primaryDeep} size={15} />
       ) : null,
-      role: "option" as const,
       selected,
       type: "item",
     };
@@ -208,7 +243,7 @@ function createComboboxMultiSelectStyles(theme: SharedUiTheme) {
     control: {
       alignItems: "center",
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.border2,
+      borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.md,
       borderWidth: 1,
       flexDirection: "row",

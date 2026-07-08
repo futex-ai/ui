@@ -20,6 +20,9 @@ input-backed comboboxes in Firna apps.
   dropdowns and combobox result lists.
 - Include visual field labels in selector accessible names when labels are
   present.
+- Provide a concise `DropdownMenu` wrapper for the common trigger + action list
+  case, while leaving `DropdownPortal` and `DropdownList` available for custom
+  pickers.
 - Size the default `field` selector with the shared `ControlSize` scale (`sm` /
   `md` / `lg`) so a select matches the height of the text inputs beside it.
 - Keep button-backed selectors/action menus separate from input-backed
@@ -103,12 +106,96 @@ import { ReadOnlySelector } from "@firna/ui/dropdown";
 <ReadOnlySelector label="Date format" value="DD/MM/YYYY" />;
 ```
 
-Use `DropdownPortal` plus `DropdownList` for action menus or custom pickers that
-need grouped rows, right icons, and footers.
+Use `DropdownMenu` for the common action-menu case. It owns the anchor ref,
+open state, portal/list composition, and closes after selectable row presses by
+default. When the menu opens, the first selectable row is active immediately;
+ArrowUp / ArrowDown move that active row, mouse hover keeps the active row in
+sync with the pointer, and Enter / Space activates the active row:
 
-For web hover menus, use `useDropdownHover` on the trigger and pass
-`surfaceHoverProps` into `DropdownPortal`. The hook keeps the menu open across
-the small pointer gap between the trigger and the portal surface.
+```tsx
+import { DropdownMenu } from "@firna/ui/dropdown";
+
+<DropdownMenu align="end" entries={entries} minWidth={220}>
+  <Pressable
+    accessibilityLabel={`Actions for ${name}`}
+    accessibilityRole="button"
+    style={styles.memberMenuButton}
+  >
+    <MoreHorizontal color={colors.ink2} size={17} />
+  </Pressable>
+</DropdownMenu>;
+```
+
+Pass `open` and `onOpenChange` for controlled state, `defaultOpen` for
+uncontrolled initial state, and `closeOnSelect={false}` when a row should keep
+the menu open. `entries` may also be a function that receives
+`{ close, open, toggle }` for uncommon rows that need direct control. When the
+trigger needs open-state styling, pass a function child that receives
+`{ open, triggerProps }` and spread `triggerProps` onto the pressable so the
+standard press and keyboard handlers stay attached.
+
+By default the menu opens on press. Pass `trigger` to change how the child opens
+it:
+
+- `"press"` (default) — tap or click opens the menu, on every platform.
+- `"hover"` — pointer hover opens it on web. The menu auto-wires
+  `useDropdownHover` and bridges the trigger-to-surface gap, so no manual hook is
+  needed. Press stays wired as the touch/keyboard fallback. On native, where
+  hover does not exist, only press opens it.
+- `"longPress"` — a press-and-hold opens it on web and native. A plain tap is
+  left to the trigger's own `onPress`, so a tappable row stays tappable.
+- `"contextMenu"` — right-click opens it on web (the browser's native menu is
+  suppressed) and a long-press opens it on native. A plain tap is again left to
+  the trigger.
+
+```tsx
+<DropdownMenu entries={entries} trigger="hover">
+  <Pressable accessibilityLabel="Account" accessibilityRole="button">
+    <Text>Account</Text>
+  </Pressable>
+</DropdownMenu>
+```
+
+In every mode the trigger advertises its menu to assistive tech with
+`aria-haspopup="menu"` and reflects the open state with `aria-expanded`.
+`longPress` and `contextMenu` are secondary-gesture triggers, so they never
+hijack a tap; Enter/Space and ArrowDown open the menu from the keyboard in every
+mode, so keyboard-only users can always reach it (right-click is also
+keyboard-reachable on web via the context-menu key). For per-platform behavior,
+drive the prop yourself, for example
+`trigger={Platform.OS === "web" ? "hover" : "longPress"}`.
+
+## Accessibility
+
+On web the option surface is a real ARIA composite (WCAG 4.1.2 Name/Role/Value):
+
+- `DropdownMenu` exposes its surface as `role="menu"` with `role="menuitem"`
+  rows; the selector and combobox surfaces are `role="listbox"` with
+  `role="option"` rows (so the selected option carries `aria-selected`). Pass
+  `accessibilityLabel` to name a menu surface.
+- The trigger/input links to its surface with `aria-controls` and tracks the
+  keyboard-active row with `aria-activedescendant`, so Arrow navigation is
+  announced without moving DOM focus off the trigger.
+- Searchable selectors and `ComboboxMultiSelect` mark their text field as
+  `role="combobox"` with `aria-autocomplete="list"`/`aria-expanded`, and
+  announce the filtered result count through a polite live region (WCAG 4.1.3).
+- `DropdownSelector` associates a visible `error`/`hint` with the trigger via
+  `aria-describedby` (and `accessibilityHint` on native) and reflects
+  `aria-invalid`/`aria-required`, since RNW does not map `accessibilityHint` to
+  `aria-describedby` (WCAG 3.3.1 / 1.3.1).
+
+These ARIA roles/attributes are emitted on web only; native keeps the tappable
+`button` row role and `accessibilityState` so OS screen readers are unaffected.
+
+Use `DropdownPortal` plus `DropdownList` directly for custom pickers that need
+to own the anchor ref, surface body, or list wiring.
+
+`trigger="hover"` covers the common hover menu. For custom hover timing, keep
+`trigger="press"` and wire `useDropdownHover` on the trigger yourself, passing
+`surfaceHoverProps` into `DropdownMenu` or `DropdownPortal`. The hook keeps the
+menu open across the small pointer gap between the trigger and the portal
+surface, and a consumer-supplied `surfaceHoverProps` still composes with the
+built-in bridge when `trigger="hover"`.
 
 Use `ComboboxPopover` plus `DropdownList` when the user keeps typing in an
 existing input while results are open. This path uses a non-modal web portal so
@@ -138,9 +225,10 @@ default theme matches the accounting source components. Juno can use
 On web, `DropdownPortal` and `ComboboxPopover` render through
 `DropdownWebLayer`, a non-modal `pointer-events: box-none` DOM portal. Only the
 menu surface is hit-testable, so the trigger keeps real hover state while the
-menu is open and the rest of the page stays interactive. Outside presses and
-Escape close the menu through `useDropdownDismiss` document listeners instead
-of a scrim.
+menu is open and the rest of the page stays interactive. Outside presses close
+the menu through a `useDropdownDismiss` document listener instead of a scrim,
+and Escape closes it through the shared escape-layer stack (`src/escapeLayer.ts`)
+so a menu opened inside a modal dismisses without also closing the modal.
 
 Do not render web dropdown surfaces through React Native Web `Modal`: its
 internal wrappers are full-viewport hit-testable elements that steal hover from
@@ -150,4 +238,7 @@ back button closes the menu.
 
 When a dropdown or combobox opens from inside a web modal, it must remain above
 the modal surface. Keep `DROPDOWN_LAYERS.portal` above
-`WEB_MODAL_LAYERS.surface`.
+`WEB_MODAL_LAYERS.surface`. The default portal layer is intentionally high
+(`1_000_000`) so anchored menus and popovers clear consumer content stacks.
+`DropdownPortal` accepts `zIndex` for the rare screen that owns an even higher
+custom layer.

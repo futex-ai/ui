@@ -23,6 +23,7 @@ import {
   View,
 } from "react-native";
 
+import { useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import {
@@ -52,6 +53,15 @@ export type DateWheelProps = DateBounds & {
 };
 
 type WheelItem = { key: string; label: string; disabled: boolean };
+
+/** A keydown event as react-native-web hands it to a Pressable on web. */
+type WheelKeyEvent = {
+  key?: string;
+  nativeEvent?: { key?: string };
+  preventDefault?: () => void;
+};
+
+const isWeb = Platform.OS === "web";
 
 // A rest within this many px of a row's exact center counts as centered, so the
 // platform's sub-pixel snap doesn't trigger a needless correcting scroll.
@@ -270,6 +280,20 @@ function WheelColumn({
     onSelectIndex(index);
   };
 
+  // ArrowUp/ArrowDown step the column to the previous/next enabled row, so the
+  // wheel is operable from the keyboard like a spinner (WCAG 2.1 2.1.1 Keyboard).
+  // RNW honours `onKeyDown` on a Pressable row (the Switch/RadioCard pattern).
+  const stepBy = (delta: number) => {
+    let next = selectedIndex;
+    do {
+      next += delta;
+    } while (next >= 0 && next <= lastIndex && items[next]?.disabled);
+    if (next < 0 || next > lastIndex || items[next]?.disabled) {
+      return;
+    }
+    onSelectIndex(next);
+  };
+
   useEffect(
     () => () => {
       if (stopTimerRef.current) {
@@ -300,6 +324,16 @@ function WheelColumn({
           item={item}
           key={item.key}
           label={label}
+          onKey={(event) => {
+            const key = event.nativeEvent?.key ?? event.key;
+            if (key === "ArrowUp") {
+              event.preventDefault?.();
+              stepBy(-1);
+            } else if (key === "ArrowDown") {
+              event.preventDefault?.();
+              stepBy(1);
+            }
+          }}
           onPress={() => handleTap(index)}
           selected={index === selectedIndex}
           styles={styles}
@@ -314,6 +348,7 @@ function WheelRow({
   distance,
   item,
   label,
+  onKey,
   onPress,
   selected,
   styles,
@@ -322,18 +357,27 @@ function WheelRow({
   distance: number;
   item: WheelItem;
   label: string;
+  onKey: (event: WheelKeyEvent) => void;
   onPress: () => void;
   selected: boolean;
   styles: WheelPickerStyles;
 }) {
+  // Inset the ring: each row sits inside a snap-scrolling column whose overflow
+  // would clip an outset outline (WCAG 2.1 2.4.7 Focus Visible).
+  const ring = useFocusRing({ offset: -2 });
+  // RNW eats `onKeyDown` on a TextInput but honours it on a Pressable.
+  const keyProps = isWeb ? { onKeyDown: onKey } : null;
   return (
     <Pressable
       accessibilityLabel={`${label} ${item.label}`}
       accessibilityRole="button"
       accessibilityState={{ disabled: item.disabled, selected }}
       disabled={item.disabled}
+      onBlur={ring.onBlur}
+      onFocus={ring.onFocus}
       onPress={onPress}
-      style={styles.item}
+      style={[styles.item, ring.focused ? ring.focusRingStyle : null]}
+      {...keyProps}
     >
       <Text
         style={[

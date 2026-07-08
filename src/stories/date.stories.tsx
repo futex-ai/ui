@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 
 import { DateField, DateRangeField, type DateRange } from "../index";
 import { StorySurface } from "./sharedExamples";
@@ -45,6 +45,24 @@ export const BoundedDateField: Story = {
   render: () => (
     <StorySurface>
       <BoundedDateExample />
+    </StorySurface>
+  ),
+};
+
+export const ValidatedDateField: Story = {
+  name: "Validated single date field",
+  render: () => (
+    <StorySurface>
+      <ValidatedDateExample />
+    </StorySurface>
+  ),
+};
+
+export const CalendarLayering: Story = {
+  name: "Calendar layering",
+  render: () => (
+    <StorySurface>
+      <CalendarLayeringExample />
     </StorySurface>
   ),
 };
@@ -148,6 +166,67 @@ function BoundedDateExample() {
         onChange={setValue}
         value={value}
       />
+    </View>
+  );
+}
+
+function ValidatedDateExample() {
+  // A future-dated value drives a visible, programmatically-associated error so
+  // the error/label wiring (aria-describedby / aria-errormessage / role=alert)
+  // is exercised — WCAG 2.1 3.3.1 / 1.3.1 / 4.1.3.
+  const [value, setValue] = useState("2027-01-01");
+  const error =
+    value && value > "2026-12-31"
+      ? "Choose a date on or before 31 Dec 2026."
+      : null;
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <DateField
+        error={error}
+        hint="The year end must fall within the current period."
+        label="Year ends"
+        max="2026-12-31"
+        onChange={setValue}
+        required
+        value={value}
+      />
+    </View>
+  );
+}
+
+function CalendarLayeringExample() {
+  const [value, setValue] = useState("2026-03-31");
+  return (
+    <View style={{ minWidth: 340, width: 340 }}>
+      <DateField
+        label="Layered date"
+        onChange={setValue}
+        value={value}
+        zIndex={2_000_000}
+      />
+      <View
+        style={{
+          backgroundColor: "#E6EFE7",
+          borderColor: "#BCD2C4",
+          borderRadius: 8,
+          borderWidth: 1,
+          marginTop: -16,
+          minHeight: 180,
+          padding: 18,
+          position: "relative",
+          zIndex: 1_500_000,
+        }}
+      >
+        <Text
+          style={{
+            color: "#28352D",
+            fontSize: 16,
+            fontWeight: "700",
+          }}
+        >
+          Overlapping panel
+        </Text>
+      </View>
     </View>
   );
 }

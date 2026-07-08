@@ -3,6 +3,8 @@ import { StyleSheet } from "react-native";
 
 import type { SharedUiTheme } from "../theme";
 
+import { dateFieldZIndex } from "./dateFieldLayers";
+
 export function createWebCalendarStyles(theme: SharedUiTheme) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
   return StyleSheet.create({
@@ -30,8 +32,9 @@ export function createWebCalendarStyles(theme: SharedUiTheme) {
       borderWidth: 1,
     },
     dow: {
+      // 10px weekday headers need a darker token to clear 4.5:1 (WCAG 2.1 1.4.3).
       ...baseText,
-      color: theme.colors.muted,
+      color: theme.colors.ink2,
       fontSize: 10,
       fontWeight: "700",
       textAlign: "center",
@@ -43,8 +46,9 @@ export function createWebCalendarStyles(theme: SharedUiTheme) {
       marginBottom: 2,
     },
     foot: {
+      // 11px footnote text uses the darker `ink2` to clear 4.5:1 (WCAG 2.1 1.4.3).
       ...baseText,
-      color: theme.colors.muted,
+      color: theme.colors.ink2,
       fontSize: 11,
       marginTop: 8,
       textAlign: "center",
@@ -56,8 +60,10 @@ export function createWebCalendarStyles(theme: SharedUiTheme) {
       marginBottom: 8,
     },
     nav: {
+      // The chevron is an interactive control, so its resting edge uses the
+      // `controlBorder` token (soft translucent-ink edge), not decorative `border`.
       alignItems: "center",
-      borderColor: theme.colors.border,
+      borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.sm,
       borderWidth: 1,
       height: 26,
@@ -65,8 +71,10 @@ export function createWebCalendarStyles(theme: SharedUiTheme) {
       width: 26,
     },
     pop: {
+      // The popover is an interactive surface; give its edge the `controlBorder`
+      // token (soft translucent-ink edge) so it is perceivable against the page.
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.border2,
+      borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.xl,
       borderWidth: 1,
       boxShadow: "0 14px 40px rgba(20, 28, 22, 0.1)",
@@ -75,7 +83,7 @@ export function createWebCalendarStyles(theme: SharedUiTheme) {
       position: "absolute",
       top: 46,
       width: 280,
-      zIndex: 1000,
+      zIndex: dateFieldZIndex(),
     },
     title: {
       ...baseText,

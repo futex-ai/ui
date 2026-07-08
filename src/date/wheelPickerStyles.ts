@@ -64,7 +64,9 @@ export function createWheelPickerStyles(theme: SharedUiTheme) {
       paddingHorizontal: 16,
       paddingVertical: 9,
     },
-    footerCancel: { borderColor: theme.colors.border2, borderWidth: 1 },
+    // The Cancel button is an interactive control; give its edge the
+    // `controlBorder` token (soft translucent-ink edge), not decorative `border2`.
+    footerCancel: { borderColor: theme.colors.controlBorder, borderWidth: 1 },
     footerCancelText: {
       ...baseText,
       color: theme.colors.ink2,

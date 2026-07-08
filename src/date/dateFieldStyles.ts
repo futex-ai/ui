@@ -5,7 +5,7 @@ import type { ControlSize } from "../controlSize";
 import { fieldChromeTokens, inputSizeTokens } from "../input";
 import type { SharedUiTheme } from "../theme";
 
-import { DATE_FIELD_LAYERS } from "./dateFieldLayers";
+import { dateFieldZIndex } from "./dateFieldLayers";
 
 export function createDateFieldStyles(
   theme: SharedUiTheme,
@@ -27,13 +27,15 @@ export function createDateFieldStyles(
     fieldLabel: chrome.fieldLabel,
     // Lifts the open field root (and the range row) above following/later-DOM
     // content so the calendar is not trapped by a sibling. See `dateFieldLayers`.
-    fieldOpen: { zIndex: DATE_FIELD_LAYERS.open },
+    fieldOpen: { zIndex: dateFieldZIndex() },
     hint: chrome.hint,
     required: chrome.required,
     trigger: {
+      // The native trigger is an interactive control box; its resting edge uses
+      // the `controlBorder` token (soft translucent-ink edge), not `border2`.
       alignItems: "center",
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.border2,
+      borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.md,
       borderWidth: 1,
       flexDirection: "row",
@@ -60,8 +62,10 @@ export function createDateFieldStyles(
     triggerOpen: { flex: 1 },
     triggerInvalid: { borderColor: theme.colors.rose },
     triggerPlaceholder: {
+      // Placeholder text conveys the field's purpose, so use the ≥4.5:1
+      // `placeholder` token rather than the faint decorative one (WCAG 2.1 1.4.3).
       ...baseText,
-      color: theme.colors.faint,
+      color: theme.colors.placeholder,
       flexShrink: 1,
       fontSize: sizing.inputFontSize,
     },

@@ -5,9 +5,15 @@ import type { SharedUiTheme } from "../theme";
 export function createRadioCardStyles(theme: SharedUiTheme) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
   return StyleSheet.create({
+    group: {
+      gap: 10,
+      minWidth: 0,
+    },
     radio: {
       alignItems: "flex-start",
-      borderColor: theme.colors.border,
+      // The `controlBorder` token gives the resting card edge a soft, light
+      // boundary (translucent ink; intentionally below the 1.4.11 ≥3:1 floor).
+      borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.lg,
       borderWidth: 1,
       flexDirection: "row",
@@ -17,7 +23,10 @@ export function createRadioCardStyles(theme: SharedUiTheme) {
     },
     radioBody: {
       ...baseText,
-      color: theme.colors.muted,
+      // `ink2` (not `muted`) so the ≤12px body still clears 4.5:1 on the tinted
+      // `primarySoft` surface of a checked card (WCAG 2.1 — 1.4.3 Contrast, AA;
+      // `muted` is only ~4.27:1 there).
+      color: theme.colors.ink2,
       fontSize: 12,
       lineHeight: 18,
     },
@@ -25,19 +34,30 @@ export function createRadioCardStyles(theme: SharedUiTheme) {
       backgroundColor: theme.colors.primarySoft,
       borderColor: theme.colors.primary,
     },
+    radioCheckGlyph: {
+      ...baseText,
+      color: theme.colors.surface,
+      fontSize: 10,
+      fontWeight: "900",
+      lineHeight: 12,
+      textAlign: "center",
+    },
     radioDisabled: { opacity: 0.6 },
     radioDot: {
-      borderColor: theme.colors.border2,
+      alignItems: "center",
+      // A `controlBorder` boundary on the empty ring so the unchecked state
+      // still reads as a control affordance (soft translucent-ink edge).
+      borderColor: theme.colors.controlBorder,
       borderRadius: 8,
       borderWidth: 2,
       height: 16,
+      justifyContent: "center",
       marginTop: 2,
       width: 16,
     },
     radioDotChecked: {
       backgroundColor: theme.colors.primary,
       borderColor: theme.colors.primary,
-      boxShadow: "inset 0 0 0 3px #fff",
     },
     radioDotCol: { alignItems: "flex-start", width: 22 },
     radioText: { flex: 1, minWidth: 0 },

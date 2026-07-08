@@ -43,28 +43,37 @@ test("web modal size tokens are stable and ordered", () => {
 test("web modal uses a document body portal with Escape and focus handling", () => {
   const source = readSource("../../src/modal/WebModalFrame.web.tsx");
   const portalSource = readSource("../../src/modal/WebModalPortal.web.tsx");
-  const nativeFallback = readSource("../../src/modal/WebModalFrame.tsx");
   const nativePortalFallback = readSource("../../src/modal/WebModalPortal.tsx");
 
   assert.match(portalSource, /createPortal/);
   assert.match(portalSource, /document\.body/);
   assert.match(source, /WebModalPortal/);
   assert.match(source, /document\.addEventListener\("keydown"/);
-  assert.match(source, /webModalEventTargetsSurface/);
+  assert.match(source, /surface\.contains\(activeElement\)/);
   assert.match(source, /previousFocusRef/);
   assert.match(source, /trapWebModalFocus/);
   assert.match(source, /event\.key === "Tab"/);
   assert.match(source, /role="dialog"/);
-  assert.doesNotMatch(
-    nativeFallback,
-    /createPortal|document\.body|<Modal|from "react-native"/,
-  );
+  // The web frame uses a DOM portal; the native portal stays a no-op because the
+  // native frame renders through a React Native `Modal` instead.
   assert.doesNotMatch(
     nativePortalFallback,
     /createPortal|document\.body|<Modal|from "react-native"/,
   );
-  assert.match(nativeFallback, /return null/);
   assert.match(nativePortalFallback, /return null/);
+});
+
+test("native modal frame renders an RN Modal sheet with native a11y containment", () => {
+  const nativeSource = readSource("../../src/modal/WebModalFrame.tsx");
+
+  assert.match(nativeSource, /from "react-native"/);
+  assert.match(nativeSource, /<Modal/);
+  assert.match(nativeSource, /animationType=/);
+  assert.match(nativeSource, /onRequestClose=/);
+  assert.match(nativeSource, /accessibilityViewIsModal/);
+  assert.match(nativeSource, /webModalCanClose/);
+  // No DOM APIs leak into the native build.
+  assert.doesNotMatch(nativeSource, /createPortal|document\.body/);
 });
 
 test("web modal focus restore lifecycle is decoupled from close callback changes", () => {

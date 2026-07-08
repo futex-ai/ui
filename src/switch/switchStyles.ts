@@ -47,23 +47,36 @@ const SWITCH_SIZES: Record<
   },
 };
 
+/** Hairline border width applied to the track and knob edges. */
+const BORDER = 1;
+
 export function createSwitchStyles(
   theme: SharedUiTheme,
   size: ControlSize = "md",
 ) {
   const sizing = SWITCH_SIZES[size];
+  // The track and knob use border-box sizing, so a 1px border eats into the
+  // content box. Pull the knob in by the border so it stays centered in the
+  // track and the on-position offset still lands flush against the far edge.
+  const knobInset = sizing.inset - BORDER;
+  const knobOn = sizing.knobOn - BORDER;
   return StyleSheet.create({
     knob: {
+      // The knob carries a subtle `controlBorder` edge against the white surface
+      // and the off-track fill (a soft translucent-ink line that reinforces the
+      // 1.4.1 position cue).
       backgroundColor: "#fff",
+      borderColor: theme.colors.controlBorder,
       borderRadius: sizing.knobSize / 2,
+      borderWidth: BORDER,
       boxShadow: "0 1px 2px rgba(0, 0, 0, 0.2)",
       height: sizing.knobSize,
-      left: sizing.inset,
+      left: knobInset,
       position: "absolute",
-      top: sizing.inset,
+      top: knobInset,
       width: sizing.knobSize,
     },
-    knobOn: { left: sizing.knobOn },
+    knobOn: { left: knobOn },
     pressable: {
       alignItems: "center",
       height: sizing.touchTarget,
@@ -71,14 +84,24 @@ export function createSwitchStyles(
       width: sizing.touchTarget,
     },
     track: {
+      // Off-track carries a `controlBorder` edge so the control's resting shape
+      // stays perceivable on the surface (soft translucent-ink line; the tint
+      // composites a touch firmer over this grey fill than over white).
       backgroundColor: theme.colors.border2,
+      borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.pill,
+      borderWidth: BORDER,
       height: sizing.trackHeight,
       position: "relative",
       width: sizing.trackWidth,
     },
     trackDisabled: { opacity: 0.5 },
-    trackOn: { backgroundColor: theme.colors.primary },
+    trackOn: {
+      backgroundColor: theme.colors.primary,
+      // On-track: match the border to the fill so the boundary stays clean
+      // against the saturated primary (the position + color cues carry state).
+      borderColor: theme.colors.primary,
+    },
   });
 }
 

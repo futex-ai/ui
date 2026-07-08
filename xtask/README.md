@@ -7,7 +7,6 @@ calling the binary directly.
 ## Responsibilities
 
 - Provide one command for the JavaScript verification suite.
-- Provide one command for syncing release-plz's version into npm metadata.
 - Provide one read-only AI review command matching the accounting repository
   workflow.
 - Keep repository automation close to the codebase and easy to run in CI or
@@ -16,8 +15,6 @@ calling the binary directly.
 ## What This Crate Does
 
 - Runs the existing npm verification suite through `cargo xtask check`.
-- Syncs the release metadata crate version into `package.json` and
-  `package-lock.json` through `cargo xtask sync-package-version`.
 - Runs a read-only Codex review against `origin/main` through
   `cargo xtask review`.
 - Prints each child command before running it so failures are easy to reproduce.
@@ -26,7 +23,6 @@ calling the binary directly.
 
 ```sh
 cargo xtask check
-cargo xtask sync-package-version
 cargo xtask review
 ```
 
@@ -44,7 +40,6 @@ cargo test --workspace
 
 - `src/cli.rs` - command-line parsing and dispatch.
 - `src/check.rs` - JavaScript verification orchestration.
-- `src/sync_package_version.rs` - release-plz to npm version synchronization.
 - `src/review.rs` - read-only Codex review wrapper.
 - `src/command.rs` - command execution helper.
 

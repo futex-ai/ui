@@ -24,6 +24,29 @@ test("storybook deploys to the existing Futex Cloudflare Pages project", () => {
   assert.doesNotMatch(source, /firna-ui-storybook/);
 });
 
+test("storybook PR preview deploy skips release-please PRs", () => {
+  const source = readWorkflow();
+
+  assert.match(
+    source,
+    /deploy-pr:[\s\S]*!\([\s\S]*startsWith\(github\.event\.pull_request\.head\.ref, 'release-please--'\)/,
+  );
+  assert.match(
+    source,
+    /deploy-pr:[\s\S]*contains\(join\(github\.event\.pull_request\.labels\.\*\.name, ','\), 'autorelease:'\)/,
+  );
+});
+
+test("storybook close cleanup does not create inactive comments", () => {
+  const source = readWorkflow();
+  const closeCleanup = source.slice(
+    source.indexOf("name: Mark preview inactive"),
+  );
+
+  assert.match(closeCleanup, /github\.rest\.issues\.updateComment/);
+  assert.doesNotMatch(closeCleanup, /github\.rest\.issues\.createComment/);
+});
+
 function readWorkflow() {
   return readFileSync(
     new URL("../../.github/workflows/storybook.yml", import.meta.url),

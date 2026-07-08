@@ -7,6 +7,7 @@ const svgShim = fileURLToPath(
 );
 
 const config: StorybookConfig = {
+  addons: ["@storybook/addon-a11y"],
   framework: {
     name: "@storybook/react-vite",
     options: {},

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { Avatar } from "../index";
 import { StorySurface } from "./sharedExamples";
@@ -23,10 +23,33 @@ export const UserAvatars: Story = {
           accessibilityLabel="Accounts Receivable"
           label="AR"
           style={styles.amberDisc}
-          textColor="#946727"
+          // Darkened from #946727 (4.22:1) to clear the 4.5:1 AA text-contrast
+          // floor on the cream disc (#74511f ≈ 6.07:1).
+          textColor="#74511f"
           tone="soft"
         />
         <Avatar accessibilityLabel="Vivienne Archer" label="VA" size={48} />
+      </View>
+    </StorySurface>
+  ),
+};
+
+export const DecorativeBesideLabel: Story = {
+  name: "Decorative beside a visible label",
+  render: () => (
+    <StorySurface>
+      <View style={styles.column}>
+        {/* The avatar is purely decorative here: the visible name already
+            identifies the person, so `decorative` hides the disc from AT to
+            avoid a duplicate announcement (1.1.1). */}
+        <View style={styles.labelRow}>
+          <Avatar decorative label="VA" />
+          <Text>Vivienne Archer</Text>
+        </View>
+        <View style={styles.labelRow}>
+          <Avatar decorative label="PR" tone="soft" />
+          <Text>Payroll Reserve</Text>
+        </View>
       </View>
     </StorySurface>
   ),
@@ -40,5 +63,13 @@ const styles = StyleSheet.create({
   },
   amberDisc: {
     backgroundColor: "#f4ecd8",
+  },
+  column: {
+    gap: 12,
+  },
+  labelRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
   },
 });

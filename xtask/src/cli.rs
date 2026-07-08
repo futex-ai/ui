@@ -9,7 +9,6 @@ use crate::check::run_check;
 use crate::command::{CommandRunner, RealCommandRunner};
 use crate::error::{Error, Result};
 use crate::review::run_review;
-use crate::sync_package_version::run_sync_package_version;
 
 #[derive(Parser, Debug)]
 #[command(name = "xtask", about = "Workspace automation tasks")]
@@ -24,15 +23,6 @@ enum Commands {
     Check,
     /// Run a read-only AI code review against origin/main and local changes.
     Review,
-    /// Sync release-plz's package version into npm metadata.
-    SyncPackageVersion(SyncPackageVersionArgs),
-}
-
-#[derive(clap::Args, Debug)]
-struct SyncPackageVersionArgs {
-    /// Override the version instead of reading the root Cargo package version.
-    #[arg(long)]
-    version: Option<String>,
 }
 
 pub(crate) fn main() -> ExitCode {
@@ -51,9 +41,6 @@ fn run(cli: Cli, runner: &dyn CommandRunner) -> Result<()> {
     match cli.command {
         Commands::Check => run_check(runner, workspace_root.as_path()),
         Commands::Review => run_review(workspace_root.as_path()),
-        Commands::SyncPackageVersion(args) => {
-            run_sync_package_version(workspace_root.as_path(), args.version.as_deref())
-        }
     }
 }
 

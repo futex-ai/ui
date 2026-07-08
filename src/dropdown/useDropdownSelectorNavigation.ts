@@ -1,11 +1,11 @@
 /** Keyboard state for button-backed dropdown selectors. */
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import type { DropdownListEntry } from "./DropdownList";
 import {
-  DropdownListEntry,
   dropdownListNavigationItems,
   selectedDropdownListEntryId,
-} from "./DropdownList";
+} from "./dropdownListModel";
 import {
   dropdownKeyAction,
   navigationResetKey,
@@ -19,6 +19,7 @@ type DropdownSelectorNavigationOptions = {
   onClose: () => void;
   onOpen: () => void;
   open: boolean;
+  resetOnOpen?: boolean;
   // When the menu is backed by a search input, the space bar must reach the
   // input as typed text rather than activating the active row.
   typeahead?: boolean;
@@ -37,6 +38,7 @@ export function useDropdownSelectorNavigation({
   onClose,
   onOpen,
   open,
+  resetOnOpen = false,
   typeahead = false,
 }: DropdownSelectorNavigationOptions) {
   const navItems = useMemo(
@@ -52,6 +54,12 @@ export function useDropdownSelectorNavigation({
   useEffect(() => {
     setActiveId(selectedOrFirstId(navItems, selectedId));
   }, [navKey, selectedId]);
+
+  useEffect(() => {
+    if (open && resetOnOpen) {
+      setActiveId(selectedOrFirstId(navItems, selectedId));
+    }
+  }, [navKey, open, resetOnOpen, selectedId]);
 
   const handleKeyDown = useCallback(
     (event: DropdownKeyboardEvent): boolean => {

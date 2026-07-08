@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet } from "react-native";
 
-import { RadioCard } from "../index";
+import { RadioCard, RadioCardGroup } from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -34,11 +34,7 @@ export const DistinguishableRadioCards: Story = {
 function CollidingTitlesExample() {
   const [choice, setChoice] = useState("recommended");
   return (
-    <View
-      accessibilityLabel="VAT scheme"
-      accessibilityRole="radiogroup"
-      style={styles.group}
-    >
+    <RadioCardGroup accessibilityLabel="VAT scheme" style={styles.group}>
       <RadioCard
         accessibilityLabel="Cash basis (recommended)"
         body="Recommended for most small businesses."
@@ -52,16 +48,19 @@ function CollidingTitlesExample() {
         onPress={() => setChoice("standard")}
         title="Cash basis"
       />
-    </View>
+    </RadioCardGroup>
   );
 }
 
 function AccountingBasisExample() {
   const [basis, setBasis] = useState("cash");
   return (
-    <View
+    // `RadioCardGroup` owns the `radiogroup` role + arrow-key roving focus, so
+    // the group is a single Tab stop and selection moves with Up/Down/Home/End
+    // (WCAG 2.1 — 4.1.2, 2.1.1, A). `required` maps to `aria-required`.
+    <RadioCardGroup
       accessibilityLabel="Accounting basis"
-      accessibilityRole="radiogroup"
+      required
       style={styles.group}
     >
       <RadioCard
@@ -81,13 +80,12 @@ function AccountingBasisExample() {
         disabled
         title="Flat rate VAT"
       />
-    </View>
+    </RadioCardGroup>
   );
 }
 
 const styles = StyleSheet.create({
   group: {
-    gap: 10,
     minWidth: 320,
   },
 });

@@ -47,7 +47,11 @@ test("switch knob animates between the off and on positions", () => {
   assert.match(stylesSource, /md: \{[\s\S]*?trackHeight: 24/);
   assert.match(stylesSource, /md: \{[\s\S]*?inset: 3/);
   assert.match(stylesSource, /md: \{[\s\S]*?knobOn: 19/);
-  assert.match(stylesSource, /knobOn: \{ left: sizing\.knobOn \}/);
+  // The knob carries a 1px control border (border-box sizing), so the
+  // on-position is pulled in by that border to stay flush against the far
+  // track edge; the knobOn style is driven by that compensated offset.
+  assert.match(stylesSource, /const knobOn = sizing\.knobOn - BORDER;/);
+  assert.match(stylesSource, /knobOn: \{ left: knobOn \}/);
 });
 
 test("switch supports the shared size scale", () => {

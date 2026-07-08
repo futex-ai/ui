@@ -54,9 +54,9 @@ export function buttonIconSize(size: ControlSize) {
 
 /**
  * Build the button's themed styles for a given size. The base `button` carries
- * the secondary (default) look — surface fill, `border2` outline, `radii.md` —
- * and the tone styles layer over it. The label colour is applied inline by the
- * component because it depends on the tone.
+ * the secondary (default) look — surface fill, `controlBorder` outline,
+ * `radii.md` — and the tone styles layer over it. The label colour is applied
+ * inline by the component because it depends on the tone.
  */
 export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
@@ -66,7 +66,12 @@ export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
     button: {
       alignItems: "center",
       backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.border2,
+      // The secondary button's resting edge is a control boundary, so it uses
+      // the dedicated `controlBorder` token — a translucent ink tint that reads
+      // as a soft, light edge (≈1.4:1 on white, intentionally below the 1.4.11
+      // ≥3:1 floor) rather than the decorative `border2`. The ghost tone
+      // overrides this to transparent; its label-as-affordance is intentional.
+      borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.md,
       borderWidth: 1,
       flexDirection: "row",
@@ -76,6 +81,12 @@ export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
       paddingHorizontal: sizing.paddingHorizontal,
     },
     danger: { borderColor: theme.colors.roseSoft },
+    // Danger is the only tone whose label is a saturated colour (`rose`) on a
+    // light fill, so washing the fill like the other tones would push the label
+    // below WCAG AA (rose on `roseSoft` is ~4.4:1). Instead its hover sharpens
+    // the warning edge from `roseSoft` to full `rose` and keeps the surface
+    // fill, so the label's contrast stays at its (AA-passing) resting ratio.
+    dangerHover: { borderColor: theme.colors.rose },
     disabled: { opacity: 0.55 },
     // A ring sitting just outside the button, so focus stays visible on every
     // tone — including `primary`, whose border already matches the theme primary
@@ -85,6 +96,10 @@ export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
       boxShadow: `0 0 0 2px ${theme.colors.surface}, 0 0 0 4px ${theme.colors.primary}`,
     },
     ghost: { backgroundColor: "transparent", borderColor: "transparent" },
+    // The accent's pale tint surfaces on hover (ghost's label is already
+    // `primaryDeep`), keeping it visually distinct from the neutral secondary
+    // hover while staying borderless.
+    ghostHover: { backgroundColor: theme.colors.primarySoft },
     label: {
       ...baseText,
       fontSize: sizing.fontSize,
@@ -95,6 +110,16 @@ export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
       backgroundColor: theme.colors.primary,
       borderColor: theme.colors.primary,
     },
+    // A filled tone can't take a light wash, so hover deepens the fill (and its
+    // matching border) to `primaryDeep`, which also raises the white label's
+    // contrast rather than weakening it.
+    primaryHover: {
+      backgroundColor: theme.colors.primaryDeep,
+      borderColor: theme.colors.primaryDeep,
+    },
+    // The neutral hover, reused verbatim from the calendar cells: swap the white
+    // surface for `soft`, holding the `border2` edge.
+    secondaryHover: { backgroundColor: theme.colors.soft },
   });
 }
 

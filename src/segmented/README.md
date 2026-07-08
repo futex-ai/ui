@@ -9,8 +9,8 @@ used around Profit & loss reporting.
 
 - Render one selected option from a small set of choices.
 - Expose `radiogroup` and `radio` semantics with checked and disabled state.
-- Support outline cells for filter pills and pill-track tabs for report-style
-  segmented controls.
+- Default to pill-track tabs for report-style segmented controls, with an
+  opt-in `variant="outline"` for rows of separate filter-pill cells.
 - Size the control with the shared `ControlSize` scale (`sm` / `md` / `lg`),
   scaling the segment padding, the label type scale, and the track gaps.
 - Use shared theme colors, fonts, and radii instead of consumer-local theme
@@ -20,7 +20,8 @@ used around Profit & loss reporting.
 ## Usage
 
 Use `SegmentedControl` for compact selectors where all options should stay
-visible:
+visible. `variant` defaults to `"pill"` — a tab-like track with the selected
+option raised as a surface, the right fit for report-style switches:
 
 ```tsx
 import { SegmentedControl } from "@firna/ui/segmented";
@@ -32,17 +33,28 @@ import { SegmentedControl } from "@firna/ui/segmented";
     { label: "Profit & loss", value: "pl" },
     { label: "Balance sheet", value: "bs" },
   ]}
-  sizing="content"
   value={report}
-  variant="pill"
 />;
 ```
 
-Pair `variant="pill"` with `sizing="content"` for the report-style tab track,
-where each tab hugs its label and the track sits flush to the start. Use
-`sizing="content"` with `wrap` when the control is a row of filter pills that may
-need to flow onto another line. Leave `sizing` as the default `"equal"` to share
-width evenly across segments.
+Pass `variant="outline"` for rows of separate bordered filter-pill cells:
+
+```tsx
+<SegmentedControl
+  accessibilityLabel="Income source"
+  onChange={setSource}
+  options={sourceOptions}
+  value={source}
+  variant="outline"
+  wrap
+/>
+```
+
+`sizing` defaults to `"content"`, so each segment hugs its label and the track
+sits flush to the start — the right fit for both the default pill tabs and for
+rows of filter pills (pair with `wrap` when they may flow onto another line).
+Pass `sizing="equal"` to share width evenly across segments, e.g. for a
+full-width two-up toggle.
 
 > `sizing` is the **width** strategy (equal vs content-hugging); `size` is the
 > **density** (`sm` / `md` / `lg`). They are independent.
@@ -63,6 +75,45 @@ the same density as the inputs and buttons beside it.
   value={report}
 />
 ```
+
+## Motion
+
+The default `pill` (tab-track) variant animates selection: the raised surface
+slides from the old option to the new one, growing or shrinking to fit each
+label as it travels. The thumb is a single absolutely-positioned surface placed
+over the selected option's measured box, so the slide is one moving element
+rather than a fill that jumps between pills.
+
+Following the `Switch` knob, the glide is a web-only CSS transition (~200ms);
+native renders the move instantly. It honours `prefers-reduced-motion` /
+`isReduceMotionEnabled` — under reduced motion the thumb snaps without sliding
+(AAA 2.3.3). Until the first layout measurement lands, the selected option keeps
+its own fill, so the selection never flickers off on first paint. The `outline`
+filter-pill variant has no thumb and keeps its instant per-cell selection.
+
+Pass `animated={false}` to turn the slide off and snap the thumb into place —
+the thumb still tracks the selected option, it just does not transition:
+
+```tsx
+<SegmentedControl animated={false} onChange={setView} options={...} value={view} />
+```
+
+## Accessibility
+
+The control follows the WAI-ARIA radio-group pattern:
+
+- The group is a single Tab stop. The selected option carries `tabIndex 0`; the
+  others are `-1` (roving tabindex). Tab moves into the group at the selected
+  option and out to the next control.
+- `ArrowLeft` / `ArrowRight` (plus `Home` / `End`) move a roving focus between
+  enabled options and select the focused option as focus lands on it. Disabled
+  options are skipped.
+- Name the group with `accessibilityLabel`, or a visible `label` (which becomes
+  the accessible name when no `accessibilityLabel` is given).
+- `error` / `hint` text is associated with the group via `aria-describedby`
+  (`error` wins when both are present), and `error` sets `aria-invalid`.
+- Focus is shown with a geometry-bearing ring (works on the borderless pill,
+  inset so the rounded track does not clip it).
 
 ## Theming
 

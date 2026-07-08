@@ -21,6 +21,14 @@ export type TriggerProps = {
   styles: DateFieldStyles;
   /** Whether the clear (✕) button is shown once a value is set. */
   clearable: boolean;
+  /** Id list of the describing error/hint text, wired as `aria-describedby`. */
+  describedById?: string;
+  /** Id of the error-message element, wired as `aria-errormessage`. */
+  errorId?: string;
+  /** Error message text, folded into the native trigger's `accessibilityHint`. */
+  errorText?: string;
+  /** Helper text, folded into the native trigger's `accessibilityHint`. */
+  hintText?: string;
 };
 
 export function WebTrigger({
@@ -32,6 +40,8 @@ export function WebTrigger({
   size,
   styles,
   clearable,
+  describedById,
+  errorId,
 }: TriggerProps) {
   const [text, setText] = useState(field.display);
   const [editing, setEditing] = useState(false);
@@ -71,6 +81,11 @@ export function WebTrigger({
       accessibilityHint={field.display ? undefined : placeholder}
       accessibilityLabel={label}
       active={field.open || editing}
+      // Associate the visible error/hint text with the input so screen readers
+      // read it after the name (RNW forwards these literal aria props to the DOM
+      // input; it does NOT map `accessibilityHint`) — WCAG 2.1 3.3.1 / 3.3.2.
+      aria-describedby={describedById}
+      aria-errormessage={errorId}
       clearAccessibilityLabel={`Clear ${label}`}
       clearable={clearable}
       // Track the committed ISO value, not the live typed buffer (`value`), so
@@ -117,9 +132,17 @@ export function NativeTrigger({
   size,
   styles,
   clearable,
+  describedById,
+  errorId,
+  errorText,
+  hintText,
 }: TriggerProps) {
   const theme = useSharedUiTheme();
   const iconSize = inputIconSize(size);
+  // Native has no `aria-describedby`; fold the error/hint into the hint slot so
+  // VoiceOver/TalkBack still read the validation message (WCAG 2.1 3.3.1 / 3.3.2).
+  const accessibilityHint =
+    [errorText, hintText].filter(Boolean).join(". ") || undefined;
   // The row is a non-accessible Pressable (a full-row tap target to open) so its
   // two accessible children — the labelled open button and the clear button —
   // stay independently focusable. If the row were itself an accessibility element
@@ -132,8 +155,11 @@ export function NativeTrigger({
       style={[styles.trigger, triggerBorder(styles, invalid, false)]}
     >
       <Pressable
+        accessibilityHint={accessibilityHint}
         accessibilityLabel={`${label}: ${field.display || placeholder}`}
         accessibilityRole="button"
+        aria-describedby={describedById}
+        aria-errormessage={errorId}
         aria-invalid={invalid}
         aria-required={required}
         onPress={() => field.setOpen(true)}
