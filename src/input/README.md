@@ -14,6 +14,8 @@ web trigger) build on it.
   announced via `aria-invalid`; `required` wires `aria-required` and the `*`.
 - Show optional leading (`prefixIcon`) and trailing (`suffixIcon`) icons inside
   the box, plus an opt-in accessible `clearable` ✕ button.
+- Reveal optional supplementary help text (`labelInfo`) from an ⓘ button beside
+  the label, in a portaled tooltip that stays out of the always-read messages.
 - Own the sage focus ring on the whole box and hide the browser's default
   outline, using shared theme colors and radii.
 - Size the field with the shared `ControlSize` scale (`sm` / `md` / `lg`),
@@ -31,6 +33,8 @@ web trigger) build on it.
   forces multiline mode, and defaults to four visible rows.
 - `InputFrame` — just the bordered box (icons, input, clear button, focus ring),
   with no label or messages. Embed it inside custom layouts or controls.
+- `LabelInfo` — the ⓘ button + tooltip that `Input` renders for `labelInfo`.
+  Exported so other labelled controls can reuse the same help affordance.
 
 ## Usage
 
@@ -72,6 +76,34 @@ decorative by default (hidden from assistive tech). Give the suffix an
 focusable, keyboard-reachable button (e.g. a show/hide-password toggle). Without
 a label, a pressable suffix is a mouse-only affordance (skipped by the keyboard
 and assistive tech) for actions that already have an accessible path.
+
+### Label info
+
+`labelInfo` renders an ⓘ button after the label that reveals supplementary help
+text in a small bubble on press. The visible bubble is built on {@link Popover},
+so it is portaled — it escapes `overflow` clipping inside modals and scroll
+areas — and dismisses on outside-press or Escape. Screen-reader users get the
+same text from the button's own description (announced on focus), so the reveal
+is a sighted-user affordance and its bubble is not announced separately. Use it
+for occasional "what is this / why we ask" detail; keep the short, always-on
+guidance in `hint`.
+
+```tsx
+<Input
+  hint="9 or 12 digits, no spaces."
+  label="VAT number"
+  labelInfo="Your VAT registration number identifies your business to the tax authority. Leave it blank if you are not VAT registered."
+  onChangeText={setVat}
+  value={vat}
+/>
+```
+
+Override the glyph with `labelInfoIcon` (any `lucide-react-native` icon) and the
+button's accessible name with `labelInfoLabel` (defaults to
+`More information about {label}`). `labelInfo` needs a `label` to anchor the
+button — it is a dev-warned no-op on the bare (label-less) variant. The reusable
+`LabelInfo` primitive is exported for other labelled controls that want the same
+affordance.
 
 ### Clearing
 
@@ -127,6 +159,15 @@ is open).
     straight through to the underlying `TextInput`.
 - **Required (3.3.2, A).** `required` wires `aria-required`; the visible `*` is
   marked `aria-hidden` so it does not leak into the accessible name.
+- **Label info (4.1.2 / 2.4.7 / 1.3.1).** The `labelInfo` ⓘ is a real button
+  with an accessible name (`labelInfoLabel`) and its own focus ring. It carries
+  the info as its accessible **description**, announced when the button is
+  focused: native reads `accessibilityHint`; web (where RNW drops that) points a
+  literal `aria-describedby` at a visually-hidden copy of the text. The portaled
+  bubble is a sighted-user reveal only — it does not steal focus and its content
+  is `aria-hidden`, so the detail is never announced twice. Because the button
+  is a sibling of the label `<Text>` (not nested inside it), it never leaks into
+  the input's `aria-labelledby` name.
 - **Focus (2.4.7, AA).** The box shows a geometry-bearing focus ring (a real
   outline, not just a border recolor) on keyboard/pointer focus, visible even on
   an invalid (rose-bordered) field.

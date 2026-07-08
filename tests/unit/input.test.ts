@@ -138,6 +138,59 @@ test("input composes the frame with a label, error, and hint", () => {
   );
 });
 
+test("input renders an info button after the label from labelInfo", () => {
+  const source = readSource("../../src/input/Input.tsx");
+
+  // The label + ⓘ share one row; the label <Text> keeps its own `nativeID` so
+  // the input's accessible name stays the label text alone (not "Email + info").
+  assert.match(source, /<View style=\{styles\.labelRow\}>/);
+  assert.match(
+    source,
+    /<Text nativeID=\{labelId\} style=\{styles\.fieldLabel\}>/,
+  );
+  assert.match(
+    source,
+    /\{labelInfo \? \([\s\S]*?<LabelInfo[\s\S]*?info=\{labelInfo\}[\s\S]*?\) : null\}/,
+  );
+  // The button's default accessible name derives from the resolved visible name.
+  assert.match(source, /More information about \$\{resolvedName\}/);
+  // `labelInfo` without a `label` has nowhere to anchor, so it is a dev-warned
+  // no-op rather than a silently-dropped prop.
+  assert.match(source, /if \(labelInfo && label === undefined\)/);
+  assert.match(source, /devWarn\(/);
+});
+
+test("label info exposes the detail on the button and reveals a visual-only bubble", () => {
+  const source = readSource("../../src/input/LabelInfo.tsx");
+
+  // The visible bubble reuses the shared Popover (portaled, so it escapes
+  // overflow clipping) but purely as a sighted-user reveal: it must not steal
+  // focus and its content is hidden from assistive tech (announced via the
+  // button instead, so it is never read twice).
+  assert.match(source, /import \{ Popover \} from "\.\.\/popover"/);
+  assert.match(source, /<Popover/);
+  assert.match(source, /manageFocus=\{false\}/);
+  assert.match(source, /<Text aria-hidden style=\{styles\.labelInfoText\}>/);
+  // The detail is the button's own accessible description, announced on focus
+  // (WCAG 1.3.1 / 4.1.2): native reads `accessibilityHint`; web — where RNW
+  // drops it — points a literal `aria-describedby` at a visually-hidden copy.
+  assert.match(source, /accessibilityHint=\{info\}/);
+  assert.match(
+    source,
+    /aria-describedby=\{isWeb \? descriptionId : undefined\}/,
+  );
+  assert.match(
+    source,
+    /<Text nativeID=\{descriptionId\} style=\{styles\.labelInfoDescription\}>/,
+  );
+  // The trigger is an accessible, keyboard-reachable button with its own ring.
+  assert.match(source, /accessibilityRole="button"/);
+  assert.match(source, /accessibilityLabel=\{accessibilityLabel\}/);
+  assert.match(source, /focus\.focused \? focus\.focusRingStyle : null/);
+  // The default glyph is lucide `Info`, overridable via the `icon` prop.
+  assert.match(source, /icon: Icon = Info/);
+});
+
 test("textarea composes the labelled input as multiline", () => {
   const source = readSource("../../src/input/Textarea.tsx");
 
@@ -166,6 +219,7 @@ test("input has public root and subpath exports", () => {
   assert.match(rootSource, /export \* from "\.\/input"/);
   assert.match(inputSource, /Input/);
   assert.match(inputSource, /InputFrame/);
+  assert.match(inputSource, /LabelInfo/);
   assert.match(inputSource, /Textarea/);
   assert.match(packageJson, /"\.\/input"/);
 });
