@@ -481,6 +481,70 @@ export function ModalExample({
   );
 }
 
+/**
+ * Bottom sheet whose body row count is caller-controlled, so you can watch the
+ * sheet ease to its new height as content is added or removed (web frame only;
+ * the native frame gets the same behaviour from gorhom's dynamic sizing).
+ */
+export function ResizableSheetExample() {
+  const [visible, setVisible] = useState(true);
+  const [rows, setRows] = useState(2);
+  return (
+    <View>
+      <Pressable
+        accessibilityLabel="Open reading list"
+        accessibilityRole="button"
+        onPress={() => setVisible(true)}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Open modal</Text>
+      </Pressable>
+      <WebModalFrame
+        footer={
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setVisible(false)}
+            style={styles.button}
+          >
+            <Text style={styles.buttonText}>Done</Text>
+          </Pressable>
+        }
+        onClose={() => setVisible(false)}
+        placement="bottom-sheet"
+        subtitle="Add or remove rows — the sheet eases to the new height."
+        title="Reading list"
+        visible={visible}
+      >
+        <View style={styles.modalBody}>
+          <View style={styles.sheetDemoControls}>
+            <Pressable
+              accessibilityLabel="Add item"
+              accessibilityRole="button"
+              onPress={() => setRows((count) => count + 1)}
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>Add item</Text>
+            </Pressable>
+            <Pressable
+              accessibilityLabel="Remove item"
+              accessibilityRole="button"
+              onPress={() => setRows((count) => Math.max(0, count - 1))}
+              style={[styles.button, styles.buttonOpen]}
+            >
+              <Text style={styles.buttonText}>Remove item</Text>
+            </Pressable>
+          </View>
+          {Array.from({ length: rows }, (_, index) => (
+            <View key={index} style={styles.sheetDemoRow}>
+              <Text style={styles.sheetDemoRowText}>Item {index + 1}</Text>
+            </View>
+          ))}
+        </View>
+      </WebModalFrame>
+    </View>
+  );
+}
+
 export function ThemeSwatch({ label }: { label: string }) {
   return (
     <View style={styles.themeDemo}>
@@ -1140,6 +1204,17 @@ const styles = StyleSheet.create({
   },
   scrollTrackingFiller: { flex: 1 },
   scrollTrackingPage: { gap: 16, minHeight: 1600, padding: 24 },
+  sheetDemoControls: { flexDirection: "row", gap: 8 },
+  sheetDemoRow: {
+    backgroundColor: "#f1f4ee",
+    borderRadius: 8,
+    padding: 12,
+  },
+  sheetDemoRowText: {
+    color: "#1c1f1d",
+    fontSize: 14,
+    fontWeight: "600",
+  },
   stage: {
     backgroundColor: "#eef1ea",
     overflow: "hidden",

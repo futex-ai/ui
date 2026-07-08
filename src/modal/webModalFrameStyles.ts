@@ -74,6 +74,15 @@ export function createWebModalFrameStyles(theme: SharedUiTheme) {
       top: 0,
       zIndex: WEB_MODAL_LAYERS.portal,
     },
+    sheetScroll: {
+      // Fill the surface so the column can scroll once the sheet hits its
+      // `maxHeight` cap; `flexBasis: auto` (the default) keeps it content-sized
+      // while the surface is still growing to fit. The content container is left
+      // content-sized (no `flexGrow`) so `onContentSizeChange` reports the
+      // sheet's natural height rather than the clamped viewport height.
+      flexGrow: 1,
+      flexShrink: 1,
+    },
     subtitle: {
       ...baseText,
       color: theme.colors.ink2,
