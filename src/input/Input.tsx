@@ -1,11 +1,14 @@
 /** Labelled text input field with validation, icons, and an optional clear button. */
+import { LucideIcon } from "lucide-react-native";
 import { useId, useMemo } from "react";
 import { Text, View } from "react-native";
 
+import { devWarn } from "../devWarn";
 import { useSharedUiTheme } from "../theme";
 
 import { InputFrame, InputFrameProps } from "./InputFrame";
 import { createInputStyles } from "./inputStyles";
+import { LabelInfo } from "./LabelInfo";
 
 export type InputProps = InputFrameProps & {
   /** Field label shown above the input. Omit for the bare variant (box + messages, no label row). */
@@ -14,6 +17,22 @@ export type InputProps = InputFrameProps & {
   error?: string | null;
   /** Helper text shown below the input. */
   hint?: string;
+  /**
+   * Supplementary help text revealed by an ⓘ button after the label. Pressing
+   * the button opens a small bubble with this text (built on `Popover`);
+   * screen-reader users get it from the button's description. Unlike `hint` it
+   * is not shown until requested, so use it for occasional "what is this / why
+   * we ask" detail rather than always-on guidance. Requires a `label` — it is
+   * ignored on the bare variant.
+   */
+  labelInfo?: string;
+  /** Icon for the {@link labelInfo} button. Defaults to the lucide `Info` glyph. */
+  labelInfoIcon?: LucideIcon;
+  /**
+   * Accessible name for the {@link labelInfo} button. Defaults to
+   * `More information about {label}`.
+   */
+  labelInfoLabel?: string;
 };
 
 /**
@@ -33,6 +52,9 @@ export function Input({
   hint,
   invalid = false,
   label,
+  labelInfo,
+  labelInfoIcon,
+  labelInfoLabel,
   required = false,
   ...props
 }: InputProps) {
@@ -46,6 +68,18 @@ export function Input({
   const clearLabel =
     clearAccessibilityLabel ??
     (resolvedName ? `Clear ${resolvedName}` : undefined);
+  // The ⓘ button anchors to the label row, so it needs a label to sit beside.
+  if (labelInfo && label === undefined) {
+    devWarn(
+      "Input: `labelInfo` needs a `label` to anchor the ⓘ button; it is " +
+        "ignored on the bare (label-less) variant.",
+    );
+  }
+  const labelInfoName =
+    labelInfoLabel ??
+    (resolvedName
+      ? `More information about ${resolvedName}`
+      : "More information");
   // Stable ids tie the visible label / error / hint <Text> nodes to the input.
   // RNW maps `nativeID → id`, so these become real `id`s in the DOM that the
   // literal `aria-*` attributes below reference.
@@ -63,17 +97,29 @@ export function Input({
   return (
     <View style={styles.field}>
       {label === undefined ? null : (
-        <Text nativeID={labelId} style={styles.fieldLabel}>
-          {label}
-          {/* The `*` is purely visual; the required state is conveyed
-              programmatically via `aria-required`. Hide it from AT so it does
-              not leak into the input's `aria-labelledby` name as "Email *". */}
-          {required ? (
-            <Text aria-hidden style={styles.required}>
-              {" *"}
-            </Text>
+        <View style={styles.labelRow}>
+          {/* The label <Text> keeps its own `nativeID`, so `aria-labelledby`
+              names the input by the visible label text alone — the ⓘ button is
+              a sibling, never folded into the accessible name. */}
+          <Text nativeID={labelId} style={styles.fieldLabel}>
+            {label}
+            {/* The `*` is purely visual; the required state is conveyed
+                programmatically via `aria-required`. Hide it from AT so it does
+                not leak into the input's `aria-labelledby` name as "Email *". */}
+            {required ? (
+              <Text aria-hidden style={styles.required}>
+                {" *"}
+              </Text>
+            ) : null}
+          </Text>
+          {labelInfo ? (
+            <LabelInfo
+              accessibilityLabel={labelInfoName}
+              icon={labelInfoIcon}
+              info={labelInfo}
+            />
           ) : null}
-        </Text>
+        </View>
       )}
       <InputFrame
         // Name the input from the visible label via a programmatic association

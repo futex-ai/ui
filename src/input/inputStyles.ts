@@ -150,6 +150,34 @@ export function createInputStyles(
     required: chrome.required,
     error: chrome.message,
     hint: chrome.hint,
+    // The label + optional ⓘ info button share one baseline-centred row.
+    labelRow: { alignItems: "center", flexDirection: "row", gap: 4 },
+    // Centre the info button's popover anchor in the label row (Popover's own
+    // default hugs `flex-start`, which would top-align the small ⓘ glyph).
+    labelInfoAnchor: { alignSelf: "center" },
+    labelInfoButton: {
+      alignItems: "center",
+      borderRadius: theme.radii.sm,
+      justifyContent: "center",
+    },
+    // Body text inside the info tooltip; the surface itself owns the chrome.
+    labelInfoText: {
+      ...baseText,
+      color: theme.colors.ink,
+      fontSize: 12,
+      lineHeight: 18,
+      paddingHorizontal: 4,
+      paddingVertical: 2,
+    },
+    // Off-screen copy of the info text that the ⓘ button points its web
+    // `aria-describedby` at — present in the a11y tree, clipped from view.
+    labelInfoDescription: {
+      height: 1,
+      margin: -1,
+      overflow: "hidden",
+      position: "absolute",
+      width: 1,
+    },
     // The bordered row that frames the input and its adornments.
     box: {
       alignItems: "center",

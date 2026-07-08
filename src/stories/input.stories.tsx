@@ -6,6 +6,7 @@ import {
   EyeOff,
   Mail,
   Search,
+  ShieldQuestionMark,
 } from "lucide-react-native";
 import { useState } from "react";
 import { View } from "react-native";
@@ -60,6 +61,11 @@ export const AutoGrowingTextarea: Story = {
 export const PasswordField: Story = {
   name: "Password with show/hide",
   render: () => surface(<PasswordExample />),
+};
+
+export const LabelInfoField: Story = {
+  name: "Label info tooltip",
+  render: () => surface(<LabelInfoExample />),
 };
 
 export const BareField: Story = {
@@ -192,6 +198,37 @@ function PasswordExample() {
       suffixIconLabel={visible ? "Hide password" : "Show password"}
       value={value}
     />
+  );
+}
+
+function LabelInfoExample() {
+  const [tax, setTax] = useState("");
+  const [key, setKey] = useState("");
+  return (
+    <>
+      <Input
+        // The ⓘ button after the label opens a tooltip with the detail, so the
+        // always-read `hint` slot stays free for the short, everyday guidance.
+        hint="9 or 12 digits, no spaces."
+        label="VAT number"
+        labelInfo="Your VAT registration number identifies your business to the tax authority. Leave it blank if you are not VAT registered."
+        onChangeText={setTax}
+        placeholder="GB123456789"
+        value={tax}
+      />
+      <Input
+        // `labelInfoIcon` swaps the default ⓘ for any lucide glyph; a custom
+        // `labelInfoLabel` names the button when the default reads awkwardly.
+        label="API key"
+        labelInfo="Create a key in Settings → Developers. Treat it like a password — it grants full access to your account."
+        labelInfoIcon={ShieldQuestionMark}
+        labelInfoLabel="How to find your API key"
+        onChangeText={setKey}
+        placeholder="sk_live_…"
+        secureTextEntry
+        value={key}
+      />
+    </>
   );
 }
 
