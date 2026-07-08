@@ -1,6 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { ModalExample, StorySurface } from "./sharedExamples";
+import {
+  ModalExample,
+  ResizableSheetExample,
+  StorySurface,
+} from "./sharedExamples";
 
 const meta = {
   title: "Modal/Examples",
@@ -24,6 +28,15 @@ export const BottomSheetWebModal: Story = {
   render: () => (
     <StorySurface>
       <ModalExample placement="bottom-sheet" title="Cookie preferences" />
+    </StorySurface>
+  ),
+};
+
+export const ResizableBottomSheet: Story = {
+  name: "Bottom-sheet resizes to content",
+  render: () => (
+    <StorySurface>
+      <ResizableSheetExample />
     </StorySurface>
   ),
 };
