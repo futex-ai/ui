@@ -479,6 +479,34 @@ test("combobox keeps input focus while filtering options", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("selector trigger keeps a value-independent name across selection", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--explicit-selector");
+
+  // triggerLabel gives a stable, value-independent accessible name; the value
+  // stays visible in the trigger text.
+  const trigger = page.getByRole("button", { exact: true, name: "Scheme" });
+  await expect(trigger).toContainText("Standard");
+
+  await trigger.click();
+  // Duplicate visible labels ("Custom") are disambiguated by per-option
+  // accessibilityLabel, so each option resolves by a distinct name.
+  await expect(
+    page.getByRole("option", { name: "Custom start date" }),
+  ).toBeVisible();
+  await page.getByRole("option", { name: "Custom end date" }).click();
+
+  // The trigger still resolves by the same name "Scheme" after the value
+  // changed to "Custom" — the name did not move with the selection.
+  const afterSelection = page.getByRole("button", {
+    exact: true,
+    name: "Scheme",
+  });
+  await expect(afterSelection).toBeVisible();
+  await expect(afterSelection).toContainText("Custom");
+});
+
 test("dropdown placement flips above the trigger near the bottom edge", async ({
   page,
 }) => {
@@ -636,6 +664,23 @@ test("segmented control toggles report and source choices", async ({
   ).toHaveCount(0);
 });
 
+test("segmented control disambiguates duplicate labels by name", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=segmented-examples--duplicate-labels");
+
+  const start = page.getByRole("radio", { name: "Custom start date" });
+  const end = page.getByRole("radio", { name: "Custom end date" });
+  const auto = page.getByRole("radio", { exact: true, name: "Auto" });
+  await expect(auto).toBeChecked();
+  await start.click();
+  await expect(start).toBeChecked();
+  await expect(end).not.toBeChecked();
+  await end.click();
+  await expect(end).toBeChecked();
+  await expect(start).not.toBeChecked();
+});
+
 test("segmented pill thumb slides over the selected tab and resizes to it", async ({
   page,
 }) => {
@@ -724,6 +769,25 @@ test("radio cards expose checked and disabled option states", async ({
   await expect(cash).toBeChecked();
   await expect(accrual).not.toBeChecked();
   await expect(flatRate).toBeDisabled();
+});
+
+test("radio card names default to the title and accept overrides", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=radio-examples--distinguishable-radio-cards",
+  );
+
+  const recommended = page.getByRole("radio", {
+    name: "Cash basis (recommended)",
+  });
+  const plain = page.getByRole("radio", { exact: true, name: "Cash basis" });
+  await expect(recommended).toBeVisible();
+  await expect(plain).toBeVisible();
+  await expect(recommended).toBeChecked();
+  await plain.click();
+  await expect(plain).toBeChecked();
+  await expect(recommended).not.toBeChecked();
 });
 
 test("switch toggles a binary setting", async ({ page }) => {

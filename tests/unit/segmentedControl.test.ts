@@ -14,6 +14,15 @@ test("segmented control exposes radio semantics and checked state", () => {
   assert.match(source, /aria-checked=\{selected\}/);
 });
 
+test("segment name defaults to the label and is overridable", () => {
+  const source = readSource("../../src/segmented/SegmentedControl.tsx");
+
+  assert.match(
+    source,
+    /accessibilityLabel=\{option\.accessibilityLabel \?\? option\.label\}/,
+  );
+});
+
 test("segmented control keeps report and filter variants", () => {
   const source = readSource("../../src/segmented/SegmentedControl.tsx");
   const stylesSource = readSource(

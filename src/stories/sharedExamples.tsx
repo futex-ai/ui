@@ -83,6 +83,37 @@ export function SelectorExample() {
   );
 }
 
+const explicitSelectorOptions = [
+  {
+    accessibilityLabel: "Standard scheme",
+    label: "Standard",
+    value: "standard",
+  },
+  {
+    accessibilityLabel: "Custom start date",
+    label: "Custom",
+    value: "custom-start",
+  },
+  {
+    accessibilityLabel: "Custom end date",
+    label: "Custom",
+    value: "custom-end",
+  },
+];
+
+export function ExplicitSelectorExample() {
+  const [value, setValue] = useState("standard");
+  return (
+    <DropdownSelector
+      label="Scheme"
+      onValueChange={setValue}
+      options={explicitSelectorOptions}
+      triggerLabel="Scheme"
+      value={value}
+    />
+  );
+}
+
 const categorySections = [
   {
     options: [

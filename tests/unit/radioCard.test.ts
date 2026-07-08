@@ -13,6 +13,12 @@ test("radio card exposes radio semantics and checked state", () => {
   assert.match(source, /aria-checked=\{checked\}/);
 });
 
+test("radio card name defaults to the title and is overridable", () => {
+  const source = readSource("../../src/radio/RadioCard.tsx");
+
+  assert.match(source, /accessibilityLabel=\{accessibilityLabel \?\? title\}/);
+});
+
 test("radio card keeps read-only disabled state and focus treatment", () => {
   const source = readSource("../../src/radio/RadioCard.tsx");
   const stylesSource = readSource("../../src/radio/radioCardStyles.ts");

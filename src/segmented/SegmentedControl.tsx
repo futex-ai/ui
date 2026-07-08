@@ -35,6 +35,12 @@ const THUMB_TRANSITION = `left ${THUMB_SLIDE}, top ${THUMB_SLIDE}, width ${THUMB
 const TEXT_TRANSITION = "color 0.2s ease";
 
 export type SegmentOption<T extends string> = {
+  /**
+   * Overridable accessible name for the segment. Defaults to `label`. Set it to
+   * disambiguate duplicate visible labels across controls or pin a
+   * locale-stable name for `getByRole("radio", { name })`.
+   */
+  accessibilityLabel?: string;
   disabled?: boolean;
   label: string;
   value: T;
@@ -371,6 +377,7 @@ function SegmentedControlButton<T extends string>({
 
   return (
     <Pressable
+      accessibilityLabel={option.accessibilityLabel ?? option.label}
       accessibilityRole="radio"
       accessibilityState={{ checked: selected, disabled }}
       aria-checked={selected}

@@ -57,6 +57,13 @@ export type DropdownListEntry =
   | { id: string; label: string; type: "divider" }
   | { id: string; label: string; type: "section" }
   | {
+      /**
+       * Overridable accessible name for the row. Defaults to `label`, so the
+       * on-screen text stays the test/automation handle. Set it to disambiguate
+       * duplicate labels or pin a locale-stable name without changing the
+       * visible copy.
+       */
+      accessibilityLabel?: string;
       disabled?: boolean;
       id: string;
       label: string;
@@ -341,6 +348,7 @@ function DropdownRow({
     : { accessibilityRole: "button" as const };
   return (
     <Pressable
+      accessibilityLabel={entry.accessibilityLabel ?? entry.label}
       accessibilityState={{
         disabled: entry.disabled,
         selected: itemRole === "option" ? entry.selected : undefined,

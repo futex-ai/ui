@@ -22,6 +22,36 @@ export const AccountingBasisRadioCards: Story = {
   ),
 };
 
+export const DistinguishableRadioCards: Story = {
+  name: "Distinguishable radio cards",
+  render: () => (
+    <StorySurface>
+      <CollidingTitlesExample />
+    </StorySurface>
+  ),
+};
+
+function CollidingTitlesExample() {
+  const [choice, setChoice] = useState("recommended");
+  return (
+    <RadioCardGroup accessibilityLabel="VAT scheme" style={styles.group}>
+      <RadioCard
+        accessibilityLabel="Cash basis (recommended)"
+        body="Recommended for most small businesses."
+        checked={choice === "recommended"}
+        onPress={() => setChoice("recommended")}
+        title="Cash basis"
+      />
+      <RadioCard
+        body="Record income when invoices are issued."
+        checked={choice === "standard"}
+        onPress={() => setChoice("standard")}
+        title="Cash basis"
+      />
+    </RadioCardGroup>
+  );
+}
+
 function AccountingBasisExample() {
   const [basis, setBasis] = useState("cash");
   return (

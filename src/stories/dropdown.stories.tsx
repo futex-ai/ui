@@ -14,6 +14,7 @@ import {
   ContextMenuExample,
   EdgePlacementGridExample,
   EndAlignedMenuExample,
+  ExplicitSelectorExample,
   HorizontalEdgeClampExample,
   HoverMenuExample,
   InputBackedComboboxExample,
@@ -55,6 +56,15 @@ export const SelectorSizes: Story = {
   render: () => (
     <StorySurface>
       <SelectorSizesExample />
+    </StorySurface>
+  ),
+};
+
+export const ExplicitSelector: Story = {
+  name: "Selector with explicit options",
+  render: () => (
+    <StorySurface>
+      <ExplicitSelectorExample />
     </StorySurface>
   ),
 };

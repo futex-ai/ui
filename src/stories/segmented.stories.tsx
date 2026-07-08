@@ -29,6 +29,12 @@ const viewOptions = [
   { label: "Quarter", value: "quarter" },
 ];
 
+const dateModeOptions = [
+  { label: "Auto", value: "auto" },
+  { accessibilityLabel: "Custom start date", label: "Custom", value: "start" },
+  { accessibilityLabel: "Custom end date", label: "Custom", value: "end" },
+];
+
 const meta = {
   title: "Segmented/Examples",
 } satisfies Meta;
@@ -81,6 +87,29 @@ export const States: Story = {
     </StorySurface>
   ),
 };
+
+export const DuplicateLabels: Story = {
+  name: "Duplicate segment labels",
+  render: () => (
+    <StorySurface>
+      <DuplicateLabelsExample />
+    </StorySurface>
+  ),
+};
+
+function DuplicateLabelsExample() {
+  const [mode, setMode] = useState("auto");
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <SegmentedControl
+        accessibilityLabel="Date mode"
+        onChange={setMode}
+        options={dateModeOptions}
+        value={mode}
+      />
+    </View>
+  );
+}
 
 function StatesExample() {
   const [period, setPeriod] = useState("monthly");
