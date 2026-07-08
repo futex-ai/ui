@@ -21,6 +21,7 @@ const INPUT_SIZES: Record<
     inputHeight: number;
     paddingHorizontal: number;
     textareaInputMinHeight: number;
+    textareaLineHeight: number;
     textareaPaddingVertical: number;
   }
 > = {
@@ -32,6 +33,10 @@ const INPUT_SIZES: Record<
     inputHeight: 30,
     paddingHorizontal: 10,
     textareaInputMinHeight: 72,
+    // Explicit per-line height so an auto-growing textarea can convert a row
+    // count into an exact pixel height on both platforms (native reads it from
+    // the rendered text; web multiplies it against the measured `scrollHeight`).
+    textareaLineHeight: 18,
     textareaPaddingVertical: 8,
   },
   md: {
@@ -42,6 +47,7 @@ const INPUT_SIZES: Record<
     inputHeight: 38,
     paddingHorizontal: 12,
     textareaInputMinHeight: 88,
+    textareaLineHeight: 20,
     textareaPaddingVertical: 10,
   },
   lg: {
@@ -52,6 +58,7 @@ const INPUT_SIZES: Record<
     inputHeight: 46,
     paddingHorizontal: 14,
     textareaInputMinHeight: 104,
+    textareaLineHeight: 22,
     textareaPaddingVertical: 12,
   },
 };
@@ -69,6 +76,28 @@ export function inputIconSize(size: ControlSize) {
  */
 export function inputSizeTokens(size: ControlSize) {
   return INPUT_SIZES[size];
+}
+
+/**
+ * The pixel geometry for an auto-growing textarea at a given size: the resolved
+ * per-line height plus the min/max box-content heights derived from the row
+ * bounds. A textarea starts at `minRows` and grows one line at a time up to
+ * `maxRows`, after which it scrolls. Shared by the {@link InputFrame} and the
+ * `useAutoGrowTextarea` hook so the row→pixel conversion has a single source.
+ */
+export function autoGrowTextareaBounds(
+  size: ControlSize,
+  minRows: number,
+  maxRows: number,
+) {
+  const lineHeight = INPUT_SIZES[size].textareaLineHeight;
+  const lowRows = Math.max(1, minRows);
+  const highRows = Math.max(lowRows, maxRows);
+  return {
+    lineHeight,
+    minHeight: lowRows * lineHeight,
+    maxHeight: highRows * lineHeight,
+  };
 }
 
 /**

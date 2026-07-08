@@ -608,6 +608,35 @@ test("placement playground reports the side resolved against the content edges",
   await expect(page.getByText("Opens downward ↓")).toBeVisible();
 });
 
+test("auto-growing textarea grows with content, caps, and shrinks back", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=input-examples--auto-growing-textarea");
+
+  const textarea = page.getByRole("textbox", { name: "Release notes" });
+  const heightOf = async () => (await textarea.boundingBox())?.height ?? 0;
+
+  // It opens at its two-row minimum.
+  const initial = await heightOf();
+  expect(initial).toBeGreaterThan(0);
+
+  // Adding lines grows the box (well past the two-row start).
+  await textarea.fill("one\ntwo\nthree\nfour\nfive");
+  await expect.poll(heightOf).toBeGreaterThan(initial + 20);
+  const grown = await heightOf();
+
+  // Past the six-row cap it stops growing — 40 lines is barely taller than 5.
+  await textarea.fill(
+    Array.from({ length: 40 }, (_, index) => `line ${index}`).join("\n"),
+  );
+  const capped = await heightOf();
+  expect(capped).toBeLessThan(grown + 30);
+
+  // Deleting content shrinks it back toward the two-row minimum.
+  await textarea.fill("back to one line");
+  await expect.poll(heightOf).toBeLessThan(grown);
+});
+
 test("segmented control toggles report and source choices", async ({
   page,
 }) => {
