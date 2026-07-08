@@ -14,16 +14,15 @@ test("dropdown rows expose an overridable accessible name", () => {
   );
 });
 
-test("selector trigger name is value-independent and exposes the value", () => {
+test("selector trigger name is value-independent", () => {
   const selectorSource = readSource("../../src/dropdown/DropdownSelector.tsx");
 
   // The trigger name resolves through selectorTriggerName (triggerLabel wins,
-  // else the composed default) and the selected value moves to aria-valuetext,
-  // so getByRole("button", { name }) stays stable across selections.
+  // else the composed default), so getByRole("button", { name }) stays stable
+  // across selections while the value stays visible in the trigger text.
   assert.match(selectorSource, /function selectorTriggerName\(/);
   assert.match(selectorSource, /return triggerLabel \?\? fallback;/);
   assert.match(selectorSource, /accessibilityLabel=\{triggerName\}/);
-  assert.match(selectorSource, /aria-valuetext=\{display \|\| placeholder\}/);
 });
 
 test("selector options forward an overridable accessible name", () => {

@@ -479,13 +479,15 @@ test("combobox keeps input focus while filtering options", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("selector trigger keeps a value-independent name and exposes the value", async ({
+test("selector trigger keeps a value-independent name across selection", async ({
   page,
 }) => {
   await page.goto("/iframe.html?id=dropdown-examples--explicit-selector");
 
+  // triggerLabel gives a stable, value-independent accessible name; the value
+  // stays visible in the trigger text.
   const trigger = page.getByRole("button", { exact: true, name: "Scheme" });
-  await expect(trigger).toHaveAttribute("aria-valuetext", "Standard");
+  await expect(trigger).toContainText("Standard");
 
   await trigger.click();
   // Duplicate visible labels ("Custom") are disambiguated by per-option
@@ -495,11 +497,14 @@ test("selector trigger keeps a value-independent name and exposes the value", as
   ).toBeVisible();
   await page.getByRole("option", { name: "Custom end date" }).click();
 
-  // The trigger name stays "Scheme" across selection; the value moves to
-  // aria-valuetext rather than the accessible name.
-  await expect(
-    page.getByRole("button", { exact: true, name: "Scheme" }),
-  ).toHaveAttribute("aria-valuetext", "Custom");
+  // The trigger still resolves by the same name "Scheme" after the value
+  // changed to "Custom" — the name did not move with the selection.
+  const afterSelection = page.getByRole("button", {
+    exact: true,
+    name: "Scheme",
+  });
+  await expect(afterSelection).toBeVisible();
+  await expect(afterSelection).toContainText("Custom");
 });
 
 test("dropdown placement flips above the trigger near the bottom edge", async ({

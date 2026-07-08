@@ -71,9 +71,9 @@ type DropdownSelectorProps = {
   size?: ControlSize;
   /**
    * Stable, value-independent accessible name for the trigger. When set, the
-   * trigger name stays constant as the selected value changes (the value moves
-   * to `aria-valuetext`), so `getByRole("button", { name })` keeps resolving.
-   * Defaults to the composed `"{label}, {value}"` name.
+   * trigger name stays constant as the selected value changes (the value stays
+   * visible in the trigger text), so `getByRole("button", { name })` keeps
+   * resolving. Defaults to the composed `"{label}, {value}"` name.
    */
   triggerLabel?: string;
   value: string;
@@ -234,7 +234,6 @@ function DropdownSelectorView({
         accessibilityState={{ disabled: !interactive }}
         aria-expanded={interactive ? open : undefined}
         aria-invalid={invalid}
-        aria-valuetext={display || placeholder}
         disabled={!interactive}
         onBlur={focus.onBlur}
         onFocus={focus.onFocus}
