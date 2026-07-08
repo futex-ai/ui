@@ -7,14 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.0](https://github.com/futex-ai/ui/compare/v0.8.0...v0.9.0) (2026-07-08)
 
-
 ### Features
 
-* **a11y:** testID-free test targeting for dropdown, radio, segmented ([#76](https://github.com/futex-ai/ui/issues/76)) ([aaea83c](https://github.com/futex-ai/ui/commit/aaea83c777a5177aef76da1cb0a5714494110153))
-* **input:** add labelInfo help affordance ([#79](https://github.com/futex-ai/ui/issues/79)) ([73c6e98](https://github.com/futex-ai/ui/commit/73c6e98f8cd5d931dadd67dff571de84ae77c873))
-* **input:** auto-growing textarea with numberOfLines + maxLines ([#78](https://github.com/futex-ai/ui/issues/78)) ([3a8530c](https://github.com/futex-ai/ui/commit/3a8530c41038515877aba0a793cfd7d0b795dfad))
-* **modal:** add native iOS/Android bottom sheet + on-device Storybook ([#74](https://github.com/futex-ai/ui/issues/74)) ([d36ec20](https://github.com/futex-ai/ui/commit/d36ec20993b2ed3e664916ec546d2784fa0d3d83))
-* **modal:** animate web bottom-sheet height to fit content ([#77](https://github.com/futex-ai/ui/issues/77)) ([cb67364](https://github.com/futex-ai/ui/commit/cb673648c77c50348732b1c956f4015d63e36d92))
+- **a11y:** testID-free test targeting for dropdown, radio, segmented ([#76](https://github.com/futex-ai/ui/issues/76)) ([aaea83c](https://github.com/futex-ai/ui/commit/aaea83c777a5177aef76da1cb0a5714494110153))
+- **input:** add labelInfo help affordance ([#79](https://github.com/futex-ai/ui/issues/79)) ([73c6e98](https://github.com/futex-ai/ui/commit/73c6e98f8cd5d931dadd67dff571de84ae77c873))
+- **input:** auto-growing textarea with numberOfLines + maxLines ([#78](https://github.com/futex-ai/ui/issues/78)) ([3a8530c](https://github.com/futex-ai/ui/commit/3a8530c41038515877aba0a793cfd7d0b795dfad))
+- **modal:** add native iOS/Android bottom sheet + on-device Storybook ([#74](https://github.com/futex-ai/ui/issues/74)) ([d36ec20](https://github.com/futex-ai/ui/commit/d36ec20993b2ed3e664916ec546d2784fa0d3d83))
+- **modal:** animate web bottom-sheet height to fit content ([#77](https://github.com/futex-ai/ui/issues/77)) ([cb67364](https://github.com/futex-ai/ui/commit/cb673648c77c50348732b1c956f4015d63e36d92))
 
 ## [0.8.0](https://github.com/futex-ai/ui/compare/v0.7.0...v0.8.0) (2026-07-01)
 
