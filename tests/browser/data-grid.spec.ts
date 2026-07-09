@@ -1,14 +1,27 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 // Clipboard access for the copy/paste test (harmless for the others).
 test.use({ permissions: ["clipboard-read", "clipboard-write"] });
 
+const storyReadyTimeout = 30_000;
+
+async function gotoDataGridStory(page: Page, storyId: string) {
+  await page.goto(
+    `/iframe.html?id=datagrid-examples--${storyId}&viewMode=story`,
+  );
+  await page.waitForSelector("#storybook-root *", {
+    timeout: storyReadyTimeout,
+  });
+}
+
 test("data grid renders typed columns, pills, dates, and a footer", async ({
   page,
 }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--basic");
+  await gotoDataGridStory(page, "basic");
 
-  await expect(page.getByRole("grid", { name: "Content" })).toBeVisible();
+  await expect(page.getByRole("grid", { name: "Content" })).toBeVisible({
+    timeout: storyReadyTimeout,
+  });
   await expect(page.getByRole("columnheader")).toHaveCount(7);
 
   // Typed cell content: a single-select pill, a right-aligned number, a tag
@@ -23,7 +36,7 @@ test("data grid renders typed columns, pills, dates, and a footer", async ({
 test("data grid selects a cell on click and moves the active cell with arrows", async ({
   page,
 }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--selection");
+  await gotoDataGridStory(page, "selection");
 
   const status = page.getByTestId("selection-status");
   await page.getByText("Why we moved every workflow").click();
@@ -45,7 +58,7 @@ test("data grid selects a cell on click and moves the active cell with arrows", 
 test("shift+arrow extends a rectangular selection and Ctrl+A selects all", async ({
   page,
 }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--selection");
+  await gotoDataGridStory(page, "selection");
 
   const status = page.getByTestId("selection-status");
   const selectedCount = () =>
@@ -64,7 +77,7 @@ test("shift+arrow extends a rectangular selection and Ctrl+A selects all", async
 });
 
 test("pointer drag paints a rectangular cell range", async ({ page }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--selection");
+  await gotoDataGridStory(page, "selection");
 
   const status = page.getByTestId("selection-status");
   const start = await page
@@ -94,7 +107,7 @@ test("pointer drag paints a rectangular cell range", async ({ page }) => {
 });
 
 test("gutter drag selects whole rows (no marquee)", async ({ page }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--selection");
+  await gotoDataGridStory(page, "selection");
   const status = page.getByTestId("selection-status");
 
   const g2 = await page.getByText("2", { exact: true }).first().boundingBox();
@@ -114,7 +127,7 @@ test("gutter drag selects whole rows (no marquee)", async ({ page }) => {
 });
 
 test("header drag selects whole columns", async ({ page }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--full-featured");
+  await gotoDataGridStory(page, "full-featured");
 
   const status = page.getByRole("columnheader").filter({ hasText: "Status" });
   const channel = page.getByRole("columnheader").filter({ hasText: "Channel" });
@@ -136,7 +149,7 @@ test("header drag selects whole columns", async ({ page }) => {
 test("a new drag after an existing selection still extends", async ({
   page,
 }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--selection");
+  await gotoDataGridStory(page, "selection");
   const status = page.getByTestId("selection-status");
 
   const a = await page.getByText("We shipped per-step").boundingBox();
@@ -167,7 +180,7 @@ test("a new drag after an existing selection still extends", async ({
 test("the active-cell ring shows only for a single-cell selection", async ({
   page,
 }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--selection");
+  await gotoDataGridStory(page, "selection");
   const ringCount = () =>
     page.evaluate(
       () =>
@@ -190,7 +203,7 @@ test("the active-cell ring shows only for a single-cell selection", async ({
 test("dragging past the bottom edge auto-scrolls and extends", async ({
   page,
 }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--virtualized");
+  await gotoDataGridStory(page, "virtualized");
   await expect(page.getByRole("grid")).toBeVisible();
 
   const first = await page.getByText("Record 1:").first().boundingBox();
@@ -208,7 +221,7 @@ test("dragging past the bottom edge auto-scrolls and extends", async ({
   await page.mouse.up();
 });
 
-async function scrollGridToBottom(page: import("@playwright/test").Page) {
+async function scrollGridToBottom(page: Page) {
   await page.evaluate(() => {
     const scroller = [...document.querySelectorAll('[role="grid"] *')].find(
       (element) => element.scrollHeight > element.clientHeight + 10,
@@ -222,7 +235,7 @@ async function scrollGridToBottom(page: import("@playwright/test").Page) {
 test("virtualizes a large grid, rendering only a window of rows", async ({
   page,
 }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--virtualized");
+  await gotoDataGridStory(page, "virtualized");
   await expect(page.getByRole("grid")).toBeVisible();
 
   // 1000 data rows, but only a windowed slice is in the DOM.
@@ -234,7 +247,7 @@ test("virtualizes a large grid, rendering only a window of rows", async ({
 test("infinite scroll appends rows when the body reaches its end", async ({
   page,
 }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--infinite-scroll");
+  await gotoDataGridStory(page, "infinite-scroll");
   const count = page.getByTestId("row-count");
   await expect(count).toHaveText("30 rows");
 
@@ -251,7 +264,7 @@ test("infinite scroll appends rows when the body reaches its end", async ({
 test("double-click edits a text cell; Enter commits and Escape reverts", async ({
   page,
 }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--editable");
+  await gotoDataGridStory(page, "editable");
 
   await page.getByText("Why we moved every workflow").dblclick();
   const input = page.locator("input").first();
@@ -273,7 +286,7 @@ test("double-click edits a text cell; Enter commits and Escape reverts", async (
 });
 
 test("number cell rejects non-numeric input", async ({ page }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--editable");
+  await gotoDataGridStory(page, "editable");
 
   await page.getByText("0.78").first().dblclick();
   await page.getByLabel("Edit number").fill("abc");
@@ -283,7 +296,7 @@ test("number cell rejects non-numeric input", async ({ page }) => {
 });
 
 test("single-select cell edits through a dropdown", async ({ page }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--editable");
+  await gotoDataGridStory(page, "editable");
 
   await page.getByText("Approved").first().dblclick();
   await expect(page.getByRole("menuitem", { name: "Published" })).toBeVisible();
@@ -292,7 +305,7 @@ test("single-select cell edits through a dropdown", async ({ page }) => {
 });
 
 test("multi-select cell adds an option via the combobox", async ({ page }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--full-featured");
+  await gotoDataGridStory(page, "full-featured");
 
   await page.getByText("infra", { exact: true }).first().dblclick();
   const combo = page.getByPlaceholder("Add…");
@@ -306,7 +319,7 @@ test("multi-select cell adds an option via the combobox", async ({ page }) => {
 test("column menu hides + sorts a field, and add column / add row work", async ({
   page,
 }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--full-featured");
+  await gotoDataGridStory(page, "full-featured");
   const status = page.getByTestId("chrome-status");
 
   // Hide the Tweet column → one fewer column header (the add-column (+) header
@@ -338,7 +351,7 @@ test("column menu hides + sorts a field, and add column / add row work", async (
 test("a rejected commit keeps the editor open and does not move", async ({
   page,
 }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--rejecting-edit");
+  await gotoDataGridStory(page, "rejecting-edit");
 
   await page.getByText("Why we moved every workflow").dblclick();
   const input = page.locator("input").first();
@@ -352,7 +365,7 @@ test("a rejected commit keeps the editor open and does not move", async ({
 });
 
 test("hiding the active column keeps a keyboard tab stop", async ({ page }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--full-featured");
+  await gotoDataGridStory(page, "full-featured");
 
   // Select a Status cell (makes it active), then hide the Status column.
   await page.getByText("Approved").first().click();
@@ -367,7 +380,7 @@ test("scrolls horizontally when the columns overflow the container", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 900, height: 700 });
-  await page.goto("/iframe.html?id=datagrid-examples--basic");
+  await gotoDataGridStory(page, "basic");
   await expect(page.getByRole("grid")).toBeVisible();
 
   // Some element inside the grid overflows horizontally and is scrollable.
@@ -387,7 +400,7 @@ test("header and body columns share the same left edges, incl. after hiding", as
   page,
 }) => {
   await page.setViewportSize({ width: 1120, height: 760 });
-  await page.goto("/iframe.html?id=datagrid-examples--full-featured");
+  await gotoDataGridStory(page, "full-featured");
   await expect(page.getByRole("grid")).toBeVisible();
 
   const lefts = () =>
@@ -421,7 +434,7 @@ test("keeps the row-number gutter pinned while scrolling horizontally", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1000, height: 760 });
-  await page.goto("/iframe.html?id=datagrid-examples--full-featured");
+  await gotoDataGridStory(page, "full-featured");
   await expect(page.getByRole("grid")).toBeVisible();
 
   const gutterLeft = async () =>
@@ -444,7 +457,7 @@ test("keeps the row-number gutter pinned while scrolling horizontally", async ({
 test("copies the selection and pastes it into another cell", async ({
   page,
 }) => {
-  await page.goto("/iframe.html?id=datagrid-examples--editable");
+  await gotoDataGridStory(page, "editable");
   await expect(page.getByRole("grid")).toBeVisible();
 
   await page.getByText("0.81").first().click(); // select row 1 Score
@@ -458,7 +471,7 @@ test("copies the selection and pastes it into another cell", async ({
 
 test("collapses to a card stack below the breakpoint", async ({ page }) => {
   await page.setViewportSize({ width: 1000, height: 720 });
-  await page.goto("/iframe.html?id=datagrid-examples--responsive");
+  await gotoDataGridStory(page, "responsive");
 
   // Wide → the full grid.
   await expect(page.getByRole("grid")).toBeVisible();
