@@ -6,7 +6,7 @@ import {
   Trash2,
 } from "lucide-react-native";
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { GestureResponderEvent } from "react-native";
 import {
   Pressable,
@@ -26,9 +26,11 @@ import {
   DropdownPlacement,
   DropdownSelector,
   Popover,
+  ResponsivePopover,
   SharedUiTheme,
   SharedUiThemeOverrides,
   SharedUiThemeProvider,
+  Sheet,
   WebModalFrame,
   defaultSharedUiTheme,
   dropdownPlacement,
@@ -430,6 +432,146 @@ export function ControlledPopoverExample() {
           </View>
         )}
       </Popover>
+    </View>
+  );
+}
+
+export function SelectorInPopoverExample() {
+  // A selector nested inside a popover. Each overlay renders in its own
+  // document-body portal, so the open menu escapes the popover's clipping box
+  // and stacks above it. Picking an option updates the field and leaves the
+  // popover open — the popover's outside-press dismissal treats the descendant
+  // menu as inside itself — while Escape closes the menu first and the popover
+  // only on a second press.
+  const [scheme, setScheme] = useState("standard");
+  return (
+    <Popover
+      label="Line settings"
+      minWidth={260}
+      trigger={({ open, triggerProps }) => (
+        <Pressable
+          {...triggerProps}
+          accessibilityLabel="Line settings"
+          accessibilityRole="button"
+          style={[styles.button, open ? styles.buttonOpen : null]}
+        >
+          <Text style={styles.buttonText}>Line settings</Text>
+        </Pressable>
+      )}
+    >
+      {({ close }) => (
+        <View style={styles.popoverForm}>
+          <Text style={styles.popoverTitle}>Line settings</Text>
+          <DropdownSelector
+            label="VAT scheme"
+            onValueChange={setScheme}
+            options={selectorOptions}
+            value={scheme}
+          />
+          <Pressable
+            accessibilityRole="button"
+            onPress={close}
+            style={styles.popoverClose}
+          >
+            <Text style={styles.popoverCloseText}>Done</Text>
+          </Pressable>
+        </View>
+      )}
+    </Popover>
+  );
+}
+
+export function ResponsivePopoverExample() {
+  // The responsive popover is controlled and anchored to an external trigger.
+  // On web it renders an anchored dialog (this story); on native the same body
+  // renders in a bottom sheet. The nested selector's menu escapes the dialog and
+  // selecting keeps the dialog open, so a filter form works inside it.
+  const anchorRef = useRef<View>(null);
+  const [open, setOpen] = useState(false);
+  const [scheme, setScheme] = useState("standard");
+  return (
+    <View>
+      <Pressable
+        accessibilityLabel="Filters"
+        accessibilityRole="button"
+        aria-expanded={open}
+        onPress={() => setOpen((current) => !current)}
+        ref={anchorRef}
+        style={[styles.responsiveTrigger, open ? styles.buttonOpen : null]}
+      >
+        <Text style={styles.buttonText}>Filters</Text>
+        <ChevronDown color="#fff" size={16} />
+      </Pressable>
+      <ResponsivePopover
+        anchorRef={anchorRef}
+        label="Filters"
+        maxHeight={360}
+        minWidth={280}
+        onClose={() => setOpen(false)}
+        open={open}
+      >
+        {({ close }) => (
+          <View style={styles.popoverForm}>
+            <Text style={styles.popoverTitle}>Filters</Text>
+            <DropdownSelector
+              label="VAT scheme"
+              onValueChange={setScheme}
+              options={selectorOptions}
+              value={scheme}
+            />
+            <Pressable
+              accessibilityRole="button"
+              onPress={close}
+              style={styles.popoverClose}
+            >
+              <Text style={styles.popoverCloseText}>Apply</Text>
+            </Pressable>
+          </View>
+        )}
+      </ResponsivePopover>
+    </View>
+  );
+}
+
+export function SheetExample() {
+  // On web the Sheet renders through the modal frame's bottom-sheet placement;
+  // on native it is the gorhom bottom sheet. Same controlled open/onClose API.
+  const [open, setOpen] = useState(false);
+  const [scheme, setScheme] = useState("standard");
+  return (
+    <View>
+      <Pressable
+        accessibilityLabel="Open sheet"
+        accessibilityRole="button"
+        onPress={() => setOpen(true)}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Open sheet</Text>
+      </Pressable>
+      <Sheet
+        label="Line settings"
+        maxHeight={360}
+        onClose={() => setOpen(false)}
+        open={open}
+      >
+        {({ close }) => (
+          <View style={styles.sheetBody}>
+            <DropdownSelector
+              label="VAT scheme"
+              onValueChange={setScheme}
+              options={selectorOptions}
+              value={scheme}
+            />
+            <Pressable
+              accessibilityRole="button"
+              onPress={close}
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>Done</Text>
+            </Pressable>
+          </View>
+        )}
+      </Sheet>
     </View>
   );
 }
@@ -1187,6 +1329,11 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     paddingTop: 4,
   },
+  popoverForm: {
+    gap: 12,
+    minWidth: 240,
+    padding: 14,
+  },
   popoverCloseText: {
     color: "#2f5945",
     fontSize: 13,
@@ -1233,8 +1380,20 @@ const styles = StyleSheet.create({
     color: "#b9c6bd",
     fontSize: 13,
   },
+  responsiveTrigger: {
+    alignItems: "center",
+    alignSelf: "flex-start",
+    backgroundColor: "#2f5945",
+    borderRadius: 8,
+    flexDirection: "row",
+    gap: 8,
+    height: 38,
+    justifyContent: "center",
+    paddingHorizontal: 14,
+  },
   scrollTrackingFiller: { flex: 1 },
   scrollTrackingPage: { gap: 16, minHeight: 1600, padding: 24 },
+  sheetBody: { gap: 12 },
   sheetDemoControls: { flexDirection: "row", gap: 8 },
   sheetDemoRow: {
     backgroundColor: "#f1f4ee",

@@ -125,6 +125,11 @@
       "react-native": "./dist/segmented/index.js",
       "import": "./dist/node/segmented/index.js"
     },
+    "./sheet": {
+      "types": "./dist/node/sheet/index.d.ts",
+      "react-native": "./dist/sheet/index.js",
+      "import": "./dist/node/sheet/index.js"
+    },
     "./skeleton": {
       "types": "./dist/node/skeleton/index.d.ts",
       "react-native": "./dist/skeleton/index.js",

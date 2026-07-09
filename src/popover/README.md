@@ -136,6 +136,50 @@ when a consuming screen owns an even higher stacking context:
 </Popover>
 ```
 
+## ResponsivePopover
+
+`ResponsivePopover` is a controlled, externally-anchored surface that **adapts by
+platform**: the anchored popover on web, a [`Sheet`](../sheet/README.md) bottom
+sheet on native, behind one API. Unlike `Popover` (which owns its trigger via a
+render prop and manages its own open state), `ResponsivePopover` takes an
+external `anchorRef` and controlled `open`/`onClose`, so it drops in where a
+consumer already renders the trigger and owns visibility.
+
+On web it composes the shared `DropdownPortal` (viewport-aware placement,
+non-modal `box-none` layer, outside-press/Escape dismissal) with `PopoverSurface`
+(role `dialog`, accessible name from `label`, focus into the surface on open and
+back to the anchor on close) — the same a11y as `Popover`, since it lives in the
+shared surface. On native the same body renders in a bottom sheet. The one
+render-prop contract works on both platforms; only `layout` (`"popover"` vs
+`"sheet"`) and the web-only `placement` differ.
+
+```tsx
+import { ResponsivePopover } from "@firna/ui/popover";
+
+const anchorRef = useRef<View>(null);
+const [open, setOpen] = useState(false);
+
+<Pressable ref={anchorRef} aria-expanded={open} onPress={() => setOpen((o) => !o)}>
+  <Text>Filters</Text>
+</Pressable>
+<ResponsivePopover
+  anchorRef={anchorRef}
+  label="Filters"
+  maxHeight={360}
+  minWidth={280}
+  onClose={() => setOpen(false)}
+  open={open}
+>
+  {({ close, layout }) => <FilterForm layout={layout} onApply={close} />}
+</ResponsivePopover>;
+```
+
+Web-only props (`align`, `minWidth`, `manageFocus`, `initialFocusRef`, `zIndex`)
+and native-only props (`title`, `dismissLabel`, `hideSheetHeader`) are ignored on
+the other platform. `align` accepts `"start" | "center" | "end"` (default
+`"end"`); `"center"` currently falls back to `"start"` until the placement engine
+gains center support.
+
 ## Theming
 
 The surface chrome (background, border, radius, shadow) comes from

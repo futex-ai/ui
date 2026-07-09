@@ -2,28 +2,22 @@
  * Native (iOS/Android) modal frame. Mirrors the caller seam of the web frame
  * (`WebModalFrame.web.tsx`) but renders through a React Native `Modal` overlay:
  *
- * - `placement="bottom-sheet"` uses `@gorhom/bottom-sheet` for a gesture-driven
- *   native sheet (drag/flick to dismiss, spring motion, a backdrop that dims with
- *   the drag, content-sized height).
+ * - `placement="bottom-sheet"` delegates to the shared `BottomSheetShell` (the
+ *   gorhom-backed sheet: drag/flick to dismiss, spring motion, a backdrop that
+ *   dims with the drag, content-sized height), injecting only this frame's own
+ *   header/footer chrome.
  * - `placement="center"` is a plain centered dialog (fade in/out).
  *
- * The sheet lives inside an RN `Modal` (+ a `GestureHandlerRootView` so gestures
- * work in the Modal's isolated view tree), which keeps the component self
+ * The sheet's gesture/backdrop plumbing lives in `BottomSheetShell` (inside an
+ * RN `Modal` + a `GestureHandlerRootView`), which keeps the component self
  * contained — consumers don't need a `BottomSheetModalProvider`, only the
- * `@gorhom/bottom-sheet` / reanimated / gesture-handler peer deps installed.
+ * bottom-sheet / reanimated / gesture-handler peer deps installed.
  *
  * `accessibilityViewIsModal` confines assistive tech to the surface (works
  * natively, unlike RNW — hence the web frame's manual `inert` focus trap).
  */
-import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetScrollView,
-  BottomSheetView,
-} from "@gorhom/bottom-sheet";
-import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
 import { X } from "lucide-react-native";
 import { useCallback, useMemo, useRef } from "react";
-import type { ComponentRef } from "react";
 import {
   KeyboardAvoidingView,
   Modal,
@@ -34,8 +28,9 @@ import {
   Text,
   View,
 } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
+import { BottomSheetShell } from "../sheet/BottomSheetShell";
+import type { BottomSheetHandle } from "../sheet/BottomSheetShell";
 import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
 
@@ -68,7 +63,7 @@ export function WebModalFrame({
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createNativeModalStyles(theme), [theme]);
   const sheet = placement === "bottom-sheet";
-  const sheetRef = useRef<ComponentRef<typeof BottomSheet>>(null);
+  const sheetRef = useRef<BottomSheetHandle | null>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
@@ -123,46 +118,20 @@ export function WebModalFrame({
   ) : null;
 
   if (sheet) {
-    const renderBackdrop = (props: BottomSheetBackdropProps) => (
-      <BottomSheetBackdrop
-        {...props}
-        appearsOnIndex={0}
-        disappearsOnIndex={-1}
-        opacity={0.36}
-        pressBehavior={canDismiss ? "close" : "none"}
-      />
-    );
+    // The bottom-sheet mechanics (gorhom + RN Modal + backdrop + scroll) live in
+    // the shared shell; the modal only injects its own chrome (header/footer).
     return (
-      <Modal
-        animationType="none"
-        onRequestClose={() => requestClose("escape")}
-        statusBarTranslucent
-        transparent
-        visible={visible}
+      <BottomSheetShell
+        dismissible={canDismiss}
+        footer={footerBlock}
+        header={header}
+        label={title}
+        onClose={() => onCloseRef.current()}
+        open={visible}
+        sheetRef={sheetRef}
       >
-        <GestureHandlerRootView style={styles.flex}>
-          <BottomSheet
-            backdropComponent={renderBackdrop}
-            backgroundStyle={styles.sheetBackground}
-            enableDynamicSizing
-            enablePanDownToClose={canDismiss}
-            handleIndicatorStyle={styles.handleIndicator}
-            index={0}
-            onClose={() => onCloseRef.current()}
-            ref={sheetRef}
-          >
-            <BottomSheetScrollView
-              accessibilityLabel={title}
-              accessibilityViewIsModal
-              contentContainerStyle={styles.sheetContent}
-            >
-              {header}
-              <View style={[styles.body, bodyStyle]}>{content}</View>
-              {footerBlock}
-            </BottomSheetScrollView>
-          </BottomSheet>
-        </GestureHandlerRootView>
-      </Modal>
+        <View style={[styles.body, bodyStyle]}>{content}</View>
+      </BottomSheetShell>
     );
   }
 
@@ -239,7 +208,6 @@ function createNativeModalStyles(theme: SharedUiTheme) {
       width: 34,
     },
     disabled: { opacity: 0.55 },
-    flex: { flex: 1 },
     footer: {
       borderTopColor: theme.colors.border,
       borderTopWidth: 1,
@@ -249,7 +217,6 @@ function createNativeModalStyles(theme: SharedUiTheme) {
       padding: 14,
       paddingTop: 12,
     },
-    handleIndicator: { backgroundColor: theme.colors.border2, width: 40 },
     header: {
       alignItems: "flex-start",
       flexDirection: "row",
@@ -258,11 +225,6 @@ function createNativeModalStyles(theme: SharedUiTheme) {
       padding: 14,
       paddingBottom: 12,
     },
-    sheetBackground: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.radii.lg,
-    },
-    sheetContent: { paddingBottom: 28 },
     subtitle: {
       ...baseText,
       color: theme.colors.ink2,

@@ -76,6 +76,15 @@ test("native modal frame renders an RN Modal sheet with native a11y containment"
   assert.doesNotMatch(nativeSource, /createPortal|document\.body/);
 });
 
+test("native modal bottom sheet delegates to the shared sheet shell", () => {
+  const nativeSource = readSource("../../src/modal/WebModalFrame.tsx");
+
+  // The gorhom bottom-sheet mechanics now live in the shared shell, so the modal
+  // reuses them instead of re-implementing the gesture/backdrop wiring.
+  assert.match(nativeSource, /BottomSheetShell/);
+  assert.doesNotMatch(nativeSource, /@gorhom\/bottom-sheet/);
+});
+
 test("web modal focus restore lifecycle is decoupled from close callback changes", () => {
   const source = readSource("../../src/modal/WebModalFrame.web.tsx");
 
