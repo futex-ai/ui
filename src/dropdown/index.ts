@@ -5,6 +5,7 @@ export * from "./DropdownMenu";
 export * from "./DropdownPortal";
 export * from "./DropdownSelector";
 export * from "./comboboxModel";
+export * from "./dropdownDismissLayers";
 export * from "./dropdownGeometry";
 export * from "./dropdownLayers";
 export * from "./dropdownMenuModel";

@@ -5,6 +5,12 @@ import { View } from "react-native";
 
 import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
 
+import {
+  dropdownSurfacesAbove,
+  pushDropdownDismissLayer,
+  removeDropdownDismissLayer,
+  type DropdownDismissLayer,
+} from "./dropdownDismissLayers";
 import { dropdownShouldClose, type DropdownNode } from "./dropdownOutsideClose";
 
 type DropdownDismissOptions = {
@@ -32,15 +38,31 @@ export function useDropdownDismiss({
 }: DropdownDismissOptions): void {
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  // A stable identity so this portal registers and unregisters the same layer.
+  const dismissLayerRef = useRef<DropdownDismissLayer>({
+    surface: () => surfaceRef.current as unknown as DropdownNode | null,
+  });
 
   useEffect(() => {
     if (!open || typeof document === "undefined") {
       return;
     }
+    const dismissLayer = dismissLayerRef.current;
+    pushDropdownDismissLayer(dismissLayer);
     const handlePointerDown = (event: Event) => {
       const anchorNode = anchorRef.current as unknown as DropdownNode | null;
       const surfaceNode = surfaceRef.current as unknown as DropdownNode | null;
-      if (dropdownShouldClose([anchorNode, surfaceNode], event.target)) {
+      // A menu opened inside this surface renders in its own sibling portal, so
+      // its surface is not a DOM descendant of ours. Treat every surface stacked
+      // above this one as inside, so a press on a nested option does not read as
+      // an outside press and dismiss this overlay from under it.
+      const descendantSurfaces = dropdownSurfacesAbove(dismissLayer);
+      if (
+        dropdownShouldClose(
+          [anchorNode, surfaceNode, ...descendantSurfaces],
+          event.target,
+        )
+      ) {
         onCloseRef.current();
       }
     };
@@ -50,6 +72,7 @@ export function useDropdownDismiss({
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown, true);
       removeEscapeLayer(layer);
+      removeDropdownDismissLayer(dismissLayer);
     };
   }, [anchorRef, open, surfaceRef]);
 }

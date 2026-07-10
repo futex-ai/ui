@@ -93,6 +93,19 @@ test("web dropdown dismissal is document-level instead of a scrim", () => {
   assert.match(dismissSource, /onEscape: \(\) => onCloseRef\.current\(\)/);
 });
 
+test("web dropdown dismissal keeps a nested overlay from closing its ancestor", () => {
+  const dismissSource = readSource("../../src/dropdown/useDropdownDismiss.ts");
+
+  // The open portal registers itself on the shared dismiss-layer stack and
+  // treats descendant surfaces (e.g. a menu opened inside a popover, which
+  // renders in its own sibling portal) as inside itself, so a press on a nested
+  // option is not an outside press for the ancestor overlay.
+  assert.match(dismissSource, /pushDropdownDismissLayer\(dismissLayer\)/);
+  assert.match(dismissSource, /removeDropdownDismissLayer\(dismissLayer\)/);
+  assert.match(dismissSource, /dropdownSurfacesAbove\(dismissLayer\)/);
+  assert.match(dismissSource, /\.\.\.descendantSurfaces/);
+});
+
 test("web dropdown portal rescues hover when the surface mounts under a fast pointer", () => {
   const webPortalSource = readSource(
     "../../src/dropdown/DropdownPortal.web.tsx",

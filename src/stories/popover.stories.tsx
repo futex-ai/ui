@@ -6,6 +6,8 @@ import { Popover } from "../index";
 import {
   ControlledPopoverExample,
   PopoverExample,
+  ResponsivePopoverExample,
+  SelectorInPopoverExample,
   StorySurface,
 } from "./sharedExamples";
 
@@ -31,6 +33,39 @@ export const ControlledPopover: Story = {
   render: () => (
     <StorySurface>
       <ControlledPopoverExample />
+    </StorySurface>
+  ),
+};
+
+/**
+ * A `DropdownSelector` nested inside a popover. Both overlays render through
+ * their own `document.body` portal, so the open menu escapes the popover's
+ * clipping box and stacks above it. Selecting an option updates the field and
+ * keeps the popover open (its outside-press dismissal recognises the descendant
+ * menu as inside), and Escape closes the menu before the popover.
+ */
+export const SelectorInPopover: Story = {
+  name: "Popover with a nested selector",
+  render: () => (
+    <StorySurface>
+      <SelectorInPopoverExample />
+    </StorySurface>
+  ),
+};
+
+/**
+ * `ResponsivePopover` behind one controlled, externally-anchored API: an
+ * anchored dialog on web (this story) and a bottom sheet on native. The web
+ * surface inherits the popover a11y — `role="dialog"`, accessible name, focus
+ * into the surface on open and back to the trigger on close, non-modal anchored
+ * — from the shared `PopoverSurface`, and hosts a filter form whose nested
+ * selector opens without dismissing the dialog.
+ */
+export const ResponsivePopoverWeb: Story = {
+  name: "Responsive popover (web = anchored dialog)",
+  render: () => (
+    <StorySurface>
+      <ResponsivePopoverExample />
     </StorySurface>
   ),
 };

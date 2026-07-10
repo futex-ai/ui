@@ -1381,6 +1381,178 @@ test("controlled popover drives external state through onOpenChange", async ({
   await expect(content).toBeHidden();
 });
 
+test("a selector nested in a popover selects an option without closing the popover", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=popover-examples--selector-in-popover");
+
+  // The popover surface is a named dialog; its trigger is a button that shares
+  // the "Line settings" name, so address each by its distinct role.
+  const trigger = page.getByRole("button", { name: "Line settings" });
+  const dialog = page.getByRole("dialog", { name: "Line settings" });
+  await expect(dialog).toBeHidden();
+
+  await trigger.click();
+  await expect(dialog).toBeVisible();
+
+  // Open the nested selector. Its menu renders in its own body portal, so it
+  // escapes the popover's clipping box and stacks above the surface.
+  await page.getByRole("button", { name: "VAT scheme, Standard" }).click();
+  const option = page.getByRole("option", { name: "Cash accounting" });
+  await expect(option).toBeVisible();
+
+  // The option's centre hit-tests to the option itself, proving the nested menu
+  // stacks on top of the popover rather than being covered by it.
+  const onTop = await option.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    const hit = document.elementFromPoint(
+      rect.left + rect.width / 2,
+      rect.top + rect.height / 2,
+    );
+    return element === hit || element.contains(hit);
+  });
+  expect(onTop).toBe(true);
+
+  // Selecting updates the field AND leaves the popover open — the regression:
+  // the popover's outside-press dismissal used to treat the sibling-portal
+  // option as an outside press and close the whole popover on selection.
+  await option.click();
+  await expect(
+    page.getByRole("button", { name: "VAT scheme, Cash accounting" }),
+  ).toBeVisible();
+  await expect(dialog).toBeVisible();
+
+  // A press elsewhere in the popover (its title, outside the menu) closes only
+  // the menu; the popover stays open.
+  await page
+    .getByRole("button", { name: "VAT scheme, Cash accounting" })
+    .click();
+  await expect(page.getByRole("option", { name: "Standard" })).toBeVisible();
+  await dialog.getByText("Line settings").click();
+  await expect(page.getByRole("option", { name: "Standard" })).toBeHidden();
+  await expect(dialog).toBeVisible();
+});
+
+test("a selector nested in a popover closes one layer per Escape and per outside press", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=popover-examples--selector-in-popover");
+  const dialog = page.getByRole("dialog", { name: "Line settings" });
+
+  await page.getByRole("button", { name: "Line settings" }).click();
+  await page.getByRole("button", { name: "VAT scheme, Standard" }).click();
+  await expect(
+    page.getByRole("option", { name: "Cash accounting" }),
+  ).toBeVisible();
+
+  // Escape closes only the top layer (the menu); the popover beneath stays open.
+  await page.keyboard.press("Escape");
+  await expect(
+    page.getByRole("option", { name: "Cash accounting" }),
+  ).toBeHidden();
+  await expect(dialog).toBeVisible();
+
+  // With no overlay above it, the next Escape closes the popover itself.
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+
+  // A single outside press with both open dismisses the whole stack.
+  await page.getByRole("button", { name: "Line settings" }).click();
+  await page.getByRole("button", { name: "VAT scheme, Standard" }).click();
+  await expect(
+    page.getByRole("option", { name: "Cash accounting" }),
+  ).toBeVisible();
+  await page.mouse.click(5, 5);
+  await expect(
+    page.getByRole("option", { name: "Cash accounting" }),
+  ).toBeHidden();
+  await expect(dialog).toBeHidden();
+});
+
+test("responsive popover opens an anchored dialog with focus management and a nested selector", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=popover-examples--responsive-popover-web");
+
+  const trigger = page.getByRole("button", { name: "Filters" });
+  const dialog = page.getByRole("dialog", { name: "Filters" });
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+
+  // Opening moves focus into the surface (web focus management) and exposes the
+  // named dialog anchored to the trigger.
+  await trigger.click();
+  await expect(dialog).toBeVisible();
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  const focusInDialog = await page.evaluate(() => {
+    const surface = document.querySelector('[role="dialog"]');
+    return surface
+      ? surface === document.activeElement ||
+          surface.contains(document.activeElement)
+      : false;
+  });
+  expect(focusInDialog).toBe(true);
+
+  // The nested selector's menu escapes the dialog's clip box; selecting an
+  // option updates the field and leaves the dialog open (non-modal anchored
+  // surface + the shared descendant-aware dismissal).
+  await page.getByRole("button", { name: "VAT scheme, Standard" }).click();
+  const option = page.getByRole("option", { name: "Cash accounting" });
+  await expect(option).toBeVisible();
+  await option.click();
+  await expect(
+    page.getByRole("button", { name: "VAT scheme, Cash accounting" }),
+  ).toBeVisible();
+  await expect(dialog).toBeVisible();
+
+  // Escape closes the top layer (menu) first, the dialog second, and focus
+  // returns to the trigger.
+  await page
+    .getByRole("button", { name: "VAT scheme, Cash accounting" })
+    .click();
+  await expect(page.getByRole("option", { name: "Standard" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("option", { name: "Standard" })).toBeHidden();
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await expect(trigger).toBeFocused();
+});
+
+test("web sheet opens the modal bottom-sheet placement and closes on Escape", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=sheet-examples--bottom-sheet");
+
+  const sheet = page.getByRole("dialog", { name: "Line settings" });
+  await expect(sheet).toBeHidden();
+
+  await page.getByRole("button", { name: "Open sheet" }).click();
+  await expect(sheet).toBeVisible();
+
+  // A selector nested in the sheet opens and selecting keeps the sheet open.
+  await page.getByRole("button", { name: "VAT scheme, Standard" }).click();
+  const option = page.getByRole("option", { name: "Cash accounting" });
+  await expect(option).toBeVisible();
+  await option.click();
+  await expect(
+    page.getByRole("button", { name: "VAT scheme, Cash accounting" }),
+  ).toBeVisible();
+  await expect(sheet).toBeVisible();
+
+  // Escape closes the menu, then the sheet.
+  await page
+    .getByRole("button", { name: "VAT scheme, Cash accounting" })
+    .click();
+  await expect(page.getByRole("option", { name: "Standard" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("option", { name: "Standard" })).toBeHidden();
+  await expect(sheet).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(sheet).toBeHidden();
+});
+
 test("date field clears its value with the clear button", async ({ page }) => {
   await page.goto("/iframe.html?id=date-examples--clearable-date-field");
 
