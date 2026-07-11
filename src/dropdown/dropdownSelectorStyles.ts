@@ -60,6 +60,8 @@ export function createDropdownSelectorStyles(
       fontWeight: "700",
       lineHeight: 18,
     },
+    // The label + optional ⓘ info button share one baseline-centred row.
+    labelRow: { alignItems: "center", flexDirection: "row", gap: 4 },
     map: {
       alignItems: "center",
       backgroundColor: theme.colors.primarySoft,

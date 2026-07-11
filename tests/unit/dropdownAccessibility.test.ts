@@ -34,6 +34,31 @@ test("selector options forward an overridable accessible name", () => {
   );
 });
 
+test("selector reveals supplementary help from a labelInfo button", () => {
+  const selectorSource = readSource("../../src/dropdown/DropdownSelector.tsx");
+  const stylesSource = readSource(
+    "../../src/dropdown/dropdownSelectorStyles.ts",
+  );
+
+  // The shared ⓘ affordance is reused, not re-implemented.
+  assert.match(
+    selectorSource,
+    /import \{ inputIconSize, LabelInfo \} from "\.\.\/input"/,
+  );
+  // The label + ⓘ share one row; the ⓘ renders only when `labelInfo` is set.
+  assert.match(selectorSource, /<View style=\{styles\.labelRow\}>/);
+  assert.match(
+    selectorSource,
+    /\{labelInfo \? \([\s\S]*?<LabelInfo[\s\S]*?info=\{labelInfo\}[\s\S]*?\) : null\}/,
+  );
+  // The button's default accessible name derives from the visible label.
+  assert.match(selectorSource, /More information about \$\{label\}/);
+  // `labelInfo` without a `label` has nowhere to anchor: a dev-warned no-op.
+  assert.match(selectorSource, /if \(labelInfo && !label\)/);
+  assert.match(selectorSource, /devWarn\(/);
+  assert.match(stylesSource, /labelRow: \{[\s\S]*?flexDirection: "row"/);
+});
+
 function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
 }

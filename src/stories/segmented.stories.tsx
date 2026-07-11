@@ -1,9 +1,20 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { ShieldQuestionMark } from "lucide-react-native";
 import { useState } from "react";
 import { View } from "react-native";
 
 import { SegmentedControl } from "../index";
 import { StorySurface } from "./sharedExamples";
+
+const basisOptions = [
+  { label: "Accrual", value: "accrual" },
+  { label: "Cash", value: "cash" },
+];
+
+const scopeOptions = [
+  { label: "All accounts", value: "all" },
+  { label: "Active", value: "active" },
+];
 
 const reportOptions = [
   { label: "Profit & loss", value: "pl" },
@@ -96,6 +107,45 @@ export const DuplicateLabels: Story = {
     </StorySurface>
   ),
 };
+
+export const LabelInfoSegmented: Story = {
+  name: "Label info tooltip",
+  render: () => (
+    <StorySurface>
+      <LabelInfoExample />
+    </StorySurface>
+  ),
+};
+
+function LabelInfoExample() {
+  const [basis, setBasis] = useState("accrual");
+  const [scope, setScope] = useState("all");
+  return (
+    <View style={{ gap: 18, minWidth: 320 }}>
+      <SegmentedControl
+        // The ⓘ after the label opens a tooltip with the detail, so the
+        // always-read `hint` stays free for short, everyday guidance.
+        hint="Most businesses report on an accruals basis."
+        label="Accounting basis"
+        labelInfo="Accrual accounting records income and expenses when they are earned or incurred; cash accounting records them only when money actually moves."
+        onChange={setBasis}
+        options={basisOptions}
+        value={basis}
+      />
+      <SegmentedControl
+        // `labelInfoIcon` swaps the default ⓘ glyph and `labelInfoLabel` names
+        // the button when the default reads awkwardly.
+        label="Report scope"
+        labelInfo="“All accounts” includes archived ledgers; “Active” limits the report to accounts with movement in the period."
+        labelInfoIcon={ShieldQuestionMark}
+        labelInfoLabel="What each scope covers"
+        onChange={setScope}
+        options={scopeOptions}
+        value={scope}
+      />
+    </View>
+  );
+}
 
 function DuplicateLabelsExample() {
   const [mode, setMode] = useState("auto");

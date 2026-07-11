@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { ShieldQuestionMark } from "lucide-react-native";
 import { useState } from "react";
 import { Text, View } from "react-native";
 
@@ -54,6 +55,15 @@ export const ValidatedDateField: Story = {
   render: () => (
     <StorySurface>
       <ValidatedDateExample />
+    </StorySurface>
+  ),
+};
+
+export const LabelInfoDateField: Story = {
+  name: "Label info tooltip",
+  render: () => (
+    <StorySurface>
+      <LabelInfoDateExample />
     </StorySurface>
   ),
 };
@@ -189,6 +199,37 @@ function ValidatedDateExample() {
         onChange={setValue}
         required
         value={value}
+      />
+    </View>
+  );
+}
+
+function LabelInfoDateExample() {
+  const [value, setValue] = useState("2026-03-31");
+  const [range, setRange] = useState<DateRange>({
+    end: "2026-03-31",
+    start: "2025-04-01",
+  });
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <DateField
+        // The ⓘ after the label opens a tooltip with the detail, so the
+        // always-read `hint` stays free for short, everyday guidance.
+        hint="Pick a day or type it as 31 Mar 2026."
+        label="Year ends"
+        labelInfo="Your financial year end is the last day of your accounting period. It sets the date range every report defaults to."
+        onChange={setValue}
+        value={value}
+      />
+      <DateRangeField
+        // `labelInfoIcon` swaps the default ⓘ glyph and `labelInfoLabel` names
+        // the button when the default reads awkwardly.
+        label="Comparison period"
+        labelInfo="Reports compare the current period against this earlier range. Pick the equivalent period last year for a like-for-like view."
+        labelInfoIcon={ShieldQuestionMark}
+        labelInfoLabel="How the comparison period is used"
+        onChange={setRange}
+        value={range}
       />
     </View>
   );

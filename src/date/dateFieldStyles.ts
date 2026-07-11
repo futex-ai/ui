@@ -29,6 +29,8 @@ export function createDateFieldStyles(
     // content so the calendar is not trapped by a sibling. See `dateFieldLayers`.
     fieldOpen: { zIndex: dateFieldZIndex() },
     hint: chrome.hint,
+    // The label + optional ⓘ info button share one baseline-centred row.
+    labelRow: { alignItems: "center", flexDirection: "row", gap: 4 },
     required: chrome.required,
     trigger: {
       // The native trigger is an interactive control box; its resting edge uses

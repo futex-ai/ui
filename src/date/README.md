@@ -86,6 +86,27 @@ import { DateField, DateRangeField } from "@firna/ui/date";
 <DateRangeField label="Current period" onChange={setRange} value={range} />;
 ```
 
+## Label info
+
+Both `DateField` and `DateRangeField` accept `labelInfo` to add an ⓘ button after
+the label that reveals supplementary help text in a small tooltip on press. It
+reuses the shared `LabelInfo` affordance (built on `Popover`, so the bubble is
+portaled and escapes overflow clipping and dismisses on outside-press/Escape).
+Screen-reader users get the text from the button's own description, so it is a
+sighted-user reveal that stays out of the always-read `hint`. Override the glyph
+with `labelInfoIcon` and the button's accessible name with `labelInfoLabel`
+(defaults to `More information about {label}`).
+
+```tsx
+<DateField
+  hint="Pick a day or type it as 31 Mar 2026."
+  label="Year ends"
+  labelInfo="Your financial year end is the last day of your accounting period; it sets the range every report defaults to."
+  onChange={setIso}
+  value={iso}
+/>
+```
+
 ## File layout
 
 - `dateMath.ts` — pure, timezone-safe helpers (ISO parse/format, `D Mon YYYY`
@@ -189,6 +210,10 @@ documents and unit-tests this rule.
 - Validation: the error text is programmatically associated with the trigger via
   `aria-describedby` + `aria-errormessage` (web) and the `accessibilityHint`
   (native), and is a polite live region so a newly-shown error is announced.
+- The optional `labelInfo` ⓘ is a real button with an accessible name and its
+  own focus ring; it carries the detail as its accessible description (announced
+  on focus) while the portaled bubble is a sighted-user reveal only, so the text
+  is never announced twice and never leaks into the field's name.
 
 ## Locale
 

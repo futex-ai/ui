@@ -59,6 +59,28 @@ test("native date trigger scales its icons with the size", () => {
   );
 });
 
+test("date fields reveal supplementary help from a labelInfo button", () => {
+  const fieldSource = readSource("../../src/date/DateField.tsx");
+  const rangeSource = readSource("../../src/date/DateRangeField.tsx");
+  const stylesSource = readSource("../../src/date/dateFieldStyles.ts");
+
+  // The shared FieldLabel wraps the label + optional ⓘ in one row, reusing the
+  // input package's LabelInfo affordance rather than re-implementing it.
+  assert.match(fieldSource, /import \{ LabelInfo \} from "\.\.\/input"/);
+  assert.match(fieldSource, /<View style=\{styles\.labelRow\}>/);
+  assert.match(
+    fieldSource,
+    /\{labelInfo \? \([\s\S]*?<LabelInfo[\s\S]*?info=\{labelInfo\}[\s\S]*?\) : null\}/,
+  );
+  // The button's default accessible name derives from the visible label.
+  assert.match(fieldSource, /More information about \$\{label\}/);
+  // Both the single field and the range field thread labelInfo into FieldLabel.
+  assert.match(fieldSource, /<FieldLabel[\s\S]*?labelInfo=\{labelInfo\}/);
+  assert.match(rangeSource, /<FieldLabel[\s\S]*?labelInfo=\{labelInfo\}/);
+  assert.match(rangeSource, /labelInfo\?: string;/);
+  assert.match(stylesSource, /labelRow: \{[\s\S]*?flexDirection: "row"/);
+});
+
 function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
 }

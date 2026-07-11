@@ -1,4 +1,5 @@
 /** Single-select segmented controls for compact one-of-N choices. */
+import { LucideIcon } from "lucide-react-native";
 import { useCallback, useId, useMemo, useRef, useState } from "react";
 import {
   type LayoutChangeEvent,
@@ -11,7 +12,9 @@ import {
 } from "react-native";
 
 import type { ControlSize } from "../controlSize";
+import { devWarn } from "../devWarn";
 import { hideWebOutlineView, useFocusRing } from "../focusRing";
+import { LabelInfo } from "../input";
 import {
   type FocusableRef,
   focusItemAt,
@@ -63,6 +66,20 @@ export type SegmentedControlProps<T extends string> = {
   error?: string | null;
   hint?: string;
   label?: string;
+  /**
+   * Supplementary help text revealed by an ⓘ button after the label. Pressing
+   * the button opens a small bubble with this text (built on `Popover`);
+   * screen-reader users get it from the button's description. Unlike `hint` it
+   * is not shown until requested. Requires a `label` to anchor the button.
+   */
+  labelInfo?: string;
+  /** Icon for the {@link labelInfo} button. Defaults to the lucide `Info` glyph. */
+  labelInfoIcon?: LucideIcon;
+  /**
+   * Accessible name for the {@link labelInfo} button. Defaults to
+   * `More information about {label}`.
+   */
+  labelInfoLabel?: string;
   onChange: (value: T) => void;
   options: readonly SegmentOption<T>[];
   required?: boolean;
@@ -97,6 +114,9 @@ export function SegmentedControl<T extends string>({
   error,
   hint,
   label,
+  labelInfo,
+  labelInfoIcon,
+  labelInfoLabel,
   onChange,
   options,
   required = false,
@@ -114,6 +134,19 @@ export function SegmentedControl<T extends string>({
   const pill = variant === "pill";
   const invalid = Boolean(error);
   const reducedMotion = useReducedMotion();
+
+  // The ⓘ button anchors to the label row, so it needs a label to sit beside.
+  // Guard on truthiness to match the label row's own `{label ? ...}` gate — an
+  // empty-string label drops the row, so it must also warn (not just `undefined`).
+  if (labelInfo && !label) {
+    devWarn(
+      "SegmentedControl: `labelInfo` needs a `label` to anchor the ⓘ button; " +
+        "it is ignored without one.",
+    );
+  }
+  const labelInfoName =
+    labelInfoLabel ??
+    (label ? `More information about ${label}` : "More information");
 
   const reactId = useId();
   const errorId = `${reactId}-error`;
@@ -239,10 +272,19 @@ export function SegmentedControl<T extends string>({
   return (
     <View style={styles.field}>
       {label ? (
-        <Text style={styles.label}>
-          {label}
-          {required ? <Text style={styles.required}> *</Text> : null}
-        </Text>
+        <View style={styles.labelRow}>
+          <Text style={styles.label}>
+            {label}
+            {required ? <Text style={styles.required}> *</Text> : null}
+          </Text>
+          {labelInfo ? (
+            <LabelInfo
+              accessibilityLabel={labelInfoName}
+              icon={labelInfoIcon}
+              info={labelInfo}
+            />
+          ) : null}
+        </View>
       ) : null}
       <View
         accessibilityHint={error ?? hint}

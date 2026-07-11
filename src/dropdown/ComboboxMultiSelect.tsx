@@ -1,10 +1,12 @@
 /** Input-backed chip multi-select for combobox forms. */
-import { Check } from "lucide-react-native";
+import { Check, LucideIcon } from "lucide-react-native";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { announce } from "../announcer";
+import { devWarn } from "../devWarn";
 import { hideWebOutline } from "../focusRing";
+import { LabelInfo } from "../input";
 import { useSharedUiTheme } from "../theme";
 import type { SharedUiTheme } from "../theme";
 
@@ -25,22 +27,64 @@ export type ComboboxMultiSelectOption = {
   value: string;
 };
 
-export function ComboboxMultiSelect({
-  footer,
-  highlightVariant,
-  onChange,
-  options,
-  placeholder = "Search to add...",
-  values,
-}: {
+export type ComboboxMultiSelectProps = {
+  /**
+   * Accessible name for the search input. When a `label` is set the input is
+   * already named from it (via `aria-labelledby`); pass this to name the bare,
+   * label-less variant, or to override the name where `aria-labelledby` is not
+   * honoured (e.g. iOS, which does not map it). Mirrors `Input`.
+   */
+  accessibilityLabel?: string;
+  /** Validation message shown below the control; turns its border rose. */
+  error?: string | null;
   footer?: string;
   /** How the keyboard-focused row is highlighted. Defaults to `"solid"`. */
   highlightVariant?: DropdownHighlightVariant;
+  /** Helper text shown below the control. */
+  hint?: string;
+  /** Force the rose invalid border independent of `error`. */
+  invalid?: boolean;
+  /** Field label shown above the control. Omit for a bare, label-less control. */
+  label?: string;
+  /**
+   * Supplementary help text revealed by an ⓘ button after the label. Pressing
+   * the button opens a small bubble with this text (built on `Popover`);
+   * screen-reader users get it from the button's description. Unlike `hint` it
+   * is not shown until requested. Requires a `label` to anchor the button.
+   */
+  labelInfo?: string;
+  /** Icon for the {@link labelInfo} button. Defaults to the lucide `Info` glyph. */
+  labelInfoIcon?: LucideIcon;
+  /**
+   * Accessible name for the {@link labelInfo} button. Defaults to
+   * `More information about {label}`.
+   */
+  labelInfoLabel?: string;
   onChange: (values: string[]) => void;
   options: ComboboxMultiSelectOption[];
   placeholder?: string;
+  /** Marks the field required (adds a `*` to the label, wires `aria-required`). */
+  required?: boolean;
   values: string[];
-}) {
+};
+
+export function ComboboxMultiSelect({
+  accessibilityLabel,
+  error,
+  footer,
+  highlightVariant,
+  hint,
+  invalid: invalidProp = false,
+  label,
+  labelInfo,
+  labelInfoIcon,
+  labelInfoLabel,
+  onChange,
+  options,
+  placeholder = "Search to add...",
+  required = false,
+  values,
+}: ComboboxMultiSelectProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createComboboxMultiSelectStyles(theme), [theme]);
   const anchorRef = useRef<View>(null);
@@ -73,10 +117,39 @@ export function ComboboxMultiSelect({
 
   const reactId = useId();
   const listId = `${reactId}-list`;
+  const labelId = `${reactId}-label`;
+  const errorId = `${reactId}-error`;
+  const hintId = `${reactId}-hint`;
   const activeDescendant =
     open && navigation.activeId
       ? dropdownRowDomId(listId, navigation.activeId)
       : undefined;
+
+  const invalid = invalidProp || Boolean(error);
+  // The ⓘ button anchors to the label row, so it needs a label to sit beside.
+  if (labelInfo && !label) {
+    devWarn(
+      "ComboboxMultiSelect: `labelInfo` needs a `label` to anchor the ⓘ " +
+        "button; it is ignored without one.",
+    );
+  }
+  const labelInfoName =
+    labelInfoLabel ??
+    (label ? `More information about ${label}` : "More information");
+  // Describe the input with whichever messages exist (error first so it reads
+  // before the hint). RNW does NOT map `accessibilityHint` to `aria-describedby`
+  // (WCAG 3.3.1 / 1.3.1), so emit the literal `aria-*` ourselves — as a cast
+  // object because RNW's bundled types omit these attributes on `TextInput`.
+  const describedBy =
+    [error ? errorId : null, hint ? hintId : null].filter(Boolean).join(" ") ||
+    undefined;
+  const describedByA11y =
+    typeof document === "undefined"
+      ? {}
+      : ({
+          "aria-describedby": describedBy,
+          "aria-errormessage": error ? errorId : undefined,
+        } as unknown as object);
 
   // Announce the result count so screen readers hear matches change as the
   // query filters, without focus leaving the input (WCAG 4.1.3).
@@ -93,60 +166,119 @@ export function ComboboxMultiSelect({
   }, [matchCount, open, query]);
 
   return (
-    <View ref={anchorRef} style={styles.wrap}>
-      <Pressable onPress={() => setOpen(true)} style={styles.control}>
-        {selected.map((option) => (
-          <View key={option.value} style={styles.chip}>
-            <Text numberOfLines={1} style={styles.chipText}>
-              {option.label}
-            </Text>
-            <Pressable
-              accessibilityLabel={`Remove ${option.label}`}
-              accessibilityRole="button"
-              onPress={() =>
-                onChange(values.filter((value) => value !== option.value))
-              }
-              style={styles.chipRemove}
-            >
-              {/* The visible "x" is decorative — the Pressable's name is
-                  "Remove {label}". Hide it from AT so the name is not polluted
-                  by the glyph (WCAG 2.5.3 Label in Name). */}
-              <Text aria-hidden style={styles.chipRemoveText}>
-                x
+    <View style={label || error || hint ? styles.field : undefined}>
+      {label ? (
+        <View style={styles.labelRow}>
+          {/* The label <Text> carries its own `nativeID`, so the input's
+              `aria-labelledby` name is the visible label text alone — the ⓘ
+              button is a sibling, never folded into the accessible name. */}
+          <Text nativeID={labelId} style={styles.label}>
+            {label}
+            {/* Visual-only `*`; the required state is conveyed programmatically
+                via `aria-required`. Hide it from AT so it does not leak into the
+                input's `aria-labelledby` name. */}
+            {required ? (
+              <Text aria-hidden style={styles.required}>
+                {" *"}
               </Text>
-            </Pressable>
-          </View>
-        ))}
-        <TextInput
-          onChangeText={setQuery}
-          onFocus={() => setOpen(true)}
-          placeholder={placeholder}
-          placeholderTextColor={theme.colors.placeholder}
-          style={[styles.input, hideWebOutline]}
-          value={query}
-          {...comboboxInputA11y({ activeDescendant, controls: listId, open })}
-          {...navigation.keyProps}
-        />
-      </Pressable>
-      <ComboboxPopover
-        anchorRef={anchorRef}
-        onClose={() => setOpen(false)}
-        open={open}
-      >
-        {(placement) => (
-          <DropdownList
-            activeId={navigation.activeId}
-            entries={entries}
-            highlightVariant={highlightVariant}
-            label={placeholder}
-            listId={listId}
-            listRole="listbox"
-            maxHeight={placement.maxHeight}
-            onActiveIdChange={navigation.setActiveId}
-            onClose={() => setOpen(false)}
+            ) : null}
+          </Text>
+          {labelInfo ? (
+            <LabelInfo
+              accessibilityLabel={labelInfoName}
+              icon={labelInfoIcon}
+              info={labelInfo}
+            />
+          ) : null}
+        </View>
+      ) : null}
+      <View ref={anchorRef} style={styles.wrap}>
+        <Pressable
+          onPress={() => setOpen(true)}
+          style={[styles.control, invalid ? styles.controlInvalid : null]}
+        >
+          {selected.map((option) => (
+            <View key={option.value} style={styles.chip}>
+              <Text numberOfLines={1} style={styles.chipText}>
+                {option.label}
+              </Text>
+              <Pressable
+                accessibilityLabel={`Remove ${option.label}`}
+                accessibilityRole="button"
+                onPress={() =>
+                  onChange(values.filter((value) => value !== option.value))
+                }
+                style={styles.chipRemove}
+              >
+                {/* The visible "x" is decorative — the Pressable's name is
+                    "Remove {label}". Hide it from AT so the name is not polluted
+                    by the glyph (WCAG 2.5.3 Label in Name). */}
+                <Text aria-hidden style={styles.chipRemoveText}>
+                  x
+                </Text>
+              </Pressable>
+            </View>
+          ))}
+          <TextInput
+            accessibilityHint={error ?? hint}
+            // Name the input from the visible label via `aria-labelledby` (so the
+            // accessible name IS the visible text — WCAG 2.5.3), unless the caller
+            // supplied an explicit `accessibilityLabel`, which then wins on both
+            // platforms. Mirrors `Input`/`InputFrame`.
+            accessibilityLabel={accessibilityLabel}
+            aria-invalid={invalid}
+            aria-labelledby={
+              accessibilityLabel === undefined && label ? labelId : undefined
+            }
+            aria-required={required}
+            onChangeText={setQuery}
+            onFocus={() => setOpen(true)}
+            placeholder={placeholder}
+            placeholderTextColor={theme.colors.placeholder}
+            style={[styles.input, hideWebOutline]}
+            value={query}
+            {...comboboxInputA11y({ activeDescendant, controls: listId, open })}
+            {...describedByA11y}
+            {...navigation.keyProps}
           />
-        )}
-      </ComboboxPopover>
+        </Pressable>
+        <ComboboxPopover
+          anchorRef={anchorRef}
+          onClose={() => setOpen(false)}
+          open={open}
+        >
+          {(placement) => (
+            <DropdownList
+              activeId={navigation.activeId}
+              entries={entries}
+              highlightVariant={highlightVariant}
+              label={label ?? placeholder}
+              listId={listId}
+              listRole="listbox"
+              maxHeight={placement.maxHeight}
+              onActiveIdChange={navigation.setActiveId}
+              onClose={() => setOpen(false)}
+            />
+          )}
+        </ComboboxPopover>
+      </View>
+      {error ? (
+        // `role="alert"` (assertive live region) announces a newly-shown
+        // validation message without moving focus — WCAG 2.1 4.1.3 (AA).
+        <Text
+          accessibilityLiveRegion="assertive"
+          accessibilityRole="alert"
+          nativeID={errorId}
+          style={styles.error}
+        >
+          {error}
+        </Text>
+      ) : null}
+      {hint ? (
+        <Text nativeID={hintId} style={styles.hint}>
+          {hint}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -253,6 +385,26 @@ function createComboboxMultiSelectStyles(theme: SharedUiTheme) {
       paddingHorizontal: 8,
       paddingVertical: 6,
     },
+    // Rose border + soft ring for the invalid state (matches DropdownSelector).
+    controlInvalid: {
+      borderColor: theme.colors.rose,
+      boxShadow: `0 0 0 2px ${theme.colors.roseSoft}`,
+    },
+    error: {
+      ...baseText,
+      color: theme.colors.rose,
+      fontSize: 11,
+      fontWeight: "700",
+      lineHeight: 16,
+    },
+    // The label + control + messages stack.
+    field: { gap: 6 },
+    hint: {
+      ...baseText,
+      color: theme.colors.muted,
+      fontSize: 11,
+      lineHeight: 16.5,
+    },
     input: {
       ...baseText,
       color: theme.colors.ink,
@@ -261,6 +413,15 @@ function createComboboxMultiSelectStyles(theme: SharedUiTheme) {
       minWidth: 130,
       padding: 0,
     },
+    label: {
+      ...baseText,
+      color: theme.colors.ink2,
+      fontSize: 12,
+      fontWeight: "700",
+      lineHeight: 18,
+    },
+    // The label + optional ⓘ info button share one baseline-centred row.
+    labelRow: { alignItems: "center", flexDirection: "row", gap: 4 },
     mark: {
       alignItems: "center",
       backgroundColor: theme.colors.primary,
@@ -270,6 +431,7 @@ function createComboboxMultiSelectStyles(theme: SharedUiTheme) {
       width: 24,
     },
     markText: { ...baseText, color: "#fff", fontSize: 11, fontWeight: "800" },
+    required: { color: theme.colors.rose },
     wrap: { position: "relative" },
   });
 }

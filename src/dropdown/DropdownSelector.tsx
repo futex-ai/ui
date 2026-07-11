@@ -1,12 +1,13 @@
 /** Single-value selector and read-only selector input surfaces. */
-import { ChevronDown, Search } from "lucide-react-native";
+import { ChevronDown, LucideIcon, Search } from "lucide-react-native";
 import { ReactNode, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Platform, Pressable, Text, TextInput, View } from "react-native";
 
 import { announce } from "../announcer";
 import type { ControlSize } from "../controlSize";
+import { devWarn } from "../devWarn";
 import { hideWebOutline, hideWebOutlineView, useFocusRing } from "../focusRing";
-import { inputIconSize } from "../input";
+import { inputIconSize, LabelInfo } from "../input";
 import { useSharedUiTheme } from "../theme";
 
 import {
@@ -59,6 +60,20 @@ type DropdownSelectorProps = {
   hint?: string;
   invalid?: boolean;
   label?: string;
+  /**
+   * Supplementary help text revealed by an ⓘ button after the label. Pressing
+   * the button opens a small bubble with this text (built on `Popover`);
+   * screen-reader users get it from the button's description. Unlike `hint` it
+   * is not shown until requested. Requires a `label` to anchor the button.
+   */
+  labelInfo?: string;
+  /** Icon for the {@link labelInfo} button. Defaults to the lucide `Info` glyph. */
+  labelInfoIcon?: LucideIcon;
+  /**
+   * Accessible name for the {@link labelInfo} button. Defaults to
+   * `More information about {label}`.
+   */
+  labelInfoLabel?: string;
   onValueChange?: (value: string) => void;
   options: DropdownSelectorOption[];
   placeholder?: string;
@@ -99,6 +114,9 @@ function DropdownSelectorView({
   hint,
   invalid: invalidProp = false,
   label,
+  labelInfo,
+  labelInfoIcon,
+  labelInfoLabel,
   onValueChange,
   options,
   placeholder = "Select an option",
@@ -161,6 +179,13 @@ function DropdownSelectorView({
   });
 
   const invalid = invalidProp || Boolean(error);
+  // The ⓘ button anchors to the label row, so it needs a label to sit beside.
+  if (labelInfo && !label) {
+    devWarn(
+      "DropdownSelector: `labelInfo` needs a `label` to anchor the ⓘ button; " +
+        "it is ignored without one.",
+    );
+  }
   const accessibleLabel = selectorAccessibleLabel(
     label,
     display || placeholder,
@@ -225,7 +250,14 @@ function DropdownSelectorView({
   return (
     <View style={label ? styles.field : null}>
       {label ? (
-        <SelectorLabel label={label} required={required} styles={styles} />
+        <SelectorLabel
+          label={label}
+          labelInfo={labelInfo}
+          labelInfoIcon={labelInfoIcon}
+          labelInfoLabel={labelInfoLabel}
+          required={required}
+          styles={styles}
+        />
       ) : null}
       <Pressable
         accessibilityHint={error ?? hint}
@@ -438,17 +470,33 @@ function selectorEntries(
 
 function SelectorLabel({
   label,
+  labelInfo,
+  labelInfoIcon,
+  labelInfoLabel,
   required,
   styles,
 }: {
   label: string;
+  labelInfo?: string;
+  labelInfoIcon?: LucideIcon;
+  labelInfoLabel?: string;
   required: boolean;
   styles: DropdownSelectorStyles;
 }) {
+  const labelInfoName = labelInfoLabel ?? `More information about ${label}`;
   return (
-    <Text style={styles.label}>
-      {label}
-      {required ? <Text style={styles.required}> *</Text> : null}
-    </Text>
+    <View style={styles.labelRow}>
+      <Text style={styles.label}>
+        {label}
+        {required ? <Text style={styles.required}> *</Text> : null}
+      </Text>
+      {labelInfo ? (
+        <LabelInfo
+          accessibilityLabel={labelInfoName}
+          icon={labelInfoIcon}
+          info={labelInfo}
+        />
+      ) : null}
+    </View>
   );
 }

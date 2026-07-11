@@ -110,6 +110,28 @@ test("segmented selected states are driven by shared theme tokens", () => {
   assert.match(stylesSource, /theme\.fonts\.sans/);
 });
 
+test("segmented control renders an info button after the label from labelInfo", () => {
+  const source = readSource("../../src/segmented/SegmentedControl.tsx");
+  const stylesSource = readSource(
+    "../../src/segmented/segmentedControlStyles.ts",
+  );
+
+  // The shared ⓘ affordance is reused from the input package, not re-built.
+  assert.match(source, /import \{ LabelInfo \} from "\.\.\/input"/);
+  // The label + ⓘ share one row; the ⓘ renders only when `labelInfo` is set.
+  assert.match(source, /<View style=\{styles\.labelRow\}>/);
+  assert.match(
+    source,
+    /\{labelInfo \? \([\s\S]*?<LabelInfo[\s\S]*?info=\{labelInfo\}[\s\S]*?\) : null\}/,
+  );
+  // The button's default accessible name derives from the visible label.
+  assert.match(source, /More information about \$\{label\}/);
+  // `labelInfo` without a `label` has nowhere to anchor: a dev-warned no-op.
+  assert.match(source, /if \(labelInfo && !label\)/);
+  assert.match(source, /devWarn\(/);
+  assert.match(stylesSource, /labelRow: \{[\s\S]*?flexDirection: "row"/);
+});
+
 test("segmented control has public root and subpath exports", () => {
   const rootSource = readSource("../../src/index.ts");
   const segmentedSource = readSource("../../src/segmented/index.ts");
