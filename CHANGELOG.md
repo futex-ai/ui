@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0](https://github.com/futex-ai/ui/compare/v0.10.0...v0.11.0) (2026-07-12)
+
+
+### Features
+
+* **fields:** add labelInfo help affordance across labelled fields ([#83](https://github.com/futex-ai/ui/issues/83)) ([6b100b2](https://github.com/futex-ai/ui/commit/6b100b20a808c1490b337ed85d596bd0b79e17c5))
+
 ## [0.10.0](https://github.com/futex-ai/ui/compare/v0.9.0...v0.10.0) (2026-07-10)
 
 ### Features
