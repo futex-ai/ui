@@ -76,6 +76,29 @@ the same density as the inputs and buttons beside it.
 />
 ```
 
+### Label info
+
+Pass `labelInfo` to add an ⓘ button after the label that reveals supplementary
+help text in a small tooltip on press. It reuses the shared `LabelInfo`
+affordance (built on `Popover`, so the bubble is portaled and escapes overflow
+clipping and dismisses on outside-press/Escape). Screen-reader users get the
+text from the button's own description, so it is a sighted-user reveal that stays
+out of the always-read `hint`. Override the glyph with `labelInfoIcon` and the
+button's accessible name with `labelInfoLabel` (defaults to
+`More information about {label}`); `labelInfo` needs a `label` to anchor the
+button (a dev-warned no-op otherwise).
+
+```tsx
+<SegmentedControl
+  hint="Most businesses report on an accruals basis."
+  label="Accounting basis"
+  labelInfo="Accrual accounting records income when it is earned; cash accounting records it when money actually moves."
+  onChange={setBasis}
+  options={basisOptions}
+  value={basis}
+/>
+```
+
 ## Motion
 
 The default `pill` (tab-track) variant animates selection: the raised surface
@@ -112,6 +135,10 @@ The control follows the WAI-ARIA radio-group pattern:
   the accessible name when no `accessibilityLabel` is given).
 - `error` / `hint` text is associated with the group via `aria-describedby`
   (`error` wins when both are present), and `error` sets `aria-invalid`.
+- The optional `labelInfo` ⓘ is a real button with an accessible name and its
+  own focus ring; it carries the detail as its accessible description (announced
+  on focus) while the portaled bubble is a sighted-user reveal only, so the text
+  is never announced twice and never leaks into the group's name.
 - Focus is shown with a geometry-bearing ring (works on the borderless pill,
   inset so the rounded track does not clip it).
 

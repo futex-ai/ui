@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { ShieldQuestionMark } from "lucide-react-native";
 import { useState } from "react";
 import { View } from "react-native";
 
-import { DropdownSelector } from "../index";
+import { ComboboxMultiSelect, DropdownSelector } from "../index";
 import type { DropdownHighlightVariant } from "../index";
 
 import {
@@ -32,6 +33,12 @@ const sizeOptions = [
   { label: "Standard", value: "standard" },
   { label: "Cash accounting", value: "cash" },
   { label: "Flat rate", value: "flat" },
+];
+
+const bookOptions = [
+  { label: "Greenhouse Studio", value: "book_1" },
+  { label: "Payroll Reserve", value: "book_2" },
+  { label: "VAT Archive", value: "book_3" },
 ];
 
 const meta = {
@@ -92,6 +99,15 @@ export const LongDropdownSelector: Story = {
   render: () => (
     <StorySurface>
       <LongSelectorExample />
+    </StorySurface>
+  ),
+};
+
+export const SelectorLabelInfo: Story = {
+  name: "Selector with label info tooltip",
+  render: () => (
+    <StorySurface>
+      <SelectorLabelInfoExample />
     </StorySurface>
   ),
 };
@@ -192,6 +208,43 @@ export const ChipMultiSelect: Story = {
   ),
 };
 
+export const ChipMultiSelectValidation: Story = {
+  name: "Chip multi-select · required with validation",
+  render: () => (
+    <StorySurface>
+      <ChipMultiSelectValidationExample />
+    </StorySurface>
+  ),
+};
+
+function ChipMultiSelectValidationExample() {
+  // A required multi-select that surfaces a programmatically associated error:
+  // the combobox input reflects aria-required/aria-invalid and references its
+  // error/hint Text by id via aria-describedby (WCAG 3.3.1 / 1.3.1 / 4.1.3).
+  // Leaving the selection empty keeps the error on screen so it is demonstrable.
+  const [values, setValues] = useState<string[]>([]);
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <ComboboxMultiSelect
+        error={
+          values.length === 0
+            ? "Select at least one book to continue."
+            : undefined
+        }
+        hint="Start typing to link the books this report should cover."
+        label="Linked books"
+        labelInfo="Linked books scope the report to specific ledgers. Leave it empty to include every active book in the organisation."
+        labelInfoIcon={ShieldQuestionMark}
+        labelInfoLabel="How linked books scope a report"
+        onChange={setValues}
+        options={bookOptions}
+        required
+        values={values}
+      />
+    </View>
+  );
+}
+
 export const EdgePlacementGrid: Story = {
   name: "Placement · edge grid",
   parameters: { layout: "fullscreen" },
@@ -221,6 +274,36 @@ export const PlacementPlayground: Story = {
   parameters: { layout: "fullscreen" },
   render: () => <PlacementPlaygroundExample />,
 };
+
+function SelectorLabelInfoExample() {
+  const [scheme, setScheme] = useState("standard");
+  const [basis, setBasis] = useState("cash");
+  return (
+    <View style={{ gap: 14, minWidth: 320 }}>
+      <DropdownSelector
+        // The ⓘ after the label opens a tooltip with the detail, so the
+        // always-read `hint` stays free for short, everyday guidance.
+        hint="This determines how VAT is calculated on invoices."
+        label="VAT scheme"
+        labelInfo="The standard scheme reclaims VAT on purchases; the flat-rate scheme pays a fixed percentage of turnover instead. Switching schemes needs HMRC approval."
+        onValueChange={setScheme}
+        options={sizeOptions}
+        value={scheme}
+      />
+      <DropdownSelector
+        // `labelInfoIcon` swaps the default ⓘ glyph and `labelInfoLabel` names
+        // the button when the default reads awkwardly.
+        label="Accounting scheme"
+        labelInfo="Cash accounting reports VAT when invoices are paid rather than issued — useful when customers pay late."
+        labelInfoIcon={ShieldQuestionMark}
+        labelInfoLabel="What each scheme means"
+        onValueChange={setBasis}
+        options={sizeOptions}
+        value={basis}
+      />
+    </View>
+  );
+}
 
 function SelectorValidationExample() {
   // A required selector that surfaces a programmatically associated hint and

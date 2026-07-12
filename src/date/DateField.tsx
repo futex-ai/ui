@@ -1,8 +1,10 @@
 /** Branded single-date input with a calendar picker. */
+import { LucideIcon } from "lucide-react-native";
 import { useEffect, useId, useLayoutEffect, useMemo, useState } from "react";
 import { Platform, Text, View } from "react-native";
 
 import type { ControlSize } from "../controlSize";
+import { LabelInfo } from "../input";
 import { useSharedUiTheme } from "../theme";
 
 import { createDateFieldStyles } from "./dateFieldStyles";
@@ -36,6 +38,20 @@ export type DateFieldProps = {
   required?: boolean;
   /** Optional helper text below the field. */
   hint?: string;
+  /**
+   * Supplementary help text revealed by an ⓘ button after the label. Pressing
+   * the button opens a small bubble with this text (built on `Popover`);
+   * screen-reader users get it from the button's description. Unlike `hint` it
+   * is not shown until requested.
+   */
+  labelInfo?: string;
+  /** Icon for the {@link labelInfo} button. Defaults to the lucide `Info` glyph. */
+  labelInfoIcon?: LucideIcon;
+  /**
+   * Accessible name for the {@link labelInfo} button. Defaults to
+   * `More information about {label}`.
+   */
+  labelInfoLabel?: string;
   /** Earliest selectable ISO date (inclusive). */
   min?: string;
   /** Latest selectable ISO date (inclusive). */
@@ -65,6 +81,9 @@ export function DateField({
   error,
   required = false,
   hint,
+  labelInfo,
+  labelInfoIcon,
+  labelInfoLabel,
   min,
   max,
   placeholder = "Select a date",
@@ -96,7 +115,13 @@ export function DateField({
     undefined;
   return (
     <View style={[styles.field, open ? openLayer : null]}>
-      <FieldLabel label={label} required={required} />
+      <FieldLabel
+        label={label}
+        labelInfo={labelInfo}
+        labelInfoIcon={labelInfoIcon}
+        labelInfoLabel={labelInfoLabel}
+        required={required}
+      />
       <DateInput
         clearable={clearable}
         describedById={describedBy}
@@ -286,20 +311,36 @@ export function DateInput({
   );
 }
 
-/** Shared label with an optional required `*`. */
+/** Shared label with an optional required `*` and ⓘ info button. */
 export function FieldLabel({
   label,
+  labelInfo,
+  labelInfoIcon,
+  labelInfoLabel,
   required,
 }: {
   label: string;
+  labelInfo?: string;
+  labelInfoIcon?: LucideIcon;
+  labelInfoLabel?: string;
   required: boolean;
 }) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createDateFieldStyles(theme), [theme]);
+  const labelInfoName = labelInfoLabel ?? `More information about ${label}`;
   return (
-    <Text style={styles.fieldLabel}>
-      {label}
-      {required ? <Text style={styles.required}> *</Text> : null}
-    </Text>
+    <View style={styles.labelRow}>
+      <Text style={styles.fieldLabel}>
+        {label}
+        {required ? <Text style={styles.required}> *</Text> : null}
+      </Text>
+      {labelInfo ? (
+        <LabelInfo
+          accessibilityLabel={labelInfoName}
+          icon={labelInfoIcon}
+          info={labelInfo}
+        />
+      ) : null}
+    </View>
   );
 }

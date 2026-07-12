@@ -592,6 +592,11 @@ export function ChipMultiSelectExample() {
   return (
     <ComboboxMultiSelect
       footer="Only active books can be selected."
+      // The ⓘ after the label opens a tooltip with the detail, so the
+      // always-read `hint` stays free for short, everyday guidance.
+      hint="Start typing to link the books this report should cover."
+      label="Linked books"
+      labelInfo="Linked books scope the report to specific ledgers. Leave it empty to include every active book in the organisation."
       onChange={setValues}
       options={books}
       values={values}

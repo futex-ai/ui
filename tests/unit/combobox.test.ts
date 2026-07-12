@@ -98,6 +98,47 @@ test("combobox empty state renders before optional footer rows", () => {
   assert.match(source, /rows\.push\(\{ id: "footer"/);
 });
 
+test("combobox multi-select wires a labelled field surface", () => {
+  const source = readSource("../../src/dropdown/ComboboxMultiSelect.tsx");
+
+  // Label names the combobox input via `aria-labelledby` (not an aria-label copy)
+  // so the accessible name IS the visible label text — WCAG 2.5.3 / 1.3.1.
+  assert.match(source, /<Text nativeID=\{labelId\} style=\{styles\.label\}>/);
+  // Named from the visible label via `aria-labelledby`, unless an explicit
+  // `accessibilityLabel` override is supplied (which then wins) — mirrors Input.
+  assert.match(
+    source,
+    /aria-labelledby=\{\s*accessibilityLabel === undefined && label \? labelId : undefined\s*\}/,
+  );
+  assert.match(source, /accessibilityLabel=\{accessibilityLabel\}/);
+  // Required marker is visual-only; the state is conveyed via `aria-required`.
+  assert.match(source, /aria-required=\{required\}/);
+  assert.match(source, /<Text aria-hidden style=\{styles\.required\}>/);
+  // Error turns the border rose and is an assertive live region tied by id;
+  // hint + error are referenced by the input via a literal `aria-describedby`.
+  assert.match(source, /invalid = invalidProp \|\| Boolean\(error\)/);
+  assert.match(source, /invalid \? styles\.controlInvalid : null/);
+  assert.match(source, /aria-invalid=\{invalid\}/);
+  assert.match(source, /accessibilityRole="alert"/);
+  assert.match(source, /"aria-describedby": describedBy/);
+});
+
+test("combobox multi-select reveals supplementary help from a labelInfo button", () => {
+  const source = readSource("../../src/dropdown/ComboboxMultiSelect.tsx");
+
+  // The shared ⓘ affordance is reused from the input package, not re-built.
+  assert.match(source, /import \{ LabelInfo \} from "\.\.\/input"/);
+  assert.match(
+    source,
+    /\{labelInfo \? \([\s\S]*?<LabelInfo[\s\S]*?info=\{labelInfo\}[\s\S]*?\) : null\}/,
+  );
+  // The button's default accessible name derives from the visible label.
+  assert.match(source, /More information about \$\{label\}/);
+  // `labelInfo` without a `label` has nowhere to anchor: a dev-warned no-op.
+  assert.match(source, /if \(labelInfo && !label\)/);
+  assert.match(source, /devWarn\(/);
+});
+
 function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
 }

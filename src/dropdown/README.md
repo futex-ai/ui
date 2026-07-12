@@ -97,6 +97,27 @@ dimensions. `ReadOnlySelector` takes the same `size`:
 />
 ```
 
+Pass `labelInfo` to add an ⓘ button after the selector's label that reveals
+supplementary help text in a small tooltip on press. It reuses the shared
+`LabelInfo` affordance (built on `Popover`, so the bubble is portaled and escapes
+overflow clipping and dismisses on outside-press/Escape). Screen-reader users get
+the text from the button's own description, so it is a sighted-user reveal that
+stays out of the always-read `hint`. Override the glyph with `labelInfoIcon` and
+the button's accessible name with `labelInfoLabel` (defaults to
+`More information about {label}`); `labelInfo` needs a `label` to anchor the
+button (a dev-warned no-op otherwise):
+
+```tsx
+<DropdownSelector
+  hint="This determines how VAT is calculated on invoices."
+  label="VAT scheme"
+  labelInfo="The standard scheme reclaims VAT on purchases; the flat-rate scheme pays a fixed percentage of turnover instead."
+  onValueChange={setScheme}
+  options={schemeOptions}
+  value={scheme}
+/>
+```
+
 Use `ReadOnlySelector` when the UI is selector-shaped but has no scoped data
 behavior yet:
 
@@ -179,10 +200,20 @@ On web the option surface is a real ARIA composite (WCAG 4.1.2 Name/Role/Value):
 - Searchable selectors and `ComboboxMultiSelect` mark their text field as
   `role="combobox"` with `aria-autocomplete="list"`/`aria-expanded`, and
   announce the filtered result count through a polite live region (WCAG 4.1.3).
+  `ComboboxMultiSelect`'s labelled surface names the combobox input from the
+  visible `label` via `aria-labelledby`, references its `error`/`hint` by id via
+  `aria-describedby`, and reflects `aria-invalid`/`aria-required` — matching
+  `DropdownSelector`. Its optional `labelInfo` ⓘ carries the detail as its own
+  accessible description (announced on focus); the portaled bubble is a
+  sighted-user reveal only, so the text is never announced twice and never leaks
+  into the input's name.
 - `DropdownSelector` associates a visible `error`/`hint` with the trigger via
   `aria-describedby` (and `accessibilityHint` on native) and reflects
   `aria-invalid`/`aria-required`, since RNW does not map `accessibilityHint` to
-  `aria-describedby` (WCAG 3.3.1 / 1.3.1).
+  `aria-describedby` (WCAG 3.3.1 / 1.3.1). Its optional `labelInfo` ⓘ is a real
+  button that carries the detail as its accessible description (announced on
+  focus); the portaled bubble is a sighted-user reveal only, so the text is never
+  announced twice and never leaks into the trigger's name.
 
 These ARIA roles/attributes are emitted on web only; native keeps the tappable
 `button` row role and `accessibilityState` so OS screen readers are unaffected.
@@ -201,17 +232,34 @@ Use `ComboboxPopover` plus `DropdownList` when the user keeps typing in an
 existing input while results are open. This path uses a non-modal web portal so
 focus stays in the input.
 
-Use `ComboboxMultiSelect` for removable-chip autocomplete controls:
+Use `ComboboxMultiSelect` for removable-chip autocomplete controls. It is a full
+labelled field: pass `label` / `hint` / `error` / `required` (and the shared
+`labelInfo` ⓘ affordance) the same way as `DropdownSelector`, or omit `label` for
+a bare control. The visible `label` names the combobox input via `aria-labelledby`,
+`error` turns the control's border rose and is announced through an assertive live
+region, and `required` wires `aria-required` plus the `*`:
 
 ```tsx
 import { ComboboxMultiSelect } from "@firna/ui/dropdown";
 
 <ComboboxMultiSelect
+  error={bookIds.length === 0 ? "Select at least one book." : undefined}
+  hint="Start typing to link the books this report should cover."
+  label="Linked books"
+  labelInfo="Linked books scope the report to specific ledgers. Leave it empty to include every active book."
   onChange={setBookIds}
   options={[{ label: "Greenhouse Studio", value: "book_123" }]}
+  required
   values={bookIds}
 />;
 ```
+
+Override the ⓘ glyph with `labelInfoIcon` and its accessible name with
+`labelInfoLabel` (defaults to `More information about {label}`); `labelInfo` needs
+a `label` to anchor the button (a dev-warned no-op otherwise). For the bare,
+label-less variant pass `accessibilityLabel` to name the search input (it also
+overrides the `label`-derived name where `aria-labelledby` is not honoured, e.g.
+iOS) — mirroring `Input`.
 
 ## Theming
 

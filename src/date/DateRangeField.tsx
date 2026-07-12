@@ -1,4 +1,5 @@
 /** Branded start–end date range built from two independent single-date inputs. */
+import { LucideIcon } from "lucide-react-native";
 import { useId, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -26,6 +27,20 @@ export type DateRangeFieldProps = {
   required?: boolean;
   /** Optional helper text below the field. */
   hint?: string;
+  /**
+   * Supplementary help text revealed by an ⓘ button after the label. Pressing
+   * the button opens a small bubble with this text (built on `Popover`);
+   * screen-reader users get it from the button's description. Unlike `hint` it
+   * is not shown until requested.
+   */
+  labelInfo?: string;
+  /** Icon for the {@link labelInfo} button. Defaults to the lucide `Info` glyph. */
+  labelInfoIcon?: LucideIcon;
+  /**
+   * Accessible name for the {@link labelInfo} button. Defaults to
+   * `More information about {label}`.
+   */
+  labelInfoLabel?: string;
   /** Earliest selectable ISO date (inclusive). */
   min?: string;
   /** Latest selectable ISO date (inclusive). */
@@ -52,6 +67,9 @@ export function DateRangeField({
   error,
   required = false,
   hint,
+  labelInfo,
+  labelInfoIcon,
+  labelInfoLabel,
   min,
   max,
   clearable = false,
@@ -98,7 +116,13 @@ export function DateRangeField({
 
   return (
     <View style={[fieldStyles.field, anyOpen ? openLayer : null]}>
-      <FieldLabel label={label} required={required} />
+      <FieldLabel
+        label={label}
+        labelInfo={labelInfo}
+        labelInfoIcon={labelInfoIcon}
+        labelInfoLabel={labelInfoLabel}
+        required={required}
+      />
       {/* react-native-web makes every View its own z-index:0 stacking context, so
           an open endpoint's calendar (nested inside this row) is trapped here and
           would be painted over by the later-DOM hint/error siblings unless the row
