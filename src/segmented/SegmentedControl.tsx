@@ -385,9 +385,13 @@ function SegmentedControlButton<T extends string>({
   variant: SegmentedControlVariant;
 }) {
   const pill = variant === "pill";
-  // Inset the ring on the pill: it lives inside the rounded track and an outset
-  // outline would be clipped by the neighbouring pill (WCAG 2.4.7).
-  const focus = useFocusRing(pill ? { offset: -2 } : {});
+  // The focus glow hugs the raised thumb: the pill and the absolutely-positioned
+  // thumb share the same measured box, so an outset glow around the (transparent)
+  // pill reads as a halo around the selected tab. It sits in the track's
+  // padding/gap and isn't clipped (the track sets no `overflow: hidden`). An
+  // inset glow instead painted a band *inside* the pill, over the thumb, which
+  // looked like a misaligned ring rather than a focus halo (WCAG 2.4.7).
+  const focus = useFocusRing();
 
   const handleKeyDown = (event: SegmentKeyEvent) => {
     const key = event.nativeEvent?.key ?? event.key;
