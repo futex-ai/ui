@@ -24,16 +24,11 @@ export function createHeatmapStyles(theme: SharedUiTheme) {
     // the buckets, 1.4.11, is a graphics/data-viz judgement rather than a hard
     // requirement, and the accessible per-cell label carries the exact value.)
     cell: {},
-    // A contrast-independent focus ring: a width-bearing outline that contrasts
-    // with the page, not the cell underneath, so it stays visible on the darkest
-    // bucket (WCAG 2.1 — 2.4.7 Focus Visible, AA; reconciles the old 2px ink
-    // border that fell to ~2:1 on dark cells). Offset out so it never overlaps
-    // the cell's own hairline border.
-    cellPressableFocused: focusRingStyleFor({
-      color: theme.colors.primary,
-      offset: 2,
-      width: 2,
-    }),
+    // A soft-glow focus indicator in `primary`: the halo bleeds into the page
+    // gap around the cell rather than onto the bucket fill underneath, so it
+    // stays visible on the darkest bucket (WCAG 2.1 — 2.4.7 Focus Visible, AA;
+    // replaces the old 2px ink border that fell to ~2:1 on dark cells).
+    cellPressableFocused: focusRingStyleFor({ color: theme.colors.primary }),
     container: { alignItems: "flex-start" },
     body: { flexDirection: "row", gap: 8 },
     grid: { flexDirection: "row" },
