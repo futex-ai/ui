@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0](https://github.com/futex-ai/ui/compare/v0.11.0...v0.12.0) (2026-07-16)
+
+
+### Features
+
+* **focus:** replace outline focus ring with a soft glow ([#85](https://github.com/futex-ai/ui/issues/85)) ([20500b1](https://github.com/futex-ai/ui/commit/20500b1b87e5a0ef85b8ede8322e82294b781ece))
+
 ## [0.11.0](https://github.com/futex-ai/ui/compare/v0.10.0...v0.11.0) (2026-07-12)
 
 ### Features
