@@ -65,6 +65,8 @@ export type ComboboxMultiSelectProps = {
   placeholder?: string;
   /** Marks the field required (adds a `*` to the label, wires `aria-required`). */
   required?: boolean;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   values: string[];
 };
 
@@ -83,6 +85,7 @@ export function ComboboxMultiSelect({
   options,
   placeholder = "Search to add...",
   required = false,
+  testID,
   values,
 }: ComboboxMultiSelectProps) {
   const theme = useSharedUiTheme();
@@ -166,7 +169,10 @@ export function ComboboxMultiSelect({
   }, [matchCount, open, query]);
 
   return (
-    <View style={label || error || hint ? styles.field : undefined}>
+    <View
+      style={label || error || hint ? styles.field : undefined}
+      testID={testID}
+    >
       {label ? (
         <View style={styles.labelRow}>
           {/* The label <Text> carries its own `nativeID`, so the input's

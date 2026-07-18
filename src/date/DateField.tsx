@@ -66,6 +66,8 @@ export type DateFieldProps = {
   size?: ControlSize;
   /** z-index for the open calendar wrappers and web popover frame. */
   zIndex?: number;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -91,6 +93,7 @@ export function DateField({
   variant = "calendar",
   size = "md",
   zIndex,
+  testID,
 }: DateFieldProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(
@@ -114,7 +117,7 @@ export function DateField({
     [error ? errorId : null, hint ? hintId : null].filter(Boolean).join(" ") ||
     undefined;
   return (
-    <View style={[styles.field, open ? openLayer : null]}>
+    <View style={[styles.field, open ? openLayer : null]} testID={testID}>
       <FieldLabel
         label={label}
         labelInfo={labelInfo}
@@ -202,6 +205,8 @@ export type DateInputProps = {
   errorText?: string;
   /** Helper text, also folded into the native `accessibilityHint`. */
   hintText?: string;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -229,6 +234,7 @@ export function DateInput({
   errorId,
   errorText,
   hintText,
+  testID,
 }: DateInputProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(
@@ -260,6 +266,7 @@ export function DateInput({
         flex ? styles.triggerFlex : null,
         field.open ? openLayer : null,
       ]}
+      testID={testID}
     >
       {/* The editable type-or-pick input only fits the calendar popover. The
           wheel is a tap-to-open sheet (typing a date doesn't pair with a

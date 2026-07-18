@@ -31,6 +31,7 @@ export function DatePickerOverlay({
   variant = "calendar",
   label,
   zIndex,
+  testID,
 }: DatePickerOverlayProps) {
   if (variant === "wheel") {
     return (
@@ -40,6 +41,7 @@ export function DatePickerOverlay({
         min={min}
         onClose={onClose}
         onSelect={onSelect}
+        testID={testID}
         today={today}
         value={value}
       />
@@ -52,6 +54,7 @@ export function DatePickerOverlay({
       min={min}
       onClose={onClose}
       onSelect={onSelect}
+      testID={testID}
       today={today}
       value={value}
       zIndex={zIndex}
@@ -68,6 +71,7 @@ function CalendarPopover({
   onClose,
   label,
   zIndex,
+  testID,
 }: Pick<
   DatePickerOverlayProps,
   | "value"
@@ -78,6 +82,7 @@ function CalendarPopover({
   | "onClose"
   | "label"
   | "zIndex"
+  | "testID"
 >) {
   const theme = useSharedUiTheme();
   const s = useMemo(() => createWebCalendarStyles(theme), [theme]);
@@ -102,6 +107,7 @@ function CalendarPopover({
       accessibilityViewIsModal
       role="dialog"
       style={[s.pop, { zIndex: dateFieldZIndex(zIndex) }]}
+      testID={testID}
     >
       <CalendarMonth
         max={max}
@@ -122,9 +128,17 @@ function WheelSheet({
   onSelect,
   onClose,
   label,
+  testID,
 }: Pick<
   DatePickerOverlayProps,
-  "value" | "today" | "min" | "max" | "onSelect" | "onClose" | "label"
+  | "value"
+  | "today"
+  | "min"
+  | "max"
+  | "onSelect"
+  | "onClose"
+  | "label"
+  | "testID"
 >) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createWheelPickerStyles(theme), [theme]);
@@ -154,6 +168,7 @@ function WheelSheet({
       onClose={onClose}
       placement="bottom-sheet"
       scroll={false}
+      testID={testID}
       title={label ?? "Select date"}
     >
       <DateWheel

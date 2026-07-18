@@ -48,6 +48,8 @@ export type BottomSheetShellProps = {
   open: boolean;
   /** Imperative handle so the caller can animate the sheet closed. */
   sheetRef?: RefObject<BottomSheetHandle | null>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 export function BottomSheetShell({
@@ -61,6 +63,7 @@ export function BottomSheetShell({
   onClose,
   open,
   sheetRef,
+  testID,
 }: BottomSheetShellProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createShellStyles(theme), [theme]);
@@ -89,6 +92,7 @@ export function BottomSheetShell({
         dismissible ? sheetRef?.current?.close() : undefined
       }
       statusBarTranslucent
+      testID={testID}
       transparent
       visible={open}
     >

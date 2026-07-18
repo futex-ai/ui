@@ -34,6 +34,8 @@ export type WebModalFrameProps = {
   surfaceStyle?: StyleProp<ViewStyle>;
   /** Header subtitle; a node so callers can embed inline links. */
   subtitle?: ReactNode;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   title: string;
   titleStyle?: StyleProp<TextStyle>;
   visible?: boolean;

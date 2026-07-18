@@ -20,6 +20,8 @@ export type ListItemProps = {
   leading?: ReactNode;
   /** Match the type scale to the list's `size`. Defaults to `md`. */
   size?: ControlSize;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   /** Primary line. A string/number is given the bold title treatment; any node renders as-is. */
   title: ReactNode;
   /** Trailing slot, e.g. a tag, amount, or chevron. */
@@ -37,13 +39,14 @@ export function ListItem({
   description,
   leading,
   size = "md",
+  testID,
   title,
   trailing,
 }: ListItemProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createListStyles(theme, size), [theme, size]);
   return (
-    <View style={styles.itemRow}>
+    <View style={styles.itemRow} testID={testID}>
       {leading != null ? (
         <View style={styles.itemLeading}>{leading}</View>
       ) : null}

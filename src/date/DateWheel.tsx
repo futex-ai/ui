@@ -50,6 +50,8 @@ export type DateWheelProps = DateBounds & {
   today: string;
   /** Called with the next ISO draft (already clamped to a valid bounded date). */
   onChange: (iso: string) => void;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 type WheelItem = { key: string; label: string; disabled: boolean };
@@ -73,6 +75,7 @@ export function DateWheel({
   min,
   max,
   onChange,
+  testID,
 }: DateWheelProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createWheelPickerStyles(theme), [theme]);
@@ -141,7 +144,7 @@ export function DateWheel({
     // No accessibilityLabel/role on the wrapper: a labelled container merges its
     // descendants into one node on native (VoiceOver/TalkBack), which would
     // swallow the individual row buttons. The sheet (overlay) names the picker.
-    <View style={styles.frame}>
+    <View style={styles.frame} testID={testID}>
       <View style={styles.wheel}>
         {/* Behind the columns (rendered first): the centered selection pill. */}
         <View pointerEvents="none" style={styles.selectionBand} />

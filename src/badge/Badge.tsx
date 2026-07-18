@@ -23,6 +23,8 @@ export type BadgeProps = {
   size?: ControlSize;
   /** Override the container pill style without forking the component. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   /**
    * The semantic status color: `neutral` (default), `primary` (the brand /
    * positive accent — the green "Active" status in the default theme),
@@ -49,6 +51,7 @@ export function Badge({
   children,
   size = "md",
   style,
+  testID,
   tone = "neutral",
   variant = "soft",
 }: BadgeProps) {
@@ -58,6 +61,7 @@ export function Badge({
   return (
     <View
       style={[styles.badge, { backgroundColor: colors.backgroundColor }, style]}
+      testID={testID}
     >
       <Text
         // An explicit `accessibilityLabel` overrides the visible text as the

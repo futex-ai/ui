@@ -37,6 +37,8 @@ export type KanbanChipProps = {
   plain?: boolean;
   /** Extra style for the chip container. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   /**
    * The semantic status color: `neutral` (the default — a quiet neutral fill,
    * matching a "score 0.81" metadatum), `primary`, `warning`, or `danger`,
@@ -61,6 +63,7 @@ export function KanbanChip({
   leading,
   plain = false,
   style,
+  testID,
   tone = "neutral",
 }: KanbanChipProps) {
   const theme = useSharedUiTheme();
@@ -76,6 +79,7 @@ export function KanbanChip({
         { backgroundColor: resolved.backgroundColor },
         style,
       ]}
+      testID={testID}
     >
       {leading != null ? (
         // The icon restates what the label already says (the channel, a file),

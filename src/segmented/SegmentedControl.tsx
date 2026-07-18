@@ -87,6 +87,8 @@ export type SegmentedControlProps<T extends string> = {
   size?: ControlSize;
   /** Width strategy: `content` (default) hugs each label; `equal` shares width evenly. */
   sizing?: SegmentedControlSizing;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   value: T;
   /**
    * Visual style: `pill` (default) renders a tab-like track with the selected
@@ -122,6 +124,7 @@ export function SegmentedControl<T extends string>({
   required = false,
   size = "md",
   sizing = "content",
+  testID,
   value,
   variant = "pill",
   wrap = false,
@@ -270,7 +273,7 @@ export function SegmentedControl<T extends string>({
   );
 
   return (
-    <View style={styles.field}>
+    <View style={styles.field} testID={testID}>
       {label ? (
         <View style={styles.labelRow}>
           <Text style={styles.label}>

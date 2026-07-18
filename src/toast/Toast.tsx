@@ -34,6 +34,8 @@ export type ToastProps = {
   toast: ToastItem;
   /** Invoked with the toast id when it should leave the stack. */
   onDismiss: (id: string) => void;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /** RNW-only pointer/focus handlers used to pause auto-dismiss; no-ops on native. */
@@ -50,7 +52,7 @@ type ToastPauseHandlers = {
  * pausing while the pointer or keyboard focus is over the toast is local state.
  * A sticky toast (`duration === null`) never starts a timer.
  */
-export function Toast({ toast, onDismiss }: ToastProps) {
+export function Toast({ toast, onDismiss, testID }: ToastProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createToastStyles(theme), [theme]);
   const accent = toastToneAccent(theme, toast.tone);
@@ -170,6 +172,7 @@ export function Toast({ toast, onDismiss }: ToastProps) {
           : [styles.cardToast, { borderLeftColor: accent }],
         toast.surfaceStyle,
       ]}
+      testID={testID}
     >
       {/* The leading/tone icon is decorative — its meaning is carried by the
           toast copy and the assistive-tech announcement, so hide it (1.1.1, A). */}

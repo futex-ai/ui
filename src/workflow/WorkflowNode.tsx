@@ -54,6 +54,8 @@ export type WorkflowStatusDotProps = {
   size?: ControlSize;
   /** The run status to show. */
   status: WorkflowNodeStatus;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 export type WorkflowNodeProps = {
@@ -71,6 +73,8 @@ export type WorkflowNodeProps = {
   size?: ControlSize;
   /** Extra style for the card container. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -83,6 +87,7 @@ export function WorkflowStatusDot({
   decorative = false,
   size = "md",
   status,
+  testID,
 }: WorkflowStatusDotProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(
@@ -130,6 +135,7 @@ export function WorkflowStatusDot({
         { backgroundColor: resolveStatusColor(theme.colors, status) },
         animate ? { opacity: pulse } : null,
       ]}
+      testID={testID}
     />
   );
 }
@@ -143,6 +149,7 @@ export function WorkflowNode({
   selected = false,
   size = "md",
   style,
+  testID,
 }: WorkflowNodeProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(
@@ -211,6 +218,7 @@ export function WorkflowNode({
           style,
           hideWebOutlineView,
         ]}
+        testID={testID}
       >
         {body(true)}
       </Pressable>
@@ -225,6 +233,7 @@ export function WorkflowNode({
         selected ? styles.nodeSelected : null,
         style,
       ]}
+      testID={testID}
     >
       {body(false)}
     </View>

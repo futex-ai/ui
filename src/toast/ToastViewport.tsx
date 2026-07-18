@@ -14,6 +14,8 @@ export type ToastViewportProps = {
   placement: ToastPlacement;
   toasts: ToastItem[];
   onDismiss: (id: string) => void;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -29,6 +31,7 @@ export function ToastViewport({
   placement,
   toasts,
   onDismiss,
+  testID,
 }: ToastViewportProps) {
   // The live region stays mounted even when the stack is empty so toast text is
   // injected into an already-existing region (WCAG 2.1 — 4.1.3, AA). On native
@@ -46,6 +49,7 @@ export function ToastViewport({
             position: "absolute",
             ...toastViewportInset(placement),
           }}
+          testID={testID}
         >
           {toasts.map((toast) => (
             <Toast key={toast.id} onDismiss={onDismiss} toast={toast} />

@@ -17,6 +17,8 @@ export type ToastViewportProps = {
   placement: ToastPlacement;
   toasts: ToastItem[];
   onDismiss: (id: string) => void;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 // `position: fixed` so the region tracks the viewport rather than the scrolled
@@ -33,6 +35,7 @@ export function ToastViewport({
   placement,
   toasts,
   onDismiss,
+  testID,
 }: ToastViewportProps) {
   if (typeof document === "undefined") {
     return null;
@@ -58,6 +61,7 @@ export function ToastViewport({
             zIndex: TOAST_LAYERS.viewport,
             ...toastViewportInset(placement),
           }}
+          testID={testID}
         >
           {toasts.map((toast) => (
             <Toast key={toast.id} onDismiss={onDismiss} toast={toast} />

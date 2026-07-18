@@ -45,6 +45,8 @@ type ButtonBaseProps = {
   size?: ControlSize;
   /** Extra style for the pressable container. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   /** Visual emphasis. Defaults to `secondary`. */
   tone?: ButtonTone;
 };
@@ -96,6 +98,7 @@ export function Button({
   onPress,
   size = "md",
   style,
+  testID,
   tone = "secondary",
 }: ButtonProps) {
   const theme = useSharedUiTheme();
@@ -167,6 +170,7 @@ export function Button({
         style,
         hideWebOutlineView,
       ]}
+      testID={testID}
     >
       {busy ? (
         <ButtonSpinner color={labelColor} size={buttonIconSize(size)} />

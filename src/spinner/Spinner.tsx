@@ -29,6 +29,8 @@ export type SpinnerProps = {
   size?: ControlSize | number;
   /** Extra style for the spinner container. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   /** Color of the trailing ring track. Defaults to the theme `border2`. */
   trackColor?: string;
 };
@@ -52,6 +54,7 @@ export function Spinner({
   duration = 800,
   size = "md",
   style,
+  testID,
   trackColor,
 }: SpinnerProps) {
   const theme = useSharedUiTheme();
@@ -95,6 +98,7 @@ export function Spinner({
       accessibilityState={{ busy: true }}
       aria-busy
       style={[styles.container, style]}
+      testID={testID}
     >
       <Animated.View aria-hidden style={{ transform: [{ rotate }] }}>
         <Svg

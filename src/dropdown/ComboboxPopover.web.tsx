@@ -21,6 +21,8 @@ type ComboboxPopoverProps = DropdownPlacementOptions & {
   children: (placement: DropdownPlacement) => ReactNode;
   onClose: () => void;
   open: boolean;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -41,6 +43,7 @@ export function ComboboxPopover({
   minWidth,
   onClose,
   open,
+  testID,
 }: ComboboxPopoverProps) {
   const surfaceRef = useRef<View>(null);
   const { anchor, viewport } = useDropdownAnchor(anchorRef, open);
@@ -64,6 +67,7 @@ export function ComboboxPopover({
       <View
         ref={surfaceRef}
         style={[surfaceStyles.surface, dropdownSurfaceRect(placement)]}
+        testID={testID}
       >
         {children(placement)}
       </View>

@@ -66,6 +66,7 @@ export function WebModalFrame({
   subtitleStyle,
   surfaceStyle,
   subtitle,
+  testID,
   title,
   titleStyle,
   visible = true,
@@ -261,7 +262,7 @@ export function WebModalFrame({
     <View style={[styles.footer, footerStyle]}>{footer}</View>
   ) : null;
   const modal = (
-    <View style={styles.layer} pointerEvents="box-none">
+    <View style={styles.layer} pointerEvents="box-none" testID={testID}>
       {/* Backdrop is a mouse-only dismiss target: hidden from assistive tech and
           skipped by the keyboard (Escape already provides the accessible close
           path), so it never injects a full-viewport "Close" control into the AT

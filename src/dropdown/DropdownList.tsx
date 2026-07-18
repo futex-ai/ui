@@ -114,6 +114,8 @@ type DropdownListProps = {
    */
   required?: boolean;
   search?: ReactNode;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 export function DropdownList({
@@ -130,6 +132,7 @@ export function DropdownList({
   onClose,
   required,
   search,
+  testID,
 }: DropdownListProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createDropdownListStyles(theme), [theme]);
@@ -234,6 +237,7 @@ export function DropdownList({
       keyboardShouldPersistTaps="handled"
       ref={scrollRef}
       style={hasChrome ? styles.scroll : { maxHeight }}
+      testID={hasChrome ? undefined : testID}
       {...containerA11y}
       {...keyProps}
     >
@@ -263,7 +267,7 @@ export function DropdownList({
     return scroll;
   }
   return (
-    <View style={[styles.chrome, { maxHeight }]}>
+    <View style={[styles.chrome, { maxHeight }]} testID={testID}>
       {search ? <View style={styles.searchRegion}>{search}</View> : null}
       {header ? <View style={styles.headerRegion}>{header}</View> : null}
       {scroll}
@@ -400,9 +404,12 @@ function DropdownRow({
 
 export function DropdownIconBox({
   Icon,
+  testID,
   tone = "sage",
 }: {
   Icon: LucideIcon;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   tone?: "danger" | "sage";
 }) {
   const theme = useSharedUiTheme();
@@ -412,6 +419,7 @@ export function DropdownIconBox({
   return (
     <View
       style={[styles.iconBox, tone === "danger" ? styles.iconBoxDanger : null]}
+      testID={testID}
     >
       <Icon color={color} size={14} />
     </View>

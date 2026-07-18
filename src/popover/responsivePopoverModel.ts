@@ -56,6 +56,8 @@ export type ResponsivePopoverProps = {
   onClose: () => void;
   /** Controlled open state. */
   open: boolean;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   /** Override the visible native title when it should differ from `label`. */
   title?: string;
   /** Web portal z-index override. */

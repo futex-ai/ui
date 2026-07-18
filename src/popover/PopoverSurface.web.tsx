@@ -33,6 +33,8 @@ export type PopoverSurfaceProps = {
   /** Surface role. Only applied alongside a `label`. Defaults to `dialog`. */
   role?: PopoverSurfaceRole;
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 function asFocusable(value: unknown): Focusable | null {
@@ -64,6 +66,7 @@ export function PopoverSurface({
   nativeID,
   role,
   style,
+  testID,
 }: PopoverSurfaceProps) {
   const surfaceRole = role ?? "dialog";
   // A tooltip is a supplemental hint and never manages focus unless the caller
@@ -104,6 +107,7 @@ export function PopoverSurface({
       role={named ? surfaceRole : undefined}
       style={style}
       tabIndex={shouldManageFocus ? -1 : undefined}
+      testID={testID}
     >
       {children}
     </View>

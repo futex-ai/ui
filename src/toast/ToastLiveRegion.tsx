@@ -8,6 +8,8 @@ import type { ToastItem } from "./toastModel";
 export type ToastLiveRegionProps = {
   /** The live toast queue; new entries are announced as they appear. */
   toasts: ToastItem[];
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -30,7 +32,7 @@ export type ToastLiveRegionProps = {
  * suppress their own live announcement (see {@link Toast}) so a toast is
  * announced exactly once, from here.
  */
-export function ToastLiveRegion({ toasts }: ToastLiveRegionProps) {
+export function ToastLiveRegion({ toasts, testID }: ToastLiveRegionProps) {
   const [polite, setPolite] = useState("");
   const [assertive, setAssertive] = useState("");
   // Ids whose announcement has already been written, so re-renders (e.g. a
@@ -98,7 +100,7 @@ export function ToastLiveRegion({ toasts }: ToastLiveRegionProps) {
   }, [toasts]);
 
   return (
-    <View pointerEvents="none" style={styles.region}>
+    <View pointerEvents="none" style={styles.region} testID={testID}>
       <Text {...POLITE_REGION_PROPS} accessibilityLiveRegion="polite">
         {polite}
       </Text>

@@ -30,6 +30,7 @@ export function Sheet({
   maxHeight,
   onClose,
   open,
+  testID,
   title,
 }: SheetProps) {
   const theme = useSharedUiTheme();
@@ -76,6 +77,7 @@ export function Sheet({
       onClose={onClose}
       open={open}
       sheetRef={sheetRef}
+      testID={testID}
     >
       <View style={styles.body}>{body}</View>
     </BottomSheetShell>

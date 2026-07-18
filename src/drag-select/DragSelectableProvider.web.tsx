@@ -68,6 +68,7 @@ export function DragSelectableProvider({
   selectionAnnouncement,
   selectionLabel,
   style,
+  testID,
 }: DragSelectableProviderProps) {
   const theme = useSharedUiTheme();
   const targetsRef = useRef(
@@ -454,6 +455,7 @@ export function DragSelectableProvider({
         onPointerDown={beginDrag}
         role={role}
         style={style}
+        testID={testID}
       >
         {children}
       </View>

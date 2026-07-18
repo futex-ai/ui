@@ -104,7 +104,13 @@ function useSkeletonSweep() {
  * platform — the loading state is announced by the surrounding container's
  * `aria-busy`, not by the placeholder.
  */
-function Placeholder({ shape }: { shape: StyleProp<ViewStyle> }) {
+function Placeholder({
+  shape,
+  testID,
+}: {
+  shape: StyleProp<ViewStyle>;
+  testID?: string;
+}) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createSkeletonStyles(theme), [theme]);
   const { animate, progress } = useSkeletonSweep();
@@ -140,6 +146,7 @@ function Placeholder({ shape }: { shape: StyleProp<ViewStyle> }) {
       importantForAccessibility="no-hide-descendants"
       onLayout={onLayout}
       style={[styles.placeholder, shape]}
+      testID={testID}
     >
       {animate && size.width > 0 ? (
         <Animated.View
@@ -183,6 +190,8 @@ export type SkeletonBarProps = {
   radius?: SkeletonRadius;
   /** Extra style for the bar. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   /** Explicit width — px or a percentage like `"60%"`. Defaults to `"100%"`. */
   width?: DimensionValue;
 };
@@ -197,6 +206,7 @@ export function SkeletonBar({
   height = 12,
   radius = "sm",
   style,
+  testID,
   width = "100%",
 }: SkeletonBarProps) {
   const theme = useSharedUiTheme();
@@ -209,6 +219,7 @@ export function SkeletonBar({
         { borderRadius: resolveSkeletonRadius(theme, radius), height },
         style,
       ]}
+      testID={testID}
     />
   );
 }
@@ -218,6 +229,8 @@ export type SkeletonCircleProps = {
   diameter: number;
   /** Extra style for the circle. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -225,13 +238,18 @@ export type SkeletonCircleProps = {
  * Shares the sheen sweep and the decorative-on-every-platform treatment of
  * {@link SkeletonBar}.
  */
-export function SkeletonCircle({ diameter, style }: SkeletonCircleProps) {
+export function SkeletonCircle({
+  diameter,
+  style,
+  testID,
+}: SkeletonCircleProps) {
   return (
     <Placeholder
       shape={[
         { borderRadius: diameter / 2, height: diameter, width: diameter },
         style,
       ]}
+      testID={testID}
     />
   );
 }
@@ -279,6 +297,8 @@ export type SkeletonGroupProps = {
   gap?: number;
   /** Extra style for the group container. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -293,6 +313,7 @@ export function SkeletonGroup({
   direction = "row",
   gap = 12,
   style,
+  testID,
 }: SkeletonGroupProps) {
   return (
     <SkeletonPulseProvider>
@@ -305,6 +326,7 @@ export function SkeletonGroup({
           },
           style,
         ]}
+        testID={testID}
       >
         {children}
       </View>

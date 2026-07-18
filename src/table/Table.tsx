@@ -81,6 +81,8 @@ export type TableProps<Row> = {
   size?: ControlSize;
   /** Extra style for the table container (e.g. a card border + radius). */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -106,6 +108,7 @@ export function Table<Row>({
   rowStyle,
   size = "md",
   style,
+  testID,
 }: TableProps<Row>) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createTableStyles(theme, size), [theme, size]);
@@ -119,6 +122,7 @@ export function Table<Row>({
       accessibilityState={loading ? { busy: true } : undefined}
       aria-busy={loading || undefined}
       style={[styles.table, style]}
+      testID={testID}
     >
       {headless ? null : (
         <View style={styles.headRow}>
@@ -216,6 +220,8 @@ export type TableCellProps = {
   numeric?: boolean;
   /** Match the type scale to the table's `size`. Defaults to `md`. */
   size?: ControlSize;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -232,6 +238,7 @@ export function TableCell({
   muted,
   numeric,
   size = "md",
+  testID,
 }: TableCellProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createTableStyles(theme, size), [theme, size]);
@@ -246,6 +253,7 @@ export function TableCell({
         align === "center" ? styles.tdCenter : null,
         align === "right" ? styles.tdRight : null,
       ]}
+      testID={testID}
     >
       {children}
     </Text>

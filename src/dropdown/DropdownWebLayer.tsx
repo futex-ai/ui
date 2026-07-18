@@ -16,9 +16,12 @@ import { dropdownPortalZIndex } from "./dropdownLayers";
  */
 export function DropdownWebLayer({
   children,
+  testID,
   zIndex,
 }: {
   children: ReactNode;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   zIndex?: number;
 }) {
   if (typeof document === "undefined") {
@@ -28,6 +31,7 @@ export function DropdownWebLayer({
     <View
       pointerEvents="box-none"
       style={[styles.layer, { zIndex: dropdownPortalZIndex(zIndex) }]}
+      testID={testID}
     >
       {children}
     </View>,

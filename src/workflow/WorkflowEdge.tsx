@@ -30,12 +30,15 @@ export type WorkflowConnectorProps = {
   size?: ControlSize;
   /** Extra style for the connector. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /** The 2px vertical rule that links two spine elements. */
 export function WorkflowConnector({
   size = "md",
   style,
+  testID,
 }: WorkflowConnectorProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(
@@ -52,6 +55,7 @@ export function WorkflowConnector({
       aria-hidden
       role="none"
       style={[styles.connector, style]}
+      testID={testID}
     />
   );
 }
@@ -65,6 +69,8 @@ export type WorkflowInsertButtonProps = {
   size?: ControlSize;
   /** Extra style for the button. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -78,6 +84,7 @@ export function WorkflowInsertButton({
   onPress,
   size = "md",
   style,
+  testID,
 }: WorkflowInsertButtonProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(
@@ -100,6 +107,7 @@ export function WorkflowInsertButton({
         style,
         hideWebOutlineView,
       ]}
+      testID={testID}
     >
       {Platform.OS === "web" ? (
         <Plus aria-hidden color={theme.colors.primaryDeep} size={iconSize} />
@@ -119,6 +127,8 @@ export type WorkflowEdgeLabelProps = {
   size?: ControlSize;
   /** Extra style for the pill. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   /** Semantic tone driving the fill and text color. Defaults to `neutral`. */
   tone?: WorkflowEdgeTone;
 };
@@ -134,6 +144,7 @@ export function WorkflowEdgeLabel({
   children,
   size = "md",
   style,
+  testID,
   tone = "neutral",
 }: WorkflowEdgeLabelProps) {
   const theme = useSharedUiTheme();
@@ -152,6 +163,7 @@ export function WorkflowEdgeLabel({
         },
         style,
       ]}
+      testID={testID}
     >
       <Text
         accessibilityLabel={accessibilityLabel}
@@ -182,6 +194,8 @@ export type WorkflowLegendProps = {
   size?: ControlSize;
   /** Extra style for the legend row. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /** A centered row of edge-label pills keying the graph's transition tones. */
@@ -189,6 +203,7 @@ export function WorkflowLegend({
   items = defaultWorkflowLegend,
   size = "md",
   style,
+  testID,
 }: WorkflowLegendProps) {
   const theme = useSharedUiTheme();
   const styles: WorkflowStyles = useMemo(
@@ -200,6 +215,7 @@ export function WorkflowLegend({
       accessibilityLabel="Edge legend"
       role="list"
       style={[styles.legend, style]}
+      testID={testID}
     >
       {items.map((item) => (
         // The `list` container owns `listitem` children so assistive tech reads

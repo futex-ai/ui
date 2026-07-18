@@ -52,6 +52,8 @@ export type TimeGridProps = CalendarTimeGridConfig & {
   onCreateEvent?: (range: CalendarDraftRange) => void;
   /** Extra style for the grid container. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -73,6 +75,7 @@ export function TimeGrid({
   slotMinutes = 30,
   pxPerHour = 48,
   style,
+  testID,
 }: TimeGridProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createCalendarStyles(theme), [theme]);
@@ -97,7 +100,7 @@ export function TimeGrid({
   });
 
   return (
-    <View style={[styles.timeGrid, style]}>
+    <View style={[styles.timeGrid, style]} testID={testID}>
       <ColumnHeaderRow dates={dates} today={today} styles={styles} />
       <AllDayRow
         dates={dates}

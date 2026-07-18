@@ -23,6 +23,8 @@ export type LabelInfoProps = {
   icon?: LucideIcon;
   /** Accessible name for the button, e.g. `More information about Email`. */
   accessibilityLabel: string;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -46,6 +48,7 @@ export function LabelInfo({
   info,
   icon: Icon = Info,
   accessibilityLabel,
+  testID,
 }: LabelInfoProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createInputStyles(theme), [theme]);
@@ -60,6 +63,7 @@ export function LabelInfo({
       manageFocus={false}
       minWidth={200}
       style={styles.labelInfoAnchor}
+      testID={testID}
       trigger={({ toggle }) => (
         <Pressable
           accessibilityHint={info}

@@ -73,6 +73,8 @@ export type ListProps<Item> = {
   size?: ControlSize;
   /** Extra style for the list container (e.g. a card border + radius). */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -96,6 +98,7 @@ export function List<Item>({
   separatorInset,
   size = "md",
   style,
+  testID,
 }: ListProps<Item>) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createListStyles(theme, size), [theme, size]);
@@ -110,6 +113,7 @@ export function List<Item>({
         aria-busy
         role="list"
         style={[styles.list, style]}
+        testID={testID}
       >
         <SkeletonPulseProvider>
           {Array.from({ length: loadingItemCount }).map((_, index) => {
@@ -160,6 +164,7 @@ export function List<Item>({
       accessibilityLabel={accessibilityLabel}
       role="list"
       style={[styles.list, style]}
+      testID={testID}
     >
       {items.map((item, index) => {
         const last = index === items.length - 1;

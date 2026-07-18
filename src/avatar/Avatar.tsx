@@ -23,6 +23,8 @@ export type AvatarProps = {
   size?: number;
   /** Override the container disc style without forking the component. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   /**
    * Override the initials color for palette-specific avatar discs. Must keep a
    * ≥4.5:1 contrast against the disc background (1.4.3) when supplied.
@@ -45,6 +47,7 @@ export function Avatar({
   label,
   size = 32,
   style,
+  testID,
   textColor,
   tone = "solid",
 }: AvatarProps) {
@@ -71,6 +74,7 @@ export function Avatar({
         solid ? styles.avatarSolid : styles.avatarSoft,
         style,
       ]}
+      testID={testID}
     >
       <Text
         // The disc is announced once via the container's `image` role + name, so

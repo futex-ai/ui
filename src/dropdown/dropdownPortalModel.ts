@@ -19,6 +19,8 @@ export type DropdownPortalProps = DropdownPlacementOptions & {
   onClose: () => void;
   open: boolean;
   surfaceHoverProps?: DropdownHoverProps;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   zIndex?: number;
 };
 

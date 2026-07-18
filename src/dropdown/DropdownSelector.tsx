@@ -84,6 +84,8 @@ type DropdownSelectorProps = {
   sections?: DropdownSelectorSection[];
   /** Control density of the default `field` variant: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   /**
    * Stable, value-independent accessible name for the trigger. When set, the
    * trigger name stays constant as the selected value changes (the value stays
@@ -127,6 +129,7 @@ function DropdownSelectorView({
   sections,
   size = "md",
   styles,
+  testID,
   triggerLabel,
   value,
   variant = "field",
@@ -248,7 +251,7 @@ function DropdownSelectorView({
   ) : null;
 
   return (
-    <View style={label ? styles.field : null}>
+    <View style={label ? styles.field : null} testID={testID}>
       {label ? (
         <SelectorLabel
           label={label}
@@ -352,6 +355,7 @@ export function ReadOnlySelector({
   label,
   required = false,
   size = "md",
+  testID,
   value,
   variant = "field",
 }: {
@@ -359,6 +363,8 @@ export function ReadOnlySelector({
   required?: boolean;
   /** Control density of the default `field` variant: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   value: string;
   variant?: SelectorVariant;
 }) {
@@ -369,7 +375,7 @@ export function ReadOnlySelector({
   );
   const accessibleLabel = selectorAccessibleLabel(label, value);
   return (
-    <View style={label ? styles.field : null}>
+    <View style={label ? styles.field : null} testID={testID}>
       {label ? (
         <SelectorLabel label={label} required={required} styles={styles} />
       ) : null}

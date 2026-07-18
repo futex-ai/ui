@@ -101,6 +101,8 @@ export type AnimatedBorderProps = {
    * `position: "absolute"` over an existing box), not dimensions.
    */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   /** Number of fading trail segments behind the bright head. Default 8. */
   trailCount?: number;
   /** Perimeter gap in px between successive trail segments. Default 3. */
@@ -137,6 +139,7 @@ export function AnimatedBorder({
   height,
   size,
   style,
+  testID,
   trailCount = DEFAULT_TRAIL_COUNT,
   trailSpacing = DEFAULT_TRAIL_SPACING,
   width,
@@ -236,7 +239,7 @@ export function AnimatedBorder({
         {...decorative}
         pointerEvents="none"
         style={[{ height: resolvedHeight, width: resolvedWidth }, style]}
-        testID="animated-border"
+        testID={testID ?? "animated-border"}
       >
         {svg}
       </View>
@@ -244,7 +247,7 @@ export function AnimatedBorder({
   }
 
   return (
-    <View style={[animatedBorderStyles.frame, style]}>
+    <View style={[animatedBorderStyles.frame, style]} testID={testID}>
       {children}
       <View
         {...decorative}

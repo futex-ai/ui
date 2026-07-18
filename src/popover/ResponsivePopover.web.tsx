@@ -25,6 +25,7 @@ export function ResponsivePopover({
   minWidth,
   onClose,
   open,
+  testID,
   zIndex,
 }: ResponsivePopoverProps) {
   const surfaceId = useId();
@@ -48,6 +49,7 @@ export function ResponsivePopover({
           manageFocus={manageFocus}
           nativeID={surfaceId}
           role="dialog"
+          testID={testID}
         >
           {resolveResponsivePopoverContent(children, {
             close: onClose,
