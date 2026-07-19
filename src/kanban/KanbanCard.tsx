@@ -38,6 +38,8 @@ export type KanbanCardProps = {
   meta?: ReactNode;
   /** Match the type scale to the board's `size` — thread the same value the `Kanban` got through `renderCard`. Defaults to `md`. */
   size?: ControlSize;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   /** The card's primary line. A string is given the bold title treatment (and wraps); any node renders as-is. */
   title: ReactNode;
 };
@@ -56,6 +58,7 @@ export function KanbanCard({
   footer,
   meta,
   size = "md",
+  testID,
   title,
 }: KanbanCardProps) {
   const theme = useSharedUiTheme();
@@ -63,7 +66,7 @@ export function KanbanCard({
   const hasSlotFooter =
     avatar != null || meta != null || date != null || footer != null;
   return (
-    <View style={styles.cardInner}>
+    <View style={styles.cardInner} testID={testID}>
       {isText(title) ? <Text style={styles.cardTitle}>{title}</Text> : title}
       {chips && chips.length > 0 ? (
         <View style={styles.chipsRow}>{chips}</View>

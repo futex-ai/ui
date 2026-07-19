@@ -29,6 +29,8 @@ export type TriggerProps = {
   errorText?: string;
   /** Helper text, folded into the native trigger's `accessibilityHint`. */
   hintText?: string;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 export function WebTrigger({
@@ -42,6 +44,7 @@ export function WebTrigger({
   clearable,
   describedById,
   errorId,
+  testID,
 }: TriggerProps) {
   const [text, setText] = useState(field.display);
   const [editing, setEditing] = useState(false);
@@ -118,6 +121,7 @@ export function WebTrigger({
       size={size}
       suffixIcon={CalendarDays}
       suffixIconStyle={styles.calendarNudge}
+      testID={testID}
       value={text}
     />
   );
@@ -136,6 +140,7 @@ export function NativeTrigger({
   errorId,
   errorText,
   hintText,
+  testID,
 }: TriggerProps) {
   const theme = useSharedUiTheme();
   const iconSize = inputIconSize(size);
@@ -153,6 +158,7 @@ export function NativeTrigger({
       accessible={false}
       onPress={() => field.setOpen(true)}
       style={[styles.trigger, triggerBorder(styles, invalid, false)]}
+      testID={testID}
     >
       <Pressable
         accessibilityHint={accessibilityHint}

@@ -28,6 +28,7 @@ export function DropdownPortal({
   onClose,
   open,
   surfaceHoverProps,
+  testID,
   zIndex,
 }: DropdownPortalProps) {
   const { anchor, viewport } = useDropdownAnchor(anchorRef, open);
@@ -62,6 +63,7 @@ export function DropdownPortal({
             onHoverIn={surfaceHoverProps?.onHoverIn}
             onHoverOut={surfaceHoverProps?.onHoverOut}
             style={[surfaceStyles.surface, dropdownSurfaceRect(placement)]}
+            testID={testID}
           >
             {children(placement)}
           </Pressable>

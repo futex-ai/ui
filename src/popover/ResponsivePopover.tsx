@@ -17,6 +17,7 @@ export function ResponsivePopover({
   maxHeight,
   onClose,
   open,
+  testID,
   title,
 }: ResponsivePopoverProps) {
   return (
@@ -27,6 +28,7 @@ export function ResponsivePopover({
       maxHeight={maxHeight}
       onClose={onClose}
       open={open}
+      testID={testID}
       title={title}
     >
       {({ close, maxHeight: bodyMaxHeight }) =>

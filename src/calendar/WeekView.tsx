@@ -35,6 +35,8 @@ export type WeekViewProps = CalendarTimeGridConfig & {
   onCreateEvent?: (range: CalendarDraftRange) => void;
   /** Extra style for the grid container. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /** Week view rendered as a 7-column {@link TimeGrid}. */
@@ -51,6 +53,7 @@ export function WeekView({
   slotMinutes,
   pxPerHour,
   style,
+  testID,
 }: WeekViewProps) {
   const dates = useMemo(
     () => weekDates(date, weekStartsOn),
@@ -72,6 +75,7 @@ export function WeekView({
       pxPerHour={pxPerHour}
       slotMinutes={slotMinutes}
       style={style}
+      testID={testID}
       today={today}
     />
   );

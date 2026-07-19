@@ -53,6 +53,8 @@ export type DateRangeFieldProps = {
   size?: ControlSize;
   /** z-index for the open calendar wrappers and web popover frames. */
   zIndex?: number;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -76,6 +78,7 @@ export function DateRangeField({
   variant = "calendar",
   size = "md",
   zIndex,
+  testID,
 }: DateRangeFieldProps) {
   const theme = useSharedUiTheme();
   // The wrapper only reads size-independent chrome (label / error / hint / open
@@ -115,7 +118,10 @@ export function DateRangeField({
       .join(" ") || undefined;
 
   return (
-    <View style={[fieldStyles.field, anyOpen ? openLayer : null]}>
+    <View
+      style={[fieldStyles.field, anyOpen ? openLayer : null]}
+      testID={testID}
+    >
       <FieldLabel
         label={label}
         labelInfo={labelInfo}

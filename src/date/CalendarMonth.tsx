@@ -70,6 +70,8 @@ export type CalendarMonthProps = DateBounds & {
   today: string;
   /** Called with the picked ISO date. */
   onSelect: (iso: string) => void;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 export function CalendarMonth({
@@ -78,6 +80,7 @@ export function CalendarMonth({
   min,
   max,
   onSelect,
+  testID,
 }: CalendarMonthProps) {
   const theme = useSharedUiTheme();
   const s = useMemo(() => createWebCalendarStyles(theme), [theme]);
@@ -143,7 +146,7 @@ export function CalendarMonth({
 
   return (
     <>
-      <View style={s.head}>
+      <View style={s.head} testID={testID}>
         <NavButton
           label={pickingYear ? "Previous years" : "Previous month"}
           onPress={() => (pickingYear ? pageYears(-1) : step(-1))}

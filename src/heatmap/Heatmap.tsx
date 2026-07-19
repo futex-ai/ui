@@ -106,6 +106,8 @@ export type HeatmapProps = {
   accessibilityLabel?: string;
   /** Style override for the outer container. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /** Weekday labels for each grid row, by week start. */
@@ -273,6 +275,7 @@ export function Heatmap({
   cellAccessibilityLabel,
   accessibilityLabel,
   style,
+  testID,
 }: HeatmapProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createHeatmapStyles(theme), [theme]);
@@ -531,6 +534,7 @@ export function Heatmap({
       // merge every cell into one node and lose the per-day labels.
       role={accessibilityLabel ? "group" : undefined}
       style={[styles.container, style]}
+      testID={testID}
     >
       <View style={styles.body}>
         {showWeekdayLabels ? (

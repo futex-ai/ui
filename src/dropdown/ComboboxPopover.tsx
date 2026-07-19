@@ -16,6 +16,8 @@ type ComboboxPopoverProps = DropdownPlacementOptions & {
   children: (placement: DropdownPlacement) => ReactNode;
   onClose: () => void;
   open: boolean;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 export function ComboboxPopover({
@@ -23,6 +25,7 @@ export function ComboboxPopover({
   maxHeight = 280,
   minWidth = 220,
   open,
+  testID,
 }: ComboboxPopoverProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(
@@ -55,7 +58,7 @@ export function ComboboxPopover({
     width: minWidth,
   };
   return (
-    <View style={[styles.surface, { maxHeight, minWidth }]}>
+    <View style={[styles.surface, { maxHeight, minWidth }]} testID={testID}>
       {children(placement)}
     </View>
   );

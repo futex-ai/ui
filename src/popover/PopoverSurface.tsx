@@ -30,6 +30,8 @@ export type PopoverSurfaceProps = {
   /** Surface role. Only applied alongside a `label`. Defaults to `dialog`. */
   role?: PopoverSurfaceRole;
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -51,6 +53,7 @@ export function PopoverSurface({
   nativeID,
   role,
   style,
+  testID,
 }: PopoverSurfaceProps) {
   const named = Boolean(label);
   return (
@@ -59,6 +62,7 @@ export function PopoverSurface({
       nativeID={nativeID}
       role={named ? (role ?? "dialog") : undefined}
       style={style}
+      testID={testID}
     >
       {children}
     </View>

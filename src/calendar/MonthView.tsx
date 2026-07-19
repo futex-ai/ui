@@ -56,6 +56,8 @@ export type MonthViewProps = {
   onCreateEvent?: (range: CalendarDraftRange) => void;
   /** Extra style for the grid container. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /** The month grid view. */
@@ -68,6 +70,7 @@ export function MonthView({
   onSelectEvent,
   onCreateEvent,
   style,
+  testID,
 }: MonthViewProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createCalendarStyles(theme), [theme]);
@@ -97,7 +100,11 @@ export function MonthView({
   }, [events, weeks]);
 
   return (
-    <View ref={drag.bindGrid.ref} style={[styles.monthGrid, style]}>
+    <View
+      ref={drag.bindGrid.ref}
+      style={[styles.monthGrid, style]}
+      testID={testID}
+    >
       <View style={styles.monthWeekdayRow}>
         {labels.map((label) => (
           <View key={label} style={styles.monthWeekdayCell}>

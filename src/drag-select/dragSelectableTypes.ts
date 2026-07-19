@@ -77,6 +77,8 @@ export type DragSelectableProviderProps = {
   selectionAnnouncement?: DragSelectableSelectionAnnouncement;
   selectionLabel?: DragSelectableSelectionLabel;
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 export type DragSelectableTargetOptions = {

@@ -29,6 +29,7 @@ export function DatePickerOverlay({
   onClose,
   variant = "calendar",
   label,
+  testID,
 }: DatePickerOverlayProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createSheetStyles(theme), [theme]);
@@ -36,7 +37,13 @@ export function DatePickerOverlay({
   const wheel = variant === "wheel";
 
   return (
-    <Modal animationType="slide" onRequestClose={onClose} transparent visible>
+    <Modal
+      animationType="slide"
+      onRequestClose={onClose}
+      testID={testID}
+      transparent
+      visible
+    >
       <Pressable
         accessibilityLabel={label ? `Close ${label}` : "Close date picker"}
         onPress={onClose}

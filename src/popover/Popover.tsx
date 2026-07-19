@@ -75,6 +75,8 @@ export type PopoverProps = DropdownPlacementOptions & {
   role?: PopoverSurfaceRole;
   /** Style merged onto the anchor wrapper (defaults to hugging the trigger). */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   /** Renders the pressable that anchors and toggles the popover. */
   trigger: (state: PopoverTriggerState) => ReactNode;
   /** z-index for the portal layer. Defaults to `DROPDOWN_LAYERS.portal`. */
@@ -113,6 +115,7 @@ export function Popover({
   open: openProp,
   role,
   style,
+  testID,
   trigger,
   zIndex,
 }: PopoverProps) {
@@ -134,7 +137,7 @@ export function Popover({
   const toggle = useCallback(() => setOpen(!open), [open, setOpen]);
 
   return (
-    <View ref={anchorRef} style={[styles.anchor, style]}>
+    <View ref={anchorRef} style={[styles.anchor, style]} testID={testID}>
       {trigger({
         close,
         open,

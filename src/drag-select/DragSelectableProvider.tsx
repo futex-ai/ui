@@ -21,6 +21,7 @@ export function DragSelectableProvider({
   children,
   role = "group",
   style,
+  testID,
 }: DragSelectableProviderProps) {
   const listenersRef = useRef(new Set<DragSelectableChangeListener>());
   const subscribe = useCallback((listener: DragSelectableChangeListener) => {
@@ -48,7 +49,12 @@ export function DragSelectableProvider({
 
   return (
     <DragSelectableContext.Provider value={context}>
-      <View accessibilityLabel={accessibilityLabel} role={role} style={style}>
+      <View
+        accessibilityLabel={accessibilityLabel}
+        role={role}
+        style={style}
+        testID={testID}
+      >
         {children}
       </View>
     </DragSelectableContext.Provider>

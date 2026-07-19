@@ -34,6 +34,8 @@ export type SwitchProps = {
   onValueChange?: (value: boolean) => void;
   /** Control density: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   trackStyle?: StyleProp<ViewStyle>;
   value: boolean;
 };
@@ -44,6 +46,7 @@ export function Switch({
   disabled = false,
   onValueChange,
   size = "md",
+  testID,
   trackStyle,
   value,
 }: SwitchProps) {
@@ -94,6 +97,7 @@ export function Switch({
       onFocus={focus.onFocus}
       onPress={toggle}
       style={styles.pressable}
+      testID={testID}
       {...keyProps}
     >
       <View

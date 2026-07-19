@@ -52,6 +52,7 @@ export function DropdownPortal({
   onClose,
   open,
   surfaceHoverProps,
+  testID,
   zIndex,
 }: DropdownPortalProps) {
   const surfaceRef = useRef<View>(null);
@@ -125,6 +126,7 @@ export function DropdownPortal({
         onPointerLeave={surfaceHoverProps?.onHoverOut}
         ref={surfaceRef}
         style={[surfaceStyles.surface, dropdownSurfaceRect(placement)]}
+        testID={testID}
       >
         {children(placement)}
       </View>

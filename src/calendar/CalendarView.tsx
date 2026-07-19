@@ -62,6 +62,8 @@ export type CalendarViewProps = CalendarTimeGridConfig & {
   hideToolbar?: boolean;
   /** Extra style for the calendar container. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 const ALL_VIEWS: CalendarViewType[] = ["month", "week", "day", "agenda"];
@@ -123,6 +125,7 @@ export function CalendarView({
   pxPerHour,
   hideToolbar = false,
   style,
+  testID,
 }: CalendarViewProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createCalendarStyles(theme), [theme]);
@@ -165,7 +168,7 @@ export function CalendarView({
   };
 
   return (
-    <View style={[styles.root, style]}>
+    <View style={[styles.root, style]} testID={testID}>
       {hideToolbar ? null : (
         <CalendarToolbar
           agendaDays={agendaDays}

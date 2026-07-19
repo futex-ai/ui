@@ -50,6 +50,8 @@ export type RadioCardProps = {
   disabled?: boolean;
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   title: string;
 };
 
@@ -61,6 +63,7 @@ export function RadioCard({
   disabled = false,
   onPress,
   style,
+  testID,
   title,
 }: RadioCardProps) {
   const theme = useSharedUiTheme();
@@ -141,6 +144,7 @@ export function RadioCard({
         cardRef.current = node as unknown as FocusableRef;
       }}
       tabIndex={tabIndex}
+      testID={testID}
       {...keyProps}
       style={[
         styles.radio,
@@ -220,6 +224,8 @@ export type RadioCardGroupProps = {
   /** Marks the group required for assistive tech (→ `aria-required`). */
   required?: boolean;
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -239,6 +245,7 @@ export function RadioCardGroup({
   label,
   required = false,
   style,
+  testID,
 }: RadioCardGroupProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createRadioCardStyles(theme), [theme]);
@@ -372,6 +379,7 @@ export function RadioCardGroup({
         aria-invalid={invalid}
         aria-required={required}
         style={[styles.group, style]}
+        testID={testID}
       >
         {label ? <Text style={styles.radioTitle}>{label}</Text> : null}
         {children}

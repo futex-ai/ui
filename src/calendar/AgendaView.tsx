@@ -38,6 +38,8 @@ export type AgendaViewProps = {
   onSelectEvent?: (occurrence: CalendarOccurrence) => void;
   /** Extra style for the agenda container. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /** A single day's group of occurrences in the agenda. */
@@ -51,6 +53,7 @@ export function AgendaView({
   agendaDays = 30,
   onSelectEvent,
   style,
+  testID,
 }: AgendaViewProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createCalendarStyles(theme), [theme]);
@@ -62,7 +65,7 @@ export function AgendaView({
   );
 
   return (
-    <View style={[styles.agenda, style]}>
+    <View style={[styles.agenda, style]} testID={testID}>
       <ScrollView
         contentContainerStyle={styles.agendaContent}
         style={styles.agendaScroll}

@@ -56,6 +56,7 @@ export function WebModalFrame({
   subtitleStyle,
   surfaceStyle,
   subtitle,
+  testID,
   title,
   titleStyle,
   visible = true,
@@ -129,6 +130,7 @@ export function WebModalFrame({
         onClose={() => onCloseRef.current()}
         open={visible}
         sheetRef={sheetRef}
+        testID={testID}
       >
         <View style={[styles.body, bodyStyle]}>{content}</View>
       </BottomSheetShell>
@@ -140,6 +142,7 @@ export function WebModalFrame({
       animationType="fade"
       onRequestClose={() => requestClose("escape")}
       statusBarTranslucent
+      testID={testID}
       transparent
       visible={visible}
     >

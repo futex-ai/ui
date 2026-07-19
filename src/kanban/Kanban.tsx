@@ -87,6 +87,8 @@ export type KanbanProps<Card> = {
   size?: ControlSize;
   /** Extra style for the board container. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -115,6 +117,7 @@ export function Kanban<Card>({
   renderColumnEmpty,
   size = "md",
   style,
+  testID,
 }: KanbanProps<Card>) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createKanbanStyles(theme, size), [theme, size]);
@@ -237,6 +240,7 @@ export function Kanban<Card>({
       ref={drag.bindBoard.ref}
       role={accessibilityLabel ? "group" : undefined}
       style={[styles.board, style]}
+      testID={testID}
     >
       <ScrollView
         contentContainerStyle={styles.boardRow}

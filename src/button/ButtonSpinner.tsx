@@ -10,6 +10,8 @@ export type ButtonSpinnerProps = {
   color: string;
   /** Diameter in px, matched to the leading icon size for the button size. */
   size: number;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /**
@@ -21,7 +23,7 @@ export type ButtonSpinnerProps = {
  * motion the loader is shown static (still a clear "in progress" affordance)
  * rather than animating (best practice, WCAG 2.1 — 2.3.3 AAA).
  */
-export function ButtonSpinner({ color, size }: ButtonSpinnerProps) {
+export function ButtonSpinner({ color, size, testID }: ButtonSpinnerProps) {
   const reducedMotion = useReducedMotion();
   const spin = useRef(new Animated.Value(0)).current;
 
@@ -56,6 +58,7 @@ export function ButtonSpinner({ color, size }: ButtonSpinnerProps) {
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
       style={{ height: size, transform: [{ rotate }], width: size }}
+      testID={testID}
     >
       <LoaderCircle color={color} size={size} />
     </Animated.View>

@@ -36,6 +36,8 @@ export type TextProps = {
   numberOfLines?: number;
   /** Extra style merged on top of the variant style. */
   style?: StyleProp<TextStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   /**
    * The text role. Headings (`h1`–`h5`) are exposed to assistive tech as
    * headings at the matching level; `body` (the default), `label`, `caption`,
@@ -60,6 +62,7 @@ export function Text({
   color,
   numberOfLines,
   style,
+  testID,
   variant = "body",
 }: TextProps) {
   const theme = useSharedUiTheme();
@@ -87,6 +90,7 @@ export function Text({
         resolvedColor === undefined ? null : { color: resolvedColor },
         style,
       ]}
+      testID={testID}
     >
       {children}
     </RNText>

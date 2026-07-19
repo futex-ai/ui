@@ -31,6 +31,8 @@ export type DayViewProps = CalendarTimeGridConfig & {
   onCreateEvent?: (range: CalendarDraftRange) => void;
   /** Extra style for the grid container. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /** Day view rendered as a single-column {@link TimeGrid}. */
@@ -46,6 +48,7 @@ export function DayView({
   slotMinutes,
   pxPerHour,
   style,
+  testID,
 }: DayViewProps) {
   const dates = useMemo(() => [date], [date]);
   const occurrences = useMemo(
@@ -64,6 +67,7 @@ export function DayView({
       pxPerHour={pxPerHour}
       slotMinutes={slotMinutes}
       style={style}
+      testID={testID}
       today={today}
     />
   );

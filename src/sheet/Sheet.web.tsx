@@ -18,6 +18,7 @@ export function Sheet({
   maxHeight,
   onClose,
   open,
+  testID,
   title,
 }: SheetProps) {
   const { height } = useWindowDimensions();
@@ -34,6 +35,7 @@ export function Sheet({
       onClose={onClose}
       placement="bottom-sheet"
       showCloseButton={!hideHeader}
+      testID={testID}
       title={title ?? label}
       visible={open}
     >

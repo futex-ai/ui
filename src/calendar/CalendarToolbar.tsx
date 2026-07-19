@@ -43,6 +43,8 @@ export type CalendarToolbarProps = {
   onToday: () => void;
   /** Change the active view. */
   onViewChange: (view: CalendarViewType) => void;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /** The calendar toolbar row. */
@@ -55,6 +57,7 @@ export function CalendarToolbar({
   onStep,
   onToday,
   onViewChange,
+  testID,
 }: CalendarToolbarProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createCalendarStyles(theme), [theme]);
@@ -65,7 +68,7 @@ export function CalendarToolbar({
   );
 
   return (
-    <View style={styles.toolbar}>
+    <View style={styles.toolbar} testID={testID}>
       <View style={styles.toolbarLeft}>
         <Pressable
           accessibilityLabel="Previous"

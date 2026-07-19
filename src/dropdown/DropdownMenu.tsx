@@ -94,6 +94,8 @@ export type DropdownMenuProps = DropdownPlacementOptions & {
   style?: StyleProp<ViewStyle>;
   /** Hover props for web hover menus that bridge trigger and portal surface. */
   surfaceHoverProps?: DropdownHoverProps;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
   /** How the child trigger opens the menu. Defaults to `"press"`. */
   trigger?: DropdownMenuTriggerMode;
   /** z-index for the portal layer. Defaults to `DROPDOWN_LAYERS.portal`. */
@@ -127,6 +129,7 @@ export function DropdownMenu({
   search,
   style,
   surfaceHoverProps,
+  testID,
   trigger = "press",
   zIndex,
 }: DropdownMenuProps) {
@@ -230,7 +233,7 @@ export function DropdownMenu({
       : surfaceHoverProps;
 
   return (
-    <View ref={anchorRef} style={[styles.anchor, style]}>
+    <View ref={anchorRef} style={[styles.anchor, style]} testID={testID}>
       {dropdownMenuTriggerNode(children, menuState, menuTriggerProps)}
       <DropdownPortal
         align={align}

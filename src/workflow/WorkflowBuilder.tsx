@@ -68,6 +68,8 @@ export type WorkflowBuilderProps = {
   size?: ControlSize;
   /** Extra style for the canvas container. */
   style?: StyleProp<ViewStyle>;
+  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  testID?: string;
 };
 
 /** The workflow builder canvas. See {@link WorkflowBuilderProps}. */
@@ -84,6 +86,7 @@ export function WorkflowBuilder({
   selectedNodeId,
   size = "md",
   style,
+  testID,
 }: WorkflowBuilderProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(
@@ -211,6 +214,7 @@ export function WorkflowBuilder({
     <View
       accessibilityLabel={accessibilityLabel}
       style={[styles.canvas, dottedStyle, style]}
+      testID={testID}
     >
       <View style={styles.graph}>
         {renderSteps(graph.steps, true)}
