@@ -7,10 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.13.0](https://github.com/futex-ai/ui/compare/v0.12.0...v0.13.0) (2026-07-19)
 
-
 ### Features
 
-* **testid:** forward testID to the root of every public component ([#87](https://github.com/futex-ai/ui/issues/87)) ([3b5e1c7](https://github.com/futex-ai/ui/commit/3b5e1c7271b367cb901f6e3a8f40c3bb75c7545d))
+- **testid:** forward testID to the root of every public component ([#87](https://github.com/futex-ai/ui/issues/87)) ([3b5e1c7](https://github.com/futex-ai/ui/commit/3b5e1c7271b367cb901f6e3a8f40c3bb75c7545d))
 
 ## [0.12.0](https://github.com/futex-ai/ui/compare/v0.11.0...v0.12.0) (2026-07-16)
 
