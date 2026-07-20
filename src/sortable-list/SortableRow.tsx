@@ -2,9 +2,13 @@
  * One row of a {@link SortableList}, plus the grab handle and the drop preview.
  * A row is a `listitem`; how it becomes draggable depends on the mode:
  *
- * - **Handle mode** — a focusable grab {@link SortableHandle} sits at the start
- *   or end of the row and is the ONLY drag / keyboard / focus target, so the rest
- *   of the row (a consumer's own buttons) stays independently interactive.
+ * - **Handle mode (`"start"` / `"end"`)** — a focusable grab {@link SortableHandle}
+ *   sits at the start or end of the row (in the gutter, beside the content) and is
+ *   the ONLY drag / keyboard / focus target, so the rest of the row (a consumer's
+ *   own buttons) stays independently interactive.
+ * - **Custom-handle mode (`"custom"`)** — the wired handle is handed to the list's
+ *   `renderItem` so the consumer places it themselves — e.g. INSIDE their card.
+ *   The row is a plain `listitem`; the grip inside the content is the drag target.
  * - **Handle-less mode** — the whole row is one focusable `button` drag target
  *   (best for simple rows with no interactive content of their own).
  * - **Disabled / non-draggable** — a plain `listitem` that is still measured (so
@@ -21,7 +25,7 @@ import { hideWebOutlineView, useFocusRing } from "../focusRing";
 import type { PressableHoverState } from "../focusRing";
 
 import type {
-  SortableHandleSide,
+  SortableHandlePlacement,
   SortableOrientation,
 } from "./sortableListModel";
 import {
@@ -39,7 +43,7 @@ type SortableRowProps = {
   content: ReactNode;
   /** Dim the row in place — the keyboard-grabbed row stays put, still focusable. */
   dragging: boolean;
-  handle?: SortableHandleSide;
+  handle?: SortableHandlePlacement;
   handleGap: number;
   handleLabel: string;
   iconColor: string;
@@ -66,7 +70,7 @@ export function SortableRow({
   renderHandle,
   styles,
 }: SortableRowProps) {
-  if (handle) {
+  if (handle === "start" || handle === "end") {
     const grip = (
       <SortableHandle
         binding={binding}
@@ -96,7 +100,9 @@ export function SortableRow({
     );
   }
 
-  if (!binding) {
+  // Custom-handle mode (the grip is inside `content`, placed by the consumer)
+  // and disabled / non-draggable rows both render a plain, measured listitem.
+  if (handle === "custom" || !binding) {
     return (
       <View
         role="listitem"
@@ -179,7 +185,7 @@ function SortableRowButton({
  * cursor. When the row is disabled the handle renders as a static, dimmed,
  * non-interactive affordance so the layout stays consistent.
  */
-function SortableHandle({
+export function SortableHandle({
   binding,
   dragging,
   iconColor,
@@ -267,7 +273,7 @@ export function SortableClone({
   content: ReactNode;
   extraStyle?: StyleProp<ViewStyle>;
   forwardedRef?: (node: unknown) => void;
-  handle?: SortableHandleSide;
+  handle?: SortableHandlePlacement;
   handleGap: number;
   iconColor: string;
   iconSize: number;
@@ -277,7 +283,10 @@ export function SortableClone({
   testID?: string;
 }) {
   const Grip = orientation === "horizontal" ? GripHorizontal : GripVertical;
-  const grip = handle ? (
+  // Only the gutter modes add a placeholder grip; in custom mode the grip is
+  // already inside `content` (a non-interactive copy), so none is added here.
+  const gutter = handle === "start" || handle === "end";
+  const grip = gutter ? (
     <View style={[styles.handle, styles.handleDisabled]}>
       {renderHandle ? (
         renderHandle({ grabbed: false })
@@ -294,7 +303,7 @@ export function SortableClone({
         markInert(node);
         forwardedRef?.(node);
       }}
-      style={[styles.row, { gap: handle ? handleGap : 0 }, extraStyle]}
+      style={[styles.row, { gap: gutter ? handleGap : 0 }, extraStyle]}
       testID={testID}
     >
       {handle === "start" ? grip : null}

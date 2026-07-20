@@ -16,8 +16,15 @@
 /** The axis the list flows along: `vertical` (default) or `horizontal`. */
 export type SortableOrientation = "horizontal" | "vertical";
 
-/** Which end of a row an optional grab handle sits at. */
+/** Which end of a row the auto-placed grab handle sits at. */
 export type SortableHandleSide = "end" | "start";
+
+/**
+ * Where a grab handle lives: auto-placed in the gutter at the `start` / `end` of
+ * the row, or `"custom"` — the list hands the wired handle to `renderItem` so the
+ * consumer places it themselves (e.g. inside their own card).
+ */
+export type SortableHandlePlacement = SortableHandleSide | "custom";
 
 /** Whether a live drag was started by a pointer or the keyboard. */
 export type SortableDragMode = "keyboard" | "pointer";

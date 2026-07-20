@@ -64,6 +64,21 @@ test("sortable list places an optional grab handle at the start or end", () => {
   );
 });
 
+test("sortable list can place the grab handle inside content (custom mode)", () => {
+  const listSource = readSource("../../src/sortable-list/SortableList.tsx");
+  const rowSource = readSource("../../src/sortable-list/SortableRow.tsx");
+
+  // renderItem gains a third arg (the wired handle) and, in custom mode, the
+  // list hands the grip to it to place inside the content (e.g. a card).
+  assert.match(listSource, /handle\?: ReactNode\) => ReactNode/);
+  assert.match(listSource, /handle === "custom"/);
+  assert.match(listSource, /customGrip\(binding, grabbed, grabLabel\)/);
+  // The row is a plain, measured listitem in custom mode (grip is in content),
+  // and the wired handle component is exported for the list to place.
+  assert.match(rowSource, /handle === "custom" \|\| !binding/);
+  assert.match(rowSource, /export function SortableHandle/);
+});
+
 test("sortable rows are listitems with a button drag target and the focus ring", () => {
   const source = readSource("../../src/sortable-list/SortableRow.tsx");
 

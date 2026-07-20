@@ -135,6 +135,45 @@ function HandleExample() {
   );
 }
 
+export const HandleInsideCard: Story = {
+  name: "Handle inside the card",
+  render: () => <InsideExample />,
+};
+
+function InsideExample() {
+  const [items, setItems] = useState(initial);
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        <Text style={styles.status}>
+          The grip is rendered inside the white card, not in the gutter.
+        </Text>
+        <SortableList<Status>
+          accessibilityLabel="Workflow statuses"
+          gap={10}
+          handle="custom"
+          itemKey={(s) => s.id}
+          itemLabel={(s) => s.name}
+          items={items}
+          onReorder={(move) =>
+            setItems((prev) => applySortableMove(prev, move, (s) => s.id))
+          }
+          renderItem={(item, index, handle) => (
+            <View style={styles.card}>
+              {handle}
+              <View style={[styles.dot, { backgroundColor: item.color }]} />
+              <Text style={styles.title}>{item.name}</Text>
+              <View style={styles.tag}>
+                <Text style={styles.tagText}>{item.tag}</Text>
+              </View>
+            </View>
+          )}
+        />
+      </View>
+    </StorySurface>
+  );
+}
+
 export const WholeRow: Story = {
   name: "Whole row draggable (no handle)",
   render: () => <WholeRowExample />,

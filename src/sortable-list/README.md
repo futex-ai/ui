@@ -15,8 +15,9 @@ on one axis.
 - Make rows draggable when given `onReorder`, staying **controlled**: report each
   committed move for the consumer to apply to its own data (the drag never
   mutates `items`). `applySortableMove` does the splice.
-- Offer an optional grab `handle` (`"start"` / `"end"`) that becomes the sole
-  drag / keyboard / focus target, so the rest of the row (its own buttons) stays
+- Offer an optional grab `handle` — auto-placed at the `"start"` / `"end"` of the
+  row, or `"custom"` to place it yourself inside your content (e.g. in a card) —
+  as the sole drag / keyboard / focus target, so the rest of the row stays
   independently interactive; with no handle the whole row is the drag surface.
 - Flow `vertical` (default) or `horizontal` via `orientation`.
 - Support a full keyboard reorder on the web (Space to grab, arrow keys to move,
@@ -63,13 +64,41 @@ the insertion index in the list with the moved item already spliced out — so
 ### Grab handle
 
 Set `handle` to `"start"` or `"end"` to render a grab handle (a themed grip
-glyph, or your own via `renderHandle`). The handle is then the **only** drag /
-keyboard / focus target, so a row's own controls (chevrons, an archive button)
-keep working. Omit `handle` to make the whole row the drag surface — best for
-simple rows with no interactive content of their own (a whole-row drag target
-plus interactive children would nest press targets). `handleLabel` names the
-handle button (defaults to `Reorder <itemLabel>`); `itemLabel` names the
-whole-row target and is woven into the drag announcements.
+glyph, or your own via `renderHandle`) in the row gutter, beside the content. The
+handle is then the **only** drag / keyboard / focus target, so a row's own
+controls (chevrons, an archive button) keep working. Omit `handle` to make the
+whole row the drag surface — best for simple rows with no interactive content of
+their own (a whole-row drag target plus interactive children would nest press
+targets). `handleLabel` names the handle button (defaults to
+`Reorder <itemLabel>`); `itemLabel` names the whole-row target and is woven into
+the drag announcements.
+
+#### Placing the handle inside your card
+
+Set `handle="custom"` to place the grip yourself — e.g. **inside** your own card
+rather than in the gutter. The list then hands the wired handle to `renderItem`
+as its third argument, and you drop it wherever you like:
+
+```tsx
+<SortableList<Status>
+  handle="custom"
+  itemKey={(s) => s.id}
+  itemLabel={(s) => s.name}
+  items={items}
+  onReorder={(move) => setItems((p) => applySortableMove(p, move, (s) => s.id))}
+  renderItem={(status, index, handle) => (
+    <Card>
+      {handle}
+      <StatusRow status={status} />
+    </Card>
+  )}
+/>
+```
+
+The provided handle carries everything the gutter one does (the drag hit-test id,
+the keyboard grab/move handler, the focus ring, and the grip glyph — customise it
+with `renderHandle`), so pointer and keyboard reordering work identically. The
+handle is `undefined` for the other modes.
 
 ### Orientation
 

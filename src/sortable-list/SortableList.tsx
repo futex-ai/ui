@@ -20,11 +20,11 @@ import type { StyleProp, ViewStyle } from "react-native";
 import type { ControlSize } from "../controlSize";
 import { useSharedUiTheme } from "../theme";
 
-import { SortableClone, SortableRow } from "./SortableRow";
+import { SortableClone, SortableHandle, SortableRow } from "./SortableRow";
 import type { SortableHandleState } from "./SortableRow";
 import {
   indicatorIndex,
-  type SortableHandleSide,
+  type SortableHandlePlacement,
   type SortableMove,
   type SortableOrientation,
 } from "./sortableListModel";
@@ -37,9 +37,10 @@ import { useSortableListDrag } from "./useSortableListDrag";
 
 export { applySortableMove } from "./sortableListModel";
 export type {
+  SortableHandlePlacement,
+  SortableHandleSide,
   SortableMove,
   SortableOrientation,
-  SortableHandleSide,
 } from "./sortableListModel";
 export type { SortableHandleState } from "./SortableRow";
 
@@ -53,12 +54,14 @@ export type SortableListProps<Item> = {
   /** Gap in px between rows. Defaults to the `size` scale — a visible gap gives the drop preview a slot to open into. */
   gap?: number;
   /**
-   * Show a grab handle at the `start` or `end` of every row. When set, the
-   * handle is the ONLY drag / keyboard / focus target, so the rest of the row
-   * stays independently interactive (its own buttons keep working). Omit for a
-   * whole-row drag surface (best for simple, non-interactive rows).
+   * Show a grab handle. `"start"` / `"end"` auto-place it in the row gutter
+   * beside the content; `"custom"` hands the wired handle to `renderItem` (its
+   * third argument) so you place it yourself — e.g. INSIDE your own card. In
+   * every case the handle is the ONLY drag / keyboard / focus target, so the rest
+   * of the row stays independently interactive. Omit for a whole-row drag surface
+   * (best for simple, non-interactive rows).
    */
-  handle?: SortableHandleSide;
+  handle?: SortableHandlePlacement;
   /** Accessible name for the grab handle button. Defaults to `Reorder <itemLabel>` (or `Reorder item`). */
   handleLabel?: (item: Item, index: number) => string;
   /** Mark a specific item as non-draggable — it stays frozen in place but still occupies its slot. */
@@ -81,8 +84,13 @@ export type SortableListProps<Item> = {
   orientation?: SortableOrientation;
   /** Custom grab-handle content; defaults to a themed grip glyph. Receives `{ grabbed }`. */
   renderHandle?: (state: SortableHandleState) => ReactNode;
-  /** Renders the content for a given item. */
-  renderItem: (item: Item, index: number) => ReactNode;
+  /**
+   * Renders the content for a given item. In `handle="custom"` mode the third
+   * argument is the wired grab handle to place inside your content (e.g. in your
+   * card); it is `undefined` for the other handle modes (the handle is placed by
+   * the list) and for the whole-row drag surface.
+   */
+  renderItem: (item: Item, index: number, handle?: ReactNode) => ReactNode;
   /** Control density: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
   /** Extra style for the list container. */
@@ -153,8 +161,37 @@ export function SortableList<Item>({
   // and place the preview at the right flow slot per mode: the pointer lifts the
   // row out (removed-item index), the keyboard leaves it in place (visual index).
   const draggedIndex = active && draggedKey ? keys.indexOf(draggedKey) : -1;
+
+  // In `handle="custom"` mode the wired grip is handed to `renderItem` to place
+  // inside the content. A binding-less copy (no testID / focus) goes into the
+  // decorative preview and ghost, so the inert clone never duplicates the real
+  // handle's `data-testid`. Other modes pass `undefined` (no consumer handle).
+  const customGrip = (
+    binding: ReturnType<typeof drag.itemBinding>,
+    grabbed: boolean,
+    gripLabel: string,
+  ) =>
+    handle === "custom" ? (
+      <SortableHandle
+        binding={binding}
+        dragging={grabbed}
+        iconColor={theme.colors.muted}
+        iconSize={iconSize}
+        label={gripLabel}
+        orientation={orientation}
+        renderHandle={renderHandle}
+        styles={styles}
+      />
+    ) : undefined;
+
   const previewNode =
-    draggedIndex >= 0 ? renderItem(items[draggedIndex], draggedIndex) : null;
+    draggedIndex >= 0
+      ? renderItem(
+          items[draggedIndex],
+          draggedIndex,
+          customGrip(null, false, ""),
+        )
+      : null;
   const previewIndex =
     active && target && draggedIndex >= 0
       ? mode === "keyboard"
@@ -207,7 +244,11 @@ export function SortableList<Item>({
     return (
       <SortableRow
         binding={binding}
-        content={renderItem(item, index)}
+        content={renderItem(
+          item,
+          index,
+          customGrip(binding, grabbed, grabLabel),
+        )}
         dragging={grabbed}
         handle={handle}
         handleGap={rowGap}
