@@ -85,8 +85,17 @@ export type DataGridProps = {
   loadingMore?: boolean;
   /** Show the row-number / expand gutter. Defaults to true. */
   showGutter?: boolean;
-  /** Render with flat (non-rounded) corners on the grid frame + mobile cards. */
-  square?: boolean;
+  /**
+   * Corner radius (px) of the grid frame + mobile cards. Defaults to `0`
+   * (square corners); pass e.g. `theme.radii.lg` for rounded corners.
+   */
+  borderRadius?: number;
+  /**
+   * Outer frame + mobile card border width (px). Defaults to `1`; set to `0`
+   * to drop the outer border (the internal cell hairlines are unaffected) —
+   * useful when the grid sits flush inside an already-bordered panel.
+   */
+  borderWidth?: number;
   /** Footer record-count text, e.g. "7 of 128 records". */
   footerText?: string;
   /** Max body height in px before the rows scroll (virtualized). */
@@ -113,7 +122,8 @@ export function DataGrid({
   onEndReached,
   loadingMore,
   showGutter = true,
-  square = false,
+  borderRadius = 0,
+  borderWidth = 1,
   footerText,
   maxHeight,
   cardBreakpoint,
@@ -122,8 +132,8 @@ export function DataGrid({
 }: DataGridProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(
-    () => createDataGridStyles(theme, size, square),
-    [theme, size, square],
+    () => createDataGridStyles(theme, size, borderRadius, borderWidth),
+    [theme, size, borderRadius, borderWidth],
   );
   const metrics = useMemo(() => dataGridMetrics(size), [size]);
   const { width: windowWidth } = useWindowDimensions();
@@ -199,13 +209,15 @@ export function DataGrid({
     () =>
       resolveColumnWidths(
         controller.visibleColumns,
-        Math.max(0, measuredWidth - 2),
+        // Subtract the left + right frame border so columns fill the content box.
+        Math.max(0, measuredWidth - borderWidth * 2),
         chromeWidth,
         resize.columnWidthOverrides,
       ),
     [
       controller.visibleColumns,
       measuredWidth,
+      borderWidth,
       chromeWidth,
       resize.columnWidthOverrides,
     ],

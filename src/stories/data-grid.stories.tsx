@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from "react-native";
 import {
   DataGrid,
   dataGridSelectionModel,
+  useSharedUiTheme,
   type DataGridColumn,
   type DataGridRow,
   type DataGridSelection,
@@ -89,18 +90,51 @@ export const FewColumns: Story = {
   ),
 };
 
-export const Square: Story = {
-  name: "Square (flat corners)",
-  render: () => (
+// Corners are square by default (see `Basic`). Pass `borderRadius` — here the
+// shared `radii.lg` token — to round the frame + mobile cards.
+function RoundedExample() {
+  const theme = useSharedUiTheme();
+  return (
     <StorySurface>
       <View style={styles.frame}>
         <DataGrid
           accessibilityLabel="Content"
+          borderRadius={theme.radii.lg}
           columns={contentColumns}
           footerText="7 of 128 records · 0 filters · sorted by Created"
           rows={contentRows}
-          square
         />
+      </View>
+    </StorySurface>
+  );
+}
+
+export const Rounded: Story = {
+  name: "Rounded corners (borderRadius)",
+  render: () => <RoundedExample />,
+};
+
+export const Borderless: Story = {
+  name: "Borderless (borderWidth 0)",
+  render: () => (
+    <StorySurface>
+      <View style={styles.stack}>
+        {/* No outer frame at all — the header fill + internal cell hairlines
+            carry the structure. Drop the border to sit flush inside your own
+            bordered/padded container. */}
+        <View style={styles.frame}>
+          <DataGrid
+            accessibilityLabel="Content"
+            borderWidth={0}
+            columns={contentColumns}
+            footerText="7 of 128 records · 0 filters · sorted by Created"
+            rows={contentRows}
+          />
+        </View>
+        <Text style={styles.hint}>
+          `borderWidth={0}` removes the outer frame entirely; the internal cell
+          separators are unaffected.
+        </Text>
       </View>
     </StorySurface>
   ),
