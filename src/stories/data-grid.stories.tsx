@@ -89,6 +89,23 @@ export const FewColumns: Story = {
   ),
 };
 
+export const Square: Story = {
+  name: "Square (flat corners)",
+  render: () => (
+    <StorySurface>
+      <View style={styles.frame}>
+        <DataGrid
+          accessibilityLabel="Content"
+          columns={contentColumns}
+          footerText="7 of 128 records · 0 filters · sorted by Created"
+          rows={contentRows}
+          square
+        />
+      </View>
+    </StorySurface>
+  ),
+};
+
 const rowIds = contentRows.map((row) => row.id);
 const columnIds = contentColumns.map((column) => column.id);
 

@@ -40,14 +40,18 @@ export const ADD_COLUMN_WIDTH = 44;
 export function createDataGridStyles(
   theme: SharedUiTheme,
   size: ControlSize = "md",
+  square = false,
 ) {
   const metrics = dataGridMetrics(size);
   const baseText = { fontFamily: theme.fonts.sans } as const;
+  // Flat corners when `square` — applied to the grid frame and the mobile card
+  // so the whole component squares off consistently.
+  const frameRadius = square ? 0 : theme.radii.lg;
   return StyleSheet.create({
     grid: {
       backgroundColor: theme.colors.surface,
       borderColor: theme.colors.border2,
-      borderRadius: theme.radii.lg,
+      borderRadius: frameRadius,
       borderWidth: 1,
       overflow: "hidden",
       // Dragging a cell range must not start a native text selection.
@@ -235,7 +239,7 @@ export function createDataGridStyles(
     card: {
       backgroundColor: theme.colors.surface,
       borderColor: theme.colors.border2,
-      borderRadius: theme.radii.lg,
+      borderRadius: frameRadius,
       borderWidth: 1,
       gap: 8,
       padding: 12,

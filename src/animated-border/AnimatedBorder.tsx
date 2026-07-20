@@ -21,10 +21,11 @@ import { useSharedUiTheme } from "../theme";
 import { useReducedMotion } from "../useReducedMotion";
 
 import {
-  animatedBorderStyles,
   createAnimatedBorderTrail,
   resolveAnimatedBorderGeometry,
-} from "./animatedBorderStyles";
+  type AnimatedBorderShape,
+} from "./animatedBorderGeometry";
+import { animatedBorderStyles } from "./animatedBorderStyles";
 
 /** Milliseconds for one full lap of the perimeter. */
 const DEFAULT_DURATION_MS = 1600;
@@ -90,6 +91,14 @@ export type AnimatedBorderProps = {
   /** Height of the bordered box in px; omit to use the square `size`. Default 0. */
   height?: number;
   /**
+   * How much the trail rounds the box: it follows `borderRadius`
+   * (`"rounded-rect"`, the default) or fully rounds the box (`"circle"`). Use
+   * `"circle"` to frame a circular avatar/icon or a pill; it ignores
+   * `borderRadius` and traces a true circle for a square box or an elongated
+   * stadium ("pill") for a non-square one. Default `"rounded-rect"`.
+   */
+  shape?: AnimatedBorderShape;
+  /**
    * Square shorthand for `width` and `height`: each falls back to `size` when it
    * is not given. Sizing comes from these props, not from `style`. Default 0.
    */
@@ -122,7 +131,9 @@ export type AnimatedBorderProps = {
  * around a corner, and a single rotated dash only reads as motion on a circle.
  *
  * Give it the `width` / `height` (or a square `size`) and `borderRadius` of the
- * element it frames. With `children` it wraps them and overlays the border;
+ * element it frames — or pass `shape="circle"` to fully round the box (a true
+ * circle when square, an elongated stadium/"pill" when not) for a circular
+ * avatar, icon, or pill. With `children` it wraps them and overlays the border;
  * without children it renders the border on its own for you to position (for
  * example absolutely, over an existing box). The loop runs on the JS-driven
  * `Animated` API — an SVG attribute cannot use the native driver — and stops on
@@ -137,6 +148,7 @@ export function AnimatedBorder({
   color,
   duration = DEFAULT_DURATION_MS,
   height,
+  shape = "rounded-rect",
   size,
   style,
   testID,
@@ -150,11 +162,16 @@ export function AnimatedBorder({
   const resolvedHeight = height ?? size ?? 0;
   const stroke = color ?? theme.colors.primary;
 
+  // `shape="circle"` fully rounds the box (a true circle when square, a stadium
+  // when not); `"rounded-rect"` follows `borderRadius`. Either way the result is
+  // a stroked rounded rect whose `perimeter` is the unit the dashed trail
+  // segments and their offsets are measured in.
   const { origin, perimeter, radius, rectHeight, rectWidth } =
     resolveAnimatedBorderGeometry({
       borderRadius,
       borderWidth,
       height: resolvedHeight,
+      shape,
       width: resolvedWidth,
     });
 
