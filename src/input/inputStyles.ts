@@ -84,6 +84,11 @@ export function inputSizeTokens(size: ControlSize) {
  * bounds. A textarea starts at `minRows` and grows one line at a time up to
  * `maxRows`, after which it scrolls. Shared by the {@link InputFrame} and the
  * `useAutoGrowTextarea` hook so the row→pixel conversion has a single source.
+ *
+ * Pass `maxRows: Infinity` for an uncapped field that grows to fit ALL its
+ * content (the `seamless` variant, which reads as body text): the `maxHeight`
+ * stays `Infinity`, and the hook drops it from the applied style so the field
+ * never scrolls.
  */
 export function autoGrowTextareaBounds(
   size: ControlSize,
@@ -96,6 +101,7 @@ export function autoGrowTextareaBounds(
   return {
     lineHeight,
     minHeight: lowRows * lineHeight,
+    // `Infinity * lineHeight` stays `Infinity` (an uncapped, grow-to-fit field).
     maxHeight: highRows * lineHeight,
   };
 }
@@ -206,6 +212,19 @@ export function createInputStyles(
       borderWidth: 0,
       paddingHorizontal: 0,
     },
+    // The `seamless` box: like `plain` but it also drops the reserved control
+    // height (`minHeight: 0`) and ALL padding, so the field collapses onto its
+    // text and reads as ordinary copy rather than a control sitting in a row. It
+    // layers AFTER `boxMultiline` so its zeroed vertical padding wins, and before
+    // the active/invalid border so those colours stay inert against the zeroed
+    // width. The focus ring, clear button, and a11y wiring stay owned by the frame.
+    boxSeamless: {
+      backgroundColor: "transparent",
+      borderWidth: 0,
+      minHeight: 0,
+      paddingHorizontal: 0,
+      paddingVertical: 0,
+    },
     boxMultiline: {
       alignItems: "flex-start",
       paddingVertical: sizing.textareaPaddingVertical,
@@ -226,6 +245,38 @@ export function createInputStyles(
       flex: 1,
       fontSize: sizing.inputFontSize,
       minHeight: sizing.textareaInputMinHeight,
+      minWidth: 0,
+      paddingBottom: 0,
+      paddingTop: 0,
+      textAlignVertical: "top",
+    },
+    // Single-line `seamless` input: no fixed control height — it sizes to one
+    // line of the font's natural line box — and no padding, so the box collapses
+    // onto the text. It deliberately sets NO `lineHeight`: a fixed line box would
+    // clip a larger `fontSize` set through `inputStyle` (e.g. a heading) in this
+    // zero-padding, height-less field, whereas the font's own leading tracks
+    // whatever size the caller uses. Callers restyle the text (size / weight /
+    // colour) through `inputStyle` to match the surrounding copy.
+    inputSeamless: {
+      ...baseText,
+      color: theme.colors.ink,
+      flex: 1,
+      fontSize: sizing.inputFontSize,
+      minWidth: 0,
+      paddingVertical: 0,
+    },
+    // Multiline `seamless` input: like the single-line variant but top-aligned
+    // and floored at one line, so an auto-growing seamless field grows to fit its
+    // content from a single line rather than reserving the textarea min-height.
+    // Like `textareaInput` it sets no fixed `lineHeight` — the auto-grow hook
+    // applies the per-size line height for its row math, and a caller `inputStyle`
+    // supplies a matching line height when it raises the font size.
+    textareaSeamless: {
+      ...baseText,
+      color: theme.colors.ink,
+      flex: 1,
+      fontSize: sizing.inputFontSize,
+      minHeight: sizing.textareaLineHeight,
       minWidth: 0,
       paddingBottom: 0,
       paddingTop: 0,

@@ -185,6 +185,58 @@ import { InputFrame } from "@firna/ui/input";
 />;
 ```
 
+### Seamless (invisible) variant
+
+`variant="seamless"` goes a step further than `plain`: on top of dropping the
+border, background, and padding it also drops the **reserved control height**, so
+the field collapses onto its text and reads as ordinary copy that happens to be
+editable — an inline-editable title, table cell, or paragraph. It only reveals
+the shared focus ring when edited. Style the text through `inputStyle` to match
+the surrounding copy (size, weight, colour, line height); the field inherits the
+`size` scale otherwise.
+
+It works on both a single-line field **and** a `multiline` one. A seamless
+multiline field auto-grows to fit **all** its content (no scrollbar) so it stays
+exactly as tall as the text — pass `maxLines` to cap it, and drive a controlled
+`value` on web (auto-grow measures on `value` change). Reach for the bare
+`Input` / `InputFrame` (or `Textarea` with `numberOfLines={1}`) so a seamless
+multiline field can start as a single line.
+
+```tsx
+import { Input, Textarea } from "@firna/ui/input";
+
+// An inline-editable heading that reads as a heading until you click into it.
+// A seamless field has no fixed height or padding, so pair a raised `fontSize`
+// with a matching `lineHeight` to keep the larger glyphs from clipping.
+<Input
+  accessibilityLabel="Document title"
+  inputStyle={{ fontSize: 22, fontWeight: "700", lineHeight: 28 }}
+  onChangeText={setTitle}
+  value={title}
+  variant="seamless"
+/>
+
+// A paragraph you edit in place; it grows to fit as you type.
+<Textarea
+  accessibilityLabel="Document body"
+  inputStyle={{ fontSize: 15, lineHeight: 22 }}
+  numberOfLines={1}
+  onChangeText={setBody}
+  value={body}
+  variant="seamless"
+/>;
+```
+
+Like `plain`, a seamless field has no border to recolor, so surface any
+validation error through the surrounding layout rather than the box. Its only
+focus indicator is the shared ring (there is no border to recolor and the native
+outline is hidden), which by default is an **outset** glow. An `overflow: hidden`
+ancestor — the very containers this variant targets, such as a table cell or a
+truncating card — clips that glow, so pass `focusRingInset` to draw the ring
+inside the box instead and keep a visible focus indicator (WCAG 2.1 2.4.7). On a
+zero-padding seamless field the inset ring paints over the text edges, so where
+you can, prefer reserving a little padding on the clipping ancestor.
+
 ## Accessibility
 
 - **Name (2.5.3 Label in Name / 1.3.1, A).** The visible `label` is tied to the

@@ -43,20 +43,39 @@ export type InputFrameProps = Omit<TextInputProps, "style"> & {
    * drops the border, background, and horizontal padding for a chrome-less
    * inline editor embedded in a row (an inline title / label editor), while
    * keeping the focus ring, the clear button, and the invalid / required a11y
-   * wiring. On `plain` the invalid state has no border to recolor — surface the
-   * error via the surrounding field / message instead.
+   * wiring. `seamless` goes further: it also drops the reserved control height
+   * and all padding so the field collapses onto its text and reads as ordinary
+   * copy that is invisibly editable — an inline-editable title, cell, or
+   * paragraph. It works on a single-line field and a `multiline` one (which
+   * grows to fit its content, capped by `maxLines` if set); style the text
+   * through `inputStyle` to match the surrounding copy. On `plain` / `seamless`
+   * the invalid state has no border to recolor — surface the error via the
+   * surrounding field / message instead.
    */
-  variant?: "framed" | "plain";
+  variant?: "framed" | "plain" | "seamless";
   /**
    * Opt a `multiline` field into auto-grow: it starts at `numberOfLines` rows
    * (the min) and grows one line at a time as content is added, up to `maxLines`
    * rows, after which it scrolls. Ignored on a single-line field, or when
    * `maxLines` is not greater than `numberOfLines`. On web this needs a
-   * controlled `value` — growth is measured whenever `value` changes.
+   * controlled `value` — growth is measured whenever `value` changes. A
+   * `seamless` multiline field auto-grows even without `maxLines` (it grows to
+   * fit ALL its content so it reads as body text); pass `maxLines` to cap it.
    */
   maxLines?: number;
   /** Force the active (primary) border, e.g. while an attached popover is open. */
   active?: boolean;
+  /**
+   * Draw the focus ring *inset* (inside the box) rather than as the default
+   * outset glow. An outset glow is clipped by an `overflow: hidden` ancestor, so
+   * a chrome-less `plain` / `seamless` field embedded in a table cell, data-grid
+   * cell, or truncating card — which has no border to recolor and hides the
+   * native outline — should opt in to keep a visible focus indicator (WCAG 2.1
+   * 2.4.7). On a zero-padding `seamless` field the inset ring paints over the
+   * text edges, so prefer reserving a little padding on the clipping ancestor
+   * where you can. Ignored on native, where the OS focus affordance applies.
+   */
+  focusRingInset?: boolean;
   /** Marks the input required (wires `aria-required`). */
   required?: boolean;
   /** Leading decorative icon shown inside the box. */
@@ -107,6 +126,7 @@ export function InputFrame({
   clearable = false,
   clearAccessibilityLabel,
   clearVisible,
+  focusRingInset = false,
   inputRef,
   inputStyle,
   invalid = false,
@@ -126,9 +146,14 @@ export function InputFrame({
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createInputStyles(theme, size), [theme, size]);
   const iconSize = inputIconSize(size);
-  const focus = useFocusRing();
+  // An inset ring survives an `overflow: hidden` ancestor that would clip the
+  // default outset glow — the pattern the date wheel and data-grid resize handle
+  // already use for controls nested inside clipping containers.
+  const focus = useFocusRing(focusRingInset ? { offset: -2 } : {});
   const plain = variant === "plain";
+  const seamless = variant === "seamless";
   const multiline = Boolean(props.multiline);
+  const seamlessMultiline = seamless && multiline;
   const showClear = clearable && (clearVisible ?? Boolean(props.value));
   const borderActive = focus.focused || active;
   const clearLabel =
@@ -150,10 +175,16 @@ export function InputFrame({
   );
   // Auto-grow: a multiline field with a `maxLines` cap above its `numberOfLines`
   // floor grows with content between the two row-derived pixel bounds. The floor
-  // defaults to two rows when the caller sets no `numberOfLines`.
-  const minRows = props.numberOfLines ?? 2;
-  const autoGrowEnabled = multiline && maxLines != null && maxLines > minRows;
-  const bounds = autoGrowTextareaBounds(size, minRows, maxLines ?? minRows);
+  // defaults to two rows (one for a seamless field, which starts as a single
+  // line of text) when the caller sets no `numberOfLines`.
+  const minRows = props.numberOfLines ?? (seamlessMultiline ? 1 : 2);
+  // A seamless multiline field always auto-grows — it reads as body text, so it
+  // grows to fit ALL its content, uncapped (`maxLines` still caps it). A framed
+  // / plain field only auto-grows with an explicit `maxLines` above the floor.
+  const autoGrowEnabled =
+    seamlessMultiline || (multiline && maxLines != null && maxLines > minRows);
+  const maxRows = maxLines ?? (seamlessMultiline ? Infinity : minRows);
+  const bounds = autoGrowTextareaBounds(size, minRows, maxRows);
   const autoGrow = useAutoGrowTextarea({
     enabled: autoGrowEnabled,
     lineHeight: bounds.lineHeight,
@@ -183,6 +214,10 @@ export function InputFrame({
         // `borderWidth` (there is no border to recolor on a plain field).
         plain ? styles.boxPlain : null,
         multiline ? styles.boxMultiline : null,
+        // `seamless` strips the same chrome plus the reserved height and all
+        // padding, so it must sit AFTER `boxMultiline` to override its vertical
+        // padding, and (like `plain`) before the active / invalid border layers.
+        seamless ? styles.boxSeamless : null,
         invalid ? styles.boxInvalid : borderActive ? styles.boxActive : null,
         style,
         // The focus ring (a geometry-bearing outline, not just a border
@@ -220,7 +255,15 @@ export function InputFrame({
           props.onFocus?.(event);
         }}
         style={[
-          multiline ? styles.textareaInput : styles.input,
+          // `seamless` uses the chrome-less, height-less text styles so the
+          // field flows like ordinary copy; the others keep the fixed-height box.
+          multiline
+            ? seamless
+              ? styles.textareaSeamless
+              : styles.textareaInput
+            : seamless
+              ? styles.inputSeamless
+              : styles.input,
           // The auto-grow bounds (min/max/height + line height) override the
           // fixed textarea min-height; a caller `inputStyle` still wins.
           autoGrow.style,

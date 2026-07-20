@@ -114,6 +114,63 @@ const inlineStyles = StyleSheet.create({
   },
 });
 
+export const SeamlessEditor: Story = {
+  name: "Seamless (invisible) editor",
+  render: () => surface(<SeamlessEditorExample />),
+};
+
+function SeamlessEditorExample() {
+  const [title, setTitle] = useState("Untitled document");
+  const [body, setBody] = useState(
+    "This whole card reads as plain text, but every line is editable — click " +
+      "in and type. The body grows to fit as you add lines.",
+  );
+  return (
+    // A document-like surface whose heading and body ARE editable text: the
+    // seamless fields carry no border, fill, or box height, so they sit flush in
+    // the copy and only reveal a focus ring when you edit them. Each field styles
+    // its text through `inputStyle` to match the surrounding type, and both keep
+    // an accessible name because there is no visible label.
+    <View style={seamlessStyles.doc}>
+      <Input
+        accessibilityLabel="Document title"
+        inputStyle={seamlessStyles.title}
+        onChangeText={setTitle}
+        placeholder="Untitled document"
+        value={title}
+        variant="seamless"
+      />
+      <Textarea
+        accessibilityLabel="Document body"
+        inputStyle={seamlessStyles.body}
+        // Seamless multiline grows to fit all its content (no maxLines cap), so
+        // the field is exactly as tall as the text — like a paragraph you edit
+        // in place. Start it as a single line.
+        numberOfLines={1}
+        onChangeText={setBody}
+        placeholder="Start writing…"
+        value={body}
+        variant="seamless"
+      />
+    </View>
+  );
+}
+
+const seamlessStyles = StyleSheet.create({
+  body: { color: "#41463f", fontSize: 15, lineHeight: 22 },
+  doc: {
+    backgroundColor: "#fff",
+    borderColor: "#e5e8e0",
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 8,
+    padding: 20,
+  },
+  // A matching line height keeps the larger heading glyphs clear of the
+  // height-less, zero-padding seamless box (never clipped).
+  title: { color: "#20241f", fontSize: 22, fontWeight: "700", lineHeight: 28 },
+});
+
 export const FieldSizes: Story = {
   name: "Field sizes",
   render: () => surface(<FieldSizesExample />),
