@@ -108,6 +108,39 @@ test("Enter deletes a same-block selection before splitting", async ({
   );
 });
 
+test("Shift+Enter deletes a same-block selection before soft-breaking", async ({
+  page,
+}) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("hello world");
+  await selectTextInBlock(page, 0, 6, 11);
+  await page.keyboard.press("Shift+Enter");
+
+  await expect(page.locator('[data-rt="p"]')).toHaveCount(1);
+  const readout = page.getByTestId("rich-text-markdown-out");
+  await expect(readout).toContainText("hello");
+  await expect(readout).not.toContainText("world");
+});
+
+test("prefix-rule revert disarms when focus leaves the editor", async ({
+  page,
+}) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("# Hello");
+  await page.getByTestId("rich-text-markdown-out").click();
+  await placeCaretAtBlockStart(page, 0);
+  await page.keyboard.press("Backspace");
+
+  await expect(page.locator('[data-rt="h1"]')).toHaveText("Hello");
+  await expect(page.getByTestId("rich-text-markdown-out")).toHaveText(
+    "# Hello",
+  );
+});
+
 test("checklist checkbox click toggles markdown state", async ({ page }) => {
   await gotoRichTextStory(page);
 

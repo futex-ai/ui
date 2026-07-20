@@ -458,21 +458,25 @@ export function RichTextEditor({
       handleMouseDown(event, root, commitDocument);
     };
     const selectionChange = () => {
-      if (!root.contains(document.activeElement)) {
-        return;
-      }
       const lastRule = lastRuleRef.current;
       if (!lastRule) {
         return;
       }
-      const position = docPositionFromDom(root, window.getSelection());
-      if (
-        position &&
-        position.block === lastRule.block &&
-        position.offset === 0
-      ) {
-        return;
+      // Stay armed only while the caret still sits exactly where the rule
+      // left it; focus moving out of the editor is a movement too.
+      if (root.contains(document.activeElement)) {
+        const position = docPositionFromDom(root, window.getSelection());
+        if (
+          position &&
+          position.block === lastRule.block &&
+          position.offset === 0
+        ) {
+          return;
+        }
       }
+      lastRuleRef.current = null;
+    };
+    const focusOut = () => {
       lastRuleRef.current = null;
     };
     root.addEventListener("beforeinput", beforeInput);
@@ -481,6 +485,7 @@ export function RichTextEditor({
     root.addEventListener("compositionstart", compositionStart);
     root.addEventListener("compositionend", compositionEnd);
     root.addEventListener("mousedown", mouseDown);
+    root.addEventListener("focusout", focusOut);
     document.addEventListener("selectionchange", selectionChange);
     return () => {
       root.removeEventListener("beforeinput", beforeInput);
@@ -489,6 +494,7 @@ export function RichTextEditor({
       root.removeEventListener("compositionstart", compositionStart);
       root.removeEventListener("compositionend", compositionEnd);
       root.removeEventListener("mousedown", mouseDown);
+      root.removeEventListener("focusout", focusOut);
       document.removeEventListener("selectionchange", selectionChange);
     };
   }, [
