@@ -168,9 +168,10 @@ top for one-off layout tweaks (e.g. margins).
 - **Keyboard (2.1.1, A).** Enter/Space activation is delegated to React Native
   Web's `role="button"` synthesis (no explicit `onKeyDown` is wired); a
   Playwright test asserts both keys still activate to catch RNW regressions.
-- **Focus visible (2.4.7, AA).** A geometry-bearing box-shadow ring is shown on
-  focus for every tone (including `primary`, where a border-colour ring would be
-  invisible), and the browser's default outline is suppressed.
+- **Focus visible (2.4.7, AA).** The library's shared soft focus glow (the same
+  `useFocusRing` box-shadow ring input / switch / radio / segmented use) is shown
+  on focus for every tone — including `primary`, where a border-colour ring would
+  be invisible — and the browser's default outline is suppressed.
 - **Resting border.** The secondary button's resting edge uses the
   `controlBorder` token — a soft, translucent-ink line (intentionally below the
   1.4.11 ≥3:1 non-text-contrast floor, for a calmer edge). The `ghost` tone
