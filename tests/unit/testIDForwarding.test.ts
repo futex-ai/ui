@@ -66,6 +66,7 @@ const FORWARDING_FILES = [
   "sheet/Sheet.tsx",
   "sheet/Sheet.web.tsx",
   "skeleton/Skeleton.tsx",
+  "sortable-list/SortableList.tsx",
   "spinner/Spinner.tsx",
   "switch/Switch.tsx",
   "table/Table.tsx",
