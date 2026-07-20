@@ -180,6 +180,49 @@ the other platform. `align` accepts `"start" | "center" | "end"` (default
 `"end"`); `"center"` currently falls back to `"start"` until the placement engine
 gains center support.
 
+## ResponsiveMenu
+
+`ResponsiveMenu` is a menu over the `ResponsivePopover` surface — an anchored
+dialog on web, a bottom sheet on native — that gives the responsive surface the
+same keyboard behaviour as [`DropdownMenu`](../dropdown/README.md): opening moves
+focus into the dialog surface, yet ↑/↓ still move the active row and Enter
+selects. Reach for it instead of dropping a bare `DropdownList` into a
+`ResponsivePopover`: that list's key handler is bound to its inner `ScrollView`,
+so it only fires while focus sits inside the scroll node — but the surface takes
+focus on open, so the keydowns bubble past it and nothing navigates.
+`ResponsiveMenu` fixes this by owning the same `useDropdownSelectorNavigation`
+document-level listener `DropdownMenu` uses and driving the list through a
+controlled active row, so navigation is independent of where focus lands. On
+native there is no keyboard — the rows are tapped directly.
+
+You supply `entries` (the same [`DropdownListEntry`](../dropdown/README.md) rows)
+plus the `ResponsivePopover` surface props; the caller still owns the trigger and
+`open` state. Rows close the surface after selection unless `closeOnSelect` is
+`false`.
+
+```tsx
+import { ResponsiveMenu } from "@firna/ui/popover";
+
+const anchorRef = useRef<View>(null);
+const [open, setOpen] = useState(false);
+
+<Pressable ref={anchorRef} aria-expanded={open} onPress={() => setOpen((o) => !o)}>
+  <Text>Row actions</Text>
+</Pressable>
+<ResponsiveMenu
+  anchorRef={anchorRef}
+  label="Row actions"
+  maxHeight={320}
+  minWidth={220}
+  onClose={() => setOpen(false)}
+  open={open}
+  entries={[
+    { id: "rename", label: "Rename", onPress: rename, type: "item" },
+    { id: "delete", label: "Delete", onPress: remove, tone: "danger", type: "item" },
+  ]}
+/>;
+```
+
 ## Theming
 
 The surface chrome (background, border, radius, shadow) comes from

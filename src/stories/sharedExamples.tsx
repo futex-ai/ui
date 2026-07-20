@@ -26,6 +26,7 @@ import {
   DropdownPlacement,
   DropdownSelector,
   Popover,
+  ResponsiveMenu,
   ResponsivePopover,
   SharedUiTheme,
   SharedUiThemeOverrides,
@@ -529,6 +530,66 @@ export function ResponsivePopoverExample() {
           </View>
         )}
       </ResponsivePopover>
+    </View>
+  );
+}
+
+export function ResponsiveMenuExample() {
+  // Same controlled, externally-anchored API as ResponsivePopover, but the body
+  // is a keyboard-navigable menu. On web ↑/↓ move the active row and Enter
+  // selects even though focus rests on the dialog surface (a document-level
+  // listener drives it); on native the rows render as tappable sheet rows.
+  const anchorRef = useRef<View>(null);
+  const [open, setOpen] = useState(false);
+  const [lastAction, setLastAction] = useState("None");
+  const entries: DropdownListEntry[] = [
+    {
+      id: "rename",
+      label: "Rename",
+      leading: <DropdownIconBox Icon={Settings} />,
+      onPress: () => setLastAction("Rename"),
+      type: "item",
+    },
+    {
+      id: "duplicate",
+      label: "Duplicate",
+      leading: <DropdownIconBox Icon={Plus} />,
+      onPress: () => setLastAction("Duplicate"),
+      type: "item",
+    },
+    { id: "divider", label: "divider", type: "divider" },
+    {
+      id: "delete",
+      label: "Delete",
+      leading: <DropdownIconBox Icon={Trash2} tone="danger" />,
+      onPress: () => setLastAction("Delete"),
+      tone: "danger",
+      type: "item",
+    },
+  ];
+  return (
+    <View style={styles.actionMenuExample}>
+      <Pressable
+        accessibilityLabel="Row actions"
+        accessibilityRole="button"
+        aria-expanded={open}
+        onPress={() => setOpen((current) => !current)}
+        ref={anchorRef}
+        style={[styles.responsiveTrigger, open ? styles.buttonOpen : null]}
+      >
+        <Text style={styles.buttonText}>Row actions</Text>
+        <ChevronDown color="#fff" size={16} />
+      </Pressable>
+      <ResponsiveMenu
+        anchorRef={anchorRef}
+        entries={entries}
+        label="Row actions"
+        maxHeight={320}
+        minWidth={220}
+        onClose={() => setOpen(false)}
+        open={open}
+      />
+      <Text style={styles.actionMenuStatus}>Last action: {lastAction}</Text>
     </View>
   );
 }

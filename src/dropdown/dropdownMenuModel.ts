@@ -240,6 +240,21 @@ export function mergeDropdownSurfaceHoverProps(
   };
 }
 
+/**
+ * Whether any row can take keyboard focus / be selected — a non-disabled item or
+ * footer row. A menu of only dividers/sections is inert, so keyboard navigation
+ * stays disabled for it. Shared by `DropdownMenu` and `ResponsiveMenu` so the
+ * two derive interactivity the same way.
+ */
+export function hasSelectableDropdownMenuEntry(
+  entries: DropdownListEntry[],
+): boolean {
+  return entries.some(
+    (entry) =>
+      (entry.type === "item" || entry.type === "footer") && !entry.disabled,
+  );
+}
+
 /** Wrap selectable row presses so common action menus close after selection. */
 export function closeDropdownMenuEntries(
   entries: DropdownListEntry[],

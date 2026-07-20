@@ -58,6 +58,7 @@ const FORWARDING_FILES = [
   "popover/Popover.tsx",
   "popover/PopoverSurface.tsx",
   "popover/PopoverSurface.web.tsx",
+  "popover/ResponsiveMenu.tsx",
   "popover/ResponsivePopover.tsx",
   "popover/ResponsivePopover.web.tsx",
   "radio/RadioCard.tsx",
