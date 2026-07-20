@@ -74,6 +74,31 @@ type ButtonBaseProps = {
    */
   iconNode?: ReactNode;
   /**
+   * Render a compact, line-height-neutral chip that flows inside a line of text
+   * (e.g. an inline "Restore" / "Undo" action beside a label). It drops the
+   * fixed track height and hugs the label with a tight padding, then pulls that
+   * padding — and the 1px border — back off with a negative vertical margin, so
+   * the button's outer (margin-box) height collapses to exactly its label line
+   * height. Dropped into a row it then takes the same vertical space as a run of
+   * text at its `size` and never grows the row's line height; the pill's
+   * fill/border overflow the text line above and below without affecting layout.
+   *
+   * Composes with `tone` (`secondary` gives a bordered chip; `ghost` / `plain`
+   * are borderless), `size`, and `icon`. It is a small, non-touch-first target —
+   * it relies on WCAG 2.1 — 2.5.8's inline / line-height target-size exception
+   * rather than the 24px minimum — so reach for it in pointer/text contexts, not
+   * for primary touch actions. It is a text-flow chip: the icon-only `square` /
+   * `circle` shapes and an explicit `minTouchTarget` floor are fixed-size intents
+   * that contradict the line-height collapse, so `inline` is skipped (a no-op)
+   * when either is set, and it should not be paired with `block`. Because the
+   * chip **and its focus ring** overflow the text line, give the row a little
+   * vertical padding — a touch more than the pill, for the ring. On web this
+   * matters only under an `overflow: "hidden"` ancestor; on native (notably
+   * Android) a parent can clip children to its own bounds, so the padding keeps
+   * the pill from being sheared there.
+   */
+  inline?: boolean;
+  /**
    * Floor the tap target at this many px (min width AND height). Independent of
    * the `size` label scale, so a compact icon-only button can still meet a
    * comfortable ≥40–44px touch target. On `square` / `circle` it also grows the
@@ -140,6 +165,7 @@ export function Button({
   disabled = false,
   icon: Icon,
   iconNode,
+  inline = false,
   minTouchTarget,
   onPress,
   shape = "rounded",
@@ -186,6 +212,15 @@ export function Button({
 
   const hasVisibleLabel = children != null && children !== "";
 
+  // The inline chip only applies to the default `rounded` shape with no competing
+  // fixed-size intent. `block` (full-width), a `minTouchTarget` floor, and the
+  // icon-only `square` / `circle` boxes each set a size that contradicts the
+  // line-height collapse, so they take precedence and `inline` is a no-op — this
+  // keeps the negative margin from leaking through those layouts and pulling
+  // their neighbours out of place.
+  const inlineChip =
+    inline && !block && shape === "rounded" && minTouchTarget == null;
+
   if (!hasVisibleLabel && !accessibilityLabel) {
     // An icon-only button with no accessible name is invisible to assistive
     // technology (WCAG 2.1 — 1.1.1 / 4.1.2). The type system enforces this for
@@ -218,6 +253,11 @@ export function Button({
         tone === "plain" ? styles.plain : null,
         tone === "danger" ? styles.danger : null,
         block ? styles.block : null,
+        // The inline chip drops the fixed track height and collapses to the label
+        // line height, layering after the tone styles so the tone fill/border
+        // still show. It is gated (see `inlineChip`) to the plain rounded shape
+        // with no competing size intent, so it never fights `block` / `shapeStyle`.
+        inlineChip ? styles.inline : null,
         // The shape override (1:1 box / min tap target) sits after `block` so a
         // fixed square size wins over `block`'s full-width stretch.
         shapeStyle,

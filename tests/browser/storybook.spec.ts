@@ -2026,6 +2026,37 @@ test("button sizes step the control height across the shared scale", async ({
   expect(Math.abs((large?.height ?? 0) - 46)).toBeLessThanOrEqual(1);
 });
 
+test("inline button collapses its margin box to the label line height", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=button-examples--inline");
+
+  // The first "Restore" chip is a default md/secondary inline button. Its visible
+  // pill (border box) is deliberately taller than a line of text, but its OUTER
+  // (margin) box — border box plus the negative vertical margins — collapses to
+  // exactly the md label line height (16px). That collapse is what keeps the chip
+  // from adding any height to the row it flows in; the pill just overflows the
+  // text line above and below.
+  const chip = page.getByRole("button", { name: "Restore" }).first();
+  const box = await chip.evaluate((el) => {
+    const cs = getComputedStyle(el);
+    const rect = el.getBoundingClientRect();
+    return {
+      borderBox: rect.height,
+      marginBox:
+        rect.height + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom),
+    };
+  });
+
+  // The margin box is the md label line height (16px). Pins the negative-margin
+  // math, including the +1px-per-side base-border cancellation: dropping it would
+  // leave the margin box at ~18px and fail here.
+  expect(Math.abs(box.marginBox - 16)).toBeLessThanOrEqual(1);
+  // The visible pill is meaningfully taller than that collapsed footprint — it
+  // overflows the text line rather than growing it.
+  expect(box.borderBox).toBeGreaterThan(box.marginBox + 2);
+});
+
 test("input sizes step the field height across the shared scale", async ({
   page,
 }) => {

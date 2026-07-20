@@ -5,6 +5,7 @@ import {
   MoreHorizontal,
   Pencil,
   Plus,
+  RotateCcw,
   Settings,
   Trash2,
 } from "lucide-react-native";
@@ -68,6 +69,50 @@ export const Sizes: Story = {
         </Button>
       </>,
     ),
+};
+
+export const Inline: Story = {
+  name: "Inline (in text)",
+  render: () => (
+    <StorySurface>
+      <View style={styles.stack}>
+        {/* The `inline` chip flows in a text row and collapses to the row's line
+            height: the pill's fill/border overflow the text line above and below
+            without making the row any taller (the "Moved to Trash — Restore"
+            pattern). */}
+        <View style={styles.inlineRow}>
+          <Text style={styles.inlineText}>Moved to Trash</Text>
+          <Button inline onPress={noop}>
+            Restore
+          </Button>
+        </View>
+        {/* Tones compose with `inline`: `secondary` (default) is a bordered chip,
+            `ghost` and `plain` are borderless; a leading icon still works. */}
+        <View style={styles.inlineRow}>
+          <Text style={styles.inlineText}>Draft saved.</Text>
+          <Button inline onPress={noop} tone="ghost">
+            Undo
+          </Button>
+          <Button icon={RotateCcw} inline onPress={noop} tone="plain">
+            Restore
+          </Button>
+        </View>
+        {/* Each size collapses to its own text line height, so the row tracks the
+            text beside it rather than the button. */}
+        <View style={styles.inlineRow}>
+          <Button inline onPress={noop} size="sm">
+            Small
+          </Button>
+          <Button inline onPress={noop} size="md">
+            Medium
+          </Button>
+          <Button inline onPress={noop} size="lg">
+            Large
+          </Button>
+        </View>
+      </View>
+    </StorySurface>
+  ),
 };
 
 export const WithIcons: Story = {
@@ -255,6 +300,22 @@ function BusyExample() {
 const styles = StyleSheet.create({
   emoji: {
     fontSize: 16,
+    lineHeight: 20,
+  },
+  inlineRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    minWidth: 320,
+    // A little vertical headroom so the chip (and its focus ring), which overflow
+    // the text line, are never clipped — required under an `overflow: "hidden"`
+    // ancestor on web and by default on native Android.
+    paddingVertical: 8,
+  },
+  inlineText: {
+    color: "#1c1f1d",
+    fontSize: 14,
     lineHeight: 20,
   },
   row: {

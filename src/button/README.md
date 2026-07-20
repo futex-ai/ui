@@ -19,6 +19,8 @@ theme tokens.
   rendered as-is, never wrapped in `<Text>`).
 - Render as an icon-only `square` or `circle` (`shape`) 1:1 tap target, with an
   optional `minTouchTarget` floor independent of the label height scale.
+- Render a compact, line-height-neutral `inline` chip that flows inside a line of
+  text (an inline "Restore" / "Undo" action) without growing the row's height.
 - Stretch full width with `block`.
 - Own the sage focus ring on the whole control and hide the browser's default
   outline, using shared theme colours and radii.
@@ -67,6 +69,14 @@ import { Plus, Settings } from "lucide-react-native";
 <Button busy={saving} onPress={save} tone="primary">
   {saving ? "Saving" : "Save"}
 </Button>
+
+{/* Inline chip beside a label — collapses to the row's line height. The row's
+    `paddingVertical` gives the overflowing pill + focus ring room (needed under
+    `overflow: "hidden"` on web and on native Android). */}
+<View style={{ alignItems: "center", flexDirection: "row", gap: 8, paddingVertical: 8 }}>
+  <Text>Moved to Trash</Text>
+  <Button inline onPress={restore}>Restore</Button>
+</View>
 ```
 
 ### Tones
@@ -102,6 +112,33 @@ and matches the accounting button (38px tall). Buttons and inputs share this
 scale, so a form can size a field and its submit button consistently. `sm`
 (30px) suits dense, non-touch-first contexts such as table rows and toolbars;
 prefer `md` or `lg` for primary, touch-first actions.
+
+### Inline
+
+`inline` renders a compact chip that flows inside a line of text — an inline
+"Restore" / "Undo" action beside a label — without changing the row's line
+height. It drops the fixed track height and hugs the label with a tight padding,
+then pulls that padding (and the 1px border) back off with a negative vertical
+margin, so the button's outer (margin-box) height collapses to exactly its label
+line height. Dropped into a row it takes the same vertical space as a run of text
+at its `size`, so the row's height tracks the text beside it, not the button; the
+pill's fill/border overflow the text line above and below without affecting
+layout.
+
+It composes with `tone` (`secondary` (default) is a bordered chip; `ghost` and
+`plain` are borderless), `size`, and a leading `icon`. It is a small,
+non-touch-first target — it relies on WCAG 2.5.8's inline / line-height
+target-size exception rather than the 24px minimum — so reach for it in
+pointer/text contexts, not for primary touch actions. It is a text-flow chip: the
+icon-only `square` / `circle` shapes and an explicit `minTouchTarget` are
+fixed-size intents that contradict the collapse, so `inline` is ignored (a no-op)
+when either is set, and it should not be paired with `block`.
+
+Because the chip **and its focus ring** overflow the text line, give the row a
+little vertical padding — slightly more than the pill, for the ring. On web that
+only matters under an `overflow: "hidden"` ancestor; on native (notably Android)
+a parent can clip children to its own bounds, so the padding keeps the pill from
+being sheared. The example rows in the story set `paddingVertical` for this.
 
 ### Block
 

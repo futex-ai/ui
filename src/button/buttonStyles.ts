@@ -9,6 +9,11 @@ import type { SharedUiTheme } from "../theme";
  * matching icon diameter. `md` matches the accounting button this was adapted
  * from (38px tall); `sm` is the compact toolbar density and `lg` the roomier
  * call-to-action density.
+ *
+ * The `inline*` padding is used only by the {@link ButtonProps.inline} variant:
+ * a compact, line-height-neutral in-text chip that drops the fixed track height
+ * and instead hugs the label, so its vertical footprint collapses to the label
+ * line height (see {@link createButtonStyles}).
  */
 const BUTTON_SIZES: Record<
   ControlSize,
@@ -17,6 +22,8 @@ const BUTTON_SIZES: Record<
     gap: number;
     height: number;
     iconSize: number;
+    inlinePaddingHorizontal: number;
+    inlinePaddingVertical: number;
     lineHeight: number;
     paddingHorizontal: number;
   }
@@ -26,6 +33,8 @@ const BUTTON_SIZES: Record<
     gap: 6,
     height: 30,
     iconSize: 14,
+    inlinePaddingHorizontal: 8,
+    inlinePaddingVertical: 2,
     lineHeight: 15,
     paddingHorizontal: 12,
   },
@@ -34,6 +43,8 @@ const BUTTON_SIZES: Record<
     gap: 6,
     height: 38,
     iconSize: 16,
+    inlinePaddingHorizontal: 10,
+    inlinePaddingVertical: 3,
     lineHeight: 16,
     paddingHorizontal: 16,
   },
@@ -42,6 +53,8 @@ const BUTTON_SIZES: Record<
     gap: 8,
     height: 46,
     iconSize: 18,
+    inlinePaddingHorizontal: 12,
+    inlinePaddingVertical: 4,
     lineHeight: 18,
     paddingHorizontal: 20,
   },
@@ -117,6 +130,21 @@ export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
     // owns the node's colour and size — and is hidden from assistive tech on
     // web like the lucide `icon` (the label / `accessibilityLabel` names it).
     iconNode: { alignItems: "center", justifyContent: "center" },
+    // The `inline` variant: a compact, line-height-neutral in-text chip. It drops
+    // the fixed track `height` (`"auto"` so the box hugs the label) and takes a
+    // tight vertical padding, then pulls that padding — plus the 1px base border
+    // — back off with a negative `marginVertical`. The result is a margin box
+    // exactly the label's `lineHeight` tall, so the chip occupies the same
+    // vertical space as a run of text at its size and never grows the row it sits
+    // in; the pill's fill/border overflow the text line above and below without
+    // affecting layout. The tone (fill/border/label colour), hover, and focus
+    // ring all still layer on from the shared tone styles.
+    inline: {
+      height: "auto",
+      marginVertical: -(sizing.inlinePaddingVertical + 1),
+      paddingHorizontal: sizing.inlinePaddingHorizontal,
+      paddingVertical: sizing.inlinePaddingVertical,
+    },
     label: {
       ...baseText,
       fontSize: sizing.fontSize,
