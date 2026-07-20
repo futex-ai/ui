@@ -209,6 +209,43 @@ test("button renders square / circle icon-only shapes with a min tap target", ()
   );
 });
 
+test("button renders a compact, line-height-neutral inline chip", () => {
+  const source = readSource("../../src/button/Button.tsx");
+  const stylesSource = readSource("../../src/button/buttonStyles.ts");
+
+  // The `inline` prop is declared, defaulted off, and gated to a plain text-flow
+  // chip (rounded shape, no `block` / `minTouchTarget`) before it layers into the
+  // style array — so its negative margin never leaks into the fixed-size layouts.
+  assert.match(source, /inline\?: boolean;/);
+  assert.match(source, /inline = false/);
+  assert.match(
+    source,
+    /const inlineChip =\s*inline && !block && shape === "rounded" && minTouchTarget == null/,
+  );
+  assert.match(source, /inlineChip \? styles\.inline : null/);
+  // The inline style drops the fixed track height (`"auto"`, so the box hugs the
+  // label) and collapses its margin box to the label line height by pulling the
+  // tight padding — plus the 1px base border — back off with a negative
+  // `marginVertical`.
+  assert.match(stylesSource, /inline: \{[\s\S]*?height: "auto"/);
+  assert.match(
+    stylesSource,
+    /marginVertical: -\(sizing\.inlinePaddingVertical \+ 1\)/,
+  );
+  assert.match(
+    stylesSource,
+    /paddingHorizontal: sizing\.inlinePaddingHorizontal/,
+  );
+  assert.match(stylesSource, /paddingVertical: sizing\.inlinePaddingVertical/);
+  // Each size carries its own compact inline padding.
+  for (const size of ["sm", "md", "lg"]) {
+    assert.match(
+      stylesSource,
+      new RegExp(`${size}: \\{[\\s\\S]*?inlinePaddingVertical: \\d`),
+    );
+  }
+});
+
 test("button renders a caller-supplied iconNode as-is, not inside Text", () => {
   const source = readSource("../../src/button/Button.tsx");
 
