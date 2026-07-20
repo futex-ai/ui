@@ -61,6 +61,8 @@ const FORWARDING_FILES = [
   "popover/ResponsivePopover.tsx",
   "popover/ResponsivePopover.web.tsx",
   "radio/RadioCard.tsx",
+  "rich-text/RichTextEditor.tsx",
+  "rich-text/RichTextEditor.web.tsx",
   "segmented/SegmentedControl.tsx",
   "sheet/BottomSheetShell.tsx",
   "sheet/Sheet.tsx",
@@ -87,7 +89,7 @@ test("every public component file forwards a caller testID to a host root", () =
     // `testID={testID ?? "animated-border"}`.
     assert.match(
       source,
-      /testID=\{testID(\s*\?\?\s*"[^"]+")?\}/,
+      /(?:testID|data-testid)=\{testID(\s*\?\?\s*"[^"]+")?\}/,
       `${file} should forward testID={testID} to its root host element`,
     );
   }
@@ -109,6 +111,8 @@ test("forwarding components declare an optional testID prop", () => {
     "modal/WebModalFrame.web.tsx": "modal/types.ts",
     "popover/ResponsivePopover.tsx": "popover/responsivePopoverModel.ts",
     "popover/ResponsivePopover.web.tsx": "popover/responsivePopoverModel.ts",
+    "rich-text/RichTextEditor.tsx": "rich-text/richTextTypes.ts",
+    "rich-text/RichTextEditor.web.tsx": "rich-text/richTextTypes.ts",
     "sheet/Sheet.tsx": "sheet/types.ts",
     "sheet/Sheet.web.tsx": "sheet/types.ts",
   };

@@ -120,6 +120,11 @@
       "react-native": "./dist/radio/index.js",
       "import": "./dist/node/radio/index.js"
     },
+    "./rich-text": {
+      "types": "./dist/node/rich-text/index.d.ts",
+      "react-native": "./dist/rich-text/index.js",
+      "import": "./dist/node/rich-text/index.js"
+    },
     "./segmented": {
       "types": "./dist/node/segmented/index.d.ts",
       "react-native": "./dist/segmented/index.js",
