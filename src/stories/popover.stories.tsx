@@ -6,6 +6,7 @@ import { Popover } from "../index";
 import {
   ControlledPopoverExample,
   PopoverExample,
+  ResponsiveMenuExample,
   ResponsivePopoverExample,
   SelectorInPopoverExample,
   StorySurface,
@@ -66,6 +67,22 @@ export const ResponsivePopoverWeb: Story = {
   render: () => (
     <StorySurface>
       <ResponsivePopoverExample />
+    </StorySurface>
+  ),
+};
+
+/**
+ * `ResponsiveMenu` gives the responsive surface `DropdownMenu`'s keyboard
+ * behaviour: opening moves focus into the dialog surface, yet ↑/↓ still move the
+ * active row and Enter selects (a document-level listener drives the list
+ * regardless of focus). On native the same `entries` render as tappable bottom
+ * sheet rows. The caller owns only the trigger and the `open` state.
+ */
+export const ResponsiveMenuStory: Story = {
+  name: "Responsive menu (keyboard-navigable)",
+  render: () => (
+    <StorySurface>
+      <ResponsiveMenuExample />
     </StorySurface>
   ),
 };

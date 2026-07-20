@@ -1575,6 +1575,75 @@ test("responsive popover opens an anchored dialog with focus management and a ne
   await expect(trigger).toBeFocused();
 });
 
+test("responsive menu navigates with the keyboard while focus rests on the dialog surface", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=popover-examples--responsive-menu-story");
+
+  const trigger = page.getByRole("button", { name: "Row actions" });
+  const dialog = page.getByRole("dialog", { name: "Row actions" });
+  await expect(dialog).toBeHidden();
+
+  await trigger.click();
+  await expect(dialog).toBeVisible();
+  // The rows are exposed as menuitems inside the dialog.
+  await expect(page.getByRole("menuitem", { name: "Rename" })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "Duplicate" })).toBeVisible();
+
+  // Focus lands on the dialog surface, NOT inside the list — the exact condition
+  // that leaves a bare DropdownList's arrow keys dead (its handler is bound to
+  // the inner ScrollView). Navigation still works here because the menu owns a
+  // document-level keydown listener that drives the active row.
+  const focusOnSurface = await page.evaluate(() => {
+    const surface = document.querySelector('[role="dialog"]');
+    return surface !== null && surface === document.activeElement;
+  });
+  expect(focusOnSurface).toBe(true);
+
+  // ArrowDown moves off the preselected first row (Rename) to Duplicate; Enter
+  // runs it and closes the menu, returning focus to the trigger.
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("Last action: Duplicate")).toBeVisible();
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+
+  // Reopening resets the active row to the first item, so a bare Enter selects
+  // Rename with no arrow press.
+  await trigger.click();
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("Last action: Rename")).toBeVisible();
+  await expect(dialog).toBeHidden();
+});
+
+test("responsive menu surface suppresses the browser's default focus ring", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=popover-examples--responsive-menu-story");
+
+  // Open via the keyboard so Chrome's `:focus-visible` heuristic engages — the
+  // state where the UA would otherwise draw a heavy blue outline around the
+  // whole surface (a mouse open never matches `:focus-visible`, so it hides the
+  // regression).
+  await page.getByRole("button", { name: "Row actions" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("menuitem", { name: "Rename" })).toBeVisible();
+
+  const surface = await page.evaluate(() => {
+    const el = document.activeElement as HTMLElement | null;
+    if (!el || el.getAttribute("role") !== "dialog") return null;
+    return {
+      focusVisible: el.matches(":focus-visible"),
+      outlineStyle: getComputedStyle(el).outlineStyle,
+    };
+  });
+  // Focus lands on the dialog surface and it DOES match `:focus-visible`, yet the
+  // UA outline is suppressed — the active row highlight is the focus affordance.
+  expect(surface?.focusVisible).toBe(true);
+  expect(surface?.outlineStyle).toBe("none");
+});
+
 test("web sheet opens the modal bottom-sheet placement and closes on Escape", async ({
   page,
 }) => {

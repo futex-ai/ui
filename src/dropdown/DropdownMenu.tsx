@@ -21,6 +21,7 @@ import { DropdownPortal } from "./DropdownPortal";
 import type { DropdownPlacementOptions } from "./dropdownGeometry";
 import {
   closeDropdownMenuEntries,
+  hasSelectableDropdownMenuEntry,
   mergeDropdownMenuTriggerProps,
   mergeDropdownSurfaceHoverProps,
   resolveDropdownMenuOpen,
@@ -283,13 +284,6 @@ function dropdownMenuTriggerNode(
   return cloneElement(
     trigger,
     mergeDropdownMenuTriggerProps(trigger.props, triggerProps),
-  );
-}
-
-function hasSelectableDropdownMenuEntry(entries: DropdownListEntry[]): boolean {
-  return entries.some(
-    (entry) =>
-      (entry.type === "item" || entry.type === "footer") && !entry.disabled,
   );
 }
 
