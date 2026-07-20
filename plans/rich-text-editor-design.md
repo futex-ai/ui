@@ -131,7 +131,9 @@ Block mapping (each block element carries `data-rt` for round-tripping):
   the serializer flattens).
 - check `<li>` starts with
   `<span data-rt="checkbox" contenteditable="false" role="checkbox" aria-checked tabindex="-1">`
-  followed by `<span data-rt="checktext">` holding the inline content.
+  followed by `<span data-rt="checktext">` holding the inline content. The
+  checkbox carries `aria-label` = the item's plain text (fallback "Checklist
+  item") so the toggle has a non-empty accessible name (WCAG 4.1.2).
 - quote `<blockquote data-rt="quote">` · codeBlock
   `<pre data-rt="code"><code>` · divider
   `<div data-rt="divider" contenteditable="false"><hr></div>`.

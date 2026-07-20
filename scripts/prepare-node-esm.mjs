@@ -57,6 +57,13 @@ async function rewriteFile(path) {
 }
 
 function resolveRelativeSpecifier(importer, specifier) {
+  if (specifier.endsWith(".web")) {
+    const webFile = resolve(dirname(importer), `${specifier}.js`);
+    if (fileExists(webFile)) {
+      return `${specifier}.js`;
+    }
+  }
+
   if (extname(specifier) !== "") {
     return specifier;
   }
