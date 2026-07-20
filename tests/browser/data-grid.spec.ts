@@ -304,6 +304,24 @@ test("single-select cell edits through a dropdown", async ({ page }) => {
   await expect(page.getByText("Published").first()).toBeVisible();
 });
 
+test("a single click on an already-selected select cell opens its menu", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "editable");
+
+  // First click only selects the cell — no dropdown yet.
+  await page.getByText("Approved").first().click();
+  await expect(page.getByRole("menuitem", { name: "Published" })).toHaveCount(
+    0,
+  );
+
+  // Wait past the double-press window so the next click is a genuine single
+  // press, then click the now-active cell once to open its dropdown.
+  await page.waitForTimeout(400);
+  await page.getByText("Approved").first().click();
+  await expect(page.getByRole("menuitem", { name: "Published" })).toBeVisible();
+});
+
 test("multi-select cell adds an option via the combobox", async ({ page }) => {
   await gotoDataGridStory(page, "full-featured");
 
