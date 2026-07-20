@@ -189,6 +189,11 @@ wide-viewport experience.
 `bg`, separators use `border`, the selection wash uses `primarySoft`, the active
 cell uses an inset `primary` ring, and pills resolve to AA-contrast token pairs.
 
+Pass `square` to flatten the corners (`borderRadius: 0`) on the grid frame and the
+mobile card stack — useful when the grid sits flush inside a bordered panel. The
+outer border itself is not configurable; keep the grid in a container if you need
+to drop or restyle it.
+
 ## Key code
 
 - `DataGrid.tsx` — the controlled component + state wiring.
