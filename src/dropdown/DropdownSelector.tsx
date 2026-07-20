@@ -41,6 +41,8 @@ export type DropdownSelectorOption = {
   /** Trailing text (e.g. an account code); see {@link DropdownListEntry}. */
   rightText?: string;
   secondary?: string;
+  /** Test identifier forwarded to this option's row (`data-testid` on web). */
+  testID?: string;
   value: string;
 };
 
@@ -468,6 +470,7 @@ function selectorEntries(
         rightText: option.rightText,
         secondary: option.secondary,
         selected: option.value === value,
+        testID: option.testID,
         type: "item" as const,
       })),
     ];

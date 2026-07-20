@@ -53,6 +53,15 @@ export function buttonIconSize(size: ControlSize) {
 }
 
 /**
+ * Track height for a given button size, in px. Exposed so the icon-only
+ * `square` / `circle` shapes can derive a 1:1 box from the same per-size scale
+ * the labelled button uses (and floor it at a caller `minTouchTarget`).
+ */
+export function buttonHeight(size: ControlSize) {
+  return BUTTON_SIZES[size].height;
+}
+
+/**
  * Build the button's themed styles for a given size. The base `button` carries
  * the secondary (default) look — surface fill, `controlBorder` outline,
  * `radii.md` — and the tone styles layer over it. The label colour is applied
@@ -100,12 +109,28 @@ export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
     // `primaryDeep`), keeping it visually distinct from the neutral secondary
     // hover while staying borderless.
     ghostHover: { backgroundColor: theme.colors.primarySoft },
+    // Pressed deepens the accent wash one step past hover so an active press
+    // reads on the borderless tone (both hover + pressed layer, pressed wins).
+    ghostPressed: { backgroundColor: theme.colors.primaryBorder },
+    // A single centred wrapper for a caller-supplied `iconNode` (e.g. an
+    // `@expo/vector-icons` glyph). It is NOT wrapped in `<Text>` — the caller
+    // owns the node's colour and size — and is hidden from assistive tech on
+    // web like the lucide `icon` (the label / `accessibilityLabel` names it).
+    iconNode: { alignItems: "center", justifyContent: "center" },
     label: {
       ...baseText,
       fontSize: sizing.fontSize,
       fontWeight: "700",
       lineHeight: sizing.lineHeight,
     },
+    // The `plain` tone: a flush, borderless neutral button (an `ink` label /
+    // icon on no resting fill or border) for chrome-less header / composer icon
+    // buttons. Distinct from `ghost`, whose label carries the brand accent.
+    plain: { backgroundColor: "transparent", borderColor: "transparent" },
+    // The neutral hover / pressed washes, reused from the list row so a flush
+    // icon button tints in step with the rest of the library's neutral surfaces.
+    plainHover: { backgroundColor: theme.colors.soft },
+    plainPressed: { backgroundColor: theme.colors.bg2 },
     primary: {
       backgroundColor: theme.colors.primary,
       borderColor: theme.colors.primary,

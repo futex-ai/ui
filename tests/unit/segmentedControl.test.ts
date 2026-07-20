@@ -132,6 +132,53 @@ test("segmented control renders an info button after the label from labelInfo", 
   assert.match(stylesSource, /labelRow: \{[\s\S]*?flexDirection: "row"/);
 });
 
+test("segmented options accept a leading lucide icon or a caller node", () => {
+  const source = readSource("../../src/segmented/SegmentedControl.tsx");
+  const stylesSource = readSource(
+    "../../src/segmented/segmentedControlStyles.ts",
+  );
+
+  // The option carries an optional lucide `icon` (tinted) and an `iconNode`
+  // escape hatch (rendered as-is, winning over `icon`).
+  assert.match(source, /icon\?: LucideIcon;/);
+  assert.match(source, /iconNode\?: ReactNode;/);
+  assert.match(
+    source,
+    /option\.iconNode != null \? \(\s*option\.iconNode\s*\) : OptionIcon \? \(/,
+  );
+  // The lucide glyph is tinted to the resolved segment text colour and sized to
+  // the control via the shared helper.
+  assert.match(source, /<OptionIcon color=\{iconTint\} size=\{iconSize\} \/>/);
+  assert.match(source, /const iconSize = segmentIconSize\(size\)/);
+  assert.match(stylesSource, /export function segmentIconSize\(/);
+  // The icon wrapper is hidden from assistive tech on web (the label names it).
+  assert.match(
+    source,
+    /aria-hidden=\{Platform\.OS === "web" \? true : undefined\}/,
+  );
+  assert.match(stylesSource, /segmentIcon: \{ alignItems: "center"/);
+  // Each pill/cell is a row so the icon sits beside the label.
+  assert.match(stylesSource, /flexDirection: "row",\s*gap: sizing\.iconGap/);
+});
+
+test("segmented iconOnly hides labels while keeping the accessible name", () => {
+  const source = readSource("../../src/segmented/SegmentedControl.tsx");
+
+  assert.match(source, /iconOnly\?: boolean;/);
+  assert.match(source, /iconOnly = false,/);
+  // The visible label is dropped only when the segment actually has an icon.
+  assert.match(source, /const showLabel = !iconOnly \|\| leadingIcon == null;/);
+  assert.match(source, /\{showLabel \? \(/);
+  // The accessible name still comes from the (hidden) label / its override.
+  assert.match(
+    source,
+    /accessibilityLabel=\{option\.accessibilityLabel \?\? option\.label\}/,
+  );
+  // A label-only option under iconOnly is a dev-warned no-op, not a silent box.
+  assert.match(source, /if \(iconOnly && options\.some\(/);
+  assert.match(source, /devWarn\(/);
+});
+
 test("segmented control has public root and subpath exports", () => {
   const rootSource = readSource("../../src/index.ts");
   const segmentedSource = readSource("../../src/segmented/index.ts");

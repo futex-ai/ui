@@ -13,6 +13,9 @@ used around Profit & loss reporting.
   opt-in `variant="outline"` for rows of separate filter-pill cells.
 - Size the control with the shared `ControlSize` scale (`sm` / `md` / `lg`),
   scaling the segment padding, the label type scale, and the track gaps.
+- Show an optional leading glyph per option — a lucide `icon` (tinted to the
+  segment's text colour) or a caller-supplied `iconNode` — and optionally hide
+  every label with `iconOnly` for a compact toolbar.
 - Use shared theme colors, fonts, and radii instead of consumer-local theme
   imports.
 - Keep equal-width and content-sized segment layouts available to consumers.
@@ -74,6 +77,31 @@ the same density as the inputs and buttons beside it.
   size="sm"
   value={report}
 />
+```
+
+### Per-option icons
+
+Give an option a leading glyph with `icon` (a lucide component, tinted to the
+segment's text colour and sized to the control) or `iconNode` (any node, rendered
+as-is with the caller's own colour and size — it wins over `icon`). Set
+`iconOnly` to hide every label and show the icons alone in a compact toolbar; the
+hidden label (or its `accessibilityLabel`) stays the accessible name, so every
+option must supply an `icon` or `iconNode` (a dev-warned fallback to the label
+text otherwise).
+
+```tsx
+import { LayoutGrid, User } from "lucide-react-native";
+
+<SegmentedControl
+  accessibilityLabel="Scope"
+  iconOnly
+  onChange={setScope}
+  options={[
+    { icon: User, label: "Personal", value: "me" },
+    { icon: LayoutGrid, label: "Workspace", value: "workspace" },
+  ]}
+  value={scope}
+/>;
 ```
 
 ### Label info
@@ -139,6 +167,10 @@ The control follows the WAI-ARIA radio-group pattern:
   own focus ring; it carries the detail as its accessible description (announced
   on focus) while the portaled bubble is a sighted-user reveal only, so the text
   is never announced twice and never leaks into the group's name.
+- A leading `icon` / `iconNode` is decorative and hidden from assistive tech on
+  web; the option's label (or `accessibilityLabel`) is the accessible name. Under
+  `iconOnly` the label is hidden visually but remains that accessible name, so
+  each option stays named without visible text.
 - Focus is shown with a geometry-bearing ring (works on the borderless pill,
   inset so the rounded track does not clip it).
 

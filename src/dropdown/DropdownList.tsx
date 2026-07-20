@@ -80,6 +80,8 @@ export type DropdownListEntry =
       rightText?: string;
       secondary?: string;
       selected?: boolean;
+      /** Test identifier forwarded to this row's pressable (`data-testid` on web). */
+      testID?: string;
       tone?: "amber" | "danger" | "default" | "muted";
       type: "footer" | "item";
     };
@@ -361,6 +363,7 @@ function DropdownRow({
       onHoverIn={entry.disabled ? undefined : onHover}
       onPress={entry.onPress}
       ref={onRowRef}
+      testID={entry.testID}
       {...webRoleProps}
       style={[
         styles.item,

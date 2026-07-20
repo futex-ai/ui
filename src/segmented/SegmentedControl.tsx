@@ -1,6 +1,13 @@
 /** Single-select segmented controls for compact one-of-N choices. */
 import { LucideIcon } from "lucide-react-native";
-import { useCallback, useId, useMemo, useRef, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   type LayoutChangeEvent,
   Platform,
@@ -21,11 +28,13 @@ import {
   nextNavIndex,
   rovingTabIndex,
 } from "../keyboardNavigation";
+import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
 import { useReducedMotion } from "../useReducedMotion";
 
 import {
   createSegmentedControlStyles,
+  segmentIconSize,
   type SegmentedControlStyles,
 } from "./segmentedControlStyles";
 
@@ -41,10 +50,23 @@ export type SegmentOption<T extends string> = {
   /**
    * Overridable accessible name for the segment. Defaults to `label`. Set it to
    * disambiguate duplicate visible labels across controls or pin a
-   * locale-stable name for `getByRole("radio", { name })`.
+   * locale-stable name for `getByRole("radio", { name })`. Required in effect
+   * when the control is `iconOnly` (the hidden label is the accessible name).
    */
   accessibilityLabel?: string;
   disabled?: boolean;
+  /**
+   * Leading lucide glyph shown before the label, tinted to match the segment's
+   * text colour and sized to the control. Use {@link iconNode} for a non-lucide
+   * glyph.
+   */
+  icon?: LucideIcon;
+  /**
+   * A caller-supplied leading icon node (e.g. an `@expo/vector-icons` glyph),
+   * rendered as-is — the caller owns its colour and size. Takes precedence over
+   * {@link icon} and is hidden from assistive tech on web.
+   */
+  iconNode?: ReactNode;
   label: string;
   value: T;
 };
@@ -65,6 +87,13 @@ export type SegmentedControlProps<T extends string> = {
   disabled?: boolean;
   error?: string | null;
   hint?: string;
+  /**
+   * Hide every option's visible label, rendering the leading icon alone for a
+   * compact toolbar. Each option's (hidden) label — or its `accessibilityLabel`
+   * — remains the accessible name (WCAG 1.1.1 / 4.1.2), so every option must
+   * supply an `icon` or `iconNode`. Defaults to `false`.
+   */
+  iconOnly?: boolean;
   label?: string;
   /**
    * Supplementary help text revealed by an ⓘ button after the label. Pressing
@@ -115,6 +144,7 @@ export function SegmentedControl<T extends string>({
   disabled = false,
   error,
   hint,
+  iconOnly = false,
   label,
   labelInfo,
   labelInfoIcon,
@@ -137,6 +167,7 @@ export function SegmentedControl<T extends string>({
   const pill = variant === "pill";
   const invalid = Boolean(error);
   const reducedMotion = useReducedMotion();
+  const iconSize = segmentIconSize(size);
 
   // The ⓘ button anchors to the label row, so it needs a label to sit beside.
   // Guard on truthiness to match the label row's own `{label ? ...}` gate — an
@@ -145,6 +176,15 @@ export function SegmentedControl<T extends string>({
     devWarn(
       "SegmentedControl: `labelInfo` needs a `label` to anchor the ⓘ button; " +
         "it is ignored without one.",
+    );
+  }
+  // An `iconOnly` control hides the visible labels, so a label-only option would
+  // render as an empty, unnameable box. Warn (and let it fall back to the label
+  // text) rather than silently dropping the glyph.
+  if (iconOnly && options.some((o) => o.icon == null && o.iconNode == null)) {
+    devWarn(
+      "SegmentedControl: `iconOnly` needs every option to supply an `icon` or " +
+        "`iconNode`; options without one render their label text instead.",
     );
   }
   const labelInfoName =
@@ -325,6 +365,8 @@ export function SegmentedControl<T extends string>({
         {options.map((option, index) => (
           <SegmentedControlButton
             disabled={disabled || option.disabled === true}
+            iconOnly={iconOnly}
+            iconSize={iconSize}
             index={index}
             itemRef={itemRefs.current[index]}
             key={option.value}
@@ -337,6 +379,7 @@ export function SegmentedControl<T extends string>({
             sizing={sizing}
             styles={styles}
             textTransition={textTransition}
+            theme={theme}
             thumbActive={thumbVisible}
             variant={variant}
           />
@@ -358,6 +401,8 @@ export function SegmentedControl<T extends string>({
 
 function SegmentedControlButton<T extends string>({
   disabled,
+  iconOnly,
+  iconSize,
   index,
   itemRef,
   onChange,
@@ -369,10 +414,13 @@ function SegmentedControlButton<T extends string>({
   sizing,
   styles,
   textTransition,
+  theme,
   thumbActive,
   variant,
 }: {
   disabled: boolean;
+  iconOnly: boolean;
+  iconSize: number;
   index: number;
   itemRef: { current: FocusableRef };
   onChange: (value: T) => void;
@@ -384,10 +432,32 @@ function SegmentedControlButton<T extends string>({
   sizing: SegmentedControlSizing;
   styles: SegmentedControlStyles;
   textTransition: TextStyle | null;
+  theme: SharedUiTheme;
   thumbActive: boolean;
   variant: SegmentedControlVariant;
 }) {
   const pill = variant === "pill";
+  // The leading glyph (a caller node wins over a tinted lucide icon). Its tint
+  // matches the segment's resolved text colour so the icon and label read as
+  // one unit and shift together on selection.
+  const OptionIcon = option.icon;
+  const iconTint = pill
+    ? selected
+      ? theme.colors.ink
+      : theme.colors.ink2
+    : selected
+      ? theme.colors.primaryDeep
+      : theme.colors.ink2;
+  const leadingIcon =
+    option.iconNode != null ? (
+      option.iconNode
+    ) : OptionIcon ? (
+      <OptionIcon color={iconTint} size={iconSize} />
+    ) : null;
+  // The visible label is dropped in `iconOnly` mode, but only when the segment
+  // actually has an icon to show — otherwise it falls back to the label so the
+  // segment is never an empty box (a dev warning fired above).
+  const showLabel = !iconOnly || leadingIcon == null;
   // The focus glow hugs the raised thumb: the pill and the absolutely-positioned
   // thumb share the same measured box, so an outset glow around the (transparent)
   // pill reads as a halo around the selected tab. It sits in the track's
@@ -460,20 +530,33 @@ function SegmentedControlButton<T extends string>({
         hideWebOutlineView,
       ]}
     >
-      <Text
-        numberOfLines={1}
-        style={[
-          pill ? styles.pillText : styles.cellText,
-          selected
-            ? pill
-              ? styles.pillTextActive
-              : styles.cellTextSelected
-            : null,
-          textTransition,
-        ]}
-      >
-        {option.label}
-      </Text>
+      {leadingIcon != null ? (
+        // The glyph is decorative: the Pressable's `accessibilityLabel` (the
+        // label / its override) is the accessible name, so hide the icon from
+        // assistive tech on web to avoid a duplicate/raw-name announcement.
+        <View
+          aria-hidden={Platform.OS === "web" ? true : undefined}
+          style={styles.segmentIcon}
+        >
+          {leadingIcon}
+        </View>
+      ) : null}
+      {showLabel ? (
+        <Text
+          numberOfLines={1}
+          style={[
+            pill ? styles.pillText : styles.cellText,
+            selected
+              ? pill
+                ? styles.pillTextActive
+                : styles.cellTextSelected
+              : null,
+            textTransition,
+          ]}
+        >
+          {option.label}
+        </Text>
+      ) : null}
     </Pressable>
   );
 }

@@ -89,6 +89,11 @@ export function createListStyles(
     itemHover: { backgroundColor: theme.colors.soft },
     itemLeading: { flexShrink: 0 },
     itemMain: { flex: 1, gap: sizing.textGap, minWidth: 0 },
+    // The title column as a pressable button (ListItem `onPress`): a pointer
+    // cursor to signal the affordance, and a pressed dim, layered over the base
+    // `itemMain` column so the leading/trailing slots stay outside the target.
+    itemMainPressable: { cursor: "pointer" },
+    itemMainPressed: { opacity: 0.6 },
     itemPressable: { cursor: "pointer" },
     itemPressed: { backgroundColor: theme.colors.bg2 },
     itemRow: {

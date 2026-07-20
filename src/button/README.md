@@ -2,17 +2,23 @@
 
 Shared pressable button for React Native and React Native Web, adapted from the
 accounting app's `.btn` primitive. It is the single button primitive for the
-library: tones, sizes, an optional leading icon, and a full-width block variant,
-all driven by shared theme tokens.
+library: tones, sizes, an optional leading icon (lucide or a caller-supplied
+node), icon-only shapes, and a full-width block variant, all driven by shared
+theme tokens.
 
 ## Responsibilities
 
-- Render a labelled button with one of four tones: `primary` (filled),
-  `secondary` (the default surface + border), `ghost` (no fill/border), and
-  `danger` (rose border + label).
+- Render a labelled button with one of five tones: `primary` (filled),
+  `secondary` (the default surface + border), `ghost` (no fill/border, brand
+  label), `plain` (no fill/border, neutral `ink` label — a flush icon button),
+  and `danger` (rose border + label).
 - Size the control with the shared `ControlSize` scale (`sm` / `md` / `lg`),
   scaling height, padding, the label type scale, and the icon.
-- Show an optional leading `icon` tinted to match the label colour.
+- Show an optional leading `icon` (a lucide glyph, tinted to the label colour) or
+  a caller-supplied `iconNode` (any node — e.g. an `@expo/vector-icons` glyph —
+  rendered as-is, never wrapped in `<Text>`).
+- Render as an icon-only `square` or `circle` (`shape`) 1:1 tap target, with an
+  optional `minTouchTarget` floor independent of the label height scale.
 - Stretch full width with `block`.
 - Own the sage focus ring on the whole control and hide the browser's default
   outline, using shared theme colours and radii.
@@ -46,6 +52,17 @@ import { Plus, Settings } from "lucide-react-native";
 {/* Icon-only: no visible text, so `accessibilityLabel` is required. */}
 <Button accessibilityLabel="Settings" icon={Settings} onPress={openSettings} />
 
+{/* Flush circular header icon button: borderless `plain` tone, 1:1 `circle`
+    shape, a non-lucide glyph, and a 40px minimum tap target. */}
+<Button
+  accessibilityLabel="More"
+  iconNode={<Ionicons name="ellipsis-horizontal" size={20} color="#1c1f1d" />}
+  minTouchTarget={40}
+  onPress={openMenu}
+  shape="circle"
+  tone="plain"
+/>
+
 {/* In-progress: blocks the press, shows a spinner, announces `aria-busy`. */}
 <Button busy={saving} onPress={save} tone="primary">
   {saving ? "Saving" : "Save"}
@@ -55,8 +72,28 @@ import { Plus, Settings } from "lucide-react-native";
 ### Tones
 
 `tone` sets the emphasis: `primary` for the main action, `secondary` (default)
-for neutral actions, `ghost` for low-emphasis inline actions, and `danger` for
-destructive ones. The label and any leading icon share one colour per tone.
+for neutral actions, `ghost` for low-emphasis inline actions (brand-accent
+label), `plain` for a flush, chrome-less icon button (neutral `ink` label with a
+neutral hover/pressed wash), and `danger` for destructive ones. The label and
+any leading lucide `icon` share one colour per tone; an `iconNode` keeps its own
+colour.
+
+### Icon-only shapes
+
+`shape` sets the container geometry: `rounded` (default) is the padded rectangle;
+`square` is an equal-padding 1:1 box; `circle` is that box with a full radius.
+The 1:1 shapes are for icon-only buttons. `minTouchTarget` floors the tap target
+(min width and height) at a given px — independent of `size` — so a compact icon
+button still meets a comfortable ≥40–44px touch target; on `square` / `circle`
+it also grows the box to that dimension.
+
+### Icons
+
+Pass a lucide component to `icon` (tinted to the label colour and sized to the
+control), or any node to `iconNode` for a non-lucide glyph — the node renders
+as-is (never inside `<Text>`), so the caller owns its colour and size. `iconNode`
+wins when both are set. Either way the glyph is hidden from assistive technology
+on web; the label (or the required `accessibilityLabel`) is the accessible name.
 
 ### Sizes
 

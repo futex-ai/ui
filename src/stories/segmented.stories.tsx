@@ -1,5 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ShieldQuestionMark } from "lucide-react-native";
+import {
+  Columns2,
+  LayoutGrid,
+  ShieldQuestionMark,
+  Table,
+  User,
+} from "lucide-react-native";
 import { useState } from "react";
 import { View } from "react-native";
 
@@ -116,6 +122,56 @@ export const LabelInfoSegmented: Story = {
     </StorySurface>
   ),
 };
+
+export const WithIcons: Story = {
+  name: "Per-option icons",
+  render: () => (
+    <StorySurface>
+      <WithIconsExample />
+    </StorySurface>
+  ),
+};
+
+function WithIconsExample() {
+  const [board, setBoard] = useState("board");
+  const [scope, setScope] = useState("me");
+  const [scopeCompact, setScopeCompact] = useState("me");
+  return (
+    <View style={{ gap: 18, minWidth: 320 }}>
+      <SegmentedControl
+        accessibilityLabel="Tasks layout"
+        label="Icon + label — Board / Table toggle"
+        onChange={setBoard}
+        options={[
+          { icon: Columns2, label: "Board", value: "board" },
+          { icon: Table, label: "Table", value: "table" },
+        ]}
+        value={board}
+      />
+      <SegmentedControl
+        accessibilityLabel="Scope"
+        label="Icon + label — Personal / Workspace scope"
+        onChange={setScope}
+        options={[
+          { icon: User, label: "Personal", value: "me" },
+          { icon: LayoutGrid, label: "Workspace", value: "workspace" },
+        ]}
+        value={scope}
+      />
+      <SegmentedControl
+        accessibilityLabel="Scope (compact)"
+        iconOnly
+        label="iconOnly — labels are the accessible name only"
+        onChange={setScopeCompact}
+        options={[
+          { icon: User, label: "Personal", value: "me" },
+          { icon: LayoutGrid, label: "Workspace", value: "workspace" },
+        ]}
+        value={scopeCompact}
+      />
+    </View>
+  );
+}
 
 function LabelInfoExample() {
   const [basis, setBasis] = useState("accrual");

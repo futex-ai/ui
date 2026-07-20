@@ -64,6 +64,24 @@ test("input frame supports the shared size scale", () => {
   assert.match(stylesSource, /lg: \{[\s\S]*?boxHeight: 48/);
 });
 
+test("input frame plain variant drops border/fill/padding, keeps the ring", () => {
+  const source = readSource("../../src/input/InputFrame.tsx");
+  const stylesSource = readSource("../../src/input/inputStyles.ts");
+
+  assert.match(source, /variant\?: "framed" \| "plain"/);
+  assert.match(source, /variant = "framed"/);
+  assert.match(source, /const plain = variant === "plain"/);
+  // The plain style layers before the active/invalid border so their border
+  // colour is inert against the zeroed border width.
+  assert.match(source, /plain \? styles\.boxPlain : null/);
+  assert.match(
+    stylesSource,
+    /boxPlain: \{\s*backgroundColor: "transparent",\s*borderWidth: 0,\s*paddingHorizontal: 0,\s*\}/,
+  );
+  // The focus ring is still applied on focus (the plain box only strips chrome).
+  assert.match(source, /focus\.focused \? focus\.focusRingStyle : null/);
+});
+
 test("input frame supports multiline textarea geometry", () => {
   const source = readSource("../../src/input/InputFrame.tsx");
   const stylesSource = readSource("../../src/input/inputStyles.ts");

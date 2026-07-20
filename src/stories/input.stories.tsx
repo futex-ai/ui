@@ -9,9 +9,9 @@ import {
   ShieldQuestionMark,
 } from "lucide-react-native";
 import { useState } from "react";
-import { View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
-import { Input, Textarea } from "../index";
+import { InputFrame, Input, Textarea } from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -72,6 +72,47 @@ export const BareField: Story = {
   name: "Bare field (no label)",
   render: () => surface(<BareExample />),
 };
+
+export const InlineEditor: Story = {
+  name: "Plain inline editor",
+  render: () => surface(<InlineEditorExample />),
+};
+
+function InlineEditorExample() {
+  const [title, setTitle] = useState("Untitled list");
+  return (
+    <View style={inlineStyles.row}>
+      {/* A chrome-less inline title editor embedded in a row: it reads as plain
+          text until focused, when the shared focus ring appears. It keeps the
+          clear button and the accessible name, but drops the border/fill so it
+          sits flush inside the row. */}
+      <InputFrame
+        accessibilityLabel="List title"
+        clearable
+        onChangeText={setTitle}
+        size="sm"
+        value={title}
+        variant="plain"
+      />
+      <Text style={inlineStyles.count}>12 tasks</Text>
+    </View>
+  );
+}
+
+const inlineStyles = StyleSheet.create({
+  count: { color: "#69706a", fontSize: 13 },
+  row: {
+    alignItems: "center",
+    borderColor: "#e5e8e0",
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+});
 
 export const FieldSizes: Story = {
   name: "Field sizes",

@@ -1,7 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Check, Pencil, Plus, Settings, Trash2 } from "lucide-react-native";
+import {
+  Bell,
+  Check,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Settings,
+  Trash2,
+} from "lucide-react-native";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { Button } from "../index";
 import { StorySurface } from "./sharedExamples";
@@ -33,6 +41,9 @@ export const Tones: Story = {
         <Button onPress={noop}>Secondary</Button>
         <Button onPress={noop} tone="ghost">
           Ghost
+        </Button>
+        <Button onPress={noop} tone="plain">
+          Plain
         </Button>
         <Button onPress={noop} tone="danger">
           Danger
@@ -95,6 +106,76 @@ export const IconOnly: Story = {
           onPress={noop}
           tone="danger"
         />
+      </>,
+    ),
+};
+
+export const IconShapes: Story = {
+  name: "Icon-only shapes",
+  render: () =>
+    row(
+      <>
+        {/* Square + circle 1:1 tap targets, floored at a 40px touch target. The
+            borderless `plain` tone is the flush header / composer icon button. */}
+        <Button
+          accessibilityLabel="Add"
+          icon={Plus}
+          minTouchTarget={40}
+          onPress={noop}
+          shape="square"
+          tone="secondary"
+        />
+        <Button
+          accessibilityLabel="Settings"
+          icon={Settings}
+          minTouchTarget={40}
+          onPress={noop}
+          shape="circle"
+          tone="plain"
+        />
+        <Button
+          accessibilityLabel="Notifications"
+          icon={Bell}
+          minTouchTarget={40}
+          onPress={noop}
+          shape="circle"
+          tone="ghost"
+        />
+        <Button
+          accessibilityLabel="More"
+          icon={MoreHorizontal}
+          minTouchTarget={40}
+          onPress={noop}
+          shape="circle"
+          tone="plain"
+        />
+      </>,
+    ),
+};
+
+export const CustomIconNode: Story = {
+  name: "Custom icon node",
+  render: () =>
+    row(
+      <>
+        {/* `iconNode` renders any node as-is (not wrapped in `<Text>`, not
+            tinted) — here a caller-coloured glyph and an emoji stand in for a
+            non-lucide `@expo/vector-icons` glyph. */}
+        <Button
+          accessibilityLabel="Add"
+          iconNode={<Plus color="#2f5945" size={18} />}
+          minTouchTarget={40}
+          onPress={noop}
+          shape="circle"
+          tone="plain"
+        />
+        <Button
+          iconNode={<Text style={styles.emoji}>✨</Text>}
+          onPress={noop}
+          tone="primary"
+        >
+          Enhance
+        </Button>
       </>,
     ),
 };
@@ -172,6 +253,10 @@ function BusyExample() {
 }
 
 const styles = StyleSheet.create({
+  emoji: {
+    fontSize: 16,
+    lineHeight: 20,
+  },
   row: {
     alignItems: "center",
     flexDirection: "row",
