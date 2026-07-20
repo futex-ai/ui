@@ -15,6 +15,7 @@
 import type { ReactNode } from "react";
 import { GripHorizontal, GripVertical } from "lucide-react-native";
 import { Platform, Pressable, View } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
 
 import { hideWebOutlineView, useFocusRing } from "../focusRing";
 import type { PressableHoverState } from "../focusRing";
@@ -241,20 +242,77 @@ function SortableHandle({
 }
 
 /**
- * The dashed, faded copy of the dragged row shown at the drop slot. It is
- * decorative — the live region speaks the target — so it stays off the
- * accessibility tree.
+ * A decorative, non-interactive clone of the dragged row — reused as the dashed
+ * drop preview shown at the target slot and as the floating clone that rides the
+ * cursor. It mirrors the row's shape (a static grip placeholder in handle mode,
+ * so its footprint matches a real row) and is marked `aria-hidden`, inert (web),
+ * and click-through. The inert marking matters: in handle mode a row's own
+ * `renderItem` controls (a consumer button) would otherwise be rendered as a
+ * FOCUSABLE copy inside an `aria-hidden` subtree — a WCAG 4.1.2 violation and a
+ * Tab trap mid-reorder. The live region speaks the target instead.
  */
-export function SortablePreview({
-  node,
+export function SortableClone({
+  content,
+  extraStyle,
+  forwardedRef,
+  handle,
+  handleGap,
+  iconColor,
+  iconSize,
+  orientation,
+  renderHandle,
   styles,
+  testID,
 }: {
-  node: ReactNode;
+  content: ReactNode;
+  extraStyle?: StyleProp<ViewStyle>;
+  forwardedRef?: (node: unknown) => void;
+  handle?: SortableHandleSide;
+  handleGap: number;
+  iconColor: string;
+  iconSize: number;
+  orientation: SortableOrientation;
+  renderHandle?: (state: SortableHandleState) => ReactNode;
   styles: SortableListStyles;
+  testID?: string;
 }) {
+  const Grip = orientation === "horizontal" ? GripHorizontal : GripVertical;
+  const grip = handle ? (
+    <View style={[styles.handle, styles.handleDisabled]}>
+      {renderHandle ? (
+        renderHandle({ grabbed: false })
+      ) : (
+        <Grip color={iconColor} size={iconSize} />
+      )}
+    </View>
+  ) : null;
   return (
-    <View aria-hidden style={styles.preview} testID="sortable-drop-preview">
-      {node}
+    <View
+      aria-hidden
+      pointerEvents="none"
+      ref={(node) => {
+        markInert(node);
+        forwardedRef?.(node);
+      }}
+      style={[styles.row, { gap: handle ? handleGap : 0 }, extraStyle]}
+      testID={testID}
+    >
+      {handle === "start" ? grip : null}
+      <View style={styles.content}>{content}</View>
+      {handle === "end" ? grip : null}
     </View>
   );
+}
+
+/**
+ * Mark a decorative clone's host node `inert` on web, so no focusable descendant
+ * (a consumer's own control rendered into the row) is reachable via Tab or counts
+ * as a focusable node inside the `aria-hidden` subtree. A no-op on native, where
+ * the node is an RN view instance with no `setAttribute`.
+ */
+function markInert(node: unknown) {
+  const el = node as { inert?: boolean; setAttribute?: unknown } | null;
+  if (el && typeof el.setAttribute === "function") {
+    el.inert = true;
+  }
 }

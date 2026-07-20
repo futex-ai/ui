@@ -33,13 +33,19 @@ test("sortable list renders the lifted-row clone and the dashed drop preview", (
   const source = readSource("../../src/sortable-list/SortableList.tsx");
   const rowSource = readSource("../../src/sortable-list/SortableRow.tsx");
 
-  // The pointer drag lifts the row into a fixed, click-through clone.
-  assert.match(source, /testID="sortable-drag-ghost"/);
-  assert.match(source, /pointerEvents="none"/);
+  // The pointer drag lifts the row into a fixed clone; the target slot gets a
+  // dashed preview. Both testIDs flow through the shared clone helper.
+  assert.match(source, /"sortable-drag-ghost"/);
+  assert.match(source, /"sortable-drop-preview"/);
   assert.match(source, /position: "fixed"/);
-  // A dashed, aria-hidden preview marks the target slot.
-  assert.match(rowSource, /testID="sortable-drop-preview"/);
+  // The shared decorative clone forwards its testID and is aria-hidden,
+  // click-through, and marked inert so a row's own controls are never a
+  // focusable copy inside an aria-hidden subtree (WCAG 4.1.2) mid-reorder.
+  assert.match(rowSource, /export function SortableClone/);
+  assert.match(rowSource, /testID=\{testID\}/);
   assert.match(rowSource, /aria-hidden/);
+  assert.match(rowSource, /pointerEvents="none"/);
+  assert.match(rowSource, /el\.inert = true/);
 });
 
 test("sortable list places an optional grab handle at the start or end", () => {

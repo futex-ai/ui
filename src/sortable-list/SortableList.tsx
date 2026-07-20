@@ -20,7 +20,7 @@ import type { StyleProp, ViewStyle } from "react-native";
 import type { ControlSize } from "../controlSize";
 import { useSharedUiTheme } from "../theme";
 
-import { SortablePreview, SortableRow } from "./SortableRow";
+import { SortableClone, SortableRow } from "./SortableRow";
 import type { SortableHandleState } from "./SortableRow";
 import {
   indicatorIndex,
@@ -171,7 +171,29 @@ export function SortableList<Item>({
           .filter((entry) => keys[entry.index] !== draggedKey)
       : items.map((item, index) => ({ index, item }));
 
-  const preview = <SortablePreview node={previewNode} styles={styles} />;
+  // The drop preview and the floating clone share one row-shaped, inert,
+  // click-through copy of the dragged row (a static grip placeholder in handle
+  // mode, so the footprint matches a real row).
+  const clone = (
+    extraStyle: StyleProp<ViewStyle>,
+    testID: string,
+    ref?: (n: unknown) => void,
+  ) => (
+    <SortableClone
+      content={previewNode}
+      extraStyle={extraStyle}
+      forwardedRef={ref}
+      handle={handle}
+      handleGap={rowGap}
+      iconColor={theme.colors.muted}
+      iconSize={iconSize}
+      orientation={orientation}
+      renderHandle={renderHandle}
+      styles={styles}
+      testID={testID}
+    />
+  );
+  const preview = clone(styles.preview, "sortable-drop-preview");
 
   const renderRow = (item: Item, index: number) => {
     const key = keys[index];
@@ -223,25 +245,22 @@ export function SortableList<Item>({
         </Fragment>
       ))}
       {previewIndex === flow.length ? preview : null}
-      {active && mode === "pointer" && previewNode ? (
-        // The clone that rides the cursor: a fixed, viewport-positioned copy of
-        // the row, moved by the hook mutating its transform. Decorative and
-        // click-through — the lifted row and the live region carry the meaning.
-        <View
-          aria-hidden
-          pointerEvents="none"
-          ref={drag.bindGhost.ref}
-          style={[
-            styles.ghost,
-            GHOST_FIXED,
-            ghostWidth != null ? { width: ghostWidth } : null,
-            ghostHeight != null ? { height: ghostHeight } : null,
-          ]}
-          testID="sortable-drag-ghost"
-        >
-          {previewNode}
-        </View>
-      ) : null}
+      {active && mode === "pointer" && previewNode
+        ? // The clone that rides the cursor: a fixed, viewport-positioned copy of
+          // the row, moved by the hook mutating its transform. Decorative,
+          // inert, and click-through — the lifted row and the live region carry
+          // the meaning.
+          clone(
+            [
+              styles.ghost,
+              GHOST_FIXED,
+              ghostWidth != null ? { width: ghostWidth } : null,
+              ghostHeight != null ? { height: ghostHeight } : null,
+            ],
+            "sortable-drag-ghost",
+            drag.bindGhost.ref,
+          )
+        : null}
     </View>
   );
 }
