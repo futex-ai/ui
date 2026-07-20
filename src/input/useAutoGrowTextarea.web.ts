@@ -93,5 +93,11 @@ export function useAutoGrowTextarea({
     return { style: null };
   }
   const height = clamp(contentHeight, minHeight, maxHeight);
-  return { style: { lineHeight, minHeight, maxHeight, height } };
+  // An uncapped (`Infinity`) max grows to fit all content: omit `maxHeight` so
+  // the field never scrolls (and RNW never renders an invalid `Infinitypx`).
+  return {
+    style: Number.isFinite(maxHeight)
+      ? { lineHeight, minHeight, maxHeight, height }
+      : { lineHeight, minHeight, height },
+  };
 }

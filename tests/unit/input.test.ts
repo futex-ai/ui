@@ -8,7 +8,12 @@ test("input frame wires invalid + required a11y and the focus ring", () => {
   assert.match(source, /aria-invalid=\{invalid\}/);
   assert.match(source, /aria-required=\{required\}/);
   // The whole box gets the sage focus ring; the inner input hides its outline.
-  assert.match(source, /const focus = useFocusRing\(\)/);
+  // The ring is outset by default and inset (offset -2) when `focusRingInset` is
+  // set, so a chrome-less field inside an overflow:hidden ancestor stays visible.
+  assert.match(
+    source,
+    /const focus = useFocusRing\(focusRingInset \? \{ offset: -2 \} : \{\}\)/,
+  );
   assert.match(source, /borderActive = focus\.focused \|\| active/);
   assert.match(source, /styles\.input,/);
   assert.match(source, /hideWebOutline/);
@@ -68,7 +73,7 @@ test("input frame plain variant drops border/fill/padding, keeps the ring", () =
   const source = readSource("../../src/input/InputFrame.tsx");
   const stylesSource = readSource("../../src/input/inputStyles.ts");
 
-  assert.match(source, /variant\?: "framed" \| "plain"/);
+  assert.match(source, /variant\?: "framed" \| "plain" \| "seamless"/);
   assert.match(source, /variant = "framed"/);
   assert.match(source, /const plain = variant === "plain"/);
   // The plain style layers before the active/invalid border so their border
@@ -88,7 +93,12 @@ test("input frame supports multiline textarea geometry", () => {
 
   assert.match(source, /multiline = Boolean\(props\.multiline\)/);
   assert.match(source, /multiline \? styles\.boxMultiline : null/);
-  assert.match(source, /multiline \? styles\.textareaInput : styles\.input/);
+  // Framed/plain multiline uses the fixed-height textarea geometry (the seamless
+  // branch of the same selection is covered by the seamless test).
+  assert.match(
+    source,
+    /multiline\s*\?\s*seamless\s*\?\s*styles\.textareaSeamless\s*:\s*styles\.textareaInput/,
+  );
   assert.match(
     stylesSource,
     /boxMultiline: \{[\s\S]*?alignItems: "flex-start"/,
@@ -104,17 +114,21 @@ test("input frame auto-grows a multiline field between numberOfLines and maxLine
   const source = readSource("../../src/input/InputFrame.tsx");
 
   // Auto-grow is gated on multiline + a maxLines cap above the numberOfLines
-  // (min rows) floor, which defaults to two rows.
-  assert.match(source, /const minRows = props\.numberOfLines \?\? 2/);
+  // (min rows) floor, which defaults to two rows (one for a seamless field).
   assert.match(
     source,
-    /autoGrowEnabled =\s*multiline && maxLines != null && maxLines > minRows/,
+    /const minRows = props\.numberOfLines \?\? \(seamlessMultiline \? 1 : 2\)/,
+  );
+  assert.match(
+    source,
+    /autoGrowEnabled =\s*seamlessMultiline \|\| \(multiline && maxLines != null && maxLines > minRows\)/,
   );
   // The row bounds convert to pixels via the shared helper and drive the hook.
   assert.match(
     source,
-    /autoGrowTextareaBounds\(size, minRows, maxLines \?\? minRows\)/,
+    /const maxRows = maxLines \?\? \(seamlessMultiline \? Infinity : minRows\)/,
   );
+  assert.match(source, /autoGrowTextareaBounds\(size, minRows, maxRows\)/);
   assert.match(source, /useAutoGrowTextarea\(\{/);
   assert.match(source, /nodeRef: internalRef/);
   // The measured height style is layered over the fixed textarea min-height, and
@@ -122,6 +136,63 @@ test("input frame auto-grows a multiline field between numberOfLines and maxLine
   assert.match(source, /autoGrow\.style,/);
   assert.match(source, /autoGrow\.onContentSizeChange\?\.\(event\)/);
   assert.match(source, /props\.onContentSizeChange\?\.\(event\)/);
+});
+
+test("input frame seamless variant drops chrome, height, and padding, grows to fit", () => {
+  const source = readSource("../../src/input/InputFrame.tsx");
+  const stylesSource = readSource("../../src/input/inputStyles.ts");
+
+  // Seamless is a third `variant` alongside framed/plain, flagged separately.
+  assert.match(source, /const seamless = variant === "seamless"/);
+  assert.match(source, /const seamlessMultiline = seamless && multiline/);
+  // Its box strips the reserved height AND all padding, and the layer ORDER is
+  // load-bearing: boxSeamless must sit AFTER boxMultiline (so its zeroed vertical
+  // padding wins) and BEFORE the invalid/active border (so their colour is inert
+  // against the zeroed border width). A reorder would re-introduce padding/border.
+  assert.match(
+    source,
+    /multiline \? styles\.boxMultiline : null,[\s\S]*?seamless \? styles\.boxSeamless : null,[\s\S]*?invalid \? styles\.boxInvalid/,
+  );
+  assert.match(
+    stylesSource,
+    /boxSeamless: \{\s*backgroundColor: "transparent",\s*borderWidth: 0,\s*minHeight: 0,\s*paddingHorizontal: 0,\s*paddingVertical: 0,\s*\}/,
+  );
+  // The input uses the height-less seamless text styles (single-line + textarea).
+  assert.match(source, /seamless\s*\?\s*styles\.textareaSeamless/);
+  assert.match(source, /seamless\s*\?\s*styles\.inputSeamless/);
+  // The single-line seamless input sets NO fixed height and NO fixed lineHeight
+  // (the tail runs fontSize -> minWidth -> paddingVertical), so a larger caller
+  // fontSize is never clipped by a too-short line box.
+  assert.match(
+    stylesSource,
+    /inputSeamless: \{[\s\S]*?fontSize: sizing\.inputFontSize,\s*minWidth: 0,\s*paddingVertical: 0,\s*\}/,
+  );
+  assert.match(
+    stylesSource,
+    /textareaSeamless: \{[\s\S]*?minHeight: sizing\.textareaLineHeight/,
+  );
+  // The focus ring still paints on focus (seamless only strips chrome), and a
+  // chrome-less field can opt into an inset ring so an overflow:hidden ancestor
+  // does not clip its only focus indicator (WCAG 2.4.7).
+  assert.match(source, /focus\.focused \? focus\.focusRingStyle : null/);
+  assert.match(
+    source,
+    /useFocusRing\(focusRingInset \? \{ offset: -2 \} : \{\}\)/,
+  );
+});
+
+test("auto-grow hooks omit maxHeight when uncapped so a seamless field never scrolls", () => {
+  const nativeSource = readSource("../../src/input/useAutoGrowTextarea.ts");
+  const webSource = readSource("../../src/input/useAutoGrowTextarea.web.ts");
+
+  // An Infinity max grows to fit all content: the applied style drops maxHeight
+  // (both builds) so the field never scrolls / never renders an invalid height.
+  for (const source of [nativeSource, webSource]) {
+    assert.match(
+      source,
+      /Number\.isFinite\(maxHeight\)\s*\?\s*\{ lineHeight, minHeight, maxHeight, height \}\s*:\s*\{ lineHeight, minHeight, height \}/,
+    );
+  }
 });
 
 test("auto-grow bounds derive min/max pixel heights from the row counts", () => {

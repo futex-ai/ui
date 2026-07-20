@@ -665,6 +665,61 @@ test("auto-growing textarea grows with content, caps, and shrinks back", async (
   await expect.poll(heightOf).toBeLessThan(grown);
 });
 
+test("seamless fields render chrome-less, stay editable, and grow to fit", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=input-examples--seamless-editor");
+
+  const title = page.getByRole("textbox", { name: "Document title" });
+  const body = page.getByRole("textbox", { name: "Document body" });
+
+  // Chrome-less at rest: the single-line field's box carries no border and no
+  // fill, so it reads as plain text rather than a control. (The box is the
+  // input's parent element.)
+  const titleBoxChrome = await title.evaluate((input) => {
+    const box = input.parentElement as HTMLElement;
+    const style = getComputedStyle(box);
+    return {
+      background: style.backgroundColor,
+      borderWidth: style.borderTopWidth,
+    };
+  });
+  expect(titleBoxChrome.background).toBe("rgba(0, 0, 0, 0)");
+  expect(titleBoxChrome.borderWidth).toBe("0px");
+
+  // Still a real, editable input.
+  await title.fill("Launch checklist");
+  await expect(title).toHaveValue("Launch checklist");
+
+  // The height-less, zero-padding seamless box must still reserve enough height
+  // for its raised 22px title font — the box sizes to the font/line box rather
+  // than clipping the glyphs to a shorter fixed line height.
+  const titleHeight = await title.evaluate(
+    (input) => (input as HTMLInputElement).clientHeight,
+  );
+  expect(titleHeight).toBeGreaterThanOrEqual(22);
+
+  // The seamless multiline body grows to fit ALL its content — no cap, no
+  // scrollbar: 30 lines are far taller than one, and the field's own height
+  // matches its scrollHeight (nothing is clipped/scrolled away).
+  const bodyMetrics = async () =>
+    body.evaluate((node) => {
+      const element = node as HTMLTextAreaElement;
+      return { height: element.clientHeight, scroll: element.scrollHeight };
+    });
+
+  await body.fill("one line");
+  const single = await bodyMetrics();
+
+  await body.fill(Array.from({ length: 30 }, (_, i) => `line ${i}`).join("\n"));
+  await expect
+    .poll(async () => (await bodyMetrics()).height)
+    .toBeGreaterThan(single.height + 100);
+  const many = await bodyMetrics();
+  // Grow-to-fit: the visible height keeps up with the content (no inner scroll).
+  expect(many.scroll - many.height).toBeLessThanOrEqual(2);
+});
+
 test("segmented control toggles report and source choices", async ({
   page,
 }) => {

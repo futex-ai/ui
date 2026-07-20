@@ -68,8 +68,12 @@ export function useAutoGrowTextarea({
     return { style: null };
   }
   const height = clamp(contentHeight, minHeight, maxHeight);
+  // An uncapped (`Infinity`) max grows to fit all content: omit `maxHeight` so
+  // the field never scrolls (and never emits an invalid `Infinity` height).
   return {
-    style: { lineHeight, minHeight, maxHeight, height },
+    style: Number.isFinite(maxHeight)
+      ? { lineHeight, minHeight, maxHeight, height }
+      : { lineHeight, minHeight, height },
     onContentSizeChange,
   };
 }

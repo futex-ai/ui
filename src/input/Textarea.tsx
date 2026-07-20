@@ -9,8 +9,10 @@ export type TextareaProps = Omit<InputProps, "multiline"> & {
   numberOfLines?: InputProps["numberOfLines"];
   /**
    * Cap for auto-grow, in rows. When set above `numberOfLines`, the textarea
-   * starts at `numberOfLines` rows and grows with content up to `maxLines`
-   * rows, then scrolls. Omit for a fixed-height textarea. On web this needs a
+   * starts at `numberOfLines` rows and grows with content up to `maxLines` rows,
+   * then scrolls. Omit for a fixed-height textarea — except with
+   * `variant="seamless"`, which always grows to fit ALL its content, so there
+   * `maxLines` is an optional cap rather than the opt-in. On web this needs a
    * controlled `value`.
    */
   maxLines?: InputProps["maxLines"];
