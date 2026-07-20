@@ -9,7 +9,8 @@ primitive.
 
 - Trace a rounded rectangle sized by `width` / `height` (or a square `size`) and
   `borderRadius` so the trail follows the same corner radius as the element it
-  frames.
+  frames, or fully round the box when `shape="circle"` (a true circle for a
+  square box, an elongated stadium/"pill" for a non-square one).
 - Draw the trail as stacked `react-native-svg` rects with animated
   `strokeDashoffset` — a bright, short head leading a fan of progressively
   fainter, longer tail segments — so the motion follows the real path on native
@@ -56,6 +57,29 @@ existing box (for example with an absolute style):
     style={{ position: "absolute", left: 0, top: 0 }}
   />
 </View>
+```
+
+### Circles and pills
+
+To frame a circular avatar/icon or a pill, pass `shape="circle"`. It fully
+rounds the box and ignores `borderRadius`, so you never compute `size / 2`:
+
+```tsx
+<AnimatedBorder shape="circle" size={40}>
+  <Avatar size={40} name="Ada" />
+</AnimatedBorder>
+```
+
+Because React Native `borderRadius` only ever makes circles and stadiums (never
+ellipses), "fully rounded" matches the framed element in both cases: a **square**
+box traces a true circle, and a **non-square** box traces an elongated
+stadium/"pill" whose straight edges and semicircular caps follow the whole
+outline — not a small circle floating in the middle.
+
+```tsx
+<AnimatedBorder shape="circle" width={160} height={44}>
+  <PillButton>Generating…</PillButton>
+</AnimatedBorder>
 ```
 
 ### Non-square boxes

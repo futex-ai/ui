@@ -70,6 +70,54 @@ export const Sizes: Story = {
   ),
 };
 
+// A round avatar to frame, standing in for a circular profile photo.
+function AvatarDisc({
+  children,
+  size = 40,
+}: {
+  children: ReactNode;
+  size?: number;
+}) {
+  return (
+    <View
+      style={[
+        styles.disc,
+        { borderRadius: size / 2, height: size, width: size },
+      ]}
+    >
+      <Text style={styles.discLabel}>{children}</Text>
+    </View>
+  );
+}
+
+export const Circles: Story = {
+  name: "Circle and pill shape",
+  render: () => (
+    <StorySurface>
+      <View style={styles.row}>
+        {/* `shape="circle"` fully rounds the box — a true circle for a square,
+            with no need to pass a matching `borderRadius`. */}
+        <AnimatedBorder shape="circle" size={28}>
+          <AvatarDisc size={28}>A</AvatarDisc>
+        </AnimatedBorder>
+        <AnimatedBorder shape="circle" size={40}>
+          <AvatarDisc size={40}>B</AvatarDisc>
+        </AnimatedBorder>
+        <AnimatedBorder shape="circle" color="#946727" size={56}>
+          <AvatarDisc size={56}>C</AvatarDisc>
+        </AnimatedBorder>
+        {/* In a non-square box `shape="circle"` traces the elongated stadium
+            ("pill") — the trail follows the whole rounded outline. */}
+        <AnimatedBorder height={40} shape="circle" width={72}>
+          <View style={[styles.wideDisc, { borderRadius: 20 }]}>
+            <Text style={styles.discLabel}>pill</Text>
+          </View>
+        </AnimatedBorder>
+      </View>
+    </StorySurface>
+  ),
+};
+
 export const NonSquare: Story = {
   name: "Non-square boxes",
   render: () => (
@@ -149,6 +197,18 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     gap: 24,
   },
+  disc: {
+    alignItems: "center",
+    backgroundColor: "#e3eee6",
+    borderColor: "rgba(20, 18, 38, 0.08)",
+    borderWidth: 1,
+    justifyContent: "center",
+  },
+  discLabel: {
+    color: "#2f5945",
+    fontSize: 12,
+    fontWeight: "700",
+  },
   pill: {
     alignItems: "center",
     backgroundColor: "#e3eee6",
@@ -165,5 +225,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     gap: 24,
+  },
+  wideDisc: {
+    alignItems: "center",
+    backgroundColor: "#eef2ed",
+    height: 40,
+    justifyContent: "center",
+    width: 72,
   },
 });

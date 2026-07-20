@@ -1918,6 +1918,40 @@ test("animated border renders a continuously moving SVG trail", async ({
   await expect.poll(readOffset).not.toBe(firstOffset);
 });
 
+test("animated border shape=circle fully rounds the box (circle and pill)", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=animatedborder-examples--circles");
+
+  // The first framed avatar is a 28px square, so shape="circle" fully rounds it
+  // into a true circle: a rect whose corner radius is the maximum
+  // (28 - 1.2 stroke) / 2 = 13.4, which SVG renders as a perfect circle.
+  const disc = page.locator('[data-testid="animated-border"]').first();
+  await expect(disc).toBeAttached();
+  const discHead = disc.locator('rect[stroke="#4f7864"]').first();
+  await expect(discHead).toBeAttached();
+  await expect(discHead).toHaveAttribute("rx", "13.4");
+  await expect(discHead).toHaveAttribute("width", "26.8");
+  await expect(discHead).toHaveAttribute("height", "26.8");
+
+  // The last framed box is a non-square 72×40, so shape="circle" traces an
+  // elongated stadium/"pill": the same maximal radius (half the SHORTER side =
+  // 19.4) but a rect spanning the FULL width (72 - 1.2 = 70.8), not a small
+  // centered circle. This is the regression the fix targets.
+  const pill = page.locator('[data-testid="animated-border"]').last();
+  const pillHead = pill.locator('rect[stroke="#4f7864"]').first();
+  await expect(pillHead).toHaveAttribute("rx", "19.4");
+  await expect(pillHead).toHaveAttribute("width", "70.8");
+  await expect(pillHead).toHaveAttribute("height", "38.8");
+
+  // It genuinely animates: the leading rect's stroke-dashoffset keeps advancing
+  // around the path, so a later sample differs from the first.
+  const readOffset = () =>
+    disc.locator("rect").first().getAttribute("stroke-dashoffset");
+  const firstOffset = await readOffset();
+  await expect.poll(readOffset).not.toBe(firstOffset);
+});
+
 test("button reflects press and disabled state", async ({ page }) => {
   await page.goto("/iframe.html?id=button-examples--interactive");
 
