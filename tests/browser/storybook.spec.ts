@@ -1617,6 +1617,33 @@ test("responsive menu navigates with the keyboard while focus rests on the dialo
   await expect(dialog).toBeHidden();
 });
 
+test("responsive menu surface suppresses the browser's default focus ring", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=popover-examples--responsive-menu-story");
+
+  // Open via the keyboard so Chrome's `:focus-visible` heuristic engages — the
+  // state where the UA would otherwise draw a heavy blue outline around the
+  // whole surface (a mouse open never matches `:focus-visible`, so it hides the
+  // regression).
+  await page.getByRole("button", { name: "Row actions" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("menuitem", { name: "Rename" })).toBeVisible();
+
+  const surface = await page.evaluate(() => {
+    const el = document.activeElement as HTMLElement | null;
+    if (!el || el.getAttribute("role") !== "dialog") return null;
+    return {
+      focusVisible: el.matches(":focus-visible"),
+      outlineStyle: getComputedStyle(el).outlineStyle,
+    };
+  });
+  // Focus lands on the dialog surface and it DOES match `:focus-visible`, yet the
+  // UA outline is suppressed — the active row highlight is the focus affordance.
+  expect(surface?.focusVisible).toBe(true);
+  expect(surface?.outlineStyle).toBe("none");
+});
+
 test("web sheet opens the modal bottom-sheet placement and closes on Escape", async ({
   page,
 }) => {

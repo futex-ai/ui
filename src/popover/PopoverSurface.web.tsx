@@ -4,6 +4,8 @@ import type { ReactNode, RefObject } from "react";
 import { View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
 
+import { hideWebOutlineView } from "../focusRing";
+
 import type { PopoverSurfaceRole } from "./popoverModel";
 
 type Focusable = { focus?: () => void };
@@ -53,10 +55,12 @@ function asFocusable(value: unknown): Focusable | null {
  *   keyboard does not drop to `<body>`.
  *
  * The surface is focusable (`tabIndex=-1`) only so focus can LAND inside it on
- * open; it is not in the Tab order and is not an interactive control, so it does
- * not paint its own focus ring (that would draw a heavy outline around the whole
- * popover the moment it opens). Interactive controls inside the surface keep
- * their own focus indicators (WCAG 2.4.7).
+ * open; it is not in the Tab order and is not an interactive control, so it
+ * suppresses the browser's default focus ring (`outlineStyle: "none"`). Without
+ * that, focusing it via the keyboard matches `:focus-visible` and the UA paints a
+ * heavy blue outline around the whole popover the moment it opens. Interactive
+ * controls inside the surface keep their own focus indicators, and for a menu the
+ * active row highlight marks the keyboard position (WCAG 2.4.7).
  */
 export function PopoverSurface({
   children,
@@ -105,7 +109,7 @@ export function PopoverSurface({
       nativeID={nativeID}
       ref={surfaceRef}
       role={named ? surfaceRole : undefined}
-      style={style}
+      style={[shouldManageFocus ? hideWebOutlineView : null, style]}
       tabIndex={shouldManageFocus ? -1 : undefined}
       testID={testID}
     >
