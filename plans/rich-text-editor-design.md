@@ -17,7 +17,17 @@ export type InlineMark = "bold" | "italic" | "strike" | "code";
 export type InlineSpan = { marks: readonly InlineMark[]; text: string };
 
 export type RichTextBlock =
-  | { spans: InlineSpan[]; type: "paragraph" | "heading1" | "heading2" | "heading3" | "bullet" | "numbered" | "quote" }
+  | {
+      spans: InlineSpan[];
+      type:
+        | "paragraph"
+        | "heading1"
+        | "heading2"
+        | "heading3"
+        | "bullet"
+        | "numbered"
+        | "quote";
+    }
   | { checked: boolean; spans: InlineSpan[]; type: "check" }
   | { code: string; type: "codeBlock" }
   | { type: "divider" };
@@ -29,6 +39,7 @@ export type DocPosition = { block: number; offset: number };
 ```
 
 Invariants (enforced by `normalizeDocument`):
+
 - **D1.1** A document is never empty — minimum is `[{ type: "paragraph", spans: [] }]`.
 - **D1.2** Adjacent spans with identical mark sets are merged; empty-text spans dropped.
 - **D1.3** Mark arrays are stored in canonical order `bold, italic, strike, code`.
@@ -36,6 +47,7 @@ Invariants (enforced by `normalizeDocument`):
   paragraph after a trailing divider (so there is always a caret target).
 
 Pure operations (all return new documents; all unit-tested in node):
+
 - `normalizeDocument`, `emptyDocument`, `spansText(spans): string`,
   `splitSpans(spans, offset)`, `sliceSpans(spans, from, to)`.
 - `splitBlock(doc, pos)` — Enter semantics. Continuation types: bullet→bullet,
@@ -71,10 +83,11 @@ Pure operations (all return new documents; all unit-tested in node):
 ## D2. Markdown mapping (`markdownSerialize.ts` / `markdownParse.ts`, pure)
 
 Serialization:
+
 - **D2.1** heading1–3 → `# ` / `## ` / `### `; bullet → `- `; numbered →
   `N. ` renumbered from 1 per contiguous run; check → `- [ ] ` / `- [x] `;
-  quote → `> ` on every line; divider → `---`; codeBlock → ```` ``` ```` fence
-  (fence grows to ```` ```` ```` if the code contains a triple backtick).
+  quote → `> ` on every line; divider → `---`; codeBlock → ` ``` ` fence
+  (fence grows to ` ` ```` if the code contains a triple backtick).
 - **D2.2** Blocks are separated by one blank line, EXCEPT consecutive blocks
   of the same list kind (bullet / numbered / check runs) which are separated
   by a single newline.
@@ -85,10 +98,11 @@ Serialization:
   nested outer→inner in canonical order. Code spans use double-backtick
   delimiters when the text itself contains a backtick.
 - **D2.5** Escaping: in plain text escape `\`` \ * _ ~ [ ] ` ``; additionally
-  escape at line start: `#`, `>`, `-`, `+`, and `N.`/`N)` numbering patterns.
+escape at line start: `#`, `>`, `-`, `+`, and `N.`/`N)` numbering patterns.
   Nothing is escaped inside codeBlock fences.
 
 Parsing (same subset, tolerant):
+
 - **D2.6** Recognized line prefixes, in test order: fence, `---`/`***`/`___`
   (divider), `#{1,3} `, `- [ ]`/`- [x]`, `- `/`* `/`+ `, `\d+[.)] `, `> `.
   Everything else is paragraph text. Setext headings, 4-space-indent code,
@@ -108,6 +122,7 @@ contentEditable root's children are managed **imperatively** — never React
 children.
 
 Block mapping (each block element carries `data-rt` for round-tripping):
+
 - paragraph `<p data-rt="p">` · heading `<h1|h2|h3 data-rt="h1|h2|h3">`
 - bullet run `<ul data-rt="ul">` / numbered run `<ol data-rt="ol">` /
   check run `<ul data-rt="checklist">` — one `<li data-rt="li">` per block;
@@ -221,7 +236,7 @@ measure a temporary zero-width span when `getClientRects()` is empty).
   apply, all swallowed before the editor's own handlers. Focus NEVER leaves
   the editor: mimic `ComboboxPopover.web.tsx` — `DropdownWebLayer` + surface
   styled by `useDropdownSurfaceStyles` + `dropdownSurfaceRect(
-  dropdownPlacement(caretRect, viewport, { align: "start" }))`, rows rendered
+dropdownPlacement(caretRect, viewport, { align: "start" }))`, rows rendered
   by `DropdownList` with a `listId`; the editor root carries `aria-controls`
   and `aria-activedescendant` via `dropdownRowDomId`. Anchor comes from a new
   `useCaretAnchor.web.ts` (caret rect in window coordinates, re-measured on
@@ -275,6 +290,7 @@ type RichTextEditorProps = {
 ## Milestone obligation checklists
 
 ### M1 — core editor + markdown pipeline
+
 1. `richTextModel.ts` per D1 (all ops except `toggleMarkInRange`).
 2. `markdownSerialize.ts` + `markdownParse.ts` per D2, with round-trip tests
    (D2.8) plus table-driven serialize and parse cases.
@@ -288,6 +304,7 @@ type RichTextEditorProps = {
    markdown; axe scan on the story).
 
 ### M2 — slash menu + block shortcuts
+
 1. `slashMenuModel.ts` (items, filter, sections) per D5.3–D5.4, unit-tested.
 2. `useCaretAnchor.web.ts` + `SlashMenu.web.tsx` per D5.6.
 3. `useSlashMenu.web.ts` state machine per D5.1–D5.2, D5.5.
@@ -298,6 +315,7 @@ type RichTextEditorProps = {
    results", extra item executes; axe with menu open.
 
 ### M3 — inline formatting + undo
+
 1. `toggleMarkInRange` per D1 + `useEditorCommands.web.ts` toggles restoring
    selection.
 2. ⌘B / ⌘I / ⌘E / ⌘⇧S keydown + `formatBold`/`formatItalic` beforeinput

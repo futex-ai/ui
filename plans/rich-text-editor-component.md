@@ -74,19 +74,19 @@ shipping media handling.
 
 ## File layout — `src/rich-text/`
 
-| File | Role |
-| --- | --- |
-| `richTextModel.ts` | Block/inline types + pure ops (splitBlock, mergeBlock, turnInto) — node-testable |
-| `markdownSerialize.ts` / `markdownParse.ts` | blocks ↔ markdown, pure, GFM subset |
-| `inputRules.ts` | prefix + inline autoformat matching, pure |
-| `slashMenuModel.ts` | item list + filter, pure |
-| `domRender.web.ts` / `domSerialize.web.ts` | blocks → DOM, DOM → blocks, normalize pass |
-| `useEditorCommands.web.ts` | toggleInline / setBlockType / caret+Range helpers |
-| `useSlashMenu.web.ts` | slash state machine (open on `/`, query, key routing) |
-| `SlashMenu.web.tsx` | caret-anchored surface reusing `DropdownList` + web dropdown layer |
-| `RichTextEditor.web.tsx` / `RichTextEditor.tsx` | web editor / native Textarea fallback |
-| `richTextStyles.ts` | theme-derived styles (typography tokens for h1–h3, code) |
-| `index.ts`, `README.md` | exports + responsibilities doc per repo convention |
+| File                                            | Role                                                                             |
+| ----------------------------------------------- | -------------------------------------------------------------------------------- |
+| `richTextModel.ts`                              | Block/inline types + pure ops (splitBlock, mergeBlock, turnInto) — node-testable |
+| `markdownSerialize.ts` / `markdownParse.ts`     | blocks ↔ markdown, pure, GFM subset                                              |
+| `inputRules.ts`                                 | prefix + inline autoformat matching, pure                                        |
+| `slashMenuModel.ts`                             | item list + filter, pure                                                         |
+| `domRender.web.ts` / `domSerialize.web.ts`      | blocks → DOM, DOM → blocks, normalize pass                                       |
+| `useEditorCommands.web.ts`                      | toggleInline / setBlockType / caret+Range helpers                                |
+| `useSlashMenu.web.ts`                           | slash state machine (open on `/`, query, key routing)                            |
+| `SlashMenu.web.tsx`                             | caret-anchored surface reusing `DropdownList` + web dropdown layer               |
+| `RichTextEditor.web.tsx` / `RichTextEditor.tsx` | web editor / native Textarea fallback                                            |
+| `richTextStyles.ts`                             | theme-derived styles (typography tokens for h1–h3, code)                         |
+| `index.ts`, `README.md`                         | exports + responsibilities doc per repo convention                               |
 
 ## Behavior spec
 
