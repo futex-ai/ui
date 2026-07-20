@@ -141,6 +141,159 @@ test("prefix-rule revert disarms when focus leaves the editor", async ({
   );
 });
 
+test("slash opens the menu at the caret", async ({ page }) => {
+  await gotoRichTextStory(page);
+
+  const editor = page.getByTestId("rich-text-editor");
+  await editor.click();
+  await page.keyboard.type("/");
+
+  const menu = page.getByTestId("rich-text-slash-menu");
+  await expect(menu).toBeVisible();
+  const editorBox = await editor.boundingBox();
+  const menuBox = await menu.boundingBox();
+  expect(editorBox).not.toBeNull();
+  expect(menuBox).not.toBeNull();
+  expect(menuBox?.x).toBeGreaterThanOrEqual(editorBox?.x ?? 0);
+  expect(menuBox?.y).toBeGreaterThan(editorBox?.y ?? 0);
+});
+
+test("slash menu typing filters rows", async ({ page }) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("/code");
+
+  const menu = page.getByTestId("rich-text-slash-menu");
+  await expect(menu).toBeVisible();
+  await expect(menu.getByText("Code block")).toBeVisible();
+  await expect(menu.getByText("Heading 1")).toHaveCount(0);
+});
+
+test("slash menu arrow navigation and Enter convert the block", async ({
+  page,
+}) => {
+  await gotoRichTextStory(page);
+
+  const editor = page.getByTestId("rich-text-editor");
+  await editor.click();
+  await page.mouse.move(0, 0);
+  await page.keyboard.type("/h");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("Title");
+
+  await expect(page.locator('[data-rt="h2"]')).toHaveText("Title");
+  await expect(page.getByTestId("rich-text-markdown-out")).toHaveText(
+    "## Title",
+  );
+});
+
+test("slash menu Escape closes and leaves query text intact", async ({
+  page,
+}) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("/quote");
+  await expect(page.getByTestId("rich-text-slash-menu")).toBeVisible();
+  await page.keyboard.press("Escape");
+
+  await expect(page.getByTestId("rich-text-slash-menu")).toHaveCount(0);
+  await expect(page.getByTestId("rich-text-markdown-out")).toHaveText("/quote");
+});
+
+test("slash menu shows a no-results state", async ({ page }) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("/xyz");
+
+  const menu = page.getByTestId("rich-text-slash-menu");
+  await expect(menu).toBeVisible();
+  await expect(menu.getByText("No results")).toBeVisible();
+});
+
+test("clicking no-results keeps focus and continues the slash query", async ({
+  page,
+}) => {
+  await gotoRichTextStory(page);
+
+  const editor = page.getByTestId("rich-text-editor");
+  await editor.click();
+  await page.keyboard.type("/xyz");
+
+  const menu = page.getByTestId("rich-text-slash-menu");
+  await menu.getByText("No results").click();
+
+  await expect(menu).toBeVisible();
+  await expect(editor).toBeFocused();
+  await page.keyboard.type("q");
+  await expect(page.getByTestId("rich-text-markdown-out")).toHaveText("/xyzq");
+  await expect(menu.getByText("No results")).toBeVisible();
+});
+
+test("slash menu keeps wheel scrolling enabled", async ({ page }) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("/");
+
+  const listbox = page.locator('[role="listbox"]');
+  await expect(listbox).toBeVisible();
+  await listbox.evaluate((element) => {
+    element.scrollTop = 0;
+  });
+  await listbox.hover();
+  await page.mouse.wheel(0, 240);
+  await expect
+    .poll(() => listbox.evaluate((element) => element.scrollTop))
+    .toBeGreaterThan(0);
+});
+
+test("Backspace past the slash closes the menu", async ({ page }) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("/");
+  await expect(page.getByTestId("rich-text-slash-menu")).toBeVisible();
+  await page.keyboard.press("Backspace");
+
+  await expect(page.getByTestId("rich-text-slash-menu")).toHaveCount(0);
+  await expect(page.getByTestId("rich-text-markdown-out")).toHaveText("");
+});
+
+test("extra slash item executes editor commands", async ({ page }) => {
+  await gotoRichTextStory(page, "with-extra-slash-items");
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("/insert");
+  const row = page.getByTestId("rich-text-slash-item-extra:insert-paragraph");
+  await expect(row.locator("svg")).toBeVisible();
+  await row.click();
+
+  await expect(page.getByTestId("rich-text-markdown-out")).toHaveText(
+    "Inserted from slash menu",
+  );
+});
+
+test("primary Alt+2 toggles heading 2", async ({ page }) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("Title");
+  await page.keyboard.press(primaryShortcut("Alt+2"));
+
+  await expect(page.locator('[data-rt="h2"]')).toHaveText("Title");
+  await expect(page.getByTestId("rich-text-markdown-out")).toHaveText(
+    "## Title",
+  );
+
+  await page.keyboard.press(primaryShortcut("Alt+2"));
+  await expect(page.locator('[data-rt="p"]')).toHaveText("Title");
+  await expect(page.getByTestId("rich-text-markdown-out")).toHaveText("Title");
+});
+
 test("checklist checkbox click toggles markdown state", async ({ page }) => {
   await gotoRichTextStory(page);
 
@@ -200,6 +353,24 @@ test("Playground story has no axe violations", async ({ page }) => {
 
   expect(results.violations).toEqual([]);
 });
+
+test("Playground slash menu has no axe violations", async ({ page }) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("/");
+  await expect(page.getByTestId("rich-text-slash-menu")).toBeVisible();
+
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .analyze();
+
+  expect(results.violations).toEqual([]);
+});
+
+function primaryShortcut(key: string) {
+  return `${process.platform === "darwin" ? "Meta" : "Control"}+${key}`;
+}
 
 async function placeCaretAtBlockStart(page: Page, blockIndex: number) {
   await page.evaluate((index) => {

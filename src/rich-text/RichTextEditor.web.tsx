@@ -11,9 +11,11 @@ import type { CSSProperties } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useFocusRing } from "../focusRing";
+import { useDocumentKeyCapture } from "../keyboardNavigation";
 import { useSharedUiTheme } from "../theme";
 import { Label } from "../typography";
 
+import { SlashMenu } from "./SlashMenu.web";
 import { renderRichTextDocument } from "./domRender.web";
 import { serializeRichTextDom } from "./domSerialize.web";
 import {
@@ -30,6 +32,7 @@ import {
   DocPosition,
   RichTextBlock,
   RichTextDocument,
+  RichTextTurnIntoType,
   blockTextLength,
   deleteForward,
   deleteRange,
@@ -45,6 +48,7 @@ import {
 } from "./richTextModel";
 import { createRichTextDomTheme, createRichTextStyles } from "./richTextStyles";
 import type { RichTextEditorProps } from "./richTextTypes";
+import { useSlashMenu } from "./useSlashMenu.web";
 
 type LastRule = {
   block: number;
@@ -63,6 +67,7 @@ export function RichTextEditor({
   onChangeMarkdown,
   placeholder,
   readOnly = false,
+  slashExtraItems = [],
   testID,
   value = "",
 }: RichTextEditorProps) {
@@ -123,6 +128,13 @@ export function RichTextEditor({
     },
     [domTheme, emitMarkdown, restoreCaret],
   );
+
+  const slashMenu = useSlashMenu({
+    commitDocument,
+    extraItems: slashExtraItems,
+    readOnlyRef,
+    rootRef,
+  });
 
   useLayoutEffect(() => {
     const root = rootRef.current;
@@ -276,7 +288,11 @@ export function RichTextEditor({
       const collapsed = samePosition(range.from, range.to);
       if (!collapsed && range.from.block !== range.to.block) {
         handleCrossBlockBeforeInput(event, root, range.from, range.to, commit);
+        slashMenu.close();
         return;
+      }
+      if (collapsed) {
+        slashMenu.handleBeforeInput(event, range.from);
       }
       if (
         event.inputType === "deleteContentBackward" &&
@@ -336,7 +352,7 @@ export function RichTextEditor({
         lastRuleRef.current = null;
       }
     },
-    [applyPrefixRule, tryRevertLastRule],
+    [applyPrefixRule, slashMenu, tryRevertLastRule],
   );
 
   const handlePaste = useCallback(
@@ -369,8 +385,9 @@ export function RichTextEditor({
         caretAfterInsertBlocks(base, insertAt, blocks),
       );
       lastRuleRef.current = null;
+      slashMenu.close();
     },
-    [],
+    [slashMenu],
   );
 
   const handleMouseDown = useCallback(
@@ -418,8 +435,9 @@ export function RichTextEditor({
         caret,
       );
       lastRuleRef.current = null;
+      slashMenu.close();
     },
-    [],
+    [slashMenu],
   );
 
   useEffect(() => {
@@ -439,6 +457,7 @@ export function RichTextEditor({
       docRef.current = next;
       setEmpty(isEmptyDocument(next));
       emitMarkdown(next);
+      slashMenu.handleInput();
     };
     const paste = (event: ClipboardEvent) => {
       handlePaste(event, root, commitDocument);
@@ -453,11 +472,13 @@ export function RichTextEditor({
       docRef.current = next;
       setEmpty(isEmptyDocument(next));
       emitMarkdown(next);
+      slashMenu.handleInput();
     };
     const mouseDown = (event: MouseEvent) => {
       handleMouseDown(event, root, commitDocument);
     };
     const selectionChange = () => {
+      slashMenu.handleSelectionChange();
       const lastRule = lastRuleRef.current;
       if (!lastRule) {
         return;
@@ -478,6 +499,7 @@ export function RichTextEditor({
     };
     const focusOut = () => {
       lastRuleRef.current = null;
+      slashMenu.close();
     };
     root.addEventListener("beforeinput", beforeInput);
     root.addEventListener("input", input);
@@ -503,7 +525,30 @@ export function RichTextEditor({
     handleBeforeInput,
     handleMouseDown,
     handlePaste,
+    slashMenu,
   ]);
+
+  const handleDocumentKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      const root = rootRef.current;
+      if (
+        !root ||
+        readOnlyRef.current ||
+        !root.contains(document.activeElement)
+      ) {
+        return;
+      }
+      if (slashMenu.handleKeyDown(event)) {
+        return;
+      }
+      if (handleBlockShortcut(event, root, commitDocument)) {
+        slashMenu.close();
+      }
+    },
+    [commitDocument, slashMenu],
+  );
+
+  useDocumentKeyCapture(!readOnly, handleDocumentKeyDown);
 
   const frameStyle = useMemo(
     () => [
@@ -544,6 +589,8 @@ export function RichTextEditor({
           ) : null}
           <div
             aria-label={label ?? "Rich text editor"}
+            aria-activedescendant={slashMenu.activeRowId}
+            aria-controls={slashMenu.open ? slashMenu.listId : undefined}
             aria-multiline="true"
             contentEditable={!readOnly}
             data-testid={testID}
@@ -554,6 +601,17 @@ export function RichTextEditor({
             style={editorStyle}
             suppressContentEditableWarning
             tabIndex={readOnly ? -1 : 0}
+          />
+          <SlashMenu
+            activeId={slashMenu.activeId}
+            listId={slashMenu.listId}
+            onActiveIdChange={slashMenu.setActiveId}
+            onClose={slashMenu.close}
+            onSelect={slashMenu.selectItem}
+            open={slashMenu.open}
+            rootRef={rootRef}
+            sections={slashMenu.sections}
+            surfaceRef={slashMenu.surfaceRef}
           />
         </View>
       </View>
@@ -593,6 +651,72 @@ function handleCrossBlockBeforeInput(
     return;
   }
   commit(base, from);
+}
+
+function handleBlockShortcut(
+  event: KeyboardEvent,
+  root: HTMLElement,
+  commit: (
+    document: readonly RichTextBlock[],
+    caret: DocPosition | null,
+  ) => void,
+): boolean {
+  const type = blockShortcutType(event);
+  if (!type) {
+    return false;
+  }
+  const selection = docRangeFromDomSelection(root, window.getSelection());
+  if (!selection) {
+    return false;
+  }
+  event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation();
+  const doc = serializeRichTextDom(root);
+  let next = normalizeDocument(doc);
+  for (
+    let index = selection.from.block;
+    index <= selection.to.block;
+    index += 1
+  ) {
+    next = turnInto(next, index, shortcutTargetType(next[index], type));
+  }
+  commit(next, selection.from);
+  return true;
+}
+
+function blockShortcutType(event: KeyboardEvent): RichTextTurnIntoType | null {
+  if (!(event.metaKey || event.ctrlKey)) {
+    return null;
+  }
+  if (event.altKey && !event.shiftKey) {
+    if (isDigit(event, "1")) return "heading1";
+    if (isDigit(event, "2")) return "heading2";
+    if (isDigit(event, "3")) return "heading3";
+  }
+  if (event.shiftKey && !event.altKey) {
+    if (isDigit(event, "7")) return "check";
+    if (isDigit(event, "8")) return "bullet";
+    if (isDigit(event, "9")) return "numbered";
+  }
+  return null;
+}
+
+function shortcutTargetType(
+  block: RichTextBlock | undefined,
+  type: RichTextTurnIntoType,
+): RichTextTurnIntoType {
+  if (
+    block?.type === type &&
+    (type === "heading1" || type === "heading2" || type === "heading3")
+  ) {
+    return "paragraph";
+  }
+  return type;
+}
+
+function isDigit(event: KeyboardEvent, digit: string): boolean {
+  return event.key === digit || event.code === `Digit${digit}`;
 }
 
 function caretAfterSplit(

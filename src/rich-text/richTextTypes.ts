@@ -1,21 +1,24 @@
 /** Shared public prop types for the web editor and native markdown fallback. */
 import type {
   DocPosition,
+  InlineMark,
   RichTextBlock,
   RichTextTurnIntoType,
 } from "./richTextModel";
 
-/** Commands exposed to future slash-menu extension items. */
+/** Commands exposed to slash-menu extension items. */
 export type RichTextEditorCommands = {
   /** Return the current collapsed selection or range endpoints. */
   getSelection: () => { from: DocPosition; to: DocPosition } | null;
   /** Insert rich blocks at the current selection. */
   insertBlocks: (blocks: readonly RichTextBlock[]) => void;
+  /** Reserved for M3 inline formatting; throws a dev warning in M2. */
+  toggleMark: (mark: InlineMark) => void;
   /** Convert the selected block(s) to a supported block type. */
   turnInto: (type: RichTextTurnIntoType) => void;
 };
 
-/** Extra slash-menu item accepted by the public API. M1 accepts and ignores it. */
+/** Extra slash-menu item accepted by the public API. Native accepts and ignores it. */
 export type SlashMenuItem = {
   execute?: (commands: RichTextEditorCommands) => void;
   icon?: unknown;

@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useState } from "react";
+import { Plus } from "lucide-react-native";
+import { useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { RichTextEditor } from "../index";
+import type { SlashMenuItem } from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const prefilledMarkdown = [
@@ -78,6 +80,11 @@ export const ReadOnly: Story = {
   ),
 };
 
+export const WithExtraSlashItems: Story = {
+  name: "With extra slash items",
+  render: () => <WithExtraSlashItemsExample />,
+};
+
 function PlaygroundExample() {
   const [markdown, setMarkdown] = useState("");
   return (
@@ -88,6 +95,50 @@ function PlaygroundExample() {
           minHeight={240}
           onChangeMarkdown={setMarkdown}
           placeholder="Write notes..."
+          testID="rich-text-editor"
+          value={markdown}
+        />
+        <View style={styles.readout}>
+          <Text style={styles.readoutLabel}>Markdown</Text>
+          <Text style={styles.readoutText} testID="rich-text-markdown-out">
+            {markdown}
+          </Text>
+        </View>
+      </View>
+    </StorySurface>
+  );
+}
+
+function WithExtraSlashItemsExample() {
+  const [markdown, setMarkdown] = useState("");
+  const extraItems = useMemo<SlashMenuItem[]>(
+    () => [
+      {
+        execute: (commands) =>
+          commands.insertBlocks([
+            {
+              spans: [{ marks: [], text: "Inserted from slash menu" }],
+              type: "paragraph",
+            },
+          ]),
+        icon: Plus,
+        id: "insert-paragraph",
+        keywords: ["custom"],
+        label: "Insert paragraph",
+        section: "Actions",
+      },
+    ],
+    [],
+  );
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        <RichTextEditor
+          label="Editor"
+          minHeight={240}
+          onChangeMarkdown={setMarkdown}
+          placeholder="Write notes..."
+          slashExtraItems={extraItems}
           testID="rich-text-editor"
           value={markdown}
         />
