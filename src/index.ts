@@ -21,6 +21,7 @@ export * from "./radio";
 export * from "./segmented";
 export * from "./sheet";
 export * from "./skeleton";
+export * from "./sortable-list";
 export * from "./spinner";
 export * from "./switch";
 export * from "./table";

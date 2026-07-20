@@ -39,6 +39,7 @@ test("package exposes every documented public subpath", () => {
     "./segmented",
     "./sheet",
     "./skeleton",
+    "./sortable-list",
     "./spinner",
     "./switch",
     "./table",

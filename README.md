@@ -53,6 +53,9 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/popover` for generic anchored popovers.
 - `@firna/ui/radio` for themed titled radio-option cards.
 - `@firna/ui/segmented` for themed single-select segmented controls.
+- `@firna/ui/sortable-list` for the drag-and-drop sortable list (pointer +
+  keyboard reordering, an optional start/end grab handle, and vertical or
+  horizontal flow).
 - `@firna/ui/spinner` for the themed indeterminate spinning loading indicator.
 - `@firna/ui/switch` for themed binary on/off switches.
 - `@firna/ui/table` for the data table with optional headers and clickable rows.
@@ -174,8 +177,8 @@ The package export map intentionally separates runtime targets:
   `Input/Examples`, `Kanban/Examples`, `List/Examples`, `Modal/Examples`,
   `Popover/Examples`,
   `Radio/Examples`,
-  `Segmented/Examples`, `Spinner/Examples`, `Switch/Examples`,
-  `Table/Examples`, `Theme/Examples`, and `Toast/Examples`.
+  `Segmented/Examples`, `SortableList/Examples`, `Spinner/Examples`,
+  `Switch/Examples`, `Table/Examples`, `Theme/Examples`, and `Toast/Examples`.
 - Required repository variable: `CLOUDFLARE_ACCOUNT_ID`.
 - Required repository secret: `CLOUDFLARE_PAGES_API_TOKEN` or
   `CLOUDFLARE_API_TOKEN`.
@@ -193,6 +196,7 @@ The package export map intentionally separates runtime targets:
 - Input and textarea components: [src/input/README.md](src/input/README.md)
 - Kanban component: [src/kanban/README.md](src/kanban/README.md)
 - List component: [src/list/README.md](src/list/README.md)
+- SortableList component: [src/sortable-list/README.md](src/sortable-list/README.md)
 - Dropdown components: [src/dropdown/README.md](src/dropdown/README.md)
 - Drag-select components:
   [src/drag-select/README.md](src/drag-select/README.md)

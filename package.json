@@ -135,6 +135,11 @@
       "react-native": "./dist/skeleton/index.js",
       "import": "./dist/node/skeleton/index.js"
     },
+    "./sortable-list": {
+      "types": "./dist/node/sortable-list/index.d.ts",
+      "react-native": "./dist/sortable-list/index.js",
+      "import": "./dist/node/sortable-list/index.js"
+    },
     "./spinner": {
       "types": "./dist/node/spinner/index.d.ts",
       "react-native": "./dist/spinner/index.js",
