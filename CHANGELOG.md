@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0](https://github.com/futex-ai/ui/compare/v0.15.0...v1.0.0) (2026-07-20)
+
+### ⚠ BREAKING CHANGES
+
+- **data-grid:** the DataGrid `square` prop is removed and corners are now square by default. Pass `borderRadius={theme.radii.lg}` for the old rounded look; use `borderWidth={0}` to drop the outer border.
+
+### Features
+
+- **data-grid:** configurable border width + radius (square by default) ([#103](https://github.com/futex-ai/ui/issues/103)) ([50821b6](https://github.com/futex-ai/ui/commit/50821b6b02e5d802ed3965c9ea21e1f2e625bdbb))
+- **popover:** add ResponsiveMenu with focus-independent keyboard nav ([#104](https://github.com/futex-ai/ui/issues/104)) ([d977aaf](https://github.com/futex-ai/ui/commit/d977aaf064d06430b619cd5a0a9f845398ac772e))
+- **rich-text:** Notion/Linear-style RichTextEditor with markdown output ([#105](https://github.com/futex-ai/ui/issues/105)) ([1da520f](https://github.com/futex-ai/ui/commit/1da520fce0aba0997bc721d15b66fa5b6445e492))
+- **sortable-list:** drag-and-drop sortable list with optional grab handle ([#101](https://github.com/futex-ai/ui/issues/101)) ([e0c06b6](https://github.com/futex-ai/ui/commit/e0c06b609e888ea23ed7ca47df658d40d54997f0))
+
+### Bug Fixes
+
+- **data-grid:** open a select cell's menu on a single click when selected ([#100](https://github.com/futex-ai/ui/issues/100)) ([8d372b8](https://github.com/futex-ai/ui/commit/8d372b8345a4889a901b28611abfaa606787c8b6))
+- **toast:** remove the tone-colored left accent strip from card toasts ([#99](https://github.com/futex-ai/ui/issues/99)) ([098f242](https://github.com/futex-ai/ui/commit/098f24246c09fedf8c81689775b77ae3e98417b9))
+
 ## [0.15.0](https://github.com/futex-ai/ui/compare/v0.14.0...v0.15.0) (2026-07-20)
 
 ### Features
