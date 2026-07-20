@@ -396,6 +396,37 @@ test("scrolls horizontally when the columns overflow the container", async ({
   expect(overflow!.scrollWidth).toBeGreaterThan(overflow!.clientWidth);
 });
 
+test("caps a lone flexible column and fills the leftover as empty grid area", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1200, height: 700 });
+  await gotoDataGridStory(page, "few-columns");
+  await expect(page.getByRole("grid", { name: "Tasks" })).toBeVisible();
+
+  // The flexible Title column is capped near the default max (~480) instead of
+  // stretching to fill the whole grid, so it stays well below the container.
+  const titleWidth = await page
+    .getByRole("columnheader")
+    .filter({ hasText: "Title" })
+    .evaluate((el) => el.getBoundingClientRect().width);
+  expect(titleWidth).toBeGreaterThan(200);
+  expect(titleWidth).toBeLessThanOrEqual(485);
+
+  // The header row still spans (nearly) the full grid width, so the leftover
+  // reads as a clean empty area rather than a table that stops short.
+  const spans = await page.evaluate(() => {
+    const grid = document.querySelector('[role="grid"]') as HTMLElement;
+    const headerRow = grid.querySelector('[role="row"]') as HTMLElement;
+    return {
+      headerRowWidth: headerRow.getBoundingClientRect().width,
+      gridInnerWidth: grid.getBoundingClientRect().width,
+    };
+  });
+  expect(spans.headerRowWidth).toBeGreaterThan(spans.gridInnerWidth - 12);
+  // ...and the content is genuinely narrower than the grid (the cap took effect).
+  expect(titleWidth + 130).toBeLessThan(spans.gridInnerWidth);
+});
+
 test("header and body columns share the same left edges, incl. after hiding", async ({
   page,
 }) => {

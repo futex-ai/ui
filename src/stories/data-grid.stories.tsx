@@ -5,6 +5,8 @@ import { StyleSheet, Text, View } from "react-native";
 import {
   DataGrid,
   dataGridSelectionModel,
+  type DataGridColumn,
+  type DataGridRow,
   type DataGridSelection,
 } from "../index";
 import { StorySurface } from "./sharedExamples";
@@ -33,6 +35,55 @@ export const Basic: Story = {
           footerText="7 of 128 records · 0 filters · sorted by Created"
           rows={contentRows}
         />
+      </View>
+    </StorySurface>
+  ),
+};
+
+// A deliberately sparse table (like a fresh two-field board): with only a
+// couple of columns, the flexible Title column would otherwise stretch across
+// the whole grid. It is capped at a sensible default width instead.
+const sparseColumns: DataGridColumn[] = [
+  { id: "title", label: "Title", fieldType: "text" },
+  {
+    id: "status",
+    label: "Status",
+    fieldType: "singleSelect",
+    width: 130,
+    options: [
+      { id: "todo", label: "Todo", color: "amber" },
+      { id: "done", label: "Done", color: "green" },
+    ],
+  },
+];
+
+const sparseRows: DataGridRow[] = [
+  { id: "s1", cells: { title: "Hello World", status: "todo" } },
+  { id: "s2", cells: { title: "Coordinate this workspace", status: "todo" } },
+  {
+    id: "s3",
+    cells: { title: "Ship the sparse-grid width fix", status: "done" },
+  },
+];
+
+export const FewColumns: Story = {
+  name: "Few columns (capped width)",
+  render: () => (
+    <StorySurface>
+      <View style={styles.stack}>
+        <View style={styles.frameWide}>
+          <DataGrid
+            accessibilityLabel="Tasks"
+            columns={sparseColumns}
+            rows={sparseRows}
+          />
+        </View>
+        <Text style={styles.hint}>
+          With only a couple of columns, the flexible Title column is capped at
+          a default max width instead of ballooning across the whole grid; the
+          leftover space reads as a clean empty area. Drag the Title header's
+          right edge to widen it past the cap.
+        </Text>
       </View>
     </StorySurface>
   ),
@@ -351,6 +402,7 @@ export const Responsive: Story = {
 
 const styles = StyleSheet.create({
   frame: { width: 940 },
+  frameWide: { width: 1000 },
   hint: { color: "#69706a", fontSize: 12 },
   responsive: { padding: 16, width: "100%" },
   stack: { gap: 10 },

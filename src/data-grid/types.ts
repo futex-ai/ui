@@ -44,11 +44,20 @@ export type DataGridColumn = {
   fieldType: DataGridFieldType;
   /** Fixed column width in px. Takes precedence over `flex`. */
   width?: number;
-  /** Flex grow factor when the column has no fixed `width`. Defaults to 1. */
+  /**
+   * Flex grow factor when the column has no fixed `width`. Defaults to 1. A
+   * flex column's automatic width is capped at a sensible default (so a lone
+   * flex column can't stretch across the whole grid); set `maxWidth` to raise
+   * or lower that cap.
+   */
   flex?: number;
   /** Minimum width in px when sized by `flex` or resized. Defaults to 80. */
   minWidth?: number;
-  /** Maximum width in px the column can be resized to. Unbounded by default. */
+  /**
+   * Maximum width in px. Bounds automatic `flex` sizing (overriding the default
+   * cap on unbounded flex columns) and caps manual resizing. Manual resizing is
+   * otherwise unbounded.
+   */
   maxWidth?: number;
   /**
    * Allow resizing the column by dragging its header's right edge (or the arrow
