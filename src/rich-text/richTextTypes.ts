@@ -12,7 +12,7 @@ export type RichTextEditorCommands = {
   getSelection: () => { from: DocPosition; to: DocPosition } | null;
   /** Insert rich blocks at the current selection. */
   insertBlocks: (blocks: readonly RichTextBlock[]) => void;
-  /** Reserved for M3 inline formatting; throws a dev warning in M2. */
+  /** Toggle an inline mark across the current non-collapsed selection. */
   toggleMark: (mark: InlineMark) => void;
   /** Convert the selected block(s) to a supported block type. */
   turnInto: (type: RichTextTurnIntoType) => void;
@@ -44,7 +44,7 @@ export type RichTextEditorProps = {
   placeholder?: string;
   /** Render the editor read-only. */
   readOnly?: boolean;
-  /** Additional slash-menu items. Accepted in M1; web/native ignore them until M2. */
+  /** Additional web slash-menu items. Native accepts and ignores them. */
   slashExtraItems?: readonly SlashMenuItem[];
   /** Test identifier forwarded to the editable root. */
   testID?: string;

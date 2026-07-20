@@ -21,15 +21,26 @@ import { serializeRichTextDom } from "./domSerialize.web";
 import {
   docPositionFromDom,
   docRangeFromDomSelection,
+  domRangeFromDocSelection,
   domRangeFromDocPosition,
   isAtBlockEnd,
   isAtBlockStart,
 } from "./domSelection.web";
-import { matchPrefixInputRule } from "./inputRules";
+import { matchInlineInputRule, matchPrefixInputRule } from "./inputRules";
 import { parseMarkdown } from "./markdownParse";
 import { serializeMarkdown } from "./markdownSerialize";
 import {
+  RichTextHistorySnapshot,
+  collapsedHistoryCaret,
+  createRichTextHistoryState,
+  recordRichTextHistory,
+  redoRichTextHistory,
+  undoRichTextHistory,
+} from "./richTextHistory";
+import {
+  DocSelection,
   DocPosition,
+  InlineMark,
   RichTextBlock,
   RichTextDocument,
   RichTextTurnIntoType,
@@ -42,18 +53,38 @@ import {
   isEmptyDocument,
   mergeBackward,
   normalizeDocument,
+  sliceSpans,
   spansText,
   splitBlock,
+  toggleMarkInRange,
   turnInto,
 } from "./richTextModel";
 import { createRichTextDomTheme, createRichTextStyles } from "./richTextStyles";
 import type { RichTextEditorProps } from "./richTextTypes";
+import { useEditorCommands } from "./useEditorCommands.web";
 import { useSlashMenu } from "./useSlashMenu.web";
 
-type LastRule = {
-  block: number;
-  literal: string;
-};
+type CommitSelection = DocPosition | DocSelection | null;
+
+type CommitDocument = (
+  document: readonly RichTextBlock[],
+  selection: CommitSelection,
+  historySnapshot?: RichTextHistorySnapshot,
+) => void;
+
+type LastRule =
+  | {
+      block: number;
+      literal: string;
+      type: "prefix";
+    }
+  | {
+      block: number;
+      from: number;
+      literal: string;
+      to: number;
+      type: "inline";
+    };
 
 /**
  * ContentEditable rich text editor for React Native Web. The document DOM is
@@ -79,6 +110,7 @@ export function RichTextEditor({
   const docRef = useRef<RichTextDocument>(parseMarkdown(value));
   const composingRef = useRef(false);
   const hasRenderedRef = useRef(false);
+  const historyRef = useRef(createRichTextHistoryState());
   const lastEmittedRef = useRef(value);
   const lastRuleRef = useRef<LastRule | null>(null);
   const onChangeRef = useRef(onChangeMarkdown);
@@ -90,19 +122,24 @@ export function RichTextEditor({
     readOnlyRef.current = readOnly;
   }, [onChangeMarkdown, readOnly]);
 
-  const restoreCaret = useCallback((position: DocPosition) => {
-    const root = rootRef.current;
-    if (!root) {
-      return;
-    }
-    const range = domRangeFromDocPosition(root, position);
-    if (!range) {
-      return;
-    }
-    const selection = window.getSelection();
-    selection?.removeAllRanges();
-    selection?.addRange(range);
-  }, []);
+  const restoreSelection = useCallback(
+    (target: Exclude<CommitSelection, null>) => {
+      const root = rootRef.current;
+      if (!root) {
+        return;
+      }
+      const range = isDocSelection(target)
+        ? domRangeFromDocSelection(root, target)
+        : domRangeFromDocPosition(root, target);
+      if (!range) {
+        return;
+      }
+      const domSelection = window.getSelection();
+      domSelection?.removeAllRanges();
+      domSelection?.addRange(range);
+    },
+    [],
+  );
 
   const emitMarkdown = useCallback((document: readonly RichTextBlock[]) => {
     const markdown = serializeMarkdown(document);
@@ -113,7 +150,7 @@ export function RichTextEditor({
   }, []);
 
   const commitDocument = useCallback(
-    (document: readonly RichTextBlock[], caret: DocPosition | null) => {
+    (document: readonly RichTextBlock[], selection: CommitSelection) => {
       const root = rootRef.current;
       if (!root) {
         return;
@@ -121,16 +158,53 @@ export function RichTextEditor({
       const normalized = renderRichTextDocument(root, document, domTheme);
       docRef.current = normalized;
       setEmpty(isEmptyDocument(normalized));
-      if (caret) {
-        restoreCaret(clampPosition(normalized, caret));
+      if (selection) {
+        restoreSelection(clampSelection(normalized, selection));
       }
       emitMarkdown(normalized);
     },
-    [domTheme, emitMarkdown, restoreCaret],
+    [domTheme, emitMarkdown, restoreSelection],
   );
 
+  const recordHistory = useCallback(
+    (
+      kind: "model" | "typing",
+      snapshot: RichTextHistorySnapshot | null = null,
+    ) => {
+      const root = rootRef.current;
+      if (!root && !snapshot) {
+        return;
+      }
+      const nextSnapshot = snapshot ?? (root ? snapshotFromDom(root) : null);
+      if (!nextSnapshot) {
+        return;
+      }
+      historyRef.current = recordRichTextHistory(
+        historyRef.current,
+        nextSnapshot,
+        kind,
+        Date.now(),
+      );
+    },
+    [],
+  );
+
+  const applyDocument = useCallback<CommitDocument>(
+    (document, selection, historySnapshot) => {
+      recordHistory("model", historySnapshot ?? null);
+      commitDocument(document, selection);
+    },
+    [commitDocument, recordHistory],
+  );
+
+  const editorCommands = useEditorCommands({
+    commitDocument: applyDocument,
+    rootRef,
+  });
+
   const slashMenu = useSlashMenu({
-    commitDocument,
+    commands: editorCommands,
+    commitDocument: applyDocument,
     extraItems: slashExtraItems,
     readOnlyRef,
     rootRef,
@@ -149,10 +223,10 @@ export function RichTextEditor({
       lastEmittedRef.current = value;
       hasRenderedRef.current = true;
       if (document.activeElement === root) {
-        restoreCaret(documentEnd(next));
+        restoreSelection(documentEnd(next));
       }
     }
-  }, [restoreCaret, value]);
+  }, [restoreSelection, value]);
 
   useLayoutEffect(() => {
     const root = rootRef.current;
@@ -160,16 +234,16 @@ export function RichTextEditor({
       return;
     }
     const focused = document.activeElement === root;
-    const caret = focused
-      ? docPositionFromDom(root, window.getSelection())
+    const selection = focused
+      ? docRangeFromDomSelection(root, window.getSelection())
       : null;
     const next = renderRichTextDocument(root, docRef.current, domTheme);
     docRef.current = next;
     setEmpty(isEmptyDocument(next));
-    if (focused && caret) {
-      restoreCaret(caret);
+    if (focused && selection) {
+      restoreSelection(selection);
     }
-  }, [domTheme, restoreCaret]);
+  }, [domTheme, restoreSelection]);
 
   useEffect(() => {
     if (autoFocus) {
@@ -182,10 +256,7 @@ export function RichTextEditor({
       event: InputEvent,
       root: HTMLElement,
       position: DocPosition,
-      commit: (
-        document: readonly RichTextBlock[],
-        caret: DocPosition | null,
-      ) => void,
+      commit: CommitDocument,
     ) => {
       const doc = serializeRichTextDom(root);
       const block = doc[position.block];
@@ -204,6 +275,12 @@ export function RichTextEditor({
         return false;
       }
       event.preventDefault();
+      const inserted = event.data ?? "";
+      const literalDoc = insertText(doc, position, inserted);
+      const literalCaret = {
+        block: position.block,
+        offset: position.offset + inserted.length,
+      };
       const cleared = deleteRange(
         doc,
         {
@@ -219,15 +296,104 @@ export function RichTextEditor({
             { spans: [], type: "paragraph" },
           ]),
           { block: position.block + 1, offset: 0 },
+          {
+            caret: collapsedHistoryCaret(literalCaret),
+            doc: literalDoc,
+          },
         );
         lastRuleRef.current = null;
         return true;
       }
-      commit(turnInto(cleared, position.block, rule.value), {
+      commit(
+        turnInto(cleared, position.block, rule.value),
+        {
+          block: position.block,
+          offset: 0,
+        },
+        {
+          caret: collapsedHistoryCaret(literalCaret),
+          doc: literalDoc,
+        },
+      );
+      lastRuleRef.current = {
         block: position.block,
-        offset: 0,
+        literal: rule.literal,
+        type: "prefix",
+      };
+      return true;
+    },
+    [],
+  );
+
+  const applyInlineRule = useCallback(
+    (
+      event: InputEvent,
+      root: HTMLElement,
+      position: DocPosition,
+      commit: CommitDocument,
+    ) => {
+      const inserted = event.data ?? "";
+      if (inserted.length === 0) {
+        return false;
+      }
+      const doc = serializeRichTextDom(root);
+      const block = doc[position.block];
+      if (!block || block.type === "codeBlock" || block.type === "divider") {
+        return false;
+      }
+      const text = spansText(block.spans);
+      const rule = matchInlineInputRule({
+        insertedText: inserted,
+        textBeforeCaret: text.slice(0, position.offset),
       });
-      lastRuleRef.current = { block: position.block, literal: rule.literal };
+      if (!rule) {
+        return false;
+      }
+      event.preventDefault();
+      const literalDoc = insertText(doc, position, inserted);
+      const withoutClose = deleteRange(
+        literalDoc,
+        { block: position.block, offset: rule.contentTo },
+        { block: position.block, offset: rule.triggerTo },
+      );
+      const withoutDelimiters = deleteRange(
+        withoutClose,
+        { block: position.block, offset: rule.triggerFrom },
+        { block: position.block, offset: rule.contentFrom },
+      );
+      const contentFrom = rule.triggerFrom;
+      const contentTo = rule.contentTo - (rule.contentFrom - rule.triggerFrom);
+      const next = everyCharacterHasMark(
+        withoutDelimiters,
+        { block: position.block, offset: contentFrom },
+        { block: position.block, offset: contentTo },
+        rule.mark,
+      )
+        ? withoutDelimiters
+        : toggleMarkInRange(
+            withoutDelimiters,
+            { block: position.block, offset: contentFrom },
+            { block: position.block, offset: contentTo },
+            rule.mark,
+          );
+      commit(
+        next,
+        { block: position.block, offset: contentTo },
+        {
+          caret: collapsedHistoryCaret({
+            block: position.block,
+            offset: rule.triggerTo,
+          }),
+          doc: literalDoc,
+        },
+      );
+      lastRuleRef.current = {
+        block: position.block,
+        from: contentFrom,
+        literal: rule.literal,
+        to: contentTo,
+        type: "inline",
+      };
       return true;
     },
     [],
@@ -238,46 +404,100 @@ export function RichTextEditor({
       event: InputEvent,
       root: HTMLElement,
       position: DocPosition,
-      commit: (
-        document: readonly RichTextBlock[],
-        caret: DocPosition | null,
-      ) => void,
+      commit: CommitDocument,
     ) => {
       const lastRule = lastRuleRef.current;
-      if (
-        !lastRule ||
-        lastRule.block !== position.block ||
-        position.offset !== 0
-      ) {
+      if (!lastRule || lastRule.block !== position.block) {
+        return false;
+      }
+      const doc = serializeRichTextDom(root);
+      if (lastRule.type === "prefix") {
+        if (position.offset !== 0) {
+          return false;
+        }
+        event.preventDefault();
+        const next = [
+          ...doc.slice(0, position.block),
+          {
+            spans: [{ marks: [], text: lastRule.literal }],
+            type: "paragraph",
+          } as RichTextBlock,
+          ...doc.slice(position.block + 1),
+        ];
+        commit(next, {
+          block: position.block,
+          offset: lastRule.literal.length,
+        });
+        lastRuleRef.current = null;
+        return true;
+      }
+      if (position.offset !== lastRule.to) {
         return false;
       }
       event.preventDefault();
-      const doc = serializeRichTextDom(root);
-      const next = [
-        ...doc.slice(0, position.block),
+      const base = deleteRange(
+        doc,
+        { block: lastRule.block, offset: lastRule.from },
+        { block: lastRule.block, offset: lastRule.to },
+      );
+      commit(
+        insertText(
+          base,
+          { block: lastRule.block, offset: lastRule.from },
+          lastRule.literal,
+        ),
         {
-          spans: [{ marks: [], text: lastRule.literal }],
-          type: "paragraph",
-        } as RichTextBlock,
-        ...doc.slice(position.block + 1),
-      ];
-      commit(next, { block: position.block, offset: lastRule.literal.length });
+          block: lastRule.block,
+          offset: lastRule.from + lastRule.literal.length,
+        },
+      );
       lastRuleRef.current = null;
       return true;
     },
     [],
   );
 
+  const applyHistory = useCallback(
+    (direction: "redo" | "undo") => {
+      const root = rootRef.current;
+      if (!root) {
+        return false;
+      }
+      const current = snapshotFromDom(root);
+      if (!current) {
+        return false;
+      }
+      const transition =
+        direction === "undo"
+          ? undoRichTextHistory(historyRef.current, current)
+          : redoRichTextHistory(historyRef.current, current);
+      if (!transition) {
+        return false;
+      }
+      historyRef.current = transition.history;
+      commitDocument(transition.snapshot.doc, transition.snapshot.caret);
+      lastRuleRef.current = null;
+      slashMenu.close();
+      return true;
+    },
+    [commitDocument, slashMenu],
+  );
+
   const handleBeforeInput = useCallback(
-    (
-      event: InputEvent,
-      root: HTMLElement,
-      commit: (
-        document: readonly RichTextBlock[],
-        caret: DocPosition | null,
-      ) => void,
-    ) => {
+    (event: InputEvent, root: HTMLElement, commit: CommitDocument) => {
       if (readOnlyRef.current || composingRef.current) {
+        return;
+      }
+      const historyDirection = historyBeforeInputDirection(event);
+      if (historyDirection) {
+        event.preventDefault();
+        applyHistory(historyDirection);
+        return;
+      }
+      if (shouldRecordNativeModelInput(event)) {
+        recordHistory("model");
+        lastRuleRef.current = null;
+        slashMenu.close();
         return;
       }
       const selection = window.getSelection();
@@ -286,6 +506,14 @@ export function RichTextEditor({
         return;
       }
       const collapsed = samePosition(range.from, range.to);
+      const formatMark = formatBeforeInputMark(event);
+      if (formatMark) {
+        event.preventDefault();
+        editorCommands.toggleMark(formatMark);
+        lastRuleRef.current = null;
+        slashMenu.close();
+        return;
+      }
       if (!collapsed && range.from.block !== range.to.block) {
         handleCrossBlockBeforeInput(event, root, range.from, range.to, commit);
         slashMenu.close();
@@ -306,6 +534,15 @@ export function RichTextEditor({
         event.data &&
         applyPrefixRule(event, root, range.from, commit)
       ) {
+        return;
+      }
+      if (
+        collapsed &&
+        event.inputType === "insertText" &&
+        event.data &&
+        applyInlineRule(event, root, range.from, commit)
+      ) {
+        slashMenu.close();
         return;
       }
       if (event.inputType === "insertParagraph") {
@@ -350,20 +587,25 @@ export function RichTextEditor({
         const doc = serializeRichTextDom(root);
         commit(deleteForward(doc, range.from), range.from);
         lastRuleRef.current = null;
+        return;
+      }
+      if (shouldRecordNativeInput(event)) {
+        recordHistory("typing");
       }
     },
-    [applyPrefixRule, slashMenu, tryRevertLastRule],
+    [
+      applyHistory,
+      applyInlineRule,
+      applyPrefixRule,
+      editorCommands,
+      recordHistory,
+      slashMenu,
+      tryRevertLastRule,
+    ],
   );
 
   const handlePaste = useCallback(
-    (
-      event: ClipboardEvent,
-      root: HTMLElement,
-      commit: (
-        document: readonly RichTextBlock[],
-        caret: DocPosition | null,
-      ) => void,
-    ) => {
+    (event: ClipboardEvent, root: HTMLElement, commit: CommitDocument) => {
       if (readOnlyRef.current) {
         return;
       }
@@ -391,14 +633,7 @@ export function RichTextEditor({
   );
 
   const handleMouseDown = useCallback(
-    (
-      event: MouseEvent,
-      root: HTMLElement,
-      commit: (
-        document: readonly RichTextBlock[],
-        caret: DocPosition | null,
-      ) => void,
-    ) => {
+    (event: MouseEvent, root: HTMLElement, commit: CommitDocument) => {
       if (readOnlyRef.current || !(event.target instanceof HTMLElement)) {
         return;
       }
@@ -446,7 +681,7 @@ export function RichTextEditor({
       return undefined;
     }
     const beforeInput = (event: InputEvent) => {
-      handleBeforeInput(event, root, commitDocument);
+      handleBeforeInput(event, root, applyDocument);
     };
     const input = () => {
       if (composingRef.current) {
@@ -460,10 +695,16 @@ export function RichTextEditor({
       slashMenu.handleInput();
     };
     const paste = (event: ClipboardEvent) => {
-      handlePaste(event, root, commitDocument);
+      handlePaste(event, root, applyDocument);
     };
     const compositionStart = () => {
+      if (readOnlyRef.current) {
+        return;
+      }
+      recordHistory("model");
       composingRef.current = true;
+      lastRuleRef.current = null;
+      slashMenu.close();
     };
     const compositionEnd = () => {
       composingRef.current = false;
@@ -475,7 +716,7 @@ export function RichTextEditor({
       slashMenu.handleInput();
     };
     const mouseDown = (event: MouseEvent) => {
-      handleMouseDown(event, root, commitDocument);
+      handleMouseDown(event, root, applyDocument);
     };
     const selectionChange = () => {
       slashMenu.handleSelectionChange();
@@ -487,11 +728,7 @@ export function RichTextEditor({
       // left it; focus moving out of the editor is a movement too.
       if (root.contains(document.activeElement)) {
         const position = docPositionFromDom(root, window.getSelection());
-        if (
-          position &&
-          position.block === lastRule.block &&
-          position.offset === 0
-        ) {
+        if (position && isLastRuleCaret(lastRule, position)) {
           return;
         }
       }
@@ -520,11 +757,12 @@ export function RichTextEditor({
       document.removeEventListener("selectionchange", selectionChange);
     };
   }, [
-    commitDocument,
+    applyDocument,
     emitMarkdown,
     handleBeforeInput,
     handleMouseDown,
     handlePaste,
+    recordHistory,
     slashMenu,
   ]);
 
@@ -541,11 +779,25 @@ export function RichTextEditor({
       if (slashMenu.handleKeyDown(event)) {
         return;
       }
-      if (handleBlockShortcut(event, root, commitDocument)) {
+      const historyDirection = historyKeyDirection(event);
+      if (historyDirection) {
+        swallowKey(event);
+        applyHistory(historyDirection);
+        return;
+      }
+      const mark = inlineShortcutMark(event);
+      if (mark) {
+        swallowKey(event);
+        editorCommands.toggleMark(mark);
+        lastRuleRef.current = null;
+        slashMenu.close();
+        return;
+      }
+      if (handleBlockShortcut(event, root, applyDocument)) {
         slashMenu.close();
       }
     },
-    [commitDocument, slashMenu],
+    [applyDocument, applyHistory, editorCommands, slashMenu],
   );
 
   useDocumentKeyCapture(!readOnly, handleDocumentKeyDown);
@@ -624,10 +876,7 @@ function handleCrossBlockBeforeInput(
   root: HTMLElement,
   from: DocPosition,
   to: DocPosition,
-  commit: (
-    document: readonly RichTextBlock[],
-    caret: DocPosition | null,
-  ) => void,
+  commit: CommitDocument,
 ): void {
   event.preventDefault();
   const doc = serializeRichTextDom(root);
@@ -656,10 +905,7 @@ function handleCrossBlockBeforeInput(
 function handleBlockShortcut(
   event: KeyboardEvent,
   root: HTMLElement,
-  commit: (
-    document: readonly RichTextBlock[],
-    caret: DocPosition | null,
-  ) => void,
+  commit: CommitDocument,
 ): boolean {
   const type = blockShortcutType(event);
   if (!type) {
@@ -700,6 +946,75 @@ function blockShortcutType(event: KeyboardEvent): RichTextTurnIntoType | null {
     if (isDigit(event, "9")) return "numbered";
   }
   return null;
+}
+
+function inlineShortcutMark(event: KeyboardEvent): InlineMark | null {
+  if (!(event.metaKey || event.ctrlKey) || event.altKey) {
+    return null;
+  }
+  const key = event.key.toLowerCase();
+  if (!event.shiftKey && key === "b") {
+    return "bold";
+  }
+  if (!event.shiftKey && key === "i") {
+    return "italic";
+  }
+  if (!event.shiftKey && key === "e") {
+    return "code";
+  }
+  return event.shiftKey && key === "s" ? "strike" : null;
+}
+
+function historyKeyDirection(event: KeyboardEvent): "redo" | "undo" | null {
+  if (!(event.metaKey || event.ctrlKey) || event.altKey) {
+    return null;
+  }
+  return event.key.toLowerCase() === "z"
+    ? event.shiftKey
+      ? "redo"
+      : "undo"
+    : null;
+}
+
+function historyBeforeInputDirection(
+  event: InputEvent,
+): "redo" | "undo" | null {
+  if (event.inputType === "historyUndo") {
+    return "undo";
+  }
+  return event.inputType === "historyRedo" ? "redo" : null;
+}
+
+function formatBeforeInputMark(event: InputEvent): InlineMark | null {
+  if (event.inputType === "formatBold") {
+    return "bold";
+  }
+  return event.inputType === "formatItalic" ? "italic" : null;
+}
+
+function shouldRecordNativeInput(event: InputEvent): boolean {
+  return (
+    event.inputType === "insertText" ||
+    event.inputType === "deleteContentBackward" ||
+    event.inputType === "deleteContentForward" ||
+    event.inputType === "deleteWordBackward" ||
+    event.inputType === "deleteWordForward"
+  );
+}
+
+function shouldRecordNativeModelInput(event: InputEvent): boolean {
+  return (
+    event.inputType === "deleteByCut" ||
+    event.inputType === "deleteByDrag" ||
+    event.inputType === "insertFromDrop" ||
+    event.inputType === "insertReplacementText"
+  );
+}
+
+function swallowKey(event: KeyboardEvent): void {
+  event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation();
 }
 
 function shortcutTargetType(
@@ -794,6 +1109,42 @@ function documentEnd(document: readonly RichTextBlock[]): DocPosition {
   return { block, offset: blockTextLength(doc[block]) };
 }
 
+function snapshotFromDom(root: HTMLElement): RichTextHistorySnapshot | null {
+  const doc = serializeRichTextDom(root);
+  return {
+    caret:
+      docRangeFromDomSelection(root, window.getSelection()) ??
+      collapsedHistoryCaret(documentEnd(doc)),
+    doc,
+  };
+}
+
+function isLastRuleCaret(rule: LastRule, position: DocPosition): boolean {
+  if (rule.block !== position.block) {
+    return false;
+  }
+  return rule.type === "prefix"
+    ? position.offset === 0
+    : position.offset === rule.to;
+}
+
+function isDocSelection(target: CommitSelection): target is DocSelection {
+  return Boolean(target && "from" in target && "to" in target);
+}
+
+function clampSelection(
+  document: readonly RichTextBlock[],
+  target: Exclude<CommitSelection, null>,
+): Exclude<CommitSelection, null> {
+  if (!isDocSelection(target)) {
+    return clampPosition(document, target);
+  }
+  return {
+    from: clampPosition(document, target.from),
+    to: clampPosition(document, target.to),
+  };
+}
+
 function clampPosition(
   document: readonly RichTextBlock[],
   position: DocPosition,
@@ -808,4 +1159,31 @@ function clampPosition(
 
 function samePosition(left: DocPosition, right: DocPosition): boolean {
   return left.block === right.block && left.offset === right.offset;
+}
+
+function everyCharacterHasMark(
+  document: readonly RichTextBlock[],
+  from: DocPosition,
+  to: DocPosition,
+  mark: InlineMark,
+): boolean {
+  const doc = normalizeDocument(document);
+  const startBlock = Math.min(from.block, to.block);
+  const endBlock = Math.max(from.block, to.block);
+  let sawText = false;
+  for (let index = startBlock; index <= endBlock; index += 1) {
+    const block = doc[index];
+    if (!block || block.type === "codeBlock" || block.type === "divider") {
+      continue;
+    }
+    const blockFrom = index === from.block ? from.offset : 0;
+    const blockTo = index === to.block ? to.offset : blockTextLength(block);
+    for (const span of sliceSpans(block.spans, blockFrom, blockTo)) {
+      sawText = true;
+      if (!span.marks.includes(mark)) {
+        return false;
+      }
+    }
+  }
+  return sawText;
 }

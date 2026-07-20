@@ -30,6 +30,9 @@ export type RichTextDocument = RichTextBlock[];
 /** Caret or selection endpoint: block index plus plain-text offset. */
 export type DocPosition = { block: number; offset: number };
 
+/** Ordered document selection endpoints. Collapsed selections have equal ends. */
+export type DocSelection = { from: DocPosition; to: DocPosition };
+
 /** Text block type accepted by `turnInto`. Dividers are inserted, not converted. */
 export type RichTextTurnIntoType = Exclude<RichTextBlock["type"], "divider">;
 
@@ -405,6 +408,42 @@ export function turnInto(
   ]);
 }
 
+/** Toggle an inline mark across a plain-text range. */
+export function toggleMarkInRange(
+  document: readonly RichTextBlock[],
+  from: DocPosition,
+  to: DocPosition,
+  mark: InlineMark,
+): RichTextDocument {
+  const doc = normalizeDocument(document);
+  const [start, end] = orderedPositions(doc, from, to);
+  if (samePosition(start, end)) {
+    return doc;
+  }
+  const ranges = selectedTextRanges(doc, start, end);
+  if (ranges.length === 0) {
+    return doc;
+  }
+  const remove = ranges.every(({ block, from: blockFrom, to: blockTo }) => {
+    const target = doc[block];
+    return (
+      isTextBlock(target) &&
+      everySpanCharacterHasMark(
+        sliceSpans(target.spans, blockFrom, blockTo),
+        mark,
+      )
+    );
+  });
+  return normalizeDocument(
+    doc.map((block, index) => {
+      const range = ranges.find((entry) => entry.block === index);
+      return range
+        ? markTextBlock(block, range.from, range.to, mark, remove)
+        : block;
+    }),
+  );
+}
+
 /** Return the plain-text length of a block. */
 export function blockTextLength(block: RichTextBlock): number {
   if (block.type === "divider") {
@@ -584,6 +623,61 @@ function clampPosition(
     block,
     offset: clamp(position.offset, 0, blockTextLength(doc[block])),
   };
+}
+
+function samePosition(left: DocPosition, right: DocPosition): boolean {
+  return left.block === right.block && left.offset === right.offset;
+}
+
+function selectedTextRanges(
+  doc: RichTextDocument,
+  start: DocPosition,
+  end: DocPosition,
+): { block: number; from: number; to: number }[] {
+  const ranges: { block: number; from: number; to: number }[] = [];
+  for (let index = start.block; index <= end.block; index += 1) {
+    const block = doc[index];
+    if (!isTextBlock(block)) {
+      continue;
+    }
+    const from = index === start.block ? start.offset : 0;
+    const to = index === end.block ? end.offset : blockTextLength(block);
+    if (from < to) {
+      ranges.push({ block: index, from, to });
+    }
+  }
+  return ranges;
+}
+
+function everySpanCharacterHasMark(
+  spans: readonly InlineSpan[],
+  mark: InlineMark,
+): boolean {
+  return spans.length > 0 && spans.every((span) => span.marks.includes(mark));
+}
+
+function markTextBlock(
+  block: RichTextBlock,
+  from: number,
+  to: number,
+  mark: InlineMark,
+  remove: boolean,
+): RichTextBlock {
+  if (!isTextBlock(block)) {
+    return block;
+  }
+  const [head, rest] = splitSpans(block.spans, from);
+  const [middle, tail] = splitSpans(rest, to - from);
+  return withSpans(block, [
+    ...head,
+    ...middle.map((span) => ({
+      marks: remove
+        ? span.marks.filter((entry) => entry !== mark)
+        : canonicalMarks([...span.marks, mark]),
+      text: span.text,
+    })),
+    ...tail,
+  ]);
 }
 
 function deleteWithinBlock(

@@ -14,6 +14,7 @@ import {
   splitBlock,
   splitSpans,
   spansText,
+  toggleMarkInRange,
   turnInto,
 } from "../../src/rich-text/richTextModel";
 
@@ -282,4 +283,132 @@ test("turnInto converts spans and code without converting to dividers", () => {
     { spans: [{ marks: [], text: "x" }], type: "paragraph" },
   ];
   assert.deepEqual(turnInto(doc, 0, "divider"), doc);
+});
+
+test("toggleMarkInRange marks a single-block partial range", () => {
+  assert.deepEqual(
+    toggleMarkInRange(
+      [{ spans: [{ marks: [], text: "hello" }], type: "paragraph" }],
+      { block: 0, offset: 1 },
+      { block: 0, offset: 4 },
+      "bold",
+    ),
+    [
+      {
+        spans: [
+          { marks: [], text: "h" },
+          { marks: ["bold"], text: "ell" },
+          { marks: [], text: "o" },
+        ],
+        type: "paragraph",
+      },
+    ],
+  );
+});
+
+test("toggleMarkInRange marks text across blocks", () => {
+  assert.deepEqual(
+    toggleMarkInRange(
+      [
+        { spans: [{ marks: [], text: "one" }], type: "paragraph" },
+        { spans: [{ marks: ["italic"], text: "two" }], type: "quote" },
+      ],
+      { block: 0, offset: 1 },
+      { block: 1, offset: 2 },
+      "strike",
+    ),
+    [
+      {
+        spans: [
+          { marks: [], text: "o" },
+          { marks: ["strike"], text: "ne" },
+        ],
+        type: "paragraph",
+      },
+      {
+        spans: [
+          { marks: ["italic", "strike"], text: "tw" },
+          { marks: ["italic"], text: "o" },
+        ],
+        type: "quote",
+      },
+    ],
+  );
+});
+
+test("toggleMarkInRange removes a mark when the whole range has it", () => {
+  assert.deepEqual(
+    toggleMarkInRange(
+      [
+        {
+          spans: [
+            { marks: ["bold"], text: "al" },
+            { marks: ["bold", "code"], text: "pha" },
+          ],
+          type: "paragraph",
+        },
+      ],
+      { block: 0, offset: 0 },
+      { block: 0, offset: 5 },
+      "bold",
+    ),
+    [
+      {
+        spans: [
+          { marks: [], text: "al" },
+          { marks: ["code"], text: "pha" },
+        ],
+        type: "paragraph",
+      },
+    ],
+  );
+});
+
+test("toggleMarkInRange leaves code blocks and dividers untouched", () => {
+  assert.deepEqual(
+    toggleMarkInRange(
+      [
+        { spans: [{ marks: [], text: "plain" }], type: "paragraph" },
+        { code: "const x = 1;", type: "codeBlock" },
+        { type: "divider" },
+        { spans: [{ marks: [], text: "tail" }], type: "paragraph" },
+      ],
+      { block: 0, offset: 2 },
+      { block: 3, offset: 2 },
+      "italic",
+    ),
+    [
+      {
+        spans: [
+          { marks: [], text: "pl" },
+          { marks: ["italic"], text: "ain" },
+        ],
+        type: "paragraph",
+      },
+      { code: "const x = 1;", type: "codeBlock" },
+      { type: "divider" },
+      {
+        spans: [
+          { marks: ["italic"], text: "ta" },
+          { marks: [], text: "il" },
+        ],
+        type: "paragraph",
+      },
+    ],
+  );
+});
+
+test("toggleMarkInRange treats empty ranges as no-ops", () => {
+  const doc: RichTextDocument = [
+    { spans: [{ marks: [], text: "same" }], type: "paragraph" },
+  ];
+  assert.deepEqual(
+    toggleMarkInRange(
+      doc,
+      { block: 0, offset: 2 },
+      { block: 0, offset: 2 },
+      "code",
+    ),
+    doc,
+  );
 });

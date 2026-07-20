@@ -12,8 +12,12 @@ reports canonical markdown through `onChangeMarkdown`.
   items, quotes, code blocks, dividers, and inline marks.
 - Parse and serialize the supported markdown subset, including checklist items,
   fenced code blocks, soft breaks, inline marks, and round-trip normalization.
-- Apply M1 block prefix shortcuts (`# `, `- `, `1. `, `> `, ` ``` `, `---`)
+- Apply block prefix shortcuts (`# `, `- `, `1. `, `> `, ` ``` `, `---`)
   through the pure model instead of direct DOM surgery.
+- Provide a web slash menu for block conversion and caller-supplied commands.
+- Toggle inline bold, italic, strike, and code marks over selected text, with
+  typed delimiter autoformat for the same mark set.
+- Maintain a web undo/redo stack for model operations and coalesced typing.
 - Manage the web `contentEditable` document imperatively; React renders the
   frame, label, and placeholder only.
 - Fall back to the shared `Textarea` on native platforms, editing raw markdown
@@ -62,11 +66,17 @@ same marks are merged, mark order is canonical, numbered-list runs are
 renumbered, and unsupported markdown constructs such as links, tables, raw HTML,
 and setext headings remain plain paragraph text.
 
+### Undo Contract
+
+Native character and word insert/delete edits are coalesced as typing. Browser
+owned destructive edits such as cut, drag/delete, drop, replacement text, and
+IME composition record a model snapshot before the native mutation so undo can
+restore the pre-edit document and stale redo is cleared.
+
 ### Native Fallback
 
 On native platforms `RichTextEditor` renders `Textarea` and edits markdown
-directly. `slashExtraItems` is accepted for API compatibility but ignored until
-the web slash menu ships.
+directly. `slashExtraItems` is accepted for API compatibility but ignored.
 
 ## Accessibility
 

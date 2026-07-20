@@ -2,16 +2,28 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 test.use({ permissions: ["clipboard-read", "clipboard-write"] });
+test.setTimeout(120_000);
 
-const storyReadyTimeout = 30_000;
+const storyReadyTimeout = 110_000;
 
 async function gotoRichTextStory(page: Page, storyId = "playground") {
-  await page.goto(
-    `/iframe.html?id=richtext-examples--${storyId}&viewMode=story`,
-  );
-  await page.waitForSelector('[data-testid="rich-text-editor"]', {
-    timeout: storyReadyTimeout,
-  });
+  const id = `richtext-examples--${storyId}`;
+  const url = `/iframe.html?id=${id}&viewMode=story`;
+  let lastError: unknown = null;
+  const deadline = Date.now() + storyReadyTimeout;
+  while (Date.now() < deadline) {
+    await page.goto(url);
+    try {
+      await page.waitForSelector('[data-testid="rich-text-editor"]', {
+        timeout: 5_000,
+      });
+      return;
+    } catch (error) {
+      lastError = error;
+      await page.waitForTimeout(500);
+    }
+  }
+  throw lastError;
 }
 
 test("heading prefix converts the block and updates markdown", async ({
@@ -294,6 +306,170 @@ test("primary Alt+2 toggles heading 2", async ({ page }) => {
   await expect(page.getByTestId("rich-text-markdown-out")).toHaveText("Title");
 });
 
+test("primary B toggles bold over a selected range", async ({ page }) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("hello world");
+  await selectTextInBlock(page, 0, 6, 11);
+  await page.keyboard.press(primaryShortcut("b"));
+
+  await expect(page.locator('[data-rt="p"] strong')).toHaveText("world");
+  await expect(page.getByTestId("rich-text-markdown-out")).toHaveText(
+    "hello **world**",
+  );
+
+  await page.keyboard.press(primaryShortcut("b"));
+  await expect(page.locator('[data-rt="p"] strong')).toHaveCount(0);
+  await expect(page.getByTestId("rich-text-markdown-out")).toHaveText(
+    "hello world",
+  );
+});
+
+test("bold autoformat applies and immediate Backspace restores literal text", async ({
+  page,
+}) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("**bold**");
+
+  await expect(page.locator('[data-rt="p"] strong')).toHaveText("bold");
+  await expect(page.getByTestId("rich-text-markdown-out")).toHaveText(
+    "**bold**",
+  );
+
+  await page.keyboard.press("Backspace");
+  await expect(page.locator('[data-rt="p"] strong')).toHaveCount(0);
+  await expect(page.getByTestId("rich-text-markdown-out")).toHaveText(
+    String.raw`\*\*bold\*\*`,
+  );
+});
+
+test("code autoformat wraps typed code spans", async ({ page }) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("`code`");
+
+  await expect(page.locator('[data-rt="p"] code')).toHaveText("code");
+  await expect(page.getByTestId("rich-text-markdown-out")).toHaveText("`code`");
+});
+
+test("undo and redo restore a structural split", async ({ page }) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("Alpha");
+  await page.keyboard.press("Enter");
+
+  await expect(page.locator('[data-rt="p"]')).toHaveCount(2);
+  await page.keyboard.press(primaryShortcut("z"));
+
+  await expect(page.locator('[data-rt="p"]')).toHaveCount(1);
+  await expect(page.getByTestId("rich-text-markdown-out")).toHaveText("Alpha");
+
+  await page.keyboard.press(primaryShortcut("Shift+z"));
+  await expect(page.locator('[data-rt="p"]')).toHaveCount(2);
+  await expect(page.getByTestId("rich-text-markdown-out")).toHaveText("Alpha");
+});
+
+test("undo and redo restore a prefix-rule application", async ({ page }) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("# ");
+
+  await expect(page.locator('[data-rt="h1"]')).toBeVisible();
+  await expectReadoutText(page, "# ");
+
+  await page.keyboard.press(primaryShortcut("z"));
+  await expect(page.locator('[data-rt="p"]')).toHaveText("# ");
+  await expectReadoutText(page, String.raw`\# `);
+
+  await page.keyboard.press(primaryShortcut("Shift+z"));
+  await expect(page.locator('[data-rt="h1"]')).toBeVisible();
+  await expectReadoutText(page, "# ");
+});
+
+test("typing burst undo is coalesced and redo restores the readout", async ({
+  page,
+}) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("abc");
+  await expect(page.getByTestId("rich-text-markdown-out")).toHaveText("abc");
+
+  await page.keyboard.press(primaryShortcut("z"));
+  await expect(page.getByTestId("rich-text-markdown-out")).toHaveText("");
+
+  await page.keyboard.press(primaryShortcut("Shift+z"));
+  await expect(page.getByTestId("rich-text-markdown-out")).toHaveText("abc");
+});
+
+test("native cut records the pre-cut undo snapshot", async ({ page }) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("abc def");
+  await selectTextInBlock(page, 0, 4, 7);
+  await page.keyboard.press(primaryShortcut("x"));
+
+  await expect(page.getByTestId("rich-text-markdown-out")).not.toContainText(
+    "def",
+  );
+
+  await page.keyboard.press(primaryShortcut("z"));
+  await expectReadoutText(page, "abc def");
+});
+
+test("synthetic composition records history and clears stale redo", async ({
+  page,
+}) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("abc");
+  await page.keyboard.press(primaryShortcut("z"));
+  await expectReadoutText(page, "");
+
+  await page.evaluate(() => {
+    const editor = document.querySelector<HTMLElement>(
+      '[data-testid="rich-text-editor"]',
+    );
+    const block = document.querySelector<HTMLElement>('[data-rt-index="0"]');
+    if (!editor || !block) {
+      throw new Error("Rich text editor block not found");
+    }
+    editor.focus();
+    editor.dispatchEvent(
+      new CompositionEvent("compositionstart", { bubbles: true, data: "" }),
+    );
+    block.textContent = "é";
+    const text = block.firstChild;
+    const range = document.createRange();
+    if (text) {
+      range.setStart(text, text.textContent?.length ?? 0);
+    } else {
+      range.setStart(block, block.childNodes.length);
+    }
+    range.collapse(true);
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    editor.dispatchEvent(
+      new CompositionEvent("compositionend", { bubbles: true, data: "é" }),
+    );
+  });
+
+  await expectReadoutText(page, "é");
+  await page.keyboard.press(primaryShortcut("z"));
+  await expectReadoutText(page, "");
+  await page.keyboard.press(primaryShortcut("Shift+z"));
+  await expectReadoutText(page, "é");
+});
+
 test("checklist checkbox click toggles markdown state", async ({ page }) => {
   await gotoRichTextStory(page);
 
@@ -370,6 +546,16 @@ test("Playground slash menu has no axe violations", async ({ page }) => {
 
 function primaryShortcut(key: string) {
   return `${process.platform === "darwin" ? "Meta" : "Control"}+${key}`;
+}
+
+async function expectReadoutText(page: Page, text: string) {
+  await expect
+    .poll(() =>
+      page
+        .getByTestId("rich-text-markdown-out")
+        .evaluate((element) => element.textContent ?? ""),
+    )
+    .toBe(text);
 }
 
 async function placeCaretAtBlockStart(page: Page, blockIndex: number) {

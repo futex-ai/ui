@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { matchPrefixInputRule } from "../../src/rich-text/inputRules";
+import {
+  matchInlineInputRule,
+  matchPrefixInputRule,
+} from "../../src/rich-text/inputRules";
 
 test("matches space-triggered heading, list, checklist, quote, and code rules", () => {
   const cases = [
@@ -73,6 +76,50 @@ test("does not match when text remains after the caret or the inserted text diff
       textAfterCaret: "",
       textBeforeCaret: "1)",
     }),
+    null,
+  );
+});
+
+test("matches inline autoformat closing delimiters at the caret", () => {
+  const cases = [
+    ["**bold*", "*", "bold", 2, 6, 0, 8, "**bold**"],
+    ["*italic", "*", "italic", 1, 7, 0, 8, "*italic*"],
+    ["`code", "`", "code", 1, 5, 0, 6, "`code`"],
+    ["~~strike~", "~", "strike", 2, 8, 0, 10, "~~strike~~"],
+  ] as const;
+
+  for (const [
+    textBeforeCaret,
+    insertedText,
+    mark,
+    contentFrom,
+    contentTo,
+    triggerFrom,
+    triggerTo,
+    literal,
+  ] of cases) {
+    assert.deepEqual(matchInlineInputRule({ insertedText, textBeforeCaret }), {
+      contentFrom,
+      contentTo,
+      literal,
+      mark,
+      triggerFrom,
+      triggerTo,
+    });
+  }
+});
+
+test("inline autoformat ignores ambiguous italic and multiline matches", () => {
+  assert.equal(
+    matchInlineInputRule({ insertedText: "*", textBeforeCaret: "a**" }),
+    null,
+  );
+  assert.equal(
+    matchInlineInputRule({ insertedText: "*", textBeforeCaret: "*a\nb" }),
+    null,
+  );
+  assert.equal(
+    matchInlineInputRule({ insertedText: "x", textBeforeCaret: "`code`" }),
     null,
   );
 });

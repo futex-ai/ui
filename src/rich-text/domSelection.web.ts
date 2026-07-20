@@ -1,5 +1,5 @@
 /** Selection and caret mapping helpers for RichTextEditor web DOM. */
-import type { DocPosition } from "./richTextModel";
+import type { DocPosition, DocSelection } from "./richTextModel";
 
 /** Return the model block index that contains a DOM node. */
 export function currentBlockIndex(
@@ -38,17 +38,29 @@ export function domRangeFromDocPosition(
   root: HTMLElement,
   position: DocPosition,
 ): Range | null {
-  const block = blockElementAt(root, position.block);
-  if (!block) {
+  const point = domPointFromDocPosition(root, position);
+  if (!point) {
     return null;
   }
   const range = document.createRange();
-  setRangeAtOffset(
-    range,
-    blockContentElement(block),
-    Math.max(0, position.offset),
-  );
+  range.setStart(point.node, point.offset);
   range.collapse(true);
+  return range;
+}
+
+/** Create a DOM range for document selection endpoints. */
+export function domRangeFromDocSelection(
+  root: HTMLElement,
+  selection: DocSelection,
+): Range | null {
+  const start = domPointFromDocPosition(root, selection.from);
+  const end = domPointFromDocPosition(root, selection.to);
+  if (!start || !end) {
+    return null;
+  }
+  const range = document.createRange();
+  range.setStart(start.node, start.offset);
+  range.setEnd(end.node, end.offset);
   return range;
 }
 
@@ -104,7 +116,7 @@ export function caretRect(selection: Selection | null): DOMRect | null {
 export function docRangeFromDomSelection(
   root: HTMLElement,
   selection: Selection | null,
-): { from: DocPosition; to: DocPosition } | null {
+): DocSelection | null {
   if (
     !selection ||
     selection.rangeCount === 0 ||
@@ -227,17 +239,14 @@ function textLength(container: HTMLElement): number {
   );
 }
 
-function setRangeAtOffset(
-  range: Range,
-  container: HTMLElement,
-  offset: number,
-): void {
-  const target = findNodeAtOffset(container, offset);
-  if (target.node.nodeType === Node.TEXT_NODE) {
-    range.setStart(target.node, target.offset);
-    return;
-  }
-  range.setStart(target.node, target.offset);
+function domPointFromDocPosition(
+  root: HTMLElement,
+  position: DocPosition,
+): { node: Node; offset: number } | null {
+  const block = blockElementAt(root, position.block);
+  return block
+    ? findNodeAtOffset(blockContentElement(block), Math.max(0, position.offset))
+    : null;
 }
 
 function findNodeAtOffset(

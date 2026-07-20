@@ -1,4 +1,4 @@
-/** Slash-menu state machine and editor command bindings for web. */
+/** Slash-menu state machine for the web editor. */
 import {
   useCallback,
   useEffect,
@@ -12,19 +12,15 @@ import { View } from "react-native";
 
 import { dropdownRowDomId, nextSelectableId } from "../dropdown";
 import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
-import { devWarn } from "../devWarn";
 
 import { docRangeFromDomSelection } from "./domSelection.web";
 import { serializeRichTextDom } from "./domSerialize.web";
 import {
   DocPosition,
-  InlineMark,
   RichTextBlock,
   RichTextDocument,
-  RichTextTurnIntoType,
   blockTextLength,
   deleteRange,
-  insertBlocks as insertModelBlocks,
   normalizeDocument,
   spansText,
   turnInto as turnModelInto,
@@ -49,6 +45,7 @@ type CommitDocument = (
 ) => void;
 
 type UseSlashMenuOptions = {
+  commands: RichTextEditorCommands;
   commitDocument: CommitDocument;
   extraItems?: readonly SlashMenuItem[];
   readOnlyRef: RefObject<boolean>;
@@ -74,6 +71,7 @@ export type SlashMenuController = {
 
 /** Manage slash-command menu state against the live contentEditable DOM. */
 export function useSlashMenu({
+  commands,
   commitDocument,
   extraItems = [],
   readOnlyRef,
@@ -132,11 +130,6 @@ export function useSlashMenu({
     }
     setSession(next);
   }, [close, rootRef]);
-
-  const commands = useMemo(
-    () => createCommands(rootRef, commitDocument),
-    [commitDocument, rootRef],
-  );
 
   const selectItem = useCallback(
     (item: SlashMenuModelItem) => {
@@ -291,60 +284,6 @@ export function useSlashMenu({
   };
 }
 
-function createCommands(
-  rootRef: RefObject<HTMLElement | null>,
-  commitDocument: CommitDocument,
-): RichTextEditorCommands {
-  return {
-    getSelection: () => {
-      const root = rootRef.current;
-      return root
-        ? docRangeFromDomSelection(root, window.getSelection())
-        : null;
-    },
-    insertBlocks: (blocks) => {
-      const root = rootRef.current;
-      if (!root) {
-        return;
-      }
-      const selection = docRangeFromDomSelection(root, window.getSelection());
-      const doc = serializeRichTextDom(root);
-      const insertAt = selection?.from ?? documentEnd(doc);
-      const base =
-        selection && !samePosition(selection.from, selection.to)
-          ? deleteRange(doc, selection.from, selection.to)
-          : doc;
-      commitDocument(
-        insertModelBlocks(base, insertAt, blocks),
-        caretAfterInsertBlocks(base, insertAt, blocks),
-      );
-    },
-    toggleMark: (_mark: InlineMark) => {
-      devWarn(
-        "RichTextEditor: `commands.toggleMark` is reserved for M3 inline formatting.",
-      );
-      throw new Error(
-        "RichTextEditor: commands.toggleMark is not implemented until M3.",
-      );
-    },
-    turnInto: (type) => {
-      const root = rootRef.current;
-      if (!root) {
-        return;
-      }
-      const selection = docRangeFromDomSelection(root, window.getSelection());
-      if (!selection) {
-        return;
-      }
-      const doc = serializeRichTextDom(root);
-      commitDocument(
-        turnSelectedBlocksInto(doc, selection, type),
-        selection.from,
-      );
-    },
-  };
-}
-
 function canOpenSlashMenu(root: HTMLElement, position: DocPosition): boolean {
   const doc = serializeRichTextDom(root);
   const block = doc[position.block];
@@ -432,48 +371,11 @@ function insertDivider(
   };
 }
 
-function turnSelectedBlocksInto(
-  document: readonly RichTextBlock[],
-  selection: { from: DocPosition; to: DocPosition },
-  type: RichTextTurnIntoType,
-): RichTextDocument {
-  let next = normalizeDocument(document);
-  for (
-    let index = selection.from.block;
-    index <= selection.to.block;
-    index += 1
-  ) {
-    next = turnModelInto(next, index, type);
-  }
-  return next;
-}
-
 function textBlockPlainText(block: RichTextBlock | undefined): string | null {
   if (!block || block.type === "divider" || block.type === "codeBlock") {
     return null;
   }
   return spansText(block.spans);
-}
-
-function caretAfterInsertBlocks(
-  document: readonly RichTextBlock[],
-  position: DocPosition,
-  blocks: readonly RichTextBlock[],
-): DocPosition {
-  const doc = normalizeDocument(document);
-  const inserted = normalizeDocument(blocks);
-  const start =
-    blockTextLength(doc[position.block]) === 0
-      ? position.block
-      : position.block + 1;
-  const block = start + inserted.length - 1;
-  return { block, offset: blockTextLength(inserted[inserted.length - 1]) };
-}
-
-function documentEnd(document: readonly RichTextBlock[]): DocPosition {
-  const doc = normalizeDocument(document);
-  const block = doc.length - 1;
-  return { block, offset: blockTextLength(doc[block]) };
 }
 
 function samePosition(left: DocPosition, right: DocPosition): boolean {
