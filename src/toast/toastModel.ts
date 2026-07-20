@@ -13,7 +13,7 @@ export type ToastTone = "error" | "info" | "success" | "warning";
 
 /**
  * Visual presentation of a toast.
- * - `card` (default) — surface card with a leading tone icon and accent strip.
+ * - `card` (default) — surface card with a leading tone icon.
  * - `solid` — compact filled toast for short, bottom-centered feedback.
  */
 export type ToastVariant = "card" | "solid";

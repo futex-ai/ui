@@ -9,9 +9,9 @@ import type { SharedUiTheme } from "../theme";
  * the card, the solid fill, custom leading icons, the action row, and the
  * close control — lives here so it tracks `SharedUiThemeProvider`.
  *
- * The tone accent (a left border strip and the leading icon colour) is applied
- * inline by {@link Toast} because it depends on the tone, mirroring how
- * {@link Button} applies its tone-driven label colour.
+ * The tone accent (the leading icon colour) is applied inline by {@link Toast}
+ * because it depends on the tone, mirroring how {@link Button} applies its
+ * tone-driven label colour.
  */
 export function createToastStyles(theme: SharedUiTheme) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
@@ -35,7 +35,6 @@ export function createToastStyles(theme: SharedUiTheme) {
     cardToast: {
       backgroundColor: theme.colors.surface,
       borderColor: theme.colors.border,
-      borderLeftWidth: 3,
       borderWidth: 1,
     },
     description: {
