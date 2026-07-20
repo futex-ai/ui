@@ -64,6 +64,11 @@ export function DataGridCell({
   // Manual double-press detection: RNW doesn't forward `onDoubleClick`, so a
   // second primary press on the same cell within 350ms opens the editor.
   const lastDownRef = useRef(0);
+  // Select cells behave like a normal dropdown: a single press on the
+  // already-active cell opens the menu (no double-click needed). Typeable
+  // fields keep the double-press convention so a plain click just selects.
+  const isSelectField =
+    column.fieldType === "singleSelect" || column.fieldType === "multiSelect";
   const setRef = useCallback(
     (node: unknown) => {
       registerNode(cellRef, node as { focus?: () => void } | null);
@@ -100,7 +105,9 @@ export function DataGridCell({
           const now = Date.now();
           const isDouble = now - lastDownRef.current < 350;
           lastDownRef.current = now;
-          if (isDouble) {
+          // Open the editor on a double-press (any field) or on a single press
+          // of an already-active select cell, so its dropdown opens in one click.
+          if (isDouble || (active && isSelectField)) {
             onBeginEdit(cellRef);
             return;
           }

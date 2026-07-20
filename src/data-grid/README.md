@@ -143,11 +143,13 @@ no handle.
 
 ### Editing
 
-Open an editor with **Enter**, a **double-press**, or (native) a tap on the
-already-active cell. **Enter** commits and moves down; **Escape** reverts; blur
-commits. `onCellChange(ref, value)` may return a promise — a rejection keeps the
-editor open so you can surface an error. Number cells reject non-numeric input
-with an inline error.
+Open an editor with **Enter**, a **double-press**, or a tap/click on the
+already-active cell (single-select and multi-select cells open their menu on a
+single click once selected, matching a normal dropdown; typeable fields need
+the double-press on web). **Enter** commits and moves down; **Escape** reverts;
+blur commits. `onCellChange(ref, value)` may return a promise — a rejection
+keeps the editor open so you can surface an error. Number cells reject
+non-numeric input with an inline error.
 
 ### Infinite scroll
 
