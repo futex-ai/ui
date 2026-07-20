@@ -250,8 +250,14 @@ export function DataGrid({
         horizontal
         // Fixed content width overflows the viewport → horizontal scroll; the
         // header scrolls in lockstep with the body since both live in here.
+        // `minWidth: 100%` floors the content at the viewport so that when
+        // capped columns leave it narrower (sparse grids), the header/rows still
+        // span the full width — the leftover reads as a clean empty grid area
+        // instead of a table that stops short with a broken border.
         contentContainerStyle={
-          layoutReady ? { width: resolved.contentWidth } : { minWidth: "100%" }
+          layoutReady
+            ? { minWidth: "100%", width: resolved.contentWidth }
+            : { minWidth: "100%" }
         }
         showsHorizontalScrollIndicator
       >

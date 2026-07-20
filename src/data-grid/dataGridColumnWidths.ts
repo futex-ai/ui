@@ -12,6 +12,18 @@ import type { DataGridColumn } from "./types";
 /** Fallback minimum column width (px) when a column sets no `minWidth`. */
 export const DEFAULT_MIN_WIDTH = 80;
 
+/**
+ * Default cap (px) on how wide a column may grow from its `flex` share when it
+ * declares no explicit `maxWidth`. Without it a lone flexible column in a sparse
+ * table — e.g. one text column beside a couple of fixed-width ones — would
+ * stretch to fill the whole viewport, so a 2-column grid ends up with one
+ * enormous column. The cap only bounds *automatic* flex sizing: an explicit
+ * `maxWidth`, a fixed `width`, and a manual resize all override it, and it never
+ * shrinks a column below its own `minWidth`. Leftover space past the cap is left
+ * empty (the grid fills it as a clean trailing area rather than over-widening).
+ */
+export const DEFAULT_MAX_FLEX_WIDTH = 480;
+
 /** A column with a resolved pixel `width` (never `flex`). */
 export type ResolvedColumn = DataGridColumn & { width: number };
 
@@ -31,6 +43,21 @@ export function clampColumnWidth(
 ): number {
   const min = column.minWidth ?? DEFAULT_MIN_WIDTH;
   const max = column.maxWidth ?? Number.POSITIVE_INFINITY;
+  return Math.min(max, Math.max(min, Math.round(width)));
+}
+
+/**
+ * Clamp a column's automatic `flex` share. Like {@link clampColumnWidth}, but a
+ * column with no explicit `maxWidth` is capped at {@link DEFAULT_MAX_FLEX_WIDTH}
+ * (never below its own `minWidth`) so a single flexible column can't stretch
+ * across the whole viewport. Fixed widths and manual resizes keep using
+ * {@link clampColumnWidth}, so they stay unbounded by the default cap.
+ */
+export function clampFlexWidth(column: DataGridColumn, width: number): number {
+  const min = column.minWidth ?? DEFAULT_MIN_WIDTH;
+  // The default cap must never fight the column's own minimum, so a column whose
+  // minWidth already exceeds the default keeps that larger floor as its max.
+  const max = column.maxWidth ?? Math.max(min, DEFAULT_MAX_FLEX_WIDTH);
   return Math.min(max, Math.max(min, Math.round(width)));
 }
 
@@ -76,9 +103,10 @@ export function resolveColumnWidths(
     } else {
       const share =
         flexTotal > 0 ? (remaining * (column.flex ?? 1)) / flexTotal : 0;
-      // Clamp the flex share to BOTH bounds so a `maxWidth` flex column never
-      // renders (or reports via aria-valuenow) above its max.
-      width = clampColumnWidth(column, share);
+      // Clamp the flex share to BOTH bounds — including the default cap for an
+      // unbounded column — so a flex column never renders (or reports via
+      // aria-valuenow) above its max, and a lone one can't fill the viewport.
+      width = clampFlexWidth(column, share);
     }
     columnsTotal += width;
     return { ...column, width };

@@ -120,9 +120,14 @@ cells from the active cell, coercing each value to its column's field type
 
 Columns size with a fixed `width` or a `flex` share (clamped to `minWidth`); the
 grid resolves them to pixel widths from its measured container so the header and
-every body row stay aligned. When the columns are wider than the container it
-scrolls horizontally, and the row-number gutter stays pinned to the left (frozen
-column, web only).
+every body row stay aligned. A flex column's automatic width is capped at a
+default max (≈480px) so a lone flexible column in a sparse grid (e.g. two
+columns) can't stretch across the whole viewport — raise or lower it with
+`maxWidth`, or drag the column wider by hand (manual resizes aren't bound by the
+default cap). When the resolved columns are narrower than the container the
+leftover reads as a clean empty grid area; when they are wider it scrolls
+horizontally, and the row-number gutter stays pinned to the left (frozen column,
+web only).
 
 ### Resizing
 
