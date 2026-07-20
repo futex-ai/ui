@@ -194,10 +194,12 @@ wide-viewport experience.
 `bg`, separators use `border`, the selection wash uses `primarySoft`, the active
 cell uses an inset `primary` ring, and pills resolve to AA-contrast token pairs.
 
-Pass `square` to flatten the corners (`borderRadius: 0`) on the grid frame and the
-mobile card stack — useful when the grid sits flush inside a bordered panel. The
-outer border itself is not configurable; keep the grid in a container if you need
-to drop or restyle it.
+The grid frame and the mobile card stack default to **square corners**
+(`borderRadius: 0`) with a `1px` outer border. Pass `borderRadius` (e.g.
+`theme.radii.lg`) to round the corners, and `borderWidth={0}` to drop the outer
+border entirely — useful when the grid sits flush inside an already-bordered
+panel. Both only touch the outer frame; the internal cell hairlines are
+unaffected.
 
 ## Key code
 

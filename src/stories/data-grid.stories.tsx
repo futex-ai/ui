@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from "react-native";
 import {
   DataGrid,
   dataGridSelectionModel,
+  useSharedUiTheme,
   type DataGridColumn,
   type DataGridRow,
   type DataGridSelection,
@@ -89,17 +90,43 @@ export const FewColumns: Story = {
   ),
 };
 
-export const Square: Story = {
-  name: "Square (flat corners)",
-  render: () => (
+// Corners are square by default (see `Basic`). Pass `borderRadius` — here the
+// shared `radii.lg` token — to round the frame + mobile cards.
+function RoundedExample() {
+  const theme = useSharedUiTheme();
+  return (
     <StorySurface>
       <View style={styles.frame}>
         <DataGrid
           accessibilityLabel="Content"
+          borderRadius={theme.radii.lg}
           columns={contentColumns}
           footerText="7 of 128 records · 0 filters · sorted by Created"
           rows={contentRows}
-          square
+        />
+      </View>
+    </StorySurface>
+  );
+}
+
+export const Rounded: Story = {
+  name: "Rounded corners (borderRadius)",
+  render: () => <RoundedExample />,
+};
+
+export const Borderless: Story = {
+  name: "Borderless (borderWidth 0)",
+  render: () => (
+    <StorySurface>
+      {/* An outer panel supplies the border; the grid drops its own frame so
+          the two don't double up. Internal cell hairlines stay. */}
+      <View style={[styles.frame, styles.panel]}>
+        <DataGrid
+          accessibilityLabel="Content"
+          borderWidth={0}
+          columns={contentColumns}
+          footerText="7 of 128 records · 0 filters · sorted by Created"
+          rows={contentRows}
         />
       </View>
     </StorySurface>
@@ -404,6 +431,13 @@ const styles = StyleSheet.create({
   frame: { width: 940 },
   frameWide: { width: 1000 },
   hint: { color: "#69706a", fontSize: 12 },
+  // Wraps the borderless grid so an outer border stands in for the dropped frame.
+  panel: {
+    borderColor: "#d7dbd6",
+    borderRadius: 10,
+    borderWidth: 1,
+    overflow: "hidden",
+  },
   responsive: { padding: 16, width: "100%" },
   stack: { gap: 10 },
   status: { color: "#3e4540", fontSize: 13, fontWeight: "700" },

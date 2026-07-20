@@ -36,23 +36,25 @@ export const ADD_COLUMN_WIDTH = 44;
  * Build the grid's themed styles for a size. Cells carry a right + bottom hairline
  * so the body reads as a real grid; the gutter, header, selection wash, active-cell
  * ring, and chrome all read from shared theme tokens.
+ *
+ * `borderRadius` and `borderWidth` shape the outer frame (and the mobile card),
+ * so the whole component squares off / de-borders consistently. Corners are flat
+ * by default (`borderRadius: 0`); the internal cell hairlines are unaffected.
  */
 export function createDataGridStyles(
   theme: SharedUiTheme,
   size: ControlSize = "md",
-  square = false,
+  borderRadius = 0,
+  borderWidth = 1,
 ) {
   const metrics = dataGridMetrics(size);
   const baseText = { fontFamily: theme.fonts.sans } as const;
-  // Flat corners when `square` — applied to the grid frame and the mobile card
-  // so the whole component squares off consistently.
-  const frameRadius = square ? 0 : theme.radii.lg;
   return StyleSheet.create({
     grid: {
       backgroundColor: theme.colors.surface,
       borderColor: theme.colors.border2,
-      borderRadius: frameRadius,
-      borderWidth: 1,
+      borderRadius,
+      borderWidth,
       overflow: "hidden",
       // Dragging a cell range must not start a native text selection.
       userSelect: "none",
@@ -239,8 +241,8 @@ export function createDataGridStyles(
     card: {
       backgroundColor: theme.colors.surface,
       borderColor: theme.colors.border2,
-      borderRadius: frameRadius,
-      borderWidth: 1,
+      borderRadius,
+      borderWidth,
       gap: 8,
       padding: 12,
     },
