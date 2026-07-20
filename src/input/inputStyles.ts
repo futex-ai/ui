@@ -198,6 +198,14 @@ export function createInputStyles(
     },
     boxActive: { borderColor: theme.colors.primary },
     boxInvalid: { borderColor: theme.colors.rose },
+    // The `plain` (borderless) box: no border, fill, or horizontal padding, for
+    // a chrome-less inline editor embedded in a row. The focus ring, the clear
+    // button, and the a11y wiring stay owned by the frame.
+    boxPlain: {
+      backgroundColor: "transparent",
+      borderWidth: 0,
+      paddingHorizontal: 0,
+    },
     boxMultiline: {
       alignItems: "flex-start",
       paddingVertical: sizing.textareaPaddingVertical,

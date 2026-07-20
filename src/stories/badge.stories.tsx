@@ -79,6 +79,74 @@ export const Sizes: Story = {
   ),
 };
 
+export const OutlineVariant: Story = {
+  name: "Outline variant",
+  render: () => (
+    <StorySurface>
+      <View style={styles.row}>
+        {tones.map((tone) => (
+          <Badge key={tone} tone={tone} variant="outline">
+            {toneLabel[tone]}
+          </Badge>
+        ))}
+      </View>
+    </StorySurface>
+  ),
+};
+
+export const StatusDots: Story = {
+  name: "Status dots",
+  render: () => (
+    <StorySurface>
+      <View style={styles.stack}>
+        <View style={styles.row}>
+          {tones.map((tone) => (
+            <Badge dot key={tone} tone={tone}>
+              {toneLabel[tone]}
+            </Badge>
+          ))}
+        </View>
+        <View style={styles.row}>
+          {tones.map((tone) => (
+            <Badge dot key={tone} tone={tone} variant="outline">
+              {toneLabel[tone]}
+            </Badge>
+          ))}
+        </View>
+      </View>
+    </StorySurface>
+  ),
+};
+
+// A caller-owned per-option palette (statuses the semantic tones do not cover),
+// each rendered from an explicit soft fill + deep text + matching dot.
+const customStatuses = [
+  { dot: "#2563EB", fill: "#EAF1FF", label: "Design", text: "#1D4ED8" },
+  { dot: "#7C3AED", fill: "#F1EAFE", label: "Research", text: "#6D28D9" },
+  { dot: "#0D9488", fill: "#E3F6F3", label: "QA", text: "#0F766E" },
+];
+
+export const CustomPalette: Story = {
+  name: "Custom colors",
+  render: () => (
+    <StorySurface>
+      <View style={styles.row}>
+        {customStatuses.map((status) => (
+          <Badge
+            color={status.fill}
+            dot
+            dotColor={status.dot}
+            key={status.label}
+            textColor={status.text}
+          >
+            {status.label}
+          </Badge>
+        ))}
+      </View>
+    </StorySurface>
+  ),
+};
+
 export const JunoTheme: Story = {
   name: "Juno theme",
   render: () => (

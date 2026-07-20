@@ -14,6 +14,8 @@ const SEGMENTED_SIZES: Record<
   {
     cellFontSize: number;
     cellPaddingHorizontal: number;
+    iconGap: number;
+    iconSize: number;
     paddingVertical: number;
     pillFontSize: number;
     pillLineHeight: number;
@@ -26,6 +28,8 @@ const SEGMENTED_SIZES: Record<
   sm: {
     cellFontSize: 11,
     cellPaddingHorizontal: 8,
+    iconGap: 5,
+    iconSize: 14,
     paddingVertical: 5,
     pillFontSize: 12,
     pillLineHeight: 18,
@@ -37,6 +41,8 @@ const SEGMENTED_SIZES: Record<
   md: {
     cellFontSize: 12,
     cellPaddingHorizontal: 10,
+    iconGap: 6,
+    iconSize: 15,
     paddingVertical: 7,
     pillFontSize: 13,
     pillLineHeight: 19.5,
@@ -48,6 +54,8 @@ const SEGMENTED_SIZES: Record<
   lg: {
     cellFontSize: 14,
     cellPaddingHorizontal: 14,
+    iconGap: 8,
+    iconSize: 17,
     paddingVertical: 10,
     pillFontSize: 15,
     pillLineHeight: 22,
@@ -57,6 +65,11 @@ const SEGMENTED_SIZES: Record<
     trackPadding: 5,
   },
 };
+
+/** Diameter of a segment's leading lucide icon for a given size, in px. */
+export function segmentIconSize(size: ControlSize = "md") {
+  return SEGMENTED_SIZES[size].iconSize;
+}
 
 export function createSegmentedControlStyles(
   theme: SharedUiTheme,
@@ -70,6 +83,10 @@ export function createSegmentedControlStyles(
       borderColor: theme.colors.controlBorder,
       borderRadius: theme.radii.md,
       borderWidth: 1,
+      // A row so an optional leading icon sits beside the label (the `iconGap`
+      // is inert on a label-only segment, which has a single child).
+      flexDirection: "row",
+      gap: sizing.iconGap,
       justifyContent: "center",
       minWidth: 0,
       paddingHorizontal: sizing.cellPaddingHorizontal,
@@ -123,6 +140,10 @@ export function createSegmentedControlStyles(
       borderColor: "transparent",
       borderRadius: theme.radii.md,
       borderWidth: 1,
+      // A row so an optional leading icon sits beside the label (the `iconGap`
+      // is inert on a label-only segment, which has a single child).
+      flexDirection: "row",
+      gap: sizing.iconGap,
       justifyContent: "center",
       minWidth: 0,
       paddingHorizontal: sizing.pillPaddingHorizontal,
@@ -158,6 +179,9 @@ export function createSegmentedControlStyles(
     },
     pillTextActive: { color: theme.colors.ink },
     required: { color: theme.colors.rose },
+    // Centred wrapper for a segment's leading icon (a lucide glyph or a
+    // caller-supplied node), hidden from assistive tech on web.
+    segmentIcon: { alignItems: "center", justifyContent: "center" },
     row: { flexDirection: "row", gap: sizing.rowGap },
     rowWrap: { flexWrap: "wrap" },
     track: {

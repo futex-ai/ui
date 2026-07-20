@@ -76,11 +76,15 @@ test("button shows a per-tone hover state, suppressed when disabled", () => {
   const source = readSource("../../src/button/Button.tsx");
   const stylesSource = readSource("../../src/button/buttonStyles.ts");
 
-  // The style prop is a Pressable callback reading react-native-web's hovered flag.
-  assert.match(source, /style=\{\(\{ hovered \}: PressableHoverState\) =>/);
+  // The style prop is a Pressable callback reading react-native-web's hovered /
+  // pressed flags.
+  assert.match(
+    source,
+    /style=\{\(\{ hovered, pressed \}: PressableHoverState\) =>/,
+  );
   // Every tone has a hover style, gated off while the button is disabled or
   // busy (a busy button blocks activation, so its hover affordance is hidden).
-  for (const tone of ["primary", "secondary", "ghost", "danger"]) {
+  for (const tone of ["primary", "secondary", "ghost", "plain", "danger"]) {
     assert.match(
       source,
       new RegExp(`hovered && !disabledState && !busy && tone === "${tone}"`),
@@ -138,6 +142,89 @@ test("button styles are driven by shared theme tokens", () => {
     /danger: \{ borderColor: theme\.colors\.roseSoft \}/,
   );
   assert.match(stylesSource, /theme\.fonts\.sans/);
+});
+
+test("button adds a borderless neutral `plain` tone with hover + pressed washes", () => {
+  const source = readSource("../../src/button/Button.tsx");
+  const stylesSource = readSource("../../src/button/buttonStyles.ts");
+
+  // `plain` joins the tone union and layers a transparent base like `ghost`.
+  assert.match(
+    source,
+    /"danger" \| "ghost" \| "plain" \| "primary" \| "secondary"/,
+  );
+  assert.match(source, /tone === "plain" \? styles\.plain : null/);
+  // The borderless tones (ghost + plain) take a pressed wash deeper than hover.
+  assert.match(
+    source,
+    /pressed && !disabledState && !busy && tone === "ghost"\s*\? styles\.ghostPressed/,
+  );
+  assert.match(
+    source,
+    /pressed && !disabledState && !busy && tone === "plain"\s*\? styles\.plainPressed/,
+  );
+  assert.match(
+    stylesSource,
+    /plain: \{ backgroundColor: "transparent", borderColor: "transparent" \}/,
+  );
+  assert.match(
+    stylesSource,
+    /plainHover: \{ backgroundColor: theme\.colors\.soft \}/,
+  );
+  assert.match(
+    stylesSource,
+    /plainPressed: \{ backgroundColor: theme\.colors\.bg2 \}/,
+  );
+  assert.match(
+    stylesSource,
+    /ghostPressed: \{ backgroundColor: theme\.colors\.primaryBorder \}/,
+  );
+});
+
+test("button renders square / circle icon-only shapes with a min tap target", () => {
+  const source = readSource("../../src/button/Button.tsx");
+  const stylesSource = readSource("../../src/button/buttonStyles.ts");
+
+  assert.match(
+    source,
+    /export type ButtonShape = "circle" \| "rounded" \| "square"/,
+  );
+  assert.match(source, /shape = "rounded"/);
+  // The 1:1 box derives from the per-size track height, floored at minTouchTarget.
+  assert.match(
+    source,
+    /Math\.max\(buttonHeight\(size\), minTouchTarget \?\? 0\)/,
+  );
+  assert.match(
+    source,
+    /shape === "circle" \? \{ borderRadius: theme\.radii\.pill \}/,
+  );
+  // A bare minTouchTarget floors the tap target without forcing the aspect ratio.
+  assert.match(source, /minHeight: minTouchTarget, minWidth: minTouchTarget/);
+  // The shape override layers after `block` so a fixed square wins full-width.
+  assert.match(source, /shapeStyle,/);
+  assert.match(
+    stylesSource,
+    /export function buttonHeight\(size: ControlSize\)/,
+  );
+});
+
+test("button renders a caller-supplied iconNode as-is, not inside Text", () => {
+  const source = readSource("../../src/button/Button.tsx");
+
+  // iconNode takes precedence over a lucide icon and renders in a bare centred
+  // View (never a <Text>), hidden from assistive tech on web.
+  assert.match(source, /iconNode\?: ReactNode;/);
+  assert.match(source, /iconNode != null \? \(/);
+  assert.match(
+    source,
+    /aria-hidden=\{Platform\.OS === "web" \? true : undefined\}/,
+  );
+  assert.match(source, /style=\{styles\.iconNode\}/);
+  // The bare node is rendered directly (no <Text> wrapper).
+  assert.match(source, />\s*\{iconNode\}\s*<\/View>/);
+  // The icon-only union accepts either a lucide `icon` or an `iconNode`.
+  assert.match(source, /\{ icon: LucideIcon \} \| \{ iconNode: ReactNode \}/);
 });
 
 test("button has public root and subpath exports", () => {

@@ -147,6 +147,11 @@ import { DropdownMenu } from "@firna/ui/dropdown";
 </DropdownMenu>;
 ```
 
+Each `item` / `footer` entry accepts an optional `testID`, forwarded to that
+row's pressable (`data-testid` on web) so an end-to-end test can target a
+specific row; `DropdownSelectorOption` exposes the same `testID` for the
+select-only picker.
+
 Pass `open` and `onOpenChange` for controlled state, `defaultOpen` for
 uncontrolled initial state, and `closeOnSelect={false}` when a row should keep
 the menu open. `entries` may also be a function that receives

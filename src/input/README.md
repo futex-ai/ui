@@ -162,6 +162,29 @@ The framed input exposes two style props, which **differ from the accounting
 open without the input being focused (the date field uses it while the calendar
 is open).
 
+### Plain (borderless) variant
+
+`InputFrame` takes a `variant`: `framed` (default) draws the bordered surface
+box; `variant="plain"` drops the border, background, and horizontal padding for a
+**chrome-less inline editor** embedded in a row — an inline title / label editor
+that reads as plain text until focused. The focus ring, the `clearable` ✕ button,
+and the invalid / required a11y wiring stay owned by the frame, so the field is
+still keyboard-accessible and announces its state. Because a plain field has no
+border, the invalid state has nothing to recolor — surface the error through the
+surrounding row or a separate message.
+
+```tsx
+import { InputFrame } from "@firna/ui/input";
+
+<InputFrame
+  accessibilityLabel="List title"
+  onChangeText={setTitle}
+  size="sm"
+  value={title}
+  variant="plain"
+/>;
+```
+
 ## Accessibility
 
 - **Name (2.5.3 Label in Name / 1.3.1, A).** The visible `label` is tied to the

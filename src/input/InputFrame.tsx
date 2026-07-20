@@ -39,6 +39,15 @@ export type InputFrameProps = Omit<TextInputProps, "style"> & {
   /** Control density: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
   /**
+   * Box treatment. `framed` (default) draws the bordered surface box; `plain`
+   * drops the border, background, and horizontal padding for a chrome-less
+   * inline editor embedded in a row (an inline title / label editor), while
+   * keeping the focus ring, the clear button, and the invalid / required a11y
+   * wiring. On `plain` the invalid state has no border to recolor — surface the
+   * error via the surrounding field / message instead.
+   */
+  variant?: "framed" | "plain";
+  /**
    * Opt a `multiline` field into auto-grow: it starts at `numberOfLines` rows
    * (the min) and grows one line at a time as content is added, up to `maxLines`
    * rows, after which it scrolls. Ignored on a single-line field, or when
@@ -111,12 +120,14 @@ export function InputFrame({
   suffixIcon: SuffixIcon,
   suffixIconLabel,
   suffixIconStyle,
+  variant = "framed",
   ...props
 }: InputFrameProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createInputStyles(theme, size), [theme, size]);
   const iconSize = inputIconSize(size);
   const focus = useFocusRing();
+  const plain = variant === "plain";
   const multiline = Boolean(props.multiline);
   const showClear = clearable && (clearVisible ?? Boolean(props.value));
   const borderActive = focus.focused || active;
@@ -166,6 +177,11 @@ export function InputFrame({
     <View
       style={[
         styles.box,
+        // `plain` strips the border / fill / horizontal padding for a
+        // chrome-less inline editor. It sits before the active / invalid border
+        // layers below so their `borderColor` becomes inert against the zeroed
+        // `borderWidth` (there is no border to recolor on a plain field).
+        plain ? styles.boxPlain : null,
         multiline ? styles.boxMultiline : null,
         invalid ? styles.boxInvalid : borderActive ? styles.boxActive : null,
         style,

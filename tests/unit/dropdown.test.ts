@@ -334,6 +334,21 @@ test("dropdown row inverts its subtext on the solid active fill", () => {
   );
 });
 
+test("dropdown item rows forward a per-entry testID to the row pressable", () => {
+  const list = readSource("../../src/dropdown/DropdownList.tsx");
+  const selector = readSource("../../src/dropdown/DropdownSelector.tsx");
+
+  // The item/footer entry carries an optional testID, forwarded to its row.
+  assert.match(
+    list,
+    /Test identifier forwarded to this row's pressable[\s\S]*?testID\?: string;/,
+  );
+  assert.match(list, /testID=\{entry\.testID\}/);
+  // The selector option exposes the same testID and threads it into the entry.
+  assert.match(selector, /testID\?: string;/);
+  assert.match(selector, /testID: option\.testID,/);
+});
+
 test("dropdown danger row uses a red solid highlight with inverted text", () => {
   const list = readSource("../../src/dropdown/DropdownList.tsx");
   const stylesSource = readSource("../../src/dropdown/dropdownListStyles.ts");

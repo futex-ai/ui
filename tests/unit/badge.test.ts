@@ -8,14 +8,81 @@ import {
   type SharedUiColors,
 } from "../../src/theme";
 
-test("badge exposes the four semantic tones and two fill variants", () => {
+test("badge exposes the four semantic tones and three fill variants", () => {
   const stylesSource = readSource("../../src/badge/badgeStyles.ts");
 
   assert.match(
     stylesSource,
     /export type BadgeTone =\s*\|?\s*"neutral"\s*\|\s*"primary"\s*\|\s*"warning"\s*\|\s*"danger"/,
   );
-  assert.match(stylesSource, /export type BadgeVariant = "soft" \| "solid"/);
+  assert.match(
+    stylesSource,
+    /export type BadgeVariant = "outline" \| "soft" \| "solid"/,
+  );
+});
+
+test("badge outline variant is a white chip with an accent border + deep text", () => {
+  const stylesSource = readSource("../../src/badge/badgeStyles.ts");
+
+  // Each outline tone puts deep-accent text on the white surface with a 1px
+  // border color (BadgeColors carries an optional borderColor for it).
+  assert.match(stylesSource, /borderColor\?: string;/);
+  assert.match(stylesSource, /if \(variant === "outline"\)/);
+  assert.match(
+    stylesSource,
+    /borderColor: colors\.primary,\s*color: colors\.primaryDeep/,
+  );
+  assert.match(
+    stylesSource,
+    /borderColor: colors\.rose,\s*color: colors\.roseDeep/,
+  );
+  assert.match(
+    stylesSource,
+    /borderColor: colors\.amber,\s*color: colors\.amberDeep/,
+  );
+  assert.match(
+    stylesSource,
+    /borderColor: colors\.border2,\s*color: colors\.ink2/,
+  );
+});
+
+test("badge renders an optional tinted dot and custom color escape hatches", () => {
+  const componentSource = readSource("../../src/badge/Badge.tsx");
+  const stylesSource = readSource("../../src/badge/badgeStyles.ts");
+
+  // Custom fill / text / border / dot colors override the resolved tone colors.
+  assert.match(
+    componentSource,
+    /const backgroundColor = color \?\? base\.backgroundColor/,
+  );
+  assert.match(
+    componentSource,
+    /const labelColor = textColor \?\? base\.color/,
+  );
+  assert.match(
+    componentSource,
+    /const resolvedBorderColor = borderColor \?\? base\.borderColor/,
+  );
+  assert.match(
+    componentSource,
+    /const resolvedDotColor = dotColor \?\? labelColor/,
+  );
+  // A custom (or outline) border color draws a 1px border on the pill.
+  assert.match(
+    componentSource,
+    /resolvedBorderColor\s*\?\s*\{ borderColor: resolvedBorderColor, borderWidth: 1 \}/,
+  );
+  // The leading dot is decorative (aria-hidden on web) and tinted per-badge.
+  assert.match(componentSource, /\{dot \? \(/);
+  assert.match(
+    componentSource,
+    /aria-hidden=\{Platform\.OS === "web" \? true : undefined\}/,
+  );
+  assert.match(
+    componentSource,
+    /style=\{\[styles\.dot, \{ backgroundColor: resolvedDotColor \}\]\}/,
+  );
+  assert.match(stylesSource, /dot: \{[\s\S]*?height: sizing\.dotSize/);
 });
 
 test("badge soft tones pair a tinted fill with the deep accent text", () => {
@@ -59,9 +126,9 @@ test("badge sizes follow the shared control-size scale with md default", () => {
   assert.match(componentSource, /tone = "neutral"/);
   assert.match(componentSource, /variant = "soft"/);
   assert.match(stylesSource, /const BADGE_SIZES: Record<\s*ControlSize,/);
-  assert.match(stylesSource, /sm: \{\s*fontSize: 11/);
-  assert.match(stylesSource, /md: \{\s*fontSize: 12/);
-  assert.match(stylesSource, /lg: \{\s*fontSize: 13/);
+  assert.match(stylesSource, /sm: \{[\s\S]*?fontSize: 11/);
+  assert.match(stylesSource, /md: \{[\s\S]*?fontSize: 12/);
+  assert.match(stylesSource, /lg: \{[\s\S]*?fontSize: 13/);
   // The pill is fully rounded and hugs its content.
   assert.match(stylesSource, /borderRadius: theme\.radii\.pill/);
   assert.match(stylesSource, /alignSelf: "flex-start"/);
@@ -94,6 +161,11 @@ test("every badge tone/variant pair meets WCAG 1.4.3 AA on its fill", () => {
     { label: "primary/solid", text: "#fff", fill: "primaryDeep" },
     { label: "warning/solid", text: "#fff", fill: "amberDeep" },
     { label: "danger/solid", text: "#fff", fill: "roseDeep" },
+    // outline = deep accent text on the white surface.
+    { label: "neutral/outline", text: "ink2", fill: "surface" },
+    { label: "primary/outline", text: "primaryDeep", fill: "surface" },
+    { label: "warning/outline", text: "amberDeep", fill: "surface" },
+    { label: "danger/outline", text: "roseDeep", fill: "surface" },
   ];
   const themes = {
     default: defaultSharedUiTheme,

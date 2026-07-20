@@ -86,6 +86,36 @@ test("list item lays out leading, title, description, and trailing slots", () =>
   );
 });
 
+test("list item makes only the title column pressable, leaving trailing free", () => {
+  const source = readSource("../../src/list/ListItem.tsx");
+  const stylesSource = readSource("../../src/list/listStyles.ts");
+
+  // `onPress` wraps ONLY the title/description column in a button; leading and
+  // trailing stay outside the press target so a trailing control (a toggle)
+  // remains independently interactive.
+  assert.match(source, /onPress\?: \(\) => void;/);
+  assert.match(source, /function PressableTitle/);
+  assert.match(source, /onPress \? \(\s*<PressableTitle/);
+  assert.match(source, /accessibilityRole="button"/);
+  assert.match(source, /accessibilityState=\{\{ disabled \}\}/);
+  // The button still owns the shared focus ring + hidden outline + pressed dim.
+  assert.match(source, /useFocusRing/);
+  assert.match(source, /focus\.focused \? focus\.focusRingStyle : null/);
+  assert.match(source, /hideWebOutlineView/);
+  assert.match(
+    source,
+    /pressed && !disabled \? styles\.itemMainPressed : null/,
+  );
+  // A rich-node title with no accessibilityLabel is a dev-warned nameless button.
+  assert.match(
+    source,
+    /accessibilityLabel \?\? \(isText\(title\) \? String\(title\) : undefined\)/,
+  );
+  assert.match(source, /if \(onPress && !resolvedName\)/);
+  assert.match(source, /devWarn\(/);
+  assert.match(stylesSource, /itemMainPressed: \{ opacity: 0\.6 \}/);
+});
+
 test("list supports the shared size scale", () => {
   const source = readSource("../../src/list/List.tsx");
   const stylesSource = readSource("../../src/list/listStyles.ts");
