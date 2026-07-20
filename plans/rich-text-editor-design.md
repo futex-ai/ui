@@ -58,7 +58,8 @@ Pure operations (all return new documents; all unit-tested in node):
   when the caret is at the end of a codeBlock whose code ends with `"\n"`
   removes that trailing newline and inserts a paragraph after (exit).
 - `insertSoftBreak(doc, pos)` — Shift+Enter: inserts `"\n"` into any text
-  block; in `codeBlock` identical to Enter-in-code.
+  block, codeBlock included. Unlike Enter, a soft break NEVER exits the code
+  block — only Enter's trailing-newline rule does.
 - `mergeBackward(doc, pos)` — Backspace-at-block-start semantics:
   bullet / numbered / check / quote → demote the block to paragraph (content
   kept). heading / paragraph → merge spans into the previous text block; if
@@ -180,8 +181,11 @@ measure a temporary zero-width span when `getClientRects()` is empty).
   numbered, `[]`/`[ ]` → check, `>` → quote, ` ``` ` → codeBlock. `---` →
   divider applies on the third `-` (no space needed). Trigger matching lives
   in pure `inputRules.ts`. Not applied inside codeBlock. Backspace
-  immediately after a rule fired reverts to the literal text (one-shot; M3
-  undo generalizes this).
+  immediately after a rule fired reverts to the literal text; the revert is
+  strictly one-shot — ANY subsequent input or selection movement disarms it
+  (M3 undo generalizes this). Exception: the divider rule has no literal
+  revert — the caret sits in the paragraph after the divider, and Backspace
+  there simply deletes the divider via `mergeBackward`.
 - **D4.5** IME: between `compositionstart`/`compositionend` all interception
   and rules are suspended; a single serialize+emit runs on compositionend.
 - **D4.6** Paste (`paste` event): preventDefault, take `text/plain`, parse as
