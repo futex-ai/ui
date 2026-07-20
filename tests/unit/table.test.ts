@@ -61,8 +61,11 @@ test("table makes rows pressable buttons when given onRowPress", () => {
   assert.match(source, /accessibilityState=\{\{ disabled \}\}/);
   assert.match(source, /disabled=\{disabled\}/);
   assert.match(source, /useFocusRing/);
-  assert.match(source, /focus\.focused \? styles\.rowFocused : null/);
-  assert.match(source, /hideWebOutlineView/);
+  assert.match(
+    source,
+    /focus\.focused && focus\.ringEnabled \? styles\.rowFocused : null/,
+  );
+  assert.match(source, /focus\.webOutlineReset/);
   assert.match(
     source,
     /style=\{\(\{ hovered, pressed \}: PressableHoverState\) =>/,

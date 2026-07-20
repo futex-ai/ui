@@ -10,10 +10,13 @@ test("input frame wires invalid + required a11y and the focus ring", () => {
   // The whole box gets the sage focus ring; the inner input hides its outline.
   // The ring is outset by default and inset (offset -2) when `focusRingInset` is
   // set, so a chrome-less field inside an overflow:hidden ancestor stays visible.
+  // `disableFocusRing` (and the theme flag) collapse the glow and restore the UA
+  // outline on the input (the real focus target).
   assert.match(
     source,
-    /const focus = useFocusRing\(focusRingInset \? \{ offset: -2 \} : \{\}\)/,
+    /useFocusRing\(\{[\s\S]*?focusRingInset \? \{ offset: -2 \} : \{\}[\s\S]*?disabled: disableFocusRing[\s\S]*?\}\)/,
   );
+  assert.match(source, /focus\.ringEnabled \? hideWebOutline : null/);
   assert.match(source, /borderActive = focus\.focused \|\| active/);
   assert.match(source, /styles\.input,/);
   assert.match(source, /hideWebOutline/);
@@ -177,7 +180,7 @@ test("input frame seamless variant drops chrome, height, and padding, grows to f
   assert.match(source, /focus\.focused \? focus\.focusRingStyle : null/);
   assert.match(
     source,
-    /useFocusRing\(focusRingInset \? \{ offset: -2 \} : \{\}\)/,
+    /useFocusRing\(\{[\s\S]*?focusRingInset \? \{ offset: -2 \} : \{\}[\s\S]*?disabled: disableFocusRing[\s\S]*?\}\)/,
   );
 });
 

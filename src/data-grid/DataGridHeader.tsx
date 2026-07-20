@@ -47,6 +47,8 @@ export type DataGridHeaderProps = {
   ) => void;
   /** The column currently being pointer-resized, for handle styling. */
   resizingColumnId: string | null;
+  /** Disable the shared focus glow on the resize handles (falls back to the UA outline). */
+  disableFocusRing: boolean;
 };
 
 /** A small ↑/↓ glyph for a sorted column. */
@@ -73,6 +75,7 @@ export function DataGridHeader({
   onBeginColumnResize,
   onColumnResizeStep,
   resizingColumnId,
+  disableFocusRing,
 }: DataGridHeaderProps) {
   const web = Platform.OS === "web";
   return (
@@ -139,6 +142,7 @@ export function DataGridHeader({
               <DataGridResizeHandle
                 active={resizingColumnId === column.id}
                 column={column as ResolvedColumn}
+                disableFocusRing={disableFocusRing}
                 onBeginResize={onBeginColumnResize}
                 onResizeStep={onColumnResizeStep}
                 styles={styles}

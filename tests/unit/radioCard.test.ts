@@ -26,7 +26,7 @@ test("radio card keeps read-only disabled state and focus treatment", () => {
   assert.match(source, /disabledState = disabled \|\| !onPress/);
   assert.match(source, /disabled=\{disabledState\}/);
   assert.match(source, /useFocusRing/);
-  assert.match(source, /hideWebOutlineView/);
+  assert.match(source, /focus\.webOutlineReset/);
   assert.match(stylesSource, /radioDisabled: \{ opacity: 0\.6 \}/);
 });
 

@@ -4,7 +4,7 @@ import { Platform, Pressable, StyleProp, View, ViewStyle } from "react-native";
 
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
-import { hideWebOutlineView, useFocusRing } from "../focusRing";
+import { useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 import { useReducedMotion } from "../useReducedMotion";
 
@@ -31,6 +31,13 @@ export type SwitchProps = {
    */
   "aria-labelledby"?: string;
   disabled?: boolean;
+  /**
+   * Disable the shared focus glow on this control. It then falls back to the
+   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
+   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
+   * `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
   onValueChange?: (value: boolean) => void;
   /** Control density: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
@@ -44,6 +51,7 @@ export function Switch({
   accessibilityLabel,
   "aria-labelledby": ariaLabelledBy,
   disabled = false,
+  disableFocusRing = false,
   onValueChange,
   size = "md",
   testID,
@@ -57,7 +65,7 @@ export function Switch({
   // against the page surface, not the track fill. The Pressable padding leaves
   // clearance and sets no `overflow: hidden`, so the outset ring is not clipped
   // and stays ≥3:1 in both the off (light) and on (primary) states (2.4.7 AA).
-  const focus = useFocusRing();
+  const focus = useFocusRing({ disabled: disableFocusRing });
   const disabledState = disabled || !onValueChange;
   const toggle = () => onValueChange?.(!value);
   const handleKeyDown = (event: SwitchKeyboardEvent) => {
@@ -106,10 +114,11 @@ export function Switch({
           value ? styles.trackOn : null,
           disabledState ? styles.trackDisabled : null,
           trackStyle,
-          // `hideWebOutlineView` suppresses the default UA outline; the focus
-          // ring (a width-bearing `outline`) is layered last so it survives and
-          // stays visible (WCAG 2.1 — 2.4.7 Focus Visible, AA).
-          hideWebOutlineView,
+          // `webOutlineReset` suppresses the default UA outline while the glow is
+          // the focus affordance; the focus ring is layered last so it survives
+          // and stays visible (WCAG 2.1 — 2.4.7 Focus Visible, AA). With the ring
+          // disabled the reset is skipped so the UA outline returns instead.
+          focus.webOutlineReset,
           focus.focused ? focus.focusRingStyle : null,
         ]}
       >

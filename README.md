@@ -16,6 +16,10 @@ surfaces. The first consumers are the accounting app and the Juno app.
   controls — buttons, inputs, dropdown selectors, date fields, segmented
   controls, and switches.
 - Themeable visual tokens so consumers can use their own brand primary color.
+- A shared, calm focus glow across every control, disable-able globally via the
+  theme's `focusRing: false` flag or per instance with a `disableFocusRing` prop
+  (both fall back to the browser's default focus outline so keyboard focus stays
+  visible).
 - High-layer date, dropdown, and popover overlays with z-index escape hatches
   for custom consumer stacking contexts.
 - Expo and React Native Web compatible platform files.
@@ -60,7 +64,13 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/switch` for themed binary on/off switches.
 - `@firna/ui/table` for the data table with optional headers and clickable rows.
 - `@firna/ui/theme` for `SharedUiThemeProvider`, default accounting-style
-  tokens, the Juno token preset, and `createSharedUiTheme`.
+  tokens, the Juno token preset, `createSharedUiTheme`, and the global
+  `focusRing` switch (`SharedUiThemeProvider theme={{ focusRing: false }}`
+  disables every control's focus glow at once).
+- `@firna/ui/focusRing` for `useFocusRing` and `focusRingStyleFor` — the shared
+  focus-glow primitive every control uses. Pass `disableFocusRing` to a single
+  control to drop only that instance's glow; both paths fall back to the
+  browser's default focus outline so keyboard focus stays visible (WCAG 2.4.7).
 - `@firna/ui/toast` for the toast provider, the `useToast` hook, the
   `toastController` method API, and transient notification toasts including
   card and solid variants with optional custom leading icons.

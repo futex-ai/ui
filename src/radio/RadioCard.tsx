@@ -19,7 +19,7 @@ import {
   ViewStyle,
 } from "react-native";
 
-import { hideWebOutlineView, useFocusRing } from "../focusRing";
+import { useFocusRing } from "../focusRing";
 import {
   focusItemAt,
   type FocusableRef,
@@ -48,6 +48,13 @@ export type RadioCardProps = {
   body?: string;
   checked?: boolean;
   disabled?: boolean;
+  /**
+   * Disable the shared focus glow on this card. It then falls back to the
+   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
+   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
+   * `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
@@ -61,6 +68,7 @@ export function RadioCard({
   body,
   checked = false,
   disabled = false,
+  disableFocusRing = false,
   onPress,
   style,
   testID,
@@ -68,7 +76,7 @@ export function RadioCard({
 }: RadioCardProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createRadioCardStyles(theme), [theme]);
-  const focus = useFocusRing();
+  const focus = useFocusRing({ disabled: disableFocusRing });
   const disabledState = disabled || !onPress;
 
   // A `RadioCardGroup` ancestor wires arrow-key navigation and a single
@@ -157,7 +165,7 @@ export function RadioCard({
         // visible on a checked card whose border is already `primary`
         // (WCAG 2.1 — 2.4.7 Focus Visible, AA).
         focus.focused ? focus.focusRingStyle : null,
-        hideWebOutlineView,
+        focus.webOutlineReset,
       ]}
     >
       <View style={styles.radioDotCol}>

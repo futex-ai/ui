@@ -51,6 +51,13 @@ const GHOST_FIXED = { position: "fixed" } as unknown as ViewStyle;
 export type SortableListProps<Item> = {
   /** Accessible label for the whole list. */
   accessibilityLabel?: string;
+  /**
+   * Disable the shared focus glow on the drag rows / handles. They then fall back
+   * to the browser's default focus outline so keyboard focus stays visible (WCAG
+   * 2.1 — 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
+   * `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
   /** Gap in px between rows. Defaults to the `size` scale — a visible gap gives the drop preview a slot to open into. */
   gap?: number;
   /**
@@ -108,6 +115,7 @@ export type SortableListProps<Item> = {
  */
 export function SortableList<Item>({
   accessibilityLabel,
+  disableFocusRing = false,
   gap,
   handle,
   handleLabel,
@@ -174,6 +182,7 @@ export function SortableList<Item>({
     handle === "custom" ? (
       <SortableHandle
         binding={binding}
+        disableFocusRing={disableFocusRing}
         dragging={grabbed}
         iconColor={theme.colors.muted}
         iconSize={iconSize}
@@ -249,6 +258,7 @@ export function SortableList<Item>({
           index,
           customGrip(binding, grabbed, grabLabel),
         )}
+        disableFocusRing={disableFocusRing}
         dragging={grabbed}
         handle={handle}
         handleGap={rowGap}

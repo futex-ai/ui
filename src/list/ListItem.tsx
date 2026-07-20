@@ -12,11 +12,7 @@ import { Pressable, Text, View } from "react-native";
 
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
-import {
-  hideWebOutlineView,
-  PressableHoverState,
-  useFocusRing,
-} from "../focusRing";
+import { PressableHoverState, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { createListStyles, type ListStyles } from "./listStyles";
@@ -31,6 +27,13 @@ export type ListItemProps = {
   description?: ReactNode;
   /** Disable the pressable title (only relevant with `onPress`). */
   disabled?: boolean;
+  /**
+   * Disable the shared focus glow on the pressable title. It then falls back to
+   * the browser's default focus outline so keyboard focus stays visible (WCAG
+   * 2.1 — 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
+   * `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
   /** Leading slot, e.g. an `Avatar`. */
   leading?: ReactNode;
   /**
@@ -62,6 +65,7 @@ export function ListItem({
   accessibilityLabel,
   description,
   disabled = false,
+  disableFocusRing = false,
   leading,
   onPress,
   size = "md",
@@ -100,6 +104,7 @@ export function ListItem({
       {onPress ? (
         <PressableTitle
           disabled={disabled}
+          disableFocusRing={disableFocusRing}
           label={resolvedName}
           onPress={onPress}
           styles={styles}
@@ -128,17 +133,19 @@ export function ListItem({
 function PressableTitle({
   children,
   disabled,
+  disableFocusRing,
   label,
   onPress,
   styles,
 }: {
   children: ReactNode;
   disabled: boolean;
+  disableFocusRing: boolean;
   label?: string;
   onPress: () => void;
   styles: ListStyles;
 }) {
-  const focus = useFocusRing();
+  const focus = useFocusRing({ disabled: disableFocusRing });
   return (
     <Pressable
       accessibilityLabel={label}
@@ -154,7 +161,7 @@ function PressableTitle({
         pressed && !disabled ? styles.itemMainPressed : null,
         focus.focused ? focus.focusRingStyle : null,
         disabled ? styles.itemDisabled : null,
-        hideWebOutlineView,
+        focus.webOutlineReset,
       ]}
     >
       {children}

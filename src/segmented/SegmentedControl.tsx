@@ -20,7 +20,7 @@ import {
 
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
-import { hideWebOutlineView, useFocusRing } from "../focusRing";
+import { useFocusRing } from "../focusRing";
 import { LabelInfo } from "../input";
 import {
   type FocusableRef,
@@ -85,6 +85,13 @@ export type SegmentedControlProps<T extends string> = {
    */
   animated?: boolean;
   disabled?: boolean;
+  /**
+   * Disable the shared focus glow on the option buttons. They then fall back to
+   * the browser's default focus outline so keyboard focus stays visible (WCAG
+   * 2.1 — 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
+   * `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
   error?: string | null;
   hint?: string;
   /**
@@ -142,6 +149,7 @@ export function SegmentedControl<T extends string>({
   accessibilityLabel,
   animated = true,
   disabled = false,
+  disableFocusRing = false,
   error,
   hint,
   iconOnly = false,
@@ -365,6 +373,7 @@ export function SegmentedControl<T extends string>({
         {options.map((option, index) => (
           <SegmentedControlButton
             disabled={disabled || option.disabled === true}
+            disableFocusRing={disableFocusRing}
             iconOnly={iconOnly}
             iconSize={iconSize}
             index={index}
@@ -401,6 +410,7 @@ export function SegmentedControl<T extends string>({
 
 function SegmentedControlButton<T extends string>({
   disabled,
+  disableFocusRing,
   iconOnly,
   iconSize,
   index,
@@ -419,6 +429,7 @@ function SegmentedControlButton<T extends string>({
   variant,
 }: {
   disabled: boolean;
+  disableFocusRing: boolean;
   iconOnly: boolean;
   iconSize: number;
   index: number;
@@ -464,7 +475,7 @@ function SegmentedControlButton<T extends string>({
   // padding/gap and isn't clipped (the track sets no `overflow: hidden`). An
   // inset glow instead painted a band *inside* the pill, over the thumb, which
   // looked like a misaligned ring rather than a focus halo (WCAG 2.4.7).
-  const focus = useFocusRing();
+  const focus = useFocusRing({ disabled: disableFocusRing });
 
   const handleKeyDown = (event: SegmentKeyEvent) => {
     const key = event.nativeEvent?.key ?? event.key;
@@ -527,7 +538,7 @@ function SegmentedControlButton<T extends string>({
         selectedStyle,
         focus.focused ? focus.focusRingStyle : null,
         disabled ? styles.disabled : null,
-        hideWebOutlineView,
+        focus.webOutlineReset,
       ]}
     >
       {leadingIcon != null ? (

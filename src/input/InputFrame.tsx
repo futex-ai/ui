@@ -76,6 +76,13 @@ export type InputFrameProps = Omit<TextInputProps, "style"> & {
    * where you can. Ignored on native, where the OS focus affordance applies.
    */
   focusRingInset?: boolean;
+  /**
+   * Disable the shared focus glow on this field. The underlying input then falls
+   * back to the browser's default focus outline so keyboard focus stays visible
+   * (WCAG 2.1 — 2.4.7 Focus Visible, AA). Disable every ring at once via the
+   * theme's `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
   /** Marks the input required (wires `aria-required`). */
   required?: boolean;
   /** Leading decorative icon shown inside the box. */
@@ -126,6 +133,7 @@ export function InputFrame({
   clearable = false,
   clearAccessibilityLabel,
   clearVisible,
+  disableFocusRing = false,
   focusRingInset = false,
   inputRef,
   inputStyle,
@@ -149,7 +157,10 @@ export function InputFrame({
   // An inset ring survives an `overflow: hidden` ancestor that would clip the
   // default outset glow — the pattern the date wheel and data-grid resize handle
   // already use for controls nested inside clipping containers.
-  const focus = useFocusRing(focusRingInset ? { offset: -2 } : {});
+  const focus = useFocusRing({
+    ...(focusRingInset ? { offset: -2 } : {}),
+    disabled: disableFocusRing,
+  });
   const plain = variant === "plain";
   const seamless = variant === "seamless";
   const multiline = Boolean(props.multiline);
@@ -267,7 +278,10 @@ export function InputFrame({
           // The auto-grow bounds (min/max/height + line height) override the
           // fixed textarea min-height; a caller `inputStyle` still wins.
           autoGrow.style,
-          hideWebOutline,
+          // Suppress the UA outline while the glow is the focus affordance; with
+          // the ring disabled, let the UA outline return on the input (the real
+          // focus target) so keyboard focus stays visible (WCAG 2.1 — 2.4.7).
+          focus.ringEnabled ? hideWebOutline : null,
           inputStyle,
         ]}
       />

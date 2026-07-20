@@ -10,11 +10,7 @@
  */
 import { Pressable, View, type ViewStyle } from "react-native";
 
-import {
-  hideWebOutlineView,
-  useFocusRing,
-  type PressableHoverState,
-} from "../focusRing";
+import { useFocusRing, type PressableHoverState } from "../focusRing";
 
 import { DEFAULT_MIN_WIDTH } from "./dataGridColumnWidths";
 import type { ResolvedColumn } from "./dataGridColumnWidths";
@@ -29,6 +25,8 @@ export type DataGridResizeHandleProps = {
   styles: DataGridStyles;
   /** Whether this column is the one being pointer-dragged (keeps the line lit). */
   active: boolean;
+  /** Disable the shared focus glow, falling back to the UA outline (WCAG 2.4.7). */
+  disableFocusRing: boolean;
   onBeginResize: (columnId: string, startWidth: number, event: unknown) => void;
   onResizeStep: (
     columnId: string,
@@ -41,12 +39,13 @@ export function DataGridResizeHandle({
   column,
   styles,
   active,
+  disableFocusRing,
   onBeginResize,
   onResizeStep,
 }: DataGridResizeHandleProps) {
   // Inset glow — the handle sits inside the grid's `overflow: hidden` clip, which
   // would crop an outset ring.
-  const focus = useFocusRing({ offset: -2 });
+  const focus = useFocusRing({ offset: -2, disabled: disableFocusRing });
 
   // RN's prop types omit the separator range attributes, so they (and the web
   // pointer/key handlers) are forwarded as literal DOM props via a cast spread.
@@ -88,7 +87,7 @@ export function DataGridResizeHandle({
       style={[
         styles.resizeHandle,
         colResizeCursor,
-        hideWebOutlineView,
+        focus.webOutlineReset,
         focus.focused ? focus.focusRingStyle : null,
       ]}
     >

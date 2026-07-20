@@ -74,12 +74,21 @@ export type SharedUiTheme = {
   colors: SharedUiColors;
   fonts: SharedUiFonts;
   radii: SharedUiRadii;
+  /**
+   * Global focus-glow switch. Defaults to `true`. Set `false` to disable the
+   * shared focus ring on every control at once (see {@link useFocusRing}); each
+   * control can also opt out individually via its `disableFocusRing` prop. When
+   * off, controls fall back to the browser's default focus outline so keyboard
+   * focus stays visible (WCAG 2.1 — 2.4.7 Focus Visible, AA).
+   */
+  focusRing: boolean;
 };
 
 export type SharedUiThemeOverrides = {
   colors?: Partial<SharedUiColors>;
   fonts?: Partial<SharedUiFonts>;
   radii?: Partial<SharedUiRadii>;
+  focusRing?: boolean;
 };
 
 export const defaultSharedUiTheme: SharedUiTheme = {
@@ -119,6 +128,7 @@ export const defaultSharedUiTheme: SharedUiTheme = {
     xl: 12,
     xxl: 14,
   },
+  focusRing: true,
 };
 
 const SharedUiThemeContext = createContext<SharedUiTheme>(defaultSharedUiTheme);
@@ -130,6 +140,7 @@ export function createSharedUiTheme(
     colors: { ...defaultSharedUiTheme.colors, ...overrides.colors },
     fonts: { ...defaultSharedUiTheme.fonts, ...overrides.fonts },
     radii: { ...defaultSharedUiTheme.radii, ...overrides.radii },
+    focusRing: overrides.focusRing ?? defaultSharedUiTheme.focusRing,
   };
 }
 

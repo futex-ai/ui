@@ -13,6 +13,7 @@ import type { RichTextEditorProps } from "./richTextTypes";
  */
 export function RichTextEditor({
   autoFocus,
+  disableFocusRing = false,
   label,
   maxHeight,
   minHeight,
@@ -32,6 +33,7 @@ export function RichTextEditor({
   return (
     <Textarea
       autoFocus={autoFocus}
+      disableFocusRing={disableFocusRing}
       editable={!readOnly}
       label={label}
       onChangeText={onChangeMarkdown}

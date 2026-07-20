@@ -6,7 +6,7 @@ import { Platform, Pressable, Text, TextInput, View } from "react-native";
 import { announce } from "../announcer";
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
-import { hideWebOutline, hideWebOutlineView, useFocusRing } from "../focusRing";
+import { hideWebOutline, useFocusRing } from "../focusRing";
 import { inputIconSize, LabelInfo } from "../input";
 import { useSharedUiTheme } from "../theme";
 
@@ -54,6 +54,13 @@ export type DropdownSelectorSection = {
 export type SelectorVariant = "field" | "map" | "mobilePeriod" | "pill";
 
 type DropdownSelectorProps = {
+  /**
+   * Disable the shared focus glow on the trigger. It then falls back to the
+   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
+   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
+   * `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
   error?: string | null;
   footer?: ReactNode;
   header?: ReactNode;
@@ -105,7 +112,7 @@ export function DropdownSelector(props: DropdownSelectorProps) {
     () => createDropdownSelectorStyles(theme, props.size ?? "md"),
     [theme, props.size],
   );
-  const focus = useFocusRing();
+  const focus = useFocusRing({ disabled: props.disableFocusRing });
   return <DropdownSelectorView {...props} focus={focus} styles={styles} />;
 }
 
@@ -282,7 +289,7 @@ function DropdownSelectorView({
           invalid ? styles.invalid : null,
           invalid && variant === "map" ? styles.mapInvalid : null,
           !interactive ? styles.readOnly : null,
-          hideWebOutlineView,
+          focus.webOutlineReset,
         ]}
         // The trigger owns the popup option list (WCAG 4.1.2): it advertises the
         // listbox and links to its id while open. These literal aria props are

@@ -50,6 +50,13 @@ export type DateWheelProps = DateBounds & {
   today: string;
   /** Called with the next ISO draft (already clamped to a valid bounded date). */
   onChange: (iso: string) => void;
+  /**
+   * Disable the shared focus glow on the wheel rows. They then fall back to the
+   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
+   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
+   * `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -75,6 +82,7 @@ export function DateWheel({
   min,
   max,
   onChange,
+  disableFocusRing = false,
   testID,
 }: DateWheelProps) {
   const theme = useSharedUiTheme();
@@ -149,6 +157,7 @@ export function DateWheel({
         {/* Behind the columns (rendered first): the centered selection pill. */}
         <View pointerEvents="none" style={styles.selectionBand} />
         <WheelColumn
+          disableFocusRing={disableFocusRing}
           items={dayItems}
           label="Day"
           onSelectIndex={(index) => commit(year, month, index + 1)}
@@ -156,6 +165,7 @@ export function DateWheel({
           styles={styles}
         />
         <WheelColumn
+          disableFocusRing={disableFocusRing}
           items={monthItems}
           label="Month"
           onSelectIndex={(index) => commit(year, index + 1, day)}
@@ -163,6 +173,7 @@ export function DateWheel({
           styles={styles}
         />
         <WheelColumn
+          disableFocusRing={disableFocusRing}
           items={yearItems}
           label="Year"
           onSelectIndex={(index) => commit(lo + index, month, day)}
@@ -179,12 +190,14 @@ function WheelColumn({
   label,
   onSelectIndex,
   selectedIndex,
+  disableFocusRing,
   styles,
 }: {
   items: WheelItem[];
   label: string;
   onSelectIndex: (index: number) => void;
   selectedIndex: number;
+  disableFocusRing: boolean;
   styles: WheelPickerStyles;
 }) {
   const scrollRef = useRef<ScrollView>(null);
@@ -323,6 +336,7 @@ function WheelColumn({
       {items.map((item, index) => (
         <WheelRow
           centered={index === centerIndex}
+          disableFocusRing={disableFocusRing}
           distance={Math.abs(index - centerIndex)}
           item={item}
           key={item.key}
@@ -348,6 +362,7 @@ function WheelColumn({
 
 function WheelRow({
   centered,
+  disableFocusRing,
   distance,
   item,
   label,
@@ -357,6 +372,7 @@ function WheelRow({
   styles,
 }: {
   centered: boolean;
+  disableFocusRing: boolean;
   distance: number;
   item: WheelItem;
   label: string;
@@ -367,7 +383,7 @@ function WheelRow({
 }) {
   // Inset the ring: each row sits inside a snap-scrolling column whose overflow
   // would clip an outset outline (WCAG 2.1 2.4.7 Focus Visible).
-  const ring = useFocusRing({ offset: -2 });
+  const ring = useFocusRing({ offset: -2, disabled: disableFocusRing });
   // RNW eats `onKeyDown` on a TextInput but honours it on a Pressable.
   const keyProps = isWeb ? { onKeyDown: onKey } : null;
   return (

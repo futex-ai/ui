@@ -10,11 +10,7 @@ import type { StyleProp, ViewStyle } from "react-native";
 import { Platform, Pressable, Text, View } from "react-native";
 
 import type { ControlSize } from "../controlSize";
-import {
-  hideWebOutlineView,
-  PressableHoverState,
-  useFocusRing,
-} from "../focusRing";
+import { PressableHoverState, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { resolveEdgeColors } from "./workflowColors";
@@ -63,6 +59,13 @@ export function WorkflowConnector({
 export type WorkflowInsertButtonProps = {
   /** Announced name for the button. Defaults to "Add step". */
   accessibilityLabel?: string;
+  /**
+   * Disable the shared focus glow on this button. It then falls back to the
+   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
+   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
+   * `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
   /** Insert handler, called when the `+` is pressed. */
   onPress: () => void;
   /** Match the graph density. Defaults to `md`. */
@@ -81,6 +84,7 @@ export type WorkflowInsertButtonProps = {
  */
 export function WorkflowInsertButton({
   accessibilityLabel = "Add step",
+  disableFocusRing = false,
   onPress,
   size = "md",
   style,
@@ -91,7 +95,7 @@ export function WorkflowInsertButton({
     () => createWorkflowStyles(theme, size),
     [theme, size],
   );
-  const focus = useFocusRing();
+  const focus = useFocusRing({ disabled: disableFocusRing });
   const iconSize = workflowSizing(size).insertIcon;
   return (
     <Pressable
@@ -103,9 +107,9 @@ export function WorkflowInsertButton({
       style={({ hovered }: PressableHoverState) => [
         styles.insertButton,
         hovered ? styles.insertButtonHover : null,
-        focus.focused ? styles.insertButtonFocused : null,
+        focus.focused && focus.ringEnabled ? styles.insertButtonFocused : null,
         style,
-        hideWebOutlineView,
+        focus.webOutlineReset,
       ]}
       testID={testID}
     >
