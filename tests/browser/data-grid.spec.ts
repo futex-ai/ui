@@ -469,6 +469,106 @@ test("copies the selection and pastes it into another cell", async ({
   await expect(page.getByText("0.81")).toHaveCount(2);
 });
 
+async function columnWidths(page: Page) {
+  return page.evaluate(() => {
+    const round = (n: number) => Math.round(n);
+    const heads = [...document.querySelectorAll('[role="columnheader"]')].map(
+      (el) => round(el.getBoundingClientRect().width),
+    );
+    const row = document.querySelector('[role="rowgroup"] [role="row"]');
+    const cells = [...(row?.querySelectorAll('[role="gridcell"]') ?? [])].map(
+      (el) => round(el.getBoundingClientRect().width),
+    );
+    return { heads, cells };
+  });
+}
+
+test("dragging a column's resize handle widens it and the body tracks it", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await gotoDataGridStory(page, "resizable");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  // Owner is the 5th column (index 4); grab its right-edge resize handle.
+  const before = await columnWidths(page);
+  const handle = page.getByRole("separator", { name: "Resize Owner" });
+  const hb = await handle.boundingBox();
+  if (!hb) {
+    throw new Error("resize handle not found");
+  }
+  await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(hb.x + hb.width / 2 + 90, hb.y + hb.height / 2, {
+    steps: 10,
+  });
+  await page.mouse.up();
+
+  const after = await columnWidths(page);
+  // The Owner column grew ~90px and the body cell stays the same width as its
+  // header (they share resolved widths), while nothing got selected.
+  expect(after.heads[4]).toBeGreaterThan(before.heads[4] + 60);
+  expect(Math.abs(after.heads[4] - after.cells[4])).toBeLessThanOrEqual(1);
+  // The Tweet column (index 0, flex) is frozen, not re-flowed, so it keeps its
+  // width — only the dragged column's edge moves.
+  expect(Math.abs(after.heads[0] - before.heads[0])).toBeLessThanOrEqual(2);
+  await expect(
+    page.locator('[role="gridcell"][aria-selected="true"]'),
+  ).toHaveCount(0);
+  // onColumnResize fired as a change notification.
+  await expect(page.getByTestId("resize-status")).toContainText("owner");
+});
+
+test("arrow keys on a focused resize handle nudge the column width", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await gotoDataGridStory(page, "resizable");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  const before = await columnWidths(page);
+  const handle = page.getByRole("separator", { name: "Resize Owner" });
+  await handle.focus();
+  // A focused handle shows a visible focus indicator (WCAG 2.4.7) — the browser
+  // outline is suppressed, so assert the focus-ring box-shadow is painted.
+  const shadow = await handle.evaluate((el) => getComputedStyle(el).boxShadow);
+  expect(shadow).not.toBe("none");
+  expect(shadow).not.toBe("");
+  for (let step = 0; step < 4; step += 1) {
+    await page.keyboard.press("ArrowRight");
+  }
+  const wider = await columnWidths(page);
+  expect(wider.heads[4]).toBeGreaterThan(before.heads[4]);
+
+  await page.keyboard.press("ArrowLeft");
+  const narrower = await columnWidths(page);
+  expect(narrower.heads[4]).toBeLessThan(wider.heads[4]);
+});
+
+test("resizes a column with no onColumnResize handler (internal widths)", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await gotoDataGridStory(page, "basic");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  const before = await columnWidths(page);
+  const handle = page.getByRole("separator", { name: "Resize Owner" });
+  const hb = await handle.boundingBox();
+  if (!hb) {
+    throw new Error("resize handle not found");
+  }
+  await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(hb.x + hb.width / 2 + 70, hb.y + hb.height / 2, {
+    steps: 8,
+  });
+  await page.mouse.up();
+
+  const after = await columnWidths(page);
+  expect(after.heads[4]).toBeGreaterThan(before.heads[4] + 40);
+});
+
 test("collapses to a card stack below the breakpoint", async ({ page }) => {
   await page.setViewportSize({ width: 1000, height: 720 });
   await gotoDataGridStory(page, "responsive");

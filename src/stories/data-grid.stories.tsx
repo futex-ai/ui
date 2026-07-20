@@ -264,6 +264,39 @@ export const FullFeatured: Story = {
   render: () => <FullFeaturedExample />,
 };
 
+function ResizableExample() {
+  const [lastResize, setLastResize] = useState("none");
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        <Text style={styles.status} testID="resize-status">
+          last resize: {lastResize}
+        </Text>
+        <View style={styles.frame}>
+          <DataGrid
+            accessibilityLabel="Content"
+            columns={contentColumns}
+            onColumnResize={(columnId, width) =>
+              setLastResize(`${columnId} → ${width}px`)
+            }
+            rows={contentRows}
+          />
+        </View>
+        <Text style={styles.hint}>
+          Drag a column header's right edge to resize it, or focus the edge and
+          use the arrow keys. The grid manages the widths; onColumnResize fires
+          so you can persist them.
+        </Text>
+      </View>
+    </StorySurface>
+  );
+}
+
+export const Resizable: Story = {
+  name: "Resizable columns",
+  render: () => <ResizableExample />,
+};
+
 export const RejectingEdit: Story = {
   name: "Editing (rejected save)",
   render: () => (

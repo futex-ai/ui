@@ -91,6 +91,29 @@ export function createDataGridStyles(
       width: 22,
     },
     headerMenuButtonHover: { backgroundColor: theme.colors.bg2 },
+    // A thin hit target straddling the header cell's right edge; the line inside
+    // it lights up on hover / while dragging. The `col-resize` cursor is added by
+    // the handle itself (it is web-only and not in RN's `cursor` union).
+    resizeHandle: {
+      alignItems: "center",
+      bottom: 0,
+      justifyContent: "center",
+      position: "absolute",
+      right: -4,
+      top: 0,
+      width: 9,
+      zIndex: 3,
+    },
+    resizeHandleLine: {
+      backgroundColor: "transparent",
+      borderRadius: 1,
+      height: "55%",
+      width: 2,
+    },
+    resizeHandleLineActive: {
+      backgroundColor: theme.colors.primary,
+      height: "100%",
+    },
     addColumnCell: {
       alignItems: "center",
       borderRightColor: theme.colors.border,
