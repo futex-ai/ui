@@ -14,8 +14,14 @@ export function createRichTextStyles(theme: SharedUiTheme) {
       color: theme.colors.ink,
       flex: 1,
       minHeight: 120,
-      paddingHorizontal: 12,
-      paddingVertical: 10,
+      // Longhand padding only: this style is spread onto a raw contentEditable
+      // <div>, and RN shorthands (paddingHorizontal/Vertical) are not CSS
+      // properties — React drops them, leaving the content flush against the
+      // frame while the placeholder floats at the padded offset.
+      paddingBottom: 10,
+      paddingLeft: 12,
+      paddingRight: 12,
+      paddingTop: 10,
     },
     field: chrome.field,
     frame: {

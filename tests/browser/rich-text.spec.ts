@@ -544,6 +544,63 @@ test("synthetic composition records history and clears stale redo", async ({
   await expectReadoutText(page, "é");
 });
 
+test("placeholder aligns with typed content", async ({ page }) => {
+  await gotoRichTextStory(page);
+
+  const placeholder = page.getByText("Write notes...");
+  const placeholderBox = await placeholder.boundingBox();
+  expect(placeholderBox).not.toBeNull();
+
+  const editor = page.getByTestId("rich-text-editor");
+  await editor.click();
+  await page.keyboard.type("Hello");
+  const textBox = await page.locator('[data-rt="p"]').boundingBox();
+  expect(textBox).not.toBeNull();
+
+  expect(Math.abs((textBox?.x ?? 0) - (placeholderBox?.x ?? 0))).toBeLessThan(
+    2,
+  );
+  expect(Math.abs((textBox?.y ?? 0) - (placeholderBox?.y ?? 0))).toBeLessThan(
+    4,
+  );
+  await expect(editor).toHaveCSS("padding-left", "12px");
+  await expect(editor).toHaveCSS("padding-top", "10px");
+});
+
+test("list markers share one text column and checkboxes sit on the text line", async ({
+  page,
+}) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("- Bullet");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("1. Number");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("[] Task");
+
+  const bulletText = await page
+    .locator('[data-rt="ul"] [data-rt="li"]')
+    .boundingBox();
+  const numberText = await page
+    .locator('[data-rt="ol"] [data-rt="li"]')
+    .boundingBox();
+  const checkText = await page.locator('[data-rt="checktext"]').boundingBox();
+  const checkbox = await page.locator('[data-rt="checkbox"]').boundingBox();
+  expect(bulletText && numberText && checkText && checkbox).toBeTruthy();
+
+  // All three list kinds start their text at the same column.
+  expect(Math.abs((bulletText?.x ?? 0) - (numberText?.x ?? 0))).toBeLessThan(2);
+  expect(Math.abs((bulletText?.x ?? 0) - (checkText?.x ?? 0))).toBeLessThan(2);
+
+  // The checkbox is vertically centered on the first text line.
+  const boxCenter = (checkbox?.y ?? 0) + (checkbox?.height ?? 0) / 2;
+  const lineCenter = (checkText?.y ?? 0) + 11;
+  expect(Math.abs(boxCenter - lineCenter)).toBeLessThan(3);
+});
+
 test("checklist checkbox click toggles markdown state", async ({ page }) => {
   await gotoRichTextStory(page);
 

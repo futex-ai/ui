@@ -148,6 +148,10 @@ function renderListItem(
   if (block.type === "check") {
     item.style.listStyleType = "none";
     item.style.paddingLeft = "0";
+    // Flex keeps the box centered on the first text line and gives wrapped
+    // lines a hanging indent at the shared list text column.
+    item.style.alignItems = "flex-start";
+    item.style.display = "flex";
     const checkbox = document.createElement("span");
     checkbox.contentEditable = "false";
     checkbox.dataset.rt = "checkbox";
@@ -164,6 +168,8 @@ function renderListItem(
     applyCheckboxStyle(checkbox, block.checked, renderTheme);
     const text = document.createElement("span");
     text.dataset.rt = "checktext";
+    text.style.flex = "1";
+    text.style.minWidth = "0";
     renderInline(text, block.spans);
     ensureCaretTarget(text);
     item.append(checkbox, text);
@@ -343,11 +349,14 @@ function applyListStyle(
   renderTheme: RichTextDomRenderTheme,
 ): void {
   element.style.margin = "0 0 8px";
+  // One shared text column for every list kind: bullet/number markers hang
+  // inside a 24px pad, and checklist rows reach the same column with a 16px
+  // box + 8px gap instead of a pad.
   if (element.dataset.rt === "checklist") {
     element.style.listStyleType = "none";
     element.style.paddingLeft = "0";
   } else {
-    element.style.paddingLeft = "22px";
+    element.style.paddingLeft = "24px";
   }
   applyTextStyle(element, renderTheme.body);
 }
@@ -371,8 +380,15 @@ function applyCheckboxStyle(
   element.style.fontWeight = "800";
   element.style.height = "16px";
   element.style.justifyContent = "center";
+  element.style.flexShrink = "0";
   element.style.lineHeight = "14px";
   element.style.marginRight = "8px";
-  element.style.transform = "translateY(2px)";
+  // Center the 16px box on the first text line instead of eyeballing a
+  // translate: (body line height − box height) / 2.
+  const lineHeight =
+    typeof renderTheme.body.lineHeight === "number"
+      ? renderTheme.body.lineHeight
+      : 22;
+  element.style.marginTop = `${Math.max(0, Math.round((lineHeight - 16) / 2))}px`;
   element.style.width = "16px";
 }
