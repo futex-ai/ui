@@ -85,6 +85,8 @@ export type DataGridProps = {
   loadingMore?: boolean;
   /** Show the row-number / expand gutter. Defaults to true. */
   showGutter?: boolean;
+  /** Render with flat (non-rounded) corners on the grid frame + mobile cards. */
+  square?: boolean;
   /** Footer record-count text, e.g. "7 of 128 records". */
   footerText?: string;
   /** Max body height in px before the rows scroll (virtualized). */
@@ -111,6 +113,7 @@ export function DataGrid({
   onEndReached,
   loadingMore,
   showGutter = true,
+  square = false,
   footerText,
   maxHeight,
   cardBreakpoint,
@@ -119,8 +122,8 @@ export function DataGrid({
 }: DataGridProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(
-    () => createDataGridStyles(theme, size),
-    [theme, size],
+    () => createDataGridStyles(theme, size, square),
+    [theme, size, square],
   );
   const metrics = useMemo(() => dataGridMetrics(size), [size]);
   const { width: windowWidth } = useWindowDimensions();
