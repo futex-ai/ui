@@ -7,20 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.15.0](https://github.com/futex-ai/ui/compare/v0.14.0...v0.15.0) (2026-07-20)
 
-
 ### Features
 
-* **animated-border:** add circle and pill shape support ([#94](https://github.com/futex-ai/ui/issues/94)) ([342ad43](https://github.com/futex-ai/ui/commit/342ad431a6faae339f72b62f3b88e50e23d593ec))
-* **button:** add inline variant for line-height-neutral in-text chips ([#91](https://github.com/futex-ai/ui/issues/91)) ([f6ed248](https://github.com/futex-ai/ui/commit/f6ed24844fe134cf291b02e1aba566b0f6dc3452))
-* **data-grid:** add square prop for flat (non-rounded) corners ([#95](https://github.com/futex-ai/ui/issues/95)) ([6c7ea84](https://github.com/futex-ai/ui/commit/6c7ea845eebef9027b20c7cc5502a642069daeca))
-* **data-grid:** cap flex column auto-width so sparse grids don't balloon ([#96](https://github.com/futex-ai/ui/issues/96)) ([23aed67](https://github.com/futex-ai/ui/commit/23aed674effb13d8b7cc0a965469e0f816255cb0))
-* **data-grid:** resizable columns ([#92](https://github.com/futex-ai/ui/issues/92)) ([415f070](https://github.com/futex-ai/ui/commit/415f0709a9b903d2cf70ec5e6b4c3c1c79889a84))
-* **input:** add seamless (invisible) editable variant ([#97](https://github.com/futex-ai/ui/issues/97)) ([29af350](https://github.com/futex-ai/ui/commit/29af350d5572a79767cc2e4f44054fb484fd9837))
-
+- **animated-border:** add circle and pill shape support ([#94](https://github.com/futex-ai/ui/issues/94)) ([342ad43](https://github.com/futex-ai/ui/commit/342ad431a6faae339f72b62f3b88e50e23d593ec))
+- **button:** add inline variant for line-height-neutral in-text chips ([#91](https://github.com/futex-ai/ui/issues/91)) ([f6ed248](https://github.com/futex-ai/ui/commit/f6ed24844fe134cf291b02e1aba566b0f6dc3452))
+- **data-grid:** add square prop for flat (non-rounded) corners ([#95](https://github.com/futex-ai/ui/issues/95)) ([6c7ea84](https://github.com/futex-ai/ui/commit/6c7ea845eebef9027b20c7cc5502a642069daeca))
+- **data-grid:** cap flex column auto-width so sparse grids don't balloon ([#96](https://github.com/futex-ai/ui/issues/96)) ([23aed67](https://github.com/futex-ai/ui/commit/23aed674effb13d8b7cc0a965469e0f816255cb0))
+- **data-grid:** resizable columns ([#92](https://github.com/futex-ai/ui/issues/92)) ([415f070](https://github.com/futex-ai/ui/commit/415f0709a9b903d2cf70ec5e6b4c3c1c79889a84))
+- **input:** add seamless (invisible) editable variant ([#97](https://github.com/futex-ai/ui/issues/97)) ([29af350](https://github.com/futex-ai/ui/commit/29af350d5572a79767cc2e4f44054fb484fd9837))
 
 ### Bug Fixes
 
-* **button:** use the shared focus glow like other controls ([#98](https://github.com/futex-ai/ui/issues/98)) ([cd889fa](https://github.com/futex-ai/ui/commit/cd889fae9cbe26d3e9bfe8aa1ee5d6d242416e27))
+- **button:** use the shared focus glow like other controls ([#98](https://github.com/futex-ai/ui/issues/98)) ([cd889fa](https://github.com/futex-ai/ui/commit/cd889fae9cbe26d3e9bfe8aa1ee5d6d242416e27))
 
 ## [0.14.0](https://github.com/futex-ai/ui/compare/v0.13.0...v0.14.0) (2026-07-20)
 
