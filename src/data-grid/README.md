@@ -124,6 +124,18 @@ every body row stay aligned. When the columns are wider than the container it
 scrolls horizontally, and the row-number gutter stays pinned to the left (frozen
 column, web only).
 
+### Resizing
+
+On web, each column header carries a resize handle on its right edge (a focusable
+`separator`): drag it to set the column's width — clamped to `minWidth` /
+`maxWidth` — or focus it and use the Left/Right arrow keys. The grid owns the
+widths internally; `columns[].width` / `flex` seed the initial size. Starting a
+resize freezes the other flexible columns at their current pixel widths, so only
+the dragged column's edge moves (the rest stay put and the grid scrolls if the
+total outgrows the container). Pass `onColumnResize(columnId, width)` to persist a
+width (e.g. to storage); opt a column out with `resizable: false`. Native renders
+no handle.
+
 ### Editing
 
 Open an editor with **Enter**, a **double-press**, or (native) a tap on the
@@ -182,6 +194,9 @@ cell uses an inset `primary` ring, and pills resolve to AA-contrast token pairs.
 - `DataGrid.tsx` — the controlled component + state wiring.
 - `useDataGridController.ts` / `useDataGridKeyboard.ts` / `useDataGridDrag.ts` —
   selection, keyboard, and pointer-drag interaction.
+- `useDataGridColumnResize.ts` / `DataGridResizeHandle.tsx` — column resizing
+  (pointer + keyboard) and the header-edge handle; widths resolved in
+  `dataGridColumnWidths.ts`.
 - `dataGridSelectionModel.ts` / `dataGridKeyboardModel.ts` — pure, React-free
   models (unit-tested), exported as `dataGridSelectionModel` /
   `dataGridKeyboardModel` namespaces.

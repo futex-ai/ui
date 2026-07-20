@@ -5,12 +5,14 @@ import { Platform, Text, View } from "react-native";
 import type { SharedUiTheme } from "../theme";
 
 import { fieldTypeIcon } from "./dataGridCellContent";
+import type { ResolvedColumn } from "./dataGridColumnWidths";
 import { isInteractiveDragTarget } from "./dataGridDragDom";
 import {
   columnLayoutStyle,
   resolveColumnAlign,
   stickyGutterStyle,
 } from "./dataGridLayout";
+import { DataGridResizeHandle } from "./DataGridResizeHandle";
 import type { DataGridStyles } from "./dataGridStyles";
 import type { DataGridColumn } from "./types";
 
@@ -31,6 +33,20 @@ export type DataGridHeaderProps = {
     columnId: string,
     node: { contains?: (n: Node) => boolean } | null,
   ) => void;
+  /** Start a pointer resize of a column from its header edge (web). */
+  onBeginColumnResize: (
+    columnId: string,
+    startWidth: number,
+    event: unknown,
+  ) => void;
+  /** Nudge a column's width via the arrow keys on a focused handle (web). */
+  onColumnResizeStep: (
+    columnId: string,
+    direction: 1 | -1,
+    currentWidth: number,
+  ) => void;
+  /** The column currently being pointer-resized, for handle styling. */
+  resizingColumnId: string | null;
 };
 
 /** A small ↑/↓ glyph for a sorted column. */
@@ -54,6 +70,9 @@ export function DataGridHeader({
   renderAddColumn,
   onBeginColumnDrag,
   registerHeaderNode,
+  onBeginColumnResize,
+  onColumnResizeStep,
+  resizingColumnId,
 }: DataGridHeaderProps) {
   const web = Platform.OS === "web";
   return (
@@ -65,6 +84,10 @@ export function DataGridHeader({
         const Icon = fieldTypeIcon(column.fieldType);
         const align = resolveColumnAlign(column);
         const glyph = sortGlyph(column.sortDirection);
+        // The handle needs a concrete pixel width (its drag start + a11y value),
+        // so it only shows once the columns are resolved and not opted out.
+        const canResize =
+          web && column.resizable !== false && typeof column.width === "number";
         // RN's prop types omit `aria-sort`; forward it as a literal web attribute.
         // `onPointerDown` starts a whole-column drag (unless on the caret menu).
         const webProps = web
@@ -112,6 +135,15 @@ export function DataGridHeader({
             </Text>
             {glyph ? <Text style={styles.headerSort}>{glyph}</Text> : null}
             {renderColumnMenuButton?.(column)}
+            {canResize ? (
+              <DataGridResizeHandle
+                active={resizingColumnId === column.id}
+                column={column as ResolvedColumn}
+                onBeginResize={onBeginColumnResize}
+                onResizeStep={onColumnResizeStep}
+                styles={styles}
+              />
+            ) : null}
           </View>
         );
       })}

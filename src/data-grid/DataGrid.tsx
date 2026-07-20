@@ -10,7 +10,7 @@
  * `DateField`, `DropdownMenu`, `ComboboxMultiSelect`, `Badge`) and lets those own
  * their portals; the grid adds the selection model, keyboard model, and chrome.
  */
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   type LayoutChangeEvent,
   ScrollView,
@@ -34,6 +34,7 @@ import {
   dataGridMetrics,
 } from "./dataGridStyles";
 import { useDataGridClipboard } from "./useDataGridClipboard";
+import { useDataGridColumnResize } from "./useDataGridColumnResize";
 import { useDataGridController } from "./useDataGridController";
 import { useDataGridEditing } from "./useDataGridEditing";
 import { useDataGridEditorRenderer } from "./useDataGridEditorRenderer";
@@ -66,6 +67,12 @@ export type DataGridProps = {
   ) => void | Promise<void>;
   /** A column header-menu action (sort / hide / delete). */
   onColumnMenuAction?: (columnId: string, action: DataGridColumnAction) => void;
+  /**
+   * Notified as a column is resized by dragging its header edge (or the arrow
+   * keys). The grid manages the width itself — use this to persist it (e.g. to
+   * storage); `columns[].width` / `flex` still supply the initial size.
+   */
+  onColumnResize?: (columnId: string, width: number) => void;
   /** Add a new column of the chosen field type. */
   onAddColumn?: (fieldType: DataGridFieldType) => void;
   /** Add a new empty record. Renders the trailing "+ New record" row. */
@@ -97,6 +104,7 @@ export function DataGrid({
   onSelectionChange,
   onCellChange,
   onColumnMenuAction,
+  onColumnResize,
   onAddColumn,
   onAddRow,
   onRowExpand,
@@ -167,6 +175,17 @@ export function DataGrid({
     theme,
   });
 
+  // Column resizing: the grid owns per-column width overrides (onColumnResize is
+  // a change notification). `resolvedWidthsRef` gives the resize hook each
+  // column's current pixel width so it can freeze flex neighbors when a drag
+  // starts; it's synced from `resolved` after every layout pass below.
+  const resolvedWidthsRef = useRef<Record<string, number>>({});
+  const resize = useDataGridColumnResize({
+    columns: controller.visibleColumns,
+    resolvedWidthsRef,
+    onColumnResize,
+  });
+
   // Resolve flex columns to pixels once the width is measured; before that, fall
   // back to flex sizing (width: 100%) for a clean first paint.
   const chromeWidth =
@@ -179,12 +198,28 @@ export function DataGrid({
         controller.visibleColumns,
         Math.max(0, measuredWidth - 2),
         chromeWidth,
+        resize.columnWidthOverrides,
       ),
-    [controller.visibleColumns, measuredWidth, chromeWidth],
+    [
+      controller.visibleColumns,
+      measuredWidth,
+      chromeWidth,
+      resize.columnWidthOverrides,
+    ],
   );
   const renderColumns = layoutReady
     ? resolved.columns
     : controller.visibleColumns;
+
+  // Keep the resize hook's view of current pixel widths in sync so a resize that
+  // starts next frame can freeze the flex columns at their painted widths.
+  useEffect(() => {
+    const widths: Record<string, number> = {};
+    for (const column of resolved.columns) {
+      widths[column.id] = column.width;
+    }
+    resolvedWidthsRef.current = widths;
+  }, [resolved]);
 
   if (asCards) {
     return (
@@ -256,7 +291,10 @@ export function DataGrid({
                 : undefined
             }
             onBeginColumnDrag={controller.beginColumnDrag}
+            onBeginColumnResize={resize.beginColumnResize}
+            onColumnResizeStep={resize.resizeColumnByStep}
             registerHeaderNode={controller.registerHeaderNode}
+            resizingColumnId={resize.resizingColumnId}
             showGutter={showGutter}
             styles={styles}
             theme={theme}

@@ -46,8 +46,15 @@ export type DataGridColumn = {
   width?: number;
   /** Flex grow factor when the column has no fixed `width`. Defaults to 1. */
   flex?: number;
-  /** Minimum width in px when sized by `flex`. */
+  /** Minimum width in px when sized by `flex` or resized. Defaults to 80. */
   minWidth?: number;
+  /** Maximum width in px the column can be resized to. Unbounded by default. */
+  maxWidth?: number;
+  /**
+   * Allow resizing the column by dragging its header's right edge (or the arrow
+   * keys on the focused edge). Defaults to true; web only.
+   */
+  resizable?: boolean;
   /** Header + cell alignment. Defaults per field type (numbers right-align). */
   align?: DataGridColumnAlign;
   /** Hide the column from the grid (kept in the data). */

@@ -9,7 +9,8 @@
  */
 import type { DataGridColumn } from "./types";
 
-const DEFAULT_MIN_WIDTH = 80;
+/** Fallback minimum column width (px) when a column sets no `minWidth`. */
+export const DEFAULT_MIN_WIDTH = 80;
 
 /** A column with a resolved pixel `width` (never `flex`). */
 export type ResolvedColumn = DataGridColumn & { width: number };
@@ -20,37 +21,64 @@ export type ResolvedColumns = {
   contentWidth: number;
 };
 
+/** Per-column pixel widths from user resizes, keyed by column id. */
+export type ColumnWidthOverrides = Readonly<Record<string, number>>;
+
+/** Round a resized width and clamp it to the column's [min, max] bounds. */
+export function clampColumnWidth(
+  column: DataGridColumn,
+  width: number,
+): number {
+  const min = column.minWidth ?? DEFAULT_MIN_WIDTH;
+  const max = column.maxWidth ?? Number.POSITIVE_INFINITY;
+  return Math.min(max, Math.max(min, Math.round(width)));
+}
+
 /**
  * @param columns  visible columns, in display order
  * @param containerWidth  the grid's inner content width in px
  * @param chromeWidth  fixed leading/trailing chrome (gutter + add-column)
+ * @param overrides  per-column resized widths that pin a column to a fixed width
  */
 export function resolveColumnWidths(
   columns: DataGridColumn[],
   containerWidth: number,
   chromeWidth: number,
+  overrides?: ColumnWidthOverrides,
 ): ResolvedColumns {
   const available = Math.max(0, containerWidth - chromeWidth);
+  // A resize override pins the column to a fixed (clamped) width, taking
+  // precedence over its declared `width`/`flex`; `undefined` means "size by flex".
+  const fixedWidthOf = (column: DataGridColumn): number | undefined => {
+    const override = overrides?.[column.id];
+    if (override !== undefined) {
+      return clampColumnWidth(column, override);
+    }
+    return column.width;
+  };
   const fixedTotal = columns.reduce(
-    (sum, column) => sum + (column.width ?? 0),
+    (sum, column) => sum + (fixedWidthOf(column) ?? 0),
     0,
   );
   const flexTotal = columns.reduce(
     (sum, column) =>
-      sum + (column.width === undefined ? (column.flex ?? 1) : 0),
+      sum + (fixedWidthOf(column) === undefined ? (column.flex ?? 1) : 0),
     0,
   );
   const remaining = Math.max(0, available - fixedTotal);
 
   let columnsTotal = 0;
   const resolved = columns.map((column): ResolvedColumn => {
+    const fixed = fixedWidthOf(column);
     let width: number;
-    if (column.width !== undefined) {
-      width = column.width;
+    if (fixed !== undefined) {
+      width = fixed;
     } else {
       const share =
         flexTotal > 0 ? (remaining * (column.flex ?? 1)) / flexTotal : 0;
-      width = Math.max(column.minWidth ?? DEFAULT_MIN_WIDTH, Math.round(share));
+      // Clamp the flex share to BOTH bounds so a `maxWidth` flex column never
+      // renders (or reports via aria-valuenow) above its max.
+      width = clampColumnWidth(column, share);
     }
     columnsTotal += width;
     return { ...column, width };
