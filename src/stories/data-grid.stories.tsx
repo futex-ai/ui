@@ -118,16 +118,23 @@ export const Borderless: Story = {
   name: "Borderless (borderWidth 0)",
   render: () => (
     <StorySurface>
-      {/* An outer panel supplies the border; the grid drops its own frame so
-          the two don't double up. Internal cell hairlines stay. */}
-      <View style={[styles.frame, styles.panel]}>
-        <DataGrid
-          accessibilityLabel="Content"
-          borderWidth={0}
-          columns={contentColumns}
-          footerText="7 of 128 records · 0 filters · sorted by Created"
-          rows={contentRows}
-        />
+      <View style={styles.stack}>
+        {/* No outer frame at all — the header fill + internal cell hairlines
+            carry the structure. Drop the border to sit flush inside your own
+            bordered/padded container. */}
+        <View style={styles.frame}>
+          <DataGrid
+            accessibilityLabel="Content"
+            borderWidth={0}
+            columns={contentColumns}
+            footerText="7 of 128 records · 0 filters · sorted by Created"
+            rows={contentRows}
+          />
+        </View>
+        <Text style={styles.hint}>
+          `borderWidth={0}` removes the outer frame entirely; the internal cell
+          separators are unaffected.
+        </Text>
       </View>
     </StorySurface>
   ),
@@ -431,13 +438,6 @@ const styles = StyleSheet.create({
   frame: { width: 940 },
   frameWide: { width: 1000 },
   hint: { color: "#69706a", fontSize: 12 },
-  // Wraps the borderless grid so an outer border stands in for the dropped frame.
-  panel: {
-    borderColor: "#d7dbd6",
-    borderRadius: 10,
-    borderWidth: 1,
-    overflow: "hidden",
-  },
   responsive: { padding: 16, width: "100%" },
   stack: { gap: 10 },
   status: { color: "#3e4540", fontSize: 13, fontWeight: "700" },
