@@ -23,6 +23,7 @@ import {
   docRangeFromDomSelection,
   domRangeFromDocSelection,
   domRangeFromDocPosition,
+  isAfterEditorCaretBoundary,
   isAtBlockEnd,
   isAtBlockStart,
 } from "./domSelection.web";
@@ -527,6 +528,23 @@ export function RichTextEditor({
         collapsed &&
         tryRevertLastRule(event, root, range.from, commit)
       ) {
+        return;
+      }
+      if (
+        event.inputType === "deleteContentBackward" &&
+        collapsed &&
+        range.from.offset > 0 &&
+        isAfterEditorCaretBoundary(selection)
+      ) {
+        event.preventDefault();
+        const doc = serializeRichTextDom(root);
+        const from = {
+          block: range.from.block,
+          offset: range.from.offset - 1,
+        };
+        commit(deleteRange(doc, from, range.from), from);
+        lastRuleRef.current = null;
+        slashMenu.close();
         return;
       }
       if (

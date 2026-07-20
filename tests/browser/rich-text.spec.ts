@@ -201,6 +201,21 @@ test("slash menu arrow navigation and Enter convert the block", async ({
   );
 });
 
+test("slash conversion preserves trailing space before continued typing", async ({
+  page,
+}) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("Shipped the editor. ");
+  await page.keyboard.type("/check");
+  await expect(page.getByTestId("rich-text-slash-menu")).toBeVisible();
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("Write docs");
+
+  await expectReadoutText(page, "- [ ] Shipped the editor. Write docs");
+});
+
 test("slash menu Escape closes and leaves query text intact", async ({
   page,
 }) => {
@@ -356,6 +371,65 @@ test("code autoformat wraps typed code spans", async ({ page }) => {
   await expect(page.getByTestId("rich-text-markdown-out")).toHaveText("`code`");
 });
 
+test("typing after code autoformat continues outside the code mark", async ({
+  page,
+}) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("a `x` b");
+
+  await expect(page.locator('[data-rt="p"] code')).toHaveText("x");
+  await expectReadoutText(page, "a `x` b");
+  await expectInlineTrailingText(page, "code", " b");
+});
+
+test("typing after bold autoformat continues outside the bold mark", async ({
+  page,
+}) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("**b** more");
+
+  await expect(page.locator('[data-rt="p"] strong')).toHaveText("b");
+  await expectReadoutText(page, "**b** more");
+  await expectInlineTrailingText(page, "strong", " more");
+});
+
+test("typing after bold toggle at block end continues outside the mark", async ({
+  page,
+}) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("bold");
+  await selectTextInBlock(page, 0, 0, 4);
+  await page.keyboard.press(primaryShortcut("b"));
+  await placeCaretAtBlockEnd(page, 0);
+  await page.keyboard.type(" plain");
+
+  await expect(page.locator('[data-rt="p"] strong')).toHaveText("bold");
+  await expectReadoutText(page, "**bold** plain");
+  await expectInlineTrailingText(page, "strong", " plain");
+});
+
+test("Backspace after a marked block-end caret deletes marked text", async ({
+  page,
+}) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("bold");
+  await selectTextInBlock(page, 0, 0, 4);
+  await page.keyboard.press(primaryShortcut("b"));
+  await placeCaretAtBlockEnd(page, 0);
+  await page.keyboard.press("Backspace");
+
+  await expect(page.locator('[data-rt="p"] strong')).toHaveText("bol");
+  await expectReadoutText(page, "**bol**");
+});
+
 test("undo and redo restore a structural split", async ({ page }) => {
   await gotoRichTextStory(page);
 
@@ -490,6 +564,26 @@ test("checklist checkbox click toggles markdown state", async ({ page }) => {
   );
 });
 
+test("checklist wrapper suppresses native list markers", async ({ page }) => {
+  await gotoRichTextStory(page);
+
+  await page.getByTestId("rich-text-editor").click();
+  await page.keyboard.type("[] Task");
+
+  const checklist = page.locator('[data-rt="checklist"]');
+  await expect(checklist).toBeVisible();
+  await expect
+    .poll(() =>
+      checklist.evaluate((element) => getComputedStyle(element).listStyleType),
+    )
+    .toBe("none");
+  await expect
+    .poll(() =>
+      checklist.evaluate((element) => getComputedStyle(element).paddingLeft),
+    )
+    .toBe("0px");
+});
+
 test("pasting markdown inserts parsed blocks", async ({ page }) => {
   await gotoRichTextStory(page);
 
@@ -579,6 +673,50 @@ async function placeCaretAtBlockStart(page: Page, blockIndex: number) {
     selection?.removeAllRanges();
     selection?.addRange(range);
   }, blockIndex);
+}
+
+async function placeCaretAtBlockEnd(page: Page, blockIndex: number) {
+  await page.evaluate((index) => {
+    const block = document.querySelector<HTMLElement>(
+      `[data-rt-index="${index}"]`,
+    );
+    if (!block) {
+      throw new Error(`Block ${index} not found`);
+    }
+    const target =
+      block.querySelector<HTMLElement>('[data-rt="checktext"]') ?? block;
+    block.closest<HTMLElement>('[data-testid="rich-text-editor"]')?.focus();
+    const range = document.createRange();
+    range.selectNodeContents(target);
+    range.collapse(false);
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  }, blockIndex);
+}
+
+async function expectInlineTrailingText(
+  page: Page,
+  selector: string,
+  text: string,
+) {
+  await expect
+    .poll(() =>
+      page
+        .locator('[data-rt="p"]')
+        .first()
+        .evaluate((block, inlineSelector) => {
+          const inline = block.querySelector(inlineSelector);
+          let trailing = "";
+          let node = inline?.nextSibling ?? null;
+          while (node) {
+            trailing += node.textContent ?? "";
+            node = node.nextSibling;
+          }
+          return trailing.replaceAll("\u200b", "").replaceAll("\u00a0", " ");
+        }, selector),
+    )
+    .toBe(text);
 }
 
 async function selectTextInBlock(

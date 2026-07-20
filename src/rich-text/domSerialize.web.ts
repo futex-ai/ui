@@ -7,12 +7,15 @@ import {
   normalizeDocument,
 } from "./richTextModel";
 
+const editorBoundarySpace = "\u00a0";
+const editorCaretBoundary = "\u200b";
+
 /** Serialize arbitrary children of the contentEditable root into rich-text blocks. */
 export function serializeRichTextDom(root: HTMLElement): RichTextDocument {
   const blocks: RichTextBlock[] = [];
   root.childNodes.forEach((node) => {
     if (node.nodeType === Node.TEXT_NODE) {
-      const text = node.textContent ?? "";
+      const text = editorText(node.textContent ?? "");
       if (text.length > 0) {
         blocks.push({ spans: [{ marks: [], text }], type: "paragraph" });
       }
@@ -118,7 +121,7 @@ function collectInline(
   spans: InlineSpan[],
 ): void {
   if (node.nodeType === Node.TEXT_NODE) {
-    appendSpan(spans, marks, node.textContent ?? "");
+    appendSpan(spans, marks, editorText(node.textContent ?? ""));
     return;
   }
   if (!(node instanceof HTMLElement)) {
@@ -153,6 +156,12 @@ function marksForElement(
     return addMark(marks, "code");
   }
   return marks;
+}
+
+function editorText(text: string): string {
+  return text
+    .replaceAll(editorCaretBoundary, "")
+    .replaceAll(editorBoundarySpace, " ");
 }
 
 function appendSpan(

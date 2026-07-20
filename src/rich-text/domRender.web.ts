@@ -26,6 +26,9 @@ type TextDomStyle = {
   lineHeight?: number | string;
 };
 
+const editorBoundarySpace = "\u00a0";
+const editorCaretBoundary = "\u200b";
+
 /** Re-render the full contentEditable document tree from the canonical model. */
 export function renderRichTextDocument(
   root: HTMLElement,
@@ -143,6 +146,8 @@ function renderListItem(
   applyTextStyle(item, renderTheme.body);
   item.style.margin = "4px 0";
   if (block.type === "check") {
+    item.style.listStyleType = "none";
+    item.style.paddingLeft = "0";
     const checkbox = document.createElement("span");
     checkbox.contentEditable = "false";
     checkbox.dataset.rt = "checkbox";
@@ -250,6 +255,9 @@ function dividerBlock(
 function renderInline(parent: HTMLElement, spans: readonly InlineSpan[]): void {
   for (const span of spans) {
     appendMarkedText(parent, span, 0);
+    if (span.marks.length > 0) {
+      parent.appendChild(document.createTextNode(editorCaretBoundary));
+    }
   }
 }
 
@@ -274,9 +282,15 @@ function appendTextWithBreaks(parent: Node, text: string): void {
       parent.appendChild(document.createElement("br"));
     }
     if (part.length > 0) {
-      parent.appendChild(document.createTextNode(part));
+      parent.appendChild(document.createTextNode(renderEditableText(part)));
     }
   });
+}
+
+function renderEditableText(text: string): string {
+  return text.replace(/^ +| +$/g, (spaces) =>
+    editorBoundarySpace.repeat(spaces.length),
+  );
 }
 
 function ensureCaretTarget(element: HTMLElement): void {
@@ -329,7 +343,12 @@ function applyListStyle(
   renderTheme: RichTextDomRenderTheme,
 ): void {
   element.style.margin = "0 0 8px";
-  element.style.paddingLeft = "22px";
+  if (element.dataset.rt === "checklist") {
+    element.style.listStyleType = "none";
+    element.style.paddingLeft = "0";
+  } else {
+    element.style.paddingLeft = "22px";
+  }
   applyTextStyle(element, renderTheme.body);
 }
 
