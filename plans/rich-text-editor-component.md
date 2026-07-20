@@ -11,7 +11,9 @@ menu for inserting/converting blocks.
 1–3, Bulleted/Numbered/Check lists, Code block, Blockquote, etc., with
 ⌘-shortcut hints in the right column. Storybook stories are the living spec.
 
-**Status:** proposed (not started).
+**Status:** M1–M3 delivered (`npm run verify` green; live Storybook smoke
+passed). Remaining: M4 post-v1 backlog only. Detailed contracts in
+[rich-text-editor-design.md](rich-text-editor-design.md).
 
 ---
 
