@@ -169,7 +169,7 @@ export function Toast({ toast, onDismiss, testID }: ToastProps) {
         styles.toast,
         filled
           ? [styles.solidToast, { backgroundColor: filledBackground }]
-          : [styles.cardToast, { borderLeftColor: accent }],
+          : styles.cardToast,
         toast.surfaceStyle,
       ]}
       testID={testID}

@@ -3,7 +3,7 @@ import type { SharedUiTheme } from "../theme";
 
 import type { ToastTone } from "./toastModel";
 
-/** Tone accent colour for the card strip and leading icon. */
+/** Tone accent colour for the leading icon. */
 export function toastToneAccent(theme: SharedUiTheme, tone: ToastTone): string {
   switch (tone) {
     case "error":
