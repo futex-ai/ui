@@ -18,17 +18,17 @@ test("button exposes button semantics and a disabled state", () => {
   assert.match(source, /disabled=\{disabledState\}/);
 });
 
-test("button shows a tone-independent focus ring and hides the web outline", () => {
+test("button shows the shared tone-independent focus glow and hides the web outline", () => {
   const source = readSource("../../src/button/Button.tsx");
-  const stylesSource = readSource("../../src/button/buttonStyles.ts");
 
+  // The focus indicator is the library's shared soft glow (`useFocusRing` →
+  // `focusRingStyle`) — the same box-shadow ring input / switch / radio /
+  // segmented use — applied on top of every tone so it stays visible even on
+  // `primary` (whose border already matches the theme primary), with the
+  // browser's default outline suppressed.
   assert.match(source, /useFocusRing/);
-  assert.match(source, /focus\.focused \? styles\.focusRing : null/);
+  assert.match(source, /focus\.focused \? focus\.focusRingStyle : null/);
   assert.match(source, /hideWebOutlineView/);
-  // The ring is a box-shadow (visible on the primary tone, whose border already
-  // matches the theme primary), not just a border-colour change.
-  assert.match(stylesSource, /focusRing: \{[\s\S]*?boxShadow:/);
-  assert.match(stylesSource, /theme\.colors\.primary/);
 });
 
 test("button renders an optional leading icon tinted and sized with the button", () => {

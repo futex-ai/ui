@@ -110,13 +110,6 @@ export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
     // fill, so the label's contrast stays at its (AA-passing) resting ratio.
     dangerHover: { borderColor: theme.colors.rose },
     disabled: { opacity: 0.55 },
-    // A ring sitting just outside the button, so focus stays visible on every
-    // tone — including `primary`, whose border already matches the theme primary
-    // (a border-colour ring would be invisible there). The surface-coloured
-    // inner band separates the ring from the button edge.
-    focusRing: {
-      boxShadow: `0 0 0 2px ${theme.colors.surface}, 0 0 0 4px ${theme.colors.primary}`,
-    },
     ghost: { backgroundColor: "transparent", borderColor: "transparent" },
     // The accent's pale tint surfaces on hover (ghost's label is already
     // `primaryDeep`), keeping it visually distinct from the neutral secondary

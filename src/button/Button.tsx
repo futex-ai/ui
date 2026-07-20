@@ -151,10 +151,10 @@ export type ButtonProps = IconOnlyButtonProps | LabelledButtonProps;
  * The shared button. Honours the accounting mockup's
  * primary / secondary / ghost / plain / danger tones, the `block` full-width
  * variant, the `square` / `circle` icon-only shapes, a lucide `icon` or a
- * caller-supplied `iconNode`, and the shared {@link ControlSize} densities. Owns
- * the sage focus ring and hides the browser's default outline, and treats a
- * missing `onPress` as a disabled control (matching the library's other
- * pressables).
+ * caller-supplied `iconNode`, and the shared {@link ControlSize} densities.
+ * Applies the library's shared focus glow ({@link useFocusRing}) and hides the
+ * browser's default outline, and treats a missing `onPress` as a disabled
+ * control (matching the library's other pressables).
  */
 export function Button({
   accessibilityHint,
@@ -290,7 +290,7 @@ export function Button({
         pressed && !disabledState && !busy && tone === "plain"
           ? styles.plainPressed
           : null,
-        focus.focused ? styles.focusRing : null,
+        focus.focused ? focus.focusRingStyle : null,
         disabledState ? styles.disabled : null,
         style,
         hideWebOutlineView,
