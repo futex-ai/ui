@@ -2,6 +2,7 @@
 
 ## Active
 
+- [Rich Text Editor component](rich-text-editor-component.md) — proposed (not started): Notion/Linear-style WYSIWYG block editor (`src/rich-text`) with markdown `onChange`, prefix shortcuts, and a caret-anchored `/` slash menu; M1–M3 planned.
 - [Easier Component Testing Without Test Ids](easier-component-testing-without-testid.md) — Milestones 1–3 (dropdown, radio, segmented) delivered and `npm run verify` green; Milestones 4–8 remaining.
 - [WCAG 2.1 AA Accessibility](wcag-2-1-accessibility.md) — Phases 0–2 delivered (automated gate green, empty `axe-baseline.json`); remaining: the manual screen-reader / 200% zoom / forced-colors release pass in §7 and the AAA/2.2 best-practice backlog.
 
