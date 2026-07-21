@@ -363,6 +363,10 @@ Required behavior:
 toColumnId, toIndex }`, `toIndex` in dragged-removed semantics) for the consumer
   to apply; it never mutates the cards. Dragging is a web gesture, so the native
   drag is an inert no-op.
+- Render the web pointer-drag clone through a `document.body` portal. Its fixed
+  position consumes viewport `clientX` / `clientY` coordinates and must remain in
+  that coordinate system even when the board is inside a transformed or scrolling
+  ancestor such as a React Native Web `ScrollView`.
 - Scroll the columns horizontally on both web and phone, and size with the
   shared control-size scale.
 

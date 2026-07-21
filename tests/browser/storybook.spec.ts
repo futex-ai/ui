@@ -2861,6 +2861,67 @@ test("kanban shows a floating clone and a drop preview while dragging", async ({
   ).toBeVisible();
 });
 
+test("kanban ghost keeps viewport coordinates inside a transformed scroller", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=kanban-examples--drag-and-drop");
+
+  const board = page.getByRole("group", { name: "Content board" });
+  const scrollerState = await board.evaluate((element) => {
+    const scroller = element.parentElement;
+    if (!scroller) {
+      throw new Error("Kanban story is missing its host element");
+    }
+    Object.assign(scroller.style, {
+      height: "420px",
+      overflow: "auto",
+      padding: "96px 72px 240px",
+      transform: "translateZ(0)",
+    });
+    scroller.scrollTop = 48;
+    return {
+      scrollTop: scroller.scrollTop,
+      scrollable: scroller.scrollHeight > scroller.clientHeight,
+      transform: getComputedStyle(scroller).transform,
+    };
+  });
+  expect(scrollerState.scrollable).toBe(true);
+  expect(scrollerState.scrollTop).toBeGreaterThan(0);
+  expect(scrollerState.transform).not.toBe("none");
+
+  const cardBox = await page.getByTestId("kanban-card-c1").boundingBox();
+  const approvedBox = await page
+    .getByTestId("kanban-column-approved")
+    .boundingBox();
+  expect(cardBox).not.toBeNull();
+  expect(approvedBox).not.toBeNull();
+
+  const pointerX = (approvedBox?.x ?? 0) + (approvedBox?.width ?? 0) / 2;
+  const pointerY = (approvedBox?.y ?? 0) + 80;
+  await page.mouse.move(
+    (cardBox?.x ?? 0) + (cardBox?.width ?? 0) / 2,
+    (cardBox?.y ?? 0) + (cardBox?.height ?? 0) / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(pointerX, pointerY, { steps: 10 });
+
+  const ghost = page.getByTestId("kanban-drag-ghost");
+  await expect(ghost).toBeVisible();
+  expect(
+    await ghost.evaluate((element) => element.parentElement === document.body),
+  ).toBe(true);
+  const ghostBox = await ghost.boundingBox();
+  expect(ghostBox).not.toBeNull();
+  expect(
+    Math.abs((ghostBox?.x ?? 0) + (ghostBox?.width ?? 0) / 2 - pointerX),
+  ).toBeLessThan(2);
+  expect(
+    Math.abs((ghostBox?.y ?? 0) + (ghostBox?.height ?? 0) / 2 - pointerY),
+  ).toBeLessThan(2);
+
+  await page.mouse.up();
+});
+
 test("kanban clicking a draggable card opens it instead of moving it", async ({
   page,
 }) => {

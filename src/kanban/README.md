@@ -180,7 +180,10 @@ another (see the "Drag and drop" story for an `applyMove` reference).
 - **Pointer (web):** press and drag a card — Trello-style, a translucent clone of
   the card lifts off and follows the cursor while a faded, dashed **preview of the
   card** opens at the slot where it would land. A plain click still fires
-  `onCardPress`; a small move threshold separates a click from a drag.
+  `onCardPress`; a small move threshold separates a click from a drag. The fixed
+  clone renders through a `document.body` portal, so it stays aligned to viewport
+  pointer coordinates when the board is nested in a transformed or scrolling
+  ancestor such as a React Native Web `ScrollView`.
 - **Keyboard:** focus a card and press **Space** to grab it (the card dims in
   place), the **arrow keys** to move the preview between slots and columns,
   **Space**/**Enter** to drop, and **Escape** to cancel. Each step is announced to

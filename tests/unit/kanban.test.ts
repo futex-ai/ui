@@ -194,6 +194,9 @@ test("kanban has public root and subpath exports", () => {
 test("kanban wires drag-and-drop through onCardMove", () => {
   const board = readSource("../../src/kanban/Kanban.tsx");
   const column = readSource("../../src/kanban/KanbanColumn.tsx");
+  const ghostPortal = readSource(
+    "../../src/kanban/KanbanDragGhostPortal.web.tsx",
+  );
 
   // The board drives the platform drag hook, binds the hit-test container, and
   // renders the floating clone that rides the cursor.
@@ -202,6 +205,10 @@ test("kanban wires drag-and-drop through onCardMove", () => {
   assert.match(board, /ref=\{drag\.bindBoard\.ref\}/);
   assert.match(board, /ref=\{drag\.bindGhost\.ref\}/);
   assert.match(board, /styles\.cardGhost/);
+  // Pointer events use viewport client coordinates. Portalling the fixed ghost
+  // to body keeps it in that coordinate system when a board ancestor transforms.
+  assert.match(board, /<KanbanDragGhostPortal>/);
+  assert.match(ghostPortal, /return createPortal\(children, document\.body\)/);
   // Columns and cards carry the data-testids the pointer drag hit-tests, the
   // keyboard handler, a dimmed grabbed card, and the translucent card preview.
   assert.match(column, /testID=\{`kanban-column-\$\{column\.id\}`\}/);
