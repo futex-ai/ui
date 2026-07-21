@@ -41,8 +41,14 @@ export type DataGridControllerOptions = {
   onNavigateToRow?: (rowIndex: number) => void;
   /** Copy the current selection to the clipboard (Ctrl/Cmd+C). */
   onCopy?: () => void;
+  /** Cut the current selection to the clipboard (Ctrl/Cmd+X). */
+  onCut?: () => void;
   /** Paste clipboard content from the active cell (Ctrl/Cmd+V). */
   onPaste?: () => void;
+  /** Clear the selected cells (Delete / Backspace). */
+  onClearSelection?: () => void;
+  /** Dismiss the copy/cut marquee (Escape). */
+  onCancelCopy?: () => void;
 };
 
 export function useDataGridController({
@@ -53,7 +59,10 @@ export function useDataGridController({
   onRequestEdit,
   onNavigateToRow,
   onCopy,
+  onCut,
   onPaste,
+  onClearSelection,
+  onCancelCopy,
 }: DataGridControllerOptions) {
   const visibleColumns = useMemo(
     () => columns.filter((column) => !column.hidden),
@@ -228,7 +237,10 @@ export function useDataGridController({
     onRequestEdit,
     onNavigateToRow,
     onCopy,
+    onCut,
     onPaste,
+    onClearSelection,
+    onCancelCopy,
   });
 
   return {

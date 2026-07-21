@@ -1,6 +1,6 @@
 /** A single grid cell: read-only content or an open editor, with selection a11y. */
 import { type ReactNode, useCallback, useRef } from "react";
-import { Platform, Pressable } from "react-native";
+import { Platform, Pressable, View } from "react-native";
 
 import { hideWebOutlineView } from "../focusRing";
 import type { SharedUiTheme } from "../theme";
@@ -20,6 +20,8 @@ export type DataGridCellProps = {
   cellRef: DataGridCellRef;
   selected: boolean;
   active: boolean;
+  /** Whether this cell is inside the copy/cut marquee (dashed outline). */
+  copied: boolean;
   /** Whether this cell is the grid's roving Tab stop (only one cell at a time). */
   tabStop: boolean;
   fontSize: number;
@@ -49,6 +51,7 @@ export function DataGridCell({
   cellRef,
   selected,
   active,
+  copied,
   tabStop,
   fontSize,
   styles,
@@ -145,6 +148,13 @@ export function DataGridCell({
         theme={theme}
         value={value}
       />
+      {copied ? (
+        <View
+          pointerEvents="none"
+          style={styles.cellCopied}
+          testID="data-grid-copy-marquee"
+        />
+      ) : null}
     </Pressable>
   );
 }

@@ -518,6 +518,99 @@ test("copies the selection and pastes it into another cell", async ({
   await expect(page.getByText("0.81")).toHaveCount(2);
 });
 
+test("a copied single cell fills a whole selected range (Excel-style)", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "editable");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  await page.getByText("0.81").first().click(); // copy row 1 Score
+  await page.keyboard.press("Control+c");
+
+  // Select the next three Score cells (rows 2–4) and paste — the one value fills
+  // the whole selection.
+  await page.getByText("0.78").first().click();
+  // The copy marquee is still shown on the source while picking the target.
+  await expect(page.getByTestId("data-grid-copy-marquee")).toHaveCount(1);
+  await page.keyboard.press("Shift+ArrowDown");
+  await page.keyboard.press("Shift+ArrowDown");
+  await page.keyboard.press("Control+v");
+
+  // Rows 1–4 Score all read 0.81 now.
+  await expect(page.getByText("0.81")).toHaveCount(4);
+  await expect(page.getByText("0.78")).toHaveCount(0);
+  await expect(page.getByText("0.55")).toHaveCount(0);
+  // The dashed marquee clears once the paste lands.
+  await expect(page.getByTestId("data-grid-copy-marquee")).toHaveCount(0);
+});
+
+test("Delete clears every cell in the selection", async ({ page }) => {
+  await gotoDataGridStory(page, "editable");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  // Select rows 1–2 of Score, then Delete clears both.
+  await page.getByText("0.81").first().click();
+  await page.keyboard.press("Shift+ArrowDown");
+  await page.keyboard.press("Delete");
+
+  await expect(page.getByText("0.81")).toHaveCount(0);
+  await expect(page.getByText("0.78")).toHaveCount(0);
+});
+
+test("cut moves a value and clears the source cell", async ({ page }) => {
+  await gotoDataGridStory(page, "editable");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  await page.getByText("0.81").first().click(); // cut row 1 Score
+  await page.keyboard.press("Control+x");
+  // A marquee marks the cut source.
+  await expect(page.getByTestId("data-grid-copy-marquee")).toHaveCount(1);
+
+  await page.getByText("0.55").first().click(); // active = row 4 Score
+  await page.keyboard.press("Control+v");
+
+  // Unlike copy, cut leaves the value in exactly one place (source cleared), and
+  // the old row-4 value is gone. The marquee clears once the cut completes.
+  await expect(page.getByText("0.81")).toHaveCount(1);
+  await expect(page.getByText("0.55")).toHaveCount(0);
+  await expect(page.getByTestId("data-grid-copy-marquee")).toHaveCount(0);
+});
+
+test("cut moves a multi-cell range and clears all its source cells", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "editable");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  // Cut rows 1–2 of Score (0.81, 0.78) — the marquee marks both source cells.
+  await page.getByText("0.81").first().click();
+  await page.keyboard.press("Shift+ArrowDown");
+  await page.keyboard.press("Control+x");
+  await expect(page.getByTestId("data-grid-copy-marquee")).toHaveCount(2);
+
+  // Paste anchored at row 4 → rows 4–5 become 0.81 / 0.78; sources cleared.
+  await page.getByText("0.55").first().click();
+  await page.keyboard.press("Control+v");
+
+  await expect(page.getByText("0.81")).toHaveCount(1);
+  await expect(page.getByText("0.78")).toHaveCount(1);
+  await expect(page.getByText("0.55")).toHaveCount(0); // row 4 overwritten
+  await expect(page.getByText("0.64")).toHaveCount(0); // row 5 overwritten
+  await expect(page.getByTestId("data-grid-copy-marquee")).toHaveCount(0);
+});
+
+test("Escape dismisses the copy marquee", async ({ page }) => {
+  await gotoDataGridStory(page, "editable");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  await page.getByText("0.81").first().click();
+  await page.keyboard.press("Control+c");
+  await expect(page.getByTestId("data-grid-copy-marquee")).toHaveCount(1);
+
+  await page.keyboard.press("Escape");
+  await expect(page.getByTestId("data-grid-copy-marquee")).toHaveCount(0);
+});
+
 async function columnWidths(page: Page) {
   return page.evaluate(() => {
     const round = (n: number) => Math.round(n);

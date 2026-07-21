@@ -248,7 +248,9 @@ function EditableExample() {
       <View style={styles.stack}>
         <Text style={styles.hint}>
           Double-click a cell to edit. Enter commits and moves down; Escape
-          cancels. Numbers reject non-numeric input.
+          cancels. Numbers reject non-numeric input. Select a range and use
+          Ctrl/Cmd-C / X / V to copy, cut, and paste (a single copied cell fills
+          the selection, like Excel); Delete clears the selected cells.
         </Text>
         <View style={styles.frame}>
           <DataGrid
