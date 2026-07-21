@@ -236,7 +236,10 @@ export function createDataGridStyles(
       paddingVertical: 6,
     },
     footerText: { ...baseText, color: theme.colors.muted, fontSize: 12 },
-    editorWrap: { justifyContent: "center", paddingHorizontal: 2 },
+    // The editor fills the cell chrome-lessly, so its text lines up with the
+    // read-only content at the cell's own horizontal padding — no extra inset
+    // (which previously offset the old framed editor box from the cell edge).
+    editorWrap: { justifyContent: "center" },
     cardStack: { gap: 10, width: "100%" },
     card: {
       backgroundColor: theme.colors.surface,

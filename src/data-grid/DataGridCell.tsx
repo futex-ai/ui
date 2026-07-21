@@ -77,10 +77,16 @@ export function DataGridCell({
   );
 
   if (editor) {
+    // The editing cell wears the same square inset primary ring as a selected /
+    // active cell (`cellActive`), so opening an editor reads as the selected cell
+    // gaining a live input rather than a foreign rounded box. The editor itself
+    // is chrome-less (see dataGridCellEditors), so this ring is the sole focus
+    // affordance and the input's text stays aligned with the read-only content.
     return (
       <Pressable
         style={[
           styles.cell,
+          styles.cellActive,
           styles.editorWrap,
           columnLayoutStyle(column),
           hideWebOutlineView,

@@ -11,6 +11,7 @@ import { useRef, useState } from "react";
 import { Text, TextInput, View } from "react-native";
 
 import { DateInput } from "../date";
+import { hideWebOutline } from "../focusRing";
 import { InputFrame } from "../input";
 
 import {
@@ -51,7 +52,14 @@ function TextEditor({ value, onCommit, onCancel }: CellEditorProps) {
   return (
     <InputFrame
       accessibilityLabel="Edit cell"
+      // Chrome-less: the box border, fill, and rounded corners are dropped so the
+      // input melts into the cell, whose own `cellActive` ring (a square inset
+      // primary ring, identical to a selected cell) is the sole focus affordance
+      // — its own ring is disabled here to avoid doubling it, and the UA outline
+      // is suppressed on the input directly.
+      disableFocusRing
       inputRef={inputRef}
+      inputStyle={hideWebOutline}
       onBlur={() => {
         if (shouldCommitOnBlur()) {
           onCommit(text === "" ? null : text, false);
@@ -63,6 +71,7 @@ function TextEditor({ value, onCommit, onCancel }: CellEditorProps) {
       onSubmitEditing={() => onCommit(text === "" ? null : text, true)}
       size="sm"
       value={text}
+      variant="plain"
     />
   );
 }
@@ -91,8 +100,13 @@ function NumberEditor({ value, onCommit, onCancel, theme }: CellEditorProps) {
     <View>
       <InputFrame
         accessibilityLabel="Edit number"
+        // Chrome-less to match the cell's own `cellActive` ring (see TextEditor).
+        // On the borderless `plain` box the invalid state has no border to
+        // recolor, so the inline error text below is the invalid affordance.
+        disableFocusRing
         inputMode="decimal"
         inputRef={inputRef}
+        inputStyle={hideWebOutline}
         invalid={error !== null}
         onBlur={() => {
           if (shouldCommitOnBlur()) {
@@ -110,6 +124,7 @@ function NumberEditor({ value, onCommit, onCancel, theme }: CellEditorProps) {
         onSubmitEditing={() => commit(true)}
         size="sm"
         value={text}
+        variant="plain"
       />
       {error ? (
         <Text
