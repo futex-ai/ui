@@ -165,7 +165,8 @@ export function cellRefFromPoint(
 
 export type DataGridDragHandlers = {
   onMove: (clientX: number, clientY: number) => void;
-  onEnd: () => void;
+  /** `committed` is true only for a real pointerup (not pointercancel / blur). */
+  onEnd: (committed: boolean) => void;
 };
 
 /**
@@ -182,7 +183,9 @@ export function attachDataGridDragListeners(
     event.preventDefault();
     handlers.onMove(event.clientX, event.clientY);
   };
-  const end = () => handlers.onEnd();
+  // Only a genuine pointerup is a completed gesture; pointercancel and window
+  // blur are aborts, so they end the drag without committing a tap-to-edit.
+  const end = (event: Event) => handlers.onEnd(event.type === "pointerup");
   document.addEventListener("pointermove", move, true);
   document.addEventListener("pointerup", end, true);
   document.addEventListener("pointercancel", end, true);
