@@ -129,6 +129,7 @@ export function MultiSelectEditor({
   return (
     <View ref={rootRef}>
       <ComboboxMultiSelect
+        borderRadius={0}
         highlightVariant="ring"
         onChange={(next) => onChange?.(next)}
         options={options}

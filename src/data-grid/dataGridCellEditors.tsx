@@ -8,7 +8,7 @@
  * `onCommit(value, moveNext)` — moveNext (Enter) advances the active cell down.
  */
 import { useRef, useState } from "react";
-import { Text, TextInput, View } from "react-native";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { DateInput } from "../date";
 import { InputFrame } from "../input";
@@ -27,6 +27,13 @@ export type { CellEditorProps } from "./dataGridEditorHooks";
 export function hasCellEditor(_type: DataGridFieldType): boolean {
   return true;
 }
+
+// In-cell editors square off their bordered box so they read as part of the
+// grid (whose cells + frame are square by default) rather than a rounded
+// control floating inside a rectangular cell.
+const editorStyles = StyleSheet.create({
+  squareFrame: { borderRadius: 0 },
+});
 
 export function CellEditor(props: CellEditorProps) {
   switch (props.column.fieldType) {
@@ -62,6 +69,7 @@ function TextEditor({ value, onCommit, onCancel }: CellEditorProps) {
       onChangeText={setText}
       onSubmitEditing={() => onCommit(text === "" ? null : text, true)}
       size="sm"
+      style={editorStyles.squareFrame}
       value={text}
     />
   );
@@ -109,6 +117,7 @@ function NumberEditor({ value, onCommit, onCancel, theme }: CellEditorProps) {
         }}
         onSubmitEditing={() => commit(true)}
         size="sm"
+        style={editorStyles.squareFrame}
         value={text}
       />
       {error ? (
@@ -136,6 +145,7 @@ function DateEditor({ column, value, onCommit, onCancel }: CellEditorProps) {
   useEscapeKey(onCancel);
   return (
     <DateInput
+      borderRadius={0}
       invalid={false}
       label={column.label}
       onChange={(iso) => onCommit(iso === "" ? null : iso, false)}
