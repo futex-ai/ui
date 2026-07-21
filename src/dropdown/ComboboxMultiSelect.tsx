@@ -35,6 +35,12 @@ export type ComboboxMultiSelectProps = {
    * honoured (e.g. iOS, which does not map it). Mirrors `Input`.
    */
   accessibilityLabel?: string;
+  /**
+   * Corner radius (px) of the control box. Defaults to `theme.radii.md`; pass
+   * `0` for square corners (e.g. an in-grid cell editor that must match a
+   * square container).
+   */
+  borderRadius?: number;
   /** Validation message shown below the control; turns its border rose. */
   error?: string | null;
   footer?: string;
@@ -72,6 +78,7 @@ export type ComboboxMultiSelectProps = {
 
 export function ComboboxMultiSelect({
   accessibilityLabel,
+  borderRadius,
   error,
   footer,
   highlightVariant,
@@ -89,7 +96,10 @@ export function ComboboxMultiSelect({
   values,
 }: ComboboxMultiSelectProps) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(() => createComboboxMultiSelectStyles(theme), [theme]);
+  const styles = useMemo(
+    () => createComboboxMultiSelectStyles(theme, borderRadius),
+    [theme, borderRadius],
+  );
   const anchorRef = useRef<View>(null);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -343,7 +353,10 @@ function OptionMark({
   );
 }
 
-function createComboboxMultiSelectStyles(theme: SharedUiTheme) {
+function createComboboxMultiSelectStyles(
+  theme: SharedUiTheme,
+  borderRadius = theme.radii.md,
+) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
   return StyleSheet.create({
     chip: {
@@ -382,7 +395,7 @@ function createComboboxMultiSelectStyles(theme: SharedUiTheme) {
       alignItems: "center",
       backgroundColor: theme.colors.surface,
       borderColor: theme.colors.controlBorder,
-      borderRadius: theme.radii.md,
+      borderRadius,
       borderWidth: 1,
       flexDirection: "row",
       flexWrap: "wrap",

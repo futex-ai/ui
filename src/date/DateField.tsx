@@ -192,6 +192,12 @@ export type DateInputProps = {
   variant?: DatePickerVariant;
   /** Control density: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
+  /**
+   * Corner radius (px) of the trigger box. Defaults to `theme.radii.md`; pass
+   * `0` for square corners (e.g. an in-grid cell editor that must match a
+   * square container).
+   */
+  borderRadius?: number;
   /** z-index for the open calendar wrappers and web popover frame. */
   zIndex?: number;
   /**
@@ -229,6 +235,7 @@ export function DateInput({
   clearable = false,
   variant = "calendar",
   size = "md",
+  borderRadius,
   zIndex,
   describedById,
   errorId,
@@ -238,8 +245,8 @@ export function DateInput({
 }: DateInputProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(
-    () => createDateFieldStyles(theme, size),
-    [theme, size],
+    () => createDateFieldStyles(theme, size, borderRadius),
+    [theme, size, borderRadius],
   );
   const field = useDateField({ value, onChange, min, max });
   const today = useMemo(() => todayIso(new Date()), []);
@@ -274,6 +281,7 @@ export function DateInput({
           open-on-focus — so the wheel uses the tap trigger on every platform. */}
       {Platform.OS === "web" && variant === "calendar" ? (
         <WebTrigger
+          borderRadius={borderRadius}
           clearable={clearable}
           describedById={describedById}
           errorId={errorId}

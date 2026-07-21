@@ -18,6 +18,8 @@ export type TriggerProps = {
   required: boolean;
   /** Control density: scales the box (web) / icons (native) to match the field. */
   size: ControlSize;
+  /** Corner radius (px) of the web trigger box; defaults to the InputFrame's. */
+  borderRadius?: number;
   styles: DateFieldStyles;
   /** Whether the clear (✕) button is shown once a value is set. */
   clearable: boolean;
@@ -40,6 +42,7 @@ export function WebTrigger({
   placeholder,
   required,
   size,
+  borderRadius,
   styles,
   clearable,
   describedById,
@@ -119,6 +122,7 @@ export function WebTrigger({
       placeholder={placeholder}
       required={required}
       size={size}
+      style={borderRadius == null ? undefined : { borderRadius }}
       suffixIcon={CalendarDays}
       suffixIconStyle={styles.calendarNudge}
       testID={testID}

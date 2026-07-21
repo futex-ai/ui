@@ -295,6 +295,35 @@ test("number cell rejects non-numeric input", async ({ page }) => {
   await expect(page.getByText("Enter a number")).toBeVisible();
 });
 
+test("in-cell editors square off their box to match the grid", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "editable");
+
+  // Text editor: the InputFrame box (the input's parent) is squared.
+  await page.getByText("Migrate your CRM in one dry-run").dblclick();
+  const textInput = page.locator("input").first();
+  await expect(textInput).toBeVisible();
+  expect(
+    await textInput.evaluate(
+      (el) =>
+        getComputedStyle(el.parentElement as HTMLElement).borderTopLeftRadius,
+    ),
+  ).toBe("0px");
+  await page.keyboard.press("Escape");
+
+  // Number editor: same squared InputFrame box.
+  await page.getByText("0.78").first().dblclick();
+  const numberInput = page.getByLabel("Edit number");
+  await expect(numberInput).toBeVisible();
+  expect(
+    await numberInput.evaluate(
+      (el) =>
+        getComputedStyle(el.parentElement as HTMLElement).borderTopLeftRadius,
+    ),
+  ).toBe("0px");
+});
+
 test("single-select cell edits through a dropdown", async ({ page }) => {
   await gotoDataGridStory(page, "editable");
 
@@ -328,6 +357,21 @@ test("multi-select cell adds an option via the combobox", async ({ page }) => {
   await page.getByText("infra", { exact: true }).first().dblclick();
   const combo = page.getByPlaceholder("Add…");
   await expect(combo).toBeVisible();
+  // The combobox control box is squared to match the grid (nearest bordered
+  // ancestor of the input).
+  expect(
+    await combo.evaluate((el) => {
+      let node = el.parentElement;
+      while (node) {
+        const style = getComputedStyle(node);
+        if (style.borderTopWidth !== "0px" && style.borderTopStyle !== "none") {
+          return style.borderTopLeftRadius;
+        }
+        node = node.parentElement;
+      }
+      return null;
+    }),
+  ).toBe("0px");
   await combo.fill("ai");
   await page.getByRole("option", { name: "ai" }).click();
   // The new option becomes a removable chip in the editor.

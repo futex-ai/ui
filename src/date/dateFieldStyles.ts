@@ -10,6 +10,7 @@ import { dateFieldZIndex } from "./dateFieldLayers";
 export function createDateFieldStyles(
   theme: SharedUiTheme,
   size: ControlSize = "md",
+  borderRadius = theme.radii.md,
 ) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
   // Share the label / required / message / hint tokens with the Input field so
@@ -38,7 +39,7 @@ export function createDateFieldStyles(
       alignItems: "center",
       backgroundColor: theme.colors.surface,
       borderColor: theme.colors.controlBorder,
-      borderRadius: theme.radii.md,
+      borderRadius,
       borderWidth: 1,
       flexDirection: "row",
       height: sizing.boxHeight,

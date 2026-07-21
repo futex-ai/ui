@@ -212,6 +212,12 @@ border entirely — useful when the grid sits flush inside an already-bordered
 panel. Both only touch the outer frame; the internal cell hairlines are
 unaffected.
 
+The **in-cell editors square off their own box** (`borderRadius: 0`) so a live
+editor reads as part of the grid rather than a rounded control floating inside a
+rectangular cell — the text / number (`InputFrame`), date (`DateInput`), and
+multi-select (`ComboboxMultiSelect`) editors are all squared regardless of the
+frame's `borderRadius`. The single-select editor keeps its rounded option pill.
+
 ## Key code
 
 - `DataGrid.tsx` — the controlled component + state wiring.
