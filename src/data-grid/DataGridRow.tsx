@@ -35,7 +35,11 @@ export type DataGridRowProps = {
   styles: DataGridStyles;
   theme: SharedUiTheme;
   onActivate: (ref: DataGridCellRef, options?: { extend?: boolean }) => void;
-  onBeginDrag: (ref: DataGridCellRef, event: unknown) => void;
+  onBeginDrag: (
+    ref: DataGridCellRef,
+    event: unknown,
+    onTap?: () => void,
+  ) => void;
   onBeginEdit: (ref: DataGridCellRef) => void;
   onKeyDown: (event: unknown) => void;
   registerNode: (

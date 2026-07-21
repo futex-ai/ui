@@ -39,7 +39,29 @@ type Session = {
   mode: DragMode;
   anchor: DataGridCellRef;
   lastFocus: DataGridCellRef;
+  /** Pointer position at press, so any real movement counts as a drag. */
+  startPoint: { x: number; y: number } | null;
+  /** Set once the press becomes a drag: moved past the threshold, or reached
+   * another cell (→ a range, not a tap-to-edit click). */
+  extended: boolean;
+  /** Fired on release if the press never became a drag — a plain click. */
+  onTap?: () => void;
 };
+
+/** Pointer travel (px) beyond which a press is a drag, not a tap-to-edit click. */
+const TAP_MOVE_THRESHOLD = 4;
+
+/** Read the viewport point from a (synthetic or native) pointer event. */
+function pointFromEvent(rawEvent: unknown): { x: number; y: number } | null {
+  const event = rawEvent as {
+    clientX?: number;
+    clientY?: number;
+    nativeEvent?: { clientX?: number; clientY?: number };
+  };
+  const x = event.clientX ?? event.nativeEvent?.clientX;
+  const y = event.clientY ?? event.nativeEvent?.clientY;
+  return typeof x === "number" && typeof y === "number" ? { x, y } : null;
+}
 
 type PointerLike = {
   button?: number;
@@ -127,6 +149,17 @@ export function useDataGridDrag(options: UseDataGridDragOptions) {
         return;
       }
       lastPointRef.current = point;
+      // Any travel past the threshold makes this a drag, not a click, so a
+      // release no longer opens the editor (see the tap handling in beginSession)
+      // — even when the pointer leaves the data cells (gutter / header / off-grid).
+      if (
+        !session.extended &&
+        session.startPoint &&
+        (Math.abs(point.x - session.startPoint.x) > TAP_MOVE_THRESHOLD ||
+          Math.abs(point.y - session.startPoint.y) > TAP_MOVE_THRESHOLD)
+      ) {
+        session.extended = true;
+      }
       const { cellNodesRef, gutterNodesRef, headerNodesRef, setSelection } =
         optionsRef.current;
       const hit = hitTestDataGrid(
@@ -139,6 +172,10 @@ export function useDataGridDrag(options: UseDataGridDragOptions) {
       const focus = focusFrom(session.mode, hit);
       if (focus && !cellRefEquals(focus, session.lastFocus)) {
         session.lastFocus = focus;
+        // Reaching another cell is also a drag — covers a sub-threshold nudge
+        // across a border and auto-scroll extension where the pointer barely
+        // moves — so a release no longer opens the editor.
+        session.extended = true;
         const next: DataGridSelection = { anchor: session.anchor, focus };
         setSelection(next);
         announceCount(next);
@@ -208,6 +245,7 @@ export function useDataGridDrag(options: UseDataGridDragOptions) {
       anchor: DataGridCellRef,
       focus: DataGridCellRef,
       rawEvent: unknown,
+      onTap?: () => void,
     ) => {
       if (typeof document === "undefined") {
         return;
@@ -222,7 +260,14 @@ export function useDataGridDrag(options: UseDataGridDragOptions) {
       }
       const next: DataGridSelection = { anchor, focus };
       optionsRef.current.setSelection(next);
-      sessionRef.current = { mode, anchor, lastFocus: focus };
+      sessionRef.current = {
+        mode,
+        anchor,
+        lastFocus: focus,
+        startPoint: pointFromEvent(rawEvent),
+        extended: false,
+        onTap,
+      };
       if (mode === "cell" && cellRefEquals(anchor, focus)) {
         optionsRef.current.announceActive(focus);
       } else {
@@ -235,14 +280,26 @@ export function useDataGridDrag(options: UseDataGridDragOptions) {
           extend({ x, y });
           startAutoScroll();
         },
-        onEnd: endDrag,
+        // A cell press released in place (never dragged) is a plain click; fire
+        // its tap callback (opens the editor on a click of the active cell).
+        // `committed` is true only for a real pointerup — a pointercancel or
+        // window blur ends the drag without editing (the press was aborted).
+        onEnd: (committed) => {
+          const session = sessionRef.current;
+          const tap =
+            committed && session && session.mode === "cell" && !session.extended
+              ? session.onTap
+              : undefined;
+          endDrag();
+          tap?.();
+        },
       });
     },
     [announceCount, endDrag, extend, startAutoScroll, updateBox],
   );
 
   const beginCellDrag = useCallback(
-    (ref: DataGridCellRef, rawEvent: unknown) => {
+    (ref: DataGridCellRef, rawEvent: unknown, onTap?: () => void) => {
       const { selectionAnchor } = optionsRef.current;
       const event = rawEvent as {
         shiftKey?: boolean;
@@ -250,7 +307,8 @@ export function useDataGridDrag(options: UseDataGridDragOptions) {
       };
       const shift = event.shiftKey ?? event.nativeEvent?.shiftKey ?? false;
       const anchor = shift && selectionAnchor ? selectionAnchor : ref;
-      beginSession("cell", anchor, ref, rawEvent);
+      // Shift is a range modifier, so a shift-press never taps-to-edit.
+      beginSession("cell", anchor, ref, rawEvent, shift ? undefined : onTap);
     },
     [beginSession],
   );

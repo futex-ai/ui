@@ -26,7 +26,12 @@ export type DataGridCellProps = {
   styles: DataGridStyles;
   theme: SharedUiTheme;
   onActivate: (ref: DataGridCellRef, options?: { extend?: boolean }) => void;
-  onBeginDrag: (ref: DataGridCellRef, event: unknown) => void;
+  onBeginDrag: (
+    ref: DataGridCellRef,
+    event: unknown,
+    /** Called on release if the press was a plain click (no drag). */
+    onTap?: () => void,
+  ) => void;
   onBeginEdit: (ref: DataGridCellRef) => void;
   onKeyDown: (event: unknown) => void;
   registerNode: (
@@ -105,13 +110,22 @@ export function DataGridCell({
           const now = Date.now();
           const isDouble = now - lastDownRef.current < 350;
           lastDownRef.current = now;
+          // Shift is a pure range modifier, so it never opens an editor.
+          const shift = (event as { shiftKey?: boolean }).shiftKey ?? false;
           // Open the editor on a double-press (any field) or on a single press
           // of an already-active select cell, so its dropdown opens in one click.
-          if (isDouble || (active && isSelectField)) {
+          if (!shift && (isDouble || (active && isSelectField))) {
             onBeginEdit(cellRef);
             return;
           }
-          onBeginDrag(cellRef, event);
+          // A plain click on the already-active cell opens its editor (so a
+          // second click edits it, Airtable-style), while a drag from it still
+          // paints a range — the tap only fires when the press never dragged.
+          onBeginDrag(
+            cellRef,
+            event,
+            active ? () => onBeginEdit(cellRef) : undefined,
+          );
         },
       } as Record<string, unknown>)
     : {};

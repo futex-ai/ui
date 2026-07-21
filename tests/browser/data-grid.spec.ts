@@ -285,6 +285,115 @@ test("double-click edits a text cell; Enter commits and Escape reverts", async (
   await expect(page.getByText("discarded text")).toHaveCount(0);
 });
 
+test("a single click on an already-selected text cell opens its editor", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "editable");
+
+  const cell = page.getByText("Why we moved every workflow");
+  // First click only selects the cell — no editor yet.
+  await cell.click();
+  await expect(page.locator("input")).toHaveCount(0);
+
+  // Past the double-press window, a genuine single click on the now-active
+  // cell opens the text editor (Airtable-style click-to-edit).
+  await page.waitForTimeout(400);
+  await cell.click();
+  const input = page.locator("input").first();
+  await expect(input).toBeVisible();
+  await input.fill("Edited by a single click");
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("Edited by a single click")).toBeVisible();
+});
+
+test("dragging from the active cell paints a range instead of editing", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "editable");
+  const selected = page.locator('[role="gridcell"][aria-selected="true"]');
+
+  // Select a cell (makes it the active single cell)...
+  const start = page.getByText("Why we moved every workflow");
+  await start.click();
+  await expect(selected).toHaveCount(1);
+  await page.waitForTimeout(400);
+
+  // ...then press+drag from that same active cell: it extends the range and
+  // does NOT open an editor (the tap-to-edit only fires on a click with no drag).
+  const a = await start.boundingBox();
+  const end = await page.getByText("0.55").first().boundingBox();
+  if (!a || !end) {
+    throw new Error("grid cells not found");
+  }
+  await page.mouse.move(a.x + 20, a.y + a.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(end.x + end.width / 2, end.y + end.height / 2, {
+    steps: 10,
+  });
+  await page.mouse.up();
+  await expect(selected).toHaveCount(9);
+  await expect(page.locator("input")).toHaveCount(0);
+});
+
+test("dragging the active cell into the gutter does not open the editor", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "editable");
+
+  const start = page.getByText("Why we moved every workflow");
+  await start.click();
+  await page.waitForTimeout(400);
+
+  // Press the active cell and drag left, off the data cells and into the
+  // row-number gutter, then release: the pointer left the cells so it is a
+  // drag, not a click — the editor must NOT open.
+  const a = await start.boundingBox();
+  if (!a) {
+    throw new Error("grid cell not found");
+  }
+  await page.mouse.move(a.x + 20, a.y + a.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(a.x - 60, a.y + a.height / 2, { steps: 6 });
+  await page.mouse.up();
+  await expect(page.locator("input")).toHaveCount(0);
+});
+
+test("losing window focus mid-press does not open the editor", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "editable");
+
+  const start = page.getByText("Why we moved every workflow");
+  await start.click();
+  await page.waitForTimeout(400);
+
+  // Press the active cell (no move, no release), then the window loses focus
+  // (Alt-Tab / OS notification). That aborts the press — it is not a completed
+  // click, so the editor must NOT open.
+  const a = await start.boundingBox();
+  if (!a) {
+    throw new Error("grid cell not found");
+  }
+  await page.mouse.move(a.x + 20, a.y + a.height / 2);
+  await page.mouse.down();
+  await page.evaluate(() => window.dispatchEvent(new Event("blur")));
+  await expect(page.locator("input")).toHaveCount(0);
+  await page.mouse.up();
+  await expect(page.locator("input")).toHaveCount(0);
+});
+
+test("shift+double-press never opens the editor (shift is range-only)", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "editable");
+
+  // A shifted double-press is a range gesture, not an edit — no editor opens.
+  await page
+    .getByText("Why we moved every workflow")
+    .dblclick({ modifiers: ["Shift"] });
+  await expect(page.locator("input")).toHaveCount(0);
+});
+
 test("number cell rejects non-numeric input", async ({ page }) => {
   await gotoDataGridStory(page, "editable");
 
