@@ -110,7 +110,7 @@ test("insert button is a focus-ringed + button primitive", () => {
   assert.match(edge, /accessibilityLabel = "Add step"/);
   assert.match(edge, /accessibilityRole="button"/);
   assert.match(edge, /useFocusRing/);
-  assert.match(edge, /hideWebOutlineView/);
+  assert.match(edge, /focus\.webOutlineReset/);
   assert.match(edge, /hovered \? styles\.insertButtonHover : null/);
 });
 
@@ -120,7 +120,7 @@ test("builder shows an optional add-step button and legend", () => {
   assert.match(source, /onAddStep \? \(/);
   assert.match(
     source,
-    /<Button icon=\{Plus\} onPress=\{onAddStep\} size="sm">/,
+    /<Button[\s\S]*?icon=\{Plus\}[\s\S]*?onPress=\{onAddStep\}[\s\S]*?size="sm"/,
   );
   assert.match(source, /\{addStepLabel\}/);
   assert.match(source, /legend !== false \? \(/);
@@ -153,9 +153,9 @@ test("node becomes a pressable button with selected and focus rings", () => {
   assert.match(source, /selected \? styles\.nodeSelected : null/);
   assert.match(
     source,
-    /focus\.focused && !selected \? styles\.nodeFocused : null/,
+    /focus\.focused && !selected && focus\.ringEnabled[\s\S]*?styles\.nodeFocused/,
   );
-  assert.match(source, /hideWebOutlineView/);
+  assert.match(source, /focus\.webOutlineReset/);
   assert.match(source, /hovered \? styles\.nodeHover : null/);
   assert.match(source, /pressed \? styles\.nodePressed : null/);
 });

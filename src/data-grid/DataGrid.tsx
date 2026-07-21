@@ -104,6 +104,13 @@ export type DataGridProps = {
   cardBreakpoint?: number;
   /** Accessible name for the whole grid (WCAG 4.1.2). */
   accessibilityLabel?: string;
+  /**
+   * Disable the shared focus glow on the column resize handles. They then fall
+   * back to the browser's default focus outline so keyboard focus stays visible
+   * (WCAG 2.1 — 2.4.7 Focus Visible, AA). Disable every ring at once via the
+   * theme's `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
   testID?: string;
 };
 
@@ -128,6 +135,7 @@ export function DataGrid({
   maxHeight,
   cardBreakpoint,
   accessibilityLabel,
+  disableFocusRing = false,
   testID,
 }: DataGridProps) {
   const theme = useSharedUiTheme();
@@ -317,6 +325,7 @@ export function DataGrid({
             registerHeaderNode={controller.registerHeaderNode}
             resizingColumnId={resize.resizingColumnId}
             showGutter={showGutter}
+            disableFocusRing={disableFocusRing}
             styles={styles}
             theme={theme}
           />

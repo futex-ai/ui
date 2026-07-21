@@ -58,8 +58,11 @@ test("kanban makes cards pressable buttons when given onCardPress", () => {
   assert.match(source, /accessibilityRole="button"/);
   assert.match(source, /accessibilityState=\{\{ disabled \}\}/);
   assert.match(source, /useFocusRing/);
-  assert.match(source, /focus\.focused \? styles\.cardFocused : null/);
-  assert.match(source, /hideWebOutlineView/);
+  assert.match(
+    source,
+    /focus\.focused && focus\.ringEnabled \? styles\.cardFocused : null/,
+  );
+  assert.match(source, /focus\.webOutlineReset/);
   assert.match(source, /hovered && !disabled \? styles\.cardHover : null/);
   assert.match(source, /pressed && !disabled \? styles\.cardPressed : null/);
   assert.match(source, /disabled \? styles\.cardDisabled : null/);

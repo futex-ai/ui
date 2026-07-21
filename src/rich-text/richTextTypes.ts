@@ -32,6 +32,13 @@ export type SlashMenuItem = {
 export type RichTextEditorProps = {
   /** Focus the editor after it mounts. */
   autoFocus?: boolean;
+  /**
+   * Disable the shared focus glow on the editor frame. It then falls back to the
+   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
+   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
+   * `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
   /** Visible field label. Also names the web textbox when present. */
   label?: string;
   /** Maximum editor body height in px; overflow scrolls inside the frame. */

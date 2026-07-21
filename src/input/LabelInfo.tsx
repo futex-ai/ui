@@ -3,7 +3,7 @@ import { Info, LucideIcon } from "lucide-react-native";
 import { useId, useMemo } from "react";
 import { Platform, Pressable, Text } from "react-native";
 
-import { hideWebOutlineView, useFocusRing } from "../focusRing";
+import { useFocusRing } from "../focusRing";
 import { Popover } from "../popover";
 import { useSharedUiTheme } from "../theme";
 
@@ -23,6 +23,13 @@ export type LabelInfoProps = {
   icon?: LucideIcon;
   /** Accessible name for the button, e.g. `More information about Email`. */
   accessibilityLabel: string;
+  /**
+   * Disable the shared focus glow on the ⓘ button. It then falls back to the
+   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
+   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
+   * `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -48,11 +55,12 @@ export function LabelInfo({
   info,
   icon: Icon = Info,
   accessibilityLabel,
+  disableFocusRing = false,
   testID,
 }: LabelInfoProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createInputStyles(theme), [theme]);
-  const focus = useFocusRing();
+  const focus = useFocusRing({ disabled: disableFocusRing });
   const descriptionId = useId();
   const isWeb = Platform.OS === "web";
   return (
@@ -76,7 +84,7 @@ export function LabelInfo({
           onPress={toggle}
           style={[
             styles.labelInfoButton,
-            hideWebOutlineView,
+            focus.webOutlineReset,
             focus.focused ? focus.focusRingStyle : null,
           ]}
         >

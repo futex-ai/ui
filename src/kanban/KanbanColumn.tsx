@@ -15,7 +15,7 @@ import { Platform, Pressable, Text, View } from "react-native";
 
 import type { BadgeTone } from "../badge/badgeStyles";
 import type { ControlSize } from "../controlSize";
-import { hideWebOutlineView, useFocusRing } from "../focusRing";
+import { useFocusRing } from "../focusRing";
 import type { PressableHoverState } from "../focusRing";
 import { SkeletonBar, SkeletonCircle } from "../skeleton";
 
@@ -60,6 +60,7 @@ type KanbanColumnProps<Card> = {
   columnWidth: number;
   consumePressSuppression: () => boolean;
   count: number;
+  disableFocusRing: boolean;
   dragState: KanbanDragState;
   entries: KanbanColumnEntry<Card>[];
   loading: boolean;
@@ -86,6 +87,7 @@ export function KanbanColumn<Card>({
   columnWidth,
   consumePressSuppression,
   count,
+  disableFocusRing,
   dragState,
   entries,
   loading,
@@ -129,6 +131,7 @@ export function KanbanColumn<Card>({
       <PressableCard
         binding={binding}
         disabled={disabled}
+        disableFocusRing={disableFocusRing}
         grabbed={grabbed}
         key={key}
         label={cardLabel?.(entry.card, entry.index)}
@@ -179,6 +182,7 @@ export function KanbanColumn<Card>({
         </Text>
         {onColumnAdd ? (
           <ColumnAddButton
+            disableFocusRing={disableFocusRing}
             label={columnAddLabel?.(column) ?? "Add card"}
             onPress={() => onColumnAdd(column)}
             styles={styles}
@@ -219,6 +223,7 @@ function PressableCard({
   binding,
   children,
   disabled,
+  disableFocusRing,
   grabbed,
   label,
   onPress,
@@ -227,12 +232,13 @@ function PressableCard({
   binding: KanbanCardDragBinding | null;
   children: ReactNode;
   disabled: boolean;
+  disableFocusRing: boolean;
   grabbed: boolean;
   label?: string;
   onPress?: () => void;
   styles: KanbanStyles;
 }) {
-  const focus = useFocusRing();
+  const focus = useFocusRing({ disabled: disableFocusRing });
   // `onKeyDown` and `tabIndex` are web-only; gate them like the segmented control.
   const dragProps =
     binding && Platform.OS === "web"
@@ -255,10 +261,10 @@ function PressableCard({
         styles.cardPressable,
         hovered && !disabled ? styles.cardHover : null,
         pressed && !disabled ? styles.cardPressed : null,
-        focus.focused ? styles.cardFocused : null,
+        focus.focused && focus.ringEnabled ? styles.cardFocused : null,
         disabled ? styles.cardDisabled : null,
         grabbed ? styles.cardGrabbed : null,
-        hideWebOutlineView,
+        focus.webOutlineReset,
       ]}
     >
       {children}
@@ -295,15 +301,17 @@ function CardPreview({
  * name); the button gains a soft fill on hover and the sage focus ring on focus.
  */
 function ColumnAddButton({
+  disableFocusRing,
   label,
   onPress,
   styles,
 }: {
+  disableFocusRing: boolean;
   label: string;
   onPress: () => void;
   styles: KanbanStyles;
 }) {
-  const focus = useFocusRing();
+  const focus = useFocusRing({ disabled: disableFocusRing });
   return (
     <Pressable
       accessibilityLabel={label}
@@ -316,7 +324,7 @@ function ColumnAddButton({
         styles.addButtonPressable,
         hovered ? styles.addButtonHover : null,
         focus.focused ? focus.focusRingStyle : null,
-        hideWebOutlineView,
+        focus.webOutlineReset,
       ]}
     >
       <Text aria-hidden importantForAccessibility="no" style={styles.addGlyph}>

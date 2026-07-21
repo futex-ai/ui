@@ -17,11 +17,7 @@ import {
 } from "react-native";
 
 import type { ControlSize } from "../controlSize";
-import {
-  hideWebOutlineView,
-  PressableHoverState,
-  useFocusRing,
-} from "../focusRing";
+import { PressableHoverState, useFocusRing } from "../focusRing";
 import { useReducedMotion } from "../useReducedMotion";
 import { useSharedUiTheme } from "../theme";
 
@@ -63,6 +59,13 @@ export type WorkflowNodeProps = {
   accessibilityLabel?: string;
   /** Override the type chip's fill (defaults to the type's category color). */
   color?: string;
+  /**
+   * Disable the shared focus glow on a pressable node. It then falls back to the
+   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
+   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
+   * `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
   /** The node data to render. */
   node: WorkflowNodeData;
   /** Press handler; providing it makes the card a pressable button. */
@@ -144,6 +147,7 @@ export function WorkflowStatusDot({
 export function WorkflowNode({
   accessibilityLabel,
   color,
+  disableFocusRing = false,
   node,
   onPress,
   selected = false,
@@ -156,7 +160,7 @@ export function WorkflowNode({
     () => createWorkflowStyles(theme, size),
     [theme, size],
   );
-  const focus = useFocusRing();
+  const focus = useFocusRing({ disabled: disableFocusRing });
   const Icon = node.icon ?? defaultWorkflowNodeIcons[node.type];
   const chipColor = color ?? defaultWorkflowNodeColors[node.type];
   const iconSize = workflowSizing(size).chipIcon;
@@ -214,9 +218,11 @@ export function WorkflowNode({
           hovered ? styles.nodeHover : null,
           pressed ? styles.nodePressed : null,
           selected ? styles.nodeSelected : null,
-          focus.focused && !selected ? styles.nodeFocused : null,
+          focus.focused && !selected && focus.ringEnabled
+            ? styles.nodeFocused
+            : null,
           style,
-          hideWebOutlineView,
+          focus.webOutlineReset,
         ]}
         testID={testID}
       >

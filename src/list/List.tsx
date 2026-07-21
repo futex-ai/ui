@@ -16,11 +16,7 @@ import { Fragment, ReactNode, useMemo } from "react";
 import { Pressable, StyleProp, View, ViewStyle } from "react-native";
 
 import type { ControlSize } from "../controlSize";
-import {
-  hideWebOutlineView,
-  PressableHoverState,
-  useFocusRing,
-} from "../focusRing";
+import { PressableHoverState, useFocusRing } from "../focusRing";
 import {
   SkeletonBar,
   SkeletonCircle,
@@ -39,6 +35,13 @@ const SKELETON_DESCRIPTION_WIDTHS = ["82%", "70%", "90%"] as const;
 export type ListProps<Item> = {
   /** Accessible label for the whole list. */
   accessibilityLabel?: string;
+  /**
+   * Disable the shared focus glow on pressable items. They then fall back to the
+   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
+   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
+   * `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
   /** Mark a specific item as non-pressable (only relevant with `onItemPress`). */
   itemDisabled?: (item: Item, index: number) => boolean;
   /** Stable React key for an item. */
@@ -86,6 +89,7 @@ export type ListProps<Item> = {
  */
 export function List<Item>({
   accessibilityLabel,
+  disableFocusRing = false,
   itemDisabled,
   itemKey,
   itemLabel,
@@ -174,6 +178,7 @@ export function List<Item>({
             {onItemPress ? (
               <PressableListItem
                 disabled={itemDisabled?.(item, index) ?? false}
+                disableFocusRing={disableFocusRing}
                 label={itemLabel?.(item, index)}
                 onPress={() => onItemPress(item, index)}
                 styles={styles}
@@ -207,17 +212,19 @@ export function List<Item>({
 function PressableListItem({
   children,
   disabled,
+  disableFocusRing,
   label,
   onPress,
   styles,
 }: {
   children: ReactNode;
   disabled: boolean;
+  disableFocusRing: boolean;
   label?: string;
   onPress: () => void;
   styles: ListStyles;
 }) {
-  const focus = useFocusRing();
+  const focus = useFocusRing({ disabled: disableFocusRing });
   return (
     <View role="listitem">
       <Pressable
@@ -233,9 +240,9 @@ function PressableListItem({
           styles.itemPressable,
           hovered && !disabled ? styles.itemHover : null,
           pressed && !disabled ? styles.itemPressed : null,
-          focus.focused ? styles.itemFocused : null,
+          focus.focused && focus.ringEnabled ? styles.itemFocused : null,
           disabled ? styles.itemDisabled : null,
-          hideWebOutlineView,
+          focus.webOutlineReset,
         ]}
       >
         {children}

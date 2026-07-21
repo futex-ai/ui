@@ -38,7 +38,18 @@ export type FocusRingOptions = {
   offset?: number;
   /** Glow opacity, 0–1. Lower is softer; raise it for more presence. Default 0.35. */
   alpha?: number;
+  /**
+   * Suppress the glow entirely. When true, {@link useFocusRing} returns an empty
+   * `focusRingStyle` and `ringEnabled: false`, so a control renders no focus
+   * glow. Callers wire this to a public `disableFocusRing` prop; the active
+   * theme's `focusRing: false` flag disables every ring globally the same way.
+   * Only consulted by `useFocusRing` — `focusRingStyleFor` ignores it.
+   */
+  disabled?: boolean;
 };
+
+/** Stable empty style returned for a disabled ring, so identity never churns. */
+const EMPTY_RING_STYLE = Object.freeze({}) as ViewStyle;
 
 /**
  * Parses a `#rgb`/`#rrggbb` hex color into an `"r, g, b"` channel triplet for
@@ -100,13 +111,30 @@ export function useFocusRing(options: FocusRingOptions = {}) {
   const [focused, setFocused] = useState(false);
   const theme = useSharedUiTheme();
   const color = options.color ?? theme.colors.primary;
-  const { width, offset, alpha } = options;
+  const { width, offset, alpha, disabled } = options;
+  // The ring is on unless this instance opts out (`disabled`) or the whole theme
+  // turns rings off (`focusRing: false`). When off, `focusRingStyle` collapses
+  // to `{}`, so the usual `focused ? focusRingStyle : null` idiom paints no glow
+  // with no gate change. `ringEnabled` is for the callers that draw their glow
+  // from a local StyleSheet (List, Table, Kanban card, Heatmap, Workflow) and so
+  // never read `focusRingStyle`; they AND it into their own gate. It also drives
+  // the web outline reset below.
+  const ringEnabled = !disabled && theme.focusRing !== false;
   const focusRingStyle = useMemo<ViewStyle>(
-    () => focusRingStyleFor({ color, width, offset, alpha }),
-    [color, width, offset, alpha],
+    () =>
+      ringEnabled
+        ? focusRingStyleFor({ color, width, offset, alpha })
+        : EMPTY_RING_STYLE,
+    [ringEnabled, color, width, offset, alpha],
   );
   return {
     focusRingStyle,
+    ringEnabled,
+    // Outline reset to spread onto the focus target: suppress the browser's
+    // default outline while the glow is the focus affordance, but let the UA
+    // outline return once the ring is disabled so keyboard focus stays visible
+    // (WCAG 2.1 — 2.4.7 Focus Visible, AA). Web-only, matching the glow.
+    webOutlineReset: ringEnabled ? hideWebOutlineView : null,
     focused,
     onBlur: () => setFocused(false),
     onFocus: () => setFocused(true),

@@ -17,6 +17,13 @@ export type WebModalFrameProps = {
   children?: ReactNode;
   closeDisabled?: boolean;
   closeLabel?: string;
+  /**
+   * Disable the shared focus glow on the close button. It then falls back to the
+   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
+   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
+   * `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
   dismissible?: boolean;
   footer?: ReactNode;
   bodyStyle?: StyleProp<ViewStyle>;

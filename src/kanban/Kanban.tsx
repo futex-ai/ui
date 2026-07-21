@@ -56,6 +56,13 @@ export type KanbanProps<Card> = {
   /** The status columns, rendered left to right. */
   columns: KanbanColumnDef[];
   /**
+   * Disable the shared focus glow on cards and the column add buttons. They then
+   * fall back to the browser's default focus outline so keyboard focus stays
+   * visible (WCAG 2.1 — 2.4.7 Focus Visible, AA). Disable every ring at once via
+   * the theme's `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
+  /**
    * Show placeholder skeleton cards instead of the cards while data loads. The
    * board announces `aria-busy`, and the placeholder cards are non-interactive
    * and hidden from assistive technology.
@@ -108,6 +115,7 @@ export function Kanban<Card>({
   columnAddLabel,
   columnWidth = 286,
   columns,
+  disableFocusRing = false,
   loading = false,
   loadingCardCount = 3,
   onCardMove,
@@ -207,6 +215,7 @@ export function Kanban<Card>({
         columnWidth={columnWidth}
         consumePressSuppression={drag.consumePressSuppression}
         count={column.count ?? entries.length}
+        disableFocusRing={disableFocusRing}
         dragState={drag.dragState}
         entries={entries}
         key={column.id}

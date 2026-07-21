@@ -12,11 +12,7 @@ import {
 
 import { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
-import {
-  hideWebOutlineView,
-  PressableHoverState,
-  useFocusRing,
-} from "../focusRing";
+import { PressableHoverState, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import {
@@ -63,6 +59,13 @@ type ButtonBaseProps = {
   busy?: boolean;
   /** Disable the button; a button without `onPress` is also treated as disabled. */
   disabled?: boolean;
+  /**
+   * Disable the shared focus glow on this button. It then falls back to the
+   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
+   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
+   * `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
   /** Leading lucide icon shown before the label, tinted to match the label colour. */
   icon?: LucideIcon;
   /**
@@ -163,6 +166,7 @@ export function Button({
   busy = false,
   children,
   disabled = false,
+  disableFocusRing = false,
   icon: Icon,
   iconNode,
   inline = false,
@@ -176,7 +180,7 @@ export function Button({
 }: ButtonProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createButtonStyles(theme, size), [theme, size]);
-  const focus = useFocusRing();
+  const focus = useFocusRing({ disabled: disableFocusRing });
   const disabledState = disabled || !onPress;
   // The label (and any leading lucide icon) colour is driven by the tone, so it
   // is applied inline rather than baked into the stylesheet. `plain` shares the
@@ -293,7 +297,9 @@ export function Button({
         focus.focused ? focus.focusRingStyle : null,
         disabledState ? styles.disabled : null,
         style,
-        hideWebOutlineView,
+        // Suppress the UA outline while the glow is the focus affordance; with
+        // the ring disabled the reset is skipped so the UA outline returns.
+        focus.webOutlineReset,
       ]}
       testID={testID}
     >

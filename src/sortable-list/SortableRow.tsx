@@ -21,7 +21,7 @@ import { GripHorizontal, GripVertical } from "lucide-react-native";
 import { Platform, Pressable, View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
 
-import { hideWebOutlineView, useFocusRing } from "../focusRing";
+import { useFocusRing } from "../focusRing";
 import type { PressableHoverState } from "../focusRing";
 
 import type {
@@ -41,6 +41,7 @@ export type SortableHandleState = { grabbed: boolean };
 type SortableRowProps = {
   binding: SortableItemBinding | null;
   content: ReactNode;
+  disableFocusRing: boolean;
   /** Dim the row in place — the keyboard-grabbed row stays put, still focusable. */
   dragging: boolean;
   handle?: SortableHandlePlacement;
@@ -58,6 +59,7 @@ type SortableRowProps = {
 export function SortableRow({
   binding,
   content,
+  disableFocusRing,
   dragging,
   handle,
   handleGap,
@@ -74,6 +76,7 @@ export function SortableRow({
     const grip = (
       <SortableHandle
         binding={binding}
+        disableFocusRing={disableFocusRing}
         dragging={dragging}
         iconColor={iconColor}
         iconSize={iconSize}
@@ -118,6 +121,7 @@ export function SortableRow({
     <View role="listitem">
       <SortableRowButton
         binding={binding}
+        disableFocusRing={disableFocusRing}
         dragging={dragging}
         label={itemLabel}
         styles={styles}
@@ -138,6 +142,7 @@ export function SortableRow({
 function SortableRowButton({
   binding,
   children,
+  disableFocusRing,
   dragging,
   label,
   styles,
@@ -145,12 +150,13 @@ function SortableRowButton({
 }: {
   binding: SortableItemBinding;
   children: ReactNode;
+  disableFocusRing: boolean;
   dragging: boolean;
   label: string;
   styles: SortableListStyles;
   testID: string;
 }) {
-  const focus = useFocusRing();
+  const focus = useFocusRing({ disabled: disableFocusRing });
   const dragProps =
     Platform.OS === "web"
       ? { onKeyDown: binding.onKeyDown, tabIndex: 0 as const }
@@ -170,7 +176,7 @@ function SortableRowButton({
         dragging ? grabbingCursor : null,
         dragging ? styles.dragging : null,
         focus.focused ? focus.focusRingStyle : null,
-        hideWebOutlineView,
+        focus.webOutlineReset,
       ]}
     >
       {children}
@@ -187,6 +193,7 @@ function SortableRowButton({
  */
 export function SortableHandle({
   binding,
+  disableFocusRing,
   dragging,
   iconColor,
   iconSize,
@@ -196,6 +203,7 @@ export function SortableHandle({
   styles,
 }: {
   binding: SortableItemBinding | null;
+  disableFocusRing: boolean;
   dragging: boolean;
   iconColor: string;
   iconSize: number;
@@ -204,7 +212,7 @@ export function SortableHandle({
   renderHandle?: (state: SortableHandleState) => ReactNode;
   styles: SortableListStyles;
 }) {
-  const focus = useFocusRing();
+  const focus = useFocusRing({ disabled: disableFocusRing });
   const Grip = orientation === "horizontal" ? GripHorizontal : GripVertical;
   const glyph = renderHandle ? (
     renderHandle({ grabbed: dragging })
@@ -239,7 +247,7 @@ export function SortableHandle({
         dragging ? grabbingCursor : null,
         hovered ? styles.handleHover : null,
         focus.focused ? focus.focusRingStyle : null,
-        hideWebOutlineView,
+        focus.webOutlineReset,
       ]}
     >
       {glyph}

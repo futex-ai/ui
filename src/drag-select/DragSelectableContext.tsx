@@ -107,11 +107,11 @@ export function useDragSelectableTarget(
     toggleSelection,
     updateTarget,
   } = useContext(DragSelectableContext);
-  const { data, disabled, id, label, order } = options;
+  const { data, disabled, disableFocusRing, id, label, order } = options;
   const cleanupRef = useRef<(() => void) | null>(null);
   const latestOptionsRef = useRef(options);
   latestOptionsRef.current = options;
-  const focus = useFocusRing();
+  const focus = useFocusRing({ disabled: disableFocusRing });
 
   const targetRef = useCallback(
     (node: Parameters<DragSelectableTargetResult["ref"]>[0]) => {

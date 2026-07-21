@@ -93,6 +93,7 @@ type LastRule =
  */
 export function RichTextEditor({
   autoFocus = false,
+  disableFocusRing = false,
   label,
   maxHeight,
   minHeight = 120,
@@ -106,7 +107,7 @@ export function RichTextEditor({
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createRichTextStyles(theme), [theme]);
   const domTheme = useMemo(() => createRichTextDomTheme(theme), [theme]);
-  const focus = useFocusRing();
+  const focus = useFocusRing({ disabled: disableFocusRing });
   const rootRef = useRef<HTMLDivElement | null>(null);
   const docRef = useRef<RichTextDocument>(parseMarkdown(value));
   const composingRef = useRef(false);
@@ -842,9 +843,12 @@ export function RichTextEditor({
       ({
         ...(StyleSheet.flatten(styles.editor) as CSSProperties),
         minHeight,
-        outlineStyle: "none",
+        // Suppress the UA outline on the contentEditable focus target while the
+        // frame glow is the affordance; with the ring disabled, let the UA
+        // outline return so keyboard focus stays visible (WCAG 2.1 — 2.4.7).
+        outlineStyle: focus.ringEnabled ? "none" : undefined,
       }) as CSSProperties,
-    [minHeight, styles.editor],
+    [focus.ringEnabled, minHeight, styles.editor],
   );
 
   return (

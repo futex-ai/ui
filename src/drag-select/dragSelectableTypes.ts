@@ -84,6 +84,14 @@ export type DragSelectableProviderProps = {
 export type DragSelectableTargetOptions = {
   data?: unknown;
   disabled?: boolean;
+  /**
+   * Disable the shared focus glow for this target: the returned `focusRingStyle`
+   * becomes empty, so a target that spreads `focused ? focusRingStyle : null`
+   * paints no glow and falls back to the browser's default focus outline (WCAG
+   * 2.1 — 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
+   * `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
   id: string;
   /**
    * Accessible name for the target. Defaults to the target `id`. Surfaced as

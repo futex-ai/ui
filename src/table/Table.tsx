@@ -12,11 +12,7 @@ import { ReactNode, useMemo } from "react";
 import { Pressable, StyleProp, Text, View, ViewStyle } from "react-native";
 
 import type { ControlSize } from "../controlSize";
-import {
-  hideWebOutlineView,
-  PressableHoverState,
-  useFocusRing,
-} from "../focusRing";
+import { PressableHoverState, useFocusRing } from "../focusRing";
 import { SkeletonBar, SkeletonPulseProvider } from "../skeleton";
 import { useSharedUiTheme } from "../theme";
 
@@ -50,6 +46,13 @@ export type TableProps<Row> = {
   cell: (row: Row, columnKey: string) => ReactNode;
   /** Column definitions controlling layout, alignment, and the header labels. */
   columns: TableColumn[];
+  /**
+   * Disable the shared focus glow on pressable rows. They then fall back to the
+   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
+   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
+   * `focusRing: false` flag instead.
+   */
+  disableFocusRing?: boolean;
   /** Hide the header row, e.g. a continuation table stacked under another. */
   headless?: boolean;
   /**
@@ -97,6 +100,7 @@ export function Table<Row>({
   accessibilityLabel,
   cell,
   columns,
+  disableFocusRing = false,
   headless = false,
   loading = false,
   loadingRowCount = 6,
@@ -179,6 +183,7 @@ export function Table<Row>({
               <PressableTableRow
                 customStyle={rowStyle?.(row, index)}
                 disabled={rowDisabled?.(row, index) ?? false}
+                disableFocusRing={disableFocusRing}
                 key={rowKey(row, index)}
                 label={rowLabel?.(row, index)}
                 last={last}
@@ -272,6 +277,7 @@ function PressableTableRow({
   children,
   customStyle,
   disabled,
+  disableFocusRing,
   label,
   last,
   onPress,
@@ -280,12 +286,13 @@ function PressableTableRow({
   children: ReactNode;
   customStyle?: StyleProp<ViewStyle>;
   disabled: boolean;
+  disableFocusRing: boolean;
   label?: string;
   last: boolean;
   onPress: () => void;
   styles: TableStyles;
 }) {
-  const focus = useFocusRing();
+  const focus = useFocusRing({ disabled: disableFocusRing });
   return (
     <Pressable
       accessibilityLabel={label}
@@ -302,9 +309,9 @@ function PressableTableRow({
         customStyle,
         hovered && !disabled ? styles.rowHover : null,
         pressed && !disabled ? styles.rowPressed : null,
-        focus.focused ? styles.rowFocused : null,
+        focus.focused && focus.ringEnabled ? styles.rowFocused : null,
         disabled ? styles.rowDisabled : null,
-        hideWebOutlineView,
+        focus.webOutlineReset,
       ]}
     >
       {children}
