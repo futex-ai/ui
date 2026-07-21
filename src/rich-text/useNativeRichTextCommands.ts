@@ -17,6 +17,7 @@ import {
 import type {
   NativePrefixRule,
   NativeRichTextTarget,
+  NativeTypingMarksOverride,
 } from "./nativeRichTextEditing";
 import type { NativeTextSelection } from "./nativeTextEdit";
 import type {
@@ -37,6 +38,7 @@ type CommitDocument = (
   kind: RichTextHistoryEditKind,
   forceFocus?: boolean,
   historySnapshot?: RichTextHistorySnapshot,
+  typingMarks?: readonly InlineMark[],
 ) => void;
 
 /** Build stable native input, selection, Backspace, and toolbar handlers. */
@@ -51,6 +53,7 @@ export function useNativeRichTextCommands({
   readOnly,
   scheduleFocus,
   selectionRef,
+  typingMarksOverrideRef,
 }: {
   activeBlockRef: RefObject<number>;
   activeMarksRef: RefObject<InlineMark[]>;
@@ -62,6 +65,7 @@ export function useNativeRichTextCommands({
   readOnly: boolean;
   scheduleFocus: (target: NativeRichTextTarget) => void;
   selectionRef: RefObject<NativeRichTextTarget>;
+  typingMarksOverrideRef: RefObject<NativeTypingMarksOverride | null>;
 }) {
   const prefixRuleRef = useRef<NativePrefixRule | null>(null);
 
@@ -90,6 +94,7 @@ export function useNativeRichTextCommands({
         transformed ? "model" : "typing",
         transformed,
         result.historySnapshot,
+        result.typingMarks,
       );
     },
     [activeMarksRef, commitDocument, documentRef, readOnly, selectionRef],
@@ -109,11 +114,13 @@ export function useNativeRichTextCommands({
       selectionRef.current = { block, selection };
       activeBlockRef.current = block;
       onActiveBlockChange(block);
-      const marks = marksForNativeSelection(
-        documentRef.current,
-        block,
-        selection,
-      );
+      const target = { block, selection };
+      const override = typingMarksOverrideRef.current;
+      const keepOverride = override && targetsEqual(override.target, target);
+      const marks = keepOverride
+        ? override.marks
+        : marksForNativeSelection(documentRef.current, block, selection);
+      if (!keepOverride) typingMarksOverrideRef.current = null;
       activeMarksRef.current = marks;
       onActiveMarksChange(marks);
       const rule = prefixRuleRef.current;
@@ -131,6 +138,7 @@ export function useNativeRichTextCommands({
       onActiveBlockChange,
       onActiveMarksChange,
       selectionRef,
+      typingMarksOverrideRef,
     ],
   );
 
@@ -170,6 +178,7 @@ export function useNativeRichTextCommands({
           : canonicalMarks([...activeMarksRef.current, mark]);
         activeMarksRef.current = marks;
         onActiveMarksChange(marks);
+        typingMarksOverrideRef.current = { marks, target };
         scheduleFocus(target);
         return;
       }
@@ -188,6 +197,7 @@ export function useNativeRichTextCommands({
       onActiveMarksChange,
       scheduleFocus,
       selectionRef,
+      typingMarksOverrideRef,
     ],
   );
 
@@ -230,7 +240,8 @@ export function useNativeRichTextCommands({
 
   const resetTransientState = useCallback(() => {
     prefixRuleRef.current = null;
-  }, []);
+    typingMarksOverrideRef.current = null;
+  }, [typingMarksOverrideRef]);
 
   return {
     handleFocus,
@@ -254,5 +265,16 @@ function canonicalMarks(marks: readonly InlineMark[]): InlineMark[] {
   const selected = new Set(marks);
   return (["bold", "italic", "strike", "code"] as const).filter((mark) =>
     selected.has(mark),
+  );
+}
+
+function targetsEqual(
+  left: NativeRichTextTarget,
+  right: NativeRichTextTarget,
+): boolean {
+  return (
+    left.block === right.block &&
+    left.selection.start === right.selection.start &&
+    left.selection.end === right.selection.end
   );
 }

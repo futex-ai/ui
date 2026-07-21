@@ -78,7 +78,9 @@ round trips remain equivalent.
   changes the marks used for subsequently inserted text.
 - Inline delimiter autoformat removes the opening and closing delimiters while
   retaining the content's existing spans, then adds the requested mark. A mark
-  already present across the whole range remains present.
+  already present across the whole range remains present. The collapsed caret
+  keeps the typing marks that were active before the rule, so continued text
+  does not inherit the delimiter-applied mark.
 - Native autocorrect, composition, selection replacement, and paste may replace
   more than one character; reconciliation must treat them as one edit rather
   than assuming single-key input.

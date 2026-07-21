@@ -17,7 +17,10 @@ import { NativeRichTextEditorSurface } from "./NativeRichTextEditorSurface";
 import { parseMarkdown } from "./markdownParse";
 import { serializeMarkdown } from "./markdownSerialize";
 import { marksForNativeSelection } from "./nativeRichTextEditing";
-import type { NativeRichTextTarget } from "./nativeRichTextEditing";
+import type {
+  NativeRichTextTarget,
+  NativeTypingMarksOverride,
+} from "./nativeRichTextEditing";
 import { createNativeRichTextStyles } from "./nativeRichTextStyles";
 import type {
   RichTextHistoryEditKind,
@@ -62,6 +65,7 @@ export function RichTextEditor({
   });
   const [activeMarks, setActiveMarks] = useState<InlineMark[]>([]);
   const activeMarksRef = useRef<InlineMark[]>([]);
+  const typingMarksOverrideRef = useRef<NativeTypingMarksOverride | null>(null);
   const [editorFocused, setEditorFocused] = useState(false);
   const inputRefs = useRef<(TextInput | null)[]>([]);
   const pendingFocusRef = useRef<NativeRichTextTarget | null>(null);
@@ -93,6 +97,7 @@ export function RichTextEditor({
       nextDocument: readonly RichTextDocument[number][],
       target: NativeRichTextTarget,
       forceFocus: boolean,
+      typingMarks?: readonly InlineMark[],
     ) => {
       const next = normalizeDocument(nextDocument);
       documentRef.current = next;
@@ -100,11 +105,12 @@ export function RichTextEditor({
       activeBlockRef.current = target.block;
       selectionRef.current = target;
       setActiveBlock(target.block);
-      const marks = marksForNativeSelection(
-        next,
-        target.block,
-        target.selection,
-      );
+      const marks =
+        typingMarks === undefined
+          ? marksForNativeSelection(next, target.block, target.selection)
+          : [...typingMarks];
+      typingMarksOverrideRef.current =
+        typingMarks === undefined ? null : { marks, target };
       activeMarksRef.current = marks;
       setActiveMarks(marks);
       if (forceFocus) scheduleFocus(target);
@@ -131,10 +137,11 @@ export function RichTextEditor({
       kind: RichTextHistoryEditKind,
       forceFocus = true,
       historySnapshot?: RichTextHistorySnapshot,
+      typingMarks?: readonly InlineMark[],
     ) => {
       if (richTextDocumentsEqual(documentRef.current, nextDocument)) return;
       recordEdit(kind, historySnapshot);
-      applyDocument(nextDocument, target, forceFocus);
+      applyDocument(nextDocument, target, forceFocus, typingMarks);
     },
     [applyDocument, recordEdit],
   );
@@ -163,6 +170,7 @@ export function RichTextEditor({
     readOnly,
     scheduleFocus,
     selectionRef,
+    typingMarksOverrideRef,
   });
 
   useLayoutEffect(() => {

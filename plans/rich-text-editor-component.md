@@ -217,6 +217,8 @@ marks for subsequent typing, matching mobile document editors.
 - [x] Commit and push the complete fix before repeating `cargo xtask review`.
 - [x] Preserve the exact public `testID` on the first native editable block
       while keeping stable field and secondary-block identifiers.
+- [x] Exit delimiter-applied inline marks before continued native typing while
+      retaining marks that were explicitly active before the rule.
 - [ ] Repeat `cargo xtask review` until no valid findings remain or the
       ten-cycle limit is reached.
 

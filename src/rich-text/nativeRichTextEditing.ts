@@ -32,6 +32,12 @@ export type NativeRichTextTarget = {
   selection: NativeTextSelection;
 };
 
+/** Explicit typing marks retained while native reports the same caret. */
+export type NativeTypingMarksOverride = {
+  marks: InlineMark[];
+  target: NativeRichTextTarget;
+};
+
 /** Reversible prefix conversion recorded for immediate Backspace. */
 export type NativePrefixRule = { block: number; literal: string };
 
@@ -41,6 +47,7 @@ export type NativeRichTextEditResult = {
   historySnapshot?: RichTextHistorySnapshot;
   prefixRule?: NativePrefixRule;
   target: NativeRichTextTarget;
+  typingMarks?: InlineMark[];
 };
 
 /** Apply a native block's next plain text while preserving its rich spans. */
@@ -80,6 +87,7 @@ export function applyNativeTextChange({
   return {
     ...editResult(formatted.document, blockIndex, formatted.contentTo),
     historySnapshot: nativeHistorySnapshot(inserted),
+    typingMarks: [...marks],
   };
 }
 

@@ -277,6 +277,8 @@ text rather than disabled inputs.
   `toggleMarkInRange`; choosing a mark at a caret updates pending marks for the
   next insertion. Delimiter rules delete only the delimiters, preserve all
   existing content spans, and add rather than remove an already-active mark.
+  The post-rule caret retains the typing marks active before the delimiter rule
+  so subsequent text does not extend the newly applied mark.
 - **D6.4** The formatting row provides insert paragraph, undo/redo, block type,
   divider, inline mark, and keyboard-dismiss actions. iOS uses
   `InputAccessoryView`; Android renders the same horizontally scrollable row at

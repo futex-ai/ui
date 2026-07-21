@@ -87,8 +87,10 @@ Character and word insert/delete edits are coalesced as typing. Destructive
 browser edits and native replacement edits record model snapshots so undo can
 restore the pre-edit document and any stale redo branch is cleared. Inline
 autoformat removes only the typed delimiters, retaining marks already present
-on the content. An input-rule transformation records the literal markdown as
-its first undo target, and unchanged model results do not create undo entries.
+on the content. Continued native typing keeps the pre-rule typing marks instead
+of extending the delimiter-applied mark. An input-rule transformation records
+the literal markdown as its first undo target, and unchanged model results do
+not create undo entries.
 
 ### Mobile Toolbar
 
