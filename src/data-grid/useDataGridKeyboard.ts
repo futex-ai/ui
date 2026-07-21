@@ -1,6 +1,8 @@
 /**
  * Keyboard navigation for the data grid: arrow movement, Shift-extend, Home/End,
- * Tab, Ctrl/Cmd+A, and Enter-to-edit. Composed by {@link useDataGridController}.
+ * Tab, Ctrl/Cmd+A, Enter-to-edit, clipboard (Ctrl/Cmd+C/X/V), Delete/Backspace to
+ * clear, and Escape to dismiss the copy marquee. Composed by
+ * {@link useDataGridController}.
  *
  * Movement math is the pure {@link nextGridCell}; this hook wires it to the
  * controller's selection + focus, scrolling the target row into view (virtualized
@@ -41,7 +43,12 @@ export type UseDataGridKeyboardOptions = {
   onRequestEdit?: (ref: DataGridCellRef) => void;
   onNavigateToRow?: (rowIndex: number) => void;
   onCopy?: () => void;
+  onCut?: () => void;
   onPaste?: () => void;
+  /** Clear the selected cells (Delete / Backspace). */
+  onClearSelection?: () => void;
+  /** Dismiss the copy/cut marquee (Escape). */
+  onCancelCopy?: () => void;
 };
 
 export function useDataGridKeyboard({
@@ -56,7 +63,10 @@ export function useDataGridKeyboard({
   onRequestEdit,
   onNavigateToRow,
   onCopy,
+  onCut,
   onPaste,
+  onClearSelection,
+  onCancelCopy,
 }: UseDataGridKeyboardOptions) {
   // Focus a cell, scrolling its row into view (virtualized body) and re-focusing
   // next frame for a cell the scroll just mounted.
@@ -118,9 +128,26 @@ export function useDataGridKeyboard({
         onCopy?.();
         return;
       }
+      if (ctrl && (key === "x" || key === "X")) {
+        event.preventDefault?.();
+        onCut?.();
+        return;
+      }
       if (ctrl && (key === "v" || key === "V")) {
         event.preventDefault?.();
         onPaste?.();
+        return;
+      }
+      // Delete / Backspace clear the selected cells (like a spreadsheet). Only
+      // reachable when not editing — the open editor owns its own key handling.
+      if (!ctrl && (key === "Delete" || key === "Backspace")) {
+        event.preventDefault?.();
+        onClearSelection?.();
+        return;
+      }
+      // Escape dismisses the copy/cut marquee.
+      if (key === "Escape") {
+        onCancelCopy?.();
         return;
       }
 
@@ -171,7 +198,10 @@ export function useDataGridKeyboard({
       columnIds,
       focusWithScroll,
       onCopy,
+      onCut,
       onPaste,
+      onClearSelection,
+      onCancelCopy,
       onRequestEdit,
       refAt,
       rowIds,

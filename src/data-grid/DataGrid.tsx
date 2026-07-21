@@ -27,6 +27,7 @@ import { DataGridMarquee } from "./DataGridMarquee";
 import { DataGridBody } from "./DataGridBody";
 import { DataGridAddColumn, DataGridColumnMenu } from "./DataGridColumnMenu";
 import { resolveColumnWidths } from "./dataGridColumnWidths";
+import { cellKey } from "./dataGridSelectionModel";
 import { DataGridHeader } from "./DataGridHeader";
 import {
   ADD_COLUMN_WIDTH,
@@ -182,9 +183,23 @@ export function DataGrid({
     onRequestEdit: editing.beginEdit,
     onNavigateToRow: navigateToRow,
     onCopy: clipboard.onCopy,
+    onCut: clipboard.onCut,
     onPaste: clipboard.onPaste,
+    onClearSelection: clipboard.onClearSelection,
+    onCancelCopy: clipboard.onCancelCopy,
   });
   clipboard.bind({ controller, rows, onCellChange });
+
+  // The copy/cut marquee: the set of marked cell keys. Cells are addressed by id,
+  // so the dashed outline follows them through a sort/filter and simply drops any
+  // cell that is no longer visible.
+  const copiedKeys = useMemo(
+    () =>
+      clipboard.copied
+        ? new Set(clipboard.copied.refs.map((ref) => cellKey(ref)))
+        : null,
+    [clipboard.copied],
+  );
 
   const renderEditor = useDataGridEditorRenderer({
     columns,
@@ -342,6 +357,7 @@ export function DataGrid({
             }
             columns={renderColumns}
             controller={controller}
+            copiedKeys={copiedKeys}
             editingCell={editing.editingCell}
             loadingMore={loadingMore}
             maxHeight={maxHeight}

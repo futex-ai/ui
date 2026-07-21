@@ -37,6 +37,8 @@ export type DataGridBodyProps = {
   loadingMore?: boolean;
   editingCell: DataGridCellRef | null;
   renderEditor?: (ref: DataGridCellRef) => ReactNode;
+  /** Keys of the cells on the clipboard (dashed copy/cut marquee), or null. */
+  copiedKeys: Set<string> | null;
   /** Trailing "+ New record" row rendered after the data rows. */
   addRow?: ReactNode;
   /** Receive a `scrollToRow(index)` fn so keyboard nav can scroll into view. */
@@ -58,6 +60,7 @@ export function DataGridBody({
   loadingMore,
   editingCell,
   renderEditor,
+  copiedKeys,
   addRow,
   onRegisterScroll,
 }: DataGridBodyProps) {
@@ -76,6 +79,7 @@ export function DataGridBody({
     <DataGridRow
       activeCell={controller.activeCell}
       columns={columns}
+      copiedKeys={copiedKeys}
       editingCell={editingCell}
       fontSize={metrics.fontSize}
       iconSize={metrics.iconSize}

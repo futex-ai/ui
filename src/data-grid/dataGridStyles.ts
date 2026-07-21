@@ -148,6 +148,19 @@ export function createDataGridStyles(
     cellActive: {
       boxShadow: `inset 0 0 0 2px ${theme.colors.primary}`,
     },
+    // The copy/cut marquee: a dashed primary outline drawn over each cell in the
+    // range on the clipboard ("marching ants"). An absolute overlay so it sits on
+    // top of the cell's solid hairlines without shifting its content.
+    cellCopied: {
+      borderColor: theme.colors.primary,
+      borderStyle: "dashed",
+      borderWidth: 1.5,
+      bottom: 0,
+      left: 0,
+      position: "absolute",
+      right: 0,
+      top: 0,
+    },
     cellText: {
       ...baseText,
       color: theme.colors.ink,

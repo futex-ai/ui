@@ -94,17 +94,19 @@ const [rows, setRows] = useState<DataGridRow[]>([
 
 The grid is one Tab stop (roving tabindex). With a cell focused:
 
-| Keys                | Action                                                  |
-| ------------------- | ------------------------------------------------------- |
-| Arrows              | Move the active cell (clamps at edges)                  |
-| `Shift`+Arrows      | Extend the rectangular selection from the anchor        |
-| `Home` / `End`      | First / last column of the row (`Ctrl`+ = grid corners) |
-| `Tab` / `Shift+Tab` | Walk cells in reading order                             |
-| `Ctrl/Cmd-A`        | Select all cells                                        |
-| `Ctrl/Cmd-C`        | Copy the selection (TSV — pastes into spreadsheets)     |
-| `Ctrl/Cmd-V`        | Paste from the active cell (coerced to each field type) |
-| `Enter`             | Edit the active cell                                    |
-| `Escape`            | Cancel the current edit                                 |
+| Keys                   | Action                                                  |
+| ---------------------- | ------------------------------------------------------- |
+| Arrows                 | Move the active cell (clamps at edges)                  |
+| `Shift`+Arrows         | Extend the rectangular selection from the anchor        |
+| `Home` / `End`         | First / last column of the row (`Ctrl`+ = grid corners) |
+| `Tab` / `Shift+Tab`    | Walk cells in reading order                             |
+| `Ctrl/Cmd-A`           | Select all cells                                        |
+| `Ctrl/Cmd-C`           | Copy the selection (TSV — pastes into spreadsheets)     |
+| `Ctrl/Cmd-X`           | Cut the selection (source clears on the next paste)     |
+| `Ctrl/Cmd-V`           | Paste into the selection (coerced to each field type)   |
+| `Delete` / `Backspace` | Clear the selected cells                                |
+| `Enter`                | Edit the active cell                                    |
+| `Escape`               | Cancel the edit, or dismiss the copy/cut marquee        |
 
 On web, a pointer drag selects: from a **cell** it paints a rectangle with a
 marquee box; from the **row-number gutter** it selects whole rows; from a
@@ -112,9 +114,16 @@ marquee box; from the **row-number gutter** it selects whole rows; from a
 auto-scrolls the body and keeps extending. Pass `selection` + `onSelectionChange`
 to control the selection, or let the grid manage it internally. Selection and
 navigation are announced to a polite live region.
-Copy (`Ctrl/Cmd-C`) serializes the selection to TSV; paste (`Ctrl/Cmd-V`) fills
-cells from the active cell, coercing each value to its column's field type
-(numbers parsed, select options matched by label or id).
+Copy (`Ctrl/Cmd-C`) and cut (`Ctrl/Cmd-X`) serialize the selection to TSV and
+outline it with a dashed "marching-ants" marquee. Paste (`Ctrl/Cmd-V`) coerces
+each value to its column's field type (numbers parsed, select options matched by
+label or id) and follows spreadsheet fill semantics: it grows the target to at
+least the copied block and tiles the source across it, so a single copied cell
+fills the whole selection, a copied row or column repeats across it, and a block
+pasted onto one cell drops in at full size. A cut clears its source cells once
+pasted; `Delete` / `Backspace` clear the selection in place. All of this needs an
+`onCellChange` handler and is web-only (it reads the OS clipboard). Copy/cut/paste
+respect `editable: false` columns and clamp writes to the grid's edges.
 
 ### Layout
 

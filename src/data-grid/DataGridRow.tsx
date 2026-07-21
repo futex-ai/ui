@@ -9,7 +9,7 @@ import type { SharedUiTheme } from "../theme";
 import { DataGridCell } from "./DataGridCell";
 import { isInteractiveDragTarget } from "./dataGridDragDom";
 import { gridcellRole, stickyGutterStyle } from "./dataGridLayout";
-import { cellRefEquals, rectContains } from "./dataGridSelectionModel";
+import { cellKey, cellRefEquals, rectContains } from "./dataGridSelectionModel";
 import type { DataGridRangeRect } from "./dataGridSelectionModel";
 import type { DataGridStyles } from "./dataGridStyles";
 import type {
@@ -23,6 +23,8 @@ export type DataGridRowProps = {
   rowIndex: number;
   columns: DataGridColumn[];
   rect: DataGridRangeRect | null;
+  /** Keys of the cells on the clipboard (dashed copy/cut marquee), or null. */
+  copiedKeys: Set<string> | null;
   activeCell: DataGridCellRef | null;
   tabStopCell: DataGridCellRef | null;
   /** Whether the current selection is exactly one cell (shows the active ring). */
@@ -59,6 +61,7 @@ function DataGridRowComponent({
   rowIndex,
   columns,
   rect,
+  copiedKeys,
   activeCell,
   tabStopCell,
   singleSelection,
@@ -136,6 +139,7 @@ function DataGridRowComponent({
             active={singleSelection && cellRefEquals(cellRef, activeCell)}
             cellRef={cellRef}
             column={column}
+            copied={copiedKeys?.has(cellKey(cellRef)) ?? false}
             editor={editing ? renderEditor?.(cellRef) : undefined}
             fontSize={fontSize}
             key={column.id}
