@@ -11,8 +11,8 @@ menu for inserting/converting blocks.
 1–3, Bulleted/Numbered/Check lists, Code block, Blockquote, etc., with
 ⌘-shortcut hints in the right column. Storybook stories are the living spec.
 
-**Status:** M1–M3 delivered (`npm run verify` green; live Storybook smoke
-passed). Remaining: M4 post-v1 backlog only. Detailed contracts in
+**Status:** M1–M4 delivered across web, iOS, and Android. Remaining product
+ideas are tracked as M5 backlog. Detailed contracts in
 [rich-text-editor-design.md](rich-text-editor-design.md).
 
 ---
@@ -37,12 +37,13 @@ extensible so host apps can add "Insert media…"-type items.
    hand-rolls complex components (DataGrid, kanban, calendar), ships zero
    runtime deps beyond RN peers, and `test:package` stubs peers. A strict block
    model keeps hand-rolled contentEditable tractable.
-2. **Web-first; native gets a markdown-textarea fallback.** contentEditable is
-   web-only. Follow the `.web.tsx` split convention:
+2. **Platform-native views share one typed model.** Follow the `.web.tsx` split
+   convention while keeping markdown and document operations platform-neutral:
    - `RichTextEditor.web.tsx` — real WYSIWYG (contentEditable).
-   - `RichTextEditor.tsx` — native fallback: the existing auto-grow `Textarea`
-     editing raw markdown with identical props, documented as interim. Full
-     native rich editing is a later project.
+   - `RichTextEditor.tsx` — native block editor built from attributed,
+     auto-growing `TextInput` blocks and a keyboard-adjacent formatting bar.
+     Consumers always exchange canonical markdown; neither renderer becomes the
+     other platform's compatibility layer.
 3. **Semi-controlled contentEditable, imperative DOM.** One contentEditable
    root whose block DOM is built by our own renderer — never React children
    (reconciliation fights user edits; raw-DOM precedent:
@@ -76,19 +77,23 @@ shipping media handling.
 
 ## File layout — `src/rich-text/`
 
-| File                                            | Role                                                                             |
-| ----------------------------------------------- | -------------------------------------------------------------------------------- |
-| `richTextModel.ts`                              | Block/inline types + pure ops (splitBlock, mergeBlock, turnInto) — node-testable |
-| `markdownSerialize.ts` / `markdownParse.ts`     | blocks ↔ markdown, pure, GFM subset                                              |
-| `inputRules.ts`                                 | prefix + inline autoformat matching, pure                                        |
-| `slashMenuModel.ts`                             | item list + filter, pure                                                         |
-| `domRender.web.ts` / `domSerialize.web.ts`      | blocks → DOM, DOM → blocks, normalize pass                                       |
-| `useEditorCommands.web.ts`                      | toggleInline / setBlockType / caret+Range helpers                                |
-| `useSlashMenu.web.ts`                           | slash state machine (open on `/`, query, key routing)                            |
-| `SlashMenu.web.tsx`                             | caret-anchored surface reusing `DropdownList` + web dropdown layer               |
-| `RichTextEditor.web.tsx` / `RichTextEditor.tsx` | web editor / native Textarea fallback                                            |
-| `richTextStyles.ts`                             | theme-derived styles (typography tokens for h1–h3, code)                         |
-| `index.ts`, `README.md`                         | exports + responsibilities doc per repo convention                               |
+| File                                                           | Role                                                                             |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `richTextModel.ts`                                             | Block/inline types + pure ops (splitBlock, mergeBlock, turnInto) — node-testable |
+| `markdownSerialize.ts` / `markdownParse.ts`                    | blocks ↔ markdown, pure, GFM subset                                              |
+| `inputRules.ts`                                                | prefix + inline autoformat matching, pure                                        |
+| `slashMenuModel.ts`                                            | item list + filter, pure                                                         |
+| `domRender.web.ts` / `domSerialize.web.ts`                     | blocks → DOM, DOM → blocks, normalize pass                                       |
+| `useEditorCommands.web.ts`                                     | toggleInline / setBlockType / caret+Range helpers                                |
+| `useSlashMenu.web.ts`                                          | slash state machine (open on `/`, query, key routing)                            |
+| `SlashMenu.web.tsx`                                            | caret-anchored surface reusing `DropdownList` + web dropdown layer               |
+| `RichTextEditor.web.tsx` / `RichTextEditor.tsx`                | web contentEditable / native block-editor controllers                            |
+| `NativeRichTextBlock.tsx`                                      | attributed native block inputs, list markers, checkboxes, read-only output       |
+| `NativeRichTextToolbar.tsx`                                    | iOS input accessory and Android in-frame formatting actions                      |
+| `nativeRichTextEditing.ts` / `nativeRichTextActions.ts`        | native reconciliation plus pure structural/toolbar operations                    |
+| `useNativeRichTextCommands.ts` / `useNativeRichTextHistory.ts` | native event orchestration and bounded undo/redo                                 |
+| `richTextStyles.ts` / `nativeRichTextStyles.ts`                | platform theme-derived typography, block, frame, and toolbar styles              |
+| `index.ts`, `README.md`                                        | exports + responsibilities doc per repo convention                               |
 
 ## Behavior spec
 
@@ -118,6 +123,14 @@ screenshot: Turn into (headings) · Lists · Blocks.
 (sanitized `text/html` handling later). **IME:** suspend input rules and slash
 handling between compositionstart/end.
 
+**Native mobile:** every block is an auto-growing native input with attributed
+inline spans. Enter and Backspace route through the shared split/merge rules;
+native autocorrect, selection replacement, paste, and composition reconcile as
+range edits that retain unaffected marks. iOS attaches the 44-point action row
+with `InputAccessoryView`; Android shows the same horizontally scrollable row
+while an editor block has focus. A collapsed-caret inline action sets pending
+marks for subsequent typing, matching mobile document editors.
+
 ## Reuse & conventions checklist
 
 - `DropdownList` (leading `DropdownIconBox` icons, `rightText` shortcut hints —
@@ -144,21 +157,51 @@ handling between compositionstart/end.
   checklist toggle; paste markdown; axe scan.
 - **Stories:** `rich-text.stories.tsx` (story id = export name) with a live
   markdown output panel; playground + readOnly + pre-seeded document stories.
+  Native Storybook mirrors editable, prefilled, and read-only cases through the
+  package's `react-native` export.
+- **Native unit/smoke:** edit inference, autocorrect replacement, mark
+  preservation, Enter/Backspace structure, prefix/inline rules, checklist and
+  toolbar actions; TypeScript plus iOS/Android Expo export, with an iOS
+  simulator interaction smoke when available.
 - Gate: `npm run verify` (format, unit, typecheck, build, package smoke,
   storybook build, browser tests).
 
 ## Milestones
 
-- **M1 — Core editor (web) + markdown pipeline:** model, DOM render/serialize,
-  markdown in/out, prefix shortcuts, Enter/Backspace structure, placeholder,
-  native fallback, stories, unit + first browser tests.
-- **M2 — Slash menu:** caret anchor, menu surface on dropdown primitives,
-  keyboard routing, `slashExtraItems` extensibility.
-- **M3 — Inline formatting + undo:** Range-based toggles, ⌘ shortcuts,
-  as-you-type inline autoformat (`**bold**` etc.), paste-as-markdown, custom
-  undo stack.
-- **M4 — Post-v1 backlog:** links, nested lists, code-block language, drag
-  handles, native rich editing.
+### M1 — Core web editor + markdown pipeline
+
+- [x] Deliver the model, markdown/DOM mapping, structural keys, prefixes,
+      placeholder, stories, and initial browser coverage.
+
+### M2 — Slash menu
+
+- [x] Deliver the caret anchor, dropdown-based command surface, keyboard
+      routing, block shortcuts, and `slashExtraItems` extension contract.
+
+### M3 — Inline formatting + undo
+
+- [x] Deliver Range-based toggles, keyboard shortcuts, delimiter autoformat,
+      paste-as-markdown, and bounded snapshot undo/redo.
+
+### M4 — Native mobile rich editing
+
+- [x] Replace the raw-markdown fallback with attributed, block-level native
+      editing on iOS and Android.
+- [x] Add native structural/input reconciliation and collapsed-caret marks.
+- [x] Add the keyboard-adjacent block/inline toolbar and native accessibility.
+- [x] Add pure native tests, native Storybook cases, platform exports, protocol
+      documentation, and paired mobile/desktop mockups.
+- [x] Run the focused tests, native smoke checks, and `cargo xtask check`.
+- [x] Commit and push the complete diff before running `cargo xtask review`.
+- [x] Run `cargo xtask review` against the pushed branch and report findings
+      without automatically changing reviewed code.
+
+### M5 — Post-v1 backlog
+
+- [ ] Links and link editing.
+- [ ] Nested lists.
+- [ ] Code-block language selection.
+- [ ] Drag handles and block reordering.
 
 ## Risks
 

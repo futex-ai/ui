@@ -4,8 +4,8 @@
 
 Implemented contract for the dropdown, drag-select, segmented control, radio
 card, switch, spinner, button, data table, workflow builder, modal, toast,
-avatar, status badge, and event-calendar extraction, including the shared
-control-size scale for buttons, inputs, and textareas.
+avatar, status badge, rich-text editor, and event-calendar extraction,
+including the shared control-size scale for buttons, inputs, and textareas.
 
 ## Purpose
 
@@ -27,6 +27,12 @@ app, plus labelled text inputs and textareas for shared forms.
 - `react`, `react-native`, `react-native-web`, `react-dom`, and
   `lucide-react-native` are external peer/runtime dependencies, not copied app
   code.
+
+## Rich Text Editor Contract
+
+The rich-text editor's cross-platform markdown, block-editing, mobile toolbar,
+and accessibility behavior is specified separately in
+[rich-text-editor.md](rich-text-editor.md).
 
 ## Theming Contract
 

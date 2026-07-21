@@ -4,7 +4,7 @@ Implementation-level design for
 [plans/rich-text-editor-component.md](rich-text-editor-component.md). The plan
 holds scope and milestones; this doc holds the contracts implementers build
 against and reviewers audit against. Obligations are numbered per milestone
-(§M1.x, §M2.x, §M3.x).
+(§M1.x, §M2.x, §M3.x, §M4.x).
 
 ---
 
@@ -253,14 +253,38 @@ dropdownPlacement(caretRect, viewport, { align: "start" }))`, rows rendered
   ⌘⇧9 → numbered — applied to the caret block (or every block a selection
   touches).
 
-## D6. Native fallback + public API
+## D6. Native editor + public API
 
-`RichTextEditor.tsx` (native): the shared props typed once in
-`richTextTypes.ts`; renders the existing `Textarea` (`src/input`) editing raw
-markdown — `value` → `value`, `onChangeMarkdown` ← `onChangeText`, `label`,
-`placeholder`, `autoFocus`, `readOnly` → `editable={false}`, `testID`
-forwarded; `minHeight`/`maxHeight` via style. `slashExtraItems` accepted and
-ignored (documented). No web-only imports in this file.
+`RichTextEditor.tsx` (native) owns a controlled `RichTextDocument`, the active
+block/selection, pending inline marks, input refs, and bounded history. It
+renders one attributed, auto-growing `TextInput` per editable block through
+`NativeRichTextBlock`; list markers, checklist controls, quote rules, divider,
+and code chrome live outside the input. Read-only mode renders styled native
+text rather than disabled inputs.
+
+- **D6.1** `onChangeText` is reconciled against the previous block text and the
+  selection captured before input. The inferred replacement range is removed,
+  new text uses pending/inherited marks, and unaffected spans retain marks.
+  A prefix/suffix fallback handles autocorrect, composition, paste, and other
+  native replacements that widen beyond the captured selection.
+- **D6.2** Newlines outside a code block split through the shared model. Empty
+  list/checklist/quote blocks exit; headings continue as paragraphs. Newlines
+  inside code blocks remain code text. Backspace at a collapsed block start
+  uses shared merge/demotion behavior; the immediately preceding prefix rule
+  can instead restore its literal trigger.
+- **D6.3** Native supports the same block prefix and inline delimiter rules as
+  web. Selecting text and choosing a mark applies it through
+  `toggleMarkInRange`; choosing a mark at a caret updates pending marks for the
+  next insertion.
+- **D6.4** The formatting row provides insert paragraph, undo/redo, block type,
+  divider, inline mark, and keyboard-dismiss actions. iOS uses
+  `InputAccessoryView`; Android renders the same horizontally scrollable row at
+  the editor's lower edge while focused. Targets are at least 44 points and
+  expose named button state.
+- **D6.5** External markdown replaces native state only when it differs from
+  the last emitted value. A controlled echo does not reset focus, selection,
+  pending marks, or history. `slashExtraItems` is accepted and ignored because
+  mobile commands live in the toolbar.
 
 Public API (both platforms):
 
@@ -285,11 +309,14 @@ type RichTextEditorProps = {
   (types / react-native / import triple, mirroring `./input`), re-export from
   `src/index.ts`, entry in `tests/unit/packageExports.test.ts`.
 - **D7.2** Every new lucide icon added to `scripts/package-smoke-stubs.mjs`.
-- **D7.3** `testID` forwarded to the web root and native Textarea; entry in
+- **D7.3** `testID` forwarded to the web root and native editor field; native
+  block/toolbar identifiers derive from it; entry in
   `tests/unit/testIDForwarding.test.ts`.
 - **D7.4** `src/rich-text/README.md` responsibilities doc in house style;
   stories in `src/stories/rich-text.stories.tsx` (story id = export name)
-  with a live markdown readout panel (`data-testid="rich-text-markdown-out"`).
+  with a live markdown readout panel (`data-testid="rich-text-markdown-out"`),
+  plus editable, prefilled, and read-only native stories in
+  `storybook-native/stories/RichTextEditor.stories.tsx`.
 - **D7.5** Gate: `npm run verify` fully green (format, unit, typecheck,
   build, package smoke, storybook build, browser tests incl. axe).
 
@@ -334,6 +361,21 @@ type RichTextEditorProps = {
    fires and Backspace reverts; ⌘Z undoes a structural op and a rule
    application; markdown readout stays consistent throughout.
 
+### M4 — native mobile rich editing
+
+1. Replace the native markdown textarea with the block controller and surface
+   per D6 while preserving the public API and shared markdown model.
+2. Add pure native edit/action modules with unit coverage for replacement
+   inference, attributed-span preservation, structural keys, input rules,
+   checklist actions, and toolbar conversions.
+3. Add native block, toolbar, styles, command, and history modules with the
+   accessibility and platform behavior in D6.
+4. Add native Storybook stories, generate its story index, typecheck the host,
+   export both native bundles, and interaction-smoke the iOS story.
+5. Update the component README, protocol, mockup, root documentation, and plan.
+6. Run `cargo xtask check`, commit and push all files, then run
+   `cargo xtask review` against the pushed diff without auto-fixing findings.
+
 ## Design decisions already settled (do not relitigate in implementation)
 
 - No external editor/markdown dependency; everything hand-rolled in
@@ -343,7 +385,7 @@ type RichTextEditorProps = {
   precedent).
 - Structural edits round-trip through the pure model (D4.2) — no incremental
   DOM surgery for splits/merges in v1.
-- Collapsed-caret mark toggling (pending marks) is out of scope for M3 —
-  toggles require a selection; backlog item for M4.
-- Links, nested lists, code-block language, drag handles: M4 backlog, not
-  built now.
+- Web collapsed-caret mark toggles remain selection-only. Native implements
+  pending marks because a keyboard toolbar must support formatting before text
+  is inserted.
+- Links, nested lists, code-block language, and drag handles are M5 backlog.

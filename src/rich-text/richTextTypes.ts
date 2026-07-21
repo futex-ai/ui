@@ -1,4 +1,4 @@
-/** Shared public prop types for the web editor and native markdown fallback. */
+/** Shared public prop types for the web and native rich-text editors. */
 import type {
   DocPosition,
   InlineMark,
@@ -28,7 +28,7 @@ export type SlashMenuItem = {
   section?: string;
 };
 
-/** Public props shared by the web editor and native markdown textarea fallback. */
+/** Public props shared by the web and native block editors. */
 export type RichTextEditorProps = {
   /** Focus the editor after it mounts. */
   autoFocus?: boolean;

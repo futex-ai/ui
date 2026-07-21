@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rich text editor — mobile and desktop</title>
+    <style>
+      :root {
+        color: #1c1f1d;
+        background: #eef0eb;
+        font-family:
+          Inter,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 32px;
+      }
+      h1 {
+        margin: 0 0 24px;
+        font-size: 24px;
+      }
+      .variants {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 32px;
+        align-items: flex-start;
+      }
+      .variant {
+        display: grid;
+        gap: 10px;
+      }
+      .caption {
+        color: #69706a;
+        font-size: 13px;
+        max-width: 680px;
+      }
+      .screen {
+        background: #fff;
+        border: 1px solid #d3d8cd;
+        box-shadow: 0 18px 52px rgba(28, 31, 29, 0.12);
+        overflow: hidden;
+      }
+      .mobile {
+        width: 390px;
+        height: 760px;
+        border-radius: 28px;
+        display: flex;
+        flex-direction: column;
+      }
+      .status {
+        height: 42px;
+        padding: 15px 22px 0;
+        font-size: 12px;
+        font-weight: 700;
+        display: flex;
+        justify-content: space-between;
+      }
+      .mobile-header {
+        height: 50px;
+        padding: 6px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #e5e8e0;
+      }
+      .icon-button {
+        border: 0;
+        background: transparent;
+        color: #3e4540;
+        font: inherit;
+        font-size: 18px;
+        padding: 8px;
+      }
+      .done {
+        color: #2f5945;
+        font-size: 15px;
+        font-weight: 700;
+      }
+      .mobile-body {
+        flex: 1;
+        padding: 22px 20px 12px;
+        overflow: hidden;
+      }
+      .eyebrow {
+        color: #69706a;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .document-title {
+        font-size: 28px;
+        font-weight: 800;
+        line-height: 34px;
+        margin-bottom: 18px;
+      }
+      .block {
+        font-size: 16px;
+        line-height: 24px;
+        margin: 7px 0;
+      }
+      .h2 {
+        font-size: 21px;
+        line-height: 28px;
+        font-weight: 750;
+        margin-top: 20px;
+      }
+      .list {
+        display: grid;
+        grid-template-columns: 22px 1fr;
+      }
+      .check {
+        width: 18px;
+        height: 18px;
+        border: 2px solid #4f7864;
+        border-radius: 4px;
+        margin-top: 3px;
+        display: grid;
+        place-items: center;
+        color: white;
+        background: #4f7864;
+        font-size: 12px;
+      }
+      .caret {
+        display: inline-block;
+        width: 2px;
+        height: 20px;
+        margin: 0 1px -4px;
+        background: #4f7864;
+      }
+      code {
+        border-radius: 4px;
+        background: #eef2ed;
+        padding: 2px 4px;
+        color: #3e4540;
+        font-family: Menlo, monospace;
+        font-size: 0.88em;
+      }
+      .toolbar {
+        height: 52px;
+        border-top: 1px solid #d3d8cd;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 4px 8px;
+        overflow: hidden;
+      }
+      .tool {
+        min-width: 42px;
+        height: 42px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: #3e4540;
+        font: inherit;
+        font-size: 16px;
+        font-weight: 650;
+      }
+      .tool.active {
+        background: #e3eee6;
+        color: #2f5945;
+      }
+      .keyboard {
+        height: 224px;
+        background: #d8dad6;
+        padding: 8px 6px 12px;
+        display: grid;
+        gap: 7px;
+      }
+      .key-row {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+      }
+      .key {
+        min-width: 31px;
+        height: 42px;
+        border-radius: 5px;
+        background: #fff;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.22);
+        display: grid;
+        place-items: center;
+        font-size: 14px;
+      }
+      .space {
+        width: 174px;
+      }
+      .desktop {
+        width: min(760px, calc(100vw - 64px));
+        border-radius: 14px;
+        padding: 28px;
+      }
+      .desktop-label {
+        font-size: 14px;
+        font-weight: 650;
+        margin-bottom: 8px;
+      }
+      .desktop-editor {
+        min-height: 420px;
+        border: 1px solid rgba(28, 31, 29, 0.27);
+        border-radius: 8px;
+        padding: 28px 32px;
+      }
+      .desktop-editor h2 {
+        font-size: 30px;
+        line-height: 36px;
+        margin: 0 0 16px;
+      }
+      .quote {
+        border-left: 3px solid #d3d8cd;
+        color: #3e4540;
+        padding-left: 14px;
+      }
+      .desktop-list {
+        display: grid;
+        grid-template-columns: 24px 1fr;
+      }
+      @media (max-width: 520px) {
+        body {
+          padding: 18px;
+        }
+        .mobile {
+          width: calc(100vw - 36px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Rich text editor</h1>
+    <main class="variants">
+      <section class="variant">
+        <div class="screen mobile">
+          <div class="status"><span>9:41</span><span>● ● ▰</span></div>
+          <div class="mobile-header">
+            <button class="icon-button">‹</button><span>Meeting notes</span
+            ><button class="icon-button done">Done</button>
+          </div>
+          <div class="mobile-body">
+            <div class="eyebrow">NOTES</div>
+            <div class="document-title">Product planning</div>
+            <div class="block">
+              We agreed to keep the first release <strong>focused</strong> and
+              learn from customer feedback.
+            </div>
+            <div class="block h2">Next steps</div>
+            <div class="block list">
+              <span class="check">✓</span><span>Draft the mobile flow</span>
+            </div>
+            <div class="block list">
+              <span
+                class="check"
+                style="background: white; color: transparent"
+              ></span
+              ><span
+                >Test the <code>markdown</code> round trip<span
+                  class="caret"
+                ></span
+              ></span>
+            </div>
+          </div>
+          <div class="toolbar" aria-label="Formatting toolbar">
+            <button class="tool">＋</button><button class="tool">↶</button
+            ><button class="tool">↷</button><button class="tool">¶</button
+            ><button class="tool active">☑</button
+            ><button class="tool active">B</button
+            ><button class="tool"><em>I</em></button
+            ><button class="tool">⌄</button>
+          </div>
+          <div class="keyboard">
+            <div class="key-row">
+              <span class="key">Q</span><span class="key">W</span
+              ><span class="key">E</span><span class="key">R</span
+              ><span class="key">T</span><span class="key">Y</span
+              ><span class="key">U</span><span class="key">I</span
+              ><span class="key">O</span><span class="key">P</span>
+            </div>
+            <div class="key-row">
+              <span class="key">A</span><span class="key">S</span
+              ><span class="key">D</span><span class="key">F</span
+              ><span class="key">G</span><span class="key">H</span
+              ><span class="key">J</span><span class="key">K</span
+              ><span class="key">L</span>
+            </div>
+            <div class="key-row">
+              <span class="key">⇧</span><span class="key">Z</span
+              ><span class="key">X</span><span class="key">C</span
+              ><span class="key">V</span><span class="key">B</span
+              ><span class="key">N</span><span class="key">M</span
+              ><span class="key">⌫</span>
+            </div>
+            <div class="key-row">
+              <span class="key">123</span><span class="key space">space</span
+              ><span class="key">return</span>
+            </div>
+          </div>
+        </div>
+        <div class="caption">
+          Mobile: rich blocks remain visible while editing; a horizontally
+          scrollable action bar sits directly above the keyboard.
+        </div>
+      </section>
+      <section class="variant">
+        <div class="screen desktop">
+          <div class="desktop-label">Notes</div>
+          <div class="desktop-editor">
+            <h2>Product planning</h2>
+            <div class="block">
+              We agreed to keep the first release <strong>focused</strong> and
+              learn from customer feedback.
+            </div>
+            <div class="block h2">Next steps</div>
+            <div class="block desktop-list">
+              <span>✓</span><span>Draft the mobile flow</span>
+            </div>
+            <div class="block desktop-list">
+              <span>□</span
+              ><span>Test the <code>markdown</code> round trip</span>
+            </div>
+            <div class="block quote">
+              Small, composable blocks keep the same document useful on every
+              surface.
+            </div>
+          </div>
+        </div>
+        <div class="caption">
+          Desktop/web: the existing content-editable presentation and
+          slash-command workflow remain unchanged.
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

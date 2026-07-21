@@ -1,8 +1,8 @@
 # Rich Text
 
-Block rich-text editor for React Native Web, with a React Native markdown
-textarea fallback. The public component edits rich content in place on web and
-reports canonical markdown through `onChangeMarkdown`.
+Cross-platform block rich-text editor for React Native and React Native Web.
+The public component edits rich content in place on web, iOS, and Android while
+reporting canonical markdown through `onChangeMarkdown`.
 
 ## Responsibilities
 
@@ -17,16 +17,21 @@ reports canonical markdown through `onChangeMarkdown`.
 - Provide a web slash menu for block conversion and caller-supplied commands.
 - Toggle inline bold, italic, strike, and code marks over selected text, with
   typed delimiter autoformat for the same mark set.
-- Maintain a web undo/redo stack for model operations and coalesced typing.
+- Maintain bounded undo/redo history for model operations and coalesced typing.
 - Manage the web `contentEditable` document imperatively; React renders the
   frame, label, and placeholder only.
-- Fall back to the shared `Textarea` on native platforms, editing raw markdown
-  with the same `value` and `onChangeMarkdown` contract.
+- Render native content as independently editable, auto-growing blocks with
+  attributed inline spans, semantic list/checklist chrome, and a
+  keyboard-adjacent formatting toolbar.
+- Reconcile native text changes, including replacement, autocorrect, paste, and
+  composition, through the shared document model without exposing raw markdown
+  as the editing surface.
 
 ## Components
 
-- `RichTextEditor` — the public editor. Web uses the block editor; native uses
-  the markdown textarea fallback.
+- `RichTextEditor` — the public editor. Web uses an imperative
+  `contentEditable` surface; native uses block-level `TextInput` surfaces and a
+  mobile formatting toolbar.
 
 ## Usage
 
@@ -66,24 +71,34 @@ same marks are merged, mark order is canonical, numbered-list runs are
 renumbered, and unsupported markdown constructs such as links, tables, raw HTML,
 and setext headings remain plain paragraph text.
 
-### Undo Contract
+### Editing Contract
 
-Native character and word insert/delete edits are coalesced as typing. Browser
-owned destructive edits such as cut, drag/delete, drop, replacement text, and
-IME composition record a model snapshot before the native mutation so undo can
-restore the pre-edit document and stale redo is cleared.
+Enter splits blocks and preserves list/checklist continuation rules; Backspace
+at a block start demotes or merges it. Markdown block prefixes and inline
+delimiters apply while typing. Selected text can be marked bold, italic,
+strikethrough, or inline code. On native, toggling a mark at a collapsed caret
+sets the marks for subsequent text.
 
-### Native Fallback
+Character and word insert/delete edits are coalesced as typing. Destructive
+browser edits and native replacement edits record model snapshots so undo can
+restore the pre-edit document and any stale redo branch is cleared.
 
-On native platforms `RichTextEditor` renders `Textarea` and edits markdown
-directly. `slashExtraItems` is accepted for API compatibility but ignored.
+### Mobile Toolbar
+
+On iOS the horizontally scrollable toolbar is attached with
+`InputAccessoryView`; Android renders the same toolbar at the editor's bottom
+edge while a block is focused. It exposes block insertion/conversion,
+undo/redo, inline marks, divider insertion, and keyboard dismissal with
+44-point controls. `slashExtraItems` remains web-only and is ignored on native.
 
 ## Accessibility
 
-- The editable web root is a `role="textbox"` with `aria-multiline="true"`.
-- A visible `label` also names the textbox through `aria-label`; when no label
-  is supplied the root falls back to `Rich text editor`.
-- Checklist controls render as `contenteditable=false` checkboxes with
-  `aria-checked`.
+- The editable web root is a `role="textbox"` with `aria-multiline="true"`;
+  each native text block is a named multiline input.
+- A visible `label` names the editor; without one, the accessible fallback is
+  `Rich text editor`.
+- Checklist controls expose checkbox role, checked state, disabled state, and a
+  44-point native target.
+- Native toolbar buttons expose names plus selected and disabled states.
 - The frame uses the shared focus-ring convention so keyboard focus remains
   visible without changing layout.
