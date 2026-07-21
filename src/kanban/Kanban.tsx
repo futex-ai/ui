@@ -24,6 +24,7 @@ import { useSharedUiTheme } from "../theme";
 
 import { KanbanColumn } from "./KanbanColumn";
 import type { KanbanColumnDef, KanbanColumnEntry } from "./KanbanColumn";
+import { KanbanDragGhostPortal } from "./KanbanDragGhostPortal";
 import { indicatorIndex } from "./kanbanDragModel";
 import type { KanbanCardMove, KanbanColumnLayout } from "./kanbanDragModel";
 import { createKanbanStyles } from "./kanbanStyles";
@@ -263,23 +264,24 @@ export function Kanban<Card>({
         )}
       </ScrollView>
       {active && mode === "pointer" && previewNode ? (
-        // The clone that rides the cursor: a fixed, viewport-positioned copy of
-        // the card, moved by the hook mutating its transform. Decorative and
-        // click-through — the lifted card and the live region carry the meaning.
-        <View
-          aria-hidden
-          pointerEvents="none"
-          ref={drag.bindGhost.ref}
-          style={[
-            styles.card,
-            styles.cardGhost,
-            GHOST_FIXED,
-            ghostWidth != null ? { width: ghostWidth } : null,
-          ]}
-          testID="kanban-drag-ghost"
-        >
-          {previewNode}
-        </View>
+        // The clone rides the viewport cursor, so web portals it to `body` to
+        // escape transformed ancestors that redefine fixed positioning.
+        <KanbanDragGhostPortal>
+          <View
+            aria-hidden
+            pointerEvents="none"
+            ref={drag.bindGhost.ref}
+            style={[
+              styles.card,
+              styles.cardGhost,
+              GHOST_FIXED,
+              ghostWidth != null ? { width: ghostWidth } : null,
+            ]}
+            testID="kanban-drag-ghost"
+          >
+            {previewNode}
+          </View>
+        </KanbanDragGhostPortal>
       ) : null}
     </View>
   );
