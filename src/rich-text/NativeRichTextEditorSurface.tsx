@@ -7,10 +7,8 @@ import { Label } from "../typography";
 
 import { NativeRichTextBlock, nativeBlockKind } from "./NativeRichTextBlock";
 import { NativeRichTextToolbar } from "./NativeRichTextToolbar";
-import type {
-  NativeRichTextTarget,
-  NativeTextSelection,
-} from "./nativeRichTextEditing";
+import type { NativeRichTextTarget } from "./nativeRichTextEditing";
+import type { NativeTextSelection } from "./nativeTextEdit";
 import type { NativeRichTextStyles } from "./nativeRichTextStyles";
 import type {
   InlineMark,

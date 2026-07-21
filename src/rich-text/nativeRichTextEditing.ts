@@ -1,5 +1,12 @@
 /** Pure reconciliation and structural actions for the native rich-text editor. */
-import { matchInlineInputRule, matchPrefixInputRule } from "./inputRules";
+import {
+  applyInlineInputRule,
+  matchInlineInputRule,
+  matchPrefixInputRule,
+} from "./inputRules";
+import { inferNativeTextEdit } from "./nativeTextEdit";
+import type { NativeTextEdit, NativeTextSelection } from "./nativeTextEdit";
+import type { RichTextHistorySnapshot } from "./richTextHistory";
 import {
   blockTextLength,
   deleteRange,
@@ -19,9 +26,6 @@ import type {
   RichTextDocument,
 } from "./richTextModel";
 
-/** Plain-text selection offsets reported by a native block TextInput. */
-export type NativeTextSelection = { end: number; start: number };
-
 /** Focus and selection target after a native model operation. */
 export type NativeRichTextTarget = {
   block: number;
@@ -34,50 +38,10 @@ export type NativePrefixRule = { block: number; literal: string };
 /** Result of reconciling a TextInput change with the rich document. */
 export type NativeRichTextEditResult = {
   document: RichTextDocument;
+  historySnapshot?: RichTextHistorySnapshot;
   prefixRule?: NativePrefixRule;
   target: NativeRichTextTarget;
 };
-
-type NativeTextEdit = { from: number; insertedText: string; to: number };
-
-/** Infer the replaced range, preferring the selection captured before input. */
-export function inferNativeTextEdit(
-  before: string,
-  after: string,
-  selection: NativeTextSelection,
-): NativeTextEdit {
-  const start = clamp(selection.start, 0, before.length);
-  const end = clamp(selection.end, start, before.length);
-  const insertedLength = after.length - (before.length - (end - start));
-  if (
-    insertedLength >= 0 &&
-    after.slice(0, start) === before.slice(0, start) &&
-    after.slice(start + insertedLength) === before.slice(end)
-  ) {
-    return {
-      from: start,
-      insertedText: after.slice(start, start + insertedLength),
-      to: end,
-    };
-  }
-  let from = 0;
-  while (from < before.length && before[from] === after[from]) {
-    from += 1;
-  }
-  let suffix = 0;
-  while (
-    suffix < before.length - from &&
-    suffix < after.length - from &&
-    before[before.length - 1 - suffix] === after[after.length - 1 - suffix]
-  ) {
-    suffix += 1;
-  }
-  return {
-    from,
-    insertedText: after.slice(from, after.length - suffix),
-    to: before.length - suffix,
-  };
-}
 
 /** Apply a native block's next plain text while preserving its rich spans. */
 export function applyNativeTextChange({
@@ -100,36 +64,23 @@ export function applyNativeTextChange({
   const edit = inferNativeTextEdit(before, nextText, selection);
   const position = { block: blockIndex, offset: edit.from };
   const prefix = prefixRuleFor(current, before, edit);
-  if (prefix) {
-    return applyPrefixRule(doc, blockIndex, edit, prefix);
-  }
   const inline = inlineRuleFor(current, before, edit);
   const base = deleteRange(doc, position, {
     block: blockIndex,
     offset: edit.to,
   });
   const inserted = insertNativeText(base, position, edit.insertedText, marks);
+  if (prefix) {
+    return applyPrefixRule(inserted, blockIndex, edit, prefix);
+  }
   if (!inline || inserted.target.block !== blockIndex) {
     return inserted;
   }
-  const text = nativeBlockText(inserted.document[blockIndex]);
-  const content = text.slice(inline.contentFrom, inline.contentTo);
-  const triggerFrom = { block: blockIndex, offset: inline.triggerFrom };
-  let formatted = deleteRange(inserted.document, triggerFrom, {
-    block: blockIndex,
-    offset: inline.triggerTo,
-  });
-  formatted = insertText(formatted, triggerFrom, content);
-  formatted = toggleMarkInRange(
-    formatted,
-    triggerFrom,
-    {
-      block: blockIndex,
-      offset: inline.triggerFrom + content.length,
-    },
-    inline.mark,
-  );
-  return editResult(formatted, blockIndex, inline.triggerFrom + content.length);
+  const formatted = applyInlineInputRule(inserted.document, blockIndex, inline);
+  return {
+    ...editResult(formatted.document, blockIndex, formatted.contentTo),
+    historySnapshot: nativeHistorySnapshot(inserted),
+  };
 }
 
 /** Return marks shared by every selected character, or adjacent to a caret. */
@@ -202,27 +153,45 @@ function inlineRuleFor(
 }
 
 function applyPrefixRule(
-  doc: RichTextDocument,
+  inserted: NativeRichTextEditResult,
   block: number,
   edit: NativeTextEdit,
   rule: NonNullable<ReturnType<typeof matchPrefixInputRule>>,
 ): NativeRichTextEditResult {
   const from = Math.max(0, edit.from - rule.deleteTriggerLength);
   const cleared = deleteRange(
-    doc,
+    inserted.document,
     { block, offset: from },
-    { block, offset: edit.to },
+    { block, offset: edit.from + edit.insertedText.length },
   );
+  const historySnapshot = nativeHistorySnapshot(inserted);
   if (rule.type === "divider") {
     const next = insertBlocks(cleared, { block, offset: 0 }, [
       { type: "divider" },
     ]);
-    return editResult(next, block + 1, 0);
+    return {
+      ...editResult(next, block + 1, 0),
+      historySnapshot,
+    };
   }
   return {
     document: turnInto(cleared, block, rule.value),
+    historySnapshot,
     prefixRule: { block, literal: rule.literal },
     target: collapsedTarget(block, 0),
+  };
+}
+
+function nativeHistorySnapshot(
+  result: NativeRichTextEditResult,
+): RichTextHistorySnapshot {
+  const { block, selection } = result.target;
+  return {
+    caret: {
+      from: { block, offset: selection.start },
+      to: { block, offset: selection.end },
+    },
+    doc: result.document,
   };
 }
 

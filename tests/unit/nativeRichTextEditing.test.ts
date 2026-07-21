@@ -9,10 +9,19 @@ import {
 } from "../../src/rich-text/nativeRichTextActions";
 import {
   applyNativeTextChange,
-  inferNativeTextEdit,
   marksForNativeSelection,
 } from "../../src/rich-text/nativeRichTextEditing";
-import type { RichTextDocument } from "../../src/rich-text/richTextModel";
+import { inferNativeTextEdit } from "../../src/rich-text/nativeTextEdit";
+import {
+  collapsedHistoryCaret,
+  createRichTextHistoryState,
+  recordRichTextHistory,
+  undoRichTextHistory,
+} from "../../src/rich-text/richTextHistory";
+import {
+  richTextDocumentsEqual,
+  type RichTextDocument,
+} from "../../src/rich-text/richTextModel";
 
 test("infers an insertion at the native selection when text repeats", () => {
   assert.deepEqual(inferNativeTextEdit("aaaa", "aaaaa", { end: 2, start: 2 }), {
@@ -135,6 +144,70 @@ test("applies native inline delimiter autoformat", () => {
   assert.deepEqual(result.target.selection, { end: 4, start: 4 });
 });
 
+test("preserves existing marks during native inline autoformat", () => {
+  const result = applyNativeTextChange({
+    block: 0,
+    document: [
+      {
+        spans: [
+          { marks: [], text: "**" },
+          { marks: ["italic"], text: "word" },
+          { marks: [], text: "*" },
+        ],
+        type: "paragraph",
+      },
+    ],
+    marks: [],
+    nextText: "**word**",
+    selection: { end: 7, start: 7 },
+  });
+
+  assert.deepEqual(result.document, [
+    {
+      spans: [{ marks: ["bold", "italic"], text: "word" }],
+      type: "paragraph",
+    },
+  ]);
+});
+
+test("records literal native input-rule state as the first undo target", () => {
+  const result = applyNativeTextChange({
+    block: 0,
+    document: [{ spans: [{ marks: [], text: "#" }], type: "paragraph" }],
+    marks: [],
+    nextText: "# ",
+    selection: { end: 1, start: 1 },
+  });
+  assert.ok(result.historySnapshot);
+  assert.deepEqual(result.historySnapshot, {
+    caret: collapsedHistoryCaret({ block: 0, offset: 2 }),
+    doc: [{ spans: [{ marks: [], text: "# " }], type: "paragraph" }],
+  });
+
+  let history = createRichTextHistoryState();
+  history = recordRichTextHistory(
+    history,
+    {
+      caret: collapsedHistoryCaret({ block: 0, offset: 0 }),
+      doc: [{ spans: [], type: "paragraph" }],
+    },
+    "typing",
+    0,
+  );
+  history = recordRichTextHistory(
+    history,
+    result.historySnapshot,
+    "model",
+    100,
+  );
+  const undo = undoRichTextHistory(history, {
+    caret: collapsedHistoryCaret({ block: 0, offset: 0 }),
+    doc: result.document,
+  });
+
+  assert.deepEqual(undo?.snapshot, result.historySnapshot);
+});
+
 test("reports marks shared by the caret or full selection", () => {
   const document: RichTextDocument = [
     {
@@ -183,6 +256,25 @@ test("merges native Backspace targets and demotes list blocks", () => {
   );
   assert.equal(demoted.document[0]?.type, "paragraph");
   assert.equal(demoted.target.block, 0);
+});
+
+test("recognizes Backspace at the document start as an unchanged edit", () => {
+  const document: RichTextDocument = [
+    { spans: [{ marks: [], text: "Hello" }], type: "paragraph" },
+  ];
+  const result = mergeNativeBlockBackward(document, 0);
+
+  assert.equal(richTextDocumentsEqual(document, result.document), true);
+  assert.deepEqual(result.target, {
+    block: 0,
+    selection: { end: 0, start: 0 },
+  });
+  assert.equal(
+    richTextDocumentsEqual(document, [
+      { spans: [{ marks: ["bold"], text: "Hello" }], type: "paragraph" },
+    ]),
+    false,
+  );
 });
 
 test("supports toolbar block insertion, conversion, and checklist toggling", () => {

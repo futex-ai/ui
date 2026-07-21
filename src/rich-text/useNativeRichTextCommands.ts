@@ -17,9 +17,12 @@ import {
 import type {
   NativePrefixRule,
   NativeRichTextTarget,
-  NativeTextSelection,
 } from "./nativeRichTextEditing";
-import type { RichTextHistoryEditKind } from "./richTextHistory";
+import type { NativeTextSelection } from "./nativeTextEdit";
+import type {
+  RichTextHistoryEditKind,
+  RichTextHistorySnapshot,
+} from "./richTextHistory";
 import { blockTextLength, toggleMarkInRange } from "./richTextModel";
 import type {
   InlineMark,
@@ -33,6 +36,7 @@ type CommitDocument = (
   target: NativeRichTextTarget,
   kind: RichTextHistoryEditKind,
   forceFocus?: boolean,
+  historySnapshot?: RichTextHistorySnapshot,
 ) => void;
 
 /** Build stable native input, selection, Backspace, and toolbar handlers. */
@@ -80,7 +84,13 @@ export function useNativeRichTextCommands({
         result.target.block !== block ||
         nativeBlockText(result.document[result.target.block]) !== nextText;
       prefixRuleRef.current = result.prefixRule ?? null;
-      commitDocument(result.document, result.target, "typing", transformed);
+      commitDocument(
+        result.document,
+        result.target,
+        transformed ? "model" : "typing",
+        transformed,
+        result.historySnapshot,
+      );
     },
     [activeMarksRef, commitDocument, documentRef, readOnly, selectionRef],
   );

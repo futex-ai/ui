@@ -19,8 +19,15 @@ import { serializeMarkdown } from "./markdownSerialize";
 import { marksForNativeSelection } from "./nativeRichTextEditing";
 import type { NativeRichTextTarget } from "./nativeRichTextEditing";
 import { createNativeRichTextStyles } from "./nativeRichTextStyles";
-import type { RichTextHistoryEditKind } from "./richTextHistory";
-import { blockTextLength, normalizeDocument } from "./richTextModel";
+import type {
+  RichTextHistoryEditKind,
+  RichTextHistorySnapshot,
+} from "./richTextHistory";
+import {
+  blockTextLength,
+  normalizeDocument,
+  richTextDocumentsEqual,
+} from "./richTextModel";
 import type { InlineMark, RichTextDocument } from "./richTextModel";
 import type { RichTextEditorProps } from "./richTextTypes";
 import { useNativeRichTextCommands } from "./useNativeRichTextCommands";
@@ -123,8 +130,10 @@ export function RichTextEditor({
       target: NativeRichTextTarget,
       kind: RichTextHistoryEditKind,
       forceFocus = true,
+      historySnapshot?: RichTextHistorySnapshot,
     ) => {
-      recordEdit(kind);
+      if (richTextDocumentsEqual(documentRef.current, nextDocument)) return;
+      recordEdit(kind, historySnapshot);
       applyDocument(nextDocument, target, forceFocus);
     },
     [applyDocument, recordEdit],

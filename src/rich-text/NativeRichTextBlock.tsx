@@ -6,7 +6,7 @@ import type { StyleProp, TextStyle } from "react-native";
 import type { SharedUiTheme } from "../theme";
 
 import { nativeBlockText } from "./nativeRichTextEditing";
-import type { NativeTextSelection } from "./nativeRichTextEditing";
+import type { NativeTextSelection } from "./nativeTextEdit";
 import type { NativeRichTextStyles } from "./nativeRichTextStyles";
 import type { InlineMark, RichTextBlock } from "./richTextModel";
 

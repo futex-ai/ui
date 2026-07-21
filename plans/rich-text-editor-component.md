@@ -11,8 +11,9 @@ menu for inserting/converting blocks.
 1–3, Bulleted/Numbered/Check lists, Code block, Blockquote, etc., with
 ⌘-shortcut hints in the right column. Storybook stories are the living spec.
 
-**Status:** M1–M4 delivered across web, iOS, and Android. Remaining product
-ideas are tracked as M5 backlog. Detailed contracts in
+**Status:** M1–M4 delivered across web, iOS, and Android. M6 tracks active
+post-review native editing hardening; remaining product ideas are tracked as
+M5 backlog. Detailed contracts in
 [rich-text-editor-design.md](rich-text-editor-design.md).
 
 ---
@@ -81,7 +82,7 @@ shipping media handling.
 | -------------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | `richTextModel.ts`                                             | Block/inline types + pure ops (splitBlock, mergeBlock, turnInto) — node-testable |
 | `markdownSerialize.ts` / `markdownParse.ts`                    | blocks ↔ markdown, pure, GFM subset                                              |
-| `inputRules.ts`                                                | prefix + inline autoformat matching, pure                                        |
+| `inputRules.ts`                                                | pure prefix matching plus mark-preserving inline autoformat                      |
 | `slashMenuModel.ts`                                            | item list + filter, pure                                                         |
 | `domRender.web.ts` / `domSerialize.web.ts`                     | blocks → DOM, DOM → blocks, normalize pass                                       |
 | `useEditorCommands.web.ts`                                     | toggleInline / setBlockType / caret+Range helpers                                |
@@ -90,7 +91,8 @@ shipping media handling.
 | `RichTextEditor.web.tsx` / `RichTextEditor.tsx`                | web contentEditable / native block-editor controllers                            |
 | `NativeRichTextBlock.tsx`                                      | attributed native block inputs, list markers, checkboxes, read-only output       |
 | `NativeRichTextToolbar.tsx`                                    | iOS input accessory and Android in-frame formatting actions                      |
-| `nativeRichTextEditing.ts` / `nativeRichTextActions.ts`        | native reconciliation plus pure structural/toolbar operations                    |
+| `nativeTextEdit.ts` / `nativeRichTextEditing.ts`               | native plain-text diff inference and attributed reconciliation                   |
+| `nativeRichTextActions.ts`                                     | native pure structural and toolbar operations                                    |
 | `useNativeRichTextCommands.ts` / `useNativeRichTextHistory.ts` | native event orchestration and bounded undo/redo                                 |
 | `richTextStyles.ts` / `nativeRichTextStyles.ts`                | platform theme-derived typography, block, frame, and toolbar styles              |
 | `index.ts`, `README.md`                                        | exports + responsibilities doc per repo convention                               |
@@ -202,6 +204,18 @@ marks for subsequent typing, matching mobile document editors.
 - [ ] Nested lists.
 - [ ] Code-block language selection.
 - [ ] Drag handles and block reordering.
+
+### M6 — Post-review native editing hardening
+
+- [x] Add regressions for literal autoformat undo, nested mark preservation,
+      and no-op Backspace history.
+- [x] Record native input-rule transforms as model edits with literal snapshots.
+- [x] Preserve existing inline spans while removing typed delimiters.
+- [x] Skip native history commits when the canonical document is unchanged.
+- [x] Run focused checks, native smoke checks, and `cargo xtask check`.
+- [ ] Commit and push the complete fix before repeating `cargo xtask review`.
+- [ ] Repeat `cargo xtask review` until no valid findings remain or the
+      ten-cycle limit is reached.
 
 ## Risks
 

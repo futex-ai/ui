@@ -275,7 +275,8 @@ text rather than disabled inputs.
 - **D6.3** Native supports the same block prefix and inline delimiter rules as
   web. Selecting text and choosing a mark applies it through
   `toggleMarkInRange`; choosing a mark at a caret updates pending marks for the
-  next insertion.
+  next insertion. Delimiter rules delete only the delimiters, preserve all
+  existing content spans, and add rather than remove an already-active mark.
 - **D6.4** The formatting row provides insert paragraph, undo/redo, block type,
   divider, inline mark, and keyboard-dismiss actions. iOS uses
   `InputAccessoryView`; Android renders the same horizontally scrollable row at
@@ -285,6 +286,10 @@ text rather than disabled inputs.
   the last emitted value. A controlled echo does not reset focus, selection,
   pending marks, or history. `slashExtraItems` is accepted and ignored because
   mobile commands live in the toolbar.
+- **D6.6** Native input-rule transformations are model history boundaries with
+  an explicit snapshot of the literal delimiters and post-input caret. Their
+  first undo restores that literal state. Canonically unchanged documents are
+  not applied or added to history.
 
 Public API (both platforms):
 

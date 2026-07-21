@@ -15,8 +15,8 @@ import type {
   NativePrefixRule,
   NativeRichTextEditResult,
   NativeRichTextTarget,
-  NativeTextSelection,
 } from "./nativeRichTextEditing";
+import type { NativeTextSelection } from "./nativeTextEdit";
 
 /** Apply Backspace-at-block-start and return the post-merge caret target. */
 export function mergeNativeBlockBackward(

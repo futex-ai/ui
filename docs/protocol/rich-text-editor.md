@@ -73,6 +73,9 @@ round trips remain equivalent.
   otherwise it inherits the adjacent span's marks.
 - A toolbar mark action toggles the selected text. With a collapsed caret it
   changes the marks used for subsequently inserted text.
+- Inline delimiter autoformat removes the opening and closing delimiters while
+  retaining the content's existing spans, then adds the requested mark. A mark
+  already present across the whole range remains present.
 - Native autocorrect, composition, selection replacement, and paste may replace
   more than one character; reconciliation must treat them as one edit rather
   than assuming single-key input.
@@ -89,7 +92,9 @@ round trips remain equivalent.
 - The action row scrolls horizontally on narrow devices and keeps the active
   block/mark state visible. Toolbar presses retain the current editor selection.
 - Undo and redo use the editor's bounded model history rather than relying on a
-  platform text input's private history.
+  platform text input's private history. Input-rule transformations create a
+  literal pre-transform snapshot, so the first undo restores the delimiters;
+  model results equal to the current canonical document create no history item.
 
 ## Read-only Contract
 

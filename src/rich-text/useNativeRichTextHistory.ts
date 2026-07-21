@@ -45,10 +45,10 @@ export function useNativeRichTextHistory({
   }, []);
 
   const recordEdit = useCallback(
-    (kind: RichTextHistoryEditKind) => {
+    (kind: RichTextHistoryEditKind, snapshot?: RichTextHistorySnapshot) => {
       historyRef.current = recordRichTextHistory(
         historyRef.current,
-        currentSnapshot(documentRef.current, selectionRef.current),
+        snapshot ?? currentSnapshot(documentRef.current, selectionRef.current),
         kind,
         Date.now(),
       );
