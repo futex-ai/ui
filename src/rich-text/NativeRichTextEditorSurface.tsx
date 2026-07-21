@@ -10,6 +10,7 @@ import { NativeRichTextToolbar } from "./NativeRichTextToolbar";
 import type { NativeRichTextTarget } from "./nativeRichTextEditing";
 import type { NativeTextSelection } from "./nativeTextEdit";
 import type { NativeRichTextStyles } from "./nativeRichTextStyles";
+import { buildNativeRichTextTestIDs } from "./nativeRichTextTestIDs";
 import type {
   InlineMark,
   RichTextDocument,
@@ -91,8 +92,9 @@ export function NativeRichTextEditorSurface({
     focusVisible ? focusRingStyle : null,
   ];
   const activeType = document[activeBlock]?.type ?? "paragraph";
+  const testIDs = buildNativeRichTextTestIDs(document, testID);
   return (
-    <View style={styles.field} testID={testID}>
+    <View style={styles.field} testID={testIDs.field}>
       {label === undefined ? null : <Label>{label}</Label>}
       <View style={frameStyle}>
         <ScrollView
@@ -129,7 +131,7 @@ export function NativeRichTextEditorSurface({
               }
               readOnly={readOnly}
               styles={styles}
-              testID={testID ? `${testID}-block-${index}` : undefined}
+              testID={testIDs.blocks[index]}
               theme={theme}
             />
           ))}

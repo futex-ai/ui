@@ -47,6 +47,10 @@ import { RichTextEditor } from "@firna/ui/rich-text";
 />;
 ```
 
+On native, the exact `testID` remains on the first editable block for backwards
+compatible typing automation. The outer field uses `${testID}-field`; remaining
+blocks use `${testID}-block-N`.
+
 ### Markdown Contract
 
 The editor accepts and emits the supported markdown subset:

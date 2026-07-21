@@ -53,7 +53,10 @@ export type RichTextEditorProps = {
   readOnly?: boolean;
   /** Additional web slash-menu items. Native accepts and ignores them. */
   slashExtraItems?: readonly SlashMenuItem[];
-  /** Test identifier forwarded to the editable root. */
+  /**
+   * Test identifier for the web editable root or first native editable block.
+   * Native also exposes `${testID}-field` and indexed secondary blocks.
+   */
   testID?: string;
   /** Controlled markdown value. */
   value?: string;

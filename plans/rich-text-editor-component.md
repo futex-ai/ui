@@ -93,6 +93,7 @@ shipping media handling.
 | `NativeRichTextToolbar.tsx`                                    | iOS input accessory and Android in-frame formatting actions                      |
 | `nativeTextEdit.ts` / `nativeRichTextEditing.ts`               | native plain-text diff inference and attributed reconciliation                   |
 | `nativeRichTextActions.ts`                                     | native pure structural and toolbar operations                                    |
+| `nativeRichTextTestIDs.ts`                                     | stable field, primary-input, and secondary-block automation IDs                  |
 | `useNativeRichTextCommands.ts` / `useNativeRichTextHistory.ts` | native event orchestration and bounded undo/redo                                 |
 | `richTextStyles.ts` / `nativeRichTextStyles.ts`                | platform theme-derived typography, block, frame, and toolbar styles              |
 | `index.ts`, `README.md`                                        | exports + responsibilities doc per repo convention                               |
@@ -214,6 +215,8 @@ marks for subsequent typing, matching mobile document editors.
 - [x] Skip native history commits when the canonical document is unchanged.
 - [x] Run focused checks, native smoke checks, and `cargo xtask check`.
 - [x] Commit and push the complete fix before repeating `cargo xtask review`.
+- [x] Preserve the exact public `testID` on the first native editable block
+      while keeping stable field and secondary-block identifiers.
 - [ ] Repeat `cargo xtask review` until no valid findings remain or the
       ten-cycle limit is reached.
 

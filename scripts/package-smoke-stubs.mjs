@@ -181,6 +181,7 @@ export const Heading2 = Icon;
 export const Heading3 = Icon;
 export const Inbox = Icon;
 export const Info = Icon;
+export const Italic = Icon;
 export const LayoutGrid = Icon;
 export const List = Icon;
 export const ListChecks = Icon;

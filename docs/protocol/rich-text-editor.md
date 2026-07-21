@@ -21,6 +21,9 @@ The paired mobile and desktop presentation is captured in
 - `onChangeMarkdown` receives canonical markdown after each committed edit.
 - `label`, `placeholder`, `autoFocus`, `readOnly`, `minHeight`, `maxHeight`,
   `disableFocusRing`, and `testID` behave on both platform families.
+- The exact `testID` targets the web editable root and the first non-divider
+  native block. Native additionally exposes `${testID}-field` on the outer
+  field and `${testID}-block-N` on remaining blocks.
 - `slashExtraItems` extends the caret menu on web. Native accepts the prop for
   API compatibility; mobile block and formatting actions live in the keyboard
   toolbar.
