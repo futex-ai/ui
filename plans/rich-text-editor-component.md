@@ -11,9 +11,8 @@ menu for inserting/converting blocks.
 1–3, Bulleted/Numbered/Check lists, Code block, Blockquote, etc., with
 ⌘-shortcut hints in the right column. Storybook stories are the living spec.
 
-**Status:** M1–M4 delivered across web, iOS, and Android. M6 tracks active
-post-review native editing hardening; remaining product ideas are tracked as
-M5 backlog. Detailed contracts in
+**Status:** M1–M4 and M6 are complete across web, iOS, and Android. Remaining
+product ideas are tracked as M5 backlog. Detailed contracts in
 [rich-text-editor-design.md](rich-text-editor-design.md).
 
 ---
@@ -219,7 +218,7 @@ marks for subsequent typing, matching mobile document editors.
       while keeping stable field and secondary-block identifiers.
 - [x] Exit delimiter-applied inline marks before continued native typing while
       retaining marks that were explicitly active before the rule.
-- [ ] Repeat `cargo xtask review` until no valid findings remain or the
+- [x] Repeat `cargo xtask review` until no valid findings remain or the
       ten-cycle limit is reached.
 
 ## Risks
