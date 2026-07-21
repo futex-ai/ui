@@ -213,7 +213,7 @@ marks for subsequent typing, matching mobile document editors.
 - [x] Preserve existing inline spans while removing typed delimiters.
 - [x] Skip native history commits when the canonical document is unchanged.
 - [x] Run focused checks, native smoke checks, and `cargo xtask check`.
-- [ ] Commit and push the complete fix before repeating `cargo xtask review`.
+- [x] Commit and push the complete fix before repeating `cargo xtask review`.
 - [ ] Repeat `cargo xtask review` until no valid findings remain or the
       ten-cycle limit is reached.
 
