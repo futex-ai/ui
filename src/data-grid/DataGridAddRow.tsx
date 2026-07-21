@@ -20,9 +20,10 @@ export function DataGridAddRow({
   iconSize: number;
 }) {
   // Wrapped in row > gridcell so the button is valid inside a grid (a button may
-  // not be a direct child of `rowgroup`/`row`).
+  // not be a direct child of `rowgroup`/`row`). The opaque `surface` keeps the
+  // row on white above a bounded grid's muted grey empty zone.
   return (
-    <View role="row">
+    <View role="row" style={{ backgroundColor: theme.colors.surface }}>
       <View {...gridcellRole()} style={{ flex: 1 }}>
         <Pressable
           accessibilityLabel="New record"

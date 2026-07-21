@@ -140,6 +140,35 @@ export const Borderless: Story = {
   ),
 };
 
+export const FixedHeight: Story = {
+  name: "Fixed height (empty area below rows)",
+  render: () => (
+    <StorySurface>
+      <View style={styles.stack}>
+        {/* A bounded body (`maxHeight`) taller than its rows keeps the height:
+            the rows stack at the top and the area below the last row reads as a
+            muted grey empty zone rather than collapsing to the rows or leaving a
+            blank white gap — the fixed-height-container case (e.g. a full-page
+            table with only a handful of records). */}
+        <View style={styles.frame}>
+          <DataGrid
+            accessibilityLabel="Content"
+            columns={contentColumns}
+            footerText="2 of 128 records"
+            maxHeight={420}
+            onAddRow={() => undefined}
+            rows={contentRows.slice(0, 2)}
+          />
+        </View>
+        <Text style={styles.hint}>
+          `maxHeight` sets a fixed body height; with fewer rows than fit, the
+          space below the last row is a quiet grey empty zone.
+        </Text>
+      </View>
+    </StorySurface>
+  ),
+};
+
 const rowIds = contentRows.map((row) => row.id);
 const columnIds = contentColumns.map((column) => column.id);
 

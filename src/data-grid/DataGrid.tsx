@@ -98,7 +98,12 @@ export type DataGridProps = {
   borderWidth?: number;
   /** Footer record-count text, e.g. "7 of 128 records". */
   footerText?: string;
-  /** Max body height in px before the rows scroll (virtualized). */
+  /**
+   * Fixed body height in px (virtualized). The body fills this height: rows
+   * scroll once they overflow it, and when they're shorter the area below the
+   * last row reads as a muted grey empty zone (Airtable / Notion style) rather
+   * than collapsing to the rows. Omit for an unbounded body sized to its rows.
+   */
   maxHeight?: number;
   /** Below this viewport width, render the read-only card stack (mobile). */
   cardBreakpoint?: number;
