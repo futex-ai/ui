@@ -55,8 +55,7 @@ export function createWheelPickerStyles(theme: SharedUiTheme) {
       right: 0,
       top: WHEEL_ITEM_HEIGHT * WHEEL_PAD_ROWS,
     },
-    // Web footer actions (rendered inside WebModalFrame's footer slot). The
-    // native sheet reuses the calendar sheet's Cancel/Done bar instead.
+    // Footer actions rendered inside the cross-platform modal frame's slot.
     footerButton: {
       alignItems: "center",
       borderRadius: theme.radii.md,

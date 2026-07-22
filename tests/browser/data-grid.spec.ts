@@ -509,7 +509,7 @@ test("select and date editors match the focused text editor chrome", async ({
     .filter({ hasText: "How scoped agents stay fully auditable" })
     .getByText("30 Jun 2026");
   await dateCell.dblclick();
-  const dateTrigger = page.getByRole("button", { name: /^Created:/ });
+  const dateTrigger = page.getByRole("textbox", { name: "Created" });
   await expect(dateTrigger).toBeFocused();
   expect(await editorChrome(dateTrigger, 1)).toEqual(expectedChrome);
   await page.keyboard.press("Escape");

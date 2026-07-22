@@ -13,6 +13,7 @@
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetScrollView,
+  BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
 import { useCallback, useMemo, useRef } from "react";
@@ -46,6 +47,8 @@ export type BottomSheetShellProps = {
   onClose: () => void;
   /** Controlled visibility of the backing RN `Modal`. */
   open: boolean;
+  /** Wrap body content in the sheet scroller. Defaults to `true`. */
+  scroll?: boolean;
   /** Imperative handle so the caller can animate the sheet closed. */
   sheetRef?: RefObject<BottomSheetHandle | null>;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
@@ -62,6 +65,7 @@ export function BottomSheetShell({
   maxHeight,
   onClose,
   open,
+  scroll = true,
   sheetRef,
   testID,
 }: BottomSheetShellProps) {
@@ -108,15 +112,27 @@ export function BottomSheetShell({
           onClose={() => onCloseRef.current()}
           ref={sheetRef}
         >
-          <BottomSheetScrollView
-            accessibilityLabel={label}
-            accessibilityViewIsModal
-            contentContainerStyle={[styles.content, contentContainerStyle]}
-          >
-            {header}
-            {children}
-            {footer}
-          </BottomSheetScrollView>
+          {scroll ? (
+            <BottomSheetScrollView
+              accessibilityLabel={label}
+              accessibilityViewIsModal
+              contentContainerStyle={[styles.content, contentContainerStyle]}
+            >
+              {header}
+              {children}
+              {footer}
+            </BottomSheetScrollView>
+          ) : (
+            <BottomSheetView
+              accessibilityLabel={label}
+              accessibilityViewIsModal
+              style={[styles.content, contentContainerStyle]}
+            >
+              {header}
+              {children}
+              {footer}
+            </BottomSheetView>
+          )}
         </BottomSheet>
       </GestureHandlerRootView>
     </Modal>

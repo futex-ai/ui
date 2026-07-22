@@ -8,25 +8,21 @@ import {
   openFieldClearsSiblings,
 } from "../../src/date/dateFieldLayers";
 
-test("an open date field paints above the form fields that follow it", () => {
+test("an open date trigger paints above overlapping sibling chrome", () => {
   assert.equal(
     openFieldClearsSiblings(DATE_FIELD_LAYERS.open, DATE_FIELD_LAYERS.base),
     true,
   );
 });
 
-test("an open range row paints above its own hint and error siblings", () => {
-  // The endpoint's calendar is nested inside the row, so the row must outrank
-  // its later-DOM hint/error siblings for the calendar to escape them.
+test("an open range row keeps its active chrome above later siblings", () => {
   assert.equal(
     openFieldClearsSiblings(DATE_FIELD_LAYERS.open, DATE_FIELD_LAYERS.base),
     true,
   );
 });
 
-test("a range row resting at the base layer leaves its calendar trapped behind the hint", () => {
-  // Regression guard: the row rested at the base elevation, so the hint (a later
-  // sibling at the same elevation) painted on top of the trapped open calendar.
+test("equal local layers do not let the earlier trigger clear a sibling", () => {
   assert.equal(
     openFieldClearsSiblings(DATE_FIELD_LAYERS.base, DATE_FIELD_LAYERS.base),
     false,
@@ -47,7 +43,7 @@ test("date calendar z-index override preserves explicit numeric values", () => {
   assert.equal(dateFieldZIndex(0), 0);
 });
 
-test("date fields forward z-index overrides to wrappers and the web calendar", () => {
+test("date fields forward z-index overrides to wrappers and the web portal", () => {
   const fieldSource = readSource("../../src/date/DateField.tsx");
   const rangeSource = readSource("../../src/date/DateRangeField.tsx");
   const overlaySource = readSource("../../src/date/DatePickerOverlay.web.tsx");

@@ -3,6 +3,8 @@
  * (`DatePickerOverlay.tsx` native, `DatePickerOverlay.web.tsx`) both implement
  * `DatePickerOverlayProps` so the `DateField` seam is identical on every platform.
  */
+import type { RefObject } from "react";
+import type { View } from "react-native";
 
 // Defined in the shared focus-ring helper; re-exported here so date consumers
 // (and the `@firna/ui/date` subpath) keep importing it from this module.
@@ -25,6 +27,8 @@ export type DatePickerVariant = "calendar" | "wheel";
 
 /** Props for a single-date picker overlay (web popover or native sheet). */
 export type DatePickerOverlayProps = DateBounds & {
+  /** Trigger wrapper measured by the portaled web calendar. */
+  anchorRef: RefObject<View | null>;
   /** Currently selected ISO date, or `""` when unset. */
   value: string;
   /** Today's ISO date, used for the "today" marker on the calendar. */

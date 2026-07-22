@@ -1,27 +1,25 @@
 /**
  * Web single-date picker (the platform override bundlers resolve on web). The
  * `variant` chooses the surface:
- * - `calendar` (default) — a branded calendar popover anchored below the field;
- *   selecting a day commits immediately and the field's outside-press dismisses.
- * - `wheel` — the spinning {@link DateWheel} in a bottom sheet
- *   ({@link WebModalFrame}); spinning stages a draft that Cancel discards and
- *   Done commits, matching the native sheet.
+ * - `calendar` (default) — a branded calendar popover portaled and anchored
+ *   below the field; selecting a day commits immediately.
+ * - `wheel` — the spinning wheel in the shared bottom sheet; spinning stages a
+ *   draft that Cancel discards and Done commits, matching the native sheet.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { useMemo } from "react";
+import { View } from "react-native";
 
-import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
-import { WebModalFrame } from "../modal";
+import { DropdownPortal } from "../dropdown";
 import { useSharedUiTheme } from "../theme";
 
 import { CalendarMonth } from "./CalendarMonth";
-import { DateWheel } from "./DateWheel";
+import { DateWheelSheet } from "./DateWheelSheet";
 import { dateFieldZIndex } from "./dateFieldLayers";
 import { DatePickerOverlayProps } from "./types";
 import { createWebCalendarStyles } from "./webCalendarStyles";
-import { createWheelPickerStyles } from "./wheelPickerStyles";
 
 export function DatePickerOverlay({
+  anchorRef,
   value,
   today,
   min,
@@ -35,7 +33,7 @@ export function DatePickerOverlay({
 }: DatePickerOverlayProps) {
   if (variant === "wheel") {
     return (
-      <WheelSheet
+      <DateWheelSheet
         label={label}
         max={max}
         min={min}
@@ -49,6 +47,7 @@ export function DatePickerOverlay({
   }
   return (
     <CalendarPopover
+      anchorRef={anchorRef}
       label={label}
       max={max}
       min={min}
@@ -63,6 +62,7 @@ export function DatePickerOverlay({
 }
 
 function CalendarPopover({
+  anchorRef,
   value,
   today,
   min,
@@ -75,6 +75,7 @@ function CalendarPopover({
 }: Pick<
   DatePickerOverlayProps,
   | "value"
+  | "anchorRef"
   | "today"
   | "min"
   | "max"
@@ -86,98 +87,35 @@ function CalendarPopover({
 >) {
   const theme = useSharedUiTheme();
   const s = useMemo(() => createWebCalendarStyles(theme), [theme]);
-  // Escape dismisses the popover through the shared layer stack, so a calendar
-  // opened inside a modal/dropdown closes itself first and the surface beneath
-  // it stays open (WCAG 2.1 2.1.2 No Keyboard Trap / 1.4.13 Content on Focus).
-  const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
-  useEffect(() => {
-    const layer = { onEscape: () => onCloseRef.current?.() };
-    pushEscapeLayer(layer);
-    return () => removeEscapeLayer(layer);
-  }, []);
   return (
-    // Named `dialog` rather than a bare anonymous container, so the popover is
-    // announced and its boundary is programmatically discoverable. The trigger
-    // (the editable text input) keeps focus for type-or-pick, so this is an
-    // anchored, non-trapping popover: Tab moves into the day grid (a single
-    // roving Tab stop) and Escape closes it (WCAG 2.1 4.1.2 Name/Role/Value).
-    <View
-      accessibilityLabel={label ?? "Choose date"}
-      accessibilityViewIsModal
-      role="dialog"
-      style={[s.pop, { zIndex: dateFieldZIndex(zIndex) }]}
-      testID={testID}
-    >
-      <CalendarMonth
-        max={max}
-        min={min}
-        onSelect={onSelect}
-        today={today}
-        value={value}
-      />
-    </View>
-  );
-}
-
-function WheelSheet({
-  value,
-  today,
-  min,
-  max,
-  onSelect,
-  onClose,
-  label,
-  testID,
-}: Pick<
-  DatePickerOverlayProps,
-  | "value"
-  | "today"
-  | "min"
-  | "max"
-  | "onSelect"
-  | "onClose"
-  | "label"
-  | "testID"
->) {
-  const theme = useSharedUiTheme();
-  const styles = useMemo(() => createWheelPickerStyles(theme), [theme]);
-  // Spin stages a draft; Done commits it, Cancel/backdrop/Escape discard it.
-  const [draft, setDraft] = useState(value || today);
-
-  return (
-    <WebModalFrame
-      footer={
-        <>
-          <Pressable
-            accessibilityRole="button"
-            onPress={onClose}
-            style={[styles.footerButton, styles.footerCancel]}
-          >
-            <Text style={styles.footerCancelText}>Cancel</Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => onSelect(draft)}
-            style={[styles.footerButton, styles.footerDone]}
-          >
-            <Text style={styles.footerDoneText}>Done</Text>
-          </Pressable>
-        </>
-      }
+    <DropdownPortal
+      anchorRef={anchorRef}
+      minWidth={280}
       onClose={onClose}
-      placement="bottom-sheet"
-      scroll={false}
-      testID={testID}
-      title={label ?? "Select date"}
+      open
+      zIndex={dateFieldZIndex(zIndex)}
     >
-      <DateWheel
-        max={max}
-        min={min}
-        onChange={setDraft}
-        today={today}
-        value={draft}
-      />
-    </WebModalFrame>
+      {() => (
+        // Named `dialog` rather than a bare anonymous container, so the
+        // popover is announced and its boundary is discoverable. The editable
+        // trigger keeps focus; Tab moves into the roving day grid and the shared
+        // portal owns outside-press/Escape dismissal.
+        <View
+          accessibilityLabel={label ?? "Choose date"}
+          accessibilityViewIsModal
+          role="dialog"
+          style={s.portalBody}
+          testID={testID}
+        >
+          <CalendarMonth
+            max={max}
+            min={min}
+            onSelect={onSelect}
+            today={today}
+            value={value}
+          />
+        </View>
+      )}
+    </DropdownPortal>
   );
 }

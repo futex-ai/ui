@@ -1253,6 +1253,32 @@ test("date calendar z-index override clears overlapping content", async ({
   expect(topLabel).toBe("15 Mar 2026");
 });
 
+test("data-grid date editor uses the inline calendar on web", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=datagrid-examples--editable");
+
+  const createdCell = page
+    .getByRole("gridcell")
+    .filter({ hasText: "29 Jun 2026" })
+    .first();
+  await createdCell.click();
+  await createdCell.click();
+
+  const input = page.getByRole("textbox", { name: "Created" });
+  const calendar = page.getByRole("dialog", { name: "Created" });
+  await expect(input).toBeFocused();
+  await expect(calendar.getByText("June 2026")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Done" })).toBeHidden();
+  await expect(page.getByRole("button", { name: "Cancel" })).toBeHidden();
+
+  await calendar.getByRole("button", { name: "28 Jun 2026" }).click();
+  await expect(calendar).toBeHidden();
+  await expect(
+    page.getByRole("gridcell").filter({ hasText: "28 Jun 2026" }).first(),
+  ).toBeVisible();
+});
+
 test("date field jumps to a far year through the header year picker", async ({
   page,
 }) => {

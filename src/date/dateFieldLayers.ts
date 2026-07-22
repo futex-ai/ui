@@ -1,20 +1,10 @@
 /**
  * Stacking-layer (z-index) tokens for the date fields.
  *
- * React Native Web renders every `View` with `position: relative` and an
- * explicit `z-index: 0`, so each one forms its own stacking context at the same
- * elevation and paints in DOM order. The web calendar is positioned with
- * `position: absolute`, so it stays trapped behind any later sibling whose
- * wrapper rests at the same elevation — even though the calendar sets its own
- * high `z-index`, because that inner value only orders children *within* its
- * wrapper's context.
- *
- * Two wrappers must therefore be lifted while a calendar is open: the field root
- * (so the calendar paints over the form fields that follow it) and, in
- * {@link DateRangeField}, the endpoints' row (so the calendar — nested one level
- * deeper inside the row — escapes the row's later-DOM hint and error siblings).
- * `base` is the resting elevation of a closed field, the row at rest, and that
- * ordinary later-DOM content.
+ * The web calendar renders through a fixed body portal, so it escapes ancestor
+ * stacking contexts and scroll clipping. `open` is the portal's default layer
+ * and is also applied to open trigger wrappers so their active chrome stays
+ * above overlapping sibling content. `base` is the resting field elevation.
  */
 export const DATE_FIELD_LAYERS = {
   /** Resting elevation of closed fields, the range row, and later-DOM siblings. */
@@ -23,7 +13,7 @@ export const DATE_FIELD_LAYERS = {
   open: 1_000_000,
 } as const;
 
-/** Default or consumer-supplied elevation for an open calendar field/popover. */
+/** Default or consumer-supplied elevation for an open web calendar portal. */
 export function dateFieldZIndex(zIndex?: number): number {
   return zIndex ?? DATE_FIELD_LAYERS.open;
 }
@@ -32,9 +22,8 @@ export function dateFieldZIndex(zIndex?: number): number {
  * Whether a field/row lifted to `fieldLayer` while open paints above sibling
  * content resting at `siblingLayer`.
  *
- * In React Native Web an open calendar only escapes its later siblings when its
- * wrapper's stacking context strictly outranks them, so the calendar is visible
- * iff the wrapper sits strictly above that content.
+ * This models ordinary sibling stacking for the trigger wrappers; the portaled
+ * calendar itself is outside those local contexts.
  */
 export function openFieldClearsSiblings(
   fieldLayer: number,

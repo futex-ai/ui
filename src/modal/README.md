@@ -30,6 +30,8 @@ though it is now cross-platform.
   Native Web stacking contexts.
 - Provide consistent backdrop, title/subtitle, close control, scrollable body,
   footer actions, size variants, and busy/non-dismissible close policy.
+- Honour `scroll={false}` on native bottom sheets with a static body, so nested
+  controls such as date-wheel columns own their scrolling gestures.
 - Support a centered dialog (`placement="center"`, the default) or a bottom
   sheet (`placement="bottom-sheet"`) pinned full-width to the viewport bottom.
 - Keep web focus behavior in one place: focus enters the close control while a

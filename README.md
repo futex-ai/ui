@@ -21,8 +21,8 @@ surfaces. The first consumers are the accounting app and the Juno app.
   theme's `focusRing: false` flag or per instance with a `disableFocusRing` prop
   (both fall back to the browser's default focus outline so keyboard focus stays
   visible).
-- High-layer date, dropdown, and popover overlays with z-index escape hatches
-  for custom consumer stacking contexts.
+- Portaled, anchored web date/dropdown/popover overlays with z-index escape
+  hatches, plus touch-friendly native date sheets.
 - Expo and React Native Web compatible platform files.
 - Focused unit tests, browser interaction tests, and package export checks.
 - Storybook previews for visual review on same-repository non-release PRs.
@@ -122,6 +122,10 @@ packed tarball, installs it into temporary consumers, imports every public
 package subpath with Node's native ESM resolver, typechecks those subpaths with
 TypeScript's NodeNext resolver, and then verifies the same subpaths through a
 Vite build.
+
+Playwright uses `STORYBOOK_PORT` when set, then Conductor's workspace-specific
+`CONDUCTOR_PORT`, and otherwise port `6006`. This lets browser checks run safely
+alongside previews from parallel workspaces.
 
 The package export map intentionally separates runtime targets:
 

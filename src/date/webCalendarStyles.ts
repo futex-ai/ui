@@ -3,8 +3,6 @@ import { StyleSheet } from "react-native";
 
 import type { SharedUiTheme } from "../theme";
 
-import { dateFieldZIndex } from "./dateFieldLayers";
-
 export function createWebCalendarStyles(theme: SharedUiTheme) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
   return StyleSheet.create({
@@ -70,21 +68,8 @@ export function createWebCalendarStyles(theme: SharedUiTheme) {
       justifyContent: "center",
       width: 26,
     },
-    pop: {
-      // The popover is an interactive surface; give its edge the `controlBorder`
-      // token (soft translucent-ink edge) so it is perceivable against the page.
-      backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.controlBorder,
-      borderRadius: theme.radii.xl,
-      borderWidth: 1,
-      boxShadow: "0 14px 40px rgba(20, 28, 22, 0.1)",
-      left: 0,
-      padding: 12,
-      position: "absolute",
-      top: 46,
-      width: 280,
-      zIndex: dateFieldZIndex(),
-    },
+    // DropdownPortal supplies the first 6px of inset plus the surface chrome.
+    portalBody: { padding: 6 },
     title: {
       ...baseText,
       color: theme.colors.ink,

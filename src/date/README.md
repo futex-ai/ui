@@ -15,9 +15,10 @@ and a `variant` prop chooses which picker that is.
   bottom sheet, built from our theme (not the OS picker). The trigger is a
   tap-to-open target on every platform (typing a date doesn't pair with a
   spinner). Spinning or tapping a row stages a draft; Cancel discards it and Done
-  commits it. The wheel sheet uses our own modal — `WebModalFrame`
-  (`placement="bottom-sheet"`) on web, RN `Modal` on native — so there is **no
-  native date-picker dependency**.
+  commits it. The wheel sheet uses the cross-platform `WebModalFrame`
+  (`placement="bottom-sheet"`): a body portal on web and the shared
+  gesture-driven bottom sheet on native. There is **no OS date-picker
+  dependency**.
 
 ```tsx
 <DateField label="Year ends" onChange={setIso} value={iso} variant="wheel" />
@@ -33,8 +34,10 @@ shared `CalendarMonth` itself and the wheel variant renders our own
 
 - **`DateField`** — single date. Label + trigger + error/hint.
 - **`DateInput`** — the bare trigger + its own single-date picker (no
-  label/error/hint). Used by `DateField` and by each `DateRangeField` endpoint;
-  pass `autoFocus` when it mounts as an active embedded editor.
+  label/error/hint). Used by `DateField` and by each `DateRangeField` endpoint.
+  Pass `autoFocus` when it mounts as an active embedded editor: web focuses the
+  editable trigger and opens the calendar, while tap-only/native variants focus
+  their trigger and open the sheet.
 - **`DateRangeField`** — start–end range built from two independent
   `DateInput`s, with ordering validation.
 - **`CalendarMonth`** — the shared, theme-driven month grid (header nav,
@@ -117,7 +120,8 @@ with `labelInfoIcon` and the button's accessible name with `labelInfoLabel`
 - `useDateField.ts` — shared hook: value, format, min/max clamp, typed-text
   parse, open state. No platform code.
 - `types.ts` — shared overlay prop contract (`DatePickerOverlayProps`).
-- `dateFieldLayers.ts` — z-index tokens for lifting open fields/rows.
+- `dateFieldLayers.ts` — the default web calendar portal layer and optional
+  z-index override.
 - `DateField.tsx` — `DateField`, `DateInput`, and the shared `FieldLabel`.
 - `DateTrigger.tsx` — the platform triggers (`WebTrigger`, `NativeTrigger` tap
   target) and the `triggerBorder` helper. `WebTrigger` renders the shared
@@ -131,10 +135,12 @@ with `labelInfoIcon` and the button's accessible name with `labelInfoLabel`
 - `DateWheel.tsx` — the shared spinning day/month/year wheel (wheel variant). A
   snap-scrolling, tappable, theme-driven three-column picker; spinning to a
   shorter month keeps a valid day and out-of-bounds dates snap back.
-- `DatePickerOverlay.web.tsx` — web overlay: calendar popover (anchored) or, for
-  the wheel variant, a `WebModalFrame` bottom sheet with Cancel/Done.
-- `DatePickerOverlay.tsx` — native overlay: a bottom-sheet `Modal` (Cancel/Done
-  draft) rendering the calendar or the wheel by `variant`.
+- `DateWheelSheet.tsx` — shared staged wheel + `WebModalFrame` bottom-sheet
+  chrome (title/close header and Cancel/Done footer) for web and native.
+- `DatePickerOverlay.web.tsx` — web overlay: portaled, anchored calendar popover
+  or the shared wheel sheet.
+- `DatePickerOverlay.tsx` — native overlay: compact calendar sheet or the shared
+  wheel sheet, selected by `variant`.
 - `dateFieldStyles.ts` / `webCalendarStyles.ts` / `wheelPickerStyles.ts` —
   `createXStyles(theme)` factories for the triggers, the calendar, and the wheel.
 
@@ -152,21 +158,16 @@ theme's `primary` / `primaryDeep` tokens.
 
 ## Web stacking (z-index)
 
-react-native-web gives every `View` `position: relative` + `zIndex: 0`, so each
-is its own stacking context and a high `zIndex` on a nested element cannot escape
-its parent. The calendar is therefore lifted at each wrapper that would trap it:
-
-- **Field root** — `fieldOpen` (`zIndex: 1_000_000`) on the open field so the
-  calendar paints over following form fields.
-- **`DateRangeField` row** — also lifted when either endpoint is open, because the
-  open endpoint's calendar is nested inside the row and would otherwise be painted
-  over by the row's later-DOM hint/error siblings.
+The calendar renders through `DropdownPortal`, whose fixed body layer escapes
+the field, grid, and scroll-container stacking contexts. It tracks the trigger
+while the viewport or an ancestor scrolls, flips above when space below is
+tight, and owns outside-press/Escape dismissal.
 
 `DateField`, `DateInput`, and `DateRangeField` accept a `zIndex` prop when a
-consumer owns an even higher custom stacking context. The override is applied to
-the open wrappers and the web calendar popover frame; native calendar sheets and
-the wheel sheet continue to use their modal layer. `dateFieldLayers.ts`
-documents and unit-tests this rule.
+consumer owns an even higher custom layer. The override is applied to the web
+calendar portal and the open trigger wrappers; native calendar and wheel sheets
+continue to use their modal layer. `dateFieldLayers.ts` documents and unit-tests
+the default layer.
 
 ## Accessibility
 
@@ -190,12 +191,11 @@ documents and unit-tests this rule.
   `accessibilityState` selected/disabled — tapping a row selects it without
   needing a fling, so the wheel is reachable by pointer and keyboard, not only by
   scroll. Out-of-bounds rows are disabled.
-- Web dismissal: the calendar popover closes on selection, on an outside press
-  (`useOutsideClose`), or on **Escape** (registered with the shared
-  `escapeLayer`, so a calendar opened inside a modal/dropdown closes itself first
-  and the surface beneath stays open). The native sheet and the web wheel sheet
-  close on Cancel, Done, or backdrop press; the web wheel sheet (`WebModalFrame`)
-  also closes on Escape and traps/restores focus.
+- Web dismissal: the calendar popover closes on selection, an outside press, or
+  **Escape** through `DropdownPortal` (so a calendar opened above another
+  surface closes first). Wheel sheets close on Cancel, Done, backdrop press,
+  close-button press, or Escape/back on supported platforms; `WebModalFrame`
+  owns modal focus behavior.
 - The web calendar popover is a labelled `role="dialog"` (named by the field
   label). It is an anchored, non-trapping popover: the editable trigger keeps
   focus for type-or-pick, and Tab moves into the day grid, which is a single
@@ -230,4 +230,5 @@ calendar and wheel variants are exercised by the Storybook Playwright spec
 (`tests/browser/storybook.spec.ts`) against the `Date/Examples` stories —
 covering month navigation and day picking for the calendar, and draft
 staging/commit, day-and-bounds clamping, Cancel, clearing, and the range field
-for the wheel.
+for the wheel. The editable data-grid story additionally verifies that web date
+cells open the inline calendar and commit without sheet actions.

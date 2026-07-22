@@ -60,6 +60,16 @@ export function WebTrigger({
   // calendar — clearing should leave the field empty and closed, not pop a picker.
   const suppressOpenRef = useRef(false);
   useEffect(() => {
+    if (!autoFocus) {
+      return;
+    }
+    // The grid enters edit mode from pointerdown. Defer focus until that pointer
+    // sequence finishes, otherwise the removed cell can reclaim focus and leave
+    // it on <body> after this input briefly focused.
+    const id = setTimeout(() => inputRef.current?.focus(), 0);
+    return () => clearTimeout(id);
+  }, [autoFocus]);
+  useEffect(() => {
     if (!editing) {
       setText(field.display);
     }

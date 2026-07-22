@@ -18,8 +18,9 @@ portals; the grid contributes the selection model, keyboard model, and chrome.
   and multi-select (colored option pills).
 - Select a rectangular range of cells by keyboard (`Shift`+arrows, `Ctrl/Cmd-A`)
   or pointer drag, with a moving active cell and roving Tab focus.
-- Edit cells in place — text/number via `Input`, date via `DateField`
-  (`variant="wheel"`), single-select via `DropdownMenu`, multi-select via
+- Edit cells in place — text/number via `Input`, date via a responsive
+  `DateInput` (anchored calendar on web, wheel bottom sheet on native),
+  single-select via `DropdownMenu`, and multi-select via
   `ComboboxMultiSelect` — committing through `onCellChange`.
 - Virtualize the body (`FlatList`, fixed row height) and load more rows on
   scroll-end via `onEndReached`.
@@ -160,6 +161,12 @@ blur commits. `onCellChange(ref, value)` may return a promise — a rejection
 keeps the editor open so you can surface an error. Number cells reject
 non-numeric input with an inline error.
 
+Date editing adapts by platform. Web renders the editable date trigger and an
+anchored calendar through `DropdownPortal`, so it stays beside the cell while
+escaping the grid's scroll clipping; entering edit mode focuses the input and
+opens that calendar immediately. Native opens the day/month/year wheel in the
+shared bottom sheet on edit entry; Cancel discards its draft and Done commits it.
+
 ### Fixed height
 
 `maxHeight` gives the body a fixed height rather than a cap: the rows scroll once
@@ -253,10 +260,6 @@ wide-viewport experience.
 
 - **Fixed row height** per `size` (`sm 32 / md 40 / lg 48`) — required for the
   windowing math; no variable / multi-line rows yet.
-- **Date editor uses `variant="wheel"` only.** `DateField`'s `calendar` variant
-  is not portaled and would be clipped by the grid's scroll container, so the
-  grid forces the (portaled) wheel. A calendar-in-grid would need the calendar
-  routed through `DropdownPortal` (future).
 - **Dropdown text-inversion gotcha.** Column menus and select editors use
   `highlightVariant="ring"`; the solid fill would invert library-owned row text
   to white. Use `rightText` (string) for trailing text, not custom `right` nodes.

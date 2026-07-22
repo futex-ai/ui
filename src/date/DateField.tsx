@@ -1,6 +1,13 @@
 /** Branded single-date input with a calendar picker. */
 import { LucideIcon } from "lucide-react-native";
-import { useEffect, useId, useLayoutEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Platform, Text, View } from "react-native";
 
 import type { ControlSize } from "../controlSize";
@@ -14,13 +21,12 @@ import { todayIso } from "./dateMath";
 import { NativeTrigger, WebTrigger } from "./DateTrigger";
 import { DatePickerVariant } from "./types";
 import { useDateField } from "./useDateField";
-import { useOutsideClose } from "./useOutsideClose";
 
 // Re-exported so the date barrel keeps `triggerBorder` on its public surface.
 export { triggerBorder } from "./DateTrigger";
 
-// Report open/close before paint (so the parent raises z-index in the same frame
-// the calendar appears), falling back to useEffect during server pre-render.
+// Report open/close before paint so parent trigger chrome reflects the state in
+// the same frame, falling back to useEffect during server pre-render.
 const useIsoLayoutEffect =
   typeof window === "undefined" ? useEffect : useLayoutEffect;
 
@@ -64,7 +70,7 @@ export type DateFieldProps = {
   variant?: DatePickerVariant;
   /** Control density: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
-  /** z-index for the open calendar wrappers and web popover frame. */
+  /** z-index for the open trigger wrappers and web calendar portal. */
   zIndex?: number;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
@@ -184,6 +190,8 @@ export type DateInputProps = {
   max?: string;
   /** Fill the available row width (range endpoints). */
   flex?: boolean;
+  /** Focus the trigger and open the platform picker when it mounts. */
+  autoFocus?: boolean;
   /** Notifies the parent when the picker opens/closes (so it can raise z-index). */
   onOpenChange?: (open: boolean) => void;
   /** Show a clear (✕) button once a value is set. Off by default. */
@@ -192,15 +200,13 @@ export type DateInputProps = {
   variant?: DatePickerVariant;
   /** Control density: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
-  /** Focus the trigger when it mounts. */
-  autoFocus?: boolean;
   /**
    * Corner radius (px) of the trigger box. Defaults to `theme.radii.md`; pass
    * `0` for square corners (e.g. an in-grid cell editor that must match a
    * square container).
    */
   borderRadius?: number;
-  /** z-index for the open calendar wrappers and web popover frame. */
+  /** z-index for the open trigger wrapper and web calendar portal. */
   zIndex?: number;
   /**
    * Space-separated id list of the error/hint text describing this field, wired
@@ -233,11 +239,11 @@ export function DateInput({
   min,
   max,
   flex = false,
+  autoFocus = false,
   onOpenChange,
   clearable = false,
   variant = "calendar",
   size = "md",
-  autoFocus = false,
   borderRadius,
   zIndex,
   describedById,
@@ -257,14 +263,18 @@ export function DateInput({
     () => ({ zIndex: dateFieldZIndex(zIndex) }),
     [zIndex],
   );
-  // The wheel sheet portals out of this anchor and manages its own dismissal, so
-  // outside-press close only applies to the anchored calendar popover.
-  const rootRef = useOutsideClose(field.open && variant === "calendar", () =>
-    field.setOpen(false),
-  );
-  // Layout effect (not passive) so the parent raises its z-index in the same
-  // frame the calendar first paints, otherwise the popover is one frame late and
-  // a later sibling can flash over it on open.
+  // The web calendar portal measures this wrapper and owns outside/Escape
+  // dismissal. Native sheets use the same ref-shaped seam but do not measure it.
+  const rootRef = useRef<View>(null);
+  // An auto-focused web trigger opens from its focus event; the explicit open
+  // also gives native/tap-only variants the matching enter-edit behaviour.
+  useEffect(() => {
+    if (autoFocus) {
+      field.setOpen(true);
+    }
+  }, [autoFocus, field.setOpen]);
+  // Layout effect (not passive) keeps parent trigger chrome in sync with the
+  // portal's first frame.
   useIsoLayoutEffect(() => {
     onOpenChange?.(field.open);
   }, [field.open, onOpenChange]);
@@ -316,6 +326,7 @@ export function DateInput({
       )}
       {field.open ? (
         <DatePickerOverlay
+          anchorRef={rootRef}
           label={label}
           max={field.max}
           min={field.min}
