@@ -37,6 +37,8 @@ export type DataGridBodyProps = {
   loadingMore?: boolean;
   editingCell: DataGridCellRef | null;
   renderEditor?: (ref: DataGridCellRef) => ReactNode;
+  /** Resolve whether an individual cell is waiting on asynchronous work. */
+  cellLoading?: (ref: DataGridCellRef) => boolean;
   /** Keys of the cells on the clipboard (dashed copy/cut marquee), or null. */
   copiedKeys: Set<string> | null;
   /** Trailing "+ New record" row rendered after the data rows. */
@@ -60,6 +62,7 @@ export function DataGridBody({
   loadingMore,
   editingCell,
   renderEditor,
+  cellLoading,
   copiedKeys,
   addRow,
   onRegisterScroll,
@@ -78,6 +81,7 @@ export function DataGridBody({
   const renderRow = (row: DataGridRowData, rowIndex: number) => (
     <DataGridRow
       activeCell={controller.activeCell}
+      cellLoading={cellLoading}
       columns={columns}
       copiedKeys={copiedKeys}
       editingCell={editingCell}

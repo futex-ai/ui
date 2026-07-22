@@ -190,7 +190,7 @@ export type DateInputProps = {
   max?: string;
   /** Fill the available row width (range endpoints). */
   flex?: boolean;
-  /** Focus the editable web trigger and open the picker when it mounts. */
+  /** Focus the trigger and open the platform picker when it mounts. */
   autoFocus?: boolean;
   /** Notifies the parent when the picker opens/closes (so it can raise z-index). */
   onOpenChange?: (open: boolean) => void;
@@ -309,6 +309,7 @@ export function DateInput({
         />
       ) : (
         <NativeTrigger
+          autoFocus={autoFocus}
           clearable={clearable}
           describedById={describedById}
           errorId={errorId}

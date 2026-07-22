@@ -109,6 +109,55 @@ export function normalizeDocument(
   return normalized;
 }
 
+/** Whether two documents contain the same canonical blocks and inline spans. */
+export function richTextDocumentsEqual(
+  left: readonly RichTextBlock[],
+  right: readonly RichTextBlock[],
+): boolean {
+  const leftDocument = normalizeDocument(left);
+  const rightDocument = normalizeDocument(right);
+  return (
+    leftDocument.length === rightDocument.length &&
+    leftDocument.every((block, index) =>
+      richTextBlocksEqual(block, rightDocument[index]),
+    )
+  );
+}
+
+function richTextBlocksEqual(
+  left: RichTextBlock,
+  right: RichTextBlock,
+): boolean {
+  if (left.type !== right.type) return false;
+  if (left.type === "divider") return true;
+  if (left.type === "codeBlock") {
+    return right.type === "codeBlock" && left.code === right.code;
+  }
+  if (right.type === "divider" || right.type === "codeBlock") return false;
+  const sameCheckState =
+    left.type !== "check" ||
+    (right.type === "check" && left.checked === right.checked);
+  return sameCheckState && richTextSpansEqual(left.spans, right.spans);
+}
+
+function richTextSpansEqual(
+  left: readonly InlineSpan[],
+  right: readonly InlineSpan[],
+): boolean {
+  return (
+    left.length === right.length &&
+    left.every((span, index) => {
+      const other = right[index];
+      if (!other) return false;
+      return (
+        span.text === other.text &&
+        span.marks.length === other.marks.length &&
+        span.marks.every((mark, markIndex) => mark === other.marks[markIndex])
+      );
+    })
+  );
+}
+
 /** Split a block with Enter semantics. */
 export function splitBlock(
   document: readonly RichTextBlock[],

@@ -4,8 +4,8 @@
 
 Implemented contract for the dropdown, drag-select, segmented control, radio
 card, switch, spinner, button, data table, workflow builder, modal, toast,
-avatar, status badge, and event-calendar extraction, including the shared
-control-size scale for buttons, inputs, and textareas.
+avatar, status badge, rich-text editor, and event-calendar extraction,
+including the shared control-size scale for buttons, inputs, and textareas.
 
 ## Purpose
 
@@ -27,6 +27,12 @@ app, plus labelled text inputs and textareas for shared forms.
 - `react`, `react-native`, `react-native-web`, `react-dom`, and
   `lucide-react-native` are external peer/runtime dependencies, not copied app
   code.
+
+## Rich Text Editor Contract
+
+The rich-text editor's cross-platform markdown, block-editing, mobile toolbar,
+and accessibility behavior is specified separately in
+[rich-text-editor.md](rich-text-editor.md).
 
 ## Theming Contract
 
@@ -227,6 +233,8 @@ Required behavior:
 - Render an identical styled trigger on every platform and resolve only the
   opened picker per platform: an editable type-or-pick text input plus anchored
   calendar popover on web, and a tap-to-pick calendar sheet on native.
+- Give editable and tap-to-pick triggers the shared input border and focus glow,
+  and let the bare `DateInput` autofocus when mounted as an embedded editor.
 - Clamp selections and typed values to the inclusive `min`/`max` bounds.
 - Validate range ordering, surfacing an error when the start is after the end,
   while still allowing each endpoint to hold any date independently.
@@ -396,6 +404,10 @@ Required behavior:
 - Preserve no-match empty rows even when combobox footers are present.
 - Keep input-backed comboboxes on a non-modal web portal so text inputs retain
   focus while results are open.
+- Give field-style selectors and chip multi-selects the shared input border and
+  focus glow, with autofocus support for controls mounted as active editors.
+  Focusing a chip multi-select search input must open its option list, and
+  pressing anywhere on the control must return focus to that input.
 - Size chip multi-selects from the shared control scale and provide a
   fixed-height single-line mode for dense table or data-grid editors, so their
   chips cannot expand over neighboring rows; summarize overflow selections and

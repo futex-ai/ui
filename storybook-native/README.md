@@ -68,10 +68,11 @@ After the dev client is installed, for normal JS iteration just:
 npm run storybook:native     # builds the lib, then `expo start --dev-client --clear`
 ```
 
-Open on the simulator/device dev client (NOT Expo Go). The **Modal / Native
-sheet** story is seeded; tap **Open bottom-sheet** to preview the native sheet,
-and use the Storybook navigator/Controls to flip the `placement` arg between
-`bottom-sheet` and `center`.
+Open the host on the simulator or device and choose a story in the navigator.
+The **Modal / Native sheet** stories exercise native overlays. The **RichText /
+Native editor** stories exercise editable, prefilled, and read-only attributed
+blocks; focus a block to inspect the iOS input accessory or Android in-frame
+formatting toolbar.
 
 ## Versions
 
@@ -81,9 +82,10 @@ Storybook React Native is on the **v10** major (same as the web Storybook). Run
 
 ## Status
 
-Bundles successfully and renders the story on the iOS simulator. The full
-on-device Storybook UI (navigator + Controls) requires the **dev build** above —
-in Expo Go it falls back to the bare story (see the Expo Go note).
+Bundles successfully for iOS and Android. The rich-text story has also been
+interaction-smoked in Expo Go on the iOS simulator, including focus and the
+input-accessory toolbar. If Expo Go cannot mount the full navigator for a local
+SDK combination, use the **dev build** above.
 
 Notes:
 

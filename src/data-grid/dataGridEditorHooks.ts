@@ -1,6 +1,5 @@
 /** Shared props + hooks for the in-cell editors. */
 import { type RefObject, useEffect, useRef } from "react";
-import type { TextInput } from "react-native";
 
 import type { SharedUiTheme } from "../theme";
 
@@ -24,11 +23,23 @@ export type CellEditorProps = {
  * `shouldCommitOnBlur()` (false during the ~250ms settle window) so the editor
  * re-focuses instead of committing the unchanged value and closing immediately.
  */
-export function useEditorAutofocus(inputRef: RefObject<TextInput | null>) {
+export function useEditorAutofocus<T>(inputRef: RefObject<T | null>) {
   const mountAtRef = useRef(0);
   useEffect(() => {
     mountAtRef.current = Date.now();
-    inputRef.current?.focus();
+    const focus = () => {
+      const focusable = inputRef.current as { focus?: () => void } | null;
+      focusable?.focus?.();
+    };
+    focus();
+    if (typeof requestAnimationFrame === "undefined") {
+      return;
+    }
+    // The pointer-up that completes edit entry can land after this effect and
+    // move focus back to the cell that is being replaced. Re-focus after that
+    // event frame so button-backed editors settle like text inputs do.
+    const frame = requestAnimationFrame(focus);
+    return () => cancelAnimationFrame(frame);
   }, [inputRef]);
   return () => Date.now() - mountAtRef.current >= 250;
 }

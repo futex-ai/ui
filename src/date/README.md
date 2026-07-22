@@ -35,8 +35,9 @@ shared `CalendarMonth` itself and the wheel variant renders our own
 - **`DateField`** — single date. Label + trigger + error/hint.
 - **`DateInput`** — the bare trigger + its own single-date picker (no
   label/error/hint). Used by `DateField` and by each `DateRangeField` endpoint.
-  Pass `autoFocus` to focus its editable web trigger and open the picker on
-  mount; tap-only/native variants open their sheet on mount instead.
+  Pass `autoFocus` when it mounts as an active embedded editor: web focuses the
+  editable trigger and opens the calendar, while tap-only/native variants focus
+  their trigger and open the sheet.
 - **`DateRangeField`** — start–end range built from two independent
   `DateInput`s, with ordering validation.
 - **`CalendarMonth`** — the shared, theme-driven month grid (header nav,
@@ -128,7 +129,7 @@ with `labelInfoIcon` and the button's accessible name with `labelInfoLabel`
   ring, clear button, and `aria-invalid` wiring as every other text input — and
   only supplies the type-or-pick behaviour (commit-on-type, focus-to-open) plus
   the calendar suffix icon. `NativeTrigger` is a tap target, not a text input, so
-  it keeps its own row layout.
+  it keeps its own row layout while sharing the active border and focus glow.
 - `DateRangeField.tsx` — two independent endpoints with ordering validation.
 - `CalendarMonth.tsx` — the shared month grid (calendar variant).
 - `DateWheel.tsx` — the shared spinning day/month/year wheel (wheel variant). A

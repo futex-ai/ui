@@ -1,4 +1,4 @@
-/** Shared public prop types for the web editor and native markdown fallback. */
+/** Shared public prop types for the web and native rich-text editors. */
 import type {
   DocPosition,
   InlineMark,
@@ -28,7 +28,7 @@ export type SlashMenuItem = {
   section?: string;
 };
 
-/** Public props shared by the web editor and native markdown textarea fallback. */
+/** Public props shared by the web and native block editors. */
 export type RichTextEditorProps = {
   /** Focus the editor after it mounts. */
   autoFocus?: boolean;
@@ -53,7 +53,10 @@ export type RichTextEditorProps = {
   readOnly?: boolean;
   /** Additional web slash-menu items. Native accepts and ignores them. */
   slashExtraItems?: readonly SlashMenuItem[];
-  /** Test identifier forwarded to the editable root. */
+  /**
+   * Test identifier for the web editable root or first native editable block.
+   * Native also exposes `${testID}-field` and indexed secondary blocks.
+   */
   testID?: string;
   /** Controlled markdown value. */
   value?: string;

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 
 import type { ControlSize } from "../controlSize";
+import { useFocusRing } from "../focusRing";
 import { InputFrame, inputIconSize } from "../input";
 import { useSharedUiTheme } from "../theme";
 
@@ -12,8 +13,8 @@ import { DateFieldController } from "./useDateField";
 
 export type TriggerProps = {
   field: DateFieldController;
-  /** Focus the editable web input when the trigger mounts. */
-  autoFocus?: boolean;
+  /** Focus the trigger when it mounts. */
+  autoFocus: boolean;
   invalid: boolean;
   label: string;
   placeholder: string;
@@ -39,7 +40,7 @@ export type TriggerProps = {
 
 export function WebTrigger({
   field,
-  autoFocus = false,
+  autoFocus,
   invalid,
   label,
   placeholder,
@@ -100,6 +101,7 @@ export function WebTrigger({
       accessibilityHint={field.display ? undefined : placeholder}
       accessibilityLabel={label}
       active={field.open || editing}
+      autoFocus={autoFocus}
       // Associate the visible error/hint text with the input so screen readers
       // read it after the name (RNW forwards these literal aria props to the DOM
       // input; it does NOT map `accessibilityHint`) — WCAG 2.1 3.3.1 / 3.3.2.
@@ -146,6 +148,7 @@ export function WebTrigger({
 
 export function NativeTrigger({
   field,
+  autoFocus,
   invalid,
   label,
   placeholder,
@@ -160,7 +163,26 @@ export function NativeTrigger({
   testID,
 }: TriggerProps) {
   const theme = useSharedUiTheme();
+  const focus = useFocusRing();
+  const triggerRef = useRef<View>(null);
   const iconSize = inputIconSize(size);
+  useEffect(() => {
+    if (!autoFocus) {
+      return;
+    }
+    const focusTrigger = () => {
+      const focusable = triggerRef.current as unknown as {
+        focus?: () => void;
+      } | null;
+      focusable?.focus?.();
+    };
+    focusTrigger();
+    if (typeof requestAnimationFrame === "undefined") {
+      return;
+    }
+    const frame = requestAnimationFrame(focusTrigger);
+    return () => cancelAnimationFrame(frame);
+  }, [autoFocus]);
   // Native has no `aria-describedby`; fold the error/hint into the hint slot so
   // VoiceOver/TalkBack still read the validation message (WCAG 2.1 3.3.1 / 3.3.2).
   const accessibilityHint =
@@ -174,7 +196,11 @@ export function NativeTrigger({
     <Pressable
       accessible={false}
       onPress={() => field.setOpen(true)}
-      style={[styles.trigger, triggerBorder(styles, invalid, false)]}
+      style={[
+        styles.trigger,
+        triggerBorder(styles, invalid, field.open || focus.focused),
+        focus.focused ? focus.focusRingStyle : null,
+      ]}
       testID={testID}
     >
       <Pressable
@@ -185,8 +211,11 @@ export function NativeTrigger({
         aria-errormessage={errorId}
         aria-invalid={invalid}
         aria-required={required}
+        onBlur={focus.onBlur}
+        onFocus={focus.onFocus}
         onPress={() => field.setOpen(true)}
-        style={styles.triggerOpen}
+        ref={triggerRef}
+        style={[styles.triggerOpen, focus.webOutlineReset]}
       >
         <Text
           style={
