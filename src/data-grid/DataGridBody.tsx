@@ -123,6 +123,10 @@ export function DataGridBody({
             {addRow}
           </>
         }
+        // Fill the fixed body height and paint the muted grey empty zone behind
+        // the rows (which are opaque). `flexGrow` stretches the content to the
+        // viewport when the rows are short; when they overflow it's a no-op.
+        contentContainerStyle={styles.bodyContent}
         data={rows}
         getItemLayout={(_, index) => ({
           length: metrics.rowHeight,
@@ -137,7 +141,9 @@ export function DataGridBody({
         ref={listRef}
         renderItem={({ item, index }) => renderRow(item, index)}
         role="rowgroup"
-        style={{ maxHeight }}
+        // A fixed height (not `maxHeight`) so a grid taller than its rows keeps
+        // the height and shows the grey empty zone below the last row.
+        style={{ height: maxHeight }}
       />
     );
   }

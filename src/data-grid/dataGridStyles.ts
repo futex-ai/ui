@@ -63,6 +63,14 @@ export function createDataGridStyles(
     // The role="grid" wrapper inside the horizontal scroller fills the resolved
     // content width so the header and body rows share one width.
     gridContent: { width: "100%" },
+    // Bounded body (a `maxHeight` is set): the scroll content container fills the
+    // fixed body height (`flexGrow`) and paints a light grey behind the rows.
+    // When the rows are shorter than the height they stack at the top on their
+    // opaque `surface` (see `bodyRow`), so the area below the last row reads as a
+    // quiet empty zone (Airtable / Notion style) instead of blank white. When the
+    // rows overflow, the container is exactly content-height so no grey shows.
+    // `bg` (the lightest recessed surface) keeps the fill subtle.
+    bodyContent: { backgroundColor: theme.colors.bg, flexGrow: 1 },
     headerRow: {
       backgroundColor: theme.colors.bg,
       borderBottomColor: theme.colors.border2,
@@ -129,7 +137,14 @@ export function createDataGridStyles(
       width: 44,
     },
     addColumnHover: { backgroundColor: theme.colors.bg2 },
-    bodyRow: { flexDirection: "row", height: metrics.rowHeight },
+    // Rows paint an opaque `surface` so they read as solid white bands over the
+    // bounded body's muted grey empty zone (see `bodyContent`); on an unbounded
+    // grid this is white-on-white and changes nothing.
+    bodyRow: {
+      backgroundColor: theme.colors.surface,
+      flexDirection: "row",
+      height: metrics.rowHeight,
+    },
     cell: {
       borderBottomColor: theme.colors.border,
       borderBottomWidth: 1,

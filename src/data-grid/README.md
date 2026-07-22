@@ -160,6 +160,14 @@ blur commits. `onCellChange(ref, value)` may return a promise — a rejection
 keeps the editor open so you can surface an error. Number cells reject
 non-numeric input with an inline error.
 
+### Fixed height
+
+`maxHeight` gives the body a fixed height rather than a cap: the rows scroll once
+they overflow it, and when there are fewer rows than fit, they stack at the top
+and the area below the last row reads as a muted grey empty zone (Airtable /
+Notion style) instead of collapsing to the rows or leaving a blank white gap.
+Omit `maxHeight` for an unbounded body that's exactly as tall as its rows.
+
 ### Infinite scroll
 
 Set a `maxHeight` to virtualize the body, then handle `onEndReached` (fired near
