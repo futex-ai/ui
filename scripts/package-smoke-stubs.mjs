@@ -82,12 +82,16 @@ export const jsxs = jsx;
   });
   await writeStubPackage(consumerRoot, "react-native", {
     "index.js": `export const FlatList = "FlatList";
+export const InputAccessoryView = "InputAccessoryView";
 export const Modal = "Modal";
 export const Pressable = "Pressable";
 export const ScrollView = "ScrollView";
 export const Text = "Text";
 export const TextInput = "TextInput";
 export const View = "View";
+export const Keyboard = {
+  dismiss() {},
+};
 export const AccessibilityInfo = {
   announceForAccessibility() {},
   isReduceMotionEnabled() {
@@ -155,6 +159,7 @@ export default Svg;
     "index.js": `const Icon = () => null;
 export const ArrowDownAZ = Icon;
 export const ArrowUpAZ = Icon;
+export const Bold = Icon;
 export const Brain = Icon;
 export const Calendar = Icon;
 export const CalendarDays = Icon;
@@ -176,6 +181,7 @@ export const Heading2 = Icon;
 export const Heading3 = Icon;
 export const Inbox = Icon;
 export const Info = Icon;
+export const Italic = Icon;
 export const LayoutGrid = Icon;
 export const List = Icon;
 export const ListChecks = Icon;
@@ -185,13 +191,16 @@ export const Maximize2 = Icon;
 export const Minus = Icon;
 export const Pilcrow = Icon;
 export const Plus = Icon;
+export const Redo2 = Icon;
 export const Search = Icon;
 export const SquareTerminal = Icon;
+export const Strikethrough = Icon;
 export const Tags = Icon;
 export const TextQuote = Icon;
 export const TriangleAlert = Icon;
 export const Trash2 = Icon;
 export const Type = Icon;
+export const Undo2 = Icon;
 export const X = Icon;
 export const Zap = Icon;
 `,

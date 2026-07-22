@@ -27,7 +27,11 @@ import {
   isAtBlockEnd,
   isAtBlockStart,
 } from "./domSelection.web";
-import { matchInlineInputRule, matchPrefixInputRule } from "./inputRules";
+import {
+  applyInlineInputRule,
+  matchInlineInputRule,
+  matchPrefixInputRule,
+} from "./inputRules";
 import { parseMarkdown } from "./markdownParse";
 import { serializeMarkdown } from "./markdownSerialize";
 import {
@@ -54,7 +58,6 @@ import {
   isEmptyDocument,
   mergeBackward,
   normalizeDocument,
-  sliceSpans,
   spansText,
   splitBlock,
   toggleMarkInRange,
@@ -353,34 +356,10 @@ export function RichTextEditor({
       }
       event.preventDefault();
       const literalDoc = insertText(doc, position, inserted);
-      const withoutClose = deleteRange(
-        literalDoc,
-        { block: position.block, offset: rule.contentTo },
-        { block: position.block, offset: rule.triggerTo },
-      );
-      const withoutDelimiters = deleteRange(
-        withoutClose,
-        { block: position.block, offset: rule.triggerFrom },
-        { block: position.block, offset: rule.contentFrom },
-      );
-      const contentFrom = rule.triggerFrom;
-      const contentTo = rule.contentTo - (rule.contentFrom - rule.triggerFrom);
-      const next = everyCharacterHasMark(
-        withoutDelimiters,
-        { block: position.block, offset: contentFrom },
-        { block: position.block, offset: contentTo },
-        rule.mark,
-      )
-        ? withoutDelimiters
-        : toggleMarkInRange(
-            withoutDelimiters,
-            { block: position.block, offset: contentFrom },
-            { block: position.block, offset: contentTo },
-            rule.mark,
-          );
+      const formatted = applyInlineInputRule(literalDoc, position.block, rule);
       commit(
-        next,
-        { block: position.block, offset: contentTo },
+        formatted.document,
+        { block: position.block, offset: formatted.contentTo },
         {
           caret: collapsedHistoryCaret({
             block: position.block,
@@ -391,9 +370,9 @@ export function RichTextEditor({
       );
       lastRuleRef.current = {
         block: position.block,
-        from: contentFrom,
+        from: formatted.contentFrom,
         literal: rule.literal,
-        to: contentTo,
+        to: formatted.contentTo,
         type: "inline",
       };
       return true;
@@ -1181,31 +1160,4 @@ function clampPosition(
 
 function samePosition(left: DocPosition, right: DocPosition): boolean {
   return left.block === right.block && left.offset === right.offset;
-}
-
-function everyCharacterHasMark(
-  document: readonly RichTextBlock[],
-  from: DocPosition,
-  to: DocPosition,
-  mark: InlineMark,
-): boolean {
-  const doc = normalizeDocument(document);
-  const startBlock = Math.min(from.block, to.block);
-  const endBlock = Math.max(from.block, to.block);
-  let sawText = false;
-  for (let index = startBlock; index <= endBlock; index += 1) {
-    const block = doc[index];
-    if (!block || block.type === "codeBlock" || block.type === "divider") {
-      continue;
-    }
-    const blockFrom = index === from.block ? from.offset : 0;
-    const blockTo = index === to.block ? to.offset : blockTextLength(block);
-    for (const span of sliceSpans(block.spans, blockFrom, blockTo)) {
-      sawText = true;
-      if (!span.marks.includes(mark)) {
-        return false;
-      }
-    }
-  }
-  return sawText;
 }

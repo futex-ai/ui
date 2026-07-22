@@ -8,6 +8,7 @@ surfaces. The first consumers are the accounting app and the Juno app.
 - Shared dropdown menu, selector, combobox, drag-select, segmented control,
   radio card, switch, spinner, button, labelled input/textarea, data table,
   editable data grid (Airtable/Notion-style),
+  cross-platform block rich-text editor with canonical markdown,
   modal, toast provider/controller, avatar, status badge, animated comet-trail
   border, calendar heatmap, full event-calendar (month/week/day/agenda,
   recurring events, drag-to-create), and branching workflow-builder step-graph
@@ -56,6 +57,8 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/modal` for web modal frame, portal, model, and layer helpers.
 - `@firna/ui/popover` for generic anchored popovers.
 - `@firna/ui/radio` for themed titled radio-option cards.
+- `@firna/ui/rich-text` for the Notion-style block editor with markdown in/out,
+  inline formatting, lists/checklists, and native keyboard toolbars.
 - `@firna/ui/segmented` for themed single-select segmented controls.
 - `@firna/ui/sortable-list` for the drag-and-drop sortable list (pointer +
   keyboard reordering, an optional start/end grab handle, and vertical or
@@ -186,7 +189,7 @@ The package export map intentionally separates runtime targets:
   `Drag Select/Examples`, `Dropdown/Examples`, `Heatmap/Examples`,
   `Input/Examples`, `Kanban/Examples`, `List/Examples`, `Modal/Examples`,
   `Popover/Examples`,
-  `Radio/Examples`,
+  `Radio/Examples`, `RichText/Examples`,
   `Segmented/Examples`, `SortableList/Examples`, `Spinner/Examples`,
   `Switch/Examples`, `Table/Examples`, `Theme/Examples`, and `Toast/Examples`.
 - Required repository variable: `CLOUDFLARE_ACCOUNT_ID`.
@@ -213,6 +216,7 @@ The package export map intentionally separates runtime targets:
 - Heatmap component: [src/heatmap/README.md](src/heatmap/README.md)
 - Modal components: [src/modal/README.md](src/modal/README.md)
 - Radio card component: [src/radio/README.md](src/radio/README.md)
+- Rich-text editor: [src/rich-text/README.md](src/rich-text/README.md)
 - Segmented control component:
   [src/segmented/README.md](src/segmented/README.md)
 - Spinner component: [src/spinner/README.md](src/spinner/README.md)
