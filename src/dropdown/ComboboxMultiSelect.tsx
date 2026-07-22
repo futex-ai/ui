@@ -6,7 +6,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { announce } from "../announcer";
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
-import { hideWebOutline, useFocusRing } from "../focusRing";
+import { useFocusRing } from "../focusRing";
 import { inputSizeTokens, LabelInfo } from "../input";
 import { useSharedUiTheme } from "../theme";
 import type { SharedUiTheme } from "../theme";
@@ -113,6 +113,7 @@ export function ComboboxMultiSelect({
   values,
 }: ComboboxMultiSelectProps) {
   const theme = useSharedUiTheme();
+  const focus = useFocusRing({ disabled: disableFocusRing });
   const styles = useMemo(
     () =>
       createComboboxMultiSelectStyles(theme, borderRadius, size, singleLine),
@@ -121,9 +122,21 @@ export function ComboboxMultiSelect({
   const anchorRef = useRef<View>(null);
   const inputRef = useRef<TextInput>(null);
   const autoFocusAtRef = useRef(0);
-  const focus = useFocusRing({ disabled: disableFocusRing });
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  useEffect(() => {
+    if (!autoFocus) {
+      return;
+    }
+    autoFocusAtRef.current = Date.now();
+    const focusInput = () => inputRef.current?.focus();
+    focusInput();
+    if (typeof requestAnimationFrame === "undefined") {
+      return;
+    }
+    const frame = requestAnimationFrame(focusInput);
+    return () => cancelAnimationFrame(frame);
+  }, [autoFocus]);
   const selected = options.filter((option) => values.includes(option.value));
   const visibleSelected = singleLine ? selected.slice(0, 1) : selected;
   const hiddenSelectedCount = selected.length - visibleSelected.length;
@@ -202,13 +215,6 @@ export function ComboboxMultiSelect({
         : `${matchCount} ${matchCount === 1 ? "option" : "options"} available`,
     );
   }, [matchCount, open, query]);
-
-  useEffect(() => {
-    if (autoFocus) {
-      autoFocusAtRef.current = Date.now();
-      inputRef.current?.focus();
-    }
-  }, [autoFocus]);
 
   return (
     <View
@@ -320,7 +326,7 @@ export function ComboboxMultiSelect({
             placeholder={placeholder}
             placeholderTextColor={theme.colors.placeholder}
             ref={inputRef}
-            style={[styles.input, focus.ringEnabled ? hideWebOutline : null]}
+            style={[styles.input, focus.webOutlineReset]}
             value={query}
             {...comboboxInputA11y({ activeDescendant, controls: listId, open })}
             {...describedByA11y}

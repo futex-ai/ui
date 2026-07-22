@@ -3,9 +3,11 @@
  * multi-select via `ComboboxMultiSelect` (live toggles, ends on outside press).
  * Both use `highlightVariant="ring"` to avoid the solid-fill text-inversion.
  */
-import { useEffect, useRef } from "react";
-import { Pressable, Text, View } from "react-native";
+import { useEffect, useMemo, useRef } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { useFocusRing } from "../focusRing";
+import { createInputStyles } from "../input";
 import {
   ComboboxMultiSelect,
   DropdownMenu,
@@ -13,7 +15,16 @@ import {
 } from "../dropdown";
 
 import { OptionPill, resolveOptionColor } from "./dataGridCellContent";
-import { type CellEditorProps, useEscapeKey } from "./dataGridEditorHooks";
+import {
+  type CellEditorProps,
+  useEditorAutofocus,
+  useEscapeKey,
+} from "./dataGridEditorHooks";
+
+const editorStyles = StyleSheet.create({
+  fill: { width: "100%" },
+  squareFrame: { borderRadius: 0, width: "100%" },
+});
 
 export function SingleSelectEditor({
   column,
@@ -24,6 +35,10 @@ export function SingleSelectEditor({
   onCancel,
 }: CellEditorProps) {
   const committedRef = useRef(false);
+  const triggerRef = useRef<View>(null);
+  const inputStyles = useMemo(() => createInputStyles(theme, "sm"), [theme]);
+  const focus = useFocusRing();
+  useEditorAutofocus(triggerRef);
   const options = column.options ?? [];
   const current = options.find((option) => option.id === value);
   const entries: DropdownListEntry[] = options.map((option) => ({
@@ -59,10 +74,21 @@ export function SingleSelectEditor({
           onCancel();
         }
       }}
+      style={editorStyles.fill}
     >
       <Pressable
         accessibilityLabel={`Edit ${column.label}`}
         accessibilityRole="button"
+        onBlur={focus.onBlur}
+        onFocus={focus.onFocus}
+        ref={triggerRef}
+        style={[
+          inputStyles.box,
+          focus.focused ? inputStyles.boxActive : null,
+          editorStyles.squareFrame,
+          focus.focused ? focus.focusRingStyle : null,
+          focus.webOutlineReset,
+        ]}
       >
         {current ? (
           <OptionPill

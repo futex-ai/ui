@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 // Clipboard access for the copy/paste test (harmless for the others).
 test.use({ permissions: ["clipboard-read", "clipboard-write"] });
@@ -12,6 +12,25 @@ async function gotoDataGridStory(page: Page, storyId: string) {
   await page.waitForSelector("#storybook-root *", {
     timeout: storyReadyTimeout,
   });
+}
+
+async function editorChrome(locator: Locator, parentLevels = 0) {
+  return locator.evaluate((element, levels) => {
+    let frame: Element | null = element;
+    for (let level = 0; level < levels; level += 1) {
+      frame = frame?.parentElement ?? null;
+    }
+    if (!frame) {
+      return null;
+    }
+    const style = getComputedStyle(frame);
+    return {
+      borderColor: style.borderTopColor,
+      borderRadius: style.borderTopLeftRadius,
+      borderWidth: style.borderTopWidth,
+      boxShadow: style.boxShadow,
+    };
+  }, parentLevels);
 }
 
 test("data grid renders typed columns, pills, dates, and a footer", async ({
@@ -31,6 +50,36 @@ test("data grid renders typed columns, pills, dates, and a footer", async ({
   await expect(page.getByText("0.81").first()).toBeVisible();
   await expect(page.getByText("29 Jun 2026").first()).toBeVisible();
   await expect(page.getByText("7 of 128 records")).toBeVisible();
+});
+
+test("a cell announces and displays its loading state while saving", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "saving-cell");
+
+  await page.getByText("Why we moved every workflow").dblclick();
+  const input = page.getByLabel("Edit cell");
+  await expect(input).toBeVisible();
+  await input.fill("Saved cell value");
+  await page.keyboard.press("Enter");
+
+  const busyCell = page.locator('[role="gridcell"][aria-busy="true"]');
+  await expect(page.getByTestId("cell-save-status")).toContainText("Saving");
+  await expect(busyCell).toHaveCount(1);
+  await expect(
+    busyCell.getByTestId("data-grid-cell-loading-indicator"),
+  ).toBeVisible();
+  const loadingContent = busyCell.getByTestId("data-grid-cell-loading-content");
+  await expect(loadingContent).toHaveCSS("flex-direction", "row");
+  await expect(loadingContent.getByText("Saved cell value")).toBeVisible();
+  // The draft editor stays mounted but hidden until the save settles.
+  await expect(input).toBeHidden();
+
+  await expect(page.getByTestId("cell-save-status")).toHaveText("Ready", {
+    timeout: 4_000,
+  });
+  await expect(busyCell).toHaveCount(0);
+  await expect(page.getByText("Saved cell value")).toBeVisible();
 });
 
 test("data grid selects a cell on click and moves the active cell with arrows", async ({
@@ -431,6 +480,48 @@ test("in-cell editors square off their box to match the grid", async ({
         getComputedStyle(el.parentElement as HTMLElement).borderTopLeftRadius,
     ),
   ).toBe("0px");
+});
+
+test("select and date editors match the focused text editor chrome", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "editable");
+
+  await page.getByText("Migrate your CRM in one dry-run").dblclick();
+  const textInput = page.getByLabel("Edit cell");
+  await expect(textInput).toBeFocused();
+  const expectedChrome = await editorChrome(textInput, 1);
+  expect(expectedChrome).toMatchObject({
+    borderRadius: "0px",
+    borderWidth: "1px",
+  });
+  expect(expectedChrome?.boxShadow).not.toBe("none");
+  await page.keyboard.press("Escape");
+
+  await page.getByText("Approved").first().dblclick();
+  const selectTrigger = page.getByRole("button", { name: "Edit Status" });
+  await expect(selectTrigger).toBeFocused();
+  expect(await editorChrome(selectTrigger)).toEqual(expectedChrome);
+  await page.keyboard.press("Escape");
+
+  const dateCell = page
+    .getByRole("row")
+    .filter({ hasText: "How scoped agents stay fully auditable" })
+    .getByText("30 Jun 2026");
+  await dateCell.dblclick();
+  const dateTrigger = page.getByRole("button", { name: /^Created:/ });
+  await expect(dateTrigger).toBeFocused();
+  expect(await editorChrome(dateTrigger, 1)).toEqual(expectedChrome);
+  await page.keyboard.press("Escape");
+
+  const tagCell = page
+    .getByRole("row")
+    .filter({ hasText: "Why we moved every workflow" })
+    .getByText("infra", { exact: true });
+  await tagCell.dblclick();
+  const multiSelectInput = page.getByPlaceholder("Add…");
+  await expect(multiSelectInput).toBeFocused();
+  expect(await editorChrome(multiSelectInput, 1)).toEqual(expectedChrome);
 });
 
 test("single-select cell edits through a dropdown", async ({ page }) => {

@@ -1,5 +1,15 @@
-/** Pure input-rule matching for RichTextEditor typing shortcuts. */
-import type { InlineMark, RichTextTurnIntoType } from "./richTextModel";
+/** Pure input-rule matching and application for rich-text typing shortcuts. */
+import {
+  deleteRange,
+  normalizeDocument,
+  sliceSpans,
+  toggleMarkInRange,
+} from "./richTextModel";
+import type {
+  InlineMark,
+  RichTextDocument,
+  RichTextTurnIntoType,
+} from "./richTextModel";
 
 /** Structural action produced by a prefix shortcut match. */
 export type RichTextPrefixRule =
@@ -36,6 +46,13 @@ export type RichTextInlineRule = {
 export type InlineRuleInput = {
   insertedText: string;
   textBeforeCaret: string;
+};
+
+/** Rich document and retained content range after applying an inline rule. */
+export type RichTextInlineRuleResult = {
+  contentFrom: number;
+  contentTo: number;
+  document: RichTextDocument;
 };
 
 /** Return the matching block prefix rule, or `null` when native input should proceed. */
@@ -96,6 +113,47 @@ export function matchInlineInputRule({
           ? [delimitedCandidate(text, "`", "code")]
           : [];
   return candidates.find((candidate) => candidate !== null) ?? null;
+}
+
+/** Remove typed delimiters and add their mark without dropping existing marks. */
+export function applyInlineInputRule(
+  document: RichTextDocument,
+  block: number,
+  rule: RichTextInlineRule,
+): RichTextInlineRuleResult {
+  const doc = normalizeDocument(document);
+  const index = Math.min(Math.max(block, 0), doc.length - 1);
+  const withoutClose = deleteRange(
+    doc,
+    { block: index, offset: rule.contentTo },
+    { block: index, offset: rule.triggerTo },
+  );
+  const withoutDelimiters = deleteRange(
+    withoutClose,
+    { block: index, offset: rule.triggerFrom },
+    { block: index, offset: rule.contentFrom },
+  );
+  const contentFrom = rule.triggerFrom;
+  const contentTo = rule.contentTo - (rule.contentFrom - rule.triggerFrom);
+  const target = withoutDelimiters[index];
+  const spans =
+    target.type === "codeBlock" || target.type === "divider"
+      ? []
+      : sliceSpans(target.spans, contentFrom, contentTo);
+  const alreadyMarked =
+    spans.length > 0 && spans.every((span) => span.marks.includes(rule.mark));
+  return {
+    contentFrom,
+    contentTo,
+    document: alreadyMarked
+      ? withoutDelimiters
+      : toggleMarkInRange(
+          withoutDelimiters,
+          { block: index, offset: contentFrom },
+          { block: index, offset: contentTo },
+          rule.mark,
+        ),
+  };
 }
 
 function turnInto(

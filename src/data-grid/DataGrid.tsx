@@ -55,6 +55,8 @@ export type DataGridProps = {
   columns: DataGridColumn[];
   /** Data rows. */
   rows: DataGridRowData[];
+  /** Return true to show a busy spinner for an individual cell. */
+  cellLoading?: (ref: DataGridCellRef) => boolean;
   /** Control density: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
   /** Controlled selection. Omit to let the grid manage it internally. */
@@ -123,6 +125,7 @@ export type DataGridProps = {
 export function DataGrid({
   columns,
   rows,
+  cellLoading,
   size = "md",
   selection,
   onSelectionChange,
@@ -179,7 +182,7 @@ export function DataGrid({
   // the latest state each render, since the handlers are created before it.
   const clipboard = useDataGridClipboard();
 
-  const editing = useDataGridEditing({ columns, onCellChange });
+  const editing = useDataGridEditing({ cellLoading, columns, onCellChange });
   const controller = useDataGridController({
     columns,
     rows,
@@ -269,8 +272,10 @@ export function DataGrid({
       <View testID={testID}>
         <DataGridCardStack
           accessibilityLabel={accessibilityLabel}
+          cellLoading={cellLoading}
           columns={controller.visibleColumns}
           fontSize={metrics.fontSize}
+          iconSize={metrics.iconSize}
           onRowExpand={onRowExpand}
           rows={rows}
           styles={styles}
@@ -361,6 +366,7 @@ export function DataGrid({
               ) : undefined
             }
             columns={renderColumns}
+            cellLoading={cellLoading}
             controller={controller}
             copiedKeys={copiedKeys}
             editingCell={editing.editingCell}
