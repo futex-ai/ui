@@ -11,8 +11,9 @@ import { hideWebOutlineView, type PressableHoverState } from "../focusRing";
 import type { SharedUiTheme } from "../theme";
 
 import { DataGridCellContent } from "./dataGridCellContent";
+import { DataGridCellLoadingContent } from "./DataGridCellLoadingIndicator";
 import type { DataGridStyles } from "./dataGridStyles";
-import type { DataGridColumn, DataGridRow } from "./types";
+import type { DataGridCellRef, DataGridColumn, DataGridRow } from "./types";
 
 export function DataGridCardStack({
   rows,
@@ -20,6 +21,8 @@ export function DataGridCardStack({
   styles,
   theme,
   fontSize,
+  iconSize,
+  cellLoading,
   onRowExpand,
   accessibilityLabel,
 }: {
@@ -28,10 +31,13 @@ export function DataGridCardStack({
   styles: DataGridStyles;
   theme: SharedUiTheme;
   fontSize: number;
+  iconSize: number;
+  cellLoading?: (ref: DataGridCellRef) => boolean;
   onRowExpand?: (rowId: string) => void;
   accessibilityLabel?: string;
 }) {
   const [titleColumn, ...fieldColumns] = columns;
+  const isLoading = (ref: DataGridCellRef) => cellLoading?.(ref) ?? false;
   return (
     <View
       accessibilityLabel={accessibilityLabel}
@@ -39,27 +45,73 @@ export function DataGridCardStack({
       style={styles.cardStack}
     >
       {rows.map((row) => {
+        const titleRef = titleColumn
+          ? { rowId: row.id, columnId: titleColumn.id }
+          : null;
+        const titleLoading = titleRef ? isLoading(titleRef) : false;
         const card = (
           <>
             {titleColumn ? (
-              <Text numberOfLines={2} style={styles.cardTitle}>
-                {String(row.cells[titleColumn.id] ?? "")}
-              </Text>
-            ) : null}
-            {fieldColumns.map((column) => (
-              <View key={column.id} style={styles.cardField}>
-                <Text style={styles.cardLabel}>{column.label}</Text>
-                <View style={styles.cardValue}>
-                  <DataGridCellContent
-                    column={column}
-                    fontSize={fontSize}
+              <View
+                accessibilityState={titleLoading ? { busy: true } : undefined}
+                aria-busy={titleLoading || undefined}
+                style={styles.cardTitleValue}
+              >
+                {titleLoading ? (
+                  <DataGridCellLoadingContent
+                    size={iconSize}
                     styles={styles}
                     theme={theme}
-                    value={row.cells[column.id] ?? null}
-                  />
-                </View>
+                  >
+                    <Text numberOfLines={2} style={styles.cardTitle}>
+                      {String(row.cells[titleColumn.id] ?? "")}
+                    </Text>
+                  </DataGridCellLoadingContent>
+                ) : (
+                  <Text numberOfLines={2} style={styles.cardTitle}>
+                    {String(row.cells[titleColumn.id] ?? "")}
+                  </Text>
+                )}
               </View>
-            ))}
+            ) : null}
+            {fieldColumns.map((column) => {
+              const ref = { rowId: row.id, columnId: column.id };
+              const loading = isLoading(ref);
+              return (
+                <View key={column.id} style={styles.cardField}>
+                  <Text style={styles.cardLabel}>{column.label}</Text>
+                  <View
+                    accessibilityState={loading ? { busy: true } : undefined}
+                    aria-busy={loading || undefined}
+                    style={styles.cardValue}
+                  >
+                    {loading ? (
+                      <DataGridCellLoadingContent
+                        size={iconSize}
+                        styles={styles}
+                        theme={theme}
+                      >
+                        <DataGridCellContent
+                          column={column}
+                          fontSize={fontSize}
+                          styles={styles}
+                          theme={theme}
+                          value={row.cells[column.id] ?? null}
+                        />
+                      </DataGridCellLoadingContent>
+                    ) : (
+                      <DataGridCellContent
+                        column={column}
+                        fontSize={fontSize}
+                        styles={styles}
+                        theme={theme}
+                        value={row.cells[column.id] ?? null}
+                      />
+                    )}
+                  </View>
+                </View>
+              );
+            })}
           </>
         );
         return onRowExpand ? (
