@@ -83,6 +83,13 @@ delimiters apply while typing. Selected text can be marked bold, italic,
 strikethrough, or inline code. On native, toggling a mark at a collapsed caret
 sets the marks for subsequent text.
 
+Native structural edits transfer first-responder focus to their target block on
+the next animation frame, after the originating input event settles. A delayed
+blur from the previous block is ignored once another block owns the caret, so
+Enter keeps the keyboard and formatting toolbar available on the new line.
+On iOS, each editable block uses a unique, pre-mounted accessory host; only the
+active host renders the controls.
+
 Character and word insert/delete edits are coalesced as typing. Destructive
 browser edits and native replacement edits record model snapshots so undo can
 restore the pre-edit document and any stale redo branch is cleared. Inline
@@ -95,8 +102,9 @@ not create undo entries.
 ### Mobile Toolbar
 
 On iOS the horizontally scrollable toolbar is attached with
-`InputAccessoryView`; Android renders the same toolbar at the editor's bottom
-edge while a block is focused. It exposes block insertion/conversion,
+`InputAccessoryView` through the active block's unique accessory host; Android
+renders the same toolbar at the editor's bottom edge while a block is focused.
+It exposes block insertion/conversion,
 undo/redo, inline marks, divider insertion, and keyboard dismissal with
 44-point controls. `slashExtraItems` remains web-only and is ignored on native.
 

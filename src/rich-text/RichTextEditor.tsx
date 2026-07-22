@@ -21,6 +21,10 @@ import type {
   NativeRichTextTarget,
   NativeTypingMarksOverride,
 } from "./nativeRichTextEditing";
+import {
+  scheduleNativeRichTextFocusHandoff,
+  shouldClearNativeEditorFocus,
+} from "./nativeRichTextFocus";
 import { createNativeRichTextStyles } from "./nativeRichTextStyles";
 import type {
   RichTextHistoryEditKind,
@@ -176,10 +180,18 @@ export function RichTextEditor({
   useLayoutEffect(() => {
     const target = pendingFocusRef.current;
     if (!target || readOnly) return;
-    pendingFocusRef.current = null;
     const input = inputRefs.current[target.block];
-    input?.focus();
-    input?.setNativeProps({ selection: target.selection });
+    if (!input) return;
+    const frame = scheduleNativeRichTextFocusHandoff({
+      input,
+      isCurrent: () => pendingFocusRef.current === target,
+      onHandled: () => {
+        pendingFocusRef.current = null;
+      },
+      scheduleFrame: requestAnimationFrame,
+      selection: target.selection,
+    });
+    return () => cancelAnimationFrame(frame);
   }, [document, focusRequest, readOnly]);
 
   useEffect(() => {
@@ -223,7 +235,9 @@ export function RichTextEditor({
       label={label}
       maxHeight={maxHeight}
       minHeight={minHeight}
-      onBlur={() => {
+      onBlur={(block) => {
+        if (!shouldClearNativeEditorFocus(activeBlockRef.current, block))
+          return;
         setEditorFocused(false);
         focus.onBlur();
       }}

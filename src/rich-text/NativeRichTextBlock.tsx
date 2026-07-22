@@ -18,7 +18,7 @@ export type NativeRichTextBlockProps = {
   inputAccessoryViewID?: string;
   inputRef: (input: TextInput | null) => void;
   listNumber?: number;
-  onBlur: () => void;
+  onBlur: (index: number) => void;
   onChangeText: (index: number, text: string) => void;
   onFocus: (index: number) => void;
   onKeyPress: (index: number, key: string) => void;
@@ -119,7 +119,7 @@ export function NativeRichTextBlock({
             editable
             inputAccessoryViewID={inputAccessoryViewID}
             multiline
-            onBlur={onBlur}
+            onBlur={() => onBlur(index)}
             onChangeText={(text) => onChangeText(index, text)}
             onFocus={() => onFocus(index)}
             onKeyPress={(event) => onKeyPress(index, event.nativeEvent.key)}

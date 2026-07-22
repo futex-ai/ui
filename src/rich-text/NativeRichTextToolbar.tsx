@@ -62,10 +62,14 @@ export type NativeRichTextToolbarProps = {
   visible: boolean;
 };
 
-/** Render one horizontally scrollable toolbar on iOS and Android. */
+/** Render an iOS accessory host or the focused Android toolbar. */
 export function NativeRichTextToolbar(props: NativeRichTextToolbarProps) {
   if (Platform.OS !== "ios" && !props.visible) return null;
-  const bar = <ToolbarBar {...props} />;
+  const bar = props.visible ? (
+    <ToolbarBar {...props} />
+  ) : (
+    <View accessibilityElementsHidden style={props.styles.toolbar} />
+  );
   return Platform.OS === "ios" ? (
     <InputAccessoryView
       backgroundColor={props.theme.colors.surface}

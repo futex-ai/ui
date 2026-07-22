@@ -1,5 +1,5 @@
 /** Presentational native rich-text frame, blocks, and mobile toolbar. */
-import { ScrollView, TextInput, View } from "react-native";
+import { Platform, ScrollView, TextInput, View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
 
 import type { SharedUiTheme } from "../theme";
@@ -8,6 +8,10 @@ import { Label } from "../typography";
 import { NativeRichTextBlock, nativeBlockKind } from "./NativeRichTextBlock";
 import { NativeRichTextToolbar } from "./NativeRichTextToolbar";
 import type { NativeRichTextTarget } from "./nativeRichTextEditing";
+import {
+  nativeRichTextAccessoryID,
+  nativeRichTextAccessoryTargets,
+} from "./nativeRichTextFocus";
 import type { NativeTextSelection } from "./nativeTextEdit";
 import type { NativeRichTextStyles } from "./nativeRichTextStyles";
 import { buildNativeRichTextTestIDs } from "./nativeRichTextTestIDs";
@@ -30,7 +34,7 @@ export type NativeRichTextEditorSurfaceProps = {
   label?: string;
   maxHeight?: number;
   minHeight: number;
-  onBlur: () => void;
+  onBlur: (block: number) => void;
   onChangeText: (block: number, text: string) => void;
   onFocus: (block: number) => void;
   onInputRef: (block: number, input: TextInput | null) => void;
@@ -93,6 +97,15 @@ export function NativeRichTextEditorSurface({
   ];
   const activeType = document[activeBlock]?.type ?? "paragraph";
   const testIDs = buildNativeRichTextTestIDs(document, testID);
+  const iosToolbarTargets = nativeRichTextAccessoryTargets(
+    accessoryId,
+    document.map((block) => block.type),
+    activeBlock,
+  );
+  const toolbarTargets =
+    Platform.OS === "ios"
+      ? iosToolbarTargets
+      : [{ block: activeBlock, id: accessoryId, visible: editorFocused }];
   return (
     <View style={styles.field} testID={testIDs.field}>
       {label === undefined ? null : <Label>{label}</Label>}
@@ -109,7 +122,10 @@ export function NativeRichTextEditorSurface({
               active={activeBlock === index}
               block={block}
               index={index}
-              inputAccessoryViewID={accessoryId}
+              inputAccessoryViewID={nativeRichTextAccessoryID(
+                accessoryId,
+                index,
+              )}
               inputRef={(input) => onInputRef(index, input)}
               key={index}
               listNumber={numberedListPosition(document, index)}
@@ -136,25 +152,28 @@ export function NativeRichTextEditorSurface({
             />
           ))}
         </ScrollView>
-        {readOnly ? null : (
-          <NativeRichTextToolbar
-            activeMarks={activeMarks}
-            blockType={activeType}
-            canRedo={canRedo}
-            canUndo={canUndo}
-            inputAccessoryViewID={accessoryId}
-            onInsertBlock={onInsertBlock}
-            onInsertDivider={onInsertDivider}
-            onRedo={onRedo}
-            onToggleMark={onToggleMark}
-            onTurnInto={onTurnInto}
-            onUndo={onUndo}
-            styles={styles}
-            testID={testID}
-            theme={theme}
-            visible={editorFocused}
-          />
-        )}
+        {readOnly
+          ? null
+          : toolbarTargets.map((target) => (
+              <NativeRichTextToolbar
+                activeMarks={activeMarks}
+                blockType={activeType}
+                canRedo={canRedo}
+                canUndo={canUndo}
+                inputAccessoryViewID={target.id}
+                key={target.id}
+                onInsertBlock={onInsertBlock}
+                onInsertDivider={onInsertDivider}
+                onRedo={onRedo}
+                onToggleMark={onToggleMark}
+                onTurnInto={onTurnInto}
+                onUndo={onUndo}
+                styles={styles}
+                testID={testID}
+                theme={theme}
+                visible={target.visible}
+              />
+            ))}
       </View>
     </View>
   );

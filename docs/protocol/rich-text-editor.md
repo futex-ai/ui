@@ -59,6 +59,9 @@ round trips remain equivalent.
 - Enter splits the current block at the selection. Heading and quote
   continuations become paragraphs; list and checklist items continue their
   list; Enter on an empty list, checklist, or quote exits to a paragraph.
+- A split transfers native first-responder focus to the continuation after the
+  originating input event settles. A late blur from the previous block must not
+  hide the keyboard or toolbar while the continuation owns the caret.
 - Enter inside a code block inserts a newline. A code block is converted or
   exited with the block toolbar rather than silently changing its contents.
 - Backspace at the start of a block follows the shared merge/demotion rules.
@@ -91,9 +94,11 @@ round trips remain equivalent.
   inserting a block, undo/redo, changing the current block type, toggling
   inline marks, and dismissing the keyboard.
 - iOS presents the bar through `InputAccessoryView`, immediately above the
-  software keyboard. Android renders the same bar at the bottom edge of the
-  editor while the keyboard is visible, compatible with the platform's normal
-  resize behavior.
+  software keyboard. Every editable iOS block has a unique accessory ID and a
+  fixed-height host mounted before focus transfer; only the active host renders
+  the controls. Android renders one bar at the bottom edge of the editor while
+  the keyboard is visible, compatible with the platform's normal resize
+  behavior.
 - The action row scrolls horizontally on narrow devices and keeps the active
   block/mark state visible. Toolbar presses retain the current editor selection.
 - Undo and redo use the editor's bounded model history rather than relying on a

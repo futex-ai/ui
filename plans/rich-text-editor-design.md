@@ -281,9 +281,11 @@ text rather than disabled inputs.
   so subsequent text does not extend the newly applied mark.
 - **D6.4** The formatting row provides insert paragraph, undo/redo, block type,
   divider, inline mark, and keyboard-dismiss actions. iOS uses
-  `InputAccessoryView`; Android renders the same horizontally scrollable row at
-  the editor's lower edge while focused. Targets are at least 44 points and
-  expose named button state.
+  `InputAccessoryView`; each editable block receives a unique accessory ID and
+  a fixed-height host before it can receive focus, while only the active host
+  renders controls. Android renders one horizontally scrollable row at the
+  editor's lower edge while focused. Targets are at least 44 points and expose
+  named button state.
 - **D6.5** External markdown replaces native state only when it differs from
   the last emitted value. A controlled echo does not reset focus, selection,
   pending marks, or history. `slashExtraItems` is accepted and ignored because
@@ -292,6 +294,12 @@ text rather than disabled inputs.
   an explicit snapshot of the literal delimiters and post-input caret. Their
   first undo restores that literal state. Canonically unchanged documents are
   not applied or added to history.
+- **D6.7** A structural edit that targets another native block defers its
+  first-responder transfer until the next animation frame so the originating
+  input event can settle. A blur from the prior block is stale once the target
+  block owns the active selection and must not clear editor focus or hide the
+  keyboard-adjacent toolbar. The target block's iOS accessory host is therefore
+  mounted and associated before the deferred transfer runs.
 
 Public API (both platforms):
 
