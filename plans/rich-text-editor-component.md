@@ -11,8 +11,8 @@ menu for inserting/converting blocks.
 1–3, Bulleted/Numbered/Check lists, Code block, Blockquote, etc., with
 ⌘-shortcut hints in the right column. Storybook stories are the living spec.
 
-**Status:** M1–M4 and M6–M7 are complete across web, iOS, and Android. M8 fixes
-native Return ownership; remaining product ideas are tracked as M5 backlog.
+**Status:** M1–M4 and M6–M8 are complete across web, iOS, and Android. Remaining
+product ideas are tracked as M5 backlog.
 Detailed contracts in [rich-text-editor-design.md](rich-text-editor-design.md).
 
 ---
@@ -245,8 +245,8 @@ marks for subsequent typing, matching mobile document editors.
 - [x] Interaction-smoke heading Return on iOS and confirm there is no empty
       heading line while the toolbar follows the paragraph.
 - [x] Run focused checks and `cargo xtask check`.
-- [ ] Commit and push the complete fix to the PR branch.
-- [ ] Run `cargo xtask review` against the pushed diff and report findings
+- [x] Commit and push the complete fix to the PR branch.
+- [x] Run `cargo xtask review` against the pushed diff and report findings
       without automatically changing reviewed code.
 
 ## Risks
