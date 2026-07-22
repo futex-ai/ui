@@ -236,7 +236,11 @@ The **in-cell editors square off their own box** (`borderRadius: 0`) so a live
 editor reads as part of the grid rather than a rounded control floating inside a
 rectangular cell — the text / number (`InputFrame`), date (`DateInput`), and
 multi-select (`ComboboxMultiSelect`) editors are all squared regardless of the
-frame's `borderRadius`. The single-select editor keeps its rounded option pill.
+frame's `borderRadius`. The multi-select also uses the compact `sm` size and
+single-line mode, keeping its search field at the same 32px height as a text
+editor and summarizing extra selections as `+N` instead of wrapping chips over
+neighboring rows. Checked option rows remain enabled so they can be toggled off.
+The single-select editor keeps its rounded option pill.
 
 ## Key code
 

@@ -277,6 +277,7 @@ function LoadingColumnExample() {
   // reason; here an AI-derived "Sentiment" column toggles between analyzing and
   // ready via the button.
   const [ready, setReady] = useState(false);
+  const [rows, setRows] = useState(contentRows);
   const columns = useMemo<DataGridColumn[]>(
     () => [
       ...contentColumns,
@@ -310,7 +311,16 @@ function LoadingColumnExample() {
           <DataGrid
             accessibilityLabel="Content"
             columns={columns}
-            rows={contentRows}
+            onCellChange={(ref, value) =>
+              setRows((current) =>
+                current.map((row) =>
+                  row.id === ref.rowId
+                    ? { ...row, cells: { ...row.cells, [ref.columnId]: value } }
+                    : row,
+                ),
+              )
+            }
+            rows={rows}
           />
         </View>
         <Text style={styles.hint}>

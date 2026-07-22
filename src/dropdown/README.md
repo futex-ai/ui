@@ -259,6 +259,14 @@ import { ComboboxMultiSelect } from "@firna/ui/dropdown";
 />;
 ```
 
+Pass `size="sm" | "md" | "lg"` to align the control with the shared input
+size scale. In a fixed-height table or data-grid cell, combine `size="sm"` with
+`singleLine`: the first selected chip stays visible, further selections collapse
+into a `+N` summary, and the control keeps the same 32px height as a compact text
+input instead of growing across adjacent rows. Selected option rows are enabled
+toggles, so pressing a checked row removes that value even when its chip is
+summarized.
+
 Override the ⓘ glyph with `labelInfoIcon` and its accessible name with
 `labelInfoLabel` (defaults to `More information about {label}`); `labelInfo` needs
 a `label` to anchor the button (a dev-warned no-op otherwise). For the bare,

@@ -396,6 +396,10 @@ Required behavior:
 - Preserve no-match empty rows even when combobox footers are present.
 - Keep input-backed comboboxes on a non-modal web portal so text inputs retain
   focus while results are open.
+- Size chip multi-selects from the shared control scale and provide a
+  fixed-height single-line mode for dense table or data-grid editors, so their
+  chips cannot expand over neighboring rows; summarize overflow selections and
+  keep checked option rows enabled as removal toggles.
 - Provide an action-menu wrapper that owns the trigger anchor, controlled or
   uncontrolled open state, portal/list composition, and default close-after-row
   selection behavior for common trigger-backed menus.

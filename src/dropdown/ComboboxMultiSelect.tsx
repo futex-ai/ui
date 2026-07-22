@@ -4,9 +4,10 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { announce } from "../announcer";
+import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
 import { hideWebOutline } from "../focusRing";
-import { LabelInfo } from "../input";
+import { inputSizeTokens, LabelInfo } from "../input";
 import { useSharedUiTheme } from "../theme";
 import type { SharedUiTheme } from "../theme";
 
@@ -71,6 +72,14 @@ export type ComboboxMultiSelectProps = {
   placeholder?: string;
   /** Marks the field required (adds a `*` to the label, wires `aria-required`). */
   required?: boolean;
+  /**
+   * Keep the control at one fixed-height row instead of wrapping selected chips,
+   * showing the first selection plus a `+N` summary for the remainder. Useful
+   * inside dense table and data-grid cells.
+   */
+  singleLine?: boolean;
+  /** Control density. Defaults to `md`, matching the shared input size scale. */
+  size?: ControlSize;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
   values: string[];
@@ -92,18 +101,23 @@ export function ComboboxMultiSelect({
   options,
   placeholder = "Search to add...",
   required = false,
+  singleLine = false,
+  size = "md",
   testID,
   values,
 }: ComboboxMultiSelectProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(
-    () => createComboboxMultiSelectStyles(theme, borderRadius),
-    [theme, borderRadius],
+    () =>
+      createComboboxMultiSelectStyles(theme, borderRadius, size, singleLine),
+    [theme, borderRadius, singleLine, size],
   );
   const anchorRef = useRef<View>(null);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const selected = options.filter((option) => values.includes(option.value));
+  const visibleSelected = singleLine ? selected.slice(0, 1) : selected;
+  const hiddenSelectedCount = selected.length - visibleSelected.length;
   const filtered = useMemo(
     () => filterComboboxOptions(options, query),
     [options, query],
@@ -112,9 +126,11 @@ export function ComboboxMultiSelect({
     filtered,
     values,
     (value) => {
-      if (!values.includes(value)) {
-        onChange([...values, value]);
-      }
+      onChange(
+        values.includes(value)
+          ? values.filter((selectedValue) => selectedValue !== value)
+          : [...values, value],
+      );
       setQuery("");
     },
     theme,
@@ -213,28 +229,40 @@ export function ComboboxMultiSelect({
           onPress={() => setOpen(true)}
           style={[styles.control, invalid ? styles.controlInvalid : null]}
         >
-          {selected.map((option) => (
+          {visibleSelected.map((option) => (
             <View key={option.value} style={styles.chip}>
               <Text numberOfLines={1} style={styles.chipText}>
                 {option.label}
               </Text>
-              <Pressable
-                accessibilityLabel={`Remove ${option.label}`}
-                accessibilityRole="button"
-                onPress={() =>
-                  onChange(values.filter((value) => value !== option.value))
-                }
-                style={styles.chipRemove}
-              >
-                {/* The visible "x" is decorative — the Pressable's name is
-                    "Remove {label}". Hide it from AT so the name is not polluted
-                    by the glyph (WCAG 2.5.3 Label in Name). */}
-                <Text aria-hidden style={styles.chipRemoveText}>
-                  x
-                </Text>
-              </Pressable>
+              {singleLine ? null : (
+                <Pressable
+                  accessibilityLabel={`Remove ${option.label}`}
+                  accessibilityRole="button"
+                  onPress={() =>
+                    onChange(values.filter((value) => value !== option.value))
+                  }
+                  style={styles.chipRemove}
+                >
+                  {/* The visible "x" is decorative — the Pressable's name is
+                      "Remove {label}". Hide it from AT so the name is not polluted
+                      by the glyph (WCAG 2.5.3 Label in Name). */}
+                  <Text aria-hidden style={styles.chipRemoveText}>
+                    x
+                  </Text>
+                </Pressable>
+              )}
             </View>
           ))}
+          {hiddenSelectedCount > 0 ? (
+            <View style={[styles.chip, styles.chipSummary]}>
+              <Text
+                accessibilityLabel={`${hiddenSelectedCount} more selected`}
+                style={styles.chipText}
+              >
+                +{hiddenSelectedCount}
+              </Text>
+            </View>
+          ) : null}
           <TextInput
             accessibilityHint={error ?? hint}
             // Name the input from the visible label via `aria-labelledby` (so the
@@ -310,7 +338,6 @@ function entriesForOptions(
   const optionRows: DropdownListEntry[] = options.map((option) => {
     const selected = values.includes(option.value);
     return {
-      disabled: selected,
       id: option.value,
       label: option.label,
       leading: <OptionMark option={option} styles={styles} />,
@@ -356,8 +383,12 @@ function OptionMark({
 function createComboboxMultiSelectStyles(
   theme: SharedUiTheme,
   borderRadius = theme.radii.md,
+  size: ControlSize = "md",
+  singleLine = false,
 ) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
+  const inputSize = inputSizeTokens(size);
+  const sizing = MULTI_SELECT_SIZES[size];
   return StyleSheet.create({
     chip: {
       alignItems: "center",
@@ -366,30 +397,37 @@ function createComboboxMultiSelectStyles(
       borderRadius: theme.radii.pill,
       borderWidth: 1,
       flexDirection: "row",
-      gap: 6,
+      flexShrink: singleLine ? 1 : 0,
+      gap: sizing.gap,
       maxWidth: "100%",
-      paddingHorizontal: 9,
-      paddingVertical: 4,
+      paddingHorizontal: sizing.chipPaddingHorizontal,
+      paddingVertical: sizing.chipPaddingVertical,
     },
     chipRemove: {
       alignItems: "center",
-      height: 18,
+      height: sizing.removeSize,
       justifyContent: "center",
-      width: 18,
+      width: sizing.removeSize,
     },
     chipRemoveText: {
       ...baseText,
       color: theme.colors.primaryDeep,
-      fontSize: 12,
+      fontSize: sizing.chipFontSize,
       fontWeight: "800",
-      lineHeight: 15,
+      lineHeight: sizing.chipLineHeight,
+    },
+    chipSummary: {
+      flexShrink: 0,
+      paddingHorizontal: singleLine ? 5 : sizing.chipPaddingHorizontal,
     },
     chipText: {
       ...baseText,
       color: theme.colors.primaryDeep,
-      fontSize: 12,
+      flexShrink: singleLine ? 1 : 0,
+      fontSize: sizing.chipFontSize,
       fontWeight: "700",
-      lineHeight: 18,
+      lineHeight: sizing.chipLineHeight,
+      minWidth: 0,
     },
     control: {
       alignItems: "center",
@@ -398,11 +436,13 @@ function createComboboxMultiSelectStyles(
       borderRadius,
       borderWidth: 1,
       flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 6,
-      minHeight: 42,
-      paddingHorizontal: 8,
-      paddingVertical: 6,
+      flexWrap: singleLine ? "nowrap" : "wrap",
+      gap: singleLine ? 3 : sizing.gap,
+      height: singleLine ? inputSize.boxHeight : undefined,
+      minHeight: inputSize.boxHeight,
+      overflow: singleLine ? "hidden" : "visible",
+      paddingHorizontal: singleLine ? 6 : sizing.controlPaddingHorizontal,
+      paddingVertical: sizing.controlPaddingVertical,
     },
     // Rose border + soft ring for the invalid state (matches DropdownSelector).
     controlInvalid: {
@@ -427,9 +467,11 @@ function createComboboxMultiSelectStyles(
     input: {
       ...baseText,
       color: theme.colors.ink,
-      flexGrow: 1,
-      fontSize: 13,
-      minWidth: 130,
+      flex: singleLine ? 1 : undefined,
+      flexGrow: singleLine ? undefined : 1,
+      flexShrink: 1,
+      fontSize: inputSize.inputFontSize,
+      minWidth: singleLine ? 28 : 130,
       padding: 0,
     },
     label: {
@@ -454,6 +496,39 @@ function createComboboxMultiSelectStyles(
     wrap: { position: "relative" },
   });
 }
+
+const MULTI_SELECT_SIZES = {
+  sm: {
+    chipFontSize: 11,
+    chipLineHeight: 16,
+    chipPaddingHorizontal: 7,
+    chipPaddingVertical: 1,
+    controlPaddingHorizontal: 8,
+    controlPaddingVertical: 5,
+    gap: 4,
+    removeSize: 16,
+  },
+  md: {
+    chipFontSize: 12,
+    chipLineHeight: 18,
+    chipPaddingHorizontal: 9,
+    chipPaddingVertical: 3,
+    controlPaddingHorizontal: 8,
+    controlPaddingVertical: 6,
+    gap: 6,
+    removeSize: 18,
+  },
+  lg: {
+    chipFontSize: 13,
+    chipLineHeight: 20,
+    chipPaddingHorizontal: 10,
+    chipPaddingVertical: 4,
+    controlPaddingHorizontal: 10,
+    controlPaddingVertical: 8,
+    gap: 8,
+    removeSize: 20,
+  },
+} as const satisfies Record<ControlSize, object>;
 
 type ComboboxMultiSelectStyles = ReturnType<
   typeof createComboboxMultiSelectStyles
