@@ -192,6 +192,8 @@ export type DateInputProps = {
   variant?: DatePickerVariant;
   /** Control density: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
+  /** Focus the trigger when it mounts. */
+  autoFocus?: boolean;
   /**
    * Corner radius (px) of the trigger box. Defaults to `theme.radii.md`; pass
    * `0` for square corners (e.g. an in-grid cell editor that must match a
@@ -235,6 +237,7 @@ export function DateInput({
   clearable = false,
   variant = "calendar",
   size = "md",
+  autoFocus = false,
   borderRadius,
   zIndex,
   describedById,
@@ -281,6 +284,7 @@ export function DateInput({
           open-on-focus — so the wheel uses the tap trigger on every platform. */}
       {Platform.OS === "web" && variant === "calendar" ? (
         <WebTrigger
+          autoFocus={autoFocus}
           borderRadius={borderRadius}
           clearable={clearable}
           describedById={describedById}
@@ -295,6 +299,7 @@ export function DateInput({
         />
       ) : (
         <NativeTrigger
+          autoFocus={autoFocus}
           clearable={clearable}
           describedById={describedById}
           errorId={errorId}

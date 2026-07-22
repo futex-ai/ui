@@ -227,6 +227,8 @@ Required behavior:
 - Render an identical styled trigger on every platform and resolve only the
   opened picker per platform: an editable type-or-pick text input plus anchored
   calendar popover on web, and a tap-to-pick calendar sheet on native.
+- Give editable and tap-to-pick triggers the shared input border and focus glow,
+  and let the bare `DateInput` autofocus when mounted as an embedded editor.
 - Clamp selections and typed values to the inclusive `min`/`max` bounds.
 - Validate range ordering, surfacing an error when the start is after the end,
   while still allowing each endpoint to hold any date independently.
@@ -396,6 +398,8 @@ Required behavior:
 - Preserve no-match empty rows even when combobox footers are present.
 - Keep input-backed comboboxes on a non-modal web portal so text inputs retain
   focus while results are open.
+- Give field-style selectors and chip multi-selects the shared input border and
+  focus glow, with autofocus support for controls mounted as active editors.
 - Size chip multi-selects from the shared control scale and provide a
   fixed-height single-line mode for dense table or data-grid editors, so their
   chips cannot expand over neighboring rows; summarize overflow selections and

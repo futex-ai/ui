@@ -232,15 +232,15 @@ border entirely — useful when the grid sits flush inside an already-bordered
 panel. Both only touch the outer frame; the internal cell hairlines are
 unaffected.
 
-The **in-cell editors square off their own box** (`borderRadius: 0`) so a live
-editor reads as part of the grid rather than a rounded control floating inside a
-rectangular cell — the text / number (`InputFrame`), date (`DateInput`), and
-multi-select (`ComboboxMultiSelect`) editors are all squared regardless of the
-frame's `borderRadius`. The multi-select also uses the compact `sm` size and
-single-line mode, keeping its search field at the same 32px height as a text
+The **in-cell editors share the focused text editor's chrome**: a square
+(`borderRadius: 0`) box, active primary border, and focus glow. Text / number
+(`InputFrame`), date (`DateInput`), single-select, and multi-select
+(`ComboboxMultiSelect`) editors therefore read as the same control family inside
+the rectangular grid, while the single-select's value remains a rounded option
+pill inside its square frame. The multi-select also uses the compact `sm` size
+and single-line mode, keeping its search field at the same 32px height as a text
 editor and summarizing extra selections as `+N` instead of wrapping chips over
 neighboring rows. Checked option rows remain enabled so they can be toggled off.
-The single-select editor keeps its rounded option pill.
 
 ## Key code
 

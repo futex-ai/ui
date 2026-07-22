@@ -6,7 +6,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { announce } from "../announcer";
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
-import { hideWebOutline } from "../focusRing";
+import { useFocusRing } from "../focusRing";
 import { inputSizeTokens, LabelInfo } from "../input";
 import { useSharedUiTheme } from "../theme";
 import type { SharedUiTheme } from "../theme";
@@ -36,12 +36,16 @@ export type ComboboxMultiSelectProps = {
    * honoured (e.g. iOS, which does not map it). Mirrors `Input`.
    */
   accessibilityLabel?: string;
+  /** Focus the search input when the control mounts. */
+  autoFocus?: boolean;
   /**
    * Corner radius (px) of the control box. Defaults to `theme.radii.md`; pass
    * `0` for square corners (e.g. an in-grid cell editor that must match a
    * square container).
    */
   borderRadius?: number;
+  /** Disable the shared focus glow and use the browser's default outline. */
+  disableFocusRing?: boolean;
   /** Validation message shown below the control; turns its border rose. */
   error?: string | null;
   footer?: string;
@@ -87,7 +91,9 @@ export type ComboboxMultiSelectProps = {
 
 export function ComboboxMultiSelect({
   accessibilityLabel,
+  autoFocus = false,
   borderRadius,
+  disableFocusRing = false,
   error,
   footer,
   highlightVariant,
@@ -107,14 +113,28 @@ export function ComboboxMultiSelect({
   values,
 }: ComboboxMultiSelectProps) {
   const theme = useSharedUiTheme();
+  const focus = useFocusRing({ disabled: disableFocusRing });
   const styles = useMemo(
     () =>
       createComboboxMultiSelectStyles(theme, borderRadius, size, singleLine),
     [theme, borderRadius, singleLine, size],
   );
   const anchorRef = useRef<View>(null);
+  const inputRef = useRef<TextInput>(null);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  useEffect(() => {
+    if (!autoFocus) {
+      return;
+    }
+    const focusInput = () => inputRef.current?.focus();
+    focusInput();
+    if (typeof requestAnimationFrame === "undefined") {
+      return;
+    }
+    const frame = requestAnimationFrame(focusInput);
+    return () => cancelAnimationFrame(frame);
+  }, [autoFocus]);
   const selected = options.filter((option) => values.includes(option.value));
   const visibleSelected = singleLine ? selected.slice(0, 1) : selected;
   const hiddenSelectedCount = selected.length - visibleSelected.length;
@@ -227,7 +247,12 @@ export function ComboboxMultiSelect({
       <View ref={anchorRef} style={styles.wrap}>
         <Pressable
           onPress={() => setOpen(true)}
-          style={[styles.control, invalid ? styles.controlInvalid : null]}
+          style={[
+            styles.control,
+            focus.focused ? styles.controlActive : null,
+            invalid ? styles.controlInvalid : null,
+            focus.focused ? focus.focusRingStyle : null,
+          ]}
         >
           {visibleSelected.map((option) => (
             <View key={option.value} style={styles.chip}>
@@ -276,10 +301,15 @@ export function ComboboxMultiSelect({
             }
             aria-required={required}
             onChangeText={setQuery}
-            onFocus={() => setOpen(true)}
+            onBlur={focus.onBlur}
+            onFocus={() => {
+              focus.onFocus();
+              setOpen(true);
+            }}
             placeholder={placeholder}
             placeholderTextColor={theme.colors.placeholder}
-            style={[styles.input, hideWebOutline]}
+            ref={inputRef}
+            style={[styles.input, focus.webOutlineReset]}
             value={query}
             {...comboboxInputA11y({ activeDescendant, controls: listId, open })}
             {...describedByA11y}
@@ -444,6 +474,7 @@ function createComboboxMultiSelectStyles(
       paddingHorizontal: singleLine ? 6 : sizing.controlPaddingHorizontal,
       paddingVertical: sizing.controlPaddingVertical,
     },
+    controlActive: { borderColor: theme.colors.primary },
     // Rose border + soft ring for the invalid state (matches DropdownSelector).
     controlInvalid: {
       borderColor: theme.colors.rose,
