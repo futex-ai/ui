@@ -35,6 +35,8 @@ shared `CalendarMonth` itself and the wheel variant renders our own
 - **`DateField`** — single date. Label + trigger + error/hint.
 - **`DateInput`** — the bare trigger + its own single-date picker (no
   label/error/hint). Used by `DateField` and by each `DateRangeField` endpoint.
+  Pass `autoFocus` to focus its editable web trigger and open the picker on
+  mount; tap-only/native variants open their sheet on mount instead.
 - **`DateRangeField`** — start–end range built from two independent
   `DateInput`s, with ordering validation.
 - **`CalendarMonth`** — the shared, theme-driven month grid (header nav,

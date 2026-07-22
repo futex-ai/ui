@@ -163,8 +163,9 @@ non-numeric input with an inline error.
 
 Date editing adapts by platform. Web renders the editable date trigger and an
 anchored calendar through `DropdownPortal`, so it stays beside the cell while
-escaping the grid's scroll clipping. Native renders the day/month/year wheel in
-the shared bottom sheet; Cancel discards its draft and Done commits it.
+escaping the grid's scroll clipping; entering edit mode focuses the input and
+opens that calendar immediately. Native opens the day/month/year wheel in the
+shared bottom sheet on edit entry; Cancel discards its draft and Done commits it.
 
 ### Fixed height
 

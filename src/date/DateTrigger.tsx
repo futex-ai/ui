@@ -12,6 +12,8 @@ import { DateFieldController } from "./useDateField";
 
 export type TriggerProps = {
   field: DateFieldController;
+  /** Focus the editable web input when the trigger mounts. */
+  autoFocus?: boolean;
   invalid: boolean;
   label: string;
   placeholder: string;
@@ -37,6 +39,7 @@ export type TriggerProps = {
 
 export function WebTrigger({
   field,
+  autoFocus = false,
   invalid,
   label,
   placeholder,
@@ -55,6 +58,16 @@ export function WebTrigger({
   // Set when `clear` refocuses the input so the focus does not also re-open the
   // calendar — clearing should leave the field empty and closed, not pop a picker.
   const suppressOpenRef = useRef(false);
+  useEffect(() => {
+    if (!autoFocus) {
+      return;
+    }
+    // The grid enters edit mode from pointerdown. Defer focus until that pointer
+    // sequence finishes, otherwise the removed cell can reclaim focus and leave
+    // it on <body> after this input briefly focused.
+    const id = setTimeout(() => inputRef.current?.focus(), 0);
+    return () => clearTimeout(id);
+  }, [autoFocus]);
   useEffect(() => {
     if (!editing) {
       setText(field.display);

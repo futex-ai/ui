@@ -146,6 +146,7 @@ function DateEditor({ column, value, onCommit, onCancel }: CellEditorProps) {
   useEscapeKey(onCancel);
   return (
     <DateInput
+      autoFocus
       borderRadius={0}
       invalid={false}
       label={column.label}

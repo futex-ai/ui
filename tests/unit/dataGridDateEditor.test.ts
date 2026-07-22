@@ -13,7 +13,19 @@ test("data-grid date editing uses the picker suited to each platform", () => {
 test("the data-grid editor applies the platform picker policy", () => {
   const source = readSource("../../src/data-grid/dataGridCellEditors.tsx");
 
+  assert.match(source, /<DateInput[\s\S]*autoFocus/);
   assert.match(source, /variant=\{dataGridDatePickerVariant\(Platform\.OS\)\}/);
+});
+
+test("an auto-focused date input opens every platform picker", () => {
+  const field = readSource("../../src/date/DateField.tsx");
+  const trigger = readSource("../../src/date/DateTrigger.tsx");
+
+  assert.match(field, /if \(autoFocus\) \{\s*field\.setOpen\(true\)/);
+  assert.match(
+    trigger,
+    /setTimeout\(\(\) => inputRef\.current\?\.focus\(\), 0\)/,
+  );
 });
 
 test("the native wheel overlay uses the shared reference-style sheet", () => {

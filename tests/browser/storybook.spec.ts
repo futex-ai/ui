@@ -1266,10 +1266,8 @@ test("data-grid date editor uses the inline calendar on web", async ({
   await createdCell.click();
 
   const input = page.getByRole("textbox", { name: "Created" });
-  await expect(input).toBeVisible();
-  await input.click();
-
   const calendar = page.getByRole("dialog", { name: "Created" });
+  await expect(input).toBeFocused();
   await expect(calendar.getByText("June 2026")).toBeVisible();
   await expect(page.getByRole("button", { name: "Done" })).toBeHidden();
   await expect(page.getByRole("button", { name: "Cancel" })).toBeHidden();

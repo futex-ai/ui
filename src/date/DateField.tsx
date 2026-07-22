@@ -190,6 +190,8 @@ export type DateInputProps = {
   max?: string;
   /** Fill the available row width (range endpoints). */
   flex?: boolean;
+  /** Focus the editable web trigger and open the picker when it mounts. */
+  autoFocus?: boolean;
   /** Notifies the parent when the picker opens/closes (so it can raise z-index). */
   onOpenChange?: (open: boolean) => void;
   /** Show a clear (✕) button once a value is set. Off by default. */
@@ -237,6 +239,7 @@ export function DateInput({
   min,
   max,
   flex = false,
+  autoFocus = false,
   onOpenChange,
   clearable = false,
   variant = "calendar",
@@ -263,6 +266,13 @@ export function DateInput({
   // The web calendar portal measures this wrapper and owns outside/Escape
   // dismissal. Native sheets use the same ref-shaped seam but do not measure it.
   const rootRef = useRef<View>(null);
+  // An auto-focused web trigger opens from its focus event; the explicit open
+  // also gives native/tap-only variants the matching enter-edit behaviour.
+  useEffect(() => {
+    if (autoFocus) {
+      field.setOpen(true);
+    }
+  }, [autoFocus, field.setOpen]);
   // Layout effect (not passive) keeps parent trigger chrome in sync with the
   // portal's first frame.
   useIsoLayoutEffect(() => {
@@ -284,6 +294,7 @@ export function DateInput({
           open-on-focus — so the wheel uses the tap trigger on every platform. */}
       {Platform.OS === "web" && variant === "calendar" ? (
         <WebTrigger
+          autoFocus={autoFocus}
           borderRadius={borderRadius}
           clearable={clearable}
           describedById={describedById}
