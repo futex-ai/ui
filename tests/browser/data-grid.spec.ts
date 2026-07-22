@@ -581,6 +581,29 @@ test("multi-select cell adds an option via the combobox", async ({ page }) => {
   await expect(page.getByText("+2", { exact: true })).toBeVisible();
 });
 
+test("multi-select edit entry focuses and highlights the combobox", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "full-featured");
+
+  const value = page.getByText("infra", { exact: true }).first();
+  await value.click();
+  await page.waitForTimeout(400);
+  await value.click();
+  const combo = page.getByRole("combobox", { name: "Edit Tags" });
+
+  await expect(combo).toBeFocused();
+  await expect(page.getByRole("option", { name: "growth" })).toBeVisible();
+  await expect
+    .poll(() =>
+      combo.evaluate(
+        (input) =>
+          getComputedStyle(input.parentElement as HTMLElement).borderTopColor,
+      ),
+    )
+    .toBe("rgb(79, 120, 100)");
+});
+
 test("loading-column multi-select stays compact and saves changes", async ({
   page,
 }) => {

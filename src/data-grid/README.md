@@ -288,7 +288,10 @@ the rectangular grid, while the single-select's value remains a rounded option
 pill inside its square frame. The multi-select also uses the compact `sm` size
 and single-line mode, keeping its search field at the same 32px height as a text
 editor and summarizing extra selections as `+N` instead of wrapping chips over
-neighboring rows. Checked option rows remain enabled so they can be toggled off.
+neighboring rows. Entering multi-select edit mode focuses the search input,
+opens its option list, and applies the primary active border and focus glow, so
+typing works immediately. Checked option rows remain enabled so they can be
+toggled off.
 
 ## Key code
 

@@ -268,6 +268,12 @@ toggles, so pressing a checked row removes that value even when its chip is
 summarized. Pass `autoFocus` when the control mounts as an active embedded
 editor; its border and shared focus glow then match the text-input family.
 
+Set `autoFocus` when the multi-select mounts as an in-place editor. Focus opens
+the option list immediately and gives the control the same primary active border
+and shared focus glow as `InputFrame`; pressing anywhere inside the control also
+returns focus to its search input. Use `disableFocusRing` to keep the active
+border while falling back to the browser's default focus outline.
+
 Override the ⓘ glyph with `labelInfoIcon` and its accessible name with
 `labelInfoLabel` (defaults to `More information about {label}`); `labelInfo` needs
 a `label` to anchor the button (a dev-warned no-op otherwise). For the bare,

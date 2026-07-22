@@ -121,12 +121,14 @@ export function ComboboxMultiSelect({
   );
   const anchorRef = useRef<View>(null);
   const inputRef = useRef<TextInput>(null);
+  const autoFocusAtRef = useRef(0);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   useEffect(() => {
     if (!autoFocus) {
       return;
     }
+    autoFocusAtRef.current = Date.now();
     const focusInput = () => inputRef.current?.focus();
     focusInput();
     if (typeof requestAnimationFrame === "undefined") {
@@ -246,13 +248,20 @@ export function ComboboxMultiSelect({
       ) : null}
       <View ref={anchorRef} style={styles.wrap}>
         <Pressable
-          onPress={() => setOpen(true)}
+          onPress={() => {
+            inputRef.current?.focus();
+            setOpen(true);
+          }}
           style={[
             styles.control,
-            focus.focused ? styles.controlActive : null,
-            invalid ? styles.controlInvalid : null,
+            invalid
+              ? styles.controlInvalid
+              : focus.focused
+                ? styles.controlActive
+                : null,
             focus.focused ? focus.focusRingStyle : null,
           ]}
+          tabIndex={-1}
         >
           {visibleSelected.map((option) => (
             <View key={option.value} style={styles.chip}>
@@ -301,7 +310,15 @@ export function ComboboxMultiSelect({
             }
             aria-required={required}
             onChangeText={setQuery}
-            onBlur={focus.onBlur}
+            onBlur={() => {
+              focus.onBlur();
+              // An in-place editor can mount during pointer-down. Ignore the
+              // matching release's transient focus transfer so the newly
+              // mounted search input remains ready for immediate typing.
+              if (autoFocus && Date.now() - autoFocusAtRef.current < 250) {
+                inputRef.current?.focus();
+              }
+            }}
             onFocus={() => {
               focus.onFocus();
               setOpen(true);

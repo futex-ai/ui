@@ -406,6 +406,8 @@ Required behavior:
   focus while results are open.
 - Give field-style selectors and chip multi-selects the shared input border and
   focus glow, with autofocus support for controls mounted as active editors.
+  Focusing a chip multi-select search input must open its option list, and
+  pressing anywhere on the control must return focus to that input.
 - Size chip multi-selects from the shared control scale and provide a
   fixed-height single-line mode for dense table or data-grid editors, so their
   chips cannot expand over neighboring rows; summarize overflow selections and
