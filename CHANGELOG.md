@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0](https://github.com/futex-ai/ui/compare/v1.0.0...v1.1.0) (2026-07-22)
+
+
+### Features
+
+* **data-grid:** add cell loading state ([#117](https://github.com/futex-ai/ui/issues/117)) ([0dd6265](https://github.com/futex-ai/ui/commit/0dd62655eb0312c53280ddb2a75eb618dea3ddea))
+* **data-grid:** add per-column loading spinner to the header ([#114](https://github.com/futex-ai/ui/issues/114)) ([d46c19a](https://github.com/futex-ai/ui/commit/d46c19a4c47fba305b9e861e7f8c12956512c3c9))
+* **data-grid:** click an already-selected cell to edit it ([#111](https://github.com/futex-ai/ui/issues/111)) ([e9a17dd](https://github.com/futex-ai/ui/commit/e9a17dd1870b85e2672091e2145327065d06a686))
+* **data-grid:** Excel-style cell copy/paste (fill, cut, delete, marquee) ([#109](https://github.com/futex-ai/ui/issues/109)) ([e868f1d](https://github.com/futex-ai/ui/commit/e868f1df06e5a658af6c3f45222020eb63deb4b2))
+* **data-grid:** muted grey empty zone below rows in a fixed-height body ([#112](https://github.com/futex-ai/ui/issues/112)) ([fd05b78](https://github.com/futex-ai/ui/commit/fd05b78a566230231f59a841e79b78f6971adb06))
+* **data-grid:** square corners for in-cell editors ([#113](https://github.com/futex-ai/ui/issues/113)) ([824201e](https://github.com/futex-ai/ui/commit/824201e90cb545ae2bf5c1e6a3ef1f2bf1a5a88c))
+* **focus-ring:** add global theme switch + per-component disableFocusRing ([#106](https://github.com/futex-ai/ui/issues/106)) ([048dc1e](https://github.com/futex-ai/ui/commit/048dc1e174c585c051922fc0c12db7f1e1907097))
+* **rich-text:** add native mobile editor ([#115](https://github.com/futex-ai/ui/issues/115)) ([26d907c](https://github.com/futex-ai/ui/commit/26d907cde7aa44341cba625fba31a6c16a1e965c))
+
+
+### Bug Fixes
+
+* **data-grid:** align editor focus styles ([#118](https://github.com/futex-ai/ui/issues/118)) ([1d91290](https://github.com/futex-ai/ui/commit/1d91290f119a78456741f610b9b8621e90335a15))
+* **data-grid:** repair multi-select editing ([#116](https://github.com/futex-ai/ui/issues/116)) ([d7c330a](https://github.com/futex-ai/ui/commit/d7c330a3475a234063e5db3e1f46d97b1b34c157))
+* **kanban:** portal drag ghost to body ([#110](https://github.com/futex-ai/ui/issues/110)) ([e47302b](https://github.com/futex-ai/ui/commit/e47302bb7aad7a533b320cafa84306cab9461b8d))
+
 ## [1.0.0](https://github.com/futex-ai/ui/compare/v0.15.0...v1.0.0) (2026-07-20)
 
 ### ⚠ BREAKING CHANGES
