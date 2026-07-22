@@ -72,6 +72,13 @@ export type DataGridColumn = {
   sortable?: boolean;
   /** Current sort direction shown in the header, or null when unsorted. */
   sortDirection?: "asc" | "desc" | null;
+  /**
+   * Show a loading spinner in place of the field-type icon in this column's
+   * header — e.g. while a just-added column is being provisioned, or its values
+   * are being (re)computed / fetched. Purely presentational: the column stays
+   * interactive (sortable, resizable, editable). Defaults to false.
+   */
+  loading?: boolean;
   /** Allow editing this column's cells. Defaults to true. */
   editable?: boolean;
   /** Options for `singleSelect` / `multiSelect` columns. */
