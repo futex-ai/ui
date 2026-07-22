@@ -33,6 +33,33 @@ test("data grid renders typed columns, pills, dates, and a footer", async ({
   await expect(page.getByText("7 of 128 records")).toBeVisible();
 });
 
+test("a cell announces and displays its loading state while saving", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "saving-cell");
+
+  await page.getByText("Why we moved every workflow").dblclick();
+  const input = page.getByLabel("Edit cell");
+  await expect(input).toBeVisible();
+  await input.fill("Saved cell value");
+  await page.keyboard.press("Enter");
+
+  const busyCell = page.locator('[role="gridcell"][aria-busy="true"]');
+  await expect(page.getByTestId("cell-save-status")).toContainText("Saving");
+  await expect(busyCell).toHaveCount(1);
+  await expect(
+    busyCell.getByTestId("data-grid-cell-loading-indicator"),
+  ).toBeVisible();
+  // The draft editor stays mounted but hidden until the save settles.
+  await expect(input).toBeHidden();
+
+  await expect(page.getByTestId("cell-save-status")).toHaveText("Ready", {
+    timeout: 4_000,
+  });
+  await expect(busyCell).toHaveCount(0);
+  await expect(page.getByText("Saved cell value")).toBeVisible();
+});
+
 test("data grid selects a cell on click and moves the active cell with arrows", async ({
   page,
 }) => {

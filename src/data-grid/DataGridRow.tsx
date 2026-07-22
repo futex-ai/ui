@@ -31,6 +31,8 @@ export type DataGridRowProps = {
   singleSelection: boolean;
   editingCell: DataGridCellRef | null;
   renderEditor?: (ref: DataGridCellRef) => React.ReactNode;
+  /** Resolve whether an individual cell is waiting on asynchronous work. */
+  cellLoading?: (ref: DataGridCellRef) => boolean;
   showGutter: boolean;
   iconSize: number;
   fontSize: number;
@@ -71,6 +73,7 @@ function DataGridRowComponent({
   singleSelection,
   editingCell,
   renderEditor,
+  cellLoading,
   showGutter,
   iconSize,
   fontSize,
@@ -146,7 +149,9 @@ function DataGridRowComponent({
             copied={copiedKeys?.has(cellKey(cellRef)) ?? false}
             editor={editing ? renderEditor?.(cellRef) : undefined}
             fontSize={fontSize}
+            iconSize={iconSize}
             key={column.id}
+            loading={cellLoading?.(cellRef) ?? false}
             onActivate={onActivate}
             onBeginDrag={onBeginDrag}
             onBeginEdit={onBeginEdit}

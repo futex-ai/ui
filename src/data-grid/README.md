@@ -194,6 +194,45 @@ icon it replaces); the loading state is conveyed by marking the header busy
 (`accessibilityState={{ busy }}` / `aria-busy`), so the header's spoken name
 stays just the column label.
 
+### Loading cells
+
+Pass `cellLoading(ref)` to mark individual body cells busy — for example while
+an edited value is being saved. A busy cell replaces its value with a compact
+spinner, exposes `accessibilityState={{ busy: true }}` / `aria-busy`, and stays
+available for selection and keyboard navigation without opening another editor.
+The responsive card presentation reflects the same state. The callback is
+controlled by the consumer, so it can resolve one cell or many cells at once:
+
+```tsx
+import type { DataGridCellRef } from "@firna/ui/data-grid";
+
+const [saving, setSaving] = useState<Set<string>>(new Set());
+const keyFor = (ref: DataGridCellRef) => `${ref.rowId}:${ref.columnId}`;
+
+<DataGrid
+  cellLoading={(ref) => saving.has(keyFor(ref))}
+  columns={columns}
+  rows={rows}
+  onCellChange={async (ref, value) => {
+    const key = keyFor(ref);
+    setSaving((current) => new Set(current).add(key));
+    try {
+      await saveCell(ref, value);
+    } finally {
+      setSaving((current) => {
+        const next = new Set(current);
+        next.delete(key);
+        return next;
+      });
+    }
+  }}
+/>;
+```
+
+If `onCellChange` returns the save promise, the grid keeps the active editor
+mounted behind the spinner until the promise settles. A rejected save therefore
+restores the draft editor, preserving the existing rejected-save behavior.
+
 ### Responsive
 
 Set `cardBreakpoint` (px) to render a read-only card stack below that viewport

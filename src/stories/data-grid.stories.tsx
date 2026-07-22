@@ -6,6 +6,8 @@ import {
   DataGrid,
   dataGridSelectionModel,
   useSharedUiTheme,
+  type DataGridCellRef,
+  type DataGridCellValue,
   type DataGridColumn,
   type DataGridRow,
   type DataGridSelection,
@@ -328,6 +330,56 @@ function LoadingColumnExample() {
 export const LoadingColumn: Story = {
   name: "Loading column (header spinner)",
   render: () => <LoadingColumnExample />,
+};
+
+function SavingCellExample() {
+  const [rows, setRows] = useState(contentRows);
+  const [savingCell, setSavingCell] = useState<DataGridCellRef | null>(null);
+
+  const saveCell = async (ref: DataGridCellRef, value: DataGridCellValue) => {
+    setSavingCell(ref);
+    await new Promise<void>((resolve) => setTimeout(resolve, 1_200));
+    setRows((current) =>
+      current.map((row) =>
+        row.id === ref.rowId
+          ? { ...row, cells: { ...row.cells, [ref.columnId]: value } }
+          : row,
+      ),
+    );
+    setSavingCell(null);
+  };
+
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        <Text style={styles.status} testID="cell-save-status">
+          {savingCell
+            ? `Saving ${savingCell.rowId}.${savingCell.columnId}…`
+            : "Ready"}
+        </Text>
+        <View style={styles.frame}>
+          <DataGrid
+            accessibilityLabel="Content"
+            cellLoading={(ref) =>
+              dataGridSelectionModel.cellRefEquals(ref, savingCell)
+            }
+            columns={contentColumns}
+            onCellChange={saveCell}
+            rows={rows}
+          />
+        </View>
+        <Text style={styles.hint}>
+          Edit any cell and commit it. The controlled `cellLoading(ref)` state
+          marks only that cell busy while this example simulates a save.
+        </Text>
+      </View>
+    </StorySurface>
+  );
+}
+
+export const SavingCell: Story = {
+  name: "Saving cell (loading spinner)",
+  render: () => <SavingCellExample />,
 };
 
 function EditableExample() {

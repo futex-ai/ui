@@ -156,6 +156,17 @@ export function createDataGridStyles(
     },
     cellRight: { alignItems: "flex-end" },
     cellCenter: { alignItems: "center" },
+    cellLoading: { alignItems: "center" },
+    cellLoadingOverlay: {
+      alignItems: "center",
+      bottom: 0,
+      justifyContent: "center",
+      left: 0,
+      position: "absolute",
+      right: 0,
+      top: 0,
+    },
+    cellEditorHidden: { opacity: 0 },
     cellSelected: { backgroundColor: theme.colors.primarySoft },
     // Inset ring (like the table's focused row) so the active cell reads even
     // with its own hairline borders; native ignores boxShadow and uses the OS
@@ -280,6 +291,7 @@ export function createDataGridStyles(
       fontSize: metrics.fontSize + 1,
       fontWeight: "600",
     },
+    cardTitleValue: { alignItems: "flex-start", justifyContent: "center" },
     cardField: {
       alignItems: "center",
       flexDirection: "row",

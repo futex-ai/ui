@@ -6,6 +6,7 @@ import { hideWebOutlineView } from "../focusRing";
 import type { SharedUiTheme } from "../theme";
 
 import { DataGridCellContent } from "./dataGridCellContent";
+import { DataGridCellLoadingIndicator } from "./DataGridCellLoadingIndicator";
 import type { DataGridStyles } from "./dataGridStyles";
 import { columnLayoutStyle, resolveColumnAlign } from "./dataGridLayout";
 import type {
@@ -25,6 +26,9 @@ export type DataGridCellProps = {
   /** Whether this cell is the grid's roving Tab stop (only one cell at a time). */
   tabStop: boolean;
   fontSize: number;
+  iconSize: number;
+  /** Whether this cell is waiting for an asynchronous operation to finish. */
+  loading: boolean;
   styles: DataGridStyles;
   theme: SharedUiTheme;
   onActivate: (ref: DataGridCellRef, options?: { extend?: boolean }) => void;
@@ -59,6 +63,8 @@ export function DataGridCell({
   copied,
   tabStop,
   fontSize,
+  iconSize,
+  loading,
   styles,
   theme,
   onActivate,
@@ -84,9 +90,33 @@ export function DataGridCell({
     [cellRef, registerNode],
   );
 
+  const web = Platform.OS === "web";
+
   if (editor) {
+    const editorWebProps = web
+      ? ({
+          role: "gridcell",
+          "aria-selected": selected,
+          ...(loading
+            ? {
+                onKeyDown: (event: unknown) => {
+                  const keyboardEvent = event as {
+                    preventDefault?: () => void;
+                    stopPropagation?: () => void;
+                  };
+                  keyboardEvent.preventDefault?.();
+                  keyboardEvent.stopPropagation?.();
+                },
+              }
+            : {}),
+        } as Record<string, unknown>)
+      : {};
     return (
       <Pressable
+        accessibilityLabel={loading ? `Loading ${column.label}` : undefined}
+        accessibilityState={loading ? { busy: true } : undefined}
+        aria-busy={loading || undefined}
+        {...editorWebProps}
         style={[
           styles.cell,
           styles.editorWrap,
@@ -94,7 +124,20 @@ export function DataGridCell({
           hideWebOutlineView,
         ]}
       >
-        {editor}
+        <View
+          accessibilityElementsHidden={loading}
+          aria-hidden={loading || undefined}
+          importantForAccessibility={loading ? "no-hide-descendants" : "auto"}
+          pointerEvents={loading ? "none" : "auto"}
+          style={loading ? styles.cellEditorHidden : undefined}
+        >
+          {editor}
+        </View>
+        {loading ? (
+          <View pointerEvents="auto" style={styles.cellLoadingOverlay}>
+            <DataGridCellLoadingIndicator size={iconSize} theme={theme} />
+          </View>
+        ) : null}
       </Pressable>
     );
   }
@@ -103,7 +146,6 @@ export function DataGridCell({
   // literal DOM attributes via a spread (web only; native grid roles are weaker).
   // On web, selection is driven by `onPointerDown` so a drag can extend the range
   // without a trailing click resetting it; native uses `onPress`.
-  const web = Platform.OS === "web";
   const webProps = web
     ? ({
         role: "gridcell",
@@ -117,7 +159,7 @@ export function DataGridCell({
           const shift = (event as { shiftKey?: boolean }).shiftKey ?? false;
           // Open the editor on a double-press (any field) or on a single press
           // of an already-active select cell, so its dropdown opens in one click.
-          if (!shift && (isDouble || (active && isSelectField))) {
+          if (!loading && !shift && (isDouble || (active && isSelectField))) {
             onBeginEdit(cellRef);
             return;
           }
@@ -127,7 +169,7 @@ export function DataGridCell({
           onBeginDrag(
             cellRef,
             event,
-            active ? () => onBeginEdit(cellRef) : undefined,
+            active && !loading ? () => onBeginEdit(cellRef) : undefined,
           );
         },
       } as Record<string, unknown>)
@@ -135,12 +177,16 @@ export function DataGridCell({
 
   return (
     <Pressable
+      accessibilityLabel={loading ? `Loading ${column.label}` : undefined}
+      accessibilityState={loading ? { busy: true } : undefined}
+      aria-busy={loading || undefined}
       // The active cell is the single Tab stop (roving tabindex), so arrow keys
       // reach this handler. On native, tapping an already-active cell edits it.
       onPress={
         web
           ? undefined
-          : () => (active ? onBeginEdit(cellRef) : onActivate(cellRef))
+          : () =>
+              active && !loading ? onBeginEdit(cellRef) : onActivate(cellRef)
       }
       ref={setRef}
       tabIndex={tabStop ? 0 : -1}
@@ -149,19 +195,24 @@ export function DataGridCell({
         styles.cell,
         align === "right" ? styles.cellRight : null,
         align === "center" ? styles.cellCenter : null,
+        loading ? styles.cellLoading : null,
         selected ? styles.cellSelected : null,
         active ? styles.cellActive : null,
         columnLayoutStyle(column),
         hideWebOutlineView,
       ]}
     >
-      <DataGridCellContent
-        column={column}
-        fontSize={fontSize}
-        styles={styles}
-        theme={theme}
-        value={value}
-      />
+      {loading ? (
+        <DataGridCellLoadingIndicator size={iconSize} theme={theme} />
+      ) : (
+        <DataGridCellContent
+          column={column}
+          fontSize={fontSize}
+          styles={styles}
+          theme={theme}
+          value={value}
+        />
+      )}
       {copied ? (
         <View
           pointerEvents="none"
