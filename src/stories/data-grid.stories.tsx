@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   DataGrid,
@@ -241,6 +241,66 @@ export const InfiniteScroll: Story = {
   render: () => <InfiniteScrollExample />,
 };
 
+function LoadingColumnExample() {
+  // A freshly added column starts in a `loading` state (its values are being
+  // provisioned/computed), then flips to ready — the header spinner swaps back
+  // to the field-type icon in place. Any column can carry `loading` for any
+  // reason; here an AI-derived "Sentiment" column toggles between analyzing and
+  // ready via the button.
+  const [ready, setReady] = useState(false);
+  const columns = useMemo<DataGridColumn[]>(
+    () => [
+      ...contentColumns,
+      {
+        id: "sentiment",
+        label: ready ? "Sentiment" : "Sentiment (analyzing…)",
+        fieldType: "singleSelect",
+        width: 170,
+        loading: !ready,
+        options: [
+          { id: "pos", label: "Positive", color: "green" },
+          { id: "neg", label: "Negative", color: "rose" },
+        ],
+      },
+    ],
+    [ready],
+  );
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        <Pressable
+          onPress={() => setReady((value) => !value)}
+          style={styles.button}
+          testID="toggle-loading"
+        >
+          <Text style={styles.buttonText}>
+            {ready ? "Reset (mark column loading)" : "Finish loading column"}
+          </Text>
+        </Pressable>
+        <View style={styles.frame}>
+          <DataGrid
+            accessibilityLabel="Content"
+            columns={columns}
+            rows={contentRows}
+          />
+        </View>
+        <Text style={styles.hint}>
+          Set `loading: true` on any column to show a spinner in place of its
+          field-type icon — for a just-added column that is still provisioning,
+          a computed/AI column being (re)generated, or any async header state.
+          The column stays interactive; the spinner swaps in place with no
+          layout shift.
+        </Text>
+      </View>
+    </StorySurface>
+  );
+}
+
+export const LoadingColumn: Story = {
+  name: "Loading column (header spinner)",
+  render: () => <LoadingColumnExample />,
+};
+
 function EditableExample() {
   const [rows, setRows] = useState(contentRows);
   return (
@@ -437,6 +497,14 @@ export const Responsive: Story = {
 };
 
 const styles = StyleSheet.create({
+  button: {
+    alignSelf: "flex-start",
+    backgroundColor: "#e8ebe8",
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  buttonText: { color: "#3e4540", fontSize: 13, fontWeight: "600" },
   frame: { width: 940 },
   frameWide: { width: 1000 },
   hint: { color: "#69706a", fontSize: 12 },

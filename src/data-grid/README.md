@@ -174,6 +174,18 @@ updating your `columns` (`sortDirection`, `hidden`) and `rows`. `onAddColumn(typ
 adds the (+) header picker; `onAddRow` adds the trailing "+ New record" row;
 `onRowExpand(rowId)` wires the gutter expand icon.
 
+### Loading columns
+
+Set `loading: true` on a column to show a spinner in place of its field-type
+icon in the header — for a just-added column still being provisioned, a
+computed / AI column being (re)generated, or any async header state. It is
+purely presentational (the column stays sortable, resizable, and editable) and
+swaps in place with no layout shift; flip it back to `false` when the column is
+ready. The spinner is decorative (hidden from assistive tech, like the field
+icon it replaces); the loading state is conveyed by marking the header busy
+(`accessibilityState={{ busy }}` / `aria-busy`), so the header's spoken name
+stays just the column label.
+
 ### Responsive
 
 Set `cardBreakpoint` (px) to render a read-only card stack below that viewport

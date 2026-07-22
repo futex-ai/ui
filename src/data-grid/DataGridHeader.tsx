@@ -2,6 +2,7 @@
 import { type ReactNode } from "react";
 import { Platform, Text, View } from "react-native";
 
+import { Spinner } from "../spinner";
 import type { SharedUiTheme } from "../theme";
 
 import { fieldTypeIcon } from "./dataGridCellContent";
@@ -125,6 +126,13 @@ export function DataGridHeader({
                 : undefined
             }
             role="columnheader"
+            // While loading, mark the header itself busy — cross-platform via
+            // `accessibilityState`, with the literal `aria-busy` pinning the web
+            // DOM state regardless of RNW's state-merge order (matching Table /
+            // busy Button). The spinner below stays decorative, so the header's
+            // accessible name remains just the label.
+            accessibilityState={column.loading ? { busy: true } : undefined}
+            aria-busy={column.loading || undefined}
             {...webProps}
             style={[
               styles.headerCell,
@@ -132,7 +140,23 @@ export function DataGridHeader({
               align === "right" ? { justifyContent: "flex-end" } : null,
             ]}
           >
-            <Icon color={theme.colors.muted} size={iconSize - 1} />
+            {column.loading ? (
+              // Same footprint as the field icon (its box is `size` px square),
+              // so toggling `loading` swaps in place with no layout shift. Muted
+              // accent keeps it quiet header chrome, not a bright alert. Hidden
+              // from assistive tech on both platforms — like the decorative icon
+              // it replaces — since the header's busy state conveys the loading
+              // (a named spinner here would double the header's spoken label).
+              <View
+                accessibilityElementsHidden
+                aria-hidden
+                importantForAccessibility="no-hide-descendants"
+              >
+                <Spinner color={theme.colors.muted} size={iconSize - 1} />
+              </View>
+            ) : (
+              <Icon color={theme.colors.muted} size={iconSize - 1} />
+            )}
             <Text numberOfLines={1} style={styles.headerLabel}>
               {column.label}
             </Text>
