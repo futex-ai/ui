@@ -482,9 +482,57 @@ test("multi-select cell adds an option via the combobox", async ({ page }) => {
     }),
   ).toBe("0px");
   await combo.fill("ai");
-  await page.getByRole("option", { name: "ai" }).click();
-  // The new option becomes a removable chip in the editor.
-  await expect(page.getByRole("button", { name: "Remove ai" })).toBeVisible();
+  const aiOption = page.getByRole("option", { name: "ai" });
+  await aiOption.click();
+  // Compact mode keeps one full chip visible and summarizes the rest while the
+  // option list exposes every selected value as an enabled toggle.
+  await expect(aiOption).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByText("+2", { exact: true })).toBeVisible();
+});
+
+test("loading-column multi-select stays compact and saves changes", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "loading-column");
+
+  await page.getByText("infra", { exact: true }).first().dblclick();
+  const combo = page.getByPlaceholder("Add…");
+  await expect(combo).toBeVisible();
+  const firstChipLabel = combo
+    .locator("..")
+    .getByText("launch", { exact: true });
+  await expect(firstChipLabel).toBeVisible();
+  expect(
+    await firstChipLabel.evaluate(
+      (label) => label.getBoundingClientRect().width,
+    ),
+  ).toBeGreaterThan(20);
+  expect(
+    await combo.evaluate(
+      (input) => input.parentElement?.getBoundingClientRect().height,
+    ),
+  ).toBe(32);
+
+  await combo.fill("growth");
+  const growthOption = page.getByRole("option", { name: "growth" });
+  await growthOption.click();
+  await expect(growthOption).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByText("+2", { exact: true })).toBeVisible();
+
+  await expect(growthOption).toBeEnabled();
+  await growthOption.click();
+  await expect(growthOption).toHaveAttribute("aria-selected", "false");
+  await expect(page.getByText("+1", { exact: true })).toBeVisible();
+  await growthOption.click();
+
+  await page.getByText("0.81", { exact: true }).click();
+  await expect(combo).toHaveCount(0);
+  await expect(
+    page
+      .getByRole("row")
+      .filter({ hasText: "We shipped per-step tool scoping" })
+      .getByText("growth", { exact: true }),
+  ).toBeVisible();
 });
 
 test("column menu hides + sorts a field, and add column / add row work", async ({

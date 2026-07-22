@@ -127,7 +127,7 @@ test("combobox multi-select reveals supplementary help from a labelInfo button",
   const source = readSource("../../src/dropdown/ComboboxMultiSelect.tsx");
 
   // The shared ⓘ affordance is reused from the input package, not re-built.
-  assert.match(source, /import \{ LabelInfo \} from "\.\.\/input"/);
+  assert.match(source, /import \{[^}]*LabelInfo[^}]*\} from "\.\.\/input"/);
   assert.match(
     source,
     /\{labelInfo \? \([\s\S]*?<LabelInfo[\s\S]*?info=\{labelInfo\}[\s\S]*?\) : null\}/,

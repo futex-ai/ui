@@ -129,11 +129,14 @@ export function MultiSelectEditor({
   return (
     <View ref={rootRef}>
       <ComboboxMultiSelect
+        accessibilityLabel={`Edit ${column.label}`}
         borderRadius={0}
         highlightVariant="ring"
         onChange={(next) => onChange?.(next)}
         options={options}
         placeholder="Add…"
+        singleLine
+        size="sm"
         values={values}
       />
     </View>
