@@ -349,7 +349,8 @@ function EditableExample() {
           Double-click a cell to edit. Enter commits and moves down; Escape
           cancels. Numbers reject non-numeric input. Select a range and use
           Ctrl/Cmd-C / X / V to copy, cut, and paste (a single copied cell fills
-          the selection, like Excel); Delete clears the selected cells.
+          the selection, like Excel); Delete clears the selected cells. Dates
+          use an inline calendar on web and a wheel sheet on native.
         </Text>
         <View style={styles.frame}>
           <DataGrid

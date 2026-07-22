@@ -129,6 +129,7 @@ export function WebModalFrame({
         label={title}
         onClose={() => onCloseRef.current()}
         open={visible}
+        scroll={scroll}
         sheetRef={sheetRef}
         testID={testID}
       >

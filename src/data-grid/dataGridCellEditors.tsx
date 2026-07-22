@@ -1,14 +1,13 @@
 /**
  * Typed in-cell editors. Each reuses a library primitive and commits an
  * already-typed value: text → `InputFrame`, number → `InputFrame` (decimal, with
- * validation), date → `DateInput` (`variant="wheel"`, which portals — the calendar
- * variant clips in the grid's scroll container). Single/multi-select live in
- * {@link dataGridSelectEditors}.
+ * validation), date → responsive `DateInput` (anchored calendar on web, wheel
+ * sheet on native). Single/multi-select live in {@link dataGridSelectEditors}.
  *
  * `onCommit(value, moveNext)` — moveNext (Enter) advances the active cell down.
  */
 import { useRef, useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { Platform, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { DateInput } from "../date";
 import { InputFrame } from "../input";
@@ -18,6 +17,7 @@ import {
   useEditorAutofocus,
   useEscapeKey,
 } from "./dataGridEditorHooks";
+import { dataGridDatePickerVariant } from "./dataGridDateEditorModel";
 import { MultiSelectEditor, SingleSelectEditor } from "./dataGridSelectEditors";
 import type { DataGridFieldType } from "./types";
 
@@ -139,7 +139,8 @@ function NumberEditor({ value, onCommit, onCancel, theme }: CellEditorProps) {
 }
 
 function DateEditor({ column, value, onCommit, onCancel }: CellEditorProps) {
-  // Escape exits the editor; picking a date in the wheel commits + closes.
+  // Escape exits the editor; picking a date commits + closes. Web uses the
+  // editable anchored calendar while native uses the touch-friendly wheel.
   // DateInput is the label-less trigger (DateField would render a field label
   // that overflows the fixed-height cell).
   useEscapeKey(onCancel);
@@ -151,7 +152,7 @@ function DateEditor({ column, value, onCommit, onCancel }: CellEditorProps) {
       onChange={(iso) => onCommit(iso === "" ? null : iso, false)}
       size="sm"
       value={value == null ? "" : String(value)}
-      variant="wheel"
+      variant={dataGridDatePickerVariant(Platform.OS)}
     />
   );
 }

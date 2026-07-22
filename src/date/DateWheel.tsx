@@ -4,9 +4,9 @@
  * the OS picker. Each column is a snap-scrolling list whose centered row is the
  * selection; rows are also tappable (the reliable pointer/keyboard path).
  *
- * Holds no platform-modal code: the web bottom sheet (`WheelDatePickerOverlay`)
- * and the native sheet (`DatePickerOverlay.tsx`) both render it. Selection is
- * staged as a draft and committed by the sheet's Done button.
+ * Holds no platform-modal code: {@link DateWheelSheet} renders it inside the
+ * cross-platform bottom sheet. Selection is staged as a draft and committed by
+ * the sheet's Done button.
  *
  * The column order is Day · Month · Year to match the `D Mon YYYY` display
  * format (en-GB), and every change is clamped: spinning to a shorter month keeps

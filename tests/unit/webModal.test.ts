@@ -85,6 +85,18 @@ test("native modal bottom sheet delegates to the shared sheet shell", () => {
   assert.doesNotMatch(nativeSource, /@gorhom\/bottom-sheet/);
 });
 
+test("native modal keeps non-scrolling sheet bodies out of a parent scroller", () => {
+  const nativeSource = readSource("../../src/modal/WebModalFrame.tsx");
+  const shellSource = readSource("../../src/sheet/BottomSheetShell.tsx");
+
+  assert.match(nativeSource, /scroll=\{scroll\}/);
+  assert.match(shellSource, /BottomSheetView/);
+  assert.match(
+    shellSource,
+    /scroll \? \([\s\S]*<BottomSheetScrollView[\s\S]*<BottomSheetView/,
+  );
+});
+
 test("web modal focus restore lifecycle is decoupled from close callback changes", () => {
   const source = readSource("../../src/modal/WebModalFrame.web.tsx");
 

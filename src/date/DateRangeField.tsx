@@ -51,7 +51,7 @@ export type DateRangeFieldProps = {
   variant?: DatePickerVariant;
   /** Control density: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
-  /** z-index for the open calendar wrappers and web popover frames. */
+  /** z-index for open trigger wrappers and web calendar portals. */
   zIndex?: number;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
@@ -129,10 +129,8 @@ export function DateRangeField({
         labelInfoLabel={labelInfoLabel}
         required={required}
       />
-      {/* react-native-web makes every View its own z-index:0 stacking context, so
-          an open endpoint's calendar (nested inside this row) is trapped here and
-          would be painted over by the later-DOM hint/error siblings unless the row
-          itself is lifted above them. */}
+      {/* Keep the active range chrome at the same layer as its open endpoint;
+          the calendar itself escapes through the shared body portal. */}
       <View style={[styles.row, anyOpen ? openLayer : null]}>
         <DateInput
           clearable={clearable}

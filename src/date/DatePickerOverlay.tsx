@@ -1,9 +1,8 @@
 /**
  * Native single-date picker (the default file `tsc` resolves and bundlers use on
  * iOS/Android). Presents the picker in a bottom sheet with Cancel/Done, so a tap
- * or spin stages a draft and Done commits it. The `variant` chooses the body:
- * the shared {@link CalendarMonth} grid (default) or the spinning
- * {@link DateWheel}.
+ * or spin stages a draft and Done commits it. The calendar keeps its compact
+ * native sheet, while the wheel uses the shared cross-platform modal frame.
  *
  * Unlike the accounting source — which delegated to the OS picker via
  * `@react-native-community/datetimepicker` — this library has no native picker
@@ -17,24 +16,29 @@ import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
 
 import { CalendarMonth } from "./CalendarMonth";
-import { DateWheel } from "./DateWheel";
-import { DatePickerOverlayProps } from "./types";
+import { DateWheelSheet } from "./DateWheelSheet";
+import type { DatePickerOverlayProps } from "./types";
 
-export function DatePickerOverlay({
+export function DatePickerOverlay(props: DatePickerOverlayProps) {
+  if ((props.variant ?? "calendar") === "wheel") {
+    return <DateWheelSheet {...props} />;
+  }
+  return <CalendarSheet {...props} />;
+}
+
+function CalendarSheet({
   value,
   today,
   min,
   max,
   onSelect,
   onClose,
-  variant = "calendar",
   label,
   testID,
 }: DatePickerOverlayProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createSheetStyles(theme), [theme]);
   const [draft, setDraft] = useState(value || today);
-  const wheel = variant === "wheel";
 
   return (
     <Modal
@@ -64,24 +68,14 @@ export function DatePickerOverlay({
             <Text style={[styles.barButton, styles.barDone]}>Done</Text>
           </Pressable>
         </View>
-        <View style={wheel ? styles.wheelBody : styles.calendar}>
-          {wheel ? (
-            <DateWheel
-              max={max}
-              min={min}
-              onChange={setDraft}
-              today={today}
-              value={draft}
-            />
-          ) : (
-            <CalendarMonth
-              max={max}
-              min={min}
-              onSelect={setDraft}
-              today={today}
-              value={draft}
-            />
-          )}
+        <View style={styles.calendar}>
+          <CalendarMonth
+            max={max}
+            min={min}
+            onSelect={setDraft}
+            today={today}
+            value={draft}
+          />
         </View>
       </View>
     </Modal>
@@ -105,7 +99,6 @@ function createSheetStyles(theme: SharedUiTheme) {
     barButton: { ...baseText, color: theme.colors.primaryDeep, fontSize: 16 },
     barDone: { fontWeight: "700" },
     calendar: { alignSelf: "center" },
-    wheelBody: { paddingBottom: 4, paddingTop: 4 },
     sheet: {
       backgroundColor: theme.colors.surface,
       borderTopLeftRadius: theme.radii.xxl,
