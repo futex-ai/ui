@@ -6,7 +6,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { announce } from "../announcer";
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
-import { hideWebOutline } from "../focusRing";
+import { hideWebOutline, useFocusRing } from "../focusRing";
 import { inputSizeTokens, LabelInfo } from "../input";
 import { useSharedUiTheme } from "../theme";
 import type { SharedUiTheme } from "../theme";
@@ -36,12 +36,16 @@ export type ComboboxMultiSelectProps = {
    * honoured (e.g. iOS, which does not map it). Mirrors `Input`.
    */
   accessibilityLabel?: string;
+  /** Focus the search input when the control mounts. */
+  autoFocus?: boolean;
   /**
    * Corner radius (px) of the control box. Defaults to `theme.radii.md`; pass
    * `0` for square corners (e.g. an in-grid cell editor that must match a
    * square container).
    */
   borderRadius?: number;
+  /** Disable the shared focus glow and use the browser's default outline. */
+  disableFocusRing?: boolean;
   /** Validation message shown below the control; turns its border rose. */
   error?: string | null;
   footer?: string;
@@ -87,7 +91,9 @@ export type ComboboxMultiSelectProps = {
 
 export function ComboboxMultiSelect({
   accessibilityLabel,
+  autoFocus = false,
   borderRadius,
+  disableFocusRing = false,
   error,
   footer,
   highlightVariant,
@@ -113,6 +119,9 @@ export function ComboboxMultiSelect({
     [theme, borderRadius, singleLine, size],
   );
   const anchorRef = useRef<View>(null);
+  const inputRef = useRef<TextInput>(null);
+  const autoFocusAtRef = useRef(0);
+  const focus = useFocusRing({ disabled: disableFocusRing });
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const selected = options.filter((option) => values.includes(option.value));
@@ -194,6 +203,13 @@ export function ComboboxMultiSelect({
     );
   }, [matchCount, open, query]);
 
+  useEffect(() => {
+    if (autoFocus) {
+      autoFocusAtRef.current = Date.now();
+      inputRef.current?.focus();
+    }
+  }, [autoFocus]);
+
   return (
     <View
       style={label || error || hint ? styles.field : undefined}
@@ -226,8 +242,20 @@ export function ComboboxMultiSelect({
       ) : null}
       <View ref={anchorRef} style={styles.wrap}>
         <Pressable
-          onPress={() => setOpen(true)}
-          style={[styles.control, invalid ? styles.controlInvalid : null]}
+          onPress={() => {
+            inputRef.current?.focus();
+            setOpen(true);
+          }}
+          style={[
+            styles.control,
+            invalid
+              ? styles.controlInvalid
+              : focus.focused
+                ? styles.controlActive
+                : null,
+            focus.focused ? focus.focusRingStyle : null,
+          ]}
+          tabIndex={-1}
         >
           {visibleSelected.map((option) => (
             <View key={option.value} style={styles.chip}>
@@ -276,10 +304,23 @@ export function ComboboxMultiSelect({
             }
             aria-required={required}
             onChangeText={setQuery}
-            onFocus={() => setOpen(true)}
+            onBlur={() => {
+              focus.onBlur();
+              // An in-place editor can mount during pointer-down. Ignore the
+              // matching release's transient focus transfer so the newly
+              // mounted search input remains ready for immediate typing.
+              if (autoFocus && Date.now() - autoFocusAtRef.current < 250) {
+                inputRef.current?.focus();
+              }
+            }}
+            onFocus={() => {
+              focus.onFocus();
+              setOpen(true);
+            }}
             placeholder={placeholder}
             placeholderTextColor={theme.colors.placeholder}
-            style={[styles.input, hideWebOutline]}
+            ref={inputRef}
+            style={[styles.input, focus.ringEnabled ? hideWebOutline : null]}
             value={query}
             {...comboboxInputA11y({ activeDescendant, controls: listId, open })}
             {...describedByA11y}
@@ -444,6 +485,7 @@ function createComboboxMultiSelectStyles(
       paddingHorizontal: singleLine ? 6 : sizing.controlPaddingHorizontal,
       paddingVertical: sizing.controlPaddingVertical,
     },
+    controlActive: { borderColor: theme.colors.primary },
     // Rose border + soft ring for the invalid state (matches DropdownSelector).
     controlInvalid: {
       borderColor: theme.colors.rose,

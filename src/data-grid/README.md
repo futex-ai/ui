@@ -239,8 +239,11 @@ multi-select (`ComboboxMultiSelect`) editors are all squared regardless of the
 frame's `borderRadius`. The multi-select also uses the compact `sm` size and
 single-line mode, keeping its search field at the same 32px height as a text
 editor and summarizing extra selections as `+N` instead of wrapping chips over
-neighboring rows. Checked option rows remain enabled so they can be toggled off.
-The single-select editor keeps its rounded option pill.
+neighboring rows. Entering multi-select edit mode focuses the search input,
+opens its option list, and applies the same primary active border and focus glow
+as the text editor, so typing works immediately. Checked option rows remain
+enabled so they can be toggled off. The single-select editor keeps its rounded
+option pill.
 
 ## Key code
 

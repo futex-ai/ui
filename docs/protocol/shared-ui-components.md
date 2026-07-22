@@ -396,6 +396,10 @@ Required behavior:
 - Preserve no-match empty rows even when combobox footers are present.
 - Keep input-backed comboboxes on a non-modal web portal so text inputs retain
   focus while results are open.
+- Let chip multi-select callers request initial search-input focus for in-place
+  editing. Focusing the search input must open its option list and give the
+  control the same primary active border and shared focus glow as a text input;
+  pressing anywhere on the control must return focus to that input.
 - Size chip multi-selects from the shared control scale and provide a
   fixed-height single-line mode for dense table or data-grid editors, so their
   chips cannot expand over neighboring rows; summarize overflow selections and

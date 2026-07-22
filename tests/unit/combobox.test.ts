@@ -114,10 +114,15 @@ test("combobox multi-select wires a labelled field surface", () => {
   // Required marker is visual-only; the state is conveyed via `aria-required`.
   assert.match(source, /aria-required=\{required\}/);
   assert.match(source, /<Text aria-hidden style=\{styles\.required\}>/);
-  // Error turns the border rose and is an assertive live region tied by id;
-  // hint + error are referenced by the input via a literal `aria-describedby`.
+  // Error wins over the primary focused border; focus still gets the shared
+  // ring. Hint + error are referenced by a literal `aria-describedby`.
   assert.match(source, /invalid = invalidProp \|\| Boolean\(error\)/);
-  assert.match(source, /invalid \? styles\.controlInvalid : null/);
+  assert.match(
+    source,
+    /invalid\s*\? styles\.controlInvalid\s*:\s*focus\.focused\s*\? styles\.controlActive/,
+  );
+  assert.match(source, /useFocusRing\(\{ disabled: disableFocusRing \}\)/);
+  assert.match(source, /focus\.focused \? focus\.focusRingStyle : null/);
   assert.match(source, /aria-invalid=\{invalid\}/);
   assert.match(source, /accessibilityRole="alert"/);
   assert.match(source, /"aria-describedby": describedBy/);

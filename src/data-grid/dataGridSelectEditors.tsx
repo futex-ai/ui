@@ -130,6 +130,7 @@ export function MultiSelectEditor({
     <View ref={rootRef}>
       <ComboboxMultiSelect
         accessibilityLabel={`Edit ${column.label}`}
+        autoFocus
         borderRadius={0}
         highlightVariant="ring"
         onChange={(next) => onChange?.(next)}
