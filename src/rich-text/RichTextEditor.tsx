@@ -155,6 +155,7 @@ export function RichTextEditor({
     handleInsertBlock,
     handleKeyPress,
     handleSelectionChange,
+    handleSubmitEditing,
     handleTextChange,
     handleToggleCheck,
     handleToggleMark,
@@ -252,6 +253,7 @@ export function RichTextEditor({
       onRedo={() => traverseHistory("redo")}
       onRequestFocus={scheduleFocus}
       onSelectionChange={handleSelectionChange}
+      onSubmitEditing={handleSubmitEditing}
       onToggleCheck={handleToggleCheck}
       onToggleMark={handleToggleMark}
       onTurnInto={handleTurnInto}

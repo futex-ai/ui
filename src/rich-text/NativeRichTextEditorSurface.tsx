@@ -44,6 +44,7 @@ export type NativeRichTextEditorSurfaceProps = {
   onRedo: () => void;
   onRequestFocus: (target: NativeRichTextTarget) => void;
   onSelectionChange: (block: number, selection: NativeTextSelection) => void;
+  onSubmitEditing: (block: number) => void;
   onToggleCheck: (block: number) => void;
   onToggleMark: (mark: InlineMark) => void;
   onTurnInto: (type: RichTextTurnIntoType) => void;
@@ -79,6 +80,7 @@ export function NativeRichTextEditorSurface({
   onRedo,
   onRequestFocus,
   onSelectionChange,
+  onSubmitEditing,
   onToggleCheck,
   onToggleMark,
   onTurnInto,
@@ -141,6 +143,7 @@ export function NativeRichTextEditorSurface({
                 });
               }}
               onSelectionChange={onSelectionChange}
+              onSubmitEditing={onSubmitEditing}
               onToggleCheck={onToggleCheck}
               placeholder={
                 document.length === 1 && index === 0 ? placeholder : undefined

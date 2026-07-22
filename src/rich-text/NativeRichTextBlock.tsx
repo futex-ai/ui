@@ -24,6 +24,7 @@ export type NativeRichTextBlockProps = {
   onKeyPress: (index: number, key: string) => void;
   onPressDivider: (index: number) => void;
   onSelectionChange: (index: number, selection: NativeTextSelection) => void;
+  onSubmitEditing: (index: number) => void;
   onToggleCheck: (index: number) => void;
   placeholder?: string;
   readOnly: boolean;
@@ -48,6 +49,7 @@ export function NativeRichTextBlock({
   onKeyPress,
   onPressDivider,
   onSelectionChange,
+  onSubmitEditing,
   onToggleCheck,
   placeholder,
   readOnly,
@@ -126,6 +128,7 @@ export function NativeRichTextBlock({
             onSelectionChange={(event) =>
               onSelectionChange(index, event.nativeEvent.selection)
             }
+            onSubmitEditing={() => onSubmitEditing(index)}
             placeholder={placeholder}
             placeholderTextColor={theme.colors.placeholder}
             ref={inputRef}
@@ -134,7 +137,7 @@ export function NativeRichTextBlock({
             selectionColor={theme.colors.primary}
             spellCheck
             style={[styles.input, textStyle]}
-            submitBehavior="newline"
+            submitBehavior={block.type === "codeBlock" ? "newline" : "submit"}
             testID={testID}
             underlineColorAndroid="transparent"
           >

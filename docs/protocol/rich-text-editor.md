@@ -59,6 +59,9 @@ round trips remain equivalent.
 - Enter splits the current block at the selection. Heading and quote
   continuations become paragraphs; list and checklist items continue their
   list; Enter on an empty list, checklist, or quote exits to a paragraph.
+- Non-code inputs treat Return as a submit event and synthesize exactly one
+  model split. The native input must not retain a second local newline after
+  the source block's content remains otherwise unchanged.
 - A split transfers native first-responder focus to the continuation after the
   originating input event settles. A late blur from the previous block must not
   hide the keyboard or toolbar while the continuation owns the caret.

@@ -269,9 +269,11 @@ text rather than disabled inputs.
   native replacements that widen beyond the captured selection.
 - **D6.2** Newlines outside a code block split through the shared model. Empty
   list/checklist/quote blocks exit; headings continue as paragraphs. Newlines
-  inside code blocks remain code text. Backspace at a collapsed block start
-  uses shared merge/demotion behavior; the immediately preceding prefix rule
-  can instead restore its literal trigger.
+  inside code blocks remain code text. Native non-code inputs use Return's
+  submit behavior to synthesize one model newline without first retaining a
+  newline in the source `TextInput`; code inputs keep native newline behavior.
+  Backspace at a collapsed block start uses shared merge/demotion behavior; the
+  immediately preceding prefix rule can instead restore its literal trigger.
 - **D6.3** Native supports the same block prefix and inline delimiter rules as
   web. Selecting text and choosing a mark applies it through
   `toggleMarkInRange`; choosing a mark at a caret updates pending marks for the

@@ -19,6 +19,7 @@ import type {
   NativeRichTextTarget,
   NativeTypingMarksOverride,
 } from "./nativeRichTextEditing";
+import { nativeTextAfterSubmit } from "./nativeTextEdit";
 import type { NativeTextSelection } from "./nativeTextEdit";
 import type {
   RichTextHistoryEditKind,
@@ -142,6 +143,22 @@ export function useNativeRichTextCommands({
     ],
   );
 
+  const handleSubmitEditing = useCallback(
+    (block: number) => {
+      const current = documentRef.current[block];
+      if (current.type === "codeBlock" || current.type === "divider") return;
+      const selection =
+        selectionRef.current.block === block
+          ? selectionRef.current.selection
+          : endSelection(current);
+      handleTextChange(
+        block,
+        nativeTextAfterSubmit(nativeBlockText(current), selection),
+      );
+    },
+    [documentRef, handleTextChange, selectionRef],
+  );
+
   const handleKeyPress = useCallback(
     (block: number, key: string) => {
       if (readOnly) return;
@@ -248,6 +265,7 @@ export function useNativeRichTextCommands({
     handleInsertBlock,
     handleKeyPress,
     handleSelectionChange,
+    handleSubmitEditing,
     handleTextChange,
     handleToggleCheck,
     handleToggleMark,

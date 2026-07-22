@@ -10,6 +10,20 @@ export type NativeTextEdit = {
   to: number;
 };
 
+/** Build the plain-text change represented by submitting Return at a selection. */
+export function nativeTextAfterSubmit(
+  text: string,
+  selection: NativeTextSelection,
+): string {
+  const start = clamp(Math.min(selection.start, selection.end), 0, text.length);
+  const end = clamp(
+    Math.max(selection.start, selection.end),
+    start,
+    text.length,
+  );
+  return `${text.slice(0, start)}\n${text.slice(end)}`;
+}
+
 /** Infer the replaced range, preferring the selection captured before input. */
 export function inferNativeTextEdit(
   before: string,

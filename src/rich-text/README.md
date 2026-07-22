@@ -87,6 +87,9 @@ Native structural edits transfer first-responder focus to their target block on
 the next animation frame, after the originating input event settles. A delayed
 blur from the previous block is ignored once another block owns the caret, so
 Enter keeps the keyboard and formatting toolbar available on the new line.
+Non-code native blocks submit Return without first inserting a local newline;
+the shared model owns the single structural split. Code blocks retain native
+newline behavior.
 On iOS, each editable block uses a unique, pre-mounted accessory host; only the
 active host renders the controls.
 
