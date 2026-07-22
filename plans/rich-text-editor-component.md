@@ -11,9 +11,8 @@ menu for inserting/converting blocks.
 1–3, Bulleted/Numbered/Check lists, Code block, Blockquote, etc., with
 ⌘-shortcut hints in the right column. Storybook stories are the living spec.
 
-**Status:** M1–M4 and M6 are complete across web, iOS, and Android. M7 hardens
-native focus transfer after structural edits. Remaining product ideas are
-tracked as M5 backlog. Detailed contracts in
+**Status:** M1–M4 and M6–M7 are complete across web, iOS, and Android. Remaining
+product ideas are tracked as M5 backlog. Detailed contracts in
 [rich-text-editor-design.md](rich-text-editor-design.md).
 
 ---
@@ -233,8 +232,8 @@ marks for subsequent typing, matching mobile document editors.
 - [x] Align the component README, protocol, and detailed design contract.
 - [x] Interaction-smoke Enter focus transfer and toolbar continuity on iOS.
 - [x] Run focused checks and `cargo xtask check`.
-- [ ] Commit and push the complete fix to the PR branch.
-- [ ] Run `cargo xtask review` against the pushed diff and report findings
+- [x] Commit and push the complete fix to the PR branch.
+- [x] Run `cargo xtask review` against the pushed diff and report findings
       without automatically changing reviewed code.
 
 ## Risks
