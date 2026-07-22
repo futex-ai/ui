@@ -6,7 +6,7 @@ import { hideWebOutlineView } from "../focusRing";
 import type { SharedUiTheme } from "../theme";
 
 import { DataGridCellContent } from "./dataGridCellContent";
-import { DataGridCellLoadingIndicator } from "./DataGridCellLoadingIndicator";
+import { DataGridCellLoadingContent } from "./DataGridCellLoadingIndicator";
 import type { DataGridStyles } from "./dataGridStyles";
 import { columnLayoutStyle, resolveColumnAlign } from "./dataGridLayout";
 import type {
@@ -91,6 +91,15 @@ export function DataGridCell({
   );
 
   const web = Platform.OS === "web";
+  const content = (
+    <DataGridCellContent
+      column={column}
+      fontSize={fontSize}
+      styles={styles}
+      theme={theme}
+      value={value}
+    />
+  );
 
   if (editor) {
     const editorWebProps = web
@@ -134,8 +143,21 @@ export function DataGridCell({
           {editor}
         </View>
         {loading ? (
-          <View pointerEvents="auto" style={styles.cellLoadingOverlay}>
-            <DataGridCellLoadingIndicator size={iconSize} theme={theme} />
+          <View
+            pointerEvents="auto"
+            style={[
+              styles.cellLoadingOverlay,
+              align === "right" ? styles.cellRight : null,
+              align === "center" ? styles.cellCenter : null,
+            ]}
+          >
+            <DataGridCellLoadingContent
+              size={iconSize}
+              styles={styles}
+              theme={theme}
+            >
+              {content}
+            </DataGridCellLoadingContent>
           </View>
         ) : null}
       </Pressable>
@@ -195,7 +217,6 @@ export function DataGridCell({
         styles.cell,
         align === "right" ? styles.cellRight : null,
         align === "center" ? styles.cellCenter : null,
-        loading ? styles.cellLoading : null,
         selected ? styles.cellSelected : null,
         active ? styles.cellActive : null,
         columnLayoutStyle(column),
@@ -203,15 +224,15 @@ export function DataGridCell({
       ]}
     >
       {loading ? (
-        <DataGridCellLoadingIndicator size={iconSize} theme={theme} />
-      ) : (
-        <DataGridCellContent
-          column={column}
-          fontSize={fontSize}
+        <DataGridCellLoadingContent
+          size={iconSize}
           styles={styles}
           theme={theme}
-          value={value}
-        />
+        >
+          {content}
+        </DataGridCellLoadingContent>
+      ) : (
+        content
       )}
       {copied ? (
         <View

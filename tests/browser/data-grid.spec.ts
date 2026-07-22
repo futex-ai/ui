@@ -50,6 +50,9 @@ test("a cell announces and displays its loading state while saving", async ({
   await expect(
     busyCell.getByTestId("data-grid-cell-loading-indicator"),
   ).toBeVisible();
+  const loadingContent = busyCell.getByTestId("data-grid-cell-loading-content");
+  await expect(loadingContent).toHaveCSS("flex-direction", "row");
+  await expect(loadingContent.getByText("Saved cell value")).toBeVisible();
   // The draft editor stays mounted but hidden until the save settles.
   await expect(input).toBeHidden();
 

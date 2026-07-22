@@ -338,7 +338,6 @@ function SavingCellExample() {
 
   const saveCell = async (ref: DataGridCellRef, value: DataGridCellValue) => {
     setSavingCell(ref);
-    await new Promise<void>((resolve) => setTimeout(resolve, 1_200));
     setRows((current) =>
       current.map((row) =>
         row.id === ref.rowId
@@ -346,6 +345,7 @@ function SavingCellExample() {
           : row,
       ),
     );
+    await new Promise<void>((resolve) => setTimeout(resolve, 1_200));
     setSavingCell(null);
   };
 
@@ -370,7 +370,8 @@ function SavingCellExample() {
         </View>
         <Text style={styles.hint}>
           Edit any cell and commit it. The controlled `cellLoading(ref)` state
-          marks only that cell busy while this example simulates a save.
+          marks only that cell busy beside its optimistic value while this
+          example simulates a save.
         </Text>
       </View>
     </StorySurface>

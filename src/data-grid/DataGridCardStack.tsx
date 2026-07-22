@@ -11,7 +11,7 @@ import { hideWebOutlineView, type PressableHoverState } from "../focusRing";
 import type { SharedUiTheme } from "../theme";
 
 import { DataGridCellContent } from "./dataGridCellContent";
-import { DataGridCellLoadingIndicator } from "./DataGridCellLoadingIndicator";
+import { DataGridCellLoadingContent } from "./DataGridCellLoadingIndicator";
 import type { DataGridStyles } from "./dataGridStyles";
 import type { DataGridCellRef, DataGridColumn, DataGridRow } from "./types";
 
@@ -58,7 +58,15 @@ export function DataGridCardStack({
                 style={styles.cardTitleValue}
               >
                 {titleLoading ? (
-                  <DataGridCellLoadingIndicator size={iconSize} theme={theme} />
+                  <DataGridCellLoadingContent
+                    size={iconSize}
+                    styles={styles}
+                    theme={theme}
+                  >
+                    <Text numberOfLines={2} style={styles.cardTitle}>
+                      {String(row.cells[titleColumn.id] ?? "")}
+                    </Text>
+                  </DataGridCellLoadingContent>
                 ) : (
                   <Text numberOfLines={2} style={styles.cardTitle}>
                     {String(row.cells[titleColumn.id] ?? "")}
@@ -78,10 +86,19 @@ export function DataGridCardStack({
                     style={styles.cardValue}
                   >
                     {loading ? (
-                      <DataGridCellLoadingIndicator
+                      <DataGridCellLoadingContent
                         size={iconSize}
+                        styles={styles}
                         theme={theme}
-                      />
+                      >
+                        <DataGridCellContent
+                          column={column}
+                          fontSize={fontSize}
+                          styles={styles}
+                          theme={theme}
+                          value={row.cells[column.id] ?? null}
+                        />
+                      </DataGridCellLoadingContent>
                     ) : (
                       <DataGridCellContent
                         column={column}

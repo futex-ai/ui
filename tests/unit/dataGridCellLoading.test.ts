@@ -15,11 +15,13 @@ test("DataGrid exposes and threads a per-cell loading resolver", () => {
   assert.match(cards, /cellLoading\?\.\(ref\) \?\? false/);
 });
 
-test("a loading grid cell renders a busy, decorative indicator", () => {
+test("a loading grid cell keeps its value beside a decorative indicator", () => {
   const cell = readSource("../../src/data-grid/DataGridCell.tsx");
+  const cards = readSource("../../src/data-grid/DataGridCardStack.tsx");
   const indicator = readSource(
     "../../src/data-grid/DataGridCellLoadingIndicator.tsx",
   );
+  const styles = readSource("../../src/data-grid/dataGridStyles.ts");
 
   assert.match(cell, /loading: boolean;/);
   assert.match(
@@ -27,7 +29,14 @@ test("a loading grid cell renders a busy, decorative indicator", () => {
     /accessibilityState=\{loading \? \{ busy: true \} : undefined\}/,
   );
   assert.match(cell, /aria-busy=\{loading \|\| undefined\}/);
-  assert.match(cell, /<DataGridCellLoadingIndicator/);
+  assert.match(cell, /<DataGridCellLoadingContent/);
+  assert.match(cards, /<DataGridCellLoadingContent/);
+  assert.match(indicator, /testID="data-grid-cell-loading-content"/);
+  assert.match(indicator, /<DataGridCellLoadingIndicator/);
+  assert.match(
+    styles,
+    /cellLoadingContent: \{[\s\S]*?flexDirection: "row"[\s\S]*?\}/,
+  );
   assert.match(indicator, /testID="data-grid-cell-loading-indicator"/);
   assert.match(indicator, /accessibilityElementsHidden/);
   assert.match(indicator, /aria-hidden/);

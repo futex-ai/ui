@@ -156,16 +156,22 @@ export function createDataGridStyles(
     },
     cellRight: { alignItems: "flex-end" },
     cellCenter: { alignItems: "center" },
-    cellLoading: { alignItems: "center" },
-    cellLoadingOverlay: {
+    cellLoadingContent: {
       alignItems: "center",
+      flexDirection: "row",
+      gap: 6,
+      maxWidth: "100%",
+    },
+    cellLoadingOverlay: {
       bottom: 0,
       justifyContent: "center",
       left: 0,
+      paddingHorizontal: metrics.paddingHorizontal,
       position: "absolute",
       right: 0,
       top: 0,
     },
+    cellLoadingValue: { flexShrink: 1, minWidth: 0 },
     cellEditorHidden: { opacity: 0 },
     cellSelected: { backgroundColor: theme.colors.primarySoft },
     // Inset ring (like the table's focused row) so the active cell reads even
