@@ -115,20 +115,26 @@ export function DataGridCardStack({
           </>
         );
         return onRowExpand ? (
-          <Pressable
-            accessibilityLabel={`Open record ${row.id}`}
-            accessibilityRole="button"
-            key={row.id}
-            onPress={() => onRowExpand(row.id)}
-            role="listitem"
-            style={({ hovered }: PressableHoverState) => [
-              styles.card,
-              hovered ? { borderColor: theme.colors.primaryBorder } : null,
-              hideWebOutlineView,
-            ]}
-          >
-            {card}
-          </Pressable>
+          // The list semantics go on a wrapper, not on the pressable itself:
+          // react-native-web resolves the DOM role as `role || accessibilityRole`,
+          // so a `role="listitem"` on the Pressable would win over the button
+          // role — and its press responder only presses Spacebar on `button`
+          // roles, leaving the card operable by Enter and click but not Space.
+          // Mirrors the shared `List`'s pressable item.
+          <View key={row.id} role="listitem">
+            <Pressable
+              accessibilityLabel={`Open record ${row.id}`}
+              accessibilityRole="button"
+              onPress={() => onRowExpand(row.id)}
+              style={({ hovered }: PressableHoverState) => [
+                styles.card,
+                hovered ? { borderColor: theme.colors.primaryBorder } : null,
+                hideWebOutlineView,
+              ]}
+            >
+              {card}
+            </Pressable>
+          </View>
         ) : (
           <View key={row.id} role="listitem" style={styles.card}>
             {card}

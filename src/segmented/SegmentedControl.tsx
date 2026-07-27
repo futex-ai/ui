@@ -479,6 +479,19 @@ function SegmentedControlButton<T extends string>({
 
   const handleKeyDown = (event: SegmentKeyEvent) => {
     const key = event.nativeEvent?.key ?? event.key;
+    // Space checks the focused segment, as the radio-group pattern requires.
+    // React Native Web's press responder binds Spacebar to `button` roles only,
+    // so on a `radio` it neither presses nor is swallowed — Space would scroll
+    // the page. Enter is left to the responder: it presses on every role, so
+    // claiming it here too would fire `onChange` twice.
+    if (key === " " || key === "Spacebar") {
+      event.preventDefault?.(); // and do not scroll the page
+      event.stopPropagation?.();
+      if (!disabled && !selected) {
+        onChange(option.value);
+      }
+      return;
+    }
     if (
       key !== "ArrowLeft" &&
       key !== "ArrowRight" &&

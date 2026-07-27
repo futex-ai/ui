@@ -748,6 +748,39 @@ test("segmented control toggles report and source choices", async ({
   ).toHaveCount(0);
 });
 
+test("segmented control checks the focused segment with Space and Enter", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=segmented-examples--profit-loss-segmented-control",
+  );
+
+  const profitLoss = page.getByRole("radio", { name: "Profit & loss" });
+  const balanceSheet = page.getByRole("radio", { name: "Balance sheet" });
+  await expect(profitLoss).toBeChecked();
+
+  // Arrow keys move the roving tab stop; Space then checks the focused segment,
+  // as the radio-group pattern requires. React Native Web's press responder
+  // binds Spacebar to `button` roles only, so a `radio` has to press itself —
+  // and must swallow the key so it does not scroll the page instead.
+  await profitLoss.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(balanceSheet).toBeFocused();
+  const scrollBefore = await page.evaluate(() => window.scrollY);
+  await page.keyboard.press("Space");
+  await expect(balanceSheet).toBeChecked();
+  await expect(profitLoss).not.toBeChecked();
+  expect(await page.evaluate(() => window.scrollY)).toBe(scrollBefore);
+
+  // Enter checks too, exactly once — the responder presses it on every role, so
+  // the segment must not claim Enter as well or `onChange` would fire twice.
+  await page.keyboard.press("ArrowLeft");
+  await expect(profitLoss).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(profitLoss).toBeChecked();
+  await expect(balanceSheet).not.toBeChecked();
+});
+
 test("segmented control disambiguates duplicate labels by name", async ({
   page,
 }) => {
@@ -891,6 +924,16 @@ test("switch toggles a binary setting", async ({ page }) => {
   await page.keyboard.press("Space");
   await expect(toggle).not.toBeChecked();
   await toggle.click();
+  await expect(toggle).toBeChecked();
+
+  // Enter must toggle exactly once. React Native Web's press responder presses
+  // Enter on any role — on keyup — while the switch's own `onKeyDown` runs on
+  // keydown, so a handler that also claims Enter toggles twice and the key
+  // looks dead. Space is the mirror case: the responder binds it to `button`
+  // roles only, so the switch has to own it.
+  await page.keyboard.press("Enter");
+  await expect(toggle).not.toBeChecked();
+  await page.keyboard.press("Enter");
   await expect(toggle).toBeChecked();
 });
 
