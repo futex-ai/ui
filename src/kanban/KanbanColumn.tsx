@@ -1,6 +1,7 @@
 /**
  * One status column of a {@link Kanban} board: a header (the status chip, the
- * card count, and an optional add button) above a vertical stack of cards.
+ * card count, an optional consumer-rendered accessory, and an optional add
+ * button) above a vertical stack of cards.
  *
  * Cards become pressable buttons — with the shared hover, focus ring, pressed,
  * and disabled treatments — when the board has an `onCardPress`, and draggable
@@ -72,6 +73,7 @@ type KanbanColumnProps<Card> = {
   /** The flow slot in this column where the preview lands, or `-1`. */
   previewIndex: number;
   renderCard: (card: Card, index: number) => ReactNode;
+  renderColumnAccessory?: (column: KanbanColumnDef) => ReactNode;
   renderColumnEmpty?: (column: KanbanColumnDef) => ReactNode;
   size: ControlSize;
   styles: KanbanStyles;
@@ -97,10 +99,16 @@ export function KanbanColumn<Card>({
   previewIndex,
   previewNode,
   renderCard,
+  renderColumnAccessory,
   renderColumnEmpty,
   size,
   styles,
 }: KanbanColumnProps<Card>) {
+  // Nothing (or `null` / `false`) means this column carries no accessory: the
+  // slot renders no wrapper at all, so the header keeps exactly the markup and
+  // geometry it has on a board that never passes `renderColumnAccessory`.
+  const accessory = renderColumnAccessory?.(column);
+  const hasAccessory = accessory != null && accessory !== false;
   const groupLabel =
     column.accessibilityLabel ??
     (typeof column.title === "string"
@@ -180,8 +188,16 @@ export function KanbanColumn<Card>({
         >
           {count}
         </Text>
+        {hasAccessory ? (
+          // Layout only: the slot adds no role, label, press handler, or focus
+          // ring, and it sits outside the board's card and drop geometry — so a
+          // press inside it never reaches a card or starts a drag. It renders in
+          // the loading state too, as the add button does.
+          <View style={styles.headerAccessory}>{accessory}</View>
+        ) : null}
         {onColumnAdd ? (
           <ColumnAddButton
+            afterAccessory={hasAccessory}
             disableFocusRing={disableFocusRing}
             label={columnAddLabel?.(column) ?? "Add card"}
             onPress={() => onColumnAdd(column)}
@@ -299,13 +315,18 @@ function CardPreview({
  * The column header's add affordance — a `button`-role plus glyph named by
  * `columnAddLabel`. The glyph itself is decorative (the button carries the
  * name); the button gains a soft fill on hover and the sage focus ring on focus.
+ * It normally end-aligns itself with an auto margin; when an accessory precedes
+ * it (`afterAccessory`) that accessory already owns the auto margin, so the
+ * button drops back to the header gap and the two sit together at the edge.
  */
 function ColumnAddButton({
+  afterAccessory,
   disableFocusRing,
   label,
   onPress,
   styles,
 }: {
+  afterAccessory: boolean;
   disableFocusRing: boolean;
   label: string;
   onPress: () => void;
@@ -321,6 +342,7 @@ function ColumnAddButton({
       onPress={onPress}
       style={({ hovered }: PressableHoverState) => [
         styles.addButton,
+        afterAccessory ? styles.addButtonAfterAccessory : null,
         styles.addButtonPressable,
         hovered ? styles.addButtonHover : null,
         focus.focused ? focus.focusRingStyle : null,

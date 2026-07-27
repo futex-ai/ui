@@ -5,10 +5,11 @@
  * `items` pattern), so cards can be filtered, sorted, or moved between statuses
  * without restructuring the column definitions.
  *
- * Each column renders a header (its status chip, the card count, and an optional
- * add button) above a vertical stack of cards. Supply `onCardPress` to make the
- * cards pressable buttons — with the shared hover, sage focus ring, pressed, and
- * disabled treatments and keyboard activation — or omit it for static cards.
+ * Each column renders a header (its status chip, the card count, an optional
+ * consumer-rendered accessory, and an optional add button) above a vertical
+ * stack of cards. Supply `onCardPress` to make the cards pressable buttons —
+ * with the shared hover, sage focus ring, pressed, and disabled treatments and
+ * keyboard activation — or omit it for static cards.
  * Supply `onCardMove` to make the cards draggable between and within columns by
  * pointer and keyboard; the board stays controlled, reporting each move for the
  * consumer to apply to its own `cards` data (the drag never mutates them).
@@ -89,6 +90,25 @@ export type KanbanProps<Card> = {
   onColumnAdd?: (column: KanbanColumnDef) => void;
   /** Renders the content of a card — typically a {@link KanbanCard}, but any node works. */
   renderCard: (card: Card, index: number) => ReactNode;
+  /**
+   * Renders an accessory into a column's header, between the count and the add
+   * button. Return `null` for columns that carry no accessory — their header is
+   * then identical to one on a board that never passes this prop.
+   *
+   * The slot is layout-only: it takes no drag, press, keyboard, or focus
+   * treatment from the board, and adds no role or label, so an interactive
+   * accessory brings all of its own (a self-contained control such as a
+   * `switch`-role toggle with a checked state and its own focus indicator). It
+   * renders in every state the add button does, including `loading`.
+   *
+   * The accessory is end-aligned with the add button and never shrinks — the
+   * title chip truncates first at a narrow `columnWidth` — and it is clipped to
+   * the status chip's 20px box (the same at every `size`) so it can never change
+   * the header's height. Size an accessory to 20px or less, and prefer an inset
+   * focus indicator: the slot clips, so an outset ring is cropped, exactly as it
+   * is on the cards.
+   */
+  renderColumnAccessory?: (column: KanbanColumnDef) => ReactNode;
   /** Renders placeholder content for a column with no cards (e.g. an empty-state message). */
   renderColumnEmpty?: (column: KanbanColumnDef) => ReactNode;
   /** Control density: `sm`, `md` (default), or `lg`. */
@@ -103,7 +123,8 @@ export type KanbanProps<Card> = {
  * The shared Kanban board. Groups `cards` into `columns` by `cardColumnId`,
  * renders each card through `renderCard`, and scrolls the columns horizontally.
  * Pass `onCardPress` for pressable cards, `onColumnAdd` for a per-column add
- * button, `renderColumnEmpty` for an empty-column placeholder, and `loading` for
+ * button, `renderColumnAccessory` for a consumer-owned control in a column
+ * header, `renderColumnEmpty` for an empty-column placeholder, and `loading` for
  * the busy skeleton state. Sizes on the shared {@link ControlSize} scale.
  */
 export function Kanban<Card>({
@@ -123,6 +144,7 @@ export function Kanban<Card>({
   onCardPress,
   onColumnAdd,
   renderCard,
+  renderColumnAccessory,
   renderColumnEmpty,
   size = "md",
   style,
@@ -227,6 +249,7 @@ export function Kanban<Card>({
         previewIndex={previewIndexFor(column.id)}
         previewNode={previewNode}
         renderCard={renderCard}
+        renderColumnAccessory={renderColumnAccessory}
         renderColumnEmpty={renderColumnEmpty}
         size={size}
         styles={styles}

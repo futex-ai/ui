@@ -50,7 +50,12 @@ also dims the visual track and reports the disabled accessibility state.
 
 - **Role + state.** Renders `role="switch"` with `aria-checked` and the disabled
   state.
-- **Keyboard.** Space (and Enter) toggle the switch when focused.
+- **Keyboard.** Space and Enter both toggle the switch when focused, each
+  exactly once. They arrive by different routes on web: React Native Web's press
+  responder presses Enter for every role, so the switch binds only Space itself
+  (the responder binds Spacebar to `button` roles alone). Binding Enter as well
+  would toggle it twice — once on keydown from the component, once on keyup from
+  the responder — leaving the key looking dead.
 - **Focus visible.** A keyboard focus ring (an inset `outline`) is drawn on the
   track (WCAG 2.4.7).
 - **Contrast.** The off-track and the white knob carry a `controlBorder`-tinted

@@ -347,6 +347,15 @@ Required behavior:
   semantic tone or a literal color override, a card count, and an optional add
   button — above a vertical stack of cards, with an optional placeholder for an
   empty column.
+- Allow the consumer to render its own accessory into a column header, between
+  the count and the add button, decided per column (a column that renders
+  nothing keeps the header markup and geometry it has when the slot is unused).
+  The slot is layout-only: it is end-aligned with the add button, never shrinks
+  (the title chip truncates first), is clipped to the header's content box so an
+  accessory can never change a header's height at any control size, adds no role,
+  label, or focus treatment of its own, and takes no part in the board's press
+  suppression, drag, or drop geometry. It renders in every state the add button
+  does, including the loading state.
 - Provide a convenience card layout: a wrapping title, an optional wrapping row
   of chips, and an optional footer built from avatar / metadata / date slots or
   a custom footer node.

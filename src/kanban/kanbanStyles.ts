@@ -73,6 +73,22 @@ const KANBAN_SIZES: Record<
   },
 };
 
+/** The chip label's single line box, and the padding stacked above and below it. */
+const CHIP_LABEL_LINE_HEIGHT = 16;
+const CHIP_PADDING_VERTICAL = 2;
+
+/**
+ * The cap on the header accessory slot: the status chip's box. The chip's type
+ * scale is fixed (it does not track {@link ControlSize}) and the count text is
+ * shorter, so this is 20px at `sm`, `md`, and `lg` alike, and it is the floor of
+ * the header row's height in every configuration — an add button, the one other
+ * header child that can be taller, only ever adds to it (19/21/23px at
+ * sm/md/lg). Capping the slot at the floor is what makes an accessory unable to
+ * change a header's height, so columns with and without one stay aligned.
+ */
+const HEADER_CONTENT_HEIGHT =
+  CHIP_LABEL_LINE_HEIGHT + CHIP_PADDING_VERTICAL * 2;
+
 /** The footer avatar diameter for a given board size — exported so a card can size its `Avatar`. */
 export function kanbanAvatarDiameter(size: ControlSize = "md"): number {
   return KANBAN_SIZES[size].avatarDiameter;
@@ -101,6 +117,10 @@ export function createKanbanStyles(
       marginLeft: "auto",
       padding: 2,
     },
+    // With an accessory in the header the trailing group is already end-aligned
+    // by the accessory's auto margin; a second auto margin would split the free
+    // space between the two, so the add button falls back to the header gap.
+    addButtonAfterAccessory: { marginLeft: 0 },
     addButtonHover: { backgroundColor: theme.colors.bg2 },
     addButtonPressable: { cursor: "pointer" },
     addGlyph: {
@@ -203,6 +223,19 @@ export function createKanbanStyles(
       paddingBottom: 2,
       paddingHorizontal: 2,
     },
+    // The consumer-rendered accessory slot. An auto margin end-aligns it (the
+    // chip + count keep the left cluster), it never shrinks — the title chip
+    // truncates first — and it is capped at the chip's box so a taller accessory
+    // is centre-clipped rather than stretching the header.
+    headerAccessory: {
+      alignItems: "center",
+      flexDirection: "row",
+      flexShrink: 0,
+      justifyContent: "center",
+      marginLeft: "auto",
+      maxHeight: HEADER_CONTENT_HEIGHT,
+      overflow: "hidden",
+    },
   });
 }
 
@@ -228,14 +261,14 @@ export function createKanbanChipStyles(theme: SharedUiTheme) {
       maxWidth: "100%",
       overflow: "hidden",
       paddingHorizontal: 9,
-      paddingVertical: 2,
+      paddingVertical: CHIP_PADDING_VERTICAL,
     },
     chipPlain: { backgroundColor: "transparent", paddingHorizontal: 0 },
     label: {
       fontFamily: theme.fonts.sans,
       fontSize: 12,
       fontWeight: "600",
-      lineHeight: 16,
+      lineHeight: CHIP_LABEL_LINE_HEIGHT,
     },
     leading: { alignItems: "center", flexDirection: "row" },
   });

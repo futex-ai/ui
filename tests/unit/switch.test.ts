@@ -35,6 +35,10 @@ test("switch handles space key activation for web switch semantics", () => {
   assert.match(source, /key !== " " && key !== "Spacebar"/);
   assert.match(source, /event\.preventDefault\?\.\(\)/);
   assert.match(source, /toggle\(\)/);
+  // Space *only*: react-native-web's press responder already presses Enter for
+  // every role (on keyup), so claiming Enter here as well toggles twice and the
+  // key goes dead. The browser test pins the behaviour; this pins the cause.
+  assert.doesNotMatch(source, /key !== "Enter"/);
 });
 
 test("switch knob animates between the off and on positions", () => {

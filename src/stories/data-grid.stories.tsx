@@ -573,7 +573,12 @@ export const RejectingEdit: Story = {
 export const Responsive: Story = {
   name: "Responsive (cards on mobile)",
   parameters: { layout: "fullscreen" },
-  render: () => (
+  render: () => <ResponsiveExample />,
+};
+
+function ResponsiveExample() {
+  const [expanded, setExpanded] = useState<string | null>(null);
+  return (
     <StorySurface>
       <View style={styles.responsive}>
         <DataGrid
@@ -581,13 +586,16 @@ export const Responsive: Story = {
           cardBreakpoint={700}
           columns={contentColumns}
           footerText="7 of 128 records"
-          onRowExpand={() => undefined}
+          onRowExpand={(rowId) => setExpanded(rowId)}
           rows={contentRows}
         />
+        <Text style={styles.status}>
+          {expanded ? `Expanded ${expanded}` : "Open a card to expand it."}
+        </Text>
       </View>
     </StorySurface>
-  ),
-};
+  );
+}
 
 const styles = StyleSheet.create({
   button: {

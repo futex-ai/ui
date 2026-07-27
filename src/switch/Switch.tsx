@@ -68,15 +68,18 @@ export function Switch({
   const focus = useFocusRing({ disabled: disableFocusRing });
   const disabledState = disabled || !onValueChange;
   const toggle = () => onValueChange?.(!value);
+  // Space only. React Native Web's press responder binds Spacebar to `button`
+  // roles alone, so a `switch` has to press itself — but it binds Enter to every
+  // role, on keyup, while this handler runs on keydown. Claiming Enter here too
+  // would toggle twice and leave the key looking dead, and the responder cannot
+  // be called off from inside the handler: `Pressable` runs its own key handler
+  // before this one and has already armed the keyup listener by then.
   const handleKeyDown = (event: SwitchKeyboardEvent) => {
     const key = event.nativeEvent?.key ?? event.key;
-    if (
-      disabledState ||
-      (key !== " " && key !== "Spacebar" && key !== "Enter")
-    ) {
+    if (disabledState || (key !== " " && key !== "Spacebar")) {
       return;
     }
-    event.preventDefault?.();
+    event.preventDefault?.(); // and do not scroll the page
     event.stopPropagation?.();
     toggle();
   };
