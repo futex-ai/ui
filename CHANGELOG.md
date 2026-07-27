@@ -7,16 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.0](https://github.com/futex-ai/ui/compare/v1.1.0...v1.2.0) (2026-07-27)
 
-
 ### Features
 
-* **data-grid:** make date picker responsive ([#120](https://github.com/futex-ai/ui/issues/120)) ([cff5fbe](https://github.com/futex-ai/ui/commit/cff5fbe647825a4231bb03958329bec7d9b1b3a1))
-* **kanban:** column header accessory slot + Space-key a11y fixes ([#122](https://github.com/futex-ai/ui/issues/122)) ([fe47f3a](https://github.com/futex-ai/ui/commit/fe47f3a43e75dea2a109567fbbd1f68ef108abc0))
-
+- **data-grid:** make date picker responsive ([#120](https://github.com/futex-ai/ui/issues/120)) ([cff5fbe](https://github.com/futex-ai/ui/commit/cff5fbe647825a4231bb03958329bec7d9b1b3a1))
+- **kanban:** column header accessory slot + Space-key a11y fixes ([#122](https://github.com/futex-ai/ui/issues/122)) ([fe47f3a](https://github.com/futex-ai/ui/commit/fe47f3a43e75dea2a109567fbbd1f68ef108abc0))
 
 ### Bug Fixes
 
-* **data-grid:** focus multi-select editor ([#119](https://github.com/futex-ai/ui/issues/119)) ([29472c9](https://github.com/futex-ai/ui/commit/29472c90de5ea7a71f46560b32708159f3586c0e))
+- **data-grid:** focus multi-select editor ([#119](https://github.com/futex-ai/ui/issues/119)) ([29472c9](https://github.com/futex-ai/ui/commit/29472c90de5ea7a71f46560b32708159f3586c0e))
 
 ## [1.1.0](https://github.com/futex-ai/ui/compare/v1.0.0...v1.1.0) (2026-07-22)
 
