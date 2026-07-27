@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Paperclip } from "lucide-react-native";
+import { Paperclip, Pause, Play } from "lucide-react-native";
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   Avatar,
@@ -11,6 +11,7 @@ import {
   KanbanChip,
   type KanbanChipColor,
   type KanbanColumnDef,
+  useFocusRing,
 } from "../index";
 import { StorySurface } from "./sharedExamples";
 
@@ -343,6 +344,151 @@ function AddAndEmptyExample() {
   );
 }
 
+export const ColumnAccessory: Story = {
+  name: "Column accessory",
+  render: () => <ColumnAccessoryExample />,
+};
+
+/**
+ * A consumer-owned header accessory: a self-contained `switch` that plays or
+ * pauses the column's agent. The library slot adds no role, label, keyboard
+ * handling, or focus treatment, so the toggle carries all four — and it is sized
+ * to the slot's 20px cap, which is the same at `sm`, `md`, and `lg` because the
+ * status chip's type scale is fixed. Anything taller is centre-clipped.
+ */
+function AgentToggle({
+  columnTitle,
+  on,
+  onToggle,
+}: {
+  columnTitle: string;
+  on: boolean;
+  onToggle: () => void;
+}) {
+  // The slot clips, so the accessory brings an *inset* ring (a negative offset)
+  // and suppresses the UA outline that the clip would crop — the same treatment
+  // the board's own cards use inside the clipped board (WCAG 2.1 — 2.4.7 AA).
+  const focus = useFocusRing({ offset: -2 });
+  // React Native Web's press responder maps Space onto `button` roles only, so a
+  // `switch` has to bind it itself; Enter already presses through the responder.
+  const keyProps =
+    Platform.OS === "web"
+      ? {
+          onKeyDown: (event: AgentToggleKeyEvent) => {
+            const key = event.nativeEvent?.key ?? event.key;
+            if (key !== " " && key !== "Spacebar") {
+              return;
+            }
+            event.preventDefault?.(); // and do not scroll the page
+            onToggle();
+          },
+        }
+      : {};
+  return (
+    <Pressable
+      accessibilityLabel={`Agent for ${columnTitle}`}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: on }}
+      aria-checked={on}
+      onBlur={focus.onBlur}
+      onFocus={focus.onFocus}
+      onPress={onToggle}
+      style={[
+        styles.agentToggle,
+        on ? styles.agentToggleOn : null,
+        focus.focused ? focus.focusRingStyle : null,
+        focus.webOutlineReset,
+      ]}
+      {...keyProps}
+    >
+      {on ? (
+        <Pause color="#2f5945" size={11} />
+      ) : (
+        <Play color="#5e645e" size={11} />
+      )}
+    </Pressable>
+  );
+}
+
+type AgentToggleKeyEvent = {
+  key?: string;
+  nativeEvent?: { key?: string };
+  preventDefault?: () => void;
+};
+
+function ColumnAccessoryExample() {
+  // Only the first two statuses can run an agent; the rest are terminal and
+  // return `null`, so their headers render exactly as they do without the prop.
+  const [agents, setAgents] = useState<Record<string, boolean>>({
+    approved: false,
+    drafted: true,
+  });
+  const [items, setItems] = useState(cards);
+  const [last, setLast] = useState<string | null>(null);
+
+  const renderAgentToggle = (column: KanbanColumnDef) =>
+    column.id in agents ? (
+      <AgentToggle
+        columnTitle={String(column.title)}
+        on={agents[column.id]}
+        onToggle={() =>
+          setAgents((prev) => ({ ...prev, [column.id]: !prev[column.id] }))
+        }
+      />
+    ) : null;
+
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        <Text style={styles.status}>
+          {last ?? "Toggle a column's agent — the board never sees the press."}
+        </Text>
+        <Kanban<ContentCard>
+          accessibilityLabel="Content board"
+          cardColumnId={(card) => card.status}
+          cardKey={(card) => card.id}
+          cardLabel={(card) => `Open ${card.id}`}
+          cards={items}
+          columnAddLabel={(column) => `Add card to ${String(column.title)}`}
+          columns={columns.slice(0, 3)}
+          onCardMove={(move) => {
+            setItems((prev) => applyMove(prev, move));
+            setLast(`Moved ${move.cardKey} to ${move.toColumnId}`);
+          }}
+          onCardPress={(card) => setLast(`Opened ${card.id}`)}
+          onColumnAdd={(column) => setLast(`Add to ${String(column.title)}`)}
+          renderCard={renderContentCard}
+          renderColumnAccessory={renderAgentToggle}
+        />
+        <Text style={styles.hint}>
+          The accessory sits at the trailing edge of the header, before the add
+          button, and takes no part in the board&apos;s press or drag handling.
+          It never shrinks — the title chip truncates first — and is clipped to
+          the status chip&apos;s box, which is 20px at sm, md, and lg alike and
+          is the floor of the header row, so an accessory can never change a
+          header&apos;s height. The toggle brings its own switch role, checked
+          state, Space key, and inset focus ring; the slot brings none of them.
+        </Text>
+        {(["sm", "md", "lg"] as const).map((size) => (
+          <View key={size}>
+            <Text style={styles.status}>{size}</Text>
+            <Kanban<ContentCard>
+              accessibilityLabel={`Agent board (${size})`}
+              cardColumnId={(card) => card.status}
+              cardKey={(card) => card.id}
+              cards={cards.slice(0, 3)}
+              columns={columns.slice(0, 3)}
+              renderCard={(card) => renderSizedCard(card, size)}
+              renderColumnAccessory={renderAgentToggle}
+              size={size}
+            />
+          </View>
+        ))}
+      </View>
+    </StorySurface>
+  );
+}
+
 export const MinimalCards: Story = {
   name: "Minimal & custom footers",
   render: () => (
@@ -455,6 +601,15 @@ function renderSizedCard(card: ContentCard, size: "lg" | "md" | "sm") {
 }
 
 const styles = StyleSheet.create({
+  agentToggle: {
+    alignItems: "center",
+    backgroundColor: "#e6e9e5",
+    borderRadius: 6,
+    height: 20,
+    justifyContent: "center",
+    width: 20,
+  },
+  agentToggleOn: { backgroundColor: "#cfe2d6" },
   customFooter: {
     color: "#69706a",
     fontFamily: "Menlo, monospace",

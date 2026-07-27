@@ -99,6 +99,98 @@ test("kanban column header shows a status chip, a count, and an optional add but
   assert.match(source, /role=\{groupLabel \? "group" : undefined\}/);
 });
 
+test("kanban threads a per-column header accessory through to the column", () => {
+  const board = readSource("../../src/kanban/Kanban.tsx");
+  const column = readSource("../../src/kanban/KanbanColumn.tsx");
+
+  // The prop keeps `KanbanProps` alphabetical: renderCard → renderColumnAccessory
+  // → renderColumnEmpty, and is threaded exactly as `renderColumnEmpty` is.
+  const declarations = [
+    "renderCard: (card: Card, index: number) => ReactNode;",
+    "renderColumnAccessory?: (column: KanbanColumnDef) => ReactNode;",
+    "renderColumnEmpty?: (column: KanbanColumnDef) => ReactNode;",
+  ].map((token) => board.indexOf(token));
+  assert.ok(declarations.every((at) => at >= 0));
+  assert.deepEqual(
+    declarations,
+    [...declarations].sort((a, b) => a - b),
+  );
+  assert.match(board, /renderColumnAccessory=\{renderColumnAccessory\}/);
+  assert.match(
+    column,
+    /renderColumnAccessory\?: \(column: KanbanColumnDef\) => ReactNode;/,
+  );
+});
+
+test("kanban column header renders an optional trailing accessory", () => {
+  const column = readSource("../../src/kanban/KanbanColumn.tsx");
+  const styles = readSource("../../src/kanban/kanbanStyles.ts");
+
+  // Nothing / null / false means no accessory and no wrapper node at all, so a
+  // column without one keeps exactly the header markup it has without the prop.
+  assert.match(
+    column,
+    /const accessory = renderColumnAccessory\?\.\(column\);/,
+  );
+  assert.match(
+    column,
+    /const hasAccessory = accessory != null && accessory !== false;/,
+  );
+  assert.match(
+    column,
+    /\{hasAccessory \? \([\s\S]*?<View style=\{styles\.headerAccessory\}>\{accessory\}<\/View>\s*\) : null\}/,
+  );
+  // It sits between the count and the add button, and takes over the trailing
+  // auto margin so the two sit together at the edge rather than splitting it.
+  assert.ok(
+    column.indexOf("styles.count") < column.indexOf("styles.headerAccessory") &&
+      column.indexOf("styles.headerAccessory") <
+        column.indexOf("<ColumnAddButton"),
+  );
+  assert.match(column, /afterAccessory=\{hasAccessory\}/);
+  assert.match(
+    column,
+    /afterAccessory \? styles\.addButtonAfterAccessory : null/,
+  );
+  assert.match(styles, /addButtonAfterAccessory: \{ marginLeft: 0 \}/);
+  // End-aligned, never shrunk (the title chip truncates first), and capped at
+  // the header's content box so the header height is identical with and without
+  // an accessory — the box is derived from the chip metrics, so it cannot drift.
+  assert.match(
+    styles,
+    /headerAccessory: \{[\s\S]*?flexShrink: 0,[\s\S]*?marginLeft: "auto",[\s\S]*?maxHeight: HEADER_CONTENT_HEIGHT,[\s\S]*?overflow: "hidden",/,
+  );
+  assert.match(
+    styles,
+    /const HEADER_CONTENT_HEIGHT =\s*CHIP_LABEL_LINE_HEIGHT \+ CHIP_PADDING_VERTICAL \* 2;/,
+  );
+  assert.match(styles, /paddingVertical: CHIP_PADDING_VERTICAL,/);
+  assert.match(styles, /lineHeight: CHIP_LABEL_LINE_HEIGHT,/);
+});
+
+test("kanban header accessory is layout-only and renders while loading", () => {
+  const column = readSource("../../src/kanban/KanbanColumn.tsx");
+
+  // The whole header — chip, count, accessory, add button — sits outside the
+  // loading branch, so the accessory shows while the stack is skeletons, exactly
+  // as the add button does.
+  const header = column.slice(
+    column.indexOf("<View style={styles.header}>"),
+    column.indexOf("{loading ? ("),
+  );
+  assert.ok(header.length > 0);
+  assert.match(header, /styles\.headerAccessory/);
+  assert.match(header, /<ColumnAddButton/);
+  // The slot itself is a bare View: no role, label, press handler, or focus ring
+  // is added around the consumer's node.
+  assert.match(
+    header,
+    /<View style=\{styles\.headerAccessory\}>\{accessory\}<\/View>/,
+  );
+  assert.doesNotMatch(header, /<Pressable/);
+  assert.doesNotMatch(header, /useFocusRing/);
+});
+
 test("kanban column renders skeleton placeholders while loading", () => {
   const source = readSource("../../src/kanban/KanbanColumn.tsx");
 

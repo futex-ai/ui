@@ -14,7 +14,8 @@ render callbacks, and sized on the shared `ControlSize` scale.
   the columns (the Table `rows` / List `items` pattern).
 - Render each card through a `renderCard` callback, so a card can be a
   [`KanbanCard`](#cards) or any node.
-- Render each column header with a status [chip](#chips), a card count, and an
+- Render each column header with a status [chip](#chips), a card count, an
+  optional [consumer-rendered accessory](#column-header-accessory), and an
   optional add button.
 - Make cards pressable buttons via `onCardPress`, with the shared hover, sage
   focus ring, pressed and disabled states, `button` semantics, and keyboard
@@ -119,6 +120,53 @@ Pass `onColumnAdd` to show a `+` button in every column header (name it per
 column with `columnAddLabel`). Pass `renderColumnEmpty` to render a placeholder
 in a column with no cards.
 
+### Column header accessory
+
+Pass `renderColumnAccessory` to put your own control in a column header —
+typically a per-status toggle the board itself should know nothing about. It
+renders between the count and the add button, at the trailing edge:
+
+```tsx
+<Kanban<Card>
+  {...boardProps}
+  renderColumnAccessory={(column) => {
+    const status = statusById(column.id);
+    return status && isAgentEnableable(status) ? (
+      <AgentStepToggle onToggle={toggleAgent} status={status} />
+    ) : null;
+  }}
+/>
+```
+
+Return `null` for a column that carries no accessory: its header then renders
+exactly as it does on a board that never passes the prop — no wrapper node, no
+layout change. Board-level rules:
+
+- **Layout only.** The slot takes no part in the board's press or drag handling:
+  a press inside it never reaches a card, never starts a drag, and is never
+  swallowed by the post-drag press suppression. It is outside the drop geometry
+  too — the drag hit-tests card and column rects, not headers.
+- **Its own accessibility.** The slot adds no role and no label, and the
+  column's group name (`"<title>, <n> cards"`) is unchanged. An interactive
+  accessory must be a self-contained control that brings its own semantics —
+  e.g. a `switch` role with a checked state — and its own keyboard handling.
+  (React Native Web's press responder maps Space onto `button` roles only, so a
+  `switch` needs its own `onKeyDown`, as the library's own
+  [`Switch`](../switch/README.md) does.)
+- **Its own focus treatment.** No focus ring is applied to the slot and
+  `disableFocusRing` does not reach into it. Prefer an _inset_ indicator
+  (`useFocusRing({ offset: -2 })`): like the cards, the slot clips, so an outset
+  ring — including the browser's default outline — is cropped.
+- **Fixed header height.** The slot is clipped to the status chip's box — 20px
+  at `sm`, `md`, and `lg` alike, since the chip's type scale does not track
+  `size`. That is the floor of the header row in every configuration, which is
+  why an accessory can never change a header's height: a taller one is
+  centre-clipped rather than accommodated, so columns with and without one stay
+  aligned. Size accessories to 20px or less.
+- **The chip truncates first.** The accessory never shrinks, so at a narrow
+  `columnWidth` the title chip gives up width before the accessory does.
+- Rendered in every state the add button is, including while `loading`.
+
 ### Loading
 
 Pass `loading` to render placeholder skeleton cards (built from the
@@ -146,8 +194,9 @@ in-card content.
 
 The board and each column are labelled `group`s; cards are `button`s when
 pressable (named by `cardLabel`) or draggable, or plain static content otherwise.
-Tab moves through the cards and add buttons in visual order; Enter / Space
-activates a focused card. When `onCardMove` is set, the card is also keyboard-
+Tab moves through the cards, header accessories, and add buttons in visual order
+— a focusable accessory sits in the natural DOM order, after the count and
+before the add button; Enter / Space activates a focused card. When `onCardMove` is set, the card is also keyboard-
 draggable — Space to grab, arrow keys to move, Space/Enter to drop, Escape to
 cancel — with each step announced through the shared live region (see
 [Drag-and-drop](#drag-and-drop)).
