@@ -136,6 +136,43 @@ test("dropdown danger row highlights red with legible text when active", async (
   await expect.poll(() => textColor(removeLabel)).toBe("rgb(255, 255, 255)");
 });
 
+test("dropdown row icons tint with the active row instead of staying dark", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=dropdown-examples--dropdown-action-menu-tinted-icons",
+  );
+
+  await page.getByRole("button", { name: "Open tinted action menu" }).click();
+
+  // lucide glyphs render through react-native-svg, which paints the tint on the
+  // root `stroke` attribute rather than a CSS color.
+  const iconStroke = (name: string | RegExp) =>
+    page
+      .getByRole("menuitem", { name })
+      .locator("svg")
+      .first()
+      .getAttribute("stroke");
+
+  await expect(page.getByRole("menuitem", { name: "Settings" })).toBeVisible();
+
+  // The first row is preselected, so it carries the solid `primary` fill. Its
+  // leading icon is a caller-owned node, so before slots could resolve against
+  // the row color it kept whatever the caller hard-coded and read as near-black
+  // on the fill while the label beside it inverted to white.
+  await expect.poll(() => iconStroke("Settings")).toBe("#ffffff");
+  // Resting rows keep the base ink, and a resting danger row takes the rose
+  // accent that matches its label.
+  expect(await iconStroke("Pin")).toBe("#1c1f1d");
+  expect(await iconStroke("Remove")).toBe("#a84f45");
+
+  // Moving the highlight inverts the newly active icon and lets the previously
+  // active one fall back to ink — including over the deep-rose danger fill.
+  await page.getByRole("menuitem", { name: "Remove" }).hover();
+  await expect.poll(() => iconStroke("Remove")).toBe("#ffffff");
+  await expect.poll(() => iconStroke("Settings")).toBe("#1c1f1d");
+});
+
 test("dropdown selector keeps trailing codes legible on the solid highlight", async ({
   page,
 }) => {

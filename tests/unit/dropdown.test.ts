@@ -395,6 +395,51 @@ test("dropdown row renders trailing rightText that inverts on the solid fill", (
   assert.match(selector, /rightText: option\.rightText/);
 });
 
+test("dropdown row slots can render against the active row's content color", () => {
+  const list = readSource("../../src/dropdown/DropdownList.tsx");
+  const stylesSource = readSource("../../src/dropdown/dropdownListStyles.ts");
+  const selector = readSource("../../src/dropdown/DropdownSelector.tsx");
+
+  // A caller node is opaque to the library, so an icon hard-coded to `ink`
+  // stayed near-black on the `primary` fill while the label beside it inverted
+  // to white. Both slots take an optional render function instead, handed the
+  // row's resolved content color so the caller can tint its own glyph.
+  assert.match(
+    list,
+    /export type DropdownRowSlot =\s*\|\s*ReactNode\s*\|\s*\(\(state: \{ color: string \}\) => ReactNode\);/,
+  );
+  assert.match(list, /leading\?: DropdownRowSlot;/);
+  assert.match(list, /right\?: DropdownRowSlot;/);
+  // Both slots resolve through the same helper, so `leading` and `right` cannot
+  // drift apart the way `secondary`/`rightText` did.
+  assert.match(
+    list,
+    /renderRowSlot\(entry\.leading, highlight\.contentColor\)/,
+  );
+  assert.match(list, /renderRowSlot\(entry\.right, highlight\.contentColor\)/);
+  assert.match(
+    list,
+    /function renderRowSlot\([\s\S]*?typeof slot === "function" \? slot\(\{ color \}\) : slot/,
+  );
+
+  // The highlight resolves the content color alongside the label style in the
+  // same state branch, so a slot always matches the label beside it.
+  assert.match(stylesSource, /contentColor: string;/);
+  assert.match(
+    stylesSource,
+    /labelStyle = styles\.itemLabelOnSolid;\s*secondaryStyle = styles\.itemSecondaryOnSolid;\s*contentColor = theme\.colors\.surface;/,
+  );
+  // Off the inverted row the tone accent wins, mirroring how `toneLabel`
+  // overrides the label style in DropdownList.
+  assert.match(
+    stylesSource,
+    /if \(!invertText\)[\s\S]*?tone === "danger"[\s\S]*?theme\.colors\.rose[\s\S]*?tone === "amber"[\s\S]*?theme\.colors\.amber/,
+  );
+
+  // The selector's `right` option widens with the row slot it feeds.
+  assert.match(selector, /right\?: DropdownRowSlot;/);
+});
+
 function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
 }

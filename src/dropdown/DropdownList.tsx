@@ -53,6 +53,23 @@ export function dropdownRowDomId(
   return `${listId}-row-${rowId}`;
 }
 
+/**
+ * Content for a row's `leading`/`right` slot: either a plain node the caller
+ * owns outright, or a render function handed the row's resolved content color.
+ *
+ * A plain node is opaque to the library — it cannot be recolored — so an icon
+ * hard-coded to `ink` stays near-black on the solid active fill while the label
+ * beside it inverts to white. Pass a function instead to tint your own glyph
+ * with the row's color, whichever icon set it comes from:
+ *
+ * ```tsx
+ * leading: ({ color }) => <Ionicons color={color} name="settings-outline" size={18} />
+ * ```
+ */
+export type DropdownRowSlot =
+  | ReactNode
+  | ((state: { color: string }) => ReactNode);
+
 export type DropdownListEntry =
   | { id: string; label: string; type: "divider" }
   | { id: string; label: string; type: "section" }
@@ -67,9 +84,11 @@ export type DropdownListEntry =
       disabled?: boolean;
       id: string;
       label: string;
-      leading?: ReactNode;
+      /** Leading slot (usually an icon). See {@link DropdownRowSlot}. */
+      leading?: DropdownRowSlot;
       onPress?: () => void;
-      right?: ReactNode;
+      /** Trailing slot. See {@link DropdownRowSlot}. */
+      right?: DropdownRowSlot;
       /**
        * Trailing text (e.g. an account code) rendered in the right slot — the
        * string companion to `right`. Library-styled, so it inverts to white on
@@ -378,7 +397,9 @@ function DropdownRow({
         </View>
       ) : null}
       {entry.leading ? (
-        <View style={styles.leading}>{entry.leading}</View>
+        <View style={styles.leading}>
+          {renderRowSlot(entry.leading, highlight.contentColor)}
+        </View>
       ) : null}
       <View style={styles.itemText}>
         <Text style={[styles.itemLabel, highlight.labelStyle, toneLabel]}>
@@ -391,7 +412,9 @@ function DropdownRow({
         ) : null}
       </View>
       {entry.right ? (
-        <View style={styles.right}>{entry.right}</View>
+        <View style={styles.right}>
+          {renderRowSlot(entry.right, highlight.contentColor)}
+        </View>
       ) : entry.rightText ? (
         <View style={styles.right}>
           <Text style={[styles.rightText, highlight.secondaryStyle]}>
@@ -403,6 +426,16 @@ function DropdownRow({
       ) : null}
     </Pressable>
   );
+}
+
+/**
+ * Resolves a row slot against the row's content color. A plain node passes
+ * through untouched (the caller owns its color); a render function receives the
+ * color so its glyph tracks the active row's inversion. `ReactNode` excludes
+ * functions, so the `typeof` check discriminates the union safely.
+ */
+function renderRowSlot(slot: DropdownRowSlot, color: string): ReactNode {
+  return typeof slot === "function" ? slot({ color }) : slot;
 }
 
 export function DropdownIconBox({

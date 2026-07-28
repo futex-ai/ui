@@ -169,6 +169,15 @@ export type DropdownRowHighlight = {
   /** Color for the trailing selection checkmark. */
   checkColor: string;
   /**
+   * Resolved color for caller-rendered row content (the `leading`/`right`
+   * slots), tracking the label color for the same row state. The library can
+   * only recolor what it renders itself, so a slot node hard-coded to `ink`
+   * stays near-black on the `primary` fill while the label beside it inverts to
+   * white; handing this color to a slot render function lets the caller tint
+   * its own glyph to match.
+   */
+  contentColor: string;
+  /**
    * Whether the row's text is inverted to white over a solid fill. When set,
    * the caller suppresses the tone accent so the inverted label/subtext wins.
    */
@@ -212,29 +221,48 @@ export function dropdownRowHighlight(
   let rowStyle: object | null = null;
   let labelStyle: object | null = null;
   let secondaryStyle: object | null = null;
+  // Resolved in lockstep with `labelStyle` so a caller-rendered slot always
+  // matches the label beside it. The base is `itemLabel`'s own color.
+  let contentColor = theme.colors.ink;
   if (isActive) {
     if (variant === "solid") {
       rowStyle = solidActiveFill(styles, state.tone);
       labelStyle = styles.itemLabelOnSolid;
       secondaryStyle = styles.itemSecondaryOnSolid;
+      contentColor = theme.colors.surface;
     } else if (variant === "ring") {
       rowStyle = styles.itemActiveRing;
       labelStyle = styles.itemLabelActive;
+      contentColor = theme.colors.primaryDeep;
     } else if (variant === "ringFill") {
       rowStyle = styles.itemActiveRingFill;
       labelStyle = styles.itemLabelActive;
+      contentColor = theme.colors.primaryDeep;
     } else {
       rowStyle = styles.itemActiveDot;
       labelStyle = styles.itemLabelActive;
+      contentColor = theme.colors.primaryDeep;
     }
   } else if (state.selected && (variant === "solid" || variant === "dot")) {
     // The non-focused selected row keeps a soft fill for `solid`/`dot`; `ring`
     // and `ringFill` stay flat and lean on the checkmark alone.
     rowStyle = styles.itemSelectedFill;
     labelStyle = styles.itemLabelActive;
+    contentColor = theme.colors.primaryDeep;
+  }
+  // The tone accent wins off the inverted row, mirroring how `DropdownList`
+  // layers `toneLabel` over `labelStyle`. On the solid fill the accent yields —
+  // it would be unreadable there, so the white label/slot wins instead.
+  if (!invertText) {
+    if (state.tone === "danger") {
+      contentColor = theme.colors.rose;
+    } else if (state.tone === "amber") {
+      contentColor = theme.colors.amber;
+    }
   }
   return {
     checkColor: invertText ? theme.colors.surface : theme.colors.primary,
+    contentColor,
     invertText,
     labelStyle,
     rowStyle,
