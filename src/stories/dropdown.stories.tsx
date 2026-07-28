@@ -9,6 +9,7 @@ import type { DropdownHighlightVariant } from "../index";
 import {
   ActionMenuExample,
   ActionMenuSubtextExample,
+  ActionMenuTintedIconsExample,
   BottomEdgeFlipExample,
   CategorySelectExample,
   ChipMultiSelectExample,
@@ -150,6 +151,15 @@ export const DropdownActionMenu: Story = {
   render: () => (
     <StorySurface>
       <ActionMenuExample />
+    </StorySurface>
+  ),
+};
+
+export const DropdownActionMenuTintedIcons: Story = {
+  name: "Dropdown action menu with tinted icons",
+  render: () => (
+    <StorySurface>
+      <ActionMenuTintedIconsExample />
     </StorySurface>
   ),
 };

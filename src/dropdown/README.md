@@ -152,6 +152,40 @@ row's pressable (`data-testid` on web) so an end-to-end test can target a
 specific row; `DropdownSelectorOption` exposes the same `testID` for the
 select-only picker.
 
+### Row slots and the active-row color
+
+The default `solid` highlight fills the active row with `primary` and inverts
+everything the library renders itself — `label`, `secondary`, `rightText`, and
+the selection check — to white. It cannot recolor a node it was merely handed,
+so a `leading`/`right` node with a hard-coded color (`<Icon color={ink} />`)
+stays near-black on that fill while the label beside it turns white.
+
+Both slots therefore accept either a plain node or a render function receiving
+the row's resolved content color, so a caller can tint its own glyph from any
+icon set:
+
+```tsx
+const entries: DropdownListEntry[] = [
+  {
+    id: "settings",
+    label: "Settings",
+    leading: ({ color }) => (
+      <Ionicons color={color} name="settings-outline" size={18} />
+    ),
+    onPress: openSettings,
+    type: "item",
+  },
+];
+```
+
+The color tracks the label for the same row state: `surface` (white) on the
+solid active fill, `primaryDeep` on the other active/selected variants, `ink` at
+rest, and the tone accent (`rose` / `amber`) on a `danger` / `amber` row off the
+inverted fill. A plain node still passes through untouched, which is the right
+choice for content that owns its color regardless of row state (an avatar, a
+category swatch). For trailing _text_, prefer the library-styled `rightText`
+string over a hand-colored `right` node.
+
 Pass `open` and `onOpenChange` for controlled state, `defaultOpen` for
 uncontrolled initial state, and `closeOnSelect={false}` when a row should keep
 the menu open. `entries` may also be a function that receives

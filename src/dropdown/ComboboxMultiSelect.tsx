@@ -155,7 +155,6 @@ export function ComboboxMultiSelect({
       );
       setQuery("");
     },
-    theme,
     styles,
     footer,
   );
@@ -378,7 +377,6 @@ function entriesForOptions(
   options: ComboboxMultiSelectOption[],
   values: string[],
   onSelect: (value: string) => void,
-  theme: SharedUiTheme,
   styles: ComboboxMultiSelectStyles,
   footer?: string,
 ): DropdownListEntry[] {
@@ -389,9 +387,11 @@ function entriesForOptions(
       label: option.label,
       leading: <OptionMark option={option} styles={styles} />,
       onPress: () => onSelect(option.value),
-      right: selected ? (
-        <Check color={theme.colors.primaryDeep} size={15} />
-      ) : null,
+      // Tinted from the row's content color rather than pinned to `primaryDeep`,
+      // which all but vanishes (~1.3:1) on the solid active fill.
+      right: selected
+        ? ({ color }: { color: string }) => <Check color={color} size={15} />
+        : null,
       selected,
       type: "item",
     };

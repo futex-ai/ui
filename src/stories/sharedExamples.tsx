@@ -1,6 +1,8 @@
 import {
+  Archive,
   ChevronDown,
   MoreHorizontal,
+  Pin,
   Plus,
   Settings,
   Trash2,
@@ -250,6 +252,61 @@ export function ActionMenuExample() {
       <DropdownMenu entries={entries} minWidth={180}>
         <Pressable
           accessibilityLabel="Open action menu"
+          accessibilityRole="button"
+          style={styles.iconButton}
+        >
+          <MoreHorizontal color="#3e4540" size={18} />
+        </Pressable>
+      </DropdownMenu>
+      <Text style={styles.actionMenuStatus}>Last action: {lastAction}</Text>
+    </View>
+  );
+}
+
+export function ActionMenuTintedIconsExample() {
+  const [lastAction, setLastAction] = useState("None");
+  // Bare glyphs rather than `DropdownIconBox` (which carries its own soft
+  // background). A plain node here would keep its own color and go near-black
+  // on the solid active fill, so each row passes a `leading` render function and
+  // tints its icon with the row color the library hands back.
+  const entries: DropdownListEntry[] = [
+    {
+      id: "settings",
+      label: "Settings",
+      leading: ({ color }) => <Settings color={color} size={16} />,
+      onPress: () => setLastAction("Settings"),
+      type: "item",
+    },
+    {
+      id: "pin",
+      label: "Pin",
+      leading: ({ color }) => <Pin color={color} size={16} />,
+      onPress: () => setLastAction("Pin"),
+      type: "item",
+    },
+    {
+      id: "archive",
+      label: "Archive",
+      leading: ({ color }) => <Archive color={color} size={16} />,
+      onPress: () => setLastAction("Archive"),
+      rightText: "⌘E",
+      type: "item",
+    },
+    {
+      id: "delete",
+      label: "Remove",
+      leading: ({ color }) => <Trash2 color={color} size={16} />,
+      onPress: () => setLastAction("Remove"),
+      tone: "danger",
+      type: "item",
+    },
+  ];
+
+  return (
+    <View style={styles.actionMenuExample}>
+      <DropdownMenu entries={entries} minWidth={200}>
+        <Pressable
+          accessibilityLabel="Open tinted action menu"
           accessibilityRole="button"
           style={styles.iconButton}
         >

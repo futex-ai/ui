@@ -15,7 +15,7 @@ import {
   DropdownListEntry,
   dropdownRowDomId,
 } from "./DropdownList";
-import type { DropdownHighlightVariant } from "./DropdownList";
+import type { DropdownHighlightVariant, DropdownRowSlot } from "./DropdownList";
 import { DropdownPortal } from "./DropdownPortal";
 import { comboboxInputA11y, filterComboboxSections } from "./comboboxModel";
 import {
@@ -37,7 +37,8 @@ export type DropdownSelectorOption = {
   accessibilityLabel?: string;
   disabled?: boolean;
   label: string;
-  right?: ReactNode;
+  /** Trailing slot; see {@link DropdownRowSlot}. */
+  right?: DropdownRowSlot;
   /** Trailing text (e.g. an account code); see {@link DropdownListEntry}. */
   rightText?: string;
   secondary?: string;
