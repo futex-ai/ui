@@ -59,6 +59,10 @@ on Windows).
       boundaries remain visible.
 - [ ] With `prefers-reduced-motion: reduce`, non-essential animation is removed
       or shortened (2.3.3 Animation from Interactions — best practice / AAA).
+- [ ] Loading indicators still animate under `prefers-reduced-motion: reduce` —
+      the `Spinner` and every `Loader` variant slow down and fade rather than
+      moving, because a frozen indicator reads as a hung screen. Removing the
+      animation entirely is the wrong fix here.
 
 ### Pointer / touch
 

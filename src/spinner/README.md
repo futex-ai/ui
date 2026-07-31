@@ -16,6 +16,8 @@ ring whose accent arc rotates continuously over a fainter track.
   consumer-local theme imports.
 - Keep only the inner ring rotating so the labelled container has a stable box
   for layout and assistive technology.
+- Honour the user's "reduce motion" preference by fading the ring in place at a
+  much slower cycle instead of rotating it.
 
 ## Usage
 
@@ -55,3 +57,18 @@ arc on a filled primary button.
 Spinners read colors from `SharedUiThemeProvider`. The accent arc uses
 `colors.primary` and the ring track uses `colors.border2`; both can be
 overridden per instance with the `color` and `trackColor` props.
+
+## Motion
+
+The ring runs off one linear `Animated` loop that stops on unmount. When the
+user has asked for reduced motion the loop slows to 2400ms and drives an opacity
+fade instead of the rotation, so the loading state stays legible without
+anything moving — freezing the spinner outright would read as a hung screen.
+
+## Other shapes
+
+`Spinner` is the ring. For the other loading shapes — a dot grid, bouncing dots,
+equalizer bars, activity-indicator blades, an expanding pulse — and for
+determinate progress, see [`Loader`](../loader/README.md).
+`<Loader variant="ring" />` renders this component, so the two are
+interchangeable.

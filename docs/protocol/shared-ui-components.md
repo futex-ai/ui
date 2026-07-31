@@ -3,7 +3,8 @@
 ## Status
 
 Implemented contract for the dropdown, drag-select, segmented control, radio
-card, switch, spinner, button, data table, workflow builder, modal, toast,
+card, switch, spinner, loader, button, data table, workflow builder, modal,
+toast,
 avatar, status badge, rich-text editor, and event-calendar extraction,
 including the shared control-size scale for buttons, inputs, and textareas.
 
@@ -108,6 +109,56 @@ Required behavior:
   alternate surfaces without forking the component.
 - Keep only the inner ring rotating so the labelled container keeps a stable box
   for layout and assistive technology.
+- Honour the user's "reduce motion" preference by slowing the loop right down
+  and fading the ring in place instead of rotating it. The indicator must keep
+  animating: a frozen spinner reads as a hung screen.
+
+## Loader Contract
+
+The loader family covers the rest of the loading vocabulary: an indeterminate
+indicator with a switchable shape, and the two determinate progress meters.
+
+Required behavior:
+
+- Render `Loader` in any of six shapes — `ring`, `dot-grid`, `dots`, `bars`,
+  `blades`, `pulse` — defaulting to `ring`.
+- Size every shape's box height from the same scale the spinner uses (`sm` /
+  `md` / `lg`, `md` default, or an explicit pixel size) so a shape can be
+  swapped for another without moving the surrounding layout. `dots` and `bars`
+  may be wider than they are tall; the rest are square.
+- Delegate `variant="ring"` to the spinner rather than reimplementing the arc,
+  so the library holds exactly one ring.
+- Give each shape a default cycle length suited to its motion, overridable per
+  instance with `duration`.
+- Drive every shape from a single `Animated` loop that stops on unmount and
+  animates only opacity and transform, so the loader stays on the native driver
+  on iOS and Android and renders identically on web. Stagger elements by
+  interpolating that one driver at a phase offset rather than by running one
+  loop per element.
+- Honour "reduce motion" by slowing the loop and animating brightness alone —
+  no translation, scale, or rotation — rather than freezing.
+- Expose `progressbar` accessibility semantics with a busy state and an
+  accessible name that defaults to a loading label. The shape itself is
+  decorative and must stay out of the accessibility tree.
+- Use shared theme tokens for the animated elements (`primary`) and tracks
+  (`border2`), with per-instance `color` and `trackColor` overrides.
+
+`ProgressBar` and `ProgressRing` cover progress whose total is known:
+
+- `ProgressBar` renders a full-width track. A `value` prop, a 0–1 fraction
+  clamped to range, makes it determinate; omitting `value` sweeps a segment
+  across the track for unknown progress.
+- `ProgressRing` renders the determinate circular meter, sharing the spinner's
+  geometry so it can replace a spinner of the same size without moving the
+  layout. Its arc starts at 12 o'clock and fills clockwise.
+- Both publish the percentage through `aria-valuenow` on ARIA's default 0–100
+  range, so screen readers announce a percentage rather than a fraction. An
+  indeterminate bar publishes a busy state and no value, per ARIA.
+- Emit both React Native's `accessibilityValue` and the literal `aria-value*`
+  DOM props. react-native-web does not translate the former into the latter, so
+  setting only `accessibilityValue` leaves a web screen reader with a
+  `progressbar` that carries no value. This applies to any determinate control,
+  not only these two.
 
 ## Radio Card Contract
 
@@ -673,6 +724,7 @@ Required behavior:
   folder, currently `Avatar/Examples`, `Badge/Examples`, `Button/Examples`,
   `Calendar/Examples`,
   `Date/Examples`, `Dropdown/Examples`, `Heatmap/Examples`, `Input/Examples`,
+  `Loader/Examples`,
   `Modal/Examples`, `Popover/Examples`, `Radio/Examples`, `Segmented/Examples`,
   `Spinner/Examples`, `Switch/Examples`, `Table/Examples`,
   `Theme/Examples`, and `Toast/Examples`.

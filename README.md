@@ -6,7 +6,9 @@ surfaces. The first consumers are the accounting app and the Juno app.
 ## Key Features
 
 - Shared dropdown menu, selector, combobox, drag-select, segmented control,
-  radio card, switch, spinner, button, labelled input/textarea, data table,
+  radio card, switch, spinner, loaders (six indeterminate shapes plus
+  determinate progress bar and ring), button, labelled input/textarea,
+  data table,
   editable data grid (Airtable/Notion-style),
   cross-platform block rich-text editor with canonical markdown,
   modal, toast provider/controller, avatar, status badge, animated comet-trail
@@ -63,6 +65,10 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/sortable-list` for the drag-and-drop sortable list (pointer +
   keyboard reordering, an optional start/end grab handle, and vertical or
   horizontal flow).
+- `@firna/ui/loader` for the loading indicator family: `Loader` with six
+  interchangeable indeterminate shapes (`ring`, `dot-grid`, `dots`, `bars`,
+  `blades`, `pulse`), plus `ProgressBar` and `ProgressRing` for work whose total
+  is known.
 - `@firna/ui/spinner` for the themed indeterminate spinning loading indicator.
 - `@firna/ui/switch` for themed binary on/off switches.
 - `@firna/ui/table` for the data table with optional headers and clickable rows.
@@ -191,7 +197,8 @@ The package export map intentionally separates runtime targets:
   `Avatar/Examples`, `Badge/Examples`, `Button/Examples`, `Calendar/Examples`,
   `Date/Examples`,
   `Drag Select/Examples`, `Dropdown/Examples`, `Heatmap/Examples`,
-  `Input/Examples`, `Kanban/Examples`, `List/Examples`, `Modal/Examples`,
+  `Input/Examples`, `Kanban/Examples`, `List/Examples`, `Loader/Examples`,
+  `Modal/Examples`,
   `Popover/Examples`,
   `Radio/Examples`, `RichText/Examples`,
   `Segmented/Examples`, `SortableList/Examples`, `Spinner/Examples`,
@@ -213,6 +220,7 @@ The package export map intentionally separates runtime targets:
 - Input and textarea components: [src/input/README.md](src/input/README.md)
 - Kanban component: [src/kanban/README.md](src/kanban/README.md)
 - List component: [src/list/README.md](src/list/README.md)
+- Loader components: [src/loader/README.md](src/loader/README.md)
 - SortableList component: [src/sortable-list/README.md](src/sortable-list/README.md)
 - Dropdown components: [src/dropdown/README.md](src/dropdown/README.md)
 - Drag-select components:
