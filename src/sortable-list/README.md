@@ -26,6 +26,8 @@ on one axis.
   preview under the pointer.
 - Expose `list` / `listitem` semantics and the shared `ControlSize` densities,
   driven by shared theme tokens.
+- Exchange items with sibling lists through the `SortableGroups` coordinator —
+  see [Groups](#groups-dragging-between-lists).
 
 ## Usage
 
@@ -122,6 +124,139 @@ and a dashed `aria-hidden` preview marks the drop slot.
 `itemDisabled(item, index)` freezes a row: it keeps its slot (so the drop math
 stays correct) but is never a drag start or a keyboard target.
 
+## Groups: dragging between lists
+
+Wrap several lists in a `SortableGroups` coordinator and give each one a
+`groupId`, and an item can be dragged out of one list and into another. The
+coordinator is a **pure provider** — it renders its children and nothing else,
+contributing no layout box — so the section titles, spacing, collapse chrome and
+empty states around each list stay entirely yours.
+
+```tsx
+import {
+  applyGroupedSortableMove,
+  SortableGroups,
+  SortableList,
+} from "@firna/ui/sortable-list";
+
+const [groups, setGroups] = useState({ personal: [], workspace: [] });
+
+<SortableGroups
+  groupFlow="vertical"
+  onMove={(move) =>
+    setGroups((prev) => applyGroupedSortableMove(prev, move, (c) => c.id))
+  }
+>
+  <SectionTitle>Workspace</SectionTitle>
+  <SortableList<Chat>
+    accessibilityLabel="Workspace"
+    groupId="workspace"
+    handle="start"
+    itemKey={(chat) => chat.id}
+    itemLabel={(chat) => chat.name}
+    items={groups.workspace}
+    renderItem={(chat) => <ChatRow chat={chat} />}
+  />
+  <SectionTitle>Personal</SectionTitle>
+  <SortableList<Chat>
+    accessibilityLabel="Personal"
+    groupId="personal"
+    handle="start"
+    itemKey={(chat) => chat.id}
+    itemLabel={(chat) => chat.name}
+    items={groups.personal}
+    renderItem={(chat) => <ChatRow chat={chat} />}
+  />
+</SortableGroups>;
+```
+
+### The grouped move contract
+
+`onMove` is the **single sink** for every committed move — across lists _and_
+within one — so branch on `fromGroupId === toGroupId` if you need to tell them
+apart:
+
+```ts
+type SortableGroupMove = {
+  key: string;
+  fromGroupId: string;
+  fromIndex: number;
+  toGroupId: string;
+  toIndex: number;
+};
+```
+
+Indices keep the same **removed-item semantics** as the single-list contract, so
+`applyGroupedSortableMove(groups, move, itemKey)` — over a
+`Record<groupId, Item[]>` — is all a consumer needs. Groups the move does not
+touch keep their array identity, so memoised rows do not re-render.
+
+A member list's own `onReorder` is ignored inside a coordinator (and warns in
+development): the coordinator's `onMove` reports that list's moves too. Its
+`accessibilityLabel` doubles as the group name in announcements
+(`Roadmap review, Personal, position 2 of 2`), falling back to the `groupId`.
+
+### Arrangement and the keyboard
+
+`groupFlow` declares how the lists sit relative to each other, which is what
+keeps the arrow keys spatially honest:
+
+- `"vertical"` (default) — the lists are **stacked**. Up / Down step within a
+  list and **overflow** into the adjacent one at its near end, so the whole
+  stack reads as one continuous column. Left / Right do nothing.
+- `"horizontal"` — the lists sit in a **row**. Left / Right **jump** to the
+  adjacent list at a clamped index and Up / Down stay inside one, matching the
+  [`Kanban`](../kanban/README.md) board.
+
+Home / End stay group-local in both. Group order is taken from the measured
+rects when a grab begins, so conditionally rendered sections cannot scramble it.
+Pointer dragging is unaffected by `groupFlow`: a list is hit-tested by rect
+containment with a nearest-rect fallback, so any 2D arrangement works — stacked,
+side by side, or a grid.
+
+### Barring a destination
+
+`canDrop(move)` vets each candidate. A rejected target is never adopted, so no
+drop preview ever opens where the item cannot land, and the arrow keys step over
+it. The item's own slot is always allowed, so a drag can always be abandoned
+back home.
+
+```tsx
+<SortableGroups
+  canDrop={(move) => !(isShared(move.key) && move.toGroupId === "personal")}
+  onMove={apply}
+>
+```
+
+Reach for it only when an item genuinely cannot occupy a destination. A
+destination that merely needs **confirming** needs nothing from the library:
+because the lists are controlled, withhold the move, show your dialog, and apply
+it on confirm — nothing mutated, so the lists snap back on their own.
+
+```tsx
+onMove={(move) => {
+  if (move.toGroupId === "personal" && move.fromGroupId === "workspace") {
+    setPendingMove(move); // opens "This will revoke teammates' access…"
+    return;               // withheld: the lists snap back untouched
+  }
+  applyMove(move);
+}}
+```
+
+### Rules and limits
+
+- **Item keys must be unique across the whole coordinator** — the drop math, the
+  pointer hit test and the focus restore all key off them, so a key repeated in
+  two lists would move the wrong row. `Kanban` holds the same rule for card
+  keys; duplicates warn in development.
+- An **empty group** needs its own height to be a comfortable drop target
+  (`style={{ minHeight: 48 }}` or your own empty-state row). The nearest-rect
+  fallback still reaches a zero-height one, but only from very close by.
+- Lists in one coordinator may differ freely in `handle` mode, `orientation`,
+  `size` and styling.
+- On native the coordinator renders its children unchanged and nothing is
+  draggable, exactly as a lone list behaves today.
+
 ## Native
 
 Reordering by dragging is a pointer / physical-keyboard gesture, so on native the
@@ -137,7 +272,3 @@ follow-up (see `plans/sortable-list-component.md`).
 open into. Rows read colours from `SharedUiThemeProvider`: the drop preview and
 focus ring use `colors.primary`, the handle hover uses `colors.soft`, and the
 default grip glyph uses `colors.muted`.
-
-```
-
-```

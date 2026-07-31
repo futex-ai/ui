@@ -108,18 +108,24 @@ test("a disabled row is measured but never a drag start or keyboard target", () 
 
 test("the drag hook is platform-split: web pointer+keyboard, inert native", () => {
   const web = readSource("../../src/sortable-list/useSortableListDrag.web.ts");
+  const engine = readSource("../../src/sortable-list/useSortableDrag.web.ts");
   const native = readSource("../../src/sortable-list/useSortableListDrag.ts");
 
-  // Web: capture-phase pointerdown, a move threshold, Space-grab / Escape-cancel.
-  assert.match(web, /const DRAG_THRESHOLD = 5;/);
-  assert.match(web, /addEventListener\("pointerdown", onPointerDown, true\)/);
-  assert.match(web, /announce\(/);
-  assert.match(web, /Escape/);
-  // The handle vs. whole-row start hit test picks the right nodes.
+  // The web hook is a thin adapter over the shared N-group engine: a lone list
+  // is a coordinator of one implicit group.
+  assert.match(web, /useSortableDrag\(\{/);
+  assert.match(web, /bindList: drag\.bindList\(IMPLICIT_GROUP_ID\)/);
+  // The engine owns the drag itself: capture-phase pointerdown, a move
+  // threshold, Space-grab / Escape-cancel.
+  assert.match(engine, /const DRAG_THRESHOLD = 5;/);
   assert.match(
-    web,
-    /optionsRef\.current\.handle\s*\?\s*measureHandles\(container\)/,
+    engine,
+    /addEventListener\("pointerdown", onPointerDown, true\)/,
   );
+  assert.match(engine, /announce\(/);
+  assert.match(engine, /Escape/);
+  // The handle vs. whole-row start hit test picks the right nodes, per group.
+  assert.match(engine, /group\.handle\s*\?\s*measureHandles\(hit\.node\)/);
   // Native: an inert no-op with the same signature.
   assert.match(native, /itemBinding: \(\) => null/);
   assert.match(native, /active: false/);

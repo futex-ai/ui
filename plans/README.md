@@ -9,6 +9,7 @@
 
 ## Completed
 
+- [Sortable group coordinator](sortable-group-coordinator.md) — delivered: `SortableGroups`, a pure-provider coordinator several `SortableList`s join via `groupId`, so items drag between lists by pointer and keyboard. One `onMove` reports `{ key, fromGroupId, fromIndex, toGroupId, toIndex }`; `groupFlow` picks the keyboard model (stacked overflow vs. Kanban-parity jumps) and `canDrop` bars destinations. The drag engine was generalised to N groups rather than copied, and the drag ghost is now a shared body-level portal. M1–M3 complete; the manual screen-reader pass is the one deferred item.
 - [Rich Text Editor component](rich-text-editor-component.md) — delivered: a cross-platform Notion/Linear-style block editor with web and native editing, mobile toolbar continuity, and single-submit native Return splitting. M1–M4 and M6–M8 are complete; M5 tracks the post-v1 backlog.
 - [Data Grid component](data-grid-component.md) — delivered: the Airtable/Notion-style editable `DataGrid` primitive (cell-range drag + keyboard selection, virtualized infinite scroll, column menus, add column/row, typed editable cells, responsive card stack). M1–M9 complete and `npm run verify` green; the on-device native pass (M7) is the one deferred manual item.
 - [Firna UI Npm Release](firna-ui-npm-release.md)

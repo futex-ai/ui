@@ -56,6 +56,10 @@ The package name is `@firna/ui`. Public exports are available from:
   frame.
 - `@firna/ui/list` for the vertical list with between-item separators, optional
   clickable items, and the `ListItem` row.
+- `@firna/ui/loader` for the loading indicator family: `Loader` with six
+  interchangeable indeterminate shapes (`ring`, `dot-grid`, `dots`, `bars`,
+  `blades`, `pulse`), plus `ProgressBar` and `ProgressRing` for work whose total
+  is known.
 - `@firna/ui/modal` for web modal frame, portal, model, and layer helpers.
 - `@firna/ui/popover` for generic anchored popovers.
 - `@firna/ui/radio` for themed titled radio-option cards.
@@ -64,11 +68,9 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/segmented` for themed single-select segmented controls.
 - `@firna/ui/sortable-list` for the drag-and-drop sortable list (pointer +
   keyboard reordering, an optional start/end grab handle, and vertical or
-  horizontal flow).
-- `@firna/ui/loader` for the loading indicator family: `Loader` with six
-  interchangeable indeterminate shapes (`ring`, `dot-grid`, `dots`, `bars`,
-  `blades`, `pulse`), plus `ProgressBar` and `ProgressRing` for work whose total
-  is known.
+  horizontal flow), plus the `SortableGroups` coordinator that lets several
+  lists exchange items — stacked as sections or laid out as a board — reporting
+  each move with its source and destination group.
 - `@firna/ui/spinner` for the themed indeterminate spinning loading indicator.
 - `@firna/ui/switch` for themed binary on/off switches.
 - `@firna/ui/table` for the data table with optional headers and clickable rows.
