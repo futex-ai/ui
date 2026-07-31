@@ -15,7 +15,7 @@ test("spinner runs an Animated rotation loop and stops on unmount", () => {
   const source = readSource("../../src/spinner/Spinner.tsx");
 
   assert.match(source, /Animated\.loop\(/);
-  assert.match(source, /Animated\.timing\(rotation/);
+  assert.match(source, /Animated\.timing\(progress/);
   assert.match(source, /easing: Easing\.linear/);
   assert.match(source, /useNativeDriver: Platform\.OS !== "web"/);
   assert.match(source, /spin\.start\(\)/);
@@ -25,6 +25,28 @@ test("spinner runs an Animated rotation loop and stops on unmount", () => {
   // The interpolated rotation drives a transform on the inner ring only.
   assert.match(source, /outputRange: \["0deg", "360deg"\]/);
   assert.match(source, /transform: \[\{ rotate \}\]/);
+});
+
+test("spinner fades instead of turning under reduced motion", () => {
+  const source = readSource("../../src/spinner/Spinner.tsx");
+
+  // A frozen spinner reads as a hung screen, so the ring keeps animating —
+  // slower, and as brightness rather than movement.
+  assert.match(source, /useReducedMotion\(\)/);
+  assert.match(source, /const REDUCED_MOTION_DURATION = 2400/);
+  assert.match(source, /const REDUCED_MOTION_MIN_OPACITY = 0\.3/);
+  assert.match(
+    source,
+    /const cycle = reducedMotion \? REDUCED_MOTION_DURATION : duration/,
+  );
+  // The fade returns to full brightness at both ends of the cycle so the loop's
+  // reset is invisible.
+  assert.match(source, /inputRange: \[0, 0\.5, 1\]/);
+  assert.match(source, /outputRange: \[1, REDUCED_MOTION_MIN_OPACITY, 1\]/);
+  assert.match(
+    source,
+    /reducedMotion \? \{ opacity \} : \{ transform: \[\{ rotate \}\] \}/,
+  );
 });
 
 test("spinner draws the ring with react-native-svg so the arc renders on iOS", () => {

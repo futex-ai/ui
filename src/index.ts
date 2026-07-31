@@ -15,6 +15,7 @@ export * from "./input";
 export * from "./kanban";
 export * from "./keyboardNavigation";
 export * from "./list";
+export * from "./loader";
 export * from "./modal";
 export * from "./popover";
 export * from "./radio";
