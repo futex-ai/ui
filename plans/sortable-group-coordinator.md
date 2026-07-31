@@ -24,7 +24,9 @@ Kanban-like board without Kanban's chrome).
 the living spec; this plan adds a stacked-sections example and a
 row-of-lists example to that same title folder.
 
-**Status:** not started. M1–M3 below.
+**Status:** M1 delivered — the drag engine now reasons about N groups behind the
+unchanged single-list API, the ghost is portaled, and `npm run verify` is green.
+M2 (the coordinator and cross-group moves) and M3 (`canDrop`, docs) are next.
 
 ---
 
@@ -208,35 +210,49 @@ Two supporting decisions:
 
 ## Milestones
 
-### M1 — Generalise the engine to N groups (no public change)
+### M1 — Generalise the engine to N groups (no public change) ✅
 
 At the end: the drag engine reasons about an array of groups, the standalone
-list is a coordinator of one, the ghost is portaled, and every existing test
-passes **unchanged** — the proof that the single-list API survived. Nothing new
-is exported.
+list is a coordinator of one, and the ghost is portaled. No public API changed
+and nothing new is exported.
 
-- [ ] Add `sortableGroupModel.ts` with the multi-group types
-      (`SortableGroupLayout`, `MeasuredSortableGroup`, `SortableGroupTarget`,
-      `SortableGroupMove`), `groupAt`, `liftedGroupDropTarget`,
-      `groupTargetToMove`, `describeGroupTarget`, `groupIndicatorIndex`,
-      reusing the `sortableListModel.ts` primitives.
-- [ ] Extract `sortableDragFocus.ts` (focus registry, `restoreFocus`, click
+- [x] Add `sortableGroupModel.ts` with the multi-group types
+      (`SortableGroupLayout`, `MeasuredSortableGroup`, `MeasuredGroupItem`,
+      `SortableGroupTarget`, `SortableGroupMove`), `groupAt`,
+      `liftedGroupDropTarget`, `initialGroupTarget`, `groupTargetToMove`,
+      `describeGroupTarget`, `groupIndicatorIndex`, reusing the
+      `sortableListModel.ts` primitives.
+- [x] Add `measureGroupRects` / `measureGroupItems` (and `GroupNode`) to
+      `sortableListDom.ts`, tagging each measured row with its group.
+- [x] Extract `sortableDragFocus.ts` (focus registry, `restoreFocus`, click
       suppression) from `useSortableListDrag.web.ts`.
-- [ ] Add `useSortableDrag.web.ts`: the pointer + keyboard engine over N groups,
-      with a per-group container node, keys, and orientation.
-- [ ] Reduce `useSortableListDrag.web.ts` to an adapter over the engine with one
+- [x] Add `useSortableDrag.web.ts`: the pointer + keyboard engine over N groups,
+      with a per-group container node, keys, handle mode, and orientation.
+- [x] Reduce `useSortableListDrag.web.ts` to an adapter over the engine with one
       implicit group id; keep `useSortableListDrag.ts` inert.
-- [ ] Add the shared `src/dragGhostPortal.{tsx,web.tsx}`; render the
+- [x] Add the shared `src/dragGhostPortal.{tsx,web.tsx}`; render the
       `SortableList` ghost through it.
-- [ ] Move `Kanban.tsx` onto the shared portal and delete
+- [x] Move `Kanban.tsx` onto the shared portal and delete
       `src/kanban/KanbanDragGhostPortal.{tsx,web.tsx}`.
-- [ ] Unit tests for the new model file (`sortableGroupDrag.test.ts`, first
-      pass: `groupAt` containment + nearest-rect, single-group parity with the
-      existing lifted-target math).
-- [ ] `tests/unit/sortableListDrag.test.ts` and `tests/unit/sortableList.test.ts`
-      pass with no edits; `tests/unit/kanban*.test.ts` green after the portal
-      move.
-- [ ] `npm run verify` green.
+- [x] Unit tests for the new model and DOM helpers
+      (`tests/unit/sortableGroupDrag.test.ts`, 24 cases: `groupAt` containment +
+      nearest-rect on both arrangements, per-group orientation scanning, empty
+      groups, move derivation, announcement phrasing, group measurement).
+- [x] Add `tests/browser/sortable-list.spec.ts` — the behavioural guard for the
+      refactor. **The plan assumed existing tests covered the drag; they did
+      not.** `sortableList*.test.ts` only assert the pure model and the
+      component source, and no browser spec touched the list, so the engine had
+      no end-to-end coverage before this. The new spec drives real pointer
+      drags, keyboard grabs, Escape-cancel, the horizontal axis, and the row's
+      own controls; it was checked against a deliberately broken engine to
+      confirm it can actually fail.
+- [x] `tests/unit/sortableListDrag.test.ts` passes unedited. Two structural
+      assertions did need repointing, both to file locations rather than
+      behaviour: `sortableList.test.ts` asserted drag internals lived in
+      `useSortableListDrag.web.ts` (they moved to the engine) and
+      `kanban.test.ts` named the deleted Kanban-local ghost portal.
+- [x] `npm run verify` green (606 unit tests, 205 browser tests including the
+      axe scan).
 
 ### M2 — The coordinator: cross-group pointer and keyboard moves
 

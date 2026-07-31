@@ -18,6 +18,7 @@ import { View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
 
 import type { ControlSize } from "../controlSize";
+import { DragGhostPortal } from "../dragGhostPortal";
 import { useSharedUiTheme } from "../theme";
 
 import { SortableClone, SortableHandle, SortableRow } from "./SortableRow";
@@ -296,12 +297,14 @@ export function SortableList<Item>({
         </Fragment>
       ))}
       {previewIndex === flow.length ? preview : null}
-      {active && mode === "pointer" && previewNode
-        ? // The clone that rides the cursor: a fixed, viewport-positioned copy of
-          // the row, moved by the hook mutating its transform. Decorative,
-          // inert, and click-through — the lifted row and the live region carry
-          // the meaning.
-          clone(
+      {active && mode === "pointer" && previewNode ? (
+        // The clone that rides the cursor: a fixed, viewport-positioned copy of
+        // the row, moved by the hook mutating its transform. Decorative, inert,
+        // and click-through — the lifted row and the live region carry the
+        // meaning. Web portals it to `body` so a transformed or scrolling
+        // ancestor cannot redefine what its fixed coordinates mean.
+        <DragGhostPortal>
+          {clone(
             [
               styles.ghost,
               GHOST_FIXED,
@@ -310,8 +313,9 @@ export function SortableList<Item>({
             ],
             "sortable-drag-ghost",
             drag.bindGhost.ref,
-          )
-        : null}
+          )}
+        </DragGhostPortal>
+      ) : null}
     </View>
   );
 }
