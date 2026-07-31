@@ -20,12 +20,12 @@ import { Platform, ScrollView, View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
 
 import type { ControlSize } from "../controlSize";
+import { DragGhostPortal } from "../dragGhostPortal";
 import { SkeletonPulseProvider } from "../skeleton";
 import { useSharedUiTheme } from "../theme";
 
 import { KanbanColumn } from "./KanbanColumn";
 import type { KanbanColumnDef, KanbanColumnEntry } from "./KanbanColumn";
-import { KanbanDragGhostPortal } from "./KanbanDragGhostPortal";
 import { indicatorIndex } from "./kanbanDragModel";
 import type { KanbanCardMove, KanbanColumnLayout } from "./kanbanDragModel";
 import { createKanbanStyles } from "./kanbanStyles";
@@ -289,7 +289,7 @@ export function Kanban<Card>({
       {active && mode === "pointer" && previewNode ? (
         // The clone rides the viewport cursor, so web portals it to `body` to
         // escape transformed ancestors that redefine fixed positioning.
-        <KanbanDragGhostPortal>
+        <DragGhostPortal>
           <View
             aria-hidden
             pointerEvents="none"
@@ -304,7 +304,7 @@ export function Kanban<Card>({
           >
             {previewNode}
           </View>
-        </KanbanDragGhostPortal>
+        </DragGhostPortal>
       ) : null}
     </View>
   );
