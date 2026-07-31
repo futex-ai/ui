@@ -13,14 +13,23 @@
  * documented follow-up); the list still renders, and order can be driven from a
  * consumer's own controls.
  */
-import { Fragment, type ReactNode, useCallback, useMemo } from "react";
+import {
+  Fragment,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import { View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
 
 import type { ControlSize } from "../controlSize";
+import { devWarn } from "../devWarn";
 import { DragGhostPortal } from "../dragGhostPortal";
 import { useSharedUiTheme } from "../theme";
 
+import { useSortableGroupContext } from "./sortableGroupContext";
 import { SortableClone, SortableHandle, SortableRow } from "./SortableRow";
 import type { SortableHandleState } from "./SortableRow";
 import {
@@ -61,6 +70,15 @@ export type SortableListProps<Item> = {
   disableFocusRing?: boolean;
   /** Gap in px between rows. Defaults to the `size` scale — a visible gap gives the drop preview a slot to open into. */
   gap?: number;
+  /**
+   * Join the enclosing {@link SortableGroups} coordinator under this id, so
+   * items can be dragged between this list and its siblings. Every move — this
+   * list's own included — is then reported through the coordinator's `onMove`
+   * rather than `onReorder`, and item keys must be unique across the whole
+   * coordinator. Without a coordinator, or without this prop, the list behaves
+   * exactly as it does standalone.
+   */
+  groupId?: string;
   /**
    * Show a grab handle. `"start"` / `"end"` auto-place it in the row gutter
    * beside the content; `"custom"` hands the wired handle to `renderItem` (its
@@ -118,6 +136,7 @@ export function SortableList<Item>({
   accessibilityLabel,
   disableFocusRing = false,
   gap,
+  groupId,
   handle,
   handleLabel,
   itemDisabled,
@@ -154,8 +173,54 @@ export function SortableList<Item>({
     [itemLabel, items, keys],
   );
 
-  const drag = useSortableListDrag({
-    enabled: Boolean(onReorder),
+  // A coordinator takes over the drag entirely when this list joins one: it
+  // owns the engine, so every move (including this list's own) is reported
+  // through its `onMove`. Standalone, the list drives its own engine as before.
+  const coordinator = useSortableGroupContext();
+  const grouped = groupId !== undefined ? coordinator : null;
+
+  const isGrouped = Boolean(grouped);
+  useEffect(() => {
+    if (isGrouped && onReorder) {
+      devWarn(
+        `SortableList: "${groupId}" is inside a SortableGroups coordinator, so its onReorder is ignored — the coordinator's onMove reports every move, including this list's own.`,
+      );
+    }
+  }, [groupId, isGrouped, onReorder]);
+
+  // Identifies this list instance to the coordinator, so a teardown cannot drop
+  // a replacement list that already claimed the same id.
+  const owner = useRef({});
+  if (grouped && groupId !== undefined) {
+    // A ref write, not state: the coordinator reads the registry live at event
+    // time, so publishing here keeps it exact without a second render pass.
+    grouped.register(
+      groupId,
+      {
+        handle: Boolean(handle),
+        itemLabel: label,
+        keys,
+        label: accessibilityLabel,
+        orientation,
+      },
+      owner.current,
+    );
+  }
+  // Depend on `unregister` (stable) rather than the context value, which is a
+  // fresh object on every drag-state change — that would tear this list out of
+  // the registry mid-drag, right after its render had put it back.
+  const unregister = grouped?.unregister;
+  useEffect(
+    () => () => {
+      if (groupId !== undefined) {
+        unregister?.(groupId, owner.current);
+      }
+    },
+    [groupId, unregister],
+  );
+
+  const solo = useSortableListDrag({
+    enabled: Boolean(onReorder) && !grouped,
     handle: Boolean(handle),
     keys,
     label,
@@ -163,8 +228,27 @@ export function SortableList<Item>({
     orientation,
   });
 
-  const { active, draggedKey, ghostHeight, ghostWidth, mode, target } =
-    drag.dragState;
+  const groupedBind = grouped?.bindList(groupId ?? "");
+  const drag =
+    grouped && groupId !== undefined
+      ? {
+          bindGhost: grouped.bindGhost,
+          bindList: groupedBind ?? solo.bindList,
+          itemBinding: grouped.itemBinding,
+        }
+      : solo;
+
+  const shared = grouped?.dragState;
+  const { active, draggedKey, ghostHeight, ghostWidth, mode } =
+    shared ?? solo.dragState;
+  // Standalone, every target belongs to this list. Grouped, only the target
+  // that names this group opens a preview here.
+  const target =
+    shared && groupId !== undefined
+      ? shared.target?.groupId === groupId
+        ? { index: shared.target.index }
+        : null
+      : solo.dragState.target;
 
   // Locate the dragged item so the list can render its preview + floating clone,
   // and place the preview at the right flow slot per mode: the pointer lifts the
@@ -194,7 +278,8 @@ export function SortableList<Item>({
       />
     ) : undefined;
 
-  const previewNode =
+  // The dragged row's content, rendered by whichever list actually holds it.
+  const ownPreview =
     draggedIndex >= 0
       ? renderItem(
           items[draggedIndex],
@@ -202,9 +287,22 @@ export function SortableList<Item>({
           customGrip(null, false, ""),
         )
       : null;
+  if (grouped && ownPreview) {
+    // Publish it so a sibling list can draw the preview for a row it does not
+    // own. Safe as a render-time ref write: the first render of any drag always
+    // targets the source group, so the value is in place before another list
+    // needs it.
+    grouped.preview.current = ownPreview;
+  }
+  const previewNode = grouped
+    ? ((grouped.preview.current as typeof ownPreview) ?? null)
+    : ownPreview;
+  // A keyboard drag leaves the grabbed row in place, so a target at or past its
+  // own slot sits one flow slot later — but only in the list that holds it. A
+  // list drawing the preview for someone else's row uses the target directly.
   const previewIndex =
-    active && target && draggedIndex >= 0
-      ? mode === "keyboard"
+    active && target
+      ? mode === "keyboard" && draggedIndex >= 0
         ? indicatorIndex(draggedIndex, target)
         : target.index
       : -1;
@@ -297,7 +395,7 @@ export function SortableList<Item>({
         </Fragment>
       ))}
       {previewIndex === flow.length ? preview : null}
-      {active && mode === "pointer" && previewNode ? (
+      {active && mode === "pointer" && draggedIndex >= 0 && previewNode ? (
         // The clone that rides the cursor: a fixed, viewport-positioned copy of
         // the row, moved by the hook mutating its transform. Decorative, inert,
         // and click-through — the lifted row and the live region carry the

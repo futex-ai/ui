@@ -207,3 +207,122 @@ test("the drag ghost tracks the cursor inside a transformed ancestor", async ({
   expect(ghost.y).toBeLessThanOrEqual(y + 60);
   expect(ghost.y + ghost.height).toBeGreaterThanOrEqual(y + 60);
 });
+
+/** Rows of one member list, read from its own container. */
+async function groupOrder(page: Page, label: string) {
+  return page
+    .getByRole("list", { name: label })
+    .locator('[data-testid^="sortable-item-"]')
+    .evaluateAll((nodes) =>
+      nodes.map((node) =>
+        (node.getAttribute("data-testid") ?? "").replace("sortable-item-", ""),
+      ),
+    );
+}
+
+test("a pointer drag moves an item into another group", async ({ page }) => {
+  await gotoSortableStory(page, "stacked-groups");
+
+  expect(await groupOrder(page, "Workspace")).toEqual([
+    "roadmap",
+    "hiring",
+    "incident",
+  ]);
+  expect(await groupOrder(page, "Personal")).toEqual(["scratch"]);
+
+  const from = await page
+    .getByRole("button", { name: "Reorder Roadmap review" })
+    .boundingBox();
+  const personal = await page
+    .getByRole("list", { name: "Personal" })
+    .boundingBox();
+  if (!from || !personal) {
+    throw new Error("expected the handle and the Personal list to be laid out");
+  }
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2 + 12);
+  await page.mouse.move(
+    personal.x + personal.width / 2,
+    personal.y + personal.height - 4,
+    { steps: 12 },
+  );
+  await page.mouse.up();
+
+  await expect
+    .poll(() => groupOrder(page, "Workspace"))
+    .toEqual(["hiring", "incident"]);
+  await expect
+    .poll(() => groupOrder(page, "Personal"))
+    .toEqual(["scratch", "roadmap"]);
+});
+
+test("the move reports both group ids to onMove", async ({ page }) => {
+  await gotoSortableStory(page, "stacked-groups");
+
+  await page.getByRole("button", { name: "Reorder Incident 428" }).focus();
+  await page.keyboard.press(" ");
+  // Past the end of Workspace, so the next step overflows into Personal.
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press(" ");
+
+  await expect(
+    page.getByText("Moved incident from workspace to personal"),
+  ).toBeVisible();
+});
+
+test("a keyboard grab overflows into the next stacked group", async ({
+  page,
+}) => {
+  await gotoSortableStory(page, "stacked-groups");
+
+  await page.getByRole("button", { name: "Reorder Incident 428" }).focus();
+  await page.keyboard.press(" ");
+  await page.keyboard.press("ArrowDown");
+  // Crossing the boundary announces the destination group by name.
+  await expect(page.locator("#firna-ui-live-region-polite")).toContainText(
+    "Personal",
+  );
+  await page.keyboard.press(" ");
+
+  await expect
+    .poll(() => groupOrder(page, "Workspace"))
+    .toEqual(["roadmap", "hiring"]);
+  await expect
+    .poll(() => groupOrder(page, "Personal"))
+    .toEqual(["incident", "scratch"]);
+});
+
+test("a within-group reorder still routes through the coordinator", async ({
+  page,
+}) => {
+  await gotoSortableStory(page, "stacked-groups");
+
+  await page.getByRole("button", { name: "Reorder Roadmap review" }).focus();
+  await page.keyboard.press(" ");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press(" ");
+
+  await expect(
+    page.getByText("Reordered roadmap within workspace"),
+  ).toBeVisible();
+  await expect
+    .poll(() => groupOrder(page, "Workspace"))
+    .toEqual(["hiring", "roadmap", "incident"]);
+});
+
+test("a row of lists crosses groups with Left and Right", async ({ page }) => {
+  await gotoSortableStory(page, "row-groups");
+
+  await page.getByRole("button", { name: "Reorder Triage inbox" }).focus();
+  await page.keyboard.press(" ");
+  // Down stays inside the column (Kanban parity); Right crosses to the next.
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press(" ");
+
+  await expect.poll(() => groupOrder(page, "todo")).toEqual(["audit"]);
+  await expect
+    .poll(() => groupOrder(page, "doing"))
+    .toEqual(["triage", "spec"]);
+});

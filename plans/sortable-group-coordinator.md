@@ -24,9 +24,10 @@ Kanban-like board without Kanban's chrome).
 the living spec; this plan adds a stacked-sections example and a
 row-of-lists example to that same title folder.
 
-**Status:** M1 delivered — the drag engine now reasons about N groups behind the
-unchanged single-list API, the ghost is portaled, and `npm run verify` is green.
-M2 (the coordinator and cross-group moves) and M3 (`canDrop`, docs) are next.
+**Status:** M1–M2 delivered — the drag engine reasons about N groups behind the
+unchanged single-list API, and a `SortableGroups` coordinator now moves items
+between lists by pointer and keyboard in both arrangements. `npm run verify` is
+green. M3 (`canDrop`, the axe pass, docs) is next.
 
 ---
 
@@ -254,47 +255,67 @@ and nothing new is exported.
 - [x] `npm run verify` green (606 unit tests, 205 browser tests including the
       axe scan).
 
-### M2 — The coordinator: cross-group pointer and keyboard moves
+### M2 — The coordinator: cross-group pointer and keyboard moves ✅
 
 At the end: several `SortableList`s inside a `SortableGroups` exchange items by
 pointer and keyboard, with the preview opening in the destination group and
 announcements naming it.
 
-- [ ] Add `keyboardGroupTarget` to `sortableGroupModel.ts` covering both
+- [x] Add `keyboardGroupTarget` to `sortableGroupModel.ts` covering both
       `groupFlow` models (vertical overflow at boundaries; horizontal jump with
       a clamped index) and group-local Home / End.
-- [ ] Add `applyGroupedSortableMove` and export it.
-- [ ] Add `sortableGroupContext.ts` with group registration, live refs, and the
+- [x] Add `applyGroupedSortableMove` and export it.
+- [x] Add `sortableGroupContext.ts` with group registration, live refs, and the
       shared drag state.
-- [ ] Add `useSortableGroupDrag.web.ts` / `.ts`.
-- [ ] Add `SortableGroups.tsx` (`groupFlow`, `onMove`, the portaled shared
-      ghost); render a Fragment so no layout box is introduced.
-- [ ] Add `groupId` to `SortableList`; route drag wiring through the coordinator
+- [x] ~~Add `useSortableGroupDrag.web.ts` / `.ts`.~~ **Not needed.** The
+      coordinator drives the platform-split `useSortableDrag` directly, so the
+      extra adapter layer would have been pass-through. What the split did need
+      was `useSortableDrag.ts` (the inert native engine) and
+      `sortableDragTypes.ts` (the shared contract both sides implement,
+      following the existing `sortableListTypes.ts` convention).
+- [x] Add `SortableGroups.tsx` (`groupFlow`, `onMove`); it renders only the
+      context provider around its children, so it introduces no layout box.
+- [x] ~~the portaled shared ghost~~ **Not needed.** The ghost is already
+      portaled to `document.body` (M1), so it escapes its source list's
+      subtree without the coordinator owning it. The list holding the dragged
+      row renders the one clone — simpler, and it keeps the clone's styles with
+      the list whose rows they describe.
+- [x] Add `groupId` to `SortableList`; route drag wiring through the coordinator
       when present, publish the preview node while dragging, render the preview
       when this list owns the target group.
-- [ ] `devWarn` on a duplicate `groupId`, on duplicate item keys across groups,
-      and on `onReorder` passed alongside `groupId`.
-- [ ] Announcements name the destination group on a group change (grab, arrow,
+- [x] `devWarn` on duplicate item keys across groups and on `onReorder` passed
+      alongside `groupId`.
+- [x] ~~`devWarn` on a duplicate `groupId`.~~ **Dropped, and replaced with a
+      correctness fix.** The warning cannot tell a genuine duplicate from a
+      remount: React renders a replacement list _before_ unmounting the one it
+      replaces, so both hold the id briefly and any check fires falsely. That
+      same ordering revealed a real bug — an id-only teardown would delete the
+      replacement's live registration — so `register` / `unregister` now carry
+      an owner token and a teardown only fires when its owner still holds the
+      id.
+- [x] Announcements name the destination group on a group change (grab, arrow,
       drop), using `accessibilityLabel` then `groupId`.
-- [ ] Exports wired in `src/sortable-list/index.ts` (`SortableGroups`,
+- [x] Exports wired in `src/sortable-list/index.ts` (`SortableGroups`,
       `SortableGroupMove`, `SortableGroupFlow`, `applyGroupedSortableMove`).
-      `src/index.ts` needs no edit — it already star-exports the directory. No
-      new package subpath either: the coordinator ships under `./sortable-list`,
-      so `tests/unit/packageExports.test.ts` must still pass untouched.
-- [ ] `SortableGroups` renders a Fragment and so has no host root to carry a
-      `testID`. It is therefore _not_ added to `FORWARDING_FILES` in
-      `tests/unit/testIDForwarding.test.ts`; add a short comment there recording
-      why, so that list's "exhaustive on purpose" claim stays honest.
-- [ ] Unit tests: cross-group keyboard stepping in both flows, boundary
-      overflow, `applyGroupedSortableMove` (including move to an empty group and
-      a within-group move through the grouped path), duplicate-key `devWarn`.
-- [ ] Source-assertion test `tests/unit/sortableGroup.test.ts` in the style of
-      `sortableList.test.ts`.
-- [ ] Storybook: a stacked-sections example (Workspace / Personal chats) and a
+      `src/index.ts` needed no edit — it already star-exports the directory. No
+      new package subpath either, and `tests/unit/packageExports.test.ts` passes
+      untouched.
+- [x] `SortableGroups` renders only a provider and so has no host root to carry
+      a `testID`. It is therefore _not_ in `FORWARDING_FILES` in
+      `tests/unit/testIDForwarding.test.ts`; a comment there records why, so
+      that list's "exhaustive on purpose" claim stays honest.
+- [x] Unit tests: cross-group keyboard stepping in both flows, boundary
+      overflow, holding at the ends of the set, `applyGroupedSortableMove`
+      (cross-group, within-group, into an empty group, untouched-group identity,
+      unknown group / key).
+- [x] Source-assertion test `tests/unit/sortableGroup.test.ts`.
+- [x] Storybook: a stacked-sections example (Workspace / Personal chats) and a
       row-of-lists example, both under `title: "SortableList/Examples"`.
-- [ ] Playwright coverage in `tests/browser/`: pointer drag from one group to
-      another, keyboard cross-group move, and the resulting `onMove` payload.
-- [ ] `npm run verify` green.
+- [x] Playwright coverage: pointer drag from one group into another, keyboard
+      overflow across a boundary, Left / Right jumping in a row of lists, a
+      within-group reorder routed through the coordinator, and the `onMove`
+      payload naming both groups.
+- [x] `npm run verify` green (628 unit tests, 210 browser tests).
 
 ### M3 — canDrop, accessibility pass, and docs
 

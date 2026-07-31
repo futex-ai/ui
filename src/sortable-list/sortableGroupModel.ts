@@ -17,10 +17,18 @@
  * row of lists, or a grid of them.
  */
 import {
+  arrowDelta,
   liftedDropTarget,
   type MeasuredSortableItem,
   type SortableOrientation,
 } from "./sortableListModel";
+
+/**
+ * How the groups sit relative to one another. It picks which arrow keys cross a
+ * group boundary, so the keyboard stays spatially honest: stacked groups are
+ * crossed with Up / Down, a row of them with Left / Right.
+ */
+export type SortableGroupFlow = "horizontal" | "vertical";
 
 /** A group's ordered item keys and the axis it flows along. */
 export type SortableGroupLayout = {
@@ -180,6 +188,140 @@ export function groupIndicatorIndex(
     return target.index + 1;
   }
   return target.index;
+}
+
+/** The step a key makes *across* groups for the given flow, or `null`. */
+function crossDelta(key: string, groupFlow: SortableGroupFlow): -1 | 1 | null {
+  return arrowDelta(
+    key,
+    groupFlow === "horizontal" ? "horizontal" : "vertical",
+  );
+}
+
+/** The target entering `group` from `direction`: its near end. */
+function enterGroup(
+  group: SortableGroupLayout,
+  draggedKey: string,
+  direction: -1 | 1,
+): SortableGroupTarget {
+  return {
+    groupId: group.groupId,
+    index:
+      direction === 1
+        ? 0
+        : group.keys.filter((key) => key !== draggedKey).length,
+  };
+}
+
+/**
+ * Step a keyboard-grabbed item, returning the next target or `null` when the
+ * key does not act on this arrangement at all.
+ *
+ * Within a group the item steps on that group's own `orientation`. Crossing a
+ * boundary follows `groupFlow`: when the crossing key is also the group's own
+ * axis — a stack of vertical lists — stepping past either end **overflows**
+ * into the adjacent group at its near end, which is what a continuous column of
+ * sections looks like. When the crossing key is the perpendicular one — a row
+ * of vertical lists — it **jumps** to the adjacent group at a clamped index,
+ * matching the Kanban board. Reaching the first or last group holds the target
+ * rather than wrapping.
+ */
+export function keyboardGroupTarget(
+  layout: SortableGroupLayout[],
+  groupFlow: SortableGroupFlow,
+  current: SortableGroupTarget,
+  draggedKey: string,
+  key: string,
+): SortableGroupTarget | null {
+  const at = layout.findIndex((entry) => entry.groupId === current.groupId);
+  const group = layout[at];
+  if (!group) {
+    return null;
+  }
+  const max = slotCount(layout, group.groupId, draggedKey);
+
+  if (key === "Home" || key === "End") {
+    return { groupId: group.groupId, index: key === "Home" ? 0 : max };
+  }
+
+  const across = crossDelta(key, groupFlow);
+  const within = arrowDelta(key, group.orientation);
+
+  if (within !== null) {
+    const next = current.index + within;
+    if (next >= 0 && next <= max) {
+      return { groupId: group.groupId, index: next };
+    }
+    // Past an end. Only the crossing key carries on into the next group; any
+    // other axis simply clamps.
+    if (across !== within) {
+      return { groupId: group.groupId, index: current.index };
+    }
+    const adjacent = layout[at + across];
+    return adjacent
+      ? enterGroup(adjacent, draggedKey, across)
+      : { groupId: group.groupId, index: current.index };
+  }
+
+  if (across !== null) {
+    const adjacent = layout[at + across];
+    if (!adjacent) {
+      return current;
+    }
+    return {
+      groupId: adjacent.groupId,
+      index: Math.min(
+        current.index,
+        slotCount(layout, adjacent.groupId, draggedKey),
+      ),
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Apply a {@link SortableGroupMove} to a record of groups: lift the item out of
+ * its source group, then insert it before the `toIndex`-th of the destination's
+ * remaining items — the removed-item splice the move contract describes, across
+ * two lists. Groups the move does not touch keep their array identity, so a
+ * consumer's memoised rows do not re-render. Returns the input unchanged when
+ * either group or the key is unknown.
+ */
+export function applyGroupedSortableMove<Item>(
+  groups: Record<string, Item[]>,
+  move: SortableGroupMove,
+  itemKey: (item: Item, index: number) => string,
+): Record<string, Item[]> {
+  const source = groups[move.fromGroupId];
+  const destination = groups[move.toGroupId];
+  if (!source || !destination) {
+    return groups;
+  }
+
+  let moved: Item | undefined;
+  const without: Item[] = [];
+  source.forEach((item, index) => {
+    if (moved === undefined && itemKey(item, index) === move.key) {
+      moved = item;
+    } else {
+      without.push(item);
+    }
+  });
+  if (moved === undefined) {
+    return groups;
+  }
+
+  // Within one group the destination is the source with the item already out.
+  const target =
+    move.toGroupId === move.fromGroupId ? without : [...destination];
+  target.splice(move.toIndex, 0, moved);
+
+  return {
+    ...groups,
+    [move.fromGroupId]: without,
+    [move.toGroupId]: target,
+  };
 }
 
 /** The starting target when a drag begins: the item's own slot in its own group. */

@@ -13,6 +13,10 @@ import test from "node:test";
  * `testID={testID}` (AnimatedBorder additionally keeps a `?? "animated-border"`
  * default). The list is exhaustive on purpose: adding a new public component
  * means adding it here.
+ *
+ * The one deliberate omission is `sortable-list/SortableGroups.tsx`: the
+ * coordinator renders only a context provider around its children, so it has no
+ * host root to carry a `testID`. Its member lists forward their own.
  */
 const FORWARDING_FILES = [
   "animated-border/AnimatedBorder.tsx",

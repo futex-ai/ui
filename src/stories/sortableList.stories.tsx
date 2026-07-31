@@ -3,7 +3,12 @@ import { Archive, ChevronDown, ChevronUp } from "lucide-react-native";
 import { type ReactNode, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { applySortableMove, SortableList } from "../index";
+import {
+  applyGroupedSortableMove,
+  applySortableMove,
+  SortableGroups,
+  SortableList,
+} from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -310,6 +315,138 @@ function SizedList({ size }: { size: "lg" | "md" | "sm" }) {
   );
 }
 
+export const StackedGroups: Story = {
+  name: "Groups: stacked sections",
+  render: () => <StackedGroupsExample />,
+};
+
+type Chat = { id: string; name: string };
+
+const chats: Record<string, Chat[]> = {
+  personal: [{ id: "scratch", name: "Scratch pad" }],
+  workspace: [
+    { id: "roadmap", name: "Roadmap review" },
+    { id: "hiring", name: "Hiring loop" },
+    { id: "incident", name: "Incident 428" },
+  ],
+};
+
+/** Two stacked sections whose rows move between them, the motivating case. */
+function StackedGroupsExample() {
+  const [groups, setGroups] = useState(chats);
+  const [last, setLast] = useState<string | null>(null);
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        <Text style={styles.status}>
+          {last ??
+            "Drag a chat between the two sections, or grab one with Space."}
+        </Text>
+        <SortableGroups
+          groupFlow="vertical"
+          onMove={(move) => {
+            setGroups((prev) =>
+              applyGroupedSortableMove(prev, move, (chat) => chat.id),
+            );
+            setLast(
+              move.fromGroupId === move.toGroupId
+                ? `Reordered ${move.key} within ${move.toGroupId}`
+                : `Moved ${move.key} from ${move.fromGroupId} to ${move.toGroupId}`,
+            );
+          }}
+        >
+          <Text style={styles.sectionTitle}>Workspace</Text>
+          <SortableList<Chat>
+            accessibilityLabel="Workspace"
+            gap={8}
+            groupId="workspace"
+            handle="start"
+            itemKey={(chat) => chat.id}
+            itemLabel={(chat) => chat.name}
+            items={groups.workspace}
+            renderItem={(chat) => (
+              <View style={styles.chatRow}>
+                <Text style={styles.title}>{chat.name}</Text>
+              </View>
+            )}
+            style={styles.section}
+          />
+          <Text style={styles.sectionTitle}>Personal</Text>
+          <SortableList<Chat>
+            accessibilityLabel="Personal"
+            gap={8}
+            groupId="personal"
+            handle="start"
+            itemKey={(chat) => chat.id}
+            itemLabel={(chat) => chat.name}
+            items={groups.personal}
+            renderItem={(chat) => (
+              <View style={styles.chatRow}>
+                <Text style={styles.title}>{chat.name}</Text>
+              </View>
+            )}
+            style={styles.section}
+          />
+        </SortableGroups>
+      </View>
+    </StorySurface>
+  );
+}
+
+export const RowGroups: Story = {
+  name: "Groups: row of lists",
+  render: () => <RowGroupsExample />,
+};
+
+const columns: Record<string, Chat[]> = {
+  doing: [{ id: "spec", name: "Spec review" }],
+  done: [{ id: "deploy", name: "Deploy 1.2" }],
+  todo: [
+    { id: "triage", name: "Triage inbox" },
+    { id: "audit", name: "Audit exports" },
+  ],
+};
+
+/** The same coordinator laid out as a board: Left / Right cross a column. */
+function RowGroupsExample() {
+  const [groups, setGroups] = useState(columns);
+  return (
+    <StorySurface>
+      <View style={styles.board}>
+        <SortableGroups
+          groupFlow="horizontal"
+          onMove={(move) =>
+            setGroups((prev) =>
+              applyGroupedSortableMove(prev, move, (card) => card.id),
+            )
+          }
+        >
+          {(["todo", "doing", "done"] as const).map((id) => (
+            <View key={id} style={styles.column}>
+              <Text style={styles.sectionTitle}>{id}</Text>
+              <SortableList<Chat>
+                accessibilityLabel={id}
+                gap={8}
+                groupId={id}
+                handle="start"
+                itemKey={(card) => card.id}
+                itemLabel={(card) => card.name}
+                items={groups[id]}
+                renderItem={(card) => (
+                  <View style={styles.chatRow}>
+                    <Text style={styles.title}>{card.name}</Text>
+                  </View>
+                )}
+                style={styles.columnList}
+              />
+            </View>
+          ))}
+        </SortableGroups>
+      </View>
+    </StorySurface>
+  );
+}
+
 const styles = StyleSheet.create({
   actions: { alignItems: "center", flexDirection: "row", gap: 2 },
   card: {
@@ -357,6 +494,24 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   sizeBlock: { gap: 6 },
+  board: { flexDirection: "row", gap: 16 },
+  chatRow: {
+    backgroundColor: "#ffffff",
+    borderColor: "#e2e6e2",
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  column: { flex: 1, gap: 8 },
+  columnList: { minHeight: 64 },
+  section: { minHeight: 48 },
+  sectionTitle: {
+    color: "#69706a",
+    fontSize: 12,
+    fontWeight: "700",
+    textTransform: "uppercase",
+  },
   stack: { gap: 12 },
   status: { color: "#3e4540", fontSize: 13, fontWeight: "700" },
   tag: {

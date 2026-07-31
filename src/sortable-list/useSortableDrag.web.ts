@@ -33,7 +33,10 @@ import {
   findGroupOrigin,
   groupTargetToMove,
   initialGroupTarget,
+  keyboardGroupTarget,
   liftedGroupDropTarget,
+  type SortableGroupFlow,
+  type SortableGroupLayout,
   type SortableGroupMove,
   type SortableGroupTarget,
 } from "./sortableGroupModel";
@@ -46,11 +49,9 @@ import {
   type GroupNode,
   type ListNode,
 } from "./sortableListDom";
-import {
-  arrowDelta,
-  keyboardDropTarget,
-  type SortableDragMode,
-  type SortableOrientation,
+import type {
+  SortableDragMode,
+  SortableOrientation,
 } from "./sortableListModel";
 import {
   HANDLE_TESTID_PREFIX,
@@ -58,56 +59,15 @@ import {
   type SortableItemBinding,
   type SortableKeyEvent,
 } from "./sortableListTypes";
+import type {
+  SortableDragEngineOptions,
+  SortableDragGroup,
+  SortableGroupDragState,
+  UseSortableDrag,
+} from "./sortableDragTypes";
 
 /** Pixels the pointer must travel before a press becomes a drag (vs. a click). */
 const DRAG_THRESHOLD = 5;
-
-/** One participating list, as the engine sees it. */
-export type SortableDragGroup = {
-  /** Stable identity for the list; the implicit id when there is only one. */
-  groupId: string;
-  /** Whether a grab handle gates the drag for this list (handle mode). */
-  handle: boolean;
-  /** The ordered item keys — the logical list the drag reasons about. */
-  keys: string[];
-  /** The list's accessible name, woven into cross-group announcements. */
-  label?: string;
-  /** The flow axis; picks the arrow keys and the rect coordinate the drag reads. */
-  orientation: SortableOrientation;
-};
-
-/** Options passed to the engine. */
-export type SortableDragEngineOptions = {
-  /** Whether dragging is on at all. */
-  enabled: boolean;
-  /** Every list taking part, in the order they registered. */
-  groups: SortableDragGroup[];
-  /** An item's accessible name, woven into the grab / drop announcements. */
-  label?: (key: string) => string | undefined;
-  /** Called with each committed move for the consumer to apply to its data. */
-  onMove?: (move: SortableGroupMove) => void;
-};
-
-/** The live drag state the lists render the lifted row + preview + clone from. */
-export type SortableGroupDragState = {
-  active: boolean;
-  draggedKey: string | null;
-  ghostHeight: number | null;
-  ghostWidth: number | null;
-  mode: SortableDragMode | null;
-  target: SortableGroupTarget | null;
-};
-
-/** What the engine returns. */
-export type UseSortableDrag = {
-  /** Registers the floating-clone node so a pointer drag can position it. */
-  bindGhost: { ref: (node: unknown) => void };
-  /** Binds a list's container so the drag can measure and hit-test within it. */
-  bindList: (groupId: string) => { ref: (node: unknown) => void };
-  dragState: SortableGroupDragState;
-  /** Per-item drag wiring, or `null` when dragging is off. */
-  itemBinding: (key: string) => SortableItemBinding | null;
-};
 
 const IDLE: SortableGroupDragState = {
   active: false,
@@ -150,6 +110,8 @@ export function useSortableDrag(
   const pointerRef = useRef<PointerSession | null>(null);
   const keyboardRef = useRef<{
     draggedKey: string;
+    /** The visual group order snapshotted when this grab began. */
+    layout: SortableGroupLayout[];
     target: SortableGroupTarget;
   } | null>(null);
   const removeMoveRef = useRef<(() => void) | null>(null);
@@ -157,10 +119,10 @@ export function useSortableDrag(
 
   /** The group an item belongs to, or `undefined` when it is not in any. */
   const groupOf = useCallback((key: string) => {
-    const origin = findGroupOrigin(optionsRef.current.groups, key);
-    return optionsRef.current.groups.find(
-      (group) => group.groupId === origin?.groupId,
-    );
+    const origin = findGroupOrigin(optionsRef.current.groups(), key);
+    return optionsRef.current
+      .groups()
+      .find((group) => group.groupId === origin?.groupId);
   }, []);
 
   // The focusable node per item is its row, or its grab handle in handle mode —
@@ -177,7 +139,7 @@ export function useSortableDrag(
   /** Every registered list paired with its live container node. */
   const groupNodes = useCallback(
     (): GroupNode[] =>
-      optionsRef.current.groups.map((group) => ({
+      optionsRef.current.groups().map((group) => ({
         groupId: group.groupId,
         node: nodesRef.current.get(group.groupId) ?? null,
       })),
@@ -187,7 +149,7 @@ export function useSortableDrag(
   /** A group's accessible name, for the announcements. */
   const groupLabel = useCallback(
     (groupId: string) =>
-      optionsRef.current.groups.find((group) => group.groupId === groupId)
+      optionsRef.current.groups().find((group) => group.groupId === groupId)
         ?.label,
     [],
   );
@@ -195,7 +157,7 @@ export function useSortableDrag(
   const describe = useCallback(
     (key: string, target: SortableGroupTarget, withItemName: boolean) =>
       describeGroupTarget(
-        optionsRef.current.groups,
+        optionsRef.current.groups(),
         key,
         target,
         groupLabel,
@@ -246,7 +208,7 @@ export function useSortableDrag(
         return;
       }
       const move = groupTargetToMove(
-        optionsRef.current.groups,
+        optionsRef.current.groups(),
         session.draggedKey,
         session.lastTarget,
       );
@@ -271,7 +233,7 @@ export function useSortableDrag(
       }
       session.x = event.clientX;
       session.y = event.clientY;
-      const { groups } = optionsRef.current;
+      const groups = optionsRef.current.groups();
       if (!session.moved) {
         const travelled = Math.hypot(
           event.clientX - session.startX,
@@ -356,9 +318,9 @@ export function useSortableDrag(
       // The drag starts inside whichever list the pointer went down on.
       const nodes = groupNodes();
       const hit = nodes.find((entry) => entry.node?.contains?.(event.target));
-      const group = optionsRef.current.groups.find(
-        (entry) => entry.groupId === hit?.groupId,
-      );
+      const group = optionsRef.current
+        .groups()
+        .find((entry) => entry.groupId === hit?.groupId);
       if (!hit?.node || !group) {
         return;
       }
@@ -405,37 +367,29 @@ export function useSortableDrag(
     };
   }, [attachMove, cancelKeyboard, focusNodes, groupNodes]);
 
-  /** Step the grabbed item within the group its target currently sits in. */
-  const stepWithinGroup = useCallback(
-    (
-      draggedKey: string,
-      current: SortableGroupTarget,
-      eventKey: string,
-    ): SortableGroupTarget | null => {
-      const group = optionsRef.current.groups.find(
-        (entry) => entry.groupId === current.groupId,
-      );
-      if (!group) {
-        return null;
+  /**
+   * The groups in visual order along `groupFlow`, which is what makes "the next
+   * group" mean the one actually below (or to the right of) this one. Taken
+   * once per keyboard grab: the arrangement cannot change mid-grab, and it
+   * keeps arrow keys off the measuring path. Groups that are not laid out keep
+   * their registration order, since `sort` is stable.
+   */
+  const orderedGroups = useCallback((): SortableDragGroup[] => {
+    const flow = optionsRef.current.groupFlow ?? "vertical";
+    const rects = new Map(
+      measureGroupRects(groupNodes()).map((rect) => [rect.groupId, rect]),
+    );
+    return [...optionsRef.current.groups()].sort((a, b) => {
+      const first = rects.get(a.groupId);
+      const second = rects.get(b.groupId);
+      if (!first || !second) {
+        return 0;
       }
-      if (eventKey === "Home" || eventKey === "End") {
-        const max = group.keys.filter((key) => key !== draggedKey).length;
-        return { groupId: group.groupId, index: eventKey === "Home" ? 0 : max };
-      }
-      const delta = arrowDelta(eventKey, group.orientation);
-      if (delta === null) {
-        return null;
-      }
-      const next = keyboardDropTarget(
-        group.keys,
-        { index: current.index },
-        draggedKey,
-        delta,
-      );
-      return { groupId: group.groupId, index: next.index };
-    },
-    [],
-  );
+      return flow === "horizontal"
+        ? first.left - second.left
+        : first.top - second.top;
+    });
+  }, [groupNodes]);
 
   const handleKeyDown = useCallback(
     (key: string, event: SortableKeyEvent) => {
@@ -443,7 +397,8 @@ export function useSortableDrag(
       if (!eventKey) {
         return;
       }
-      const { groups, label, onMove } = optionsRef.current;
+      const { label, onMove } = optionsRef.current;
+      const groups = optionsRef.current.groups();
       const grabbed = keyboardRef.current;
       const stop = () => {
         event.preventDefault?.();
@@ -459,7 +414,11 @@ export function useSortableDrag(
           return;
         }
         stop();
-        keyboardRef.current = { draggedKey: key, target: start };
+        keyboardRef.current = {
+          draggedKey: key,
+          layout: orderedGroups(),
+          target: start,
+        };
         setDragState({
           active: true,
           draggedKey: key,
@@ -482,11 +441,17 @@ export function useSortableDrag(
         eventKey === "End"
       ) {
         stop(); // hold every arrow while grabbed so the page never scrolls.
-        const next = stepWithinGroup(key, grabbed.target, eventKey);
+        const next = keyboardGroupTarget(
+          grabbed.layout,
+          optionsRef.current.groupFlow ?? "vertical",
+          grabbed.target,
+          key,
+          eventKey,
+        );
         if (!next) {
           return;
         }
-        keyboardRef.current = { draggedKey: key, target: next };
+        keyboardRef.current = { ...grabbed, target: next };
         setDragState((state) => ({ ...state, target: next }));
         announce(describe(key, next, true));
         return;
@@ -513,7 +478,7 @@ export function useSortableDrag(
         restoreFocus(key);
       }
     },
-    [describe, restoreFocus, stepWithinGroup],
+    [describe, orderedGroups, restoreFocus],
   );
 
   const itemBinding = useCallback(

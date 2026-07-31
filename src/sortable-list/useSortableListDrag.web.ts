@@ -33,10 +33,11 @@ export function useSortableListDrag(
 
   // No `label`: an unnamed group makes the engine announce the bare
   // `Position 2 of 5`, exactly as a lone list should.
-  const groups = useMemo(
+  const group = useMemo(
     () => [{ groupId: IMPLICIT_GROUP_ID, handle, keys, orientation }],
     [handle, keys, orientation],
   );
+  const groups = useCallback(() => group, [group]);
 
   const onMove = useCallback(
     (move: { key: string; fromIndex: number; toIndex: number }) =>

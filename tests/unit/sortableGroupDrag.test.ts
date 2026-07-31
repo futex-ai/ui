@@ -13,6 +13,8 @@ import {
   groupAt,
   groupIndicatorIndex,
   groupTargetToMove,
+  keyboardGroupTarget,
+  applyGroupedSortableMove,
   initialGroupTarget,
   liftedGroupDropTarget,
   type MeasuredGroupItem,
@@ -379,4 +381,269 @@ test("measureGroupItems tags every row with the group it belongs to", () => {
       top: 120,
     },
   ]);
+});
+
+// A Kanban-like arrangement: two vertical lists sitting side by side.
+const board: SortableGroupLayout[] = [
+  { groupId: "todo", keys: ["x", "y"], orientation: "vertical" },
+  { groupId: "done", keys: ["z"], orientation: "vertical" },
+];
+
+test("keyboardGroupTarget steps within a group on its own axis", () => {
+  assert.deepEqual(
+    keyboardGroupTarget(
+      layout,
+      "vertical",
+      { groupId: "workspace", index: 0 },
+      "a",
+      "ArrowDown",
+    ),
+    { groupId: "workspace", index: 1 },
+  );
+});
+
+test("keyboardGroupTarget overflows into the next stacked group", () => {
+  // Dragging a leaves workspace one slot deep, so index 1 is its last; stepping
+  // on lands at the near end of the group below.
+  assert.deepEqual(
+    keyboardGroupTarget(
+      layout,
+      "vertical",
+      { groupId: "workspace", index: 1 },
+      "a",
+      "ArrowDown",
+    ),
+    { groupId: "personal", index: 0 },
+  );
+});
+
+test("keyboardGroupTarget overflows back into the previous stacked group", () => {
+  assert.deepEqual(
+    keyboardGroupTarget(
+      layout,
+      "vertical",
+      { groupId: "personal", index: 0 },
+      "a",
+      "ArrowUp",
+    ),
+    { groupId: "workspace", index: 1 },
+  );
+});
+
+test("keyboardGroupTarget holds at the ends of the whole set", () => {
+  assert.deepEqual(
+    keyboardGroupTarget(
+      layout,
+      "vertical",
+      { groupId: "workspace", index: 0 },
+      "a",
+      "ArrowUp",
+    ),
+    { groupId: "workspace", index: 0 },
+  );
+  assert.deepEqual(
+    keyboardGroupTarget(
+      layout,
+      "vertical",
+      { groupId: "personal", index: 1 },
+      "a",
+      "ArrowDown",
+    ),
+    { groupId: "personal", index: 1 },
+  );
+});
+
+test("keyboardGroupTarget ignores the cross-axis arrows when groups stack", () => {
+  // Left / Right have no spatial meaning for a vertical stack of lists.
+  assert.equal(
+    keyboardGroupTarget(
+      layout,
+      "vertical",
+      { groupId: "workspace", index: 0 },
+      "a",
+      "ArrowRight",
+    ),
+    null,
+  );
+});
+
+test("keyboardGroupTarget keeps Home and End inside the current group", () => {
+  assert.deepEqual(
+    keyboardGroupTarget(
+      layout,
+      "vertical",
+      { groupId: "personal", index: 1 },
+      "a",
+      "Home",
+    ),
+    { groupId: "personal", index: 0 },
+  );
+  assert.deepEqual(
+    keyboardGroupTarget(
+      layout,
+      "vertical",
+      { groupId: "workspace", index: 0 },
+      "a",
+      "End",
+    ),
+    { groupId: "workspace", index: 1 },
+  );
+});
+
+test("keyboardGroupTarget never leaves a group on the flow's cross axis", () => {
+  // Kanban parity: with groups in a row, Down clamps at the column's end.
+  assert.deepEqual(
+    keyboardGroupTarget(
+      board,
+      "horizontal",
+      { groupId: "todo", index: 1 },
+      "x",
+      "ArrowDown",
+    ),
+    { groupId: "todo", index: 1 },
+  );
+});
+
+test("keyboardGroupTarget jumps between groups laid out in a row", () => {
+  assert.deepEqual(
+    keyboardGroupTarget(
+      board,
+      "horizontal",
+      { groupId: "todo", index: 1 },
+      "x",
+      "ArrowRight",
+    ),
+    { groupId: "done", index: 1 },
+  );
+  // The index is clamped to the destination's slot count.
+  assert.deepEqual(
+    keyboardGroupTarget(
+      board,
+      "horizontal",
+      { groupId: "todo", index: 2 },
+      "x",
+      "ArrowRight",
+    ),
+    { groupId: "done", index: 1 },
+  );
+});
+
+test("keyboardGroupTarget holds at the first and last group in a row", () => {
+  assert.deepEqual(
+    keyboardGroupTarget(
+      board,
+      "horizontal",
+      { groupId: "todo", index: 0 },
+      "x",
+      "ArrowLeft",
+    ),
+    { groupId: "todo", index: 0 },
+  );
+});
+
+test("applyGroupedSortableMove splices an item across groups", () => {
+  const groups = {
+    personal: [{ id: "c" }],
+    workspace: [{ id: "a" }, { id: "b" }],
+  };
+
+  const next = applyGroupedSortableMove(
+    groups,
+    {
+      fromGroupId: "workspace",
+      fromIndex: 0,
+      key: "a",
+      toGroupId: "personal",
+      toIndex: 1,
+    },
+    (item) => item.id,
+  );
+
+  assert.deepEqual(next.workspace, [{ id: "b" }]);
+  assert.deepEqual(next.personal, [{ id: "c" }, { id: "a" }]);
+});
+
+test("applyGroupedSortableMove reorders inside one group", () => {
+  const groups = { workspace: [{ id: "a" }, { id: "b" }, { id: "c" }] };
+
+  const next = applyGroupedSortableMove(
+    groups,
+    {
+      fromGroupId: "workspace",
+      fromIndex: 0,
+      key: "a",
+      toGroupId: "workspace",
+      toIndex: 2,
+    },
+    (item) => item.id,
+  );
+
+  assert.deepEqual(next.workspace, [{ id: "b" }, { id: "c" }, { id: "a" }]);
+});
+
+test("applyGroupedSortableMove moves into an empty group", () => {
+  const groups = { personal: [], workspace: [{ id: "a" }] };
+
+  const next = applyGroupedSortableMove(
+    groups,
+    {
+      fromGroupId: "workspace",
+      fromIndex: 0,
+      key: "a",
+      toGroupId: "personal",
+      toIndex: 0,
+    },
+    (item) => item.id,
+  );
+
+  assert.deepEqual(next.workspace, []);
+  assert.deepEqual(next.personal, [{ id: "a" }]);
+});
+
+test("applyGroupedSortableMove leaves untouched groups identical", () => {
+  const other = [{ id: "d" }];
+  const groups = {
+    other,
+    personal: [{ id: "c" }],
+    workspace: [{ id: "a" }],
+  };
+
+  const next = applyGroupedSortableMove(
+    groups,
+    {
+      fromGroupId: "workspace",
+      fromIndex: 0,
+      key: "a",
+      toGroupId: "personal",
+      toIndex: 0,
+    },
+    (item) => item.id,
+  );
+
+  // Referential identity, so a consumer's memoised rows do not re-render.
+  assert.equal(next.other, other);
+});
+
+test("applyGroupedSortableMove returns the input for an unknown group or key", () => {
+  const groups = { workspace: [{ id: "a" }] };
+  const move = {
+    fromGroupId: "workspace",
+    fromIndex: 0,
+    key: "a",
+    toGroupId: "nowhere",
+    toIndex: 0,
+  };
+
+  assert.equal(
+    applyGroupedSortableMove(groups, move, (i) => i.id),
+    groups,
+  );
+  assert.equal(
+    applyGroupedSortableMove(
+      groups,
+      { ...move, key: "missing", toGroupId: "workspace", toIndex: 1 },
+      (i) => i.id,
+    ),
+    groups,
+  );
 });
