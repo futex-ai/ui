@@ -281,6 +281,48 @@ export function keyboardGroupTarget(
 }
 
 /**
+ * Step a keyboard-grabbed item to the next target its consumer will actually
+ * accept, walking on in the same direction over any slot `accepts` rejects. A
+ * group that rejects every slot is therefore passed straight through. When
+ * nothing ahead is acceptable — or the step has run out of groups — the target
+ * holds where it is, so a rejected destination can never be committed by
+ * accident. Returns `null` only when the key does not act on this arrangement.
+ *
+ * Home and End land in one step, so a rejected end simply holds rather than
+ * searching inward; the arrow keys are the way to walk to a specific slot.
+ */
+export function acceptableGroupTarget(
+  layout: SortableGroupLayout[],
+  groupFlow: SortableGroupFlow,
+  current: SortableGroupTarget,
+  draggedKey: string,
+  key: string,
+  accepts: (target: SortableGroupTarget) => boolean,
+): SortableGroupTarget | null {
+  let next = keyboardGroupTarget(layout, groupFlow, current, draggedKey, key);
+  if (next === null) {
+    return null;
+  }
+  const slot = (target: SortableGroupTarget) =>
+    `${target.groupId}:${target.index}`;
+  // Visited slots bound the walk: a step that stops moving (an end of the set,
+  // or Home / End repeating) would otherwise spin.
+  const seen = new Set([slot(current)]);
+  while (!accepts(next)) {
+    if (seen.has(slot(next))) {
+      return current;
+    }
+    seen.add(slot(next));
+    const after = keyboardGroupTarget(layout, groupFlow, next, draggedKey, key);
+    if (after === null) {
+      return current;
+    }
+    next = after;
+  }
+  return next;
+}
+
+/**
  * Apply a {@link SortableGroupMove} to a record of groups: lift the item out of
  * its source group, then insert it before the `toIndex`-th of the destination's
  * remaining items — the removed-item splice the move contract describes, across

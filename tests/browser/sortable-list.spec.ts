@@ -326,3 +326,71 @@ test("a row of lists crosses groups with Left and Right", async ({ page }) => {
     .poll(() => groupOrder(page, "doing"))
     .toEqual(["triage", "spec"]);
 });
+
+test("canDrop bars a keyboard move into a rejecting group", async ({
+  page,
+}) => {
+  await gotoSortableStory(page, "barred-destination");
+
+  await page.getByRole("button", { name: "Reorder Roadmap review" }).focus();
+  await page.keyboard.press(" ");
+  // Personal refuses this row, so stepping down walks to the end of Workspace
+  // and holds there rather than crossing.
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press(" ");
+
+  await expect
+    .poll(() => groupOrder(page, "Workspace"))
+    .toEqual(["hiring", "incident", "roadmap"]);
+  await expect.poll(() => groupOrder(page, "Personal")).toEqual(["scratch"]);
+});
+
+test("canDrop opens no preview in a rejecting group", async ({ page }) => {
+  await gotoSortableStory(page, "barred-destination");
+
+  const from = await page
+    .getByRole("button", { name: "Reorder Roadmap review" })
+    .boundingBox();
+  const personal = await page
+    .getByRole("list", { name: "Personal" })
+    .boundingBox();
+  if (!from || !personal) {
+    throw new Error("expected the handle and the Personal list to be laid out");
+  }
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2 + 12);
+  await page.mouse.move(
+    personal.x + personal.width / 2,
+    personal.y + personal.height - 4,
+    { steps: 12 },
+  );
+
+  // No drop preview inside the group that refuses the row.
+  await expect(
+    page
+      .getByRole("list", { name: "Personal" })
+      .getByTestId("sortable-drop-preview"),
+  ).toHaveCount(0);
+
+  await page.mouse.up();
+
+  await expect.poll(() => groupOrder(page, "Personal")).toEqual(["scratch"]);
+});
+
+test("a row barred from one group still moves within its own", async ({
+  page,
+}) => {
+  await gotoSortableStory(page, "barred-destination");
+
+  await page.getByRole("button", { name: "Reorder Roadmap review" }).focus();
+  await page.keyboard.press(" ");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press(" ");
+
+  await expect
+    .poll(() => groupOrder(page, "Workspace"))
+    .toEqual(["hiring", "roadmap", "incident"]);
+});

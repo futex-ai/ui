@@ -62,7 +62,9 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/segmented` for themed single-select segmented controls.
 - `@firna/ui/sortable-list` for the drag-and-drop sortable list (pointer +
   keyboard reordering, an optional start/end grab handle, and vertical or
-  horizontal flow).
+  horizontal flow), plus the `SortableGroups` coordinator that lets several
+  lists exchange items — stacked as sections or laid out as a board — reporting
+  each move with its source and destination group.
 - `@firna/ui/spinner` for the themed indeterminate spinning loading indicator.
 - `@firna/ui/switch` for themed binary on/off switches.
 - `@firna/ui/table` for the data table with optional headers and clickable rows.

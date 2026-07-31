@@ -447,6 +447,70 @@ function RowGroupsExample() {
   );
 }
 
+export const BarredDestination: Story = {
+  name: "Groups: a barred destination",
+  render: () => <BarredExample />,
+};
+
+/** "Roadmap review" is shared, so it can never land in Personal. */
+function BarredExample() {
+  const [groups, setGroups] = useState(chats);
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        <Text style={styles.status}>
+          Roadmap review is shared, so Personal refuses it — no drop preview
+          opens there and the arrow keys step past it.
+        </Text>
+        <SortableGroups
+          canDrop={(move) =>
+            !(move.key === "roadmap" && move.toGroupId === "personal")
+          }
+          groupFlow="vertical"
+          onMove={(move) =>
+            setGroups((prev) =>
+              applyGroupedSortableMove(prev, move, (chat) => chat.id),
+            )
+          }
+        >
+          <Text style={styles.sectionTitle}>Workspace</Text>
+          <SortableList<Chat>
+            accessibilityLabel="Workspace"
+            gap={8}
+            groupId="workspace"
+            handle="start"
+            itemKey={(chat) => chat.id}
+            itemLabel={(chat) => chat.name}
+            items={groups.workspace}
+            renderItem={(chat) => (
+              <View style={styles.chatRow}>
+                <Text style={styles.title}>{chat.name}</Text>
+              </View>
+            )}
+            style={styles.section}
+          />
+          <Text style={styles.sectionTitle}>Personal</Text>
+          <SortableList<Chat>
+            accessibilityLabel="Personal"
+            gap={8}
+            groupId="personal"
+            handle="start"
+            itemKey={(chat) => chat.id}
+            itemLabel={(chat) => chat.name}
+            items={groups.personal}
+            renderItem={(chat) => (
+              <View style={styles.chatRow}>
+                <Text style={styles.title}>{chat.name}</Text>
+              </View>
+            )}
+            style={styles.section}
+          />
+        </SortableGroups>
+      </View>
+    </StorySurface>
+  );
+}
+
 const styles = StyleSheet.create({
   actions: { alignItems: "center", flexDirection: "row", gap: 2 },
   card: {

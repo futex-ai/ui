@@ -38,6 +38,18 @@ type GroupRegistry = Map<
 >;
 
 export type SortableGroupsProps = {
+  /**
+   * Bar a destination outright. Called with each candidate move; returning
+   * `false` means the pointer never adopts that target (so no preview opens
+   * there) and the keyboard steps over it. The item's own slot is always
+   * allowed, so a drag can always be abandoned back home.
+   *
+   * This is for destinations an item genuinely cannot occupy. A destination
+   * that merely needs *confirming* does not need it: withhold the move, show
+   * your dialog, and apply it on confirm — nothing has mutated, so the lists
+   * snap back on their own.
+   */
+  canDrop?: (move: SortableGroupMove) => boolean;
   children: ReactNode;
   /**
    * How the member lists sit relative to each other, which picks the keyboard
@@ -56,6 +68,7 @@ export type SortableGroupsProps = {
 };
 
 export function SortableGroups({
+  canDrop,
   children,
   groupFlow = "vertical",
   onMove,
@@ -91,6 +104,7 @@ export function SortableGroups({
   );
 
   const drag = useSortableDrag({
+    canDrop,
     enabled: Boolean(onMove),
     groupFlow,
     groups,

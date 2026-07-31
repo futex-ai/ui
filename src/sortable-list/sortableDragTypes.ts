@@ -34,6 +34,12 @@ export type SortableDragGroup = {
 
 /** Options passed to the engine. */
 export type SortableDragEngineOptions = {
+  /**
+   * Vet a candidate destination. A rejected target is never adopted, so no drop
+   * preview ever opens where the item cannot land, and the keyboard steps over
+   * it. The item's own slot is always allowed, so a drag can always be undone.
+   */
+  canDrop?: (move: SortableGroupMove) => boolean;
   /** Whether dragging is on at all. */
   enabled: boolean;
   /** How the groups sit relative to each other; picks the crossing arrow keys. */

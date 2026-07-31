@@ -62,6 +62,22 @@ test("only the list holding the target opens a preview", () => {
   );
 });
 
+test("canDrop is consulted on both the pointer and keyboard paths", () => {
+  const coordinator = readSource("../../src/sortable-list/SortableGroups.tsx");
+  const engine = readSource("../../src/sortable-list/useSortableDrag.web.ts");
+
+  assert.match(
+    coordinator,
+    /canDrop\?: \(move: SortableGroupMove\) => boolean;/,
+  );
+  // Pointer: a rejected target is never adopted, so no preview opens there.
+  assert.match(engine, /if \(!accepts\(session\.draggedKey, target\)\) \{/);
+  // Keyboard: the step walks on over rejected slots.
+  assert.match(engine, /acceptableGroupTarget\(/);
+  // The item's own slot is always allowed, so a drag can always return home.
+  assert.match(engine, /move === null \|\| \(optionsRef\.current\.canDrop/);
+});
+
 test("the coordinator warns when item keys collide across groups", () => {
   const source = readSource("../../src/sortable-list/SortableGroups.tsx");
 
@@ -77,7 +93,9 @@ test("the drag engine is platform-split behind one shared contract", () => {
   // Groups are read live, because member lists register during their own render.
   assert.match(types, /groups: \(\) => SortableDragGroup\[\];/);
   assert.match(web, /optionsRef\.current\.groups\(\)/);
-  assert.match(web, /keyboardGroupTarget\(/);
+  // The keyboard steps through the model's canDrop-aware walker, which wraps
+  // keyboardGroupTarget.
+  assert.match(web, /acceptableGroupTarget\(/);
   // Native stays inert with the same signature.
   assert.match(native, /itemBinding: \(\) => null/);
   assert.match(native, /bindList: \(\) => NO_BIND/);

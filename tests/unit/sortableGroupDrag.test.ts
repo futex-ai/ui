@@ -8,18 +8,20 @@ import {
 } from "../../src/sortable-list/sortableListDom";
 
 import {
+  acceptableGroupTarget,
+  applyGroupedSortableMove,
   describeGroupTarget,
   findGroupOrigin,
   groupAt,
   groupIndicatorIndex,
   groupTargetToMove,
-  keyboardGroupTarget,
-  applyGroupedSortableMove,
   initialGroupTarget,
+  keyboardGroupTarget,
   liftedGroupDropTarget,
   type MeasuredGroupItem,
   type MeasuredSortableGroup,
   type SortableGroupLayout,
+  type SortableGroupTarget,
 } from "../../src/sortable-list/sortableGroupModel";
 
 // Two stacked vertical groups: "workspace" holds a, b; "personal" holds c.
@@ -645,5 +647,87 @@ test("applyGroupedSortableMove returns the input for an unknown group or key", (
       (i) => i.id,
     ),
     groups,
+  );
+});
+
+// Three stacked groups, so a rejection can be walked past into a third.
+const threeGroups: SortableGroupLayout[] = [
+  ...layout,
+  { groupId: "archive", keys: ["d"], orientation: "vertical" },
+];
+
+/** Reject every slot in `groupIds`. */
+const reject =
+  (...groupIds: string[]) =>
+  (target: SortableGroupTarget) =>
+    !groupIds.includes(target.groupId);
+
+test("acceptableGroupTarget steps over a rejected slot", () => {
+  assert.deepEqual(
+    acceptableGroupTarget(
+      layout,
+      "vertical",
+      { groupId: "workspace", index: 0 },
+      "a",
+      "ArrowDown",
+      (target) => !(target.groupId === "workspace" && target.index === 1),
+    ),
+    { groupId: "personal", index: 0 },
+  );
+});
+
+test("acceptableGroupTarget walks past a group that rejects everything", () => {
+  assert.deepEqual(
+    acceptableGroupTarget(
+      threeGroups,
+      "vertical",
+      { groupId: "workspace", index: 1 },
+      "a",
+      "ArrowDown",
+      reject("personal"),
+    ),
+    { groupId: "archive", index: 0 },
+  );
+});
+
+test("acceptableGroupTarget holds when nothing ahead is acceptable", () => {
+  assert.deepEqual(
+    acceptableGroupTarget(
+      threeGroups,
+      "vertical",
+      { groupId: "workspace", index: 1 },
+      "a",
+      "ArrowDown",
+      reject("personal", "archive"),
+    ),
+    { groupId: "workspace", index: 1 },
+  );
+});
+
+test("acceptableGroupTarget leaves an unhandled key alone", () => {
+  assert.equal(
+    acceptableGroupTarget(
+      layout,
+      "vertical",
+      { groupId: "workspace", index: 0 },
+      "a",
+      "ArrowRight",
+      () => true,
+    ),
+    null,
+  );
+});
+
+test("acceptableGroupTarget takes the first acceptable slot unchanged", () => {
+  assert.deepEqual(
+    acceptableGroupTarget(
+      layout,
+      "vertical",
+      { groupId: "workspace", index: 0 },
+      "a",
+      "ArrowDown",
+      () => true,
+    ),
+    { groupId: "workspace", index: 1 },
   );
 });

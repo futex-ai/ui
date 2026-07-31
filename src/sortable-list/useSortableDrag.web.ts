@@ -29,11 +29,11 @@ import { announce } from "../announcer";
 
 import { suppressNextClick, useSortableFocusNodes } from "./sortableDragFocus";
 import {
+  acceptableGroupTarget,
   describeGroupTarget,
   findGroupOrigin,
   groupTargetToMove,
   initialGroupTarget,
-  keyboardGroupTarget,
   liftedGroupDropTarget,
   type SortableGroupFlow,
   type SortableGroupLayout,
@@ -154,6 +154,23 @@ export function useSortableDrag(
     [],
   );
 
+  /**
+   * Whether the consumer will take this destination. A target that would not
+   * move the item at all — its own slot — is always allowed, so a drag can
+   * always return home even when everything else is barred.
+   */
+  const accepts = useCallback(
+    (draggedKey: string, target: SortableGroupTarget) => {
+      const move = groupTargetToMove(
+        optionsRef.current.groups(),
+        draggedKey,
+        target,
+      );
+      return move === null || (optionsRef.current.canDrop?.(move) ?? true);
+    },
+    [],
+  );
+
   const describe = useCallback(
     (key: string, target: SortableGroupTarget, withItemName: boolean) =>
       describeGroupTarget(
@@ -271,6 +288,9 @@ export function useSortableDrag(
       if (!target) {
         return;
       }
+      if (!accepts(session.draggedKey, target)) {
+        return; // hold the preview at the last slot the consumer accepted.
+      }
       const previous = session.lastTarget;
       session.lastTarget = target;
       if (
@@ -300,7 +320,7 @@ export function useSortableDrag(
       document.removeEventListener("pointercancel", onCancel, true);
       window.removeEventListener("blur", onCancel);
     };
-  }, [describe, finishPointer, groupNodes, positionGhost]);
+  }, [accepts, describe, finishPointer, groupNodes, positionGhost]);
 
   useEffect(() => {
     if (typeof document === "undefined") {
@@ -441,12 +461,13 @@ export function useSortableDrag(
         eventKey === "End"
       ) {
         stop(); // hold every arrow while grabbed so the page never scrolls.
-        const next = keyboardGroupTarget(
+        const next = acceptableGroupTarget(
           grabbed.layout,
           optionsRef.current.groupFlow ?? "vertical",
           grabbed.target,
           key,
           eventKey,
+          (target) => accepts(key, target),
         );
         if (!next) {
           return;
@@ -478,7 +499,7 @@ export function useSortableDrag(
         restoreFocus(key);
       }
     },
-    [describe, orderedGroups, restoreFocus],
+    [accepts, describe, orderedGroups, restoreFocus],
   );
 
   const itemBinding = useCallback(

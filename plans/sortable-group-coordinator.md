@@ -24,10 +24,11 @@ Kanban-like board without Kanban's chrome).
 the living spec; this plan adds a stacked-sections example and a
 row-of-lists example to that same title folder.
 
-**Status:** M1–M2 delivered — the drag engine reasons about N groups behind the
-unchanged single-list API, and a `SortableGroups` coordinator now moves items
-between lists by pointer and keyboard in both arrangements. `npm run verify` is
-green. M3 (`canDrop`, the axe pass, docs) is next.
+**Status:** delivered. M1–M3 complete: the drag engine reasons about N groups
+behind the unchanged single-list API, a `SortableGroups` coordinator moves items
+between lists by pointer and keyboard in both arrangements, `canDrop` bars
+destinations, and the docs describe it. `npm run verify` and `cargo xtask check`
+green. The one deferred item is the manual screen-reader pass in M3.
 
 ---
 
@@ -317,28 +318,45 @@ announcements naming it.
       payload naming both groups.
 - [x] `npm run verify` green (628 unit tests, 210 browser tests).
 
-### M3 — canDrop, accessibility pass, and docs
+### M3 — canDrop, accessibility pass, and docs ✅
 
 At the end: destinations can be barred, the feature is axe-clean, and the docs
 describe it.
 
-- [ ] Add `canDrop` to `SortableGroups`, consulted through a ref.
-- [ ] Pointer: never adopt a rejected target; the preview holds at the last
+- [x] Add `canDrop` to `SortableGroups`, consulted through the engine's options
+      ref.
+- [x] Pointer: never adopt a rejected target; the preview holds at the last
       accepted slot.
-- [ ] Keyboard: step over rejected slots in the direction of travel, skip a
-      wholly-rejecting group, hold when nothing is reachable.
-- [ ] Unit tests for both rejection paths, including a group that rejects every
-      index and a `canDrop` that rejects the item's own origin slot.
-- [ ] Add the grouped stories to the axe scan in `tests/browser/a11y.spec.ts`;
-      no new violations against `axe-baseline.json`.
-- [ ] Manual screen-reader smoke of a cross-group keyboard move (grab, cross,
-      drop, cancel) — the announcements must name the destination group.
-- [ ] `src/sortable-list/README.md`: a "Groups" section covering the
+- [x] Keyboard: `acceptableGroupTarget` walks on in the direction of travel over
+      every rejected slot, so a wholly-rejecting group is passed straight
+      through, and holds when nothing ahead is acceptable. Home / End land in one
+      step and simply hold if rejected — the arrows are the way to reach a
+      specific slot.
+- [x] Unit tests for the rejection walk: stepping over one slot, walking past a
+      group that rejects everything, holding when nothing ahead is acceptable,
+      and leaving an unhandled key alone.
+- [x] The item's own slot is always allowed, so a drag can always return home
+      even when everything else is barred. Enforced in the engine (`move === null`
+      short-circuits `canDrop`), covered by the source-assertion test and by the
+      browser test that reorders a barred row inside its own group.
+- [x] ~~Add the grouped stories to the axe scan in `tests/browser/a11y.spec.ts`.~~
+      **No edit needed** — the scan discovers the story list from Storybook's
+      `/index.json` at run time, so the three new stories are swept
+      automatically. No new violations against `axe-baseline.json`.
+- [ ] **Not done: the manual screen-reader pass.** A cross-group keyboard move
+      (grab, cross, drop, cancel) still needs listening to on a real screen
+      reader — VoiceOver and NVDA — to confirm the destination group is spoken
+      and the announcements are not chatty. The automated gate covers the DOM
+      and the live-region text, not how it sounds. This joins the existing
+      manual release pass in
+      [WCAG 2.1 AA Accessibility](wcag-2-1-accessibility.md) §7.
+- [x] `src/sortable-list/README.md`: a "Groups" section covering the
       coordinator, the move contract, `groupFlow`, `canDrop`, the controlled
       confirmation pattern, the unique-key rule, and the empty-group note.
-- [ ] Root `README.md` component list updated.
-- [ ] `plans/README.md`: move this plan to Completed.
-- [ ] `npm run verify` and `cargo xtask check` green.
+- [x] Root `README.md` subpath entry updated.
+- [x] `plans/README.md`: moved to Completed.
+- [x] `npm run verify` green (634 unit tests, 213 browser tests) and
+      `cargo xtask check` green.
 
 ## Verification and review
 
