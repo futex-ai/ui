@@ -18,13 +18,15 @@ export type SharedUiColors = {
   /**
    * Boundary color for interactive controls (inputs, the date trigger, the
    * dropdown selector, secondary buttons, segmented cells, radio cards, the
-   * switch track). A translucent tint of the theme's `ink` (≈27% opacity)
-   * rather than a fixed grey: the edge composites with whatever sits behind it,
-   * so it reads as a light, unobtrusive line on the white `surface` (≈1.4:1 on
-   * #fff) and stays proportionate — lifting gently over the grayer page or a
-   * tinted fill instead of floating as a hard grey outline. Kept in sync by
-   * hand with `ink`. Intentionally below the WCAG 2.1 — 1.4.11 Non-text
-   * Contrast (AA) ≥3:1 floor: a calmer, blended edge is the deliberate trade.
+   * switch's resting knob — and the switch track at half alpha, the one place
+   * the edge paints over a grey fill instead of white). A translucent tint of
+   * the theme's `ink` (≈27% opacity) rather than a fixed grey: the edge
+   * composites with whatever sits behind it, so it reads as a light,
+   * unobtrusive line on the white `surface` (≈1.4:1 on #fff) and stays
+   * proportionate — lifting gently over the grayer page or a tinted fill
+   * instead of floating as a hard grey outline. Kept in sync by hand with
+   * `ink`. Intentionally below the WCAG 2.1 — 1.4.11 Non-text Contrast (AA)
+   * ≥3:1 floor: a calmer, blended edge is the deliberate trade.
    * `border`/`border2` remain the even lighter decorative dividers.
    */
   controlBorder: string;
