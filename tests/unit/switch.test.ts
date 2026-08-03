@@ -78,6 +78,26 @@ test("switch states are driven by shared theme tokens", () => {
   assert.match(stylesSource, /theme\.radii\.pill/);
 });
 
+test("switch off-track edge softens the control border over its grey fill", () => {
+  const stylesSource = readSource("../../src/switch/switchStyles.ts");
+
+  // Border-box paints the knob's own white fill behind its edge, so the knob
+  // takes `controlBorder` at face value — the weight the token is tuned for.
+  assert.match(
+    stylesSource,
+    /borderColor: theme\.colors\.controlBorder,\n\s*borderRadius: sizing\.knobSize/,
+  );
+  // The track paints its edge over the grey `border2` fill, where the same tint
+  // composites about twice as dark, so it halves the alpha instead.
+  assert.match(stylesSource, /const TRACK_EDGE_ALPHA_SCALE = 0\.5;/);
+  assert.match(
+    stylesSource,
+    /borderColor: scaleAlpha\(\s*theme\.colors\.controlBorder,\s*TRACK_EDGE_ALPHA_SCALE,?\s*\)/,
+  );
+  // A non-`rgba()` override (hex, named color) falls through unscaled.
+  assert.match(stylesSource, /if \(!match\) return color;/);
+});
+
 test("switch has public root and subpath exports", () => {
   const rootSource = readSource("../../src/index.ts");
   const switchSource = readSource("../../src/switch/index.ts");

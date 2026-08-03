@@ -18,7 +18,9 @@ export type SharedUiColors = {
   /**
    * Boundary color for interactive controls (inputs, the date trigger, the
    * dropdown selector, secondary buttons, segmented cells, radio cards, the
-   * switch track). A translucent tint of the theme's `ink` (≈27% opacity)
+   * switch knob — and the switch track at half alpha, the one place the edge
+   * paints over a grey fill instead of white). A translucent tint of the
+   * theme's `ink` (≈27% opacity)
    * rather than a fixed grey: the edge composites with whatever sits behind it,
    * so it reads as a light, unobtrusive line on the white `surface` (≈1.4:1 on
    * #fff) and stays proportionate — lifting gently over the grayer page or a
