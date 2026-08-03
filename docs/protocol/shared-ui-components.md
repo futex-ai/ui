@@ -184,6 +184,9 @@ Required behavior:
 
 - Render a labelled button with an optional leading icon tinted to match the
   label color.
+- Treat caller-supplied icon nodes as decorative content: hide them from the web
+  accessibility tree and prevent pointer targeting so focus stays on the outer
+  button even when a child SVG is independently focusable.
 - Support the primary (filled), secondary (surface + border, the default), ghost
   (no fill or border), and danger (rose border + label) tones.
 - Support a full-width block variant for stacked form actions and bottom sheets.

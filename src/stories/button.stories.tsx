@@ -205,10 +205,12 @@ export const CustomIconNode: Story = {
       <>
         {/* `iconNode` renders any node as-is (not wrapped in `<Text>`, not
             tinted) — here a caller-coloured glyph and an emoji stand in for a
-            non-lucide `@expo/vector-icons` glyph. */}
+            non-lucide `@expo/vector-icons` glyph. The explicit `tabIndex`
+            models a consumer-supplied SVG that would otherwise take click
+            focus; the decorative wrapper keeps focus on the button. */}
         <Button
           accessibilityLabel="Add"
-          iconNode={<Plus color="#2f5945" size={18} />}
+          iconNode={<Plus color="#2f5945" size={18} tabIndex={-1} />}
           minTouchTarget={40}
           onPress={noop}
           shape="circle"

@@ -252,13 +252,16 @@ test("button renders a caller-supplied iconNode as-is, not inside Text", () => {
   const source = readSource("../../src/button/Button.tsx");
 
   // iconNode takes precedence over a lucide icon and renders in a bare centred
-  // View (never a <Text>), hidden from assistive tech on web.
+  // View (never a <Text>), hidden from assistive tech on web. Pointer events are
+  // disabled on that decorative wrapper so a caller-supplied focusable SVG
+  // cannot take click focus away from the outer button.
   assert.match(source, /iconNode\?: ReactNode;/);
   assert.match(source, /iconNode != null \? \(/);
   assert.match(
     source,
     /aria-hidden=\{Platform\.OS === "web" \? true : undefined\}/,
   );
+  assert.match(source, /pointerEvents="none"/);
   assert.match(source, /style=\{styles\.iconNode\}/);
   // The bare node is rendered directly (no <Text> wrapper).
   assert.match(source, />\s*\{iconNode\}\s*<\/View>/);

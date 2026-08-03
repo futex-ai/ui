@@ -122,6 +122,8 @@ export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
     // `@expo/vector-icons` glyph). It is NOT wrapped in `<Text>` — the caller
     // owns the node's colour and size — and is hidden from assistive tech on
     // web like the lucide `icon` (the label / `accessibilityLabel` names it).
+    // Its wrapper also ignores pointer targeting in `Button`, keeping focus on
+    // the outer pressable even when a caller supplies a focusable child.
     iconNode: { alignItems: "center", justifyContent: "center" },
     // The `inline` variant: a compact, line-height-neutral in-text chip. It drops
     // the fixed track `height` (`"auto"` so the box hugs the label) and takes a
