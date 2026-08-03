@@ -3,6 +3,10 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
+  animatedBorderGradientId,
+  resolveAnimatedBorderStroke,
+} from "../../src/animated-border/animatedBorderColor";
+import {
   createAnimatedBorderTrail,
   resolveAnimatedBorderGeometry,
 } from "../../src/animated-border/animatedBorderGeometry";
@@ -51,7 +55,10 @@ test("animated border draws the trail with react-native-svg rects", () => {
   // CSS gradient borders cannot follow a corner radius, so the trail is real
   // rounded-rect geometry stroked with react-native-svg. A circle/pill is just
   // the fully-rounded case of that rect, so one shape element covers every case.
-  assert.match(source, /import Svg, \{ Rect \} from "react-native-svg"/);
+  assert.match(
+    source,
+    /import Svg, \{ Defs, LinearGradient, Rect, Stop \} from "react-native-svg"/,
+  );
   assert.match(source, /Animated\.createAnimatedComponent\(DomSafeRect\)/);
   // The Animated wrapper's `collapsable` prop is stripped before it reaches the
   // SVG node / the DOM, and the wrapper carries a displayName for devtools.
@@ -199,7 +206,105 @@ test("animated border color falls back to the shared theme primary", () => {
   const source = readSource("../../src/animated-border/AnimatedBorder.tsx");
 
   assert.match(source, /useSharedUiTheme/);
-  assert.match(source, /color \?\? theme\.colors\.primary/);
+  // The fallback is threaded through the shared resolver rather than applied
+  // inline, so a single color and a color pair take the same path to a stroke.
+  assert.match(
+    source,
+    /resolveAnimatedBorderStroke\(\{[\s\S]*?fallback: theme\.colors\.primary,[\s\S]*?\}\)/,
+  );
+});
+
+test("animated border strokes a color pair with a two-color gradient", () => {
+  const source = readSource("../../src/animated-border/AnimatedBorder.tsx");
+
+  // The gradient id is unique per instance and sanitised so it stays a valid
+  // `url(#…)` reference on web.
+  assert.match(source, /animatedBorderGradientId\(useId\(\)\)/);
+  // Defined only for a pair: a single-color trail renders no <Defs> at all.
+  assert.match(source, /\{gradient == null \? null : \(/);
+  assert.match(source, /<LinearGradient id=\{gradientId\}/);
+  // `from` sits at BOTH ends with `to` through the middle, so the two sides of
+  // the box read the same instead of ramping one way across it.
+  assert.match(
+    source,
+    /<Stop offset=\{0\} stopColor=\{gradient\.from\} \/>\s*<Stop offset=\{0\.5\} stopColor=\{gradient\.to\} \/>\s*<Stop offset=\{1\} stopColor=\{gradient\.from\} \/>/,
+  );
+  // One resolved stroke feeds both the moving trail and the reduced-motion
+  // outline, so a gradient applies in either mode.
+  assert.equal(source.match(/stroke=\{stroke\}/g)?.length, 2);
+});
+
+test("animatedBorderGradientId survives every useId shape React emits", () => {
+  // React has emitted colons (18) and guillemets (19.0) inside `useId`, and both
+  // break the `url(#…)` the stroke points at — which would leave the trail
+  // unpainted rather than merely mis-colored.
+  assert.equal(
+    animatedBorderGradientId(":r7:"),
+    "animated-border-trail-r7",
+    "React 18 colons must not reach the fragment reference",
+  );
+  assert.equal(
+    animatedBorderGradientId("«r7»"),
+    "animated-border-trail-r7",
+    "React 19.0 guillemets must not reach the fragment reference",
+  );
+  assert.equal(
+    animatedBorderGradientId("_r_7_"),
+    "animated-border-trail-_r_7_",
+  );
+
+  // The digits that distinguish one `useId` value from the next always survive,
+  // so two borders on one screen keep different ids and cannot steal each
+  // other's colors.
+  assert.notEqual(
+    animatedBorderGradientId("«r7»"),
+    animatedBorderGradientId("«r8»"),
+  );
+});
+
+test("resolveAnimatedBorderStroke strokes a single color directly", () => {
+  assert.deepEqual(
+    resolveAnimatedBorderStroke({
+      color: "#a84f45",
+      fallback: "#2f5945",
+      gradientId: "trail",
+    }),
+    { gradient: null, stroke: "#a84f45" },
+  );
+
+  // An omitted color falls back to the theme color the component passes in.
+  assert.deepEqual(
+    resolveAnimatedBorderStroke({
+      color: undefined,
+      fallback: "#2f5945",
+      gradientId: "trail",
+    }),
+    { gradient: null, stroke: "#2f5945" },
+  );
+});
+
+test("resolveAnimatedBorderStroke turns a color pair into a gradient", () => {
+  // A pair points the stroke at the gradient the component defines, and hands
+  // back the two colors to build it from.
+  assert.deepEqual(
+    resolveAnimatedBorderStroke({
+      color: ["#36c5f0", "#e01e5a"],
+      fallback: "#2f5945",
+      gradientId: "trail-1",
+    }),
+    { gradient: { from: "#36c5f0", to: "#e01e5a" }, stroke: "url(#trail-1)" },
+  );
+
+  // A repeated color is the solid case: a caller holding only one brand color
+  // can pass a pair without branching, and no gradient is defined for it.
+  assert.deepEqual(
+    resolveAnimatedBorderStroke({
+      color: ["#36c5f0", "#36c5f0"],
+      fallback: "#2f5945",
+      gradientId: "trail-2",
+    }),
+    { gradient: null, stroke: "#36c5f0" },
+  );
 });
 
 test("animated border can wrap content or render on its own", () => {
@@ -222,6 +327,7 @@ test("animated border has public root and subpath exports", () => {
 
   assert.match(rootSource, /export \* from "\.\/animated-border"/);
   assert.match(borderSource, /AnimatedBorder/);
+  assert.match(borderSource, /animatedBorderColor/);
   assert.match(borderSource, /animatedBorderGeometry/);
   assert.match(packageJson, /"\.\/animated-border"/);
 });

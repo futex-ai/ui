@@ -162,6 +162,58 @@ export const Tuned: Story = {
   ),
 };
 
+export const Gradient: Story = {
+  name: "Two-color gradient",
+  render: () => (
+    <StorySurface>
+      <View style={styles.column}>
+        <View style={styles.row}>
+          {/* A connected app's brand pair. The sweep runs from → to → from
+              across the box, so both sides read the first color and the second
+              runs through the middle. */}
+          <AnimatedBorder
+            borderRadius={7}
+            color={["#36c5f0", "#e01e5a"]}
+            size={24}
+          >
+            <Badge>S</Badge>
+          </AnimatedBorder>
+          <AnimatedBorder
+            borderRadius={10}
+            color={["#7b5cff", "#22c8a8"]}
+            size={36}
+          >
+            <Badge borderRadius={10} size={36}>
+              N
+            </Badge>
+          </AnimatedBorder>
+          {/* Only one brand color to hand? Repeat it — a pair of the same color
+              renders exactly like passing that color on its own, so a caller
+              never has to branch. */}
+          <AnimatedBorder
+            borderRadius={7}
+            color={["#a84f45", "#a84f45"]}
+            size={24}
+          >
+            <Badge>1</Badge>
+          </AnimatedBorder>
+          <Text style={styles.caption}>pair → gradient, repeat → solid</Text>
+        </View>
+        <AnimatedBorder
+          borderRadius={22}
+          color={["#36c5f0", "#e01e5a"]}
+          height={44}
+          width={200}
+        >
+          <View style={[styles.pill, { borderRadius: 22 }]}>
+            <Text style={styles.pillLabel}>Running…</Text>
+          </View>
+        </AnimatedBorder>
+      </View>
+    </StorySurface>
+  ),
+};
+
 const styles = StyleSheet.create({
   badge: {
     alignItems: "center",
