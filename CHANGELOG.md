@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0](https://github.com/futex-ai/ui/compare/v1.5.0...v1.6.0) (2026-08-03)
+
+
+### Features
+
+* **animated-border:** two-color gradient trail ([#134](https://github.com/futex-ai/ui/issues/134)) ([149fc29](https://github.com/futex-ai/ui/commit/149fc29d9443bb7c3b89dbc10b978595b4f3deeb))
+
+
+### Bug Fixes
+
+* **button:** keep focus off icon nodes ([#131](https://github.com/futex-ai/ui/issues/131)) ([e49e1a0](https://github.com/futex-ai/ui/commit/e49e1a0c44599a4b91f9df4269eae8c1c8a2592f))
+* **switch:** soften the off-track border and drop the knob edge when on ([#133](https://github.com/futex-ai/ui/issues/133)) ([fe75049](https://github.com/futex-ai/ui/commit/fe7504951c2a758459adfe71d9c86a2113c1116e))
+
 ## [1.5.0](https://github.com/futex-ai/ui/compare/v1.4.0...v1.5.0) (2026-08-03)
 
 ### Features
