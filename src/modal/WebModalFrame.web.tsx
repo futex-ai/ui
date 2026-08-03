@@ -90,12 +90,10 @@ export function WebModalFrame({
   const initialFocusTargetRef = useRef(initialFocusRef);
   const onCloseRef = useRef(onClose);
   const previousFocusRef = useRef<HTMLElement | null>(null);
-  const showCloseButtonRef = useRef(showCloseButton);
   const surfaceRef = useRef<View>(null);
   closePolicyRef.current = { closeDisabled, dismissible };
   initialFocusTargetRef.current = initialFocusRef;
   onCloseRef.current = onClose;
-  showCloseButtonRef.current = showCloseButton;
   const requestClose = useCallback((source: WebModalCloseSource) => {
     if (webModalCanClose(closePolicyRef.current, source)) {
       onCloseRef.current();
@@ -160,14 +158,12 @@ export function WebModalFrame({
     }
     // The trigger to restore on close is captured by the inertness effect above
     // (which runs first, before `inert` blurs it). The portal children are
-    // committed before this effect runs, so the refs are populated and focus can
+    // committed before this effect runs, so the DOM is queryable and focus can
     // move into the surface synchronously (no `setTimeout(0)` race).
-    const focusTarget =
+    focusWebModalElement(
       initialFocusTargetRef.current?.current ??
-      (showCloseButtonRef.current
-        ? closeButtonRef.current
-        : surfaceRef.current);
-    focusWebModalElement(focusTarget);
+        webModalInitialFocusTarget(surfaceRef, closeButtonRef),
+    );
     return () => {
       focusWebModalElement(previousFocusRef.current);
       previousFocusRef.current = null;
@@ -336,11 +332,45 @@ export function WebModalFrame({
   return <WebModalPortal visible={visible}>{modal}</WebModalPortal>;
 }
 
+/**
+ * Where focus lands when a modal opens, absent an explicit `initialFocusRef`:
+ * the first control the *caller* rendered — the form field, or the footer's
+ * action button when the body holds nothing focusable. The close button is
+ * skipped even though it comes first in DOM order, because opening a dialog
+ * with "dismiss" preselected is a poor landing spot: it is the least likely
+ * thing the user came to do, and a reflexive Enter throws the dialog away.
+ *
+ * Tab order itself needs no rework. A focus trap is a cycle, so starting on the
+ * caller's first control already yields `field → … → action → close → field`:
+ * the close button is the last stop on the way round, and Shift+Tab from the
+ * landing element reaches it immediately.
+ *
+ * Falls back to the close button when the caller rendered nothing focusable at
+ * all, then to the surface itself (`tabIndex={-1}`), so focus always enters the
+ * dialog and screen readers announce it rather than being left on the trigger.
+ */
+function webModalInitialFocusTarget(
+  surfaceRef: RefObject<View | null>,
+  closeButtonRef: RefObject<View | null>,
+): HTMLElement | null {
+  const surface = webModalElement(surfaceRef);
+  if (!surface) {
+    return null;
+  }
+  // Null once `showCloseButton` is false — the Pressable is unmounted, so React
+  // has cleared the ref and every focusable below is already caller content.
+  const closeButton = webModalElement(closeButtonRef);
+  const callerControl = webModalFocusableElements(surface).find(
+    (element) => element !== closeButton,
+  );
+  return callerControl ?? closeButton ?? surface;
+}
+
 function trapWebModalFocus(
   event: KeyboardEvent,
   surfaceRef: RefObject<View | null>,
 ): void {
-  const surface = webModalSurfaceElement(surfaceRef);
+  const surface = webModalElement(surfaceRef);
   if (!surface) {
     return;
   }
@@ -380,11 +410,10 @@ function webModalElementIsFocusable(element: HTMLElement): boolean {
   return style.display !== "none" && style.visibility !== "hidden";
 }
 
-function webModalSurfaceElement(
-  surfaceRef: RefObject<View | null>,
-): HTMLElement | null {
-  const surface = surfaceRef.current as unknown;
-  return surface instanceof HTMLElement ? surface : null;
+/** RNW resolves a `View` ref to its host node; narrow it for DOM-only work. */
+function webModalElement(ref: RefObject<View | null>): HTMLElement | null {
+  const node = ref.current as unknown;
+  return node instanceof HTMLElement ? node : null;
 }
 
 /**

@@ -266,6 +266,16 @@ test("button renders a caller-supplied iconNode as-is, not inside Text", () => {
   assert.match(source, /\{ icon: LucideIcon \} \| \{ iconNode: ReactNode \}/);
 });
 
+test("button exposes its pressable for imperative focus", () => {
+  const source = readSource("../../src/button/Button.tsx");
+
+  // Named `buttonRef` rather than a forwarded `ref`, matching InputFrame's
+  // `inputRef`. Callers need it to aim a modal's `initialFocusRef` at a footer
+  // action — most often the safe one on a destructive confirmation.
+  assert.match(source, /buttonRef\?: Ref<View>;/);
+  assert.match(source, /ref=\{buttonRef\}/);
+});
+
 test("button has public root and subpath exports", () => {
   const rootSource = readSource("../../src/index.ts");
   const buttonSource = readSource("../../src/button/index.ts");

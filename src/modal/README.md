@@ -34,10 +34,14 @@ though it is now cross-platform.
   controls such as date-wheel columns own their scrolling gestures.
 - Support a centered dialog (`placement="center"`, the default) or a bottom
   sheet (`placement="bottom-sheet"`) pinned full-width to the viewport bottom.
-- Keep web focus behavior in one place: focus enters the close control while a
-  modal is open, Tab stays inside the modal (the trap re-engages on every Tab,
-  so focus that escapes to `<body>` is pulled back in), and focus returns to the
-  previously focused element on close.
+- Keep web focus behavior in one place: on open, focus enters the first control
+  the caller rendered — the form field, or the footer's action button when the
+  body holds nothing focusable — never the close button, which is skipped
+  despite coming first in DOM order. Tab stays inside the modal (the trap
+  re-engages on every Tab, so focus that escapes to `<body>` is pulled back in),
+  and focus returns to the previously focused element on close. Because the trap
+  is a cycle, starting on the caller's first control puts the close button last
+  on the way round: `field → … → action → close → field`.
 - Expose correct dialog semantics: the surface is a `role="dialog"` with
   `aria-modal` and is named by its title via `aria-labelledby` (the title is a
   `role="heading"`). Background page content is made `inert`/`aria-hidden` while
@@ -85,6 +89,34 @@ import { WebModalFrame } from "@firna/ui/modal";
 Use `dismissible={false}` when Escape/backdrop should not close the modal, and
 `closeDisabled` while a submit is in flight. Pass `placement="bottom-sheet"` for
 a bottom-pinned mobile-web sheet.
+
+Pass `initialFocusRef` (web-only) to override where focus lands on open. Reach
+for it when the default — the first focusable control in DOM order — is the
+wrong landing spot, most often on a destructive confirmation, where focus should
+start on the safe action:
+
+```tsx
+const cancelRef = useRef<View | null>(null);
+
+<WebModalFrame
+  footer={
+    <>
+      <Button onPress={onDelete} tone="danger">
+        Delete
+      </Button>
+      <Button buttonRef={cancelRef} onPress={onClose}>
+        Cancel
+      </Button>
+    </>
+  }
+  initialFocusRef={cancelRef}
+  onClose={onClose}
+  title="Delete book"
+  visible={open}
+>
+  This cannot be undone.
+</WebModalFrame>;
+```
 
 ## Theming
 

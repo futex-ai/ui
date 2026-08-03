@@ -722,6 +722,62 @@ export function ChipMultiSelectExample() {
   );
 }
 
+/**
+ * Confirmation dialog whose body is text only. With nothing focusable in the
+ * body, the frame lands focus on the footer's action button rather than the
+ * close button — the fallback leg of its initial-focus rule.
+ */
+export function ConfirmModalExample() {
+  const [visible, setVisible] = useState(true);
+  const [status, setStatus] = useState("No decision yet");
+  return (
+    <View style={styles.actionMenuExample}>
+      <Text style={styles.actionMenuStatus}>{status}</Text>
+      <Pressable
+        accessibilityLabel="Open Publish changes"
+        accessibilityRole="button"
+        onPress={() => setVisible(true)}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Open modal</Text>
+      </Pressable>
+      <WebModalFrame
+        footer={
+          <>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                setStatus("Published");
+                setVisible(false);
+              }}
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>Publish</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                setStatus("Cancelled");
+                setVisible(false);
+              }}
+              style={[styles.button, styles.buttonOpen]}
+            >
+              <Text style={styles.buttonText}>Cancel</Text>
+            </Pressable>
+          </>
+        }
+        onClose={() => setVisible(false)}
+        title="Publish changes"
+        visible={visible}
+      >
+        <Text style={styles.actionMenuStatus}>
+          Everyone with access to this book will see the new figures.
+        </Text>
+      </WebModalFrame>
+    </View>
+  );
+}
+
 export function ModalExample({
   placement,
   title,

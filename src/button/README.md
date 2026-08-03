@@ -145,6 +145,26 @@ being sheared. The example rows in the story set `paddingVertical` for this.
 `block` stretches the button to fill its container (full width), for stacked
 form actions and bottom sheets.
 
+### Imperative focus
+
+`buttonRef` exposes the underlying pressable for callers that must drive focus
+themselves. The usual reason is a modal's `initialFocusRef`: `WebModalFrame`
+opens focus on the first control the caller rendered, so a destructive
+confirmation should point it at the safe action instead.
+
+```tsx
+const cancelRef = useRef<View | null>(null);
+
+<WebModalFrame initialFocusRef={cancelRef} /* … */>
+  <Button buttonRef={cancelRef} onPress={onClose}>
+    Cancel
+  </Button>
+</WebModalFrame>;
+```
+
+The prop is named rather than a forwarded `ref`, matching `InputFrame`'s
+`inputRef`.
+
 ## Styling
 
 `style` extends the pressable container (`ViewStyle`). Tone, size, the focus

@@ -1,6 +1,6 @@
 /** Shared pressable button with tone, size, optional icon, and block variants. */
 import { LucideIcon } from "lucide-react-native";
-import { ReactNode, useMemo } from "react";
+import { ReactNode, Ref, useMemo } from "react";
 import {
   Platform,
   Pressable,
@@ -57,6 +57,13 @@ type ButtonBaseProps = {
    * and the leading icon is replaced by a spinner.
    */
   busy?: boolean;
+  /**
+   * Handle on the underlying pressable, for callers that must drive focus
+   * imperatively — most often a modal's `initialFocusRef`, to open a
+   * destructive confirmation on its safe action rather than its destructive
+   * one. Named rather than a forwarded `ref`, matching `InputFrame.inputRef`.
+   */
+  buttonRef?: Ref<View>;
   /** Disable the button; a button without `onPress` is also treated as disabled. */
   disabled?: boolean;
   /**
@@ -164,6 +171,7 @@ export function Button({
   accessibilityLabel,
   block = false,
   busy = false,
+  buttonRef,
   children,
   disabled = false,
   disableFocusRing = false,
@@ -250,6 +258,7 @@ export function Button({
       onFocus={focus.onFocus}
       // Block activation while busy without unfocusing/hiding the control.
       onPress={busy ? undefined : onPress}
+      ref={buttonRef}
       style={({ hovered, pressed }: PressableHoverState) => [
         styles.button,
         tone === "primary" ? styles.primary : null,
