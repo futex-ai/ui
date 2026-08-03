@@ -55,7 +55,7 @@ test("switch knob animates between the off and on positions", () => {
   // on-position is pulled in by that border to stay flush against the far
   // track edge; the knobOn style is driven by that compensated offset.
   assert.match(stylesSource, /const knobOn = sizing\.knobOn - BORDER;/);
-  assert.match(stylesSource, /knobOn: \{ left: knobOn \}/);
+  assert.match(stylesSource, /knobOn: \{ borderColor: "#fff", left: knobOn \}/);
 });
 
 test("switch supports the shared size scale", () => {
@@ -96,6 +96,9 @@ test("switch off-track edge softens the control border over its grey fill", () =
   );
   // A non-`rgba()` override (hex, named color) falls through unscaled.
   assert.match(stylesSource, /if \(!match\) return color;/);
+  // On the saturated `primary` track the white knob carries itself, so the edge
+  // is matched to the knob's fill rather than tinted.
+  assert.match(stylesSource, /knobOn: \{ borderColor: "#fff"/);
 });
 
 test("switch has public root and subpath exports", () => {

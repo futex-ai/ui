@@ -92,9 +92,9 @@ export function createSwitchStyles(
   const knobOn = sizing.knobOn - BORDER;
   return StyleSheet.create({
     knob: {
-      // The knob carries a subtle `controlBorder` edge against the white surface
-      // and the off-track fill (a soft translucent-ink line that reinforces the
-      // 1.4.1 position cue).
+      // Resting on the off-track, the knob carries a subtle `controlBorder`
+      // edge against the grey fill (a soft translucent-ink line that reinforces
+      // the 1.4.1 position cue). `knobOn` drops it for the on-position.
       backgroundColor: "#fff",
       borderColor: theme.colors.controlBorder,
       borderRadius: sizing.knobSize / 2,
@@ -106,7 +106,13 @@ export function createSwitchStyles(
       top: knobInset,
       width: sizing.knobSize,
     },
-    knobOn: { left: knobOn },
+    // On the saturated `primary` track the white knob already stands out on its
+    // own (≈5:1 in both shipped themes), so the edge is dropped — matched to the
+    // knob's fill the way `trackOn` matches its own, which keeps the geometry
+    // identical and leaves no grey ring muddying the boundary. It stays on the
+    // off-track, where white-on-`border2` is the low-contrast pairing that needs
+    // it (WCAG 1.4.11 Non-text Contrast).
+    knobOn: { borderColor: "#fff", left: knobOn },
     pressable: {
       alignItems: "center",
       height: sizing.touchTarget,

@@ -58,12 +58,15 @@ also dims the visual track and reports the disabled accessibility state.
   the responder — leaving the key looking dead.
 - **Focus visible.** A keyboard focus ring (an inset `outline`) is drawn on the
   track (WCAG 2.4.7).
-- **Contrast.** The off-track and the white knob carry a `controlBorder`-tinted
-  edge so the resting boundary and the knob position cue stay perceivable
-  (WCAG 1.4.11 Non-text Contrast, 1.4.1 Use of Color). The track takes the tint
-  at half alpha: it paints over the grey `border2` fill rather than white, so
-  the full-strength token composites to roughly twice the weight it has
-  everywhere else and reads as a hard outline.
+- **Contrast.** The off-track and the knob resting on it carry a
+  `controlBorder`-tinted edge so the resting boundary and the knob position cue
+  stay perceivable (WCAG 1.4.11 Non-text Contrast, 1.4.1 Use of Color). The
+  track takes the tint at half alpha: it paints over the grey `border2` fill
+  rather than white, so the full-strength token composites to roughly twice the
+  weight it has everywhere else and reads as a hard outline. The on-state knob
+  drops its edge entirely — white on the saturated `primary` track is ≈5:1 in
+  both shipped themes, so the tint only muddies a boundary that already carries
+  itself.
 - **Reduced motion.** The knob slide is suppressed when the user prefers reduced
   motion.
 
@@ -88,6 +91,7 @@ up with the inputs and buttons in the same row.
 Switches read colors and radii from `SharedUiThemeProvider`. The off track uses
 `colors.border2` with a half-alpha `colors.controlBorder` edge, the on track uses
 the active theme `colors.primary`, the knob carries a full-strength
-`colors.controlBorder` edge, and the track radius uses `radii.pill`. A
+`colors.controlBorder` edge while it sits on the off track and none once it
+slides onto the on track, and the track radius uses `radii.pill`. A
 `controlBorder` override that isn't an `rgba()`/`rgb()` color draws the track
 edge at face value.
