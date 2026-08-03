@@ -7,10 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.5.0](https://github.com/futex-ai/ui/compare/v1.4.0...v1.5.0) (2026-08-03)
 
-
 ### Features
 
-* **modal:** focus caller content on open, add Button buttonRef ([#129](https://github.com/futex-ai/ui/issues/129)) ([b0ffc25](https://github.com/futex-ai/ui/commit/b0ffc252e1a929cde0f790dd4d79d2998119c009))
+- **modal:** focus caller content on open, add Button buttonRef ([#129](https://github.com/futex-ai/ui/issues/129)) ([b0ffc25](https://github.com/futex-ai/ui/commit/b0ffc252e1a929cde0f790dd4d79d2998119c009))
 
 ## [1.4.0](https://github.com/futex-ai/ui/compare/v1.3.0...v1.4.0) (2026-07-31)
 
