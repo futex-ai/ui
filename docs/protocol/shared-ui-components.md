@@ -3,8 +3,8 @@
 ## Status
 
 Implemented contract for the dropdown, drag-select, segmented control, radio
-card, switch, spinner, loader, button, data table, workflow builder, modal,
-toast,
+card, switch, spinner, loader, animated border, button, data table, workflow
+builder, modal, toast,
 avatar, status badge, rich-text editor, and event-calendar extraction,
 including the shared control-size scale for buttons, inputs, and textareas.
 
@@ -159,6 +159,46 @@ Required behavior:
   setting only `accessibilityValue` leaves a web screen reader with a
   `progressbar` that carries no value. This applies to any determinate control,
   not only these two.
+
+## Animated Border Contract
+
+The animated border covers the decorative "working" highlight: a comet trail
+that traces the perimeter of the element it frames, marking an active tool icon,
+avatar, or card while work is running.
+
+Required behavior:
+
+- Trace the real rounded-rectangle path of the framed box, sized by `width` /
+  `height` (or a square `size`) and `borderRadius`, so the trail follows the
+  same corner radius as the element it frames. `shape="circle"` fully rounds the
+  box instead — a true circle when square, an elongated stadium ("pill") when
+  not — and ignores `borderRadius`.
+- Draw the trail as stacked `react-native-svg` rects with an animated
+  `strokeDashoffset`: a short, bright head leading progressively fainter, longer
+  tail segments. Real path geometry is required because a CSS gradient border
+  cannot bend around a corner and a single rotated dash only reads as motion on
+  a circle.
+- Run the loop through React Native's `Animated` API and stop it on unmount. The
+  loop is JS-driven (`useNativeDriver: false`) because an SVG attribute cannot
+  run on the native driver.
+- Accept `color` as either a single color or a `[from, to]` pair, defaulting to
+  the theme `primary`. A pair strokes the trail with an SVG gradient sweeping
+  `from → to → from` across the box, so a border can carry a consumer's brand
+  pair and identify which connected app is working, not merely that something
+  is. `from` is repeated at both ends so the two sides of the border read the
+  same rather than ramping one way across it.
+- Treat a pair of identical colors as the single-color case — solid, with no
+  gradient defined — so a caller holding one brand color can repeat it instead
+  of branching. Gradient ids must be per-instance and free of any characters
+  that would break a `url(#…)` reference on web.
+- Keep the border out of the accessibility tree on every platform and let
+  pointer events pass through to the content it overlays. It is decoration; the
+  surrounding control owns the announced state.
+- Honour the user's "reduce motion" preference by settling into a static
+  outline — stroked with the same color or gradient — instead of looping the
+  trail around the perimeter.
+- Wrap `children` and overlay the border over them, or render standalone (with
+  no children) for the caller to position over an existing box.
 
 ## Radio Card Contract
 

@@ -2,6 +2,7 @@
 import {
   forwardRef,
   useEffect,
+  useId,
   useRef,
   type ComponentProps,
   type ReactNode,
@@ -14,12 +15,17 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import Svg, { Rect } from "react-native-svg";
+import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 
 import { devWarn } from "../devWarn";
 import { useSharedUiTheme } from "../theme";
 import { useReducedMotion } from "../useReducedMotion";
 
+import {
+  animatedBorderGradientId,
+  resolveAnimatedBorderStroke,
+  type AnimatedBorderColor,
+} from "./animatedBorderColor";
 import {
   createAnimatedBorderTrail,
   resolveAnimatedBorderGeometry,
@@ -84,8 +90,13 @@ export type AnimatedBorderProps = {
   borderWidth?: number;
   /** Content the border is drawn over; omit to render the border on its own. */
   children?: ReactNode;
-  /** Trail color. Defaults to the theme `primary`. */
-  color?: string;
+  /**
+   * Trail color: one color, or a `[from, to]` pair drawn as a gradient that
+   * sweeps `from → to → from` across the box, so a border can carry an app's
+   * brand pair. Repeating the same color in a pair renders solid. Defaults to
+   * the theme `primary`.
+   */
+  color?: AnimatedBorderColor;
   /** Milliseconds for one full lap of the perimeter. Default 1600. */
   duration?: number;
   /** Height of the bordered box in px; omit to use the square `size`. Default 0. */
@@ -140,6 +151,11 @@ export type AnimatedBorderProps = {
  * unmount. The border is purely decorative, so it is hidden from assistive
  * technology, and it settles into a static outline when the user prefers
  * reduced motion.
+ *
+ * `color` takes a single color or a `[from, to]` pair. A pair strokes the trail
+ * with a gradient sweeping `from → to → from` across the box, so a border can
+ * carry a brand pair — a connected app's primary and secondary — and identify
+ * whose work is running, not just that something is.
  */
 export function AnimatedBorder({
   borderRadius = 0,
@@ -160,7 +176,15 @@ export function AnimatedBorder({
   const reduceMotion = useReducedMotion();
   const resolvedWidth = width ?? size ?? 0;
   const resolvedHeight = height ?? size ?? 0;
-  const stroke = color ?? theme.colors.primary;
+  // A stable, collision-free gradient id, sanitised so it is a valid `url(#…)`
+  // reference on web. Built unconditionally — a hook cannot be called behind the
+  // single-color branch — but only referenced when `color` is a pair.
+  const gradientId = animatedBorderGradientId(useId());
+  const { gradient, stroke } = resolveAnimatedBorderStroke({
+    color,
+    fallback: theme.colors.primary,
+    gradientId,
+  });
 
   // `shape="circle"` fully rounds the box (a true circle when square, a stadium
   // when not); `"rounded-rect"` follows `borderRadius`. Either way the result is
@@ -213,6 +237,22 @@ export function AnimatedBorder({
 
   const svg = (
     <Svg {...decorative} height={resolvedHeight} width={resolvedWidth}>
+      {gradient == null ? null : (
+        // A two-color trail is stroked with this gradient instead of a color.
+        // It is a spatial sweep across the box, so the moving dashes change hue
+        // as they travel rather than each carrying a fixed color, and `from`
+        // sits at BOTH ends: the two sides of the border then read the same and
+        // the pair's second color runs through the middle, which is the
+        // symmetric "primary → secondary → primary" treatment a brand pair
+        // wants. A one-way ramp would leave the left and right sides mismatched.
+        <Defs>
+          <LinearGradient id={gradientId} x1="0" x2="1" y1="0" y2="0">
+            <Stop offset={0} stopColor={gradient.from} />
+            <Stop offset={0.5} stopColor={gradient.to} />
+            <Stop offset={1} stopColor={gradient.from} />
+          </LinearGradient>
+        </Defs>
+      )}
       {reduceMotion ? (
         // A calm, static outline for users who opt out of motion.
         <Rect

@@ -27,7 +27,9 @@ primitive.
   the content underneath.
 - Settle into a static outline when the user prefers reduced motion.
 - Use the shared theme `primary` for the trail color instead of a consumer-local
-  theme import.
+  theme import, and accept either one color or a `[from, to]` pair — a pair is
+  stroked with an SVG gradient so a border can carry a brand pair rather than a
+  single accent.
 
 ## Usage
 
@@ -106,13 +108,46 @@ spacing) is computed from the real rounded-rect path.
 />
 ```
 
-- `color` — trail color; defaults to the theme `primary`.
+- `color` — trail color: one color, or a `[from, to]` pair drawn as a gradient
+  (see below); defaults to the theme `primary`.
 - `borderWidth` — stroke thickness in px (default `1.2`).
 - `duration` — milliseconds for one full lap (default `1600`).
 - `trailCount` — number of fading tail segments behind the head (default `8`).
 - `trailSpacing` — perimeter gap in px between segments (default `3`).
 
+### Two-color gradient
+
+Pass a `[from, to]` pair to stroke the trail with a gradient instead of a flat
+color — enough to say _whose_ work is running, not just that something is:
+
+```tsx
+// Slack-branded: cyan through magenta and back.
+<AnimatedBorder borderRadius={7} color={["#36c5f0", "#e01e5a"]} size={24}>
+  <ToolIconBadge group="slack" />
+</AnimatedBorder>
+```
+
+The gradient sweeps **across the box** (`from → to → from`, left to right), so
+the dashes change hue as they travel rather than each carrying a fixed color.
+`from` sits at both ends deliberately: the left and right sides of the border
+then read the same, with the second color through the middle. A one-way ramp
+would leave the two sides mismatched.
+
+When only one color is available, repeat it — a pair of the same color renders
+exactly like passing that color on its own, so callers never need to branch:
+
+```tsx
+const brand = app.colors ?? [theme.colors.primary, theme.colors.primary];
+
+<AnimatedBorder color={brand} shape="circle" size={40}>
+  <AppIcon app={app} />
+</AnimatedBorder>;
+```
+
+The gradient applies in reduced-motion mode too: the static outline it settles
+into is stroked with the same pair.
+
 ## Theming
 
 The trail reads `colors.primary` from `SharedUiThemeProvider` by default; pass
-`color` to override it per instance.
+`color` to override it per instance, as a single color or a `[from, to]` pair.

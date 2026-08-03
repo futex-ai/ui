@@ -2304,6 +2304,52 @@ test("animated border shape=circle fully rounds the box (circle and pill)", asyn
   await expect.poll(readOffset).not.toBe(firstOffset);
 });
 
+test("animated border strokes a color pair through an SVG gradient", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=animatedborder-examples--gradient");
+
+  // The first badge takes a `[from, to]` pair, so its trail is stroked with a
+  // gradient rather than a flat color. The `url(#…)` reference has to resolve
+  // against a real definition — which is what the per-instance, colon-free
+  // gradient id buys, since `useId` alone emits ids that break the reference.
+  const pair = page.locator('[data-testid="animated-border"]').first();
+  const gradient = pair.locator("linearGradient");
+  await expect(gradient).toHaveCount(1);
+  const gradientId = await gradient.getAttribute("id");
+  await expect(
+    pair.locator(`rect[stroke="url(#${gradientId})"]`).first(),
+  ).toBeAttached();
+
+  // from → to → from: the pair's first color sits at BOTH ends with the second
+  // through the middle, so the two sides of the border read the same instead of
+  // ramping one way across the box.
+  const stops = gradient.locator("stop");
+  await expect(stops).toHaveCount(3);
+  await expect(stops.nth(0)).toHaveAttribute("offset", "0");
+  await expect(stops.nth(0)).toHaveAttribute("stop-color", "#36c5f0");
+  await expect(stops.nth(1)).toHaveAttribute("offset", "0.5");
+  await expect(stops.nth(1)).toHaveAttribute("stop-color", "#e01e5a");
+  await expect(stops.nth(2)).toHaveAttribute("offset", "1");
+  await expect(stops.nth(2)).toHaveAttribute("stop-color", "#36c5f0");
+
+  // The third badge repeats a single color. That is the solid case: no gradient
+  // is defined for it and the trail is stroked with the color itself, so a
+  // caller holding one brand color can pass a pair without branching.
+  const repeated = page.locator('[data-testid="animated-border"]').nth(2);
+  await expect(repeated.locator("linearGradient")).toHaveCount(0);
+  await expect(
+    repeated.locator('rect[stroke="#a84f45"]').first(),
+  ).toBeAttached();
+
+  // Ids are per-instance, so several gradient borders on one screen cannot
+  // collide and steal each other's colors.
+  const ids = await page
+    .locator("linearGradient")
+    .evaluateAll((nodes) => nodes.map((node) => node.id));
+  expect(new Set(ids).size).toBe(ids.length);
+});
+
 test("button reflects press and disabled state", async ({ page }) => {
   await page.goto("/iframe.html?id=button-examples--interactive");
 

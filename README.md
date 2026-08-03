@@ -36,7 +36,8 @@ The package name is `@firna/ui`. Public exports are available from:
 
 - `@firna/ui` for all public components and helpers.
 - `@firna/ui/animated-border` for the animated comet-trail border that traces a
-  rounded-rectangle perimeter to highlight an element.
+  rounded-rectangle perimeter to highlight an element, in a single color or a
+  two-color brand gradient.
 - `@firna/ui/avatar` for the themed circular initials avatar.
 - `@firna/ui/badge` for the themed status badge pill with tone, variant, and
   size variants.
