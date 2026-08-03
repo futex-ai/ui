@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import {
+  ConfirmModalExample,
   ModalExample,
   ResizableSheetExample,
   StorySurface,
@@ -28,6 +29,15 @@ export const BottomSheetWebModal: Story = {
   render: () => (
     <StorySurface>
       <ModalExample placement="bottom-sheet" title="Cookie preferences" />
+    </StorySurface>
+  ),
+};
+
+export const ConfirmWebModal: Story = {
+  name: "Confirmation modal",
+  render: () => (
+    <StorySurface>
+      <ConfirmModalExample />
     </StorySurface>
   ),
 };

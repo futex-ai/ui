@@ -97,6 +97,20 @@ test("native modal keeps non-scrolling sheet bodies out of a parent scroller", (
   );
 });
 
+test("web modal opens focus on caller content rather than the close button", () => {
+  const source = readSource("../../src/modal/WebModalFrame.web.tsx");
+
+  // An explicit `initialFocusRef` still wins; otherwise the frame picks the
+  // first focusable the caller rendered, skipping the close button even though
+  // it comes first in DOM order, and only then falls back to close/surface.
+  assert.match(
+    source,
+    /initialFocusTargetRef\.current\?\.current \?\?\s*webModalInitialFocusTarget\(surfaceRef, closeButtonRef\)/,
+  );
+  assert.match(source, /\(element\) => element !== closeButton/);
+  assert.match(source, /return callerControl \?\? closeButton \?\? surface/);
+});
+
 test("web modal focus restore lifecycle is decoupled from close callback changes", () => {
   const source = readSource("../../src/modal/WebModalFrame.web.tsx");
 

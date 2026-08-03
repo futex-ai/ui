@@ -29,7 +29,13 @@ export type WebModalFrameProps = {
   bodyStyle?: StyleProp<ViewStyle>;
   footerStyle?: StyleProp<ViewStyle>;
   headerStyle?: StyleProp<ViewStyle>;
-  /** Web-only: element focused when the modal opens. Ignored on native. */
+  /**
+   * Web-only: element focused when the modal opens, overriding the default —
+   * the first focusable control the caller rendered (the close button is
+   * skipped despite coming first in DOM order). Point it at the safe action on
+   * a destructive confirmation, where the default would land on the
+   * destructive one. Ignored on native, which has no tab order.
+   */
   initialFocusRef?: RefObject<Focusable | null>;
   onClose: () => void;
   /** `center` (default) or `bottom-sheet` (pinned full-width to the bottom). */

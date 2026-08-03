@@ -1225,8 +1225,8 @@ test("web modal restores focus and allows nested dropdowns above the surface", a
   const closeButton = page.getByRole("button", {
     name: "Close Invite teammate",
   });
-  await expect(closeButton).toBeFocused();
-  await page.keyboard.press("Tab");
+  // Focus lands on the caller's first control, not the close button, and the
+  // trap cycle then reaches the close button last on the way round.
   await expect(textField).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(
@@ -1236,8 +1236,10 @@ test("web modal restores focus and allows nested dropdowns above the surface", a
   await expect(page.getByRole("button", { name: "Done" })).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(closeButton).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(textField).toBeFocused();
   await page.keyboard.press("Shift+Tab");
-  await expect(page.getByRole("button", { name: "Done" })).toBeFocused();
+  await expect(closeButton).toBeFocused();
 
   await page.getByRole("button", { name: "Nested selector, Standard" }).click();
   await expect(page.getByText("Cash accounting")).toBeVisible();
@@ -1249,6 +1251,34 @@ test("web modal restores focus and allows nested dropdowns above the surface", a
   expect(modalBox).not.toBeNull();
   expect(optionBox).not.toBeNull();
   expect(optionBox?.y).toBeGreaterThanOrEqual((modalBox?.y ?? 0) - 1);
+});
+
+test("a modal with no focusable body content opens on its footer action", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=modal-examples--confirm-web-modal");
+
+  // `exact` matters: the close button is named "Close Publish changes", which a
+  // substring match on "Publish" would also resolve to.
+  const publish = page.getByRole("button", { name: "Publish", exact: true });
+  const cancel = page.getByRole("button", { name: "Cancel", exact: true });
+  const closeButton = page.getByRole("button", {
+    name: "Close Publish changes",
+  });
+
+  // The body is text only, so the first caller-rendered control is the footer's
+  // action button — focus falls through to it rather than to the close button.
+  await expect(publish).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(cancel).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(closeButton).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(publish).toBeFocused();
+
+  // Focus is on the action, so Enter commits rather than dismissing.
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("Published")).toBeVisible();
 });
 
 test("a dropdown inside a modal closes on Escape without closing the modal", async ({
