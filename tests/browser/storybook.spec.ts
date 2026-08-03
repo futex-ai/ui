@@ -2392,6 +2392,36 @@ test("button with icons renders its labelled actions", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Delete" })).toBeVisible();
 });
 
+test("custom button icon nodes cannot take pointer focus", async ({ page }) => {
+  await page.goto("/iframe.html?id=button-examples--custom-icon-node");
+
+  const button = page.getByRole("button", { name: "Add" });
+  const icon = button.locator("svg");
+  await expect(icon).toHaveAttribute("tabindex", "-1");
+
+  const iconBox = await icon.boundingBox();
+  expect(iconBox).not.toBeNull();
+  await page.mouse.click(
+    (iconBox?.x ?? 0) + (iconBox?.width ?? 0) / 2,
+    (iconBox?.y ?? 0) + (iconBox?.height ?? 0) / 2,
+  );
+
+  // A caller or web renderer can accidentally make a decorative SVG
+  // click-focusable with `tabindex=-1`. The icon node is visual content only, so
+  // pointer targeting must fall through to the outer button rather than drawing
+  // the browser's focus outline on the SVG.
+  await expect(button).toBeFocused();
+  await expect(icon).not.toBeFocused();
+  await expect
+    .poll(() =>
+      icon.evaluate(
+        (node) =>
+          getComputedStyle(node.parentElement as HTMLElement).pointerEvents,
+      ),
+    )
+    .toBe("none");
+});
+
 test("button sizes step the control height across the shared scale", async ({
   page,
 }) => {

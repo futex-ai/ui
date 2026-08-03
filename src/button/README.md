@@ -17,6 +17,8 @@ theme tokens.
 - Show an optional leading `icon` (a lucide glyph, tinted to the label colour) or
   a caller-supplied `iconNode` (any node — e.g. an `@expo/vector-icons` glyph —
   rendered as-is, never wrapped in `<Text>`).
+- Keep caller-supplied icon nodes decorative and non-interactive so a focusable
+  child SVG cannot take pointer focus away from the outer button.
 - Render as an icon-only `square` or `circle` (`shape`) 1:1 tap target, with an
   optional `minTouchTarget` floor independent of the label height scale.
 - Render a compact, line-height-neutral `inline` chip that flows inside a line of
@@ -104,6 +106,10 @@ control), or any node to `iconNode` for a non-lucide glyph — the node renders
 as-is (never inside `<Text>`), so the caller owns its colour and size. `iconNode`
 wins when both are set. Either way the glyph is hidden from assistive technology
 on web; the label (or the required `accessibilityLabel`) is the accessible name.
+The `iconNode` wrapper also ignores pointer events, ensuring clicks target and
+focus the button even if the supplied node contains an SVG with a `tabIndex`.
+Interactive content is therefore not supported inside `iconNode`; render it as
+a separate named control instead.
 
 ### Sizes
 
@@ -180,7 +186,9 @@ top for one-off layout tweaks (e.g. margins).
   type-enforced, and a `__DEV__` warning fires if a name can't be resolved.
 - **Decorative icon (1.1.1, A).** The leading icon is hidden from assistive
   technology (`aria-hidden` on web), so the button is announced once by its name
-  rather than by the raw glyph.
+  rather than by the raw glyph. Caller-supplied icon nodes also ignore pointer
+  events, preventing a focusable descendant from stealing click focus and
+  showing a second browser focus outline inside the button.
 - **Busy state (4.1.2, A).** `busy` sets `aria-busy`, blocks the press handler,
   and swaps the icon for a spinner while keeping the button focusable and
   announced. It is distinct from `disabled` (which removes the control from the

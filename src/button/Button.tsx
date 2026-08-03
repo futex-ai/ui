@@ -316,10 +316,13 @@ export function Button({
         <ButtonSpinner color={labelColor} size={buttonIconSize(size)} />
       ) : iconNode != null ? (
         // A caller-supplied icon node renders as-is (never inside `<Text>`) and
-        // is hidden from assistive technology on web like the lucide `icon`
-        // below — the label / required `accessibilityLabel` is the name.
+        // is decorative: hide it from assistive technology on web and prevent
+        // pointer targeting so even a click-focusable child SVG cannot take
+        // focus from the outer button. The label / required `accessibilityLabel`
+        // is the name.
         <View
           aria-hidden={Platform.OS === "web" ? true : undefined}
+          pointerEvents="none"
           style={styles.iconNode}
         >
           {iconNode}
