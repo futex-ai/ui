@@ -7,10 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.6.1](https://github.com/futex-ai/ui/compare/v1.6.0...v1.6.1) (2026-08-04)
 
-
 ### Bug Fixes
 
-* **list:** target test IDs at pressables ([#135](https://github.com/futex-ai/ui/issues/135)) ([bcf60ce](https://github.com/futex-ai/ui/commit/bcf60cee2dd2ca0c235563a0f9d4ede032249d3e))
+- **list:** target test IDs at pressables ([#135](https://github.com/futex-ai/ui/issues/135)) ([bcf60ce](https://github.com/futex-ai/ui/commit/bcf60cee2dd2ca0c235563a0f9d4ede032249d3e))
 
 ## [1.6.0](https://github.com/futex-ai/ui/compare/v1.5.0...v1.6.0) (2026-08-03)
 
