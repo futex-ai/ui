@@ -15,6 +15,14 @@ import type { SharedUiTheme } from "../theme";
  */
 export function createToastStyles(theme: SharedUiTheme) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
+  // The solid variant's hover wash brightens its fill. On the light themes that
+  // fill is a deep accent, so a white wash lifts it; on the dark themes the
+  // solid fills invert to light accents, where a white wash is invisible — so
+  // it flips to a black wash that darkens instead.
+  const solidHoverWash =
+    theme.scheme === "dark"
+      ? "rgba(0, 0, 0, 0.10)"
+      : "rgba(255, 255, 255, 0.14)";
   return StyleSheet.create({
     actions: {
       flexDirection: "row",
@@ -50,7 +58,7 @@ export function createToastStyles(theme: SharedUiTheme) {
       paddingHorizontal: 6,
       paddingVertical: 2,
     },
-    solidActionButtonHover: { backgroundColor: "rgba(255, 255, 255, 0.14)" },
+    solidActionButtonHover: { backgroundColor: solidHoverWash },
     solidActionText: {
       ...baseText,
       fontSize: 14,
@@ -67,7 +75,7 @@ export function createToastStyles(theme: SharedUiTheme) {
       marginRight: -8,
       marginTop: 0,
     },
-    solidCloseButtonHover: { backgroundColor: "rgba(255, 255, 255, 0.14)" },
+    solidCloseButtonHover: { backgroundColor: solidHoverWash },
     solidContent: {
       flexGrow: 0,
       flexShrink: 1,

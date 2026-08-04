@@ -23,7 +23,11 @@ test("skeleton sweeps a white sheen drawn with react-native-svg", () => {
     /import Svg, \{ Defs, LinearGradient, Rect, Stop \} from "react-native-svg"/,
   );
   assert.match(source, /<LinearGradient id=\{gradientId\}/);
-  assert.match(source, /stopOpacity=\{SKELETON_SHEEN_OPACITY\}/);
+  assert.match(source, /stopOpacity=\{sheenOpacity\}/);
+  // The stops stay white on both schemes; only the peak opacity is scheme-picked
+  // (the light sweep blows out to a glare on the dark `soft` base).
+  assert.match(source, /SKELETON_SHEEN_OPACITY_DARK/);
+  assert.match(source, /theme\.scheme === "dark"/);
   assert.match(source, /fill=\{`url\(#\$\{gradientId\}\)`\}/);
   // The sheen is translated across the placeholder's measured width, and the
   // SVG is given explicit pixel dimensions (percentage sizing is unreliable on

@@ -6,11 +6,17 @@ import type { SharedUiRadii, SharedUiTheme } from "../theme";
 export const SKELETON_SWEEP_DURATION = 1300;
 
 /**
- * Peak opacity of the white sheen that sweeps over the placeholder. The sheen is
- * a horizontal `transparent → white → transparent` gradient, so only its centre
- * reaches this opacity as it crosses.
+ * Peak opacity of the white sheen that sweeps over the placeholder on the light
+ * `soft` base. The sheen is a horizontal `transparent → white → transparent`
+ * gradient, so only its centre reaches this opacity as it crosses.
  */
 export const SKELETON_SHEEN_OPACITY = 0.65;
+
+/**
+ * Dark-scheme peak: the same white sweep reads as a glare on a dark base, so
+ * it drops to a subtle 0.12 highlight (GitHub-dark-style shimmer).
+ */
+export const SKELETON_SHEEN_OPACITY_DARK = 0.12;
 
 /** A shared radii token (`sm` / `md` / `lg` / `pill` / …) or an explicit pixel radius. */
 export type SkeletonRadius = keyof SharedUiRadii | number;

@@ -20,8 +20,7 @@ const WHITE_LITERAL_ALLOWLIST: Record<string, number> = {
   "theme.tsx": 4, // the two light presets' surface + onSolid "#ffffff" pairs
   "skeleton/Skeleton.tsx": 3, // sheen gradient stops stay white by design
   "workflow/WorkflowNode.tsx": 2, // fixed category palette glyphs (see D6)
-  "toast/toastStyles.ts": 2, // hover washes rgba(255, 255, 255, 0.14) — drops to 1 in M3.3
-  "switch/switchStyles.ts": 2, // knob + knobOn "#fff" — removed entirely in M3.1
+  "toast/toastStyles.ts": 1, // the light-scheme arm of the solid hover wash
 };
 
 function walk(dir: string): string[] {

@@ -12,10 +12,10 @@ provider API changes, no automatic OS detection (consumers pass a preset;
 pattern documented), no global Storybook default flip (the browser suite pins
 31 light-theme colors to existing story ids).
 
-**Status:** M1–M2 delivered (`onSolid` + `scheme` groundwork, then both dark
-presets). `npm run verify` green on the combined tree — 677 unit tests, 219
-Playwright tests incl. the full axe sweep, all 31 pinned light-theme colors
-unchanged. M3–M5 remaining. All palette values below are pre-validated
+**Status:** M1–M3 delivered (`onSolid` + `scheme` groundwork, both dark
+presets, and the four scheme-gated component fixes). `npm run verify` green —
+677 unit tests, 219 Playwright tests incl. the full axe sweep, all 31 pinned
+light-theme colors unchanged. M4–M5 remaining. All palette values below are pre-validated
 against WCAG 2.1 — 1.4.3/1.4.11 (ratios listed per pair, independently
 re-derived at implementation time — every row matches); the component audit is
 complete (every hazardous site enumerated with file:line, verified in the tree
@@ -784,7 +784,7 @@ Consumes `theme.scheme` (M1) + the dark presets (M2, for tests/stories).
 Light themes must stay pixel-identical (all three changes collapse to today's
 values when `scheme === "light"`).
 
-- [ ] **M3.1** Switch knob per D7: edit `src/switch/switchStyles.ts` L94–115
+- [x] **M3.1** Switch knob per D7: edit `src/switch/switchStyles.ts` L94–115
       (knob off-fill ternary; `knobOn` gains `backgroundColor` + `borderColor:
 onSolid`; rewrite the two comments as in the D7 snippet).
       `tests/unit/switch.test.ts` L58 and L101 pin
@@ -792,21 +792,21 @@ onSolid`; rewrite the two comments as in the D7 snippet).
       the new `knobOn` shape (e.g.
       `/knobOn: \{\s*backgroundColor: theme\.colors\.onSolid/`). Remove the
       `switch/switchStyles.ts` entry from the M1.6 allowlist (count is now 0).
-- [ ] **M3.2** Skeleton sheen per D7 (`SKELETON_SHEEN_OPACITY_DARK = 0.12` in
+- [x] **M3.2** Skeleton sheen per D7 (`SKELETON_SHEEN_OPACITY_DARK = 0.12` in
       `skeletonStyles.ts`, scheme-picked in `Skeleton.tsx`).
       `tests/unit/skeleton.test.ts` L26 pins
       `stopOpacity=\{SKELETON_SHEEN_OPACITY\}` — update it to
       `stopOpacity=\{sheenOpacity\}` and add asserts that the component source
       contains the scheme pick (`/SKELETON_SHEEN_OPACITY_DARK/` and
       `/theme\.scheme === "dark"/`).
-- [ ] **M3.3** Toast hover wash per D7 (`solidHoverWash` const, two sites).
+- [x] **M3.3** Toast hover wash per D7 (`solidHoverWash` const, two sites).
       Drop the `toast/toastStyles.ts` count in the M1.6 allowlist from 2 to 1.
-- [ ] **M3.4** Data-grid pills per D7 (`resolveOptionColor` dark arms — the
+- [x] **M3.4** Data-grid pills per D7 (`resolveOptionColor` dark arms — the
       AA numbers are already pinned by M2.1's pill test). Update the resolver's
       doc comment (L56–60) to mention the scheme-gated pairs.
-- [ ] **M3.5** `npm run format && npm run verify` → green (still proves
+- [x] **M3.5** `npm run format && npm run verify` → green (still proves
       light-mode zero-delta: pinned colors untouched).
-- [ ] **M3.6** Commit:
+- [x] **M3.6** Commit:
 
 ```bash
 git add src tests plans

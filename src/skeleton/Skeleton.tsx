@@ -43,6 +43,7 @@ import {
   resolveSkeletonRadius,
   SkeletonRadius,
   SKELETON_SHEEN_OPACITY,
+  SKELETON_SHEEN_OPACITY_DARK,
   SKELETON_SWEEP_DURATION,
 } from "./skeletonStyles";
 
@@ -120,6 +121,13 @@ function Placeholder({
   // A stable, collision-free gradient id (sanitised of `useId`'s colons so it is
   // a valid `url(#…)` reference on web).
   const gradientId = `skeleton-sheen-${useId().replace(/:/g, "")}`;
+  // The stops stay white on both schemes — only the peak opacity moves, because
+  // the same sweep that reads as a soft highlight on the light `soft` base
+  // blows out to a glare on the dark one.
+  const sheenOpacity =
+    theme.scheme === "dark"
+      ? SKELETON_SHEEN_OPACITY_DARK
+      : SKELETON_SHEEN_OPACITY;
 
   const translateX = useMemo(
     () =>
@@ -161,7 +169,7 @@ function Placeholder({
                 <Stop
                   offset={0.5}
                   stopColor="#ffffff"
-                  stopOpacity={SKELETON_SHEEN_OPACITY}
+                  stopOpacity={sheenOpacity}
                 />
                 <Stop offset={1} stopColor="#ffffff" stopOpacity={0} />
               </LinearGradient>

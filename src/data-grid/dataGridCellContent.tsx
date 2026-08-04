@@ -55,13 +55,16 @@ type ColorPair = { backgroundColor: string; color: string };
 
 /**
  * Resolve a select option's color to an AA-contrast background/text pair. Green,
- * amber, rose and gray reuse the theme's verified soft/deep tokens; blue, purple
- * and teal use fixed pairs held to ≥4.5:1 (WCAG 2.1 — 1.4.3, AA).
+ * amber, rose and gray reuse the theme's verified soft/deep tokens, so they
+ * adapt to the active scheme for free; blue, purple and teal have no token
+ * family to ride, so they carry fixed light and dark pairs picked on
+ * `theme.scheme`, each held to ≥4.5:1 (WCAG 2.1 — 1.4.3, AA).
  */
 export function resolveOptionColor(
   theme: SharedUiTheme,
   color: DataGridOptionColor = "gray",
 ): ColorPair {
+  const dark = theme.scheme === "dark";
   switch (color) {
     case "green":
       return {
@@ -79,11 +82,17 @@ export function resolveOptionColor(
         color: theme.colors.roseDeep,
       };
     case "blue":
-      return { backgroundColor: "#dbe7f3", color: "#2c557f" };
+      return dark
+        ? { backgroundColor: "#1c2a3a", color: "#a8c8ee" }
+        : { backgroundColor: "#dbe7f3", color: "#2c557f" };
     case "purple":
-      return { backgroundColor: "#ebe5f9", color: "#4a3795" };
+      return dark
+        ? { backgroundColor: "#2a2440", color: "#c3b2f0" }
+        : { backgroundColor: "#ebe5f9", color: "#4a3795" };
     case "teal":
-      return { backgroundColor: "#d6ede7", color: "#1b6052" };
+      return dark
+        ? { backgroundColor: "#16302b", color: "#7fd0c0" }
+        : { backgroundColor: "#d6ede7", color: "#1b6052" };
     default:
       return { backgroundColor: theme.colors.soft, color: theme.colors.ink2 };
   }
