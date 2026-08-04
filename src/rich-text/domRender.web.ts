@@ -373,7 +373,7 @@ function applyCheckboxStyle(
   element.style.border = `1px solid ${checked ? renderTheme.theme.colors.primaryDeep : renderTheme.theme.colors.controlBorder}`;
   element.style.borderRadius = `${renderTheme.theme.radii.sm}px`;
   element.style.boxSizing = "border-box";
-  element.style.color = "#fff";
+  element.style.color = renderTheme.theme.colors.onSolid;
   element.style.display = "inline-flex";
   element.style.fontFamily = renderTheme.theme.fonts.sans;
   element.style.fontSize = "10px";

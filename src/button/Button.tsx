@@ -195,7 +195,7 @@ export function Button({
   // neutral `ink` of `secondary` — it differs only in its (absent) chrome.
   const labelColor =
     tone === "primary"
-      ? "#fff"
+      ? theme.colors.onSolid
       : tone === "danger"
         ? theme.colors.rose
         : tone === "ghost"

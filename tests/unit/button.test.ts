@@ -54,8 +54,8 @@ test("button renders an optional leading icon tinted and sized with the button",
 test("button label colour follows the tone", () => {
   const source = readSource("../../src/button/Button.tsx");
 
-  // primary -> white, danger -> rose, ghost -> primaryDeep, secondary -> ink.
-  assert.match(source, /tone === "primary"\s*\?\s*"#fff"/);
+  // primary -> onSolid, danger -> rose, ghost -> primaryDeep, secondary -> ink.
+  assert.match(source, /tone === "primary"\s*\?\s*theme\.colors\.onSolid/);
   assert.match(source, /theme\.colors\.rose/);
   assert.match(source, /theme\.colors\.primaryDeep/);
   assert.match(source, /theme\.colors\.ink/);

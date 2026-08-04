@@ -178,6 +178,11 @@ export function WorkflowNode({
   const body = (dotDecorative: boolean) => (
     <>
       <View style={[styles.chip, { backgroundColor: chipColor }]}>
+        {/*
+          Deliberately NOT `colors.onSolid`: node chips are a fixed category
+          palette (workflowTypes.ts) that does not invert with the theme, and
+          white passes ≥4.5:1 on all six fills. See plans/dark-mode.md.
+        */}
         {Platform.OS === "web" ? (
           <Icon aria-hidden color="#fff" size={iconSize} />
         ) : (

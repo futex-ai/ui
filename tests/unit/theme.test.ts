@@ -40,6 +40,25 @@ test("both themes define the deep amber/rose accents for badge tones", () => {
   assert.equal(junoSharedUiTheme.colors.roseDeep, "#9a4138");
 });
 
+test("themes carry the onSolid token and a scheme", () => {
+  assert.equal(defaultSharedUiTheme.colors.onSolid, "#ffffff");
+  assert.equal(junoSharedUiTheme.colors.onSolid, "#ffffff");
+  assert.equal(defaultSharedUiTheme.scheme, "light");
+  assert.equal(junoSharedUiTheme.scheme, "light");
+  // An unrelated override must not drop them (per-key spread guard).
+  const overridden = createSharedUiTheme({ colors: { primary: "#123456" } });
+  assert.equal(overridden.colors.onSolid, "#ffffff");
+  assert.equal(overridden.scheme, "light");
+});
+
+test("createSharedUiTheme accepts a base theme to extend", () => {
+  const base = createSharedUiTheme({ colors: { primary: "#123456" } });
+  const derived = createSharedUiTheme({ colors: { rose: "#654321" } }, base);
+  assert.equal(derived.colors.primary, "#123456"); // inherited from base
+  assert.equal(derived.colors.rose, "#654321");
+  assert.equal(derived.radii.md, base.radii.md);
+});
+
 test("focus ring uses the active shared theme primary color", () => {
   const source = readFileSync(
     new URL("../../src/focusRing.ts", import.meta.url),

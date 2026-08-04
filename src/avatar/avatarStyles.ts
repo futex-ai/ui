@@ -13,7 +13,7 @@ export function createAvatarStyles(theme: SharedUiTheme) {
       color: theme.colors.primaryDeep,
       fontWeight: "700",
     },
-    avatarTextSolid: { color: "#fff" },
+    avatarTextSolid: { color: theme.colors.onSolid },
   });
 }
 

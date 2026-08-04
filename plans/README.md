@@ -2,6 +2,7 @@
 
 ## Active
 
+- [Dark mode](dark-mode.md) — planned, not started: two dark presets (`darkSharedUiTheme`, `junoDarkSharedUiTheme`) with WCAG-pre-validated palettes, a new `colors.onSolid` token replacing every hardcoded inverse white (`"#fff"` + `surface`-as-inverse, 23 sites audited), a `theme.scheme` flag for the four physical-metaphor branches (switch knob, skeleton sheen, toast wash, data-grid pills), opt-in dark Storybook stories gated by the axe sweep, and contrast unit tests pinning every documented pair across all four themes. M1–M5.
 - [Disable the focus ring](disable-focus-ring.md) — M1–M5 delivered: a theme `focusRing` kill switch + per-instance `disableFocusRing` prop on every ring-bearer, backed by one `useFocusRing({ disabled })` / `ringEnabled` / `webOutlineReset` primitive; disabled rings restore the UA outline (WCAG 2.4.7). Unit tests + a `Focus ring/Examples` story added. Deferred: `DateField`/`DateRangeField` composite forwarding.
 - [SortableList component](sortable-list-component.md) — M1 delivered (web pointer + keyboard drag, optional start/end grab handle, vertical/horizontal flow) and `npm run verify` green; M2 (native drag / touch reordering + RTL) deferred.
 - [Easier Component Testing Without Test Ids](easier-component-testing-without-testid.md) — Milestones 1–3 (dropdown, radio, segmented) delivered and `npm run verify` green; Milestones 4–8 remaining.

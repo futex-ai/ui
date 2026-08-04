@@ -91,22 +91,22 @@ export function createDropdownListStyles(theme: SharedUiTheme) {
       lineHeight: 18,
     },
     itemLabelActive: { color: theme.colors.primaryDeep },
-    // White label for the solid-fill active row (`solid` variant); `surface`
-    // (white) clears AA text contrast on the `primary` fill.
-    itemLabelOnSolid: { color: theme.colors.surface },
+    // Punched-out label for the solid-fill active row (`solid` variant);
+    // `onSolid` clears AA text contrast on the `primary` fill.
+    itemLabelOnSolid: { color: theme.colors.onSolid },
     // Subtext color for the solid-fill active row. The muted grey all but
     // vanishes on the `primary` fill (~1.2:1), so the secondary line flips to
-    // `surface` (white) like the label. No dimmer tint clears AA on `primary`
-    // (even `primarySoft` is only ~4.2:1), so hierarchy here leans on the
-    // subtext's smaller size/weight rather than a lighter color.
-    itemSecondaryOnSolid: { color: theme.colors.surface },
+    // `onSolid` like the label. No dimmer tint clears AA on `primary` (even
+    // `primarySoft` is only ~4.2:1), so hierarchy here leans on the subtext's
+    // smaller size/weight rather than a lighter color.
+    itemSecondaryOnSolid: { color: theme.colors.onSolid },
     itemSelectedFill: { backgroundColor: theme.colors.primarySoft },
     itemText: { flex: 1, minWidth: 0 },
     leading: { alignItems: "center", justifyContent: "center" },
     right: { alignItems: "center", justifyContent: "center" },
     // Trailing text (e.g. an account code). Muted grey at rest like the subtext;
     // on the solid active fill it picks up the highlight's secondary override
-    // (white) so it stays legible instead of fading to ~1.2:1. Tabular figures
+    // (`onSolid`) so it stays legible instead of fading to ~1.2:1. Tabular figures
     // keep numeric codes aligned column-to-column down the list.
     rightText: {
       ...baseText,
@@ -214,7 +214,7 @@ export function dropdownRowHighlight(
 ): DropdownRowHighlight {
   const isActive = state.active && !state.disabled;
   // The solid fill paints the active row in a saturated color, so its text is
-  // inverted to white. A danger/amber row swaps the fill for its deep accent
+  // inverted to `onSolid`. A danger/amber row swaps the fill for its deep accent
   // (instead of recoloring the text) so the tone reads as red/amber while
   // staying legible; the caller suppresses the tone text on these rows.
   const invertText = isActive && variant === "solid";
@@ -229,7 +229,7 @@ export function dropdownRowHighlight(
       rowStyle = solidActiveFill(styles, state.tone);
       labelStyle = styles.itemLabelOnSolid;
       secondaryStyle = styles.itemSecondaryOnSolid;
-      contentColor = theme.colors.surface;
+      contentColor = theme.colors.onSolid;
     } else if (variant === "ring") {
       rowStyle = styles.itemActiveRing;
       labelStyle = styles.itemLabelActive;
@@ -252,7 +252,7 @@ export function dropdownRowHighlight(
   }
   // The tone accent wins off the inverted row, mirroring how `DropdownList`
   // layers `toneLabel` over `labelStyle`. On the solid fill the accent yields —
-  // it would be unreadable there, so the white label/slot wins instead.
+  // it would be unreadable there, so the `onSolid` label/slot wins instead.
   if (!invertText) {
     if (state.tone === "danger") {
       contentColor = theme.colors.rose;
@@ -261,7 +261,7 @@ export function dropdownRowHighlight(
     }
   }
   return {
-    checkColor: invertText ? theme.colors.surface : theme.colors.primary,
+    checkColor: invertText ? theme.colors.onSolid : theme.colors.primary,
     contentColor,
     invertText,
     labelStyle,

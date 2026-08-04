@@ -23,7 +23,7 @@ export function createWebCalendarStyles(theme: SharedUiTheme) {
       borderRadius: theme.radii.md,
     },
     cellText: { ...baseText, color: theme.colors.ink, fontSize: 13 },
-    cellTextSelected: { color: theme.colors.surface, fontWeight: "700" },
+    cellTextSelected: { color: theme.colors.onSolid, fontWeight: "700" },
     cellToday: {
       borderColor: theme.colors.primary,
       borderRadius: theme.radii.md,
@@ -106,7 +106,7 @@ export function createWebCalendarStyles(theme: SharedUiTheme) {
       marginBottom: 8,
     },
     yearText: { ...baseText, color: theme.colors.ink, fontSize: 13 },
-    yearTextSelected: { color: theme.colors.surface, fontWeight: "700" },
+    yearTextSelected: { color: theme.colors.onSolid, fontWeight: "700" },
   });
 }
 

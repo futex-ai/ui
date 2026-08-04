@@ -35,6 +35,17 @@ export type SharedUiColors = {
   ink2: string;
   muted: string;
   /**
+   * Text and icon color on solid accent fills — the badge/button/avatar solid
+   * variants, the dropdown's solid active row, the calendar "today" disc and
+   * event blocks, the selected date cell, the radio check, the switch knob at
+   * the on-position, the combobox count mark, the drag-select count badge and
+   * the rich-text checkbox tick. White in the light themes; in the dark themes
+   * solid fills invert to light accents, so this flips to the near-black page
+   * ink-well. Held to WCAG 2.1 — 1.4.3 (AA): ≥4.5:1 on `primary`, `ink2` and
+   * every `*Deep` fill in all four shipped themes.
+   */
+  onSolid: string;
+  /**
    * Placeholder / faint-but-meaningful text color. Held to WCAG 2.1 — 1.4.3
    * Contrast Minimum (AA): ≥4.5:1 on `surface`. Use this instead of `faint`
    * (which stays light for decorative use) wherever the text conveys meaning.
@@ -72,6 +83,8 @@ export type SharedUiRadii = {
   xxl: number;
 };
 
+export type SharedUiScheme = "light" | "dark";
+
 export type SharedUiTheme = {
   colors: SharedUiColors;
   fonts: SharedUiFonts;
@@ -84,6 +97,14 @@ export type SharedUiTheme = {
    * focus stays visible (WCAG 2.1 — 2.4.7 Focus Visible, AA).
    */
   focusRing: boolean;
+  /**
+   * Which side of the light/dark divide this theme's palette sits on. Almost
+   * no component should branch on it — colors flow through tokens — but the
+   * few physical-metaphor sites (the white skeleton sheen, the switch knob's
+   * off-state fill, the solid toast's hover wash, the data-grid's fixed pill
+   * pairs) legitimately need to know. Defaults to "light".
+   */
+  scheme: SharedUiScheme;
 };
 
 export type SharedUiThemeOverrides = {
@@ -91,6 +112,7 @@ export type SharedUiThemeOverrides = {
   fonts?: Partial<SharedUiFonts>;
   radii?: Partial<SharedUiRadii>;
   focusRing?: boolean;
+  scheme?: SharedUiScheme;
 };
 
 export const defaultSharedUiTheme: SharedUiTheme = {
@@ -107,6 +129,7 @@ export const defaultSharedUiTheme: SharedUiTheme = {
     ink: "#1c1f1d",
     ink2: "#3e4540",
     muted: "#69706a",
+    onSolid: "#ffffff",
     placeholder: "#6c736c",
     primary: "#4f7864",
     primaryBorder: "#d1e2d7",
@@ -131,18 +154,21 @@ export const defaultSharedUiTheme: SharedUiTheme = {
     xxl: 14,
   },
   focusRing: true,
+  scheme: "light",
 };
 
 const SharedUiThemeContext = createContext<SharedUiTheme>(defaultSharedUiTheme);
 
 export function createSharedUiTheme(
   overrides: SharedUiThemeOverrides = {},
+  base: SharedUiTheme = defaultSharedUiTheme,
 ): SharedUiTheme {
   return {
-    colors: { ...defaultSharedUiTheme.colors, ...overrides.colors },
-    fonts: { ...defaultSharedUiTheme.fonts, ...overrides.fonts },
-    radii: { ...defaultSharedUiTheme.radii, ...overrides.radii },
-    focusRing: overrides.focusRing ?? defaultSharedUiTheme.focusRing,
+    colors: { ...base.colors, ...overrides.colors },
+    fonts: { ...base.fonts, ...overrides.fonts },
+    radii: { ...base.radii, ...overrides.radii },
+    focusRing: overrides.focusRing ?? base.focusRing,
+    scheme: overrides.scheme ?? base.scheme,
   };
 }
 
@@ -179,6 +205,7 @@ export const junoSharedUiTheme = createSharedUiTheme({
     ink: "#15131F",
     ink2: "#3D3A4E",
     muted: "#65627A",
+    onSolid: "#ffffff",
     placeholder: "#6F6C7E",
     primary: "#6F5BD0",
     primaryBorder: "#E2DAF5",

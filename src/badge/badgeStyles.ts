@@ -82,8 +82,8 @@ const BADGE_SIZES: Record<
  * minimum on its own fill in both shipped themes: the `soft` fills pair their
  * tinted background with the deep accent text (`primaryDeep` / `amberDeep` /
  * `roseDeep`, all ≥4.5:1 on their soft tint); the `solid` fills use those same
- * deep accents under white text (also ≥4.5:1); and the `outline` fills put the
- * same deep accent text on the white `surface` (≥4.5:1) with a 1px accent
+ * deep accents under `onSolid` text (also ≥4.5:1); and the `outline` fills put
+ * the same deep accent text on the `surface` (≥4.5:1) with a 1px accent
  * border. The label text itself states the status, so color is never the only
  * channel (1.4.1).
  */
@@ -95,13 +95,13 @@ export function resolveBadgeColors(
   if (variant === "solid") {
     switch (tone) {
       case "neutral":
-        return { backgroundColor: colors.ink2, color: "#fff" };
+        return { backgroundColor: colors.ink2, color: colors.onSolid };
       case "primary":
-        return { backgroundColor: colors.primaryDeep, color: "#fff" };
+        return { backgroundColor: colors.primaryDeep, color: colors.onSolid };
       case "warning":
-        return { backgroundColor: colors.amberDeep, color: "#fff" };
+        return { backgroundColor: colors.amberDeep, color: colors.onSolid };
       case "danger":
-        return { backgroundColor: colors.roseDeep, color: "#fff" };
+        return { backgroundColor: colors.roseDeep, color: colors.onSolid };
     }
   }
   if (variant === "outline") {

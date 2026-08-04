@@ -75,7 +75,7 @@ export function createWheelPickerStyles(theme: SharedUiTheme) {
     footerDone: { backgroundColor: theme.colors.primaryDeep },
     footerDoneText: {
       ...baseText,
-      color: theme.colors.surface,
+      color: theme.colors.onSolid,
       fontSize: 14,
       fontWeight: "700",
     },

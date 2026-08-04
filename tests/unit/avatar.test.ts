@@ -18,7 +18,10 @@ test("avatar renders solid and soft tones driven by shared theme tokens", () => 
     /avatarSoft: \{ backgroundColor: theme\.colors\.soft \}/,
   );
   assert.match(stylesSource, /color: theme\.colors\.primaryDeep/);
-  assert.match(stylesSource, /avatarTextSolid: \{ color: "#fff" \}/);
+  assert.match(
+    stylesSource,
+    /avatarTextSolid: \{ color: theme\.colors\.onSolid \}/,
+  );
   assert.match(stylesSource, /fontFamily: theme\.fonts\.sans/);
 });
 
