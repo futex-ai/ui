@@ -7,10 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.7.0](https://github.com/futex-ai/ui/compare/v1.6.1...v1.7.0) (2026-08-04)
 
-
 ### Features
 
-* **avatar:** rounded-square shape via a themeable corner ratio ([#137](https://github.com/futex-ai/ui/issues/137)) ([0be9908](https://github.com/futex-ai/ui/commit/0be9908081e3f3c3aa089a23fcd856c78bfd82a4))
+- **avatar:** rounded-square shape via a themeable corner ratio ([#137](https://github.com/futex-ai/ui/issues/137)) ([0be9908](https://github.com/futex-ai/ui/commit/0be9908081e3f3c3aa089a23fcd856c78bfd82a4))
 
 ## [1.6.1](https://github.com/futex-ai/ui/compare/v1.6.0...v1.6.1) (2026-08-04)
 
