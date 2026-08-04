@@ -3,7 +3,12 @@ import { ShieldQuestionMark } from "lucide-react-native";
 import { useState } from "react";
 import { Text, View } from "react-native";
 
-import { DateField, DateRangeField, type DateRange } from "../index";
+import {
+  DateField,
+  DateRangeField,
+  darkSharedUiTheme,
+  type DateRange,
+} from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -18,6 +23,15 @@ export const SingleDateField: Story = {
   name: "Single date field",
   render: () => (
     <StorySurface>
+      <SingleDateExample />
+    </StorySurface>
+  ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
       <SingleDateExample />
     </StorySurface>
   ),

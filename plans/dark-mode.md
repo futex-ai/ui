@@ -12,10 +12,12 @@ provider API changes, no automatic OS detection (consumers pass a preset;
 pattern documented), no global Storybook default flip (the browser suite pins
 31 light-theme colors to existing story ids).
 
-**Status:** M1–M3 delivered (`onSolid` + `scheme` groundwork, both dark
-presets, and the four scheme-gated component fixes). `npm run verify` green —
-677 unit tests, 219 Playwright tests incl. the full axe sweep, all 31 pinned
-light-theme colors unchanged. M4–M5 remaining. All palette values below are pre-validated
+**Status:** M1–M4 delivered (`onSolid` + `scheme` groundwork, both dark
+presets, the four scheme-gated component fixes, and 14 dark Storybook stories
+with pinned-color + axe coverage). `npm run verify` green — 677 unit tests, 224
+Playwright tests incl. the full axe sweep against a still-empty
+`axe-baseline.json`, all 31 pinned light-theme colors unchanged. M5
+remaining. All palette values below are pre-validated
 against WCAG 2.1 — 1.4.3/1.4.11 (ratios listed per pair, independently
 re-derived at implementation time — every row matches); the component audit is
 complete (every hazardous site enumerated with file:line, verified in the tree
@@ -826,11 +828,11 @@ dark story is automatically axe-scanned (including `color-contrast` at AA) by
 `tests/browser/a11y.spec.ts` — that sweep is the CI-enforced acceptance test
 for the palettes in situ.
 
-- [ ] **M4.1** `StorySurface` paints `colors.bg` per D5
+- [x] **M4.1** `StorySurface` paints `colors.bg` per D5
       (`src/stories/sharedExamples.tsx` L909–921; import `createSharedUiTheme`
       and `useMemo` there). Run `npm run storybook` and spot-check a light story:
       visually unchanged (bg `#f7f7f3` matches the body CSS).
-- [ ] **M4.2** Dark swatch stories in `src/stories/theme.stories.tsx`:
+- [x] **M4.2** Dark swatch stories in `src/stories/theme.stories.tsx`:
       alongside the two existing stories add
 
 ```tsx
@@ -847,7 +849,7 @@ export const DarkJunoTheme = () => (
 );
 ```
 
-- [ ] **M4.3** One `Dark` export in each high-risk story file, wrapping that
+- [x] **M4.3** One `Dark` export in each high-risk story file, wrapping that
       file's most representative existing example component (the same component
       the file's first story renders — do not build new demo content) in
       `<StorySurface theme={darkSharedUiTheme}>`. Files (12): `badge.stories.tsx`,
@@ -861,7 +863,7 @@ export const DarkJunoTheme = () => (
       `<family>-examples--dark`, per the id = export-name convention). Where a
       story file's example takes no theme prop, wrap it directly — `StorySurface`
       provides the provider.
-- [ ] **M4.4** Pin three dark computed colors in
+- [x] **M4.4** Pin three dark computed colors in
       `tests/browser/storybook.spec.ts` (append to the relevant describe blocks,
       reusing the file's existing `backgroundColor()`/color helpers — `onSolid`
       `#141613` = `rgb(20, 22, 19)`):
@@ -895,16 +897,16 @@ These are templates: match each to the actual DOM of the example wrapped in
 M4.3 (the existing tests in the same file show the working selector
 idioms). Three is the floor, not the ceiling.
 
-- [ ] **M4.5** `npm run verify` → green. Expect the a11y sweep to take a few
+- [x] **M4.5** `npm run verify` → green. Expect the a11y sweep to take a few
       extra minutes (14 new stories × fresh context each). If axe reports a
       `color-contrast` violation on a dark story, treat it as a real palette or
       wiring bug — fix the source, never baseline it.
-- [ ] **M4.6** Manual visual pass (`npm run storybook`): walk all 14 dark
+- [x] **M4.6** Manual visual pass (`npm run storybook`): walk all 14 dark
       stories; specifically eyeball the heatmap ramp direction (dark→light),
       modal/popover separation against the dark surface (D6 says shadows stay —
       revisit only if illegible), skeleton shimmer subtlety, and focus rings
       (Tab through the dark button/switch stories).
-- [ ] **M4.7** Commit:
+- [x] **M4.7** Commit:
 
 ```bash
 git add src/stories tests plans

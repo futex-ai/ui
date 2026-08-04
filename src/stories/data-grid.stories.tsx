@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   DataGrid,
+  darkSharedUiTheme,
   dataGridSelectionModel,
   useSharedUiTheme,
   type DataGridCellRef,
@@ -31,6 +32,28 @@ export const Basic: Story = {
   name: "Basic",
   render: () => (
     <StorySurface>
+      <View style={styles.frame}>
+        <DataGrid
+          accessibilityLabel="Content"
+          columns={contentColumns}
+          footerText="7 of 128 records · 0 filters · sorted by Created"
+          rows={contentRows}
+        />
+      </View>
+    </StorySurface>
+  ),
+};
+
+/**
+ * The select pills under a dark preset: `green`/`amber`/`rose`/`gray` ride the
+ * theme's soft/deep tokens and adapt for free, while `blue`/`purple`/`teal`
+ * (which have no token family) switch to their fixed dark pairs on
+ * `theme.scheme`.
+ */
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
       <View style={styles.frame}>
         <DataGrid
           accessibilityLabel="Content"

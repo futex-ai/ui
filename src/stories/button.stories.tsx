@@ -12,7 +12,7 @@ import {
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { Button } from "../index";
+import { Button, darkSharedUiTheme } from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -51,6 +51,29 @@ export const Tones: Story = {
         </Button>
       </>,
     ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <View style={styles.row}>
+        <Button onPress={noop} tone="primary">
+          Primary
+        </Button>
+        <Button onPress={noop}>Secondary</Button>
+        <Button onPress={noop} tone="ghost">
+          Ghost
+        </Button>
+        <Button onPress={noop} tone="plain">
+          Plain
+        </Button>
+        <Button onPress={noop} tone="danger">
+          Danger
+        </Button>
+      </View>
+    </StorySurface>
+  ),
 };
 
 export const Sizes: Story = {
