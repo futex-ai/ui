@@ -33,7 +33,10 @@ test("list exposes list / listitem semantics with a presentational separator", (
   // The container is a list; each item is a listitem; the divider is removed
   // from the accessibility tree so the list only owns its listitem children.
   assert.match(source, /role="list"/);
-  assert.match(source, /<View role="listitem" style=\{styles\.item\}>/);
+  assert.match(
+    source,
+    /<View\s+role="listitem"\s+style=\{styles\.item\}\s+testID=/,
+  );
   assert.match(source, /accessibilityRole="none"/);
   assert.match(source, /aria-hidden/);
   assert.match(source, /role="none"/);
@@ -43,7 +46,10 @@ test("list renders plain static items without an onItemPress", () => {
   const source = readSource("../../src/list/List.tsx");
 
   assert.match(source, /onItemPress \? \(/);
-  assert.match(source, /<View role="listitem" style=\{styles\.item\}>/);
+  assert.match(
+    source,
+    /<View\s+role="listitem"\s+style=\{styles\.item\}\s+testID=/,
+  );
 });
 
 test("list makes items pressable buttons when given onItemPress", () => {
@@ -69,6 +75,27 @@ test("list makes items pressable buttons when given onItemPress", () => {
   assert.match(source, /hovered && !disabled \? styles\.itemHover : null/);
   assert.match(source, /pressed && !disabled \? styles\.itemPressed : null/);
   assert.match(source, /disabled \? styles\.itemDisabled : null/);
+});
+
+test("list forwards per-item testIDs to each item interaction target", () => {
+  const source = readSource("../../src/list/List.tsx");
+
+  assert.match(
+    source,
+    /itemTestID\?: \(item: Item, index: number\) => string;/,
+  );
+  assert.match(
+    source,
+    /<PressableListItem[\s\S]*?testID=\{itemTestID\?\.\(item, index\)\}/,
+  );
+  assert.match(
+    source,
+    /<View[\s\S]*?role="listitem"[\s\S]*?testID=\{itemTestID\?\.\(item, index\)\}/,
+  );
+  assert.match(
+    source,
+    /function PressableListItem[\s\S]*?<Pressable[\s\S]*?testID=\{testID\}/,
+  );
 });
 
 test("list item lays out leading, title, description, and trailing slots", () => {
@@ -117,6 +144,23 @@ test("list item makes only the title column pressable, leaving trailing free", (
   assert.match(source, /if \(onPress && !resolvedName\)/);
   assert.match(source, /devWarn\(/);
   assert.match(stylesSource, /itemMainPressed: \{ opacity: 0\.6 \}/);
+});
+
+test("list item forwards testID to its press target when pressable", () => {
+  const source = readSource("../../src/list/ListItem.tsx");
+
+  // React Native Testing Library dispatches `fireEvent.press` from the queried
+  // host up through its ancestors. The identifier therefore belongs on the
+  // Pressable itself when `onPress` is present, not on its parent row View.
+  assert.match(
+    source,
+    /<View style=\{styles\.itemRow\} testID=\{onPress \? undefined : testID\}>/,
+  );
+  assert.match(source, /<PressableTitle[\s\S]*?testID=\{testID\}[\s\S]*?>/);
+  assert.match(
+    source,
+    /function PressableTitle[\s\S]*?<Pressable[\s\S]*?testID=\{testID\}/,
+  );
 });
 
 test("list supports the shared size scale", () => {

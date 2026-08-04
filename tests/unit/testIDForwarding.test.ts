@@ -3,16 +3,17 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 /**
- * Public components forward a caller-supplied `testID` to the outermost host
- * element they render (react-native-web maps `testID` -> `data-testid`; native
- * keeps the RN `testID`). This guards that contract across the whole library so
- * a regression that drops a forward is caught here rather than in a consumer's
- * end-to-end test.
+ * Public components forward a caller-supplied `testID` to a host element
+ * (react-native-web maps `testID` -> `data-testid`; native keeps the RN
+ * `testID`). This is normally the outermost root; an interactive component can
+ * instead target the host that owns its handler so test presses reach it. This
+ * guards the forwarding contract across the whole library so a regression that
+ * drops a forward is caught here rather than in a consumer's end-to-end test.
  *
- * Each file below owns at least one exported component whose root(s) forward
- * `testID={testID}` (AnimatedBorder additionally keeps a `?? "animated-border"`
- * default). The list is exhaustive on purpose: adding a new public component
- * means adding it here.
+ * Each file below owns at least one exported component whose host target
+ * forwards `testID={testID}` (AnimatedBorder additionally keeps a
+ * `?? "animated-border"` default). The list is exhaustive on purpose: adding a
+ * new public component means adding it here.
  *
  * The one deliberate omission is `sortable-list/SortableGroups.tsx`: the
  * coordinator renders only a context provider around its children, so it has no
@@ -90,7 +91,7 @@ const FORWARDING_FILES = [
   "workflow/WorkflowNode.tsx",
 ] as const;
 
-test("every public component file forwards a caller testID to a host root", () => {
+test("every public component file forwards a caller testID to a host", () => {
   for (const file of FORWARDING_FILES) {
     const source = readSource(`../../src/${file}`);
     // `testID={testID}` on a host element, or the AnimatedBorder default form
@@ -98,7 +99,7 @@ test("every public component file forwards a caller testID to a host root", () =
     assert.match(
       source,
       /(?:testID|data-testid)=\{testID(\s*\?\?\s*"[^"]+")?\}/,
-      `${file} should forward testID={testID} to its root host element`,
+      `${file} should forward testID={testID} to a host element`,
     );
   }
 });
