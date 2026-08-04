@@ -5,7 +5,12 @@ render a **rounded square** as well as the circular disc it renders today. The
 square's corner radius scales with `size` from a new themeable ratio token, so a
 rounded square looks identical at 24px and at 64px.
 
-**Status:** Not started. Design agreed (see [Design](#design)); M1 and M2 below.
+**Status:** M1 and M2 delivered. `Avatar` ships `shape?: "circle" | "square"`
+(circle by default), the square radius resolved by the pure `avatarRadius` module
+from the new `radii.avatarRatio` theme token (default `0.25`, clamped to
+`[0, 0.5]`). Unit tests (`avatarRadius.test.ts` + updated `avatar` / `theme`
+suites), a `Circle and rounded square` story, and a browser assertion pinning the
+computed corner radius all landed.
 
 > **For agentic workers:** use `superpowers:subagent-driven-development` or
 > `superpowers:executing-plans` to work through this plan task by task. Steps use
@@ -157,7 +162,7 @@ type SharedUiRadii = { avatarRatio: number /* …existing keys */ };
 type AvatarProps = { shape?: AvatarShape /* …existing props */ };
 ```
 
-- [ ] **Step 1 — Write the failing unit test.** Create
+- [x] **Step 1 — Write the failing unit test.** Create
       `tests/unit/avatarRadius.test.ts`:
 
   ```ts
@@ -193,14 +198,14 @@ type AvatarProps = { shape?: AvatarShape /* …existing props */ };
   });
   ```
 
-- [ ] **Step 2 — Run it and watch it fail.**
+- [x] **Step 2 — Run it and watch it fail.**
 
   Run: `npm run test -- --test-name-pattern="avatar"`
   (or the single file: `node --import tsx --test tests/unit/avatarRadius.test.ts`)
 
   Expected: FAIL — `Cannot find module '../../src/avatar/avatarRadius'`.
 
-- [ ] **Step 3 — Write the module.** Create `src/avatar/avatarRadius.ts`:
+- [x] **Step 3 — Write the module.** Create `src/avatar/avatarRadius.ts`:
 
   ```ts
   /**
@@ -238,12 +243,12 @@ type AvatarProps = { shape?: AvatarShape /* …existing props */ };
   }
   ```
 
-- [ ] **Step 4 — Run the test and watch it pass.**
+- [x] **Step 4 — Run the test and watch it pass.**
 
   Run: `node --import tsx --test tests/unit/avatarRadius.test.ts`
   Expected: PASS, 4 tests.
 
-- [ ] **Step 5 — Add the failing theme-token test.** Append to
+- [x] **Step 5 — Add the failing theme-token test.** Append to
       `tests/unit/theme.test.ts` (it already imports `defaultSharedUiTheme` and
       `junoSharedUiTheme`):
 
@@ -255,12 +260,12 @@ type AvatarProps = { shape?: AvatarShape /* …existing props */ };
   });
   ```
 
-- [ ] **Step 6 — Run it and watch it fail.**
+- [x] **Step 6 — Run it and watch it fail.**
 
   Run: `node --import tsx --test tests/unit/theme.test.ts`
   Expected: FAIL — `avatarRatio` is `undefined`.
 
-- [ ] **Step 7 — Add the token.** In [`src/theme.tsx`](../src/theme.tsx), add
+- [x] **Step 7 — Add the token.** In [`src/theme.tsx`](../src/theme.tsx), add
       `avatarRatio` as the first key of `SharedUiRadii` (L66–73):
 
   ```ts
@@ -299,12 +304,12 @@ type AvatarProps = { shape?: AvatarShape /* …existing props */ };
   `junoSharedUiTheme` (L168, whose `radii` override omits `pill` today) picks the
   new token up for free.
 
-- [ ] **Step 8 — Run it and watch it pass.**
+- [x] **Step 8 — Run it and watch it pass.**
 
   Run: `node --import tsx --test tests/unit/theme.test.ts`
   Expected: PASS.
 
-- [ ] **Step 9 — Update the Avatar source assertions to the new wiring.** In
+- [x] **Step 9 — Update the Avatar source assertions to the new wiring.** In
       `tests/unit/avatar.test.ts`, the test at L25–32 currently asserts
       `/borderRadius: size \/ 2/`, which this change deletes from `Avatar.tsx`.
       Replace that test body with:
@@ -343,13 +348,13 @@ type AvatarProps = { shape?: AvatarShape /* …existing props */ };
   });
   ```
 
-- [ ] **Step 10 — Run them and watch them fail.**
+- [x] **Step 10 — Run them and watch them fail.**
 
   Run: `node --import tsx --test tests/unit/avatar.test.ts`
   Expected: FAIL on the `avatarBorderRadius(...)` and `shape?: AvatarShape`
   matches.
 
-- [ ] **Step 11 — Wire the prop into `Avatar.tsx`.** Four edits to
+- [x] **Step 11 — Wire the prop into `Avatar.tsx`.** Four edits to
       [`src/avatar/Avatar.tsx`](../src/avatar/Avatar.tsx):
   1. Update the file's leading doc comment (L1) — it says "Circular user avatar":
 
@@ -420,7 +425,7 @@ type AvatarProps = { shape?: AvatarShape /* …existing props */ };
    * `square`), and the initials' font size (`size * 0.38`).
   ```
 
-- [ ] **Step 12 — Export the module.** In `src/avatar/index.ts`, add the line
+- [x] **Step 12 — Export the module.** In `src/avatar/index.ts`, add the line
       (keeping the file alphabetical):
 
   ```ts
@@ -432,12 +437,12 @@ type AvatarProps = { shape?: AvatarShape /* …existing props */ };
   No `package.json` change is needed: the `./avatar` subpath already exists and
   is asserted by `tests/unit/packageExports.test.ts` L24.
 
-- [ ] **Step 13 — Run the unit suite and typecheck.**
+- [x] **Step 13 — Run the unit suite and typecheck.**
 
   Run: `npm run test && npm run typecheck`
   Expected: all tests PASS (including the three touched files) and no TS errors.
 
-- [ ] **Step 14 — Commit.**
+- [x] **Step 14 — Commit.**
 
   ```bash
   git add src/avatar src/theme.tsx tests/unit/avatarRadius.test.ts \
@@ -458,7 +463,7 @@ rounded square; theme consumers can retune every avatar corner with one token.
 Makes the new shape visible in Storybook, pins the rendered radius in a browser
 test, and brings the contract docs back into alignment.
 
-- [ ] **Step 1 — Add the story.** In
+- [x] **Step 1 — Add the story.** In
       [`src/stories/avatar.stories.tsx`](../src/stories/avatar.stories.tsx), add
       after `DecorativeBesideLabel` (L37–56):
 
@@ -520,7 +525,7 @@ test, and brings the contract docs back into alignment.
   The existing `styles.row`, `styles.column`, and `styles.amberDisc` entries
   (L58–75) already cover this; no stylesheet change is needed.
 
-- [ ] **Step 2 — Add the failing browser test.** In
+- [x] **Step 2 — Add the failing browser test.** In
       [`tests/browser/storybook.spec.ts`](../tests/browser/storybook.spec.ts),
       add after the existing avatar test (which starts at L2097):
 
@@ -549,7 +554,7 @@ test, and brings the contract docs back into alignment.
   });
   ```
 
-- [ ] **Step 3 — Run the browser test.**
+- [x] **Step 3 — Run the browser test.**
 
   Run: `npm run test:browser -- storybook.spec.ts -g "shape=square"`
   (add `STORYBOOK_PORT=6007` if port 6006 is taken by another workspace)
@@ -564,7 +569,7 @@ test, and brings the contract docs back into alignment.
   If the sweep does report a violation on `avatar-examples--shapes`, fix the
   story rather than baselining it.
 
-- [ ] **Step 4 — Update the component README.** In
+- [x] **Step 4 — Update the component README.** In
       [`src/avatar/README.md`](../src/avatar/README.md):
   - Opening paragraph (L3–5): replace "circular user avatar" with
     "user avatar" and note it renders "a themed disc or rounded square".
@@ -580,7 +585,7 @@ test, and brings the contract docs back into alignment.
   - Theming (L62–67): add "The `square` shape's corner radius is
     `size * radii.avatarRatio` (default `0.25`, clamped to `[0, 0.5]`)."
 
-- [ ] **Step 5 — Update the protocol contract.** In
+- [x] **Step 5 — Update the protocol contract.** In
       [`docs/protocol/shared-ui-components.md`](../docs/protocol/shared-ui-components.md),
       the Avatar Contract at L276–294 currently mandates a circle. Rewrite the
       intro line and the first two required-behavior bullets, and add one:
@@ -603,26 +608,26 @@ test, and brings the contract docs back into alignment.
   override, `textColor`) as they are. The theme contract earlier in the file
   (L46) names `radii` as a bag without enumerating its keys, so it needs no edit.
 
-- [ ] **Step 6 — Update the top-level README.** In
+- [x] **Step 6 — Update the top-level README.** In
       [`README.md`](../README.md) L41, change
       "`@firna/ui/avatar` for the themed circular initials avatar." to
       "`@firna/ui/avatar` for the themed initials avatar (circle or rounded
       square)."
 
-- [ ] **Step 7 — Update the plan index.** This plan is already listed under
+- [x] **Step 7 — Update the plan index.** This plan is already listed under
       **Active** in [`plans/README.md`](README.md). Move that line to the
       **Completed** section and rewrite its trailing summary to state what
       shipped and that `npm run verify` is green, matching the style of the other
       completed entries.
 
-- [ ] **Step 8 — Run the full gate.**
+- [x] **Step 8 — Run the full gate.**
 
   Run: `npm run verify`
   Expected: green across format:check, unit tests, typecheck, build,
   package smoke, Storybook build, and the browser suite including the axe
   WCAG 2.1 A/AA sweep. If `format:check` fails, run `npm run format` and re-run.
 
-- [ ] **Step 9 — Commit and push.**
+- [x] **Step 9 — Commit and push.**
 
   ```bash
   git add -A
@@ -634,7 +639,7 @@ test, and brings the contract docs back into alignment.
   git push
   ```
 
-- [ ] **Step 10 — Run the AI review.**
+- [x] **Step 10 — Run the AI review.**
 
   Run: `cargo xtask review`
   Report each finding with a number, a severity, and a recommendation rather than

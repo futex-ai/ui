@@ -55,6 +55,61 @@ export const DecorativeBesideLabel: Story = {
   ),
 };
 
+const SHAPE_SIZES = [24, 32, 48, 64];
+
+export const Shapes: Story = {
+  name: "Circle and rounded square",
+  render: () => (
+    <StorySurface>
+      <View style={styles.column}>
+        {/* The square corner scales with `size` (radii.avatarRatio, 0.25 by
+            default), so the shape reads the same at 24px and at 64px. */}
+        <View style={styles.row}>
+          {SHAPE_SIZES.map((size) => (
+            <Avatar
+              accessibilityLabel={`Circle ${size}`}
+              key={size}
+              label="GS"
+              size={size}
+            />
+          ))}
+        </View>
+        <View style={styles.row}>
+          {SHAPE_SIZES.map((size) => (
+            <Avatar
+              accessibilityLabel={`Square ${size}`}
+              key={size}
+              label="GS"
+              shape="square"
+              size={size}
+            />
+          ))}
+        </View>
+        <View style={styles.row}>
+          <Avatar
+            accessibilityLabel="Payroll Reserve"
+            label="PR"
+            shape="square"
+            size={48}
+            tone="soft"
+          />
+          <Avatar
+            accessibilityLabel="Accounts Receivable"
+            label="AR"
+            shape="square"
+            size={48}
+            style={styles.amberDisc}
+            // Darkened from #946727 (4.22:1) to clear the 4.5:1 AA text-contrast
+            // floor on the cream disc (#74511f ≈ 6.07:1).
+            textColor="#74511f"
+            tone="soft"
+          />
+        </View>
+      </View>
+    </StorySurface>
+  ),
+};
+
 const styles = StyleSheet.create({
   row: {
     alignItems: "center",

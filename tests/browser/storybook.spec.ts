@@ -2122,6 +2122,29 @@ test("avatar renders initials and sizes the disc from the size prop", async ({
   expect(box?.height).toBeLessThanOrEqual(49);
 });
 
+test("avatar shape=square rounds corners proportionally to size", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=avatar-examples--shapes");
+
+  // radii.avatarRatio defaults to 0.25, so a 32px square gets an 8px corner
+  // and a 64px square gets 16px — while a circle keeps size / 2. The longhand
+  // corner property is asserted because Chromium does not always serialize
+  // the `border-radius` shorthand in computed styles.
+  await expect(page.locator('[aria-label="Circle 32"]')).toHaveCSS(
+    "border-top-left-radius",
+    "16px",
+  );
+  await expect(page.locator('[aria-label="Square 32"]')).toHaveCSS(
+    "border-top-left-radius",
+    "8px",
+  );
+  await expect(page.locator('[aria-label="Square 64"]')).toHaveCSS(
+    "border-top-left-radius",
+    "16px",
+  );
+});
+
 test("spinner renders an accessible, continuously rotating loading indicator", async ({
   page,
 }) => {

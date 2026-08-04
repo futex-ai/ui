@@ -2,7 +2,6 @@
 
 ## Active
 
-- [Avatar rounded square](avatar-rounded-square.md) — not started: a `shape="square"` prop on `Avatar` backed by a pure `avatarRadius` module and a new themeable `radii.avatarRatio` corner ratio (default `0.25`, clamped to `[0, 0.5]`), so a rounded square reads identically at every size.
 - [Disable the focus ring](disable-focus-ring.md) — M1–M5 delivered: a theme `focusRing` kill switch + per-instance `disableFocusRing` prop on every ring-bearer, backed by one `useFocusRing({ disabled })` / `ringEnabled` / `webOutlineReset` primitive; disabled rings restore the UA outline (WCAG 2.4.7). Unit tests + a `Focus ring/Examples` story added. Deferred: `DateField`/`DateRangeField` composite forwarding.
 - [SortableList component](sortable-list-component.md) — M1 delivered (web pointer + keyboard drag, optional start/end grab handle, vertical/horizontal flow) and `npm run verify` green; M2 (native drag / touch reordering + RTL) deferred.
 - [Easier Component Testing Without Test Ids](easier-component-testing-without-testid.md) — Milestones 1–3 (dropdown, radio, segmented) delivered and `npm run verify` green; Milestones 4–8 remaining.
@@ -10,6 +9,7 @@
 
 ## Completed
 
+- [Avatar rounded square](avatar-rounded-square.md) — delivered: `Avatar` gains `shape?: "circle" | "square"` (circle by default, so no call site changed). The square's corner radius comes from a pure `avatarRadius` module driven by a new themeable `radii.avatarRatio` token (default `0.25`, clamped to `[0, 0.5]`), so a rounded square reads identically at every size. M1–M2 complete and `npm run verify` green.
 - [Sortable group coordinator](sortable-group-coordinator.md) — delivered: `SortableGroups`, a pure-provider coordinator several `SortableList`s join via `groupId`, so items drag between lists by pointer and keyboard. One `onMove` reports `{ key, fromGroupId, fromIndex, toGroupId, toIndex }`; `groupFlow` picks the keyboard model (stacked overflow vs. Kanban-parity jumps) and `canDrop` bars destinations. The drag engine was generalised to N groups rather than copied, and the drag ghost is now a shared body-level portal. M1–M3 complete; the manual screen-reader pass is the one deferred item.
 - [Rich Text Editor component](rich-text-editor-component.md) — delivered: a cross-platform Notion/Linear-style block editor with web and native editing, mobile toolbar continuity, and single-submit native Return splitting. M1–M4 and M6–M8 are complete; M5 tracks the post-v1 backlog.
 - [Data Grid component](data-grid-component.md) — delivered: the Airtable/Notion-style editable `DataGrid` primitive (cell-range drag + keyboard selection, virtualized infinite scroll, column menus, add column/row, typed editable cells, responsive card stack). M1–M9 complete and `npm run verify` green; the on-device native pass (M7) is the one deferred manual item.
