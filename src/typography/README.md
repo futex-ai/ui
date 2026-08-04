@@ -120,7 +120,7 @@ the accessible name:
   variant just to get its size, as that misstates the outline (a 1.3.1
   failure). The role and the heading level are intentionally coupled.
 - **Contrast contract:** every default color and every semantic token meets the
-  4.5:1 AA text-contrast minimum on the surface in both shipped themes. When you
+  4.5:1 AA text-contrast minimum on the surface in all four shipped themes. When you
   pass a raw-string `color`, you own keeping it at ≥4.5:1 (1.4.3).
 
 ## Theming

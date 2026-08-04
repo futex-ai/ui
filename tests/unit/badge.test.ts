@@ -3,7 +3,9 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
+  darkSharedUiTheme,
   defaultSharedUiTheme,
+  junoDarkSharedUiTheme,
   junoSharedUiTheme,
   type SharedUiColors,
 } from "../../src/theme";
@@ -170,6 +172,8 @@ test("every badge tone/variant pair meets WCAG 1.4.3 AA on its fill", () => {
   const themes = {
     default: defaultSharedUiTheme,
     juno: junoSharedUiTheme,
+    dark: darkSharedUiTheme,
+    junoDark: junoDarkSharedUiTheme,
   };
 
   for (const [themeName, theme] of Object.entries(themes)) {

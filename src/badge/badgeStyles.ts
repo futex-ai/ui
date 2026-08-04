@@ -79,7 +79,7 @@ const BADGE_SIZES: Record<
 /**
  * Resolve a tone/variant pair to its container fill and label color from the
  * theme. Every pair meets the WCAG 2.1 — 1.4.3 (AA, 4.5:1) text-contrast
- * minimum on its own fill in both shipped themes: the `soft` fills pair their
+ * minimum on its own fill in all four shipped themes: the `soft` fills pair their
  * tinted background with the deep accent text (`primaryDeep` / `amberDeep` /
  * `roseDeep`, all ≥4.5:1 on their soft tint); the `solid` fills use those same
  * deep accents under `onSolid` text (also ≥4.5:1); and the `outline` fills put

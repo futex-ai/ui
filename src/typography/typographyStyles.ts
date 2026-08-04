@@ -23,8 +23,8 @@ export type TypographyVariant =
 
 /**
  * Semantic text-color tokens. Every token resolves to a theme color that meets
- * the WCAG 2.1 — 1.4.3 (AA, 4.5:1) text-contrast minimum on the surface in both
- * shipped themes, so picking a token can never fall below AA. The decorative
+ * the WCAG 2.1 — 1.4.3 (AA, 4.5:1) text-contrast minimum on the surface in all
+ * four shipped themes, so picking a token can never fall below AA. The decorative
  * `faint` theme color (2.26:1 on white) is deliberately not exposed here. Use
  * `inverse` only on a solid accent fill — it resolves to the theme's `onSolid`,
  * so it inverts with the scheme — where the consumer owns the background and

@@ -12,9 +12,10 @@ provider API changes, no automatic OS detection (consumers pass a preset;
 pattern documented), no global Storybook default flip (the browser suite pins
 31 light-theme colors to existing story ids).
 
-**Status:** M1 delivered (`onSolid` + `scheme` groundwork; `npm run verify`
-green — 674 unit tests, full Playwright + axe sweep, all 31 pinned light-theme
-colors unchanged). M2–M5 remaining. All palette values below are pre-validated
+**Status:** M1–M2 delivered (`onSolid` + `scheme` groundwork, then both dark
+presets). `npm run verify` green on the combined tree — 677 unit tests, 219
+Playwright tests incl. the full axe sweep, all 31 pinned light-theme colors
+unchanged. M3–M5 remaining. All palette values below are pre-validated
 against WCAG 2.1 — 1.4.3/1.4.11 (ratios listed per pair, independently
 re-derived at implementation time — every row matches); the component audit is
 complete (every hazardous site enumerated with file:line, verified in the tree
@@ -648,7 +649,7 @@ Produces: `darkSharedUiTheme`, `junoDarkSharedUiTheme`, `SharedUiScheme` —
 exported from `src/theme.tsx` (root and `./theme` subpaths re-export `*`, so
 no packaging changes; `tests/unit/packageExports.test.ts` is unaffected).
 
-- [ ] **M2.1 — failing tests first.** In `tests/unit/darkTheme.test.ts` add
+- [x] **M2.1 — failing tests first.** In `tests/unit/darkTheme.test.ts` add
       (import `darkSharedUiTheme`, `junoDarkSharedUiTheme`, `junoSharedUiTheme`,
       and the `SharedUiColors` type from `"../../src/theme"`; copy the
       `relativeLuminance`/`contrastRatio` helpers from `tests/unit/badge.test.ts`
@@ -736,11 +737,11 @@ test("data-grid fixed dark pill pairs meet AA", () => {
 asserted token is hex. `controlBorder` is deliberately absent: it is the
 documented sub-3:1 trade.) Run → FAIL (presets don't exist).
 
-- [ ] **M2.2** Add the two presets to `src/theme.tsx` exactly as in D3
+- [x] **M2.2** Add the two presets to `src/theme.tsx` exactly as in D3
       (bottom of the file, after `junoSharedUiTheme` — `junoDarkSharedUiTheme`
       passes `junoSharedUiTheme` as `base`). Export `SharedUiScheme` from D2 if
       not already. Run the dark tests → green.
-- [ ] **M2.3** In `tests/unit/badge.test.ts`, extend the themes map so the
+- [x] **M2.3** In `tests/unit/badge.test.ts`, extend the themes map so the
       existing 12-pair badge matrix gates all four themes:
 
 ```ts
@@ -756,7 +757,7 @@ Run `node --import tsx --test tests/unit/badge.test.ts` → green (the
 outline rows resolve `ink2`/`*Deep` on the dark `surface`: all ≥4.5 by the
 D3 table).
 
-- [ ] **M2.4** Update `src/theme.tsx` JSDoc: `amberDeep`, `roseDeep`,
+- [x] **M2.4** Update `src/theme.tsx` JSDoc: `amberDeep`, `roseDeep`,
       `controlBorder`, `placeholder` comments say "both shipped themes" → "all
       four shipped themes"; extend the `amberDeep`/`roseDeep` wording: "under
       white text" → "under `onSolid` text (white in the light themes; in the dark
@@ -764,8 +765,8 @@ D3 table).
       allowlist count for `theme.tsx` in `tests/unit/darkTheme.test.ts` if the
       presets changed the literal-white count (they don't — dark presets contain
       no white).
-- [ ] **M2.5** `npm run format && npm run verify` → green.
-- [ ] **M2.6** Commit:
+- [x] **M2.5** `npm run format && npm run verify` → green.
+- [x] **M2.6** Commit:
 
 ```bash
 git add src/theme.tsx tests plans
