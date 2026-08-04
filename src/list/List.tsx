@@ -48,6 +48,8 @@ export type ListProps<Item> = {
   itemKey: (item: Item, index: number) => string;
   /** Accessible label for a pressable item, e.g. `Open Calum Moore`. */
   itemLabel?: (item: Item, index: number) => string;
+  /** Test identifier for an item's rendered target (`data-testid` on web). */
+  itemTestID?: (item: Item, index: number) => string;
   /** The data items. */
   items: Item[];
   /**
@@ -93,6 +95,7 @@ export function List<Item>({
   itemDisabled,
   itemKey,
   itemLabel,
+  itemTestID,
   items,
   loading = false,
   loadingItemCount = 6,
@@ -182,11 +185,16 @@ export function List<Item>({
                 label={itemLabel?.(item, index)}
                 onPress={() => onItemPress(item, index)}
                 styles={styles}
+                testID={itemTestID?.(item, index)}
               >
                 {content}
               </PressableListItem>
             ) : (
-              <View role="listitem" style={styles.item}>
+              <View
+                role="listitem"
+                style={styles.item}
+                testID={itemTestID?.(item, index)}
+              >
                 {content}
               </View>
             )}
@@ -216,6 +224,7 @@ function PressableListItem({
   label,
   onPress,
   styles,
+  testID,
 }: {
   children: ReactNode;
   disabled: boolean;
@@ -223,6 +232,7 @@ function PressableListItem({
   label?: string;
   onPress: () => void;
   styles: ListStyles;
+  testID?: string;
 }) {
   const focus = useFocusRing({ disabled: disableFocusRing });
   return (
@@ -235,6 +245,7 @@ function PressableListItem({
         onBlur={focus.onBlur}
         onFocus={focus.onFocus}
         onPress={onPress}
+        testID={testID}
         style={({ hovered, pressed }: PressableHoverState) => [
           styles.item,
           styles.itemPressable,
