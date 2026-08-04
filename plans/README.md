@@ -2,6 +2,7 @@
 
 ## Active
 
+- [Avatar rounded square](avatar-rounded-square.md) — not started: a `shape="square"` prop on `Avatar` backed by a pure `avatarRadius` module and a new themeable `radii.avatarRatio` corner ratio (default `0.25`, clamped to `[0, 0.5]`), so a rounded square reads identically at every size.
 - [Disable the focus ring](disable-focus-ring.md) — M1–M5 delivered: a theme `focusRing` kill switch + per-instance `disableFocusRing` prop on every ring-bearer, backed by one `useFocusRing({ disabled })` / `ringEnabled` / `webOutlineReset` primitive; disabled rings restore the UA outline (WCAG 2.4.7). Unit tests + a `Focus ring/Examples` story added. Deferred: `DateField`/`DateRangeField` composite forwarding.
 - [SortableList component](sortable-list-component.md) — M1 delivered (web pointer + keyboard drag, optional start/end grab handle, vertical/horizontal flow) and `npm run verify` green; M2 (native drag / touch reordering + RTL) deferred.
 - [Easier Component Testing Without Test Ids](easier-component-testing-without-testid.md) — Milestones 1–3 (dropdown, radio, segmented) delivered and `npm run verify` green; Milestones 4–8 remaining.
