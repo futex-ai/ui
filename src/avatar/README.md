@@ -1,13 +1,16 @@
 # Avatar
 
-Reusable React Native and React Native Web circular user avatar copied from the
+Reusable React Native and React Native Web user avatar copied from the
 accounting app's shared `Avatar` primitive. It renders short initials on a
-themed disc.
+themed disc or rounded square.
 
 ## Responsibilities
 
-- Render a circular disc with one or two initials centered on it.
-- Scale the diameter, circular radius (`size / 2`), and initials' font size
+- Render a disc or rounded square with one or two initials centered on it.
+- Offer two shapes: `circle` (default) and `square`, whose corner radius scales
+  with `size` from the theme's `radii.avatarRatio`.
+- Scale the box, the corner radius (`size / 2` for `circle`,
+  `size * radii.avatarRatio` for `square`), and the initials' font size
   (`size * 0.38`) from a single `size` prop.
 - Offer two tones: `solid` (primary-filled disc, white text) and `soft` (soft
   tint, deep-primary text).
@@ -29,6 +32,7 @@ import { Avatar } from "@firna/ui/avatar";
 <Avatar accessibilityLabel="Greenhouse Studio" label="GS" />;
 <Avatar label="PR" tone="soft" />;
 <Avatar label="VA" size={48} />;
+<Avatar label="GS" shape="square" size={48} />;
 <Avatar
   label="AR"
   style={{ backgroundColor: "#f4ecd8" }}
@@ -37,10 +41,13 @@ import { Avatar } from "@firna/ui/avatar";
 ```
 
 `label` is the visible initials. `size` defaults to `32`. `tone` defaults to
-`solid`. Pass `accessibilityLabel` to give assistive tech the full name (it
-overrides the visible initials as the accessible name); omit it and the initials
-are read instead. `style` overrides the container disc for non-default surfaces.
-`textColor` overrides the initials' color for palette-specific discs.
+`solid`. `shape` defaults to `circle`; `square` is the same 1:1 box with
+proportionally rounded corners. Pass `accessibilityLabel` to give assistive tech
+the full name (it overrides the visible initials as the accessible name); omit it
+and the initials are read instead. `style` overrides the container disc for
+non-default surfaces — pass `style={{ borderRadius }}` for a one-off radius that
+should not follow the theme ratio. `textColor` overrides the initials' color for
+palette-specific discs.
 
 ## Accessibility
 
@@ -65,3 +72,6 @@ Avatars read colors and fonts from `SharedUiThemeProvider`. The `solid` disc
 uses `colors.primary` with white initials; the `soft` disc uses `colors.soft`
 with `colors.primaryDeep` initials; the initials use the theme `fonts.sans`.
 When `textColor` is provided, it overrides the tone's default initials color.
+The `square` shape's corner radius is `size * radii.avatarRatio` (default
+`0.25`, clamped to `[0, 0.5]`), so retuning that one token reshapes every
+rounded-square avatar at once.

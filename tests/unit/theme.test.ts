@@ -30,6 +30,12 @@ test("juno theme maps the purple primary family", () => {
   assert.equal(junoSharedUiTheme.colors.primarySoft, "#F0EBFA");
 });
 
+test("radii expose the avatar rounded-square ratio", () => {
+  assert.equal(defaultSharedUiTheme.radii.avatarRatio, 0.25);
+  // Themes built through createSharedUiTheme inherit the default token.
+  assert.equal(junoSharedUiTheme.radii.avatarRatio, 0.25);
+});
+
 test("both themes define the deep amber/rose accents for badge tones", () => {
   // The deep accents back the warning/danger badge tones; the lighter
   // amber/rose accents fall below AA on their own soft tints, so these mirror

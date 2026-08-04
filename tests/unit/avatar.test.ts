@@ -26,9 +26,25 @@ test("avatar sizes the disc and initials from the size prop", () => {
   const source = readSource("../../src/avatar/Avatar.tsx");
 
   assert.match(source, /size = 32/);
-  assert.match(source, /borderRadius: size \/ 2/);
+  assert.match(source, /shape = "circle"/);
+  // Whitespace-tolerant: the call sits right on Prettier's 80-column limit,
+  // so it may be formatted on one line or wrapped across four.
+  assert.match(
+    source,
+    /avatarBorderRadius\(\s*size,\s*shape,\s*theme\.radii\.avatarRatio,?\s*\)/,
+  );
   assert.match(source, /height: size, width: size/);
   assert.match(source, /fontSize: size \* 0\.38/);
+});
+
+test("avatar exposes a public shape type and re-exports it", () => {
+  const source = readSource("../../src/avatar/Avatar.tsx");
+  const radiusSource = readSource("../../src/avatar/avatarRadius.ts");
+  const indexSource = readSource("../../src/avatar/index.ts");
+
+  assert.match(radiusSource, /export type AvatarShape = "circle" \| "square"/);
+  assert.match(source, /shape\?: AvatarShape/);
+  assert.match(indexSource, /export \* from "\.\/avatarRadius"/);
 });
 
 test("avatar forwards accessible names and style overrides", () => {

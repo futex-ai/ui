@@ -1,9 +1,10 @@
-/** Circular user avatar that renders initials on a themed disc. */
+/** User avatar that renders initials on a themed disc or rounded square. */
 import { useMemo } from "react";
 import { StyleProp, Text, TextStyle, View, ViewStyle } from "react-native";
 
 import { useSharedUiTheme } from "../theme";
 
+import { avatarBorderRadius, type AvatarShape } from "./avatarRadius";
 import { createAvatarStyles } from "./avatarStyles";
 
 export type AvatarTone = "soft" | "solid";
@@ -19,6 +20,11 @@ export type AvatarProps = {
   decorative?: boolean;
   /** Short initials shown on the disc, typically one or two characters. */
   label: string;
+  /**
+   * Disc geometry. `circle` (default) is a full disc; `square` is the same
+   * 1:1 box with corners rounded by the theme's `radii.avatarRatio`.
+   */
+  shape?: AvatarShape;
   /** Diameter in pixels. The radius, and the initials' font size, scale with it. */
   size?: number;
   /** Override the container disc style without forking the component. */
@@ -35,16 +41,18 @@ export type AvatarProps = {
 };
 
 /**
- * A circular avatar showing initials. `size` drives the diameter, the circular
- * radius (`size / 2`), and the initials' font size (`size * 0.38`). The `solid`
- * tone fills the disc with the theme primary and white text; the `soft` tone
- * uses the soft tint with deep-primary text. `textColor` can override those
+ * A circular or rounded-square avatar showing initials. `size` drives the box,
+ * the corner radius (`size / 2` for `circle`, `size * radii.avatarRatio` for
+ * `square`), and the initials' font size (`size * 0.38`). The `solid` tone
+ * fills the disc with the theme primary and white text; the `soft` tone uses
+ * the soft tint with deep-primary text. `textColor` can override those
  * defaults when a consumer supplies a palette-specific disc color.
  */
 export function Avatar({
   accessibilityLabel,
   decorative = false,
   label,
+  shape = "circle",
   size = 32,
   style,
   testID,
@@ -54,6 +62,7 @@ export function Avatar({
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createAvatarStyles(theme), [theme]);
   const solid = tone === "solid";
+  const borderRadius = avatarBorderRadius(size, shape, theme.radii.avatarRatio);
   return (
     <View
       // A decorative avatar is removed from the AT tree entirely (web `aria-hidden`,
@@ -70,7 +79,7 @@ export function Avatar({
       importantForAccessibility={decorative ? "no-hide-descendants" : undefined}
       style={[
         styles.avatar,
-        { borderRadius: size / 2, height: size, width: size },
+        { borderRadius, height: size, width: size },
         solid ? styles.avatarSolid : styles.avatarSoft,
         style,
       ]}
