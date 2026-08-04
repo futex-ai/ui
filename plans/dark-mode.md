@@ -12,12 +12,16 @@ provider API changes, no automatic OS detection (consumers pass a preset;
 pattern documented), no global Storybook default flip (the browser suite pins
 31 light-theme colors to existing story ids).
 
-**Status:** M1–M4 delivered (`onSolid` + `scheme` groundwork, both dark
-presets, the four scheme-gated component fixes, and 14 dark Storybook stories
-with pinned-color + axe coverage). `npm run verify` green — 677 unit tests, 224
-Playwright tests incl. the full axe sweep against a still-empty
-`axe-baseline.json`, all 31 pinned light-theme colors unchanged. M5
-remaining. All palette values below are pre-validated
+**Status:** Delivered — M1–M5 complete. `npm run verify` green: 677 unit
+tests, 224 Playwright tests including the full axe WCAG A/AA sweep against a
+still-empty `axe-baseline.json`, and all 31 pinned light-theme computed colors
+unchanged (the zero-visual-delta proof). Four presets ship:
+`defaultSharedUiTheme`, `junoSharedUiTheme`, `darkSharedUiTheme`,
+`junoDarkSharedUiTheme`. The one deferred item is the manual on-device dark
+smoke of the native Storybook host (M5.3) — native Storybook sits outside the
+verify gate. All palette values below were pre-validated against WCAG 2.1 —
+1.4.3/1.4.11 and independently re-derived at implementation time (every row
+matched to 2dp); the component audit is complete. All palette values below are pre-validated
 against WCAG 2.1 — 1.4.3/1.4.11 (ratios listed per pair, independently
 re-derived at implementation time — every row matches); the component audit is
 complete (every hazardous site enumerated with file:line, verified in the tree
@@ -920,18 +924,18 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 
 ### M5 — docs, native host, release notes
 
-- [ ] **M5.1** `README.md`: under Key Features extend the "Themeable visual
+- [x] **M5.1** `README.md`: under Key Features extend the "Themeable visual
       tokens" bullet with the dark presets; in the `@firna/ui/theme` bullet of
       User-Facing Interface list `darkSharedUiTheme`, `junoDarkSharedUiTheme`,
       `SharedUiScheme`, and the `createSharedUiTheme(overrides, base)` form; add
       the D4 `useColorScheme` consumer snippet to the theming docs. The Storybook
       Deployments story-folder list is unchanged (no new top-level folders).
-- [ ] **M5.2** `docs/protocol/shared-ui-components.md` §Theming Contract
+- [x] **M5.2** `docs/protocol/shared-ui-components.md` §Theming Contract
       (L38–55): add the dark-mode clause — four shipped presets; `onSolid` is the
       only inverse-content token; solid fills invert on dark; `scheme` exists but
       components must not branch on it except the four documented sites; consumers
       own OS detection.
-- [ ] **M5.3** Native Storybook host: in
+- [x] **M5.3** Native Storybook host: in
       `storybook-native/.rnstorybook/preview.tsx` keep the default-theme
       decorator but route it through a module-level constant so flipping the
       on-device host to dark is a one-line edit, and document that in the file:
@@ -947,10 +951,10 @@ Manual on-device smoke (SheetModal + RichTextEditor stories under
 `darkSharedUiTheme`) is **deferred** — native Storybook is outside the
 verify gate; note it under Follow-ups when ticking this box.
 
-- [ ] **M5.4** Update this plan's **Status** line (delivered milestones, test
+- [x] **M5.4** Update this plan's **Status** line (delivered milestones, test
       counts from the verify output) and move/annotate the entry in
       `plans/README.md` per house convention.
-- [ ] **M5.5** `npm run format && npm run verify` → green. Commit:
+- [x] **M5.5** `npm run format && npm run verify` → green. Commit:
 
 ```bash
 git add README.md docs storybook-native plans
@@ -991,8 +995,41 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 - Harden the drag-select marquee's `${primary}1A` hex-alpha concatenation
   (`src/drag-select/DragSelectableOverlay.web.tsx:50`) against non-6-digit-hex
   theme primaries.
-- Manual on-device dark smoke of the native Storybook host (M5.3).
+- Manual on-device dark smoke of the native Storybook host (M5.3) — the one
+  deferred item from this plan.
 - Dark-tuned `nodeColors` preset for `WorkflowBuilder` consumers who want
   brighter chips on dark.
 - `ViewportStage` (fullscreen stories) is hardcoded light (`#eef1ea` +
   `defaultSharedUiTheme`); theme it if a fullscreen dark story is ever needed.
+
+## Deviations from the plan as written (all verified)
+
+- **The white-literal guard needs the `i` flag.** `junoSharedUiTheme` spells its
+  surface `"#FFFFFF"`, so a case-sensitive pattern counts 3 in `theme.tsx`, not
+  the 4 the allowlist specifies, and would miss uppercase strays elsewhere.
+- **More source-grep tests pinned the old literals than M1.6 listed.** Besides
+  `badge.test.ts`, the `avatar`, `button`, `typography` and `dropdown` (×2)
+  suites asserted `"#fff"` / `colors.surface` at the swapped sites and were
+  updated alongside.
+- **The "both shipped themes" JSDoc sweep reaches past `theme.tsx`.**
+  `badgeStyles.ts`, `workflowColors.ts`, `typographyStyles.ts` and
+  `typography/README.md` carried the same claim. All were widened to four, and
+  two rows (`rose` on `surface`, `ink2` on `bg2`) were added to the M2 contrast
+  table so the widened claims are tested rather than merely asserted.
+- **The stories' own chrome was hardcoded light.** `ThemeSwatch`'s heading was a
+  real axe `color-contrast` failure on the dark swatches; the action-menu status
+  line and ⋯ trigger, the skeleton card/labels, and the switch demo copy would
+  have been. All were routed through tokens that equal the literals they
+  replaced in the default theme, so light rendering is unchanged.
+- **The calendar fixture's event colors cannot carry `onSolid`.** They are a
+  caller-owned palette that does not invert, and the near-black label falls to
+  ~3.9:1 on them, so the dark story drops the per-event `color` and lets chips
+  take the theme fill.
+- **DataGrid story ids use the `datagrid-` prefix**, not `data-grid-` as the
+  M4.4 template assumed.
+- **Environment:** `npx playwright install chromium` is not optional — a fresh
+  `npm install` pulls a Playwright expecting a newer headless-shell build. Also
+  capture `npm run verify`'s exit code directly; piping it into `tail` reports
+  `tail`'s status. Under parallel-workspace CPU load the browser suite can shed
+  ~12/219 pointer-interaction tests to timeouts; re-running the affected spec
+  files in isolation distinguishes flake from regression.

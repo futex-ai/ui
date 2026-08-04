@@ -52,6 +52,24 @@ and accessibility behavior is specified separately in
 - Focus rings use the active theme primary color.
 - Consumer theme overrides must be shallow and predictable; unspecified tokens
   fall back to the default shared theme.
+- Dark mode ships as presets, not as a mode flag: four presets are shipped (the
+  accounting default and Juno, each light and dark). A theme creation helper
+  must accept a base theme to extend so a branded override of a dark preset
+  stays dark.
+- Inverse content — text and icons on a solid accent fill — must resolve through
+  a single `onSolid` token rather than a literal white, so it inverts with the
+  palette.
+- Solid fills invert on the dark presets: the deep accents become light and
+  `onSolid` becomes the page ink-well. This keeps every token relationship
+  (deep-on-soft, deep-as-fill, ramp ordering) valid in both schemes, so
+  components need no scheme-specific code.
+- A `scheme` field states which side of the light/dark divide a palette sits on.
+  Components must not branch on it except at genuine physical-metaphor sites
+  that cannot invert through tokens — today the switch knob, the skeleton sheen,
+  the solid toast's hover wash, and the data grid's fixed pill colors.
+- Every documented contrast obligation applies to all four presets.
+- The library does not detect the OS color scheme; consumers own that wiring so
+  the theme module stays free of platform imports.
 
 ## Segmented Control Contract
 
