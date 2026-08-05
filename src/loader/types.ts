@@ -5,6 +5,7 @@
  * the internal contract every shape renderer receives once {@link Loader} has
  * resolved the theme color, the cycle length, and the pixel box.
  */
+import type { ColorValue } from "react-native";
 
 /**
  * The indeterminate loading shapes.
@@ -30,8 +31,13 @@ export type LoaderVariant =
  * never carries its own accessibility semantics or `testID`.
  */
 export type LoaderShapeProps = {
-  /** Resolved accent color — already defaulted to the theme primary. */
-  color: string;
+  /**
+   * Resolved accent color — already defaulted to the theme primary. Typed as a
+   * `ColorValue` rather than a `string` because every shape feeds it straight
+   * into a `backgroundColor` or `borderColor`, so a caller can hand over any
+   * React Native color — {@link Avatar} forwards its `textColor` override.
+   */
+  color: ColorValue;
   /** Resolved cycle length in milliseconds for one full animation loop. */
   duration: number;
   /** Resolved box size in pixels; every shape draws inside a `size` square. */

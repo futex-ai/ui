@@ -288,6 +288,11 @@ Required behavior:
   `0.25`) clamped to `[0, 0.5]` so the corner reads identically at every size.
 - Support a solid tone (primary-filled disc with white initials) and a soft tone
   (soft-tinted disc with deep-primary initials).
+- Offer an indeterminate `loading` state that replaces the initials in place
+  with the loader family's `dot-grid` shape, drawn in the same foreground color
+  the initials would have used. The disc keeps its fill, corner, and footprint
+  so a row of avatars does not reflow, and it reports itself as a busy
+  progress indicator rather than an image for as long as it is loading.
 - Use shared theme tokens for the disc backgrounds, the initials' color, and the
   initials' font, with no consumer-local theme imports.
 - Accept an optional accessible name and a container style override without
