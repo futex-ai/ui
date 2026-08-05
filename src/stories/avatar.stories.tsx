@@ -110,6 +110,60 @@ export const Shapes: Story = {
   ),
 };
 
+export const Loading: Story = {
+  name: "Loading",
+  render: () => (
+    <StorySurface>
+      <View style={styles.column}>
+        {/* `loading` swaps the initials for the dot-grid loader in place: the
+            disc keeps its tone, shape, and box, so the row does not reflow when
+            the load finishes. The dots inherit the initials' color, including a
+            palette-specific `textColor` override. */}
+        <View style={styles.row}>
+          {SHAPE_SIZES.map((size) => (
+            <Avatar
+              accessibilityLabel={`Loading ${size}`}
+              key={size}
+              label="GS"
+              loading
+              size={size}
+            />
+          ))}
+        </View>
+        <View style={styles.row}>
+          <Avatar
+            accessibilityLabel="Payroll Reserve"
+            label="PR"
+            loading
+            tone="soft"
+          />
+          <Avatar
+            accessibilityLabel="Accounts Receivable"
+            label="AR"
+            loading
+            style={styles.amberDisc}
+            textColor="#74511f"
+            tone="soft"
+          />
+          <Avatar
+            accessibilityLabel="Greenhouse Studio"
+            label="GS"
+            loading
+            shape="square"
+            size={48}
+          />
+        </View>
+        {/* Side by side with the settled avatar it replaces — same footprint. */}
+        <View style={styles.labelRow}>
+          <Avatar accessibilityLabel="Vivienne Archer" label="VA" loading />
+          <Avatar accessibilityLabel="Vivienne Archer" label="VA" />
+          <Text>Loading, then loaded</Text>
+        </View>
+      </View>
+    </StorySurface>
+  ),
+};
+
 const styles = StyleSheet.create({
   row: {
     alignItems: "center",
