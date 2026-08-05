@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { StyleSheet } from "react-native";
 
-import { RadioCard, RadioCardGroup } from "../index";
+import { RadioCard, RadioCardGroup, darkSharedUiTheme } from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -17,6 +17,15 @@ export const AccountingBasisRadioCards: Story = {
   name: "Accounting basis radio cards",
   render: () => (
     <StorySurface>
+      <AccountingBasisExample />
+    </StorySurface>
+  ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
       <AccountingBasisExample />
     </StorySurface>
   ),

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { Text, View } from "react-native";
 
-import { Heatmap, type HeatmapDatum } from "../index";
+import { Heatmap, darkSharedUiTheme, type HeatmapDatum } from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -40,6 +40,25 @@ export const HeatmapYear: Story = {
   name: "Full year",
   render: () => (
     <StorySurface>
+      <Heatmap
+        accessibilityLabel="Activity in 2024"
+        endDate="2024-12-31"
+        startDate="2024-01-01"
+        values={data2024}
+      />
+    </StorySurface>
+  ),
+};
+
+/**
+ * The default ramp `[primarySoft, primaryBorder, primary, primaryDeep]` needs
+ * no dark-specific code: on a dark preset those tokens run dark → light, so
+ * "more intense = brighter" — the correct dark reading.
+ */
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
       <Heatmap
         accessibilityLabel="Activity in 2024"
         endDate="2024-12-31"

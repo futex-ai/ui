@@ -55,7 +55,9 @@ test("typography resolves semantic color tokens to AA-safe theme colors", () => 
   // `primary` steps down to the deep primary (the lighter primary is borderline).
   assert.match(stylesSource, /case "primary":\s*return colors\.primaryDeep;/);
   assert.match(stylesSource, /case "danger":\s*return colors\.rose;/);
-  assert.match(stylesSource, /case "inverse":\s*return "#fff";/);
+  // `inverse` rides the theme's inverse-content token so it flips with the
+  // scheme instead of hardcoding white.
+  assert.match(stylesSource, /case "inverse":\s*return colors\.onSolid;/);
   // The decorative `faint` color (2.26:1, fails AA as text) is never exposed.
   assert.doesNotMatch(stylesSource, /"faint"/);
   assert.doesNotMatch(stylesSource, /colors\.faint/);

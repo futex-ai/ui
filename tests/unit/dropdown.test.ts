@@ -319,11 +319,11 @@ test("dropdown row inverts its subtext on the solid active fill", () => {
   // base muted style, so an active solid row's subtext is recolored rather than
   // left at the muted grey that vanishes against the `primary` fill.
   assert.match(list, /styles\.secondary, highlight\.secondaryStyle/);
-  // The solid active row maps the subtext to `surface` (white), mirroring the
-  // inverted label, and the highlight shape exposes that override.
+  // The solid active row maps the subtext to `onSolid`, mirroring the inverted
+  // label, and the highlight shape exposes that override.
   assert.match(
     stylesSource,
-    /itemSecondaryOnSolid: \{ color: theme\.colors\.surface \}/,
+    /itemSecondaryOnSolid: \{ color: theme\.colors\.onSolid \}/,
   );
   assert.match(stylesSource, /secondaryStyle: object \| null;/);
   // Only the solid active branch sets the override; every other state leaves it
@@ -427,7 +427,7 @@ test("dropdown row slots can render against the active row's content color", () 
   assert.match(stylesSource, /contentColor: string;/);
   assert.match(
     stylesSource,
-    /labelStyle = styles\.itemLabelOnSolid;\s*secondaryStyle = styles\.itemSecondaryOnSolid;\s*contentColor = theme\.colors\.surface;/,
+    /labelStyle = styles\.itemLabelOnSolid;\s*secondaryStyle = styles\.itemSecondaryOnSolid;\s*contentColor = theme\.colors\.onSolid;/,
   );
   // Off the inverted row the tone accent wins, mirroring how `toneLabel`
   // overrides the label style in DropdownList.

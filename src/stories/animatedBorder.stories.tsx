@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { AnimatedBorder } from "../index";
+import { AnimatedBorder, darkSharedUiTheme } from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -40,6 +40,25 @@ export const ActiveIcon: Story = {
           <Badge>G</Badge>
         </AnimatedBorder>
         <Text style={styles.caption}>idle → active</Text>
+      </View>
+    </StorySurface>
+  ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <View style={styles.row}>
+        <Badge>G</Badge>
+        <AnimatedBorder borderRadius={7} size={24}>
+          <Badge>G</Badge>
+        </AnimatedBorder>
+        <Text
+          style={[styles.caption, { color: darkSharedUiTheme.colors.muted }]}
+        >
+          idle → active
+        </Text>
       </View>
     </StorySurface>
   ),

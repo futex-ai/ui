@@ -1,6 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { defaultSharedUiTheme, junoSharedUiTheme } from "../index";
+import {
+  darkSharedUiTheme,
+  defaultSharedUiTheme,
+  junoDarkSharedUiTheme,
+  junoSharedUiTheme,
+} from "../index";
 import { StorySurface, ThemeSwatch } from "./sharedExamples";
 
 const meta = {
@@ -25,6 +30,24 @@ export const AlternatePrimaryTheme: Story = {
   render: () => (
     <StorySurface theme={junoSharedUiTheme}>
       <ThemeSwatch label="Juno primary" />
+    </StorySurface>
+  ),
+};
+
+export const DarkAccountingTheme: Story = {
+  name: "Dark accounting theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <ThemeSwatch label="darkSharedUiTheme" />
+    </StorySurface>
+  ),
+};
+
+export const DarkJunoTheme: Story = {
+  name: "Dark Juno theme",
+  render: () => (
+    <StorySurface theme={junoDarkSharedUiTheme}>
+      <ThemeSwatch label="junoDarkSharedUiTheme" />
     </StorySurface>
   ),
 };

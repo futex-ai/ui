@@ -12,6 +12,8 @@ import {
   Label,
   Overline,
   Text,
+  darkSharedUiTheme,
+  useSharedUiTheme,
 } from "../index";
 import { StorySurface } from "./sharedExamples";
 
@@ -103,7 +105,46 @@ export const Truncation: Story = {
   ),
 };
 
+/**
+ * The semantic tokens under a dark preset, plus the one token that only makes
+ * sense on a fill: `inverse` resolves to the theme's `onSolid`, so it is white
+ * on the light themes and the near-black ink-well here.
+ */
+function DarkTokensExample() {
+  const theme = useSharedUiTheme();
+  return (
+    <View style={styles.stack}>
+      <Text color="default">Default ink — primary text.</Text>
+      <Text color="secondary">Secondary — supporting copy.</Text>
+      <Text color="muted">Muted — metadata and hints.</Text>
+      <Text color="placeholder">Placeholder — faint but meaningful.</Text>
+      <Text color="primary">Primary — branded emphasis.</Text>
+      <Text color="danger">Danger — payment failed, retry the charge.</Text>
+      <View
+        style={[styles.solidFill, { backgroundColor: theme.colors.primary }]}
+      >
+        <Text color="inverse">Inverse — punched out of a solid fill.</Text>
+      </View>
+    </View>
+  );
+}
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <DarkTokensExample />
+    </StorySurface>
+  ),
+};
+
 const styles = StyleSheet.create({
+  solidFill: {
+    alignSelf: "flex-start",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
   stack: {
     gap: 10,
     maxWidth: 420,

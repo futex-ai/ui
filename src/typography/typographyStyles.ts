@@ -23,11 +23,12 @@ export type TypographyVariant =
 
 /**
  * Semantic text-color tokens. Every token resolves to a theme color that meets
- * the WCAG 2.1 — 1.4.3 (AA, 4.5:1) text-contrast minimum on the surface in both
- * shipped themes, so picking a token can never fall below AA. The decorative
+ * the WCAG 2.1 — 1.4.3 (AA, 4.5:1) text-contrast minimum on the surface in all
+ * four shipped themes, so picking a token can never fall below AA. The decorative
  * `faint` theme color (2.26:1 on white) is deliberately not exposed here. Use
- * `inverse` only on a dark fill, where the consumer owns the background and its
- * contrast.
+ * `inverse` only on a solid accent fill — it resolves to the theme's `onSolid`,
+ * so it inverts with the scheme — where the consumer owns the background and
+ * its contrast.
  */
 export type TypographyColor =
   | "default"
@@ -156,8 +157,10 @@ export function typographyLevel(
  * Resolve a semantic {@link TypographyColor} token to a concrete theme color.
  * Every mapping is held to WCAG 2.1 — 1.4.3 (AA) on the surface; `default` is
  * the primary `ink`, the others step down through the secondary and muted inks
- * and the brand/danger accents, all of which stay ≥4.5:1. `inverse` is white
- * for use on dark fills, where the consumer owns the background contrast.
+ * and the brand/danger accents, all of which stay ≥4.5:1. `inverse` is the
+ * theme's `onSolid` — white in the light themes, the near-black ink-well in the
+ * dark ones — for use on solid accent fills, where the consumer owns the
+ * background contrast.
  */
 export function resolveTypographyColor(
   colors: SharedUiTheme["colors"],
@@ -177,7 +180,7 @@ export function resolveTypographyColor(
     case "danger":
       return colors.rose;
     case "inverse":
-      return "#fff";
+      return colors.onSolid;
   }
 }
 

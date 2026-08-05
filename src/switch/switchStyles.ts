@@ -95,7 +95,11 @@ export function createSwitchStyles(
       // Resting on the off-track, the knob carries a subtle `controlBorder`
       // edge against the grey fill (a soft translucent-ink line that reinforces
       // the 1.4.1 position cue). `knobOn` drops it for the on-position.
-      backgroundColor: "#fff",
+      //
+      // Off-position: light-scheme themes keep the white knob; dark themes
+      // float a light-ink knob on the dark `border2` track (≥3:1, 1.4.11).
+      backgroundColor:
+        theme.scheme === "dark" ? theme.colors.ink : theme.colors.onSolid,
       borderColor: theme.colors.controlBorder,
       borderRadius: sizing.knobSize / 2,
       borderWidth: BORDER,
@@ -106,13 +110,19 @@ export function createSwitchStyles(
       top: knobInset,
       width: sizing.knobSize,
     },
-    // On the saturated `primary` track the white knob already stands out on its
-    // own (≈5:1 in both shipped themes), so the edge is dropped — matched to the
-    // knob's fill the way `trackOn` matches its own, which keeps the geometry
-    // identical and leaves no grey ring muddying the boundary. It stays on the
-    // off-track, where white-on-`border2` is the low-contrast pairing that needs
-    // it (WCAG 1.4.11 Non-text Contrast).
-    knobOn: { borderColor: "#fff", left: knobOn },
+    // On the saturated `primary` track the knob flips to `onSolid` — white over
+    // the deep light-theme track, near-black over the light dark-theme track
+    // (the solid-inversion model) — where it stands out on its own (≥6.4:1 in
+    // all four shipped themes). The edge is dropped by matching the fill, the
+    // way `trackOn` matches its own, which keeps the geometry identical and
+    // leaves no grey ring muddying the boundary. The `controlBorder` edge stays
+    // on the off-track, where knob-on-`border2` is the low-contrast pairing that
+    // needs it (WCAG 1.4.11 Non-text Contrast).
+    knobOn: {
+      backgroundColor: theme.colors.onSolid,
+      borderColor: theme.colors.onSolid,
+      left: knobOn,
+    },
     pressable: {
       alignItems: "center",
       height: sizing.touchTarget,

@@ -9,6 +9,7 @@ import {
   DayView,
   MonthView,
   WeekView,
+  darkSharedUiTheme,
   formatTimeRange,
   type CalendarDraftRange,
   type CalendarEvent,
@@ -114,6 +115,26 @@ export const MonthCalendar: Story = {
     <StorySurface>
       <CalendarExampleFrame>
         <MonthView date={TODAY} events={EVENTS} today={TODAY} />
+      </CalendarExampleFrame>
+    </StorySurface>
+  ),
+};
+
+// The same fixture with its per-event `color` dropped so the chips take the
+// theme's own `primary` fill. Those demo colors are a caller-owned palette —
+// like the workflow node chips they do NOT invert with the theme, and the
+// near-black `onSolid` label would fall below AA on the light-mode greens and
+// blues. Chips on the theme fill are contrast-verified in every preset.
+const THEME_FILLED_EVENTS: CalendarEvent[] = EVENTS.map(
+  ({ color: _color, ...event }) => event,
+);
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <CalendarExampleFrame>
+        <MonthView date={TODAY} events={THEME_FILLED_EVENTS} today={TODAY} />
       </CalendarExampleFrame>
     </StorySurface>
   ),

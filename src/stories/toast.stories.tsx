@@ -5,6 +5,7 @@ import { StyleSheet, View } from "react-native";
 import {
   Button,
   ToastProvider,
+  darkSharedUiTheme,
   toastController,
   useSharedUiTheme,
   useToast,
@@ -318,6 +319,17 @@ export const QueueAndDismissAll: Story = {
 export const SolidBottomCenter: Story = {
   name: "Solid bottom-center",
   render: () => playground("bottom-center", <SolidVariantTriggers />),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <ToastProvider placement="bottom-center">
+        <SolidVariantTriggers />
+      </ToastProvider>
+    </StorySurface>
+  ),
 };
 
 export const IconBottomCenter: Story = {

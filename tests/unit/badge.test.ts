@@ -3,7 +3,9 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
+  darkSharedUiTheme,
   defaultSharedUiTheme,
+  junoDarkSharedUiTheme,
   junoSharedUiTheme,
   type SharedUiColors,
 } from "../../src/theme";
@@ -107,13 +109,13 @@ test("badge soft tones pair a tinted fill with the deep accent text", () => {
   );
 });
 
-test("badge solid tones fill with the deep accent under white text", () => {
+test("badge solid tones fill with the deep accent under onSolid text", () => {
   const stylesSource = readSource("../../src/badge/badgeStyles.ts");
 
   for (const fill of ["ink2", "primaryDeep", "amberDeep", "roseDeep"]) {
     assert.match(
       stylesSource,
-      new RegExp(`backgroundColor: colors\\.${fill}, color: "#fff"`),
+      new RegExp(`backgroundColor: colors\\.${fill}, color: colors\\.onSolid`),
     );
   }
 });
@@ -149,19 +151,19 @@ test("every badge tone/variant pair meets WCAG 1.4.3 AA on its fill", () => {
   // data so this guard stays free of the react-native import chain (the unit
   // runner cannot transform react-native). The source-grep test above pins that
   // badgeStyles.ts actually pairs these tokens, so together they prove the
-  // rendered badge is AA. A token key resolves through the theme; "#fff" is the
-  // literal solid-fill text color.
-  type Token = keyof SharedUiColors | "#fff";
+  // rendered badge is AA. Every entry is a token key resolved through the theme
+  // — including `onSolid`, the inverse-content color on the solid fills.
+  type Token = keyof SharedUiColors;
   const pairs: { label: string; text: Token; fill: Token }[] = [
     { label: "neutral/soft", text: "ink2", fill: "bg2" },
     { label: "primary/soft", text: "primaryDeep", fill: "primarySoft" },
     { label: "warning/soft", text: "amberDeep", fill: "amberSoft" },
     { label: "danger/soft", text: "roseDeep", fill: "roseSoft" },
-    { label: "neutral/solid", text: "#fff", fill: "ink2" },
-    { label: "primary/solid", text: "#fff", fill: "primaryDeep" },
-    { label: "warning/solid", text: "#fff", fill: "amberDeep" },
-    { label: "danger/solid", text: "#fff", fill: "roseDeep" },
-    // outline = deep accent text on the white surface.
+    { label: "neutral/solid", text: "onSolid", fill: "ink2" },
+    { label: "primary/solid", text: "onSolid", fill: "primaryDeep" },
+    { label: "warning/solid", text: "onSolid", fill: "amberDeep" },
+    { label: "danger/solid", text: "onSolid", fill: "roseDeep" },
+    // outline = deep accent text on the plain surface.
     { label: "neutral/outline", text: "ink2", fill: "surface" },
     { label: "primary/outline", text: "primaryDeep", fill: "surface" },
     { label: "warning/outline", text: "amberDeep", fill: "surface" },
@@ -170,14 +172,14 @@ test("every badge tone/variant pair meets WCAG 1.4.3 AA on its fill", () => {
   const themes = {
     default: defaultSharedUiTheme,
     juno: junoSharedUiTheme,
+    dark: darkSharedUiTheme,
+    junoDark: junoDarkSharedUiTheme,
   };
 
   for (const [themeName, theme] of Object.entries(themes)) {
-    const resolve = (token: Token) =>
-      token === "#fff" ? "#fff" : theme.colors[token];
     for (const { label, text, fill } of pairs) {
-      const textHex = resolve(text);
-      const fillHex = resolve(fill);
+      const textHex = theme.colors[text];
+      const fillHex = theme.colors[fill];
       const ratio = contrastRatio(textHex, fillHex);
       assert.ok(
         ratio >= 4.5,

@@ -539,7 +539,12 @@ function createComboboxMultiSelectStyles(
       justifyContent: "center",
       width: 24,
     },
-    markText: { ...baseText, color: "#fff", fontSize: 11, fontWeight: "800" },
+    markText: {
+      ...baseText,
+      color: theme.colors.onSolid,
+      fontSize: 11,
+      fontWeight: "800",
+    },
     required: { color: theme.colors.rose },
     wrap: { position: "relative" },
   });

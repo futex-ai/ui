@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Popover } from "../index";
+import { Popover, darkSharedUiTheme } from "../index";
 
 import {
   ControlledPopoverExample,
@@ -24,6 +24,15 @@ export const ContentPopover: Story = {
   name: "Content popover",
   render: () => (
     <StorySurface>
+      <PopoverExample />
+    </StorySurface>
+  ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
       <PopoverExample />
     </StorySurface>
   ),

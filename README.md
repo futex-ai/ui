@@ -18,7 +18,10 @@ surfaces. The first consumers are the accounting app and the Juno app.
 - A shared `sm` / `md` / `lg` size scale (`ControlSize`) across the interactive
   controls — buttons, inputs, dropdown selectors, date fields, segmented
   controls, and switches.
-- Themeable visual tokens so consumers can use their own brand primary color.
+- Themeable visual tokens so consumers can use their own brand primary color,
+  with four shipped presets — the accounting default and Juno, each in a light
+  and a dark variant. Every component reads its colors from the tokens, so dark
+  mode is a preset swap rather than a per-component opt-in.
 - A shared, calm focus glow across every control, disable-able globally via the
   theme's `focusRing: false` flag or per instance with a `disableFocusRing` prop
   (both fall back to the browser's default focus outline so keyboard focus stays
@@ -76,9 +79,11 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/switch` for themed binary on/off switches.
 - `@firna/ui/table` for the data table with optional headers and clickable rows.
 - `@firna/ui/theme` for `SharedUiThemeProvider`, default accounting-style
-  tokens, the Juno token preset, `createSharedUiTheme`, and the global
-  `focusRing` switch (`SharedUiThemeProvider theme={{ focusRing: false }}`
-  disables every control's focus glow at once).
+  tokens, the Juno token preset, the `darkSharedUiTheme` and
+  `junoDarkSharedUiTheme` dark presets, the `SharedUiScheme` type,
+  `createSharedUiTheme(overrides, base)`, and the global `focusRing` switch
+  (`SharedUiThemeProvider theme={{ focusRing: false }}` disables every control's
+  focus glow at once). See [Theming](#theming) for the dark-mode contract.
 - `@firna/ui/focusRing` for `useFocusRing` and `focusRingStyleFor` — the shared
   focus-glow primitive every control uses. Pass `disableFocusRing` to a single
   control to drop only that instance's glow; both paths fall back to the
@@ -99,6 +104,60 @@ npm install @firna/ui
 Consumers must provide the peer dependencies listed in `package.json`: React,
 React DOM, React Native, React Native Web, React Native SVG, and
 lucide-react-native.
+
+## Theming
+
+Four presets ship, all built from the same semantic token set:
+`defaultSharedUiTheme` and `junoSharedUiTheme` (light), `darkSharedUiTheme` and
+`junoDarkSharedUiTheme` (dark). Pass one to `SharedUiThemeProvider`, or brand it
+first with `createSharedUiTheme(overrides, base)` — the second argument picks
+the preset to extend, so a dark brand tint stays dark:
+
+```tsx
+const brandDark = createSharedUiTheme(
+  { colors: { primary: "#8fb3ff" } },
+  darkSharedUiTheme,
+);
+```
+
+Two token-level rules make dark mode work without per-component branching:
+
+- **`colors.onSolid`** is the text/icon color on solid accent fills (the solid
+  badge, the primary button, the dropdown's active row, the calendar "today"
+  disc, the switch knob at the on-position…). It is white in the light themes
+  and the near-black page ink-well in the dark ones.
+- **Solid fills invert.** In the dark presets the `*Deep` tokens become _light_
+  accents and `onSolid` darkens, so every existing token relationship
+  (deep-on-soft, deep-as-fill, the heatmap ramp's ordering) keeps working
+  unchanged. Every documented WCAG 2.1 — 1.4.3/1.4.11 pair is pinned by unit
+  tests across all four presets, and every dark Storybook story is swept by axe.
+
+`theme.scheme` (`"light" | "dark"`) is available for the rare physical-metaphor
+case, but components should read colors from tokens rather than branch on it.
+
+The library does **not** detect the OS setting — the provider stays free of a
+`react-native` import so it can be loaded by the node test runner and the
+package-smoke stubs. Consumers own that wiring:
+
+```tsx
+import { useColorScheme } from "react-native";
+import {
+  darkSharedUiTheme,
+  defaultSharedUiTheme,
+  SharedUiThemeProvider,
+} from "@firna/ui/theme";
+
+function App() {
+  const scheme = useColorScheme();
+  return (
+    <SharedUiThemeProvider
+      theme={scheme === "dark" ? darkSharedUiTheme : defaultSharedUiTheme}
+    >
+      {/* … */}
+    </SharedUiThemeProvider>
+  );
+}
+```
 
 ## Developer Get Started
 

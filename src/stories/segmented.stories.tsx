@@ -9,7 +9,7 @@ import {
 import { useState } from "react";
 import { View } from "react-native";
 
-import { SegmentedControl } from "../index";
+import { SegmentedControl, darkSharedUiTheme } from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const basisOptions = [
@@ -64,6 +64,15 @@ export const ProfitLossSegmentedControl: Story = {
   name: "Profit & loss segmented control",
   render: () => (
     <StorySurface>
+      <ProfitLossSegmentedExample />
+    </StorySurface>
+  ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
       <ProfitLossSegmentedExample />
     </StorySurface>
   ),

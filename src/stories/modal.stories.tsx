@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
+import { darkSharedUiTheme } from "../index";
 import {
   ConfirmModalExample,
   ModalExample,
@@ -19,6 +20,15 @@ export const CenteredWebModal: Story = {
   name: "Centered web modal",
   render: () => (
     <StorySurface>
+      <ModalExample placement="center" title="Invite teammate" />
+    </StorySurface>
+  ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
       <ModalExample placement="center" title="Invite teammate" />
     </StorySurface>
   ),

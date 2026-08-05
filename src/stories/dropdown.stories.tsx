@@ -3,7 +3,11 @@ import { ShieldQuestionMark } from "lucide-react-native";
 import { useState } from "react";
 import { View } from "react-native";
 
-import { ComboboxMultiSelect, DropdownSelector } from "../index";
+import {
+  ComboboxMultiSelect,
+  DropdownSelector,
+  darkSharedUiTheme,
+} from "../index";
 import type { DropdownHighlightVariant } from "../index";
 
 import {
@@ -150,6 +154,15 @@ export const DropdownActionMenu: Story = {
   name: "Dropdown action menu",
   render: () => (
     <StorySurface>
+      <ActionMenuExample />
+    </StorySurface>
+  ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
       <ActionMenuExample />
     </StorySurface>
   ),

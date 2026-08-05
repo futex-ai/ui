@@ -11,7 +11,13 @@ import {
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { InputFrame, Input, Textarea } from "../index";
+import {
+  InputFrame,
+  Input,
+  Textarea,
+  darkSharedUiTheme,
+  type SharedUiTheme,
+} from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -22,8 +28,8 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-const surface = (node: React.ReactNode) => (
-  <StorySurface>
+const surface = (node: React.ReactNode, theme?: SharedUiTheme) => (
+  <StorySurface theme={theme}>
     <View style={{ gap: 14, minWidth: 320 }}>{node}</View>
   </StorySurface>
 );
@@ -31,6 +37,11 @@ const surface = (node: React.ReactNode) => (
 export const LabelledField: Story = {
   name: "Labelled field",
   render: () => surface(<LabelledExample />),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => surface(<LabelledExample />, darkSharedUiTheme),
 };
 
 export const ValidatedField: Story = {

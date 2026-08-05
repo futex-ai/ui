@@ -8,7 +8,7 @@ import {
   Trash2,
 } from "lucide-react-native";
 import type { ReactNode } from "react";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { GestureResponderEvent } from "react-native";
 import {
   Pressable,
@@ -35,10 +35,12 @@ import {
   SharedUiThemeProvider,
   Sheet,
   WebModalFrame,
+  createSharedUiTheme,
   defaultSharedUiTheme,
   dropdownPlacement,
   dropdownSurfaceRect,
   useDropdownSurfaceStyles,
+  useSharedUiTheme,
 } from "../index";
 
 const selectorOptions = [
@@ -226,8 +228,39 @@ export function SearchableSelectorExample() {
   );
 }
 
+/**
+ * The examples' own chrome — the "Last action" status line and the ⋯ icon
+ * trigger — reads from the theme rather than fixed light values, so any example
+ * composes under any preset (including the dark ones). Every token below
+ * resolves to exactly the literal it replaced in the default theme, so the
+ * light stories are unchanged.
+ */
+function ExampleStatus({ children }: { children: ReactNode }) {
+  const theme = useSharedUiTheme();
+  return (
+    <Text style={[styles.actionMenuStatus, { color: theme.colors.ink2 }]}>
+      {children}
+    </Text>
+  );
+}
+
+function useExampleIconTrigger() {
+  const theme = useSharedUiTheme();
+  return {
+    iconColor: theme.colors.ink2,
+    style: [
+      styles.iconButton,
+      {
+        backgroundColor: theme.colors.surface,
+        borderColor: theme.colors.border2,
+      },
+    ],
+  };
+}
+
 export function ActionMenuExample() {
   const [lastAction, setLastAction] = useState("None");
+  const iconTrigger = useExampleIconTrigger();
   const entries: DropdownListEntry[] = [
     {
       id: "settings",
@@ -253,18 +286,19 @@ export function ActionMenuExample() {
         <Pressable
           accessibilityLabel="Open action menu"
           accessibilityRole="button"
-          style={styles.iconButton}
+          style={iconTrigger.style}
         >
-          <MoreHorizontal color="#3e4540" size={18} />
+          <MoreHorizontal color={iconTrigger.iconColor} size={18} />
         </Pressable>
       </DropdownMenu>
-      <Text style={styles.actionMenuStatus}>Last action: {lastAction}</Text>
+      <ExampleStatus>Last action: {lastAction}</ExampleStatus>
     </View>
   );
 }
 
 export function ActionMenuTintedIconsExample() {
   const [lastAction, setLastAction] = useState("None");
+  const iconTrigger = useExampleIconTrigger();
   // Bare glyphs rather than `DropdownIconBox` (which carries its own soft
   // background). A plain node here would keep its own color and go near-black
   // on the solid active fill, so each row passes a `leading` render function and
@@ -308,18 +342,19 @@ export function ActionMenuTintedIconsExample() {
         <Pressable
           accessibilityLabel="Open tinted action menu"
           accessibilityRole="button"
-          style={styles.iconButton}
+          style={iconTrigger.style}
         >
-          <MoreHorizontal color="#3e4540" size={18} />
+          <MoreHorizontal color={iconTrigger.iconColor} size={18} />
         </Pressable>
       </DropdownMenu>
-      <Text style={styles.actionMenuStatus}>Last action: {lastAction}</Text>
+      <ExampleStatus>Last action: {lastAction}</ExampleStatus>
     </View>
   );
 }
 
 export function ActionMenuSubtextExample() {
   const [lastAction, setLastAction] = useState("None");
+  const iconTrigger = useExampleIconTrigger();
   const entries: DropdownListEntry[] = [
     {
       id: "settings",
@@ -346,12 +381,12 @@ export function ActionMenuSubtextExample() {
         <Pressable
           accessibilityLabel="Open settings menu"
           accessibilityRole="button"
-          style={styles.iconButton}
+          style={iconTrigger.style}
         >
-          <MoreHorizontal color="#3e4540" size={18} />
+          <MoreHorizontal color={iconTrigger.iconColor} size={18} />
         </Pressable>
       </DropdownMenu>
-      <Text style={styles.actionMenuStatus}>Last action: {lastAction}</Text>
+      <ExampleStatus>Last action: {lastAction}</ExampleStatus>
     </View>
   );
 }
@@ -646,7 +681,7 @@ export function ResponsiveMenuExample() {
         onClose={() => setOpen(false)}
         open={open}
       />
-      <Text style={styles.actionMenuStatus}>Last action: {lastAction}</Text>
+      <ExampleStatus>Last action: {lastAction}</ExampleStatus>
     </View>
   );
 }
@@ -732,7 +767,7 @@ export function ConfirmModalExample() {
   const [status, setStatus] = useState("No decision yet");
   return (
     <View style={styles.actionMenuExample}>
-      <Text style={styles.actionMenuStatus}>{status}</Text>
+      <ExampleStatus>{status}</ExampleStatus>
       <Pressable
         accessibilityLabel="Open Publish changes"
         accessibilityRole="button"
@@ -770,9 +805,9 @@ export function ConfirmModalExample() {
         title="Publish changes"
         visible={visible}
       >
-        <Text style={styles.actionMenuStatus}>
+        <ExampleStatus>
           Everyone with access to this book will see the new figures.
-        </Text>
+        </ExampleStatus>
       </WebModalFrame>
     </View>
   );
@@ -787,6 +822,9 @@ export function ModalExample({
 }) {
   const [visible, setVisible] = useState(true);
   const [text, setText] = useState("");
+  // A bare TextInput inherits the browser's black default, which is unreadable
+  // on a dark surface — and its placeholder needs the theme's own token too.
+  const theme = useSharedUiTheme();
   return (
     <View>
       <Pressable
@@ -818,7 +856,14 @@ export function ModalExample({
             accessibilityLabel="Modal text field"
             onChangeText={setText}
             placeholder="Type here"
-            style={styles.input}
+            placeholderTextColor={theme.colors.placeholder}
+            style={[
+              styles.input,
+              {
+                borderColor: theme.colors.controlBorder,
+                color: theme.colors.ink,
+              },
+            ]}
             value={text}
           />
           <DropdownSelector
@@ -898,14 +943,26 @@ export function ResizableSheetExample() {
 }
 
 export function ThemeSwatch({ label }: { label: string }) {
+  // The swatch heading names the preset it is demonstrating, so it has to read
+  // that preset's own `ink` rather than a fixed dark grey — otherwise a dark
+  // swatch prints near-black on near-black.
+  const theme = useSharedUiTheme();
   return (
     <View style={styles.themeDemo}>
-      <Text style={styles.heading}>{label}</Text>
+      <Text style={[styles.heading, { color: theme.colors.ink }]}>{label}</Text>
       <SelectorExample />
     </View>
   );
 }
 
+/**
+ * The panel every story renders into. It paints its own theme's `bg` rather
+ * than inheriting the canvas: the Storybook body is a fixed light
+ * `#f7f7f3` (`.storybook/storybook.css`), so a dark-theme story would otherwise
+ * composite dark text over a light page and the axe sweep would (rightly) fail
+ * it. For the default theme the painted color *is* `#f7f7f3`, so every existing
+ * light story renders pixel-identically.
+ */
 export function StorySurface({
   children,
   theme = defaultSharedUiTheme,
@@ -913,9 +970,12 @@ export function StorySurface({
   children: ReactNode;
   theme?: SharedUiTheme | SharedUiThemeOverrides;
 }) {
+  const resolved = useMemo(() => createSharedUiTheme(theme), [theme]);
   return (
-    <SharedUiThemeProvider theme={theme}>
-      <View style={styles.surface}>{children}</View>
+    <SharedUiThemeProvider theme={resolved}>
+      <View style={[styles.surface, { backgroundColor: resolved.colors.bg }]}>
+        {children}
+      </View>
     </SharedUiThemeProvider>
   );
 }
@@ -1301,7 +1361,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionMenuStatus: {
-    color: "#3e4540",
     fontSize: 13,
     fontWeight: "600",
   },
@@ -1395,15 +1454,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   heading: {
-    color: "#1c1f1d",
     fontSize: 16,
     fontWeight: "800",
     marginBottom: 12,
   },
   iconButton: {
     alignItems: "center",
-    backgroundColor: "#fff",
-    borderColor: "#d3d8cd",
     borderRadius: 8,
     borderWidth: 1,
     height: 38,
@@ -1411,7 +1467,6 @@ const styles = StyleSheet.create({
     width: 38,
   },
   input: {
-    borderColor: "#d3d8cd",
     borderRadius: 8,
     borderWidth: 1,
     fontSize: 14,
@@ -1590,6 +1645,10 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   surface: {
+    // Rounded so a dark-theme panel reads as a panel on the light Storybook
+    // canvas instead of a hard-cornered slab. Invisible on the light themes,
+    // where the panel's fill matches the page.
+    borderRadius: 12,
     minWidth: 320,
     padding: 24,
   },

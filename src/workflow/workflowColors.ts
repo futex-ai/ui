@@ -23,7 +23,7 @@ export type EdgeColors = {
  * philosophy as the {@link Badge}: `success` follows the brand `primary` accent
  * (green in the default theme), `failure` the rose danger accent, `condition`
  * the amber warning accent, and `always`/`neutral` a quiet neutral. Every pair
- * keeps its deep text ≥4.5:1 on its own soft fill in both shipped themes.
+ * keeps its deep text ≥4.5:1 on its own soft fill in all four shipped themes.
  */
 export function resolveEdgeColors(
   colors: SharedUiColors,

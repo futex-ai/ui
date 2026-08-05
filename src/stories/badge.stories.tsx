@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { StyleSheet, View } from "react-native";
 
 import { Badge } from "../index";
-import { junoSharedUiTheme } from "../index";
+import { darkSharedUiTheme, junoSharedUiTheme } from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -142,6 +142,30 @@ export const CustomPalette: Story = {
             {status.label}
           </Badge>
         ))}
+      </View>
+    </StorySurface>
+  ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <View style={styles.stack}>
+        <View style={styles.row}>
+          {tones.map((tone) => (
+            <Badge key={tone} tone={tone} variant="soft">
+              {toneLabel[tone]}
+            </Badge>
+          ))}
+        </View>
+        <View style={styles.row}>
+          {tones.map((tone) => (
+            <Badge key={tone} tone={tone} variant="solid">
+              {toneLabel[tone]}
+            </Badge>
+          ))}
+        </View>
       </View>
     </StorySurface>
   ),

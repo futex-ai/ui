@@ -78,7 +78,12 @@ export function DragSelectableOverlay({
           },
         ]}
       >
-        <Text style={[styles.badgeText, { fontFamily: theme.fonts.sans }]}>
+        <Text
+          style={[
+            styles.badgeText,
+            { color: theme.colors.onSolid, fontFamily: theme.fonts.sans },
+          ]}
+        >
           {label}
         </Text>
       </View>
@@ -97,7 +102,6 @@ const styles = StyleSheet.create({
     right: -16,
   },
   badgeText: {
-    color: "#fff",
     fontSize: 11,
     fontWeight: "800",
     lineHeight: 14,

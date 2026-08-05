@@ -2,7 +2,13 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { Loader, LoaderVariant, ProgressBar, ProgressRing } from "../index";
+import {
+  Loader,
+  LoaderVariant,
+  ProgressBar,
+  ProgressRing,
+  darkSharedUiTheme,
+} from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -36,6 +42,34 @@ export const Variants: Story = {
               />
             </View>
             <Text style={styles.caption}>{label}</Text>
+          </View>
+        ))}
+      </View>
+    </StorySurface>
+  ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <View style={styles.gallery}>
+        {VARIANTS.map(({ label, variant }) => (
+          <View key={variant} style={styles.cell}>
+            <View style={styles.stage}>
+              <Loader
+                accessibilityLabel={`Loading ${label}`}
+                variant={variant}
+              />
+            </View>
+            <Text
+              style={[
+                styles.caption,
+                { color: darkSharedUiTheme.colors.muted },
+              ]}
+            >
+              {label}
+            </Text>
           </View>
         ))}
       </View>

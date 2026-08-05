@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { StyleSheet, Text, View } from "react-native";
 
-import { Avatar } from "../index";
+import { Avatar, darkSharedUiTheme } from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -25,6 +25,29 @@ export const UserAvatars: Story = {
           style={styles.amberDisc}
           // Darkened from #946727 (4.22:1) to clear the 4.5:1 AA text-contrast
           // floor on the cream disc (#74511f ≈ 6.07:1).
+          textColor="#74511f"
+          tone="soft"
+        />
+        <Avatar accessibilityLabel="Vivienne Archer" label="VA" size={48} />
+      </View>
+    </StorySurface>
+  ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <View style={styles.row}>
+        <Avatar accessibilityLabel="Greenhouse Studio" label="GS" />
+        <Avatar accessibilityLabel="Payroll Reserve" label="PR" tone="soft" />
+        {/* The custom cream disc is a caller-owned palette, so — like the
+            workflow node chips — it does NOT invert with the theme; the pair
+            stays internally AA (6.07:1). */}
+        <Avatar
+          accessibilityLabel="Accounts Receivable"
+          label="AR"
+          style={styles.amberDisc}
           textColor="#74511f"
           tone="soft"
         />

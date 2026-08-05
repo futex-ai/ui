@@ -11,6 +11,7 @@ import {
   KanbanChip,
   type KanbanChipColor,
   type KanbanColumnDef,
+  darkSharedUiTheme,
   useFocusRing,
 } from "../index";
 import { StorySurface } from "./sharedExamples";
@@ -194,6 +195,22 @@ export const GroupedByStatus: Story = {
   name: "Grouped by status",
   render: () => (
     <StorySurface>
+      <Kanban<ContentCard>
+        accessibilityLabel="Content board"
+        cardColumnId={(card) => card.status}
+        cardKey={(card) => card.id}
+        cards={cards}
+        columns={columns}
+        renderCard={renderContentCard}
+      />
+    </StorySurface>
+  ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
       <Kanban<ContentCard>
         accessibilityLabel="Content board"
         cardColumnId={(card) => card.status}

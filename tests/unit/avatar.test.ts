@@ -20,7 +20,7 @@ test("avatar renders solid and soft tones driven by shared theme tokens", () => 
   // Both tone foregrounds are resolved by `avatarForegroundColor`, so the
   // tokens are asserted there rather than inline on the style entries.
   assert.match(stylesSource, /theme\.colors\.primaryDeep/);
-  assert.match(stylesSource, /const SOLID_TEXT_COLOR = "#fff"/);
+  assert.match(stylesSource, /theme\.colors\.onSolid/);
   assert.match(
     stylesSource,
     /avatarTextSolid: \{ color: avatarForegroundColor\(theme, true\) \}/,
@@ -36,7 +36,7 @@ test("avatar resolves one foreground color for the initials and the loader", () 
   // never be drawn in a different color from the initials they replace.
   assert.match(
     stylesSource,
-    /return override \?\? \(solid \? SOLID_TEXT_COLOR : theme\.colors\.primaryDeep\)/,
+    /return override \?\? \(solid \? theme\.colors\.onSolid : theme\.colors\.primaryDeep\)/,
   );
   assert.match(
     stylesSource,

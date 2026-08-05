@@ -36,7 +36,7 @@ export function createRadioCardStyles(theme: SharedUiTheme) {
     },
     radioCheckGlyph: {
       ...baseText,
-      color: theme.colors.surface,
+      color: theme.colors.onSolid,
       fontSize: 10,
       fontWeight: "900",
       lineHeight: 12,

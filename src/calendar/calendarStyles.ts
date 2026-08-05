@@ -152,7 +152,7 @@ export function createCalendarStyles(theme: SharedUiTheme) {
       minWidth: 22,
       paddingHorizontal: 4,
     },
-    monthTodayNumber: { color: theme.colors.surface, fontWeight: "700" },
+    monthTodayNumber: { color: theme.colors.onSolid, fontWeight: "700" },
     // Vertical stack of chips / spanning bars within a cell.
     monthCellChips: { gap: 2 },
 
@@ -167,7 +167,7 @@ export function createCalendarStyles(theme: SharedUiTheme) {
     },
     chipText: {
       ...baseText,
-      color: theme.colors.surface,
+      color: theme.colors.onSolid,
       fontSize: 11,
       fontWeight: "600",
     },
@@ -258,7 +258,7 @@ export function createCalendarStyles(theme: SharedUiTheme) {
       minWidth: 26,
       paddingHorizontal: 5,
     },
-    timeHeaderTodayDay: { color: theme.colors.surface },
+    timeHeaderTodayDay: { color: theme.colors.onSolid },
     // Scrollable body holding the hour rows + day columns.
     timeGridBody: { flexGrow: 1 },
     // Inner content row: gutter on the left, the day columns on the right.
@@ -388,16 +388,16 @@ export function createCalendarStyles(theme: SharedUiTheme) {
     },
     eventBlockTitle: {
       ...baseText,
-      color: theme.colors.surface,
+      color: theme.colors.onSolid,
       fontSize: 11,
       fontWeight: "700",
     },
     eventBlockTime: {
       ...baseText,
-      color: theme.colors.surface,
+      color: theme.colors.onSolid,
       fontSize: 10,
-      // Full-opacity white keeps the time text ≥4.5:1 on the primary event fill
-      // (WCAG 2.1 — 1.4.3 Contrast). White at 0.9 composites to ~4.41:1.
+      // Full-opacity `onSolid` keeps the time text ≥4.5:1 on the primary event
+      // fill (WCAG 2.1 — 1.4.3 Contrast). White at 0.9 composites to ~4.41:1.
     },
 
     // --- drag ghost (in-progress drag-to-create) ---------------------------

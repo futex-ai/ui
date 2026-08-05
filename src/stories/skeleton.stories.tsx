@@ -1,7 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { StyleSheet, Text, View } from "react-native";
 
-import { SkeletonBar, SkeletonCircle, SkeletonGroup } from "../index";
+import {
+  SkeletonBar,
+  SkeletonCircle,
+  SkeletonGroup,
+  darkSharedUiTheme,
+  useSharedUiTheme,
+} from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -12,20 +18,65 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+/**
+ * The demo's own chrome (the section labels and the card) reads from the theme
+ * rather than fixed light values, so these examples compose under any preset —
+ * including the dark ones. The default theme's tokens are the same values that
+ * were hardcoded before, so the light stories are unchanged.
+ */
+function SectionLabel({ children }: { children: string }) {
+  const theme = useSharedUiTheme();
+  return (
+    <Text style={[styles.label, { color: theme.colors.ink2 }]}>{children}</Text>
+  );
+}
+
+function Card({ children }: { children: React.ReactNode }) {
+  const theme = useSharedUiTheme();
+  return (
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.colors.surface,
+          borderColor: theme.colors.border,
+        },
+      ]}
+    >
+      {children}
+    </View>
+  );
+}
+
+function PrimitivesExample() {
+  return (
+    <View style={styles.stack}>
+      <SectionLabel>Bars</SectionLabel>
+      <View style={styles.bars}>
+        <SkeletonBar width="40%" />
+        <SkeletonBar width="80%" />
+        <SkeletonBar width="60%" />
+      </View>
+      <SectionLabel>Circle</SectionLabel>
+      <SkeletonCircle diameter={48} />
+    </View>
+  );
+}
+
 export const Primitives: Story = {
   name: "Primitives",
   render: () => (
     <StorySurface>
-      <View style={styles.stack}>
-        <Text style={styles.label}>Bars</Text>
-        <View style={styles.bars}>
-          <SkeletonBar width="40%" />
-          <SkeletonBar width="80%" />
-          <SkeletonBar width="60%" />
-        </View>
-        <Text style={styles.label}>Circle</Text>
-        <SkeletonCircle diameter={48} />
-      </View>
+      <PrimitivesExample />
+    </StorySurface>
+  ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <PrimitivesExample />
     </StorySurface>
   ),
 };
@@ -39,7 +90,7 @@ export const ComposedRow: Story = {
   name: "Composed row",
   render: () => (
     <StorySurface>
-      <View style={styles.card}>
+      <Card>
         <SkeletonGroup gap={12}>
           <SkeletonCircle diameter={40} />
           <SkeletonGroup direction="column" gap={6} style={styles.fill}>
@@ -48,7 +99,7 @@ export const ComposedRow: Story = {
           </SkeletonGroup>
           <SkeletonBar height={12} radius="pill" width={56} />
         </SkeletonGroup>
-      </View>
+      </Card>
     </StorySurface>
   ),
 };
@@ -58,14 +109,14 @@ export const ComposedCard: Story = {
   name: "Composed card",
   render: () => (
     <StorySurface>
-      <View style={styles.card}>
+      <Card>
         <SkeletonGroup direction="column" gap={12}>
           <SkeletonBar height={18} radius="md" width="55%" />
           <SkeletonBar height={12} />
           <SkeletonBar height={12} />
           <SkeletonBar height={12} width="70%" />
         </SkeletonGroup>
-      </View>
+      </Card>
     </StorySurface>
   ),
 };
@@ -76,8 +127,6 @@ const styles = StyleSheet.create({
     width: 280,
   },
   card: {
-    backgroundColor: "#ffffff",
-    borderColor: "#e5e8e0",
     borderRadius: 12,
     borderWidth: 1,
     padding: 16,
@@ -85,7 +134,6 @@ const styles = StyleSheet.create({
   },
   fill: { flex: 1 },
   label: {
-    color: "#3e4540",
     fontSize: 13,
     fontWeight: "600",
   },

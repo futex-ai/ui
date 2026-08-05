@@ -4,10 +4,11 @@ export type SharedUiColors = {
   amber: string;
   /**
    * Deep amber for the warning tone: the badge's `soft` warning text on
-   * `amberSoft` and the `solid` warning fill under white text. Held to WCAG
-   * 2.1 — 1.4.3 (AA): ≥4.5:1 on `amberSoft` and as a fill under white in both
-   * shipped themes, since the lighter `amber` accent falls below AA on its own
-   * soft tint. Mirrors `primaryDeep`.
+   * `amberSoft` and the `solid` warning fill under `onSolid` text (white in the
+   * light themes; in the dark themes the fill lightens and `onSolid` darkens
+   * instead). Held to WCAG 2.1 — 1.4.3 (AA): ≥4.5:1 on `amberSoft` and as a
+   * fill under `onSolid` in all four shipped themes, since the lighter `amber`
+   * accent falls below AA on its own soft tint. Mirrors `primaryDeep`.
    */
   amberDeep: string;
   amberSoft: string;
@@ -21,13 +22,15 @@ export type SharedUiColors = {
    * switch's resting knob — and the switch track at half alpha, the one place
    * the edge paints over a grey fill instead of white). A translucent tint of
    * the theme's `ink` (≈27% opacity) rather than a fixed grey: the edge
-   * composites with whatever sits behind it, so it reads as a light,
-   * unobtrusive line on the white `surface` (≈1.4:1 on #fff) and stays
+   * composites with whatever sits behind it, so it reads as an unobtrusive line
+   * on the `surface` (≈1.4:1 on the light themes' white) and stays
    * proportionate — lifting gently over the grayer page or a tinted fill
-   * instead of floating as a hard grey outline. Kept in sync by hand with
-   * `ink`. Intentionally below the WCAG 2.1 — 1.4.11 Non-text Contrast (AA)
-   * ≥3:1 floor: a calmer, blended edge is the deliberate trade.
-   * `border`/`border2` remain the even lighter decorative dividers.
+   * instead of floating as a hard grey outline. In the dark themes the light
+   * `ink` composites the same way, as a light line over the dark fills. Kept in
+   * sync by hand with `ink` in all four shipped themes. Intentionally below the
+   * WCAG 2.1 — 1.4.11 Non-text Contrast (AA) ≥3:1 floor: a calmer, blended edge
+   * is the deliberate trade. `border`/`border2` remain the even lighter
+   * decorative dividers.
    */
   controlBorder: string;
   faint: string;
@@ -35,9 +38,21 @@ export type SharedUiColors = {
   ink2: string;
   muted: string;
   /**
+   * Text and icon color on solid accent fills — the badge/button/avatar solid
+   * variants, the dropdown's solid active row, the calendar "today" disc and
+   * event blocks, the selected date cell, the radio check, the switch knob at
+   * the on-position, the combobox count mark, the drag-select count badge and
+   * the rich-text checkbox tick. White in the light themes; in the dark themes
+   * solid fills invert to light accents, so this flips to the near-black page
+   * ink-well. Held to WCAG 2.1 — 1.4.3 (AA): ≥4.5:1 on `primary`, `ink2` and
+   * every `*Deep` fill in all four shipped themes.
+   */
+  onSolid: string;
+  /**
    * Placeholder / faint-but-meaningful text color. Held to WCAG 2.1 — 1.4.3
-   * Contrast Minimum (AA): ≥4.5:1 on `surface`. Use this instead of `faint`
-   * (which stays light for decorative use) wherever the text conveys meaning.
+   * Contrast Minimum (AA): ≥4.5:1 on `surface` in all four shipped themes. Use
+   * this instead of `faint` (which stays light for decorative use) wherever the
+   * text conveys meaning.
    */
   placeholder: string;
   primary: string;
@@ -47,10 +62,11 @@ export type SharedUiColors = {
   rose: string;
   /**
    * Deep rose for the danger tone: the badge's `soft` danger text on `roseSoft`
-   * and the `solid` danger fill under white text. Held to WCAG 2.1 — 1.4.3
-   * (AA): ≥4.5:1 on `roseSoft` and as a fill under white in both shipped
-   * themes, since the lighter `rose` accent falls below AA on its own soft
-   * tint. Mirrors `primaryDeep`.
+   * and the `solid` danger fill under `onSolid` text (white in the light
+   * themes; in the dark themes the fill lightens and `onSolid` darkens
+   * instead). Held to WCAG 2.1 — 1.4.3 (AA): ≥4.5:1 on `roseSoft` and as a fill
+   * under `onSolid` in all four shipped themes, since the lighter `rose` accent
+   * falls below AA on its own soft tint. Mirrors `primaryDeep`.
    */
   roseDeep: string;
   roseSoft: string;
@@ -78,6 +94,8 @@ export type SharedUiRadii = {
   xxl: number;
 };
 
+export type SharedUiScheme = "light" | "dark";
+
 export type SharedUiTheme = {
   colors: SharedUiColors;
   fonts: SharedUiFonts;
@@ -90,6 +108,14 @@ export type SharedUiTheme = {
    * focus stays visible (WCAG 2.1 — 2.4.7 Focus Visible, AA).
    */
   focusRing: boolean;
+  /**
+   * Which side of the light/dark divide this theme's palette sits on. Almost
+   * no component should branch on it — colors flow through tokens — but the
+   * few physical-metaphor sites (the white skeleton sheen, the switch knob's
+   * off-state fill, the solid toast's hover wash, the data-grid's fixed pill
+   * pairs) legitimately need to know. Defaults to "light".
+   */
+  scheme: SharedUiScheme;
 };
 
 export type SharedUiThemeOverrides = {
@@ -97,6 +123,7 @@ export type SharedUiThemeOverrides = {
   fonts?: Partial<SharedUiFonts>;
   radii?: Partial<SharedUiRadii>;
   focusRing?: boolean;
+  scheme?: SharedUiScheme;
 };
 
 export const defaultSharedUiTheme: SharedUiTheme = {
@@ -113,6 +140,7 @@ export const defaultSharedUiTheme: SharedUiTheme = {
     ink: "#1c1f1d",
     ink2: "#3e4540",
     muted: "#69706a",
+    onSolid: "#ffffff",
     placeholder: "#6c736c",
     primary: "#4f7864",
     primaryBorder: "#d1e2d7",
@@ -138,18 +166,21 @@ export const defaultSharedUiTheme: SharedUiTheme = {
     xxl: 14,
   },
   focusRing: true,
+  scheme: "light",
 };
 
 const SharedUiThemeContext = createContext<SharedUiTheme>(defaultSharedUiTheme);
 
 export function createSharedUiTheme(
   overrides: SharedUiThemeOverrides = {},
+  base: SharedUiTheme = defaultSharedUiTheme,
 ): SharedUiTheme {
   return {
-    colors: { ...defaultSharedUiTheme.colors, ...overrides.colors },
-    fonts: { ...defaultSharedUiTheme.fonts, ...overrides.fonts },
-    radii: { ...defaultSharedUiTheme.radii, ...overrides.radii },
-    focusRing: overrides.focusRing ?? defaultSharedUiTheme.focusRing,
+    colors: { ...base.colors, ...overrides.colors },
+    fonts: { ...base.fonts, ...overrides.fonts },
+    radii: { ...base.radii, ...overrides.radii },
+    focusRing: overrides.focusRing ?? base.focusRing,
+    scheme: overrides.scheme ?? base.scheme,
   };
 }
 
@@ -186,6 +217,7 @@ export const junoSharedUiTheme = createSharedUiTheme({
     ink: "#15131F",
     ink2: "#3D3A4E",
     muted: "#65627A",
+    onSolid: "#ffffff",
     placeholder: "#6F6C7E",
     primary: "#6F5BD0",
     primaryBorder: "#E2DAF5",
@@ -205,3 +237,79 @@ export const junoSharedUiTheme = createSharedUiTheme({
     xxl: 22,
   },
 });
+
+/**
+ * Dark counterpart of the accounting default: warm green-tinted greys with the
+ * sage accents lightened for a dark surface. Elevation inverts — `surface`
+ * sits *above* `bg` by being slightly lighter — and solid fills invert too:
+ * the `*Deep` tokens become the light accents and `onSolid` becomes the page
+ * ink-well, so every existing token relationship (deep-on-soft, deep-as-fill,
+ * the heatmap ramp's ordering) keeps working with no per-component logic.
+ * Every documented WCAG 2.1 — 1.4.3/1.4.11 pair is pinned by
+ * `tests/unit/darkTheme.test.ts`.
+ */
+export const darkSharedUiTheme = createSharedUiTheme({
+  scheme: "dark",
+  colors: {
+    amber: "#cfa763",
+    amberDeep: "#e3c186",
+    amberSoft: "#322a19",
+    bg: "#141613",
+    bg2: "#1b1e1b",
+    border: "#2a2e2a",
+    border2: "#3a403a",
+    controlBorder: "rgba(230, 233, 228, 0.27)", // ink (#e6e9e4) @ 27% — translucent control edge
+    faint: "#5c635b",
+    ink: "#e6e9e4",
+    ink2: "#c3c9c2",
+    muted: "#9aa29a",
+    onSolid: "#141613",
+    placeholder: "#9aa29a",
+    primary: "#7aa78e",
+    primaryBorder: "#33493d",
+    primaryDeep: "#a3cdb4",
+    primarySoft: "#223029",
+    rose: "#cd8478",
+    roseDeep: "#eba99d",
+    roseSoft: "#382220",
+    soft: "#252a25",
+    surface: "#212522",
+  },
+});
+
+/**
+ * Dark Juno: cool violet-tinted greys. Built on {@link junoSharedUiTheme} as
+ * its base so it inherits Juno's larger radii, and follows the same
+ * solid-inversion model as {@link darkSharedUiTheme}.
+ */
+export const junoDarkSharedUiTheme = createSharedUiTheme(
+  {
+    scheme: "dark",
+    colors: {
+      amber: "#d9a852",
+      amberDeep: "#e8c37e",
+      amberSoft: "#322913",
+      bg: "#131218",
+      bg2: "#19181f",
+      border: "#282631",
+      border2: "#38353f",
+      controlBorder: "rgba(232, 230, 240, 0.27)", // ink (#e8e6f0) @ 27%
+      faint: "#615e70",
+      ink: "#e8e6f0",
+      ink2: "#c7c3d6",
+      muted: "#9d99ae",
+      onSolid: "#131218",
+      placeholder: "#9d99ae",
+      primary: "#9b8ce8",
+      primaryBorder: "#3b3459",
+      primaryDeep: "#b6aaf5",
+      primarySoft: "#272239",
+      rose: "#d98282",
+      roseDeep: "#f0a3a3",
+      roseSoft: "#3a1f1f",
+      soft: "#1f1d27",
+      surface: "#1e1c25",
+    },
+  },
+  junoSharedUiTheme,
+);
