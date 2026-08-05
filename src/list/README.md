@@ -58,13 +58,16 @@ text past a leading avatar.
 Pass `onItemPress` to make every item a pressable button. Items then gain a
 hover wash, the sage focus ring, a pressed state, and keyboard activation (Enter
 / Space), and announce themselves as buttons inside the list. Use `itemLabel` to
-give each item an accessible name, and `itemDisabled` to make individual items
-non-pressable. Without `onItemPress`, items render as plain static rows.
+give each item an accessible name, `itemDisabled` to make individual items
+non-pressable, and `itemTestID` to identify each item's actual press target in
+tests. Without `onItemPress`, items render as plain static rows and `itemTestID`
+identifies the row view instead.
 
 ```tsx
 <List<Person>
   itemKey={(person) => person.id}
   itemLabel={(person) => `Open ${person.name}`}
+  itemTestID={(person) => `person-${person.id}`}
   items={people}
   onItemPress={(person) => router.push(`/people/${person.id}`)}
   renderItem={(person) => <ListItem title={person.name} />}
@@ -98,6 +101,10 @@ bold `title` with an optional muted `description` beneath it, and an optional
 `trailing` accessory (a tag, amount, or chevron). `title` and `description` take
 the themed typography when passed a string/number, or render any node as-is.
 `renderItem` can return any node, so a list is never limited to `ListItem`.
+
+When `ListItem` has an `onPress`, its `testID` is forwarded to the title
+`Pressable`, so `fireEvent.press(getByTestId(...))` reaches the handler. For a
+static `ListItem`, the same prop identifies the outer row view.
 
 ### Sizes
 

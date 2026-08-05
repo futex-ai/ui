@@ -80,6 +80,12 @@ export type SharedUiFonts = {
 };
 
 export type SharedUiRadii = {
+  /**
+   * Corner radius of `Avatar`'s `shape="square"` as a fraction of its `size`,
+   * clamped to `[0, 0.5]`. A ratio rather than a pixel value so a rounded
+   * square looks identical at every avatar size.
+   */
+  avatarRatio: number;
   lg: number;
   md: number;
   pill: number;
@@ -151,6 +157,7 @@ export const defaultSharedUiTheme: SharedUiTheme = {
     sans: "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
   },
   radii: {
+    avatarRatio: 0.25,
     lg: 10,
     md: 8,
     pill: 999,

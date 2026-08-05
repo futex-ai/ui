@@ -293,16 +293,24 @@ Required behavior:
 
 ## Avatar Contract
 
-The avatar family covers the compact circular initials badge used to represent a
-person or entity.
+The avatar family covers the compact initials badge used to represent a person
+or entity, as either a circular disc or a rounded square.
 
 Required behavior:
 
-- Render a circular disc with one or two initials centered on it.
-- Drive the diameter, the circular radius, and the initials' font size from a
-  single `size` prop so every avatar scales proportionally.
+- Render a disc or a rounded square with one or two initials centered on it.
+- Drive the box, the corner radius, and the initials' font size from a single
+  `size` prop so every avatar scales proportionally.
+- Offer two shapes: `circle` (the default, radius `size / 2`) and `square`,
+  whose radius is `size * radii.avatarRatio` — a theme ratio token (default
+  `0.25`) clamped to `[0, 0.5]` so the corner reads identically at every size.
 - Support a solid tone (primary-filled disc with white initials) and a soft tone
   (soft-tinted disc with deep-primary initials).
+- Offer an indeterminate `loading` state that replaces the initials in place
+  with the loader family's `dot-grid` shape, drawn in the same foreground color
+  the initials would have used. The disc keeps its fill, corner, and footprint
+  so a row of avatars does not reflow, and it reports itself as a busy
+  progress indicator rather than an image for as long as it is loading.
 - Use shared theme tokens for the disc backgrounds, the initials' color, and the
   initials' font, with no consumer-local theme imports.
 - Accept an optional accessible name and a container style override without

@@ -46,7 +46,10 @@ export type ListItemProps = {
   onPress?: () => void;
   /** Match the type scale to the list's `size`. Defaults to `md`. */
   size?: ControlSize;
-  /** Test identifier forwarded to the root element (`data-testid` on web). */
+  /**
+   * Test identifier for the title press target when `onPress` is set, or the
+   * static row otherwise (`data-testid` on web).
+   */
   testID?: string;
   /** Primary line. A string/number is given the bold title treatment; any node renders as-is. */
   title: ReactNode;
@@ -97,7 +100,7 @@ export function ListItem({
     </>
   );
   return (
-    <View style={styles.itemRow} testID={testID}>
+    <View style={styles.itemRow} testID={onPress ? undefined : testID}>
       {leading != null ? (
         <View style={styles.itemLeading}>{leading}</View>
       ) : null}
@@ -108,6 +111,7 @@ export function ListItem({
           label={resolvedName}
           onPress={onPress}
           styles={styles}
+          testID={testID}
         >
           {mainContent}
         </PressableTitle>
@@ -137,6 +141,7 @@ function PressableTitle({
   label,
   onPress,
   styles,
+  testID,
 }: {
   children: ReactNode;
   disabled: boolean;
@@ -144,6 +149,7 @@ function PressableTitle({
   label?: string;
   onPress: () => void;
   styles: ListStyles;
+  testID?: string;
 }) {
   const focus = useFocusRing({ disabled: disableFocusRing });
   return (
@@ -155,6 +161,7 @@ function PressableTitle({
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onPress}
+      testID={testID}
       style={({ pressed }: PressableHoverState) => [
         styles.itemMain,
         styles.itemMainPressable,

@@ -1,6 +1,23 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, TextStyle } from "react-native";
 
 import type { SharedUiTheme } from "../theme";
+
+/**
+ * The disc foreground: the color the initials are drawn in, and the color the
+ * dot-grid loader takes when `loading` replaces them. Resolved as a value
+ * rather than only as a style so the text and the dots cannot drift apart, and
+ * so a palette disc that overrode `textColor` keeps its contrast contract in
+ * both states. On a `solid` disc it is the theme's `onSolid` — white in the
+ * light themes, the near-black ink-well in the dark ones, where the `primary`
+ * fill lightens instead.
+ */
+export function avatarForegroundColor(
+  theme: SharedUiTheme,
+  solid: boolean,
+  override?: TextStyle["color"],
+): NonNullable<TextStyle["color"]> {
+  return override ?? (solid ? theme.colors.onSolid : theme.colors.primaryDeep);
+}
 
 export function createAvatarStyles(theme: SharedUiTheme) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
@@ -10,10 +27,10 @@ export function createAvatarStyles(theme: SharedUiTheme) {
     avatarSolid: { backgroundColor: theme.colors.primary },
     avatarText: {
       ...baseText,
-      color: theme.colors.primaryDeep,
+      color: avatarForegroundColor(theme, false),
       fontWeight: "700",
     },
-    avatarTextSolid: { color: theme.colors.onSolid },
+    avatarTextSolid: { color: avatarForegroundColor(theme, true) },
   });
 }
 

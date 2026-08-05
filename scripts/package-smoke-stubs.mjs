@@ -269,7 +269,10 @@ export type AccessibilityRole = string;
 export interface AccessibilityState {
   [key: string]: unknown;
 }
+export type ColorValue = string | OpaqueColorValue;
 export type DimensionValue = number | string | null | undefined;
+export declare const OpaqueColorValue: unique symbol;
+export type OpaqueColorValue = typeof OpaqueColorValue;
 export interface TextInputProps {
   [key: string]: unknown;
 }
