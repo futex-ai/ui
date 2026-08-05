@@ -1002,6 +1002,34 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 - `ViewportStage` (fullscreen stories) is hardcoded light (`#eef1ea` +
   `defaultSharedUiTheme`); theme it if a fullscreen dark story is ever needed.
 
+## Post-M5 addition — dark coverage for every story family
+
+M4 covered the 12 families the plan flagged as high-risk. A follow-up pass added
+a `Dark` story to the remaining 17 (AnimatedBorder, DragSelect, FocusRing,
+Input, Kanban, List, Loader, Modal, Popover, Radio, RichText, Segmented, Sheet,
+SortableList, Spinner, Table, Workflow), so all 30 story files now carry one —
+**31 dark stories**, every one axe-swept against the still-empty baseline.
+
+What that pass turned up:
+
+- **A bare `TextInput` in `ModalExample` had no color**, so it fell back to the
+  browser's black default on the dark surface (1.35:1). It now takes
+  `colors.ink` plus a themed `placeholderTextColor`. axe caught this one.
+- **Internally-consistent light chrome is invisible to axe.** The Table's status
+  pills and SortableList's rows were fixed white/light cards whose own text
+  passed contrast, so only the screenshots showed them sitting wrongly on a dark
+  panel. Both now read from the theme.
+- **Not every hardcoded grey is a token.** SortableList's tag text was
+  `#5e645e` — a deliberately darkened on-tint value, _not_ `muted`. Substituting
+  `muted` put it at 4.49:1 on the `soft` fill and broke the **light** story
+  (5 nodes). Use `ink2` (8.71:1) on soft tints; verify a substitution rather
+  than assuming the literal equals the token.
+- **Fullscreen families paint their own page.** Workflow's stories have no
+  `StorySurface`, so its dark story sets `colors.bg` itself.
+- **Story-id spelling:** titles containing spaces hyphenate —
+  `drag-select-examples--dark`, `focus-ring-examples--dark` — while
+  `datagrid-`, `richtext-` and `sortablelist-` do not.
+
 ## Deviations from the plan as written (all verified)
 
 - **The white-literal guard needs the `i` flag.** `junoSharedUiTheme` spells its

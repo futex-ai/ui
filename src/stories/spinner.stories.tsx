@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { StyleSheet, Text, View } from "react-native";
 
-import { Spinner } from "../index";
+import { Spinner, darkSharedUiTheme } from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -19,6 +19,20 @@ export const LoadingStates: Story = {
       <View style={styles.row}>
         <Spinner />
         <Text style={styles.label}>Loading invoices…</Text>
+      </View>
+    </StorySurface>
+  ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <View style={styles.row}>
+        <Spinner />
+        <Text style={[styles.label, { color: darkSharedUiTheme.colors.ink2 }]}>
+          Loading invoices…
+        </Text>
       </View>
     </StorySurface>
   ),

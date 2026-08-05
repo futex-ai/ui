@@ -9,6 +9,7 @@ import {
   WorkflowEdgeLabel,
   WorkflowLegend,
   WorkflowNode,
+  darkSharedUiTheme,
   junoSharedUiTheme,
   type WorkflowEdgeTone,
   type WorkflowGraph,
@@ -279,6 +280,30 @@ export const BranchingBuilder: Story = {
   render: () => (
     <SharedUiThemeProvider theme={junoSharedUiTheme}>
       <View style={{ padding: 20 }}>
+        <BranchingBuilderExample />
+      </View>
+    </SharedUiThemeProvider>
+  ),
+};
+
+/**
+ * The builder under the dark preset. These stories are `fullscreen`, so there
+ * is no `StorySurface` to paint the page — the stage does it, otherwise the
+ * graph would sit on Storybook's light canvas. The node chips keep their fixed
+ * category palette by design (see plans/dark-mode.md).
+ */
+export const Dark: Story = {
+  name: "Dark theme",
+  parameters: { layout: "fullscreen" },
+  render: () => (
+    <SharedUiThemeProvider theme={darkSharedUiTheme}>
+      <View
+        style={{
+          backgroundColor: darkSharedUiTheme.colors.bg,
+          minHeight: "100%",
+          padding: 20,
+        }}
+      >
         <BranchingBuilderExample />
       </View>
     </SharedUiThemeProvider>

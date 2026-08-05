@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
+import { darkSharedUiTheme } from "../index";
 import { SheetExample, StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -21,6 +22,15 @@ export const BottomSheet: Story = {
   name: "Bottom sheet",
   render: () => (
     <StorySurface>
+      <SheetExample />
+    </StorySurface>
+  ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
       <SheetExample />
     </StorySurface>
   ),

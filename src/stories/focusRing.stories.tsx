@@ -2,7 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { Button, Input, RadioCard, SegmentedControl, Switch } from "../index";
+import {
+  Button,
+  Input,
+  RadioCard,
+  SegmentedControl,
+  Switch,
+  darkSharedUiTheme,
+  useSharedUiTheme,
+} from "../index";
 import { StorySurface } from "./sharedExamples";
 
 /**
@@ -29,6 +37,15 @@ export const RingEnabledDefault: Story = {
   render: () => (
     <StorySurface>
       <ControlRow caption="Default theme — Tab to see the soft focus glow." />
+    </StorySurface>
+  ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <ControlRow caption="Dark theme — Tab to see the soft focus glow." />
     </StorySurface>
   ),
 };
@@ -65,9 +82,13 @@ function ControlRow({
   const [choice, setChoice] = useState("weekly");
   const [text, setText] = useState("");
   const [radio, setRadio] = useState("standard");
+  // The caption reads from the theme so this row composes under any preset.
+  const theme = useSharedUiTheme();
   return (
     <View style={styles.column}>
-      <Text style={styles.caption}>{caption}</Text>
+      <Text style={[styles.caption, { color: theme.colors.muted }]}>
+        {caption}
+      </Text>
       <View style={styles.row}>
         <Button disableFocusRing={disableFocusRing} onPress={() => undefined}>
           Save
@@ -117,7 +138,6 @@ function ControlRow({
 
 const styles = StyleSheet.create({
   caption: {
-    color: "#69706a",
     fontSize: 13,
   },
   column: {

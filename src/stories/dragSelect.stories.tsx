@@ -7,6 +7,7 @@ import {
   DragSelectableProvider,
   hideWebOutlineView,
   useDragSelectableChanges,
+  darkSharedUiTheme,
   useDragSelectableTarget,
 } from "../index";
 import { StorySurface } from "./sharedExamples";
@@ -35,6 +36,15 @@ export const LedgerRows: Story = {
   name: "Ledger rows",
   render: () => (
     <StorySurface>
+      <LedgerRowsExample />
+    </StorySurface>
+  ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
       <LedgerRowsExample />
     </StorySurface>
   ),

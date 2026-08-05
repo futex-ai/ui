@@ -3,7 +3,7 @@ import { Plus } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { RichTextEditor } from "../index";
+import { RichTextEditor, darkSharedUiTheme } from "../index";
 import type { SlashMenuItem } from "../index";
 import { StorySurface } from "./sharedExamples";
 
@@ -52,6 +52,22 @@ export const Prefilled: Story = {
   name: "Prefilled",
   render: () => (
     <StorySurface>
+      <View style={styles.stack}>
+        <RichTextEditor
+          label="Notes"
+          minHeight={260}
+          placeholder="Write notes..."
+          value={prefilledMarkdown}
+        />
+      </View>
+    </StorySurface>
+  ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
       <View style={styles.stack}>
         <RichTextEditor
           label="Notes"

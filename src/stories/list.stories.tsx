@@ -2,7 +2,14 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { Avatar, List, ListItem, Switch } from "../index";
+import {
+  Avatar,
+  List,
+  ListItem,
+  Switch,
+  darkSharedUiTheme,
+  useSharedUiTheme,
+} from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -77,6 +84,22 @@ export const Payroll: Story = {
 };
 
 /** With `separators={false}` the rows stack flush, with no hairline between them. */
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <ListCard>
+        <List<Person>
+          accessibilityLabel="People on payroll"
+          itemKey={(person) => person.id}
+          items={people}
+          renderItem={personItem}
+        />
+      </ListCard>
+    </StorySurface>
+  ),
+};
+
 export const NoSeparators: Story = {
   name: "No separators",
   render: () => (
@@ -260,27 +283,39 @@ export const Sizes: Story = {
 
 /** A soft sage pill, matching the mockup's "First full month" tag. */
 function Badge({ label }: { label: string }) {
+  // The chip rides the same soft/deep pair it used to hardcode, so it inverts
+  // with the theme instead of staying a light-green chip on a dark panel.
+  const theme = useSharedUiTheme();
   return (
-    <View style={styles.badge}>
-      <Text style={styles.badgeText}>{label}</Text>
+    <View style={[styles.badge, { backgroundColor: theme.colors.primarySoft }]}>
+      <Text style={[styles.badgeText, { color: theme.colors.primaryDeep }]}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+/** The bordered frame the list sits in, drawn with the theme's own border. */
+function ListCard({ children }: { children: React.ReactNode }) {
+  const theme = useSharedUiTheme();
+  return (
+    <View style={[styles.card, { borderColor: theme.colors.border }]}>
+      {children}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   badge: {
-    backgroundColor: "#e3eee6",
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 5,
   },
   badgeText: {
-    color: "#2f5945",
     fontSize: 13,
     fontWeight: "700",
   },
   card: {
-    borderColor: "#e5e8e0",
     borderRadius: 12,
     borderWidth: 1,
     overflow: "hidden",

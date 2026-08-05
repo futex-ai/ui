@@ -2,7 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { Avatar, Button, Table, TableCell, type TableColumn } from "../index";
+import {
+  Avatar,
+  Button,
+  Table,
+  TableCell,
+  darkSharedUiTheme,
+  useSharedUiTheme,
+  type TableColumn,
+} from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -64,6 +72,25 @@ export const WithHeaders: Story = {
   render: () => (
     <StorySurface>
       <View style={styles.card}>
+        <Table<Invoice>
+          accessibilityLabel="Invoices"
+          cell={invoiceCell}
+          columns={columns}
+          rowKey={(row) => row.id}
+          rows={invoices}
+        />
+      </View>
+    </StorySurface>
+  ),
+};
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <View
+        style={[styles.card, { borderColor: darkSharedUiTheme.colors.border }]}
+      >
         <Table<Invoice>
           accessibilityLabel="Invoices"
           cell={invoiceCell}
@@ -351,15 +378,19 @@ function StatusBadge({ status }: { status: EmployeeStatus }) {
 }
 
 function StatusPill({ status }: { status: Invoice["status"] }) {
-  const tone =
+  // The three fills are the theme's own soft tints (the same values that were
+  // hardcoded here), so the pills invert with the palette instead of staying
+  // light chips on a dark table.
+  const { colors } = useSharedUiTheme();
+  const backgroundColor =
     status === "Paid"
-      ? styles.pillPaid
+      ? colors.primarySoft
       : status === "Overdue"
-        ? styles.pillOverdue
-        : styles.pillDraft;
+        ? colors.roseSoft
+        : colors.soft;
   return (
-    <View style={[styles.pill, tone]}>
-      <Text style={styles.pillText}>{status}</Text>
+    <View style={[styles.pill, { backgroundColor }]}>
+      <Text style={[styles.pillText, { color: colors.ink2 }]}>{status}</Text>
     </View>
   );
 }
@@ -558,11 +589,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
-  pillDraft: { backgroundColor: "#eef2ed" },
-  pillOverdue: { backgroundColor: "#f4e3df" },
-  pillPaid: { backgroundColor: "#e3eee6" },
   pillText: {
-    color: "#3e4540",
     fontSize: 11,
     fontWeight: "700",
   },

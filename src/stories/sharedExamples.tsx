@@ -822,6 +822,9 @@ export function ModalExample({
 }) {
   const [visible, setVisible] = useState(true);
   const [text, setText] = useState("");
+  // A bare TextInput inherits the browser's black default, which is unreadable
+  // on a dark surface — and its placeholder needs the theme's own token too.
+  const theme = useSharedUiTheme();
   return (
     <View>
       <Pressable
@@ -853,7 +856,14 @@ export function ModalExample({
             accessibilityLabel="Modal text field"
             onChangeText={setText}
             placeholder="Type here"
-            style={styles.input}
+            placeholderTextColor={theme.colors.placeholder}
+            style={[
+              styles.input,
+              {
+                borderColor: theme.colors.controlBorder,
+                color: theme.colors.ink,
+              },
+            ]}
             value={text}
           />
           <DropdownSelector
@@ -1457,7 +1467,6 @@ const styles = StyleSheet.create({
     width: 38,
   },
   input: {
-    borderColor: "#d3d8cd",
     borderRadius: 8,
     borderWidth: 1,
     fontSize: 14,

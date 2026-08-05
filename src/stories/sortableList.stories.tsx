@@ -8,6 +8,9 @@ import {
   applySortableMove,
   SortableGroups,
   SortableList,
+  darkSharedUiTheme,
+  useSharedUiTheme,
+  type SharedUiTheme,
 } from "../index";
 import { StorySurface } from "./sharedExamples";
 
@@ -44,22 +47,33 @@ function StatusRow({
   onArchive: () => void;
   onMove: (delta: -1 | 1) => void;
 }) {
+  // The row chrome reads from the theme (the same values it used to hardcode)
+  // so a reorderable row is a themed card rather than a fixed white one. The
+  // per-status `item.color` dot stays a caller-owned palette.
+  const { colors } = useSharedUiTheme();
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: colors.surface, borderColor: colors.border },
+      ]}
+    >
       <View style={[styles.dot, { backgroundColor: item.color }]} />
-      <Text style={styles.title}>{item.name}</Text>
-      <View style={styles.tag}>
-        <Text style={styles.tagText}>{item.tag}</Text>
+      <Text style={[styles.title, { color: colors.ink }]}>{item.name}</Text>
+      <View style={[styles.tag, { backgroundColor: colors.soft }]}>
+        {/* `ink2`, not `muted`: on the `soft` tint muted lands at 4.49:1 —
+            just under the 1.4.3 AA floor. */}
+        <Text style={[styles.tagText, { color: colors.ink2 }]}>{item.tag}</Text>
       </View>
       <View style={styles.actions}>
         <IconButton label={`Move ${item.name} up`} onPress={() => onMove(-1)}>
-          <ChevronUp color="#69706a" size={16} />
+          <ChevronUp color={colors.muted} size={16} />
         </IconButton>
         <IconButton label={`Move ${item.name} down`} onPress={() => onMove(1)}>
-          <ChevronDown color="#69706a" size={16} />
+          <ChevronDown color={colors.muted} size={16} />
         </IconButton>
         <IconButton label={`Archive ${item.name}`} onPress={onArchive}>
-          <Archive color="#69706a" size={15} />
+          <Archive color={colors.muted} size={15} />
         </IconButton>
       </View>
     </View>
@@ -92,7 +106,7 @@ export const WithHandle: Story = {
   render: () => <HandleExample />,
 };
 
-function HandleExample() {
+function HandleExample({ theme }: { theme?: SharedUiTheme }) {
   const [items, setItems] = useState(initial);
   const [last, setLast] = useState<string | null>(null);
   const swap = (index: number, delta: -1 | 1) =>
@@ -104,9 +118,11 @@ function HandleExample() {
       return next;
     });
   return (
-    <StorySurface>
+    <StorySurface theme={theme}>
       <View style={styles.stack}>
-        <Text style={styles.status}>
+        <Text
+          style={[styles.status, theme ? { color: theme.colors.ink2 } : null]}
+        >
           {last ?? "Drag a handle to reorder, or focus one and press Space."}
         </Text>
         <SortableList<Status>
@@ -130,7 +146,9 @@ function HandleExample() {
             />
           )}
         />
-        <Text style={styles.hint}>
+        <Text
+          style={[styles.hint, theme ? { color: theme.colors.muted } : null]}
+        >
           The handle is the only drag target, so each row&apos;s own up / down /
           archive buttons keep working. Space to grab, arrows to move, Space or
           Enter to drop, Escape to cancel.
@@ -139,6 +157,11 @@ function HandleExample() {
     </StorySurface>
   );
 }
+
+export const Dark: Story = {
+  name: "Dark theme",
+  render: () => <HandleExample theme={darkSharedUiTheme} />,
+};
 
 export const HandleInsideCard: Story = {
   name: "Handle inside the card",
@@ -515,8 +538,6 @@ const styles = StyleSheet.create({
   actions: { alignItems: "center", flexDirection: "row", gap: 2 },
   card: {
     alignItems: "center",
-    backgroundColor: "#ffffff",
-    borderColor: "#e5e8e0",
     borderRadius: 10,
     borderWidth: 1,
     flexDirection: "row",
@@ -579,17 +600,15 @@ const styles = StyleSheet.create({
   stack: { gap: 12 },
   status: { color: "#3e4540", fontSize: 13, fontWeight: "700" },
   tag: {
-    backgroundColor: "#eef2ed",
     borderRadius: 6,
     marginLeft: "auto",
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
   tagText: {
-    color: "#5e645e",
     fontFamily: "Menlo, monospace",
     fontSize: 11,
     fontWeight: "700",
   },
-  title: { color: "#1c1f1d", fontSize: 15, fontWeight: "700" },
+  title: { fontSize: 15, fontWeight: "700" },
 });
