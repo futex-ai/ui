@@ -5,6 +5,7 @@ import { Platform, Text, View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
 
 import type { ControlSize } from "../controlSize";
+import { PulseHalo } from "../status-dot/PulseHalo";
 import { useSharedUiTheme } from "../theme";
 
 import { createBadgeStyles, resolveBadgeColors } from "./badgeStyles";
@@ -40,6 +41,14 @@ export type BadgeProps = {
   dot?: boolean;
   /** Custom dot color, overriding the default (the resolved text color). */
   dotColor?: string;
+  /**
+   * Signal a live or in-progress state (the "● Running" pill) by swelling a
+   * fading halo out of the leading {@link dot} — the same ping as
+   * {@link StatusDot}, honouring the user's "reduce motion" preference. The halo
+   * overflows the pill without resizing it. A no-op without {@link dot}, since
+   * there is nothing to pulse.
+   */
+  pulse?: boolean;
   /** Density on the shared `sm` / `md` (default) / `lg` scale. */
   size?: ControlSize;
   /** Override the container pill style without forking the component. */
@@ -68,7 +77,8 @@ export type BadgeProps = {
  * {@link BadgeTone} and {@link BadgeVariant} resolved against the theme — every
  * tone/variant pair stays ≥4.5:1 (WCAG 1.4.3 AA) on its own fill in both shipped
  * themes — and sizes on the shared {@link ControlSize} scale. An optional
- * leading {@link BadgeProps.dot} adds a tinted status dot, and the
+ * leading {@link BadgeProps.dot} adds a tinted status dot (with
+ * {@link BadgeProps.pulse} for a live state), and the
  * {@link BadgeProps.color} / {@link BadgeProps.textColor} /
  * {@link BadgeProps.borderColor} escape hatches render a status pill from a
  * caller-owned per-option palette. The label text states the status, so the
@@ -81,6 +91,7 @@ export function Badge({
   color,
   dot = false,
   dotColor,
+  pulse = false,
   size = "md",
   style,
   testID,
@@ -112,8 +123,14 @@ export function Badge({
       {dot ? (
         <View
           aria-hidden={Platform.OS === "web" ? true : undefined}
-          style={[styles.dot, { backgroundColor: resolvedDotColor }]}
-        />
+          style={styles.dot}
+        >
+          {/* Behind the fill, and free to overflow the pill as it swells. */}
+          {pulse ? <PulseHalo color={resolvedDotColor} /> : null}
+          <View
+            style={[styles.dotFill, { backgroundColor: resolvedDotColor }]}
+          />
+        </View>
       ) : null}
       <Text
         // An explicit `accessibilityLabel` overrides the visible text as the

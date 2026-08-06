@@ -168,13 +168,19 @@ export function createBadgeStyles(theme: SharedUiTheme, size: ControlSize) {
       paddingHorizontal: sizing.paddingHorizontal,
       paddingVertical: sizing.paddingVertical,
     },
-    // A small round status dot; the component tints its `backgroundColor` to the
-    // tone (or a custom color). Decorative — the label states the status — so it
-    // is hidden from assistive tech.
+    // A small round status dot. Decorative — the label states the status — so it
+    // is hidden from assistive tech. `dot` is the box that holds the layout;
+    // `dotFill` is the visible circle the component tints to the tone (or a
+    // custom color). Splitting them lets a `PulseHalo` sit between the two, so
+    // the ping paints behind the fill and swells past the pill.
     dot: {
-      borderRadius: sizing.dotSize / 2,
       height: sizing.dotSize,
       width: sizing.dotSize,
+    },
+    dotFill: {
+      borderRadius: sizing.dotSize / 2,
+      height: "100%",
+      width: "100%",
     },
     label: {
       fontFamily: theme.fonts.sans,

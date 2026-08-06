@@ -338,8 +338,39 @@ Required behavior:
 - Keep the visible label text as the status channel so the tone color reinforces
   rather than solely conveys the meaning, with an optional accessibility-label
   override for abbreviated or numeric labels.
+- Offer an optional leading status dot, tinted to the resolved label color (or a
+  custom color), which may `pulse` for a live state through the same shared halo
+  as the status dot family.
 - Use shared theme tokens for the fills, the label color, the font, and the pill
   radius, with no consumer-local theme imports.
+
+## Status Dot Contract
+
+The status dot family covers the small round state indicator that sits beside a
+label — in a list row, a table cell, a header, or inside a badge.
+
+Required behavior:
+
+- Render a circle sized on the shared `ControlSize` scale (`sm` / `md`
+  (default) / `lg`), where `md` matches the workflow graph's run-status dot so
+  the two families cannot diverge.
+- Carry the `Badge` tone vocabulary (`neutral` (default), `primary`, `warning`,
+  `danger`) as a type alias rather than a restated union, so a dot and the pill
+  beside it describe a status in one language. A dot has no text of its own, so
+  it takes the mid accent rather than a soft-fill/deep-text pair.
+- Accept a custom color for a caller-owned palette the semantic tones do not
+  cover — the route by which the workflow graph keeps its own status palette.
+- Offer an optional `pulse` that swells a translucent halo out of the dot and
+  fades it — the design system's live-state ping — while the dot itself stays
+  solid. The halo is drawn out of flow so it overflows the dot (and any pill
+  around it) without affecting layout, it is shared with the badge dot so no
+  surface hand-rolls a heartbeat, it is decorative, and under reduced motion it
+  is not drawn at all (2.3.3). Its loop stops on unmount.
+- Stay decorative unless given a label, on the assumption the adjacent text
+  states the status; a labelled dot reports as an `image` with that name, so the
+  status is never carried by color alone (WCAG 1.4.1).
+- Use shared theme tokens for the fill and the radius, with no consumer-local
+  theme imports.
 
 ## Date Contract
 
@@ -668,7 +699,11 @@ Required behavior:
 - Color-code the six node kinds with a white-glyph icon chip from a fixed,
   overridable decorative category palette (like avatar colors), and surface a
   per-node run-status dot (`ok`, `running`, `waiting`, `error`, `skipped`) with a
-  spoken text alternative; the `running` dot pulses unless reduced motion.
+  spoken text alternative; the `running` dot pulses unless reduced motion. The
+  dot is the shared status dot family rendered with this module's vocabulary,
+  which supplies the color, the label, and the rule that only `running` pulses —
+  the graph keeps its own palette (notably the faint `skipped` fill) rather than
+  mapping onto the four semantic tones.
 - Make nodes optionally pressable: a pressable node exposes `button`
   accessibility semantics with the selected state, owns the shared hover, focus
   ring, and pressed treatment, hides the browser's default outline, and is
@@ -795,7 +830,8 @@ Required behavior:
   `Date/Examples`, `Dropdown/Examples`, `Heatmap/Examples`, `Input/Examples`,
   `Loader/Examples`,
   `Modal/Examples`, `Popover/Examples`, `Radio/Examples`, `Segmented/Examples`,
-  `Spinner/Examples`, `Switch/Examples`, `Table/Examples`,
+  `Spinner/Examples`, `Status dot/Examples`, `Switch/Examples`,
+  `Table/Examples`,
   `Theme/Examples`, and `Toast/Examples`.
 
 ## Non-Goals

@@ -4,10 +4,8 @@
  * (with the shared hover / focus-ring / pressed treatment) when given an
  * `onPress`, and shows the selected ring when it is the actively-edited node.
  */
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo } from "react";
 import {
-  Animated,
-  Easing,
   Platform,
   Pressable,
   StyleProp,
@@ -18,7 +16,7 @@ import {
 
 import type { ControlSize } from "../controlSize";
 import { PressableHoverState, useFocusRing } from "../focusRing";
-import { useReducedMotion } from "../useReducedMotion";
+import { StatusDot } from "../status-dot";
 import { useSharedUiTheme } from "../theme";
 
 import { resolveStatusColor } from "./workflowColors";
@@ -81,10 +79,14 @@ export type WorkflowNodeProps = {
 };
 
 /**
- * The colored, gently-pulsing status dot with a spoken status alternative. The
- * `running` dot pulses its opacity (through the native driver off web, matching
- * the {@link Spinner}) unless the user prefers reduced motion. Pass `decorative`
- * to mute its announcement when the surrounding node already names the status.
+ * The run-status flavour of {@link StatusDot}: the generic primitive plus this
+ * module's status vocabulary, which supplies the color, the spoken label, and
+ * the rule that only `running` pulses. Colors come from
+ * {@link resolveStatusColor} rather than a {@link StatusDotTone} so the graph
+ * keeps its own palette — notably the deliberately faint `skipped` dot.
+ *
+ * Unlike a bare `StatusDot`, this one names itself by default; pass `decorative`
+ * to mute the announcement when the surrounding node already states the status.
  */
 export function WorkflowStatusDot({
   decorative = false,
@@ -93,51 +95,13 @@ export function WorkflowStatusDot({
   testID,
 }: WorkflowStatusDotProps) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(
-    () => createWorkflowStyles(theme, size),
-    [theme, size],
-  );
-  const reduceMotion = useReducedMotion();
-  const pulse = useRef(new Animated.Value(1)).current;
-  const animate = status === "running" && !reduceMotion;
-
-  useEffect(() => {
-    if (!animate) {
-      pulse.setValue(1);
-      return;
-    }
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, {
-          duration: 800,
-          easing: Easing.inOut(Easing.ease),
-          toValue: 0.35,
-          useNativeDriver: Platform.OS !== "web",
-        }),
-        Animated.timing(pulse, {
-          duration: 800,
-          easing: Easing.inOut(Easing.ease),
-          toValue: 1,
-          useNativeDriver: Platform.OS !== "web",
-        }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [animate, pulse]);
 
   return (
-    <Animated.View
-      accessibilityElementsHidden={decorative}
-      accessibilityLabel={decorative ? undefined : STATUS_LABELS[status]}
-      accessibilityRole={decorative ? undefined : "image"}
-      aria-hidden={decorative || undefined}
-      importantForAccessibility={decorative ? "no-hide-descendants" : undefined}
-      style={[
-        styles.statusDot,
-        { backgroundColor: resolveStatusColor(theme.colors, status) },
-        animate ? { opacity: pulse } : null,
-      ]}
+    <StatusDot
+      color={resolveStatusColor(theme.colors, status)}
+      label={decorative ? undefined : STATUS_LABELS[status]}
+      pulse={status === "running"}
+      size={size}
       testID={testID}
     />
   );

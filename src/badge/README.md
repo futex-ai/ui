@@ -11,7 +11,8 @@ themed tone.
 - Carry a semantic status color through a `tone` — `neutral` (default),
   `primary`, `warning`, or `danger` — in a quiet `soft` fill, a filled `solid`
   fill, or a bordered `outline` chip.
-- Show an optional leading status `dot`, tinted to the tone (or a custom color).
+- Show an optional leading status `dot`, tinted to the tone (or a custom color),
+  optionally pulsing (`pulse`) for a live state.
 - Accept custom `color` / `textColor` / `borderColor` for a caller-owned
   per-option palette the semantic tones do not cover.
 - Keep every built-in tone/variant pair at the WCAG 1.4.3 AA text-contrast
@@ -60,6 +61,21 @@ states the status — and is decorative (hidden from assistive tech):
 <Badge dot tone="primary">In progress</Badge>
 <Badge dot variant="outline" tone="warning">Blocked</Badge>
 ```
+
+Add `pulse` for a live or in-progress state. The dot stays solid while a
+translucent halo swells out of it and fades — the same radar ping as the
+standalone `StatusDot`, which shares the animation. The halo is out of flow, so
+it overflows the pill without resizing it. It is a no-op without `dot`, and is
+not drawn at all under `prefers-reduced-motion`:
+
+```tsx
+<Badge dot pulse tone="primary">
+  Running
+</Badge>
+```
+
+For a dot outside a pill — in a list row, a table cell, a header — reach for
+[`StatusDot`](../status-dot/README.md) directly.
 
 ### Custom colors
 
@@ -121,6 +137,9 @@ reads green; the same `tone="primary"` follows the brand color in other themes.
 - The label is a single line; the full string stays the accessible name.
 - The optional leading `dot` is decorative (hidden from assistive tech) — the
   label text carries the status, so the dot color is never the only channel.
+- A `pulse`ing dot's halo honours `prefers-reduced-motion` — it is not drawn at
+  all (the AAA criterion 2.3.3 Animation from Interactions) — and is decorative
+  in every case.
 - The 4.5:1 AA contract holds for the built-in tones; a **custom** `color` /
   `textColor` pair is the caller's responsibility to keep AA.
 
