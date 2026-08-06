@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0](https://github.com/futex-ai/ui/compare/v1.7.0...v1.8.0) (2026-08-06)
+
+
+### Features
+
+* **avatar:** dot-grid loader via a `loading` prop ([#139](https://github.com/futex-ai/ui/issues/139)) ([f277b87](https://github.com/futex-ai/ui/commit/f277b874086bff2163775e91212462f57a01b881))
+* **status-dot:** promote the workflow pulsing dot into a StatusDot primitive ([#142](https://github.com/futex-ai/ui/issues/142)) ([60c6079](https://github.com/futex-ai/ui/commit/60c60793527354869770cdbb643c482682a7b3f6))
+* **theme:** ship dark mode via an onSolid token and two dark presets ([#141](https://github.com/futex-ai/ui/issues/141)) ([3c3f478](https://github.com/futex-ai/ui/commit/3c3f478bf3ef60caafe867e2e59630f8a05e594c))
+
 ## [1.7.0](https://github.com/futex-ai/ui/compare/v1.6.1...v1.7.0) (2026-08-04)
 
 ### Features
