@@ -187,19 +187,21 @@ test("status dot carries a spoken status and pulses only when running", () => {
     source,
     /const STATUS_LABELS: Record<WorkflowNodeStatus, string>/,
   );
-  assert.match(source, /const animate = status === "running" && !reduceMotion/);
-  // The dot names itself with an image role, but mutes that when decorative
-  // (inside a node whose own name already states the status).
+  // The graph keeps its run-status vocabulary and hands the rendering to the
+  // shared primitive: only `running` pulses, and the colors stay this module's
+  // (so `skipped` keeps its deliberately faint fill, not a neutral tone).
+  assert.match(source, /pulse=\{status === "running"\}/);
+  assert.match(source, /color=\{resolveStatusColor\(theme\.colors, status\)\}/);
+  // The dot names itself, but mutes that when decorative (inside a node whose
+  // own name already states the status). A bare StatusDot is the other way
+  // round, so this wrapper passes the label through explicitly.
   assert.match(
     source,
-    /accessibilityLabel=\{decorative \? undefined : STATUS_LABELS\[status\]\}/,
+    /label=\{decorative \? undefined : STATUS_LABELS\[status\]\}/,
   );
-  assert.match(
-    source,
-    /accessibilityRole=\{decorative \? undefined : "image"\}/,
-  );
-  // The pulse loop stops on unmount / when animation is disabled.
-  assert.match(source, /return \(\) => loop\.stop\(\)/);
+  // The pulse loop (and its unmount teardown) now lives in usePulse.
+  const pulseSource = readSource("../../src/usePulse.ts");
+  assert.match(pulseSource, /return \(\) => loop\.stop\(\)/);
 });
 
 test("node carries the composed label only when pressable (Table pattern)", () => {

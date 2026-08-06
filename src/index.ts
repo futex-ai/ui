@@ -25,6 +25,7 @@ export * from "./sheet";
 export * from "./skeleton";
 export * from "./sortable-list";
 export * from "./spinner";
+export * from "./status-dot";
 export * from "./switch";
 export * from "./table";
 export * from "./theme";

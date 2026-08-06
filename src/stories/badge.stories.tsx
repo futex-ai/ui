@@ -118,6 +118,25 @@ export const StatusDots: Story = {
   ),
 };
 
+export const PulsingDot: Story = {
+  name: "Pulsing dot",
+  render: () => (
+    <StorySurface>
+      <View style={styles.row}>
+        <Badge dot pulse tone="primary">
+          Running
+        </Badge>
+        <Badge dot pulse tone="warning" variant="outline">
+          Syncing
+        </Badge>
+        <Badge dot tone="neutral">
+          Queued
+        </Badge>
+      </View>
+    </StorySurface>
+  ),
+};
+
 // A caller-owned per-option palette (statuses the semantic tones do not cover),
 // each rendered from an explicit soft fill + deep text + matching dot.
 const customStatuses = [

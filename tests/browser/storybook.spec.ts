@@ -3658,3 +3658,51 @@ test("dark story surface paints its own theme background", async ({ page }) => {
   const surface = page.locator("#storybook-root > div").first();
   await expect(surface).toHaveCSS("background-color", "rgb(20, 22, 19)");
 });
+
+test("status dot sizes step 7 / 9 / 11 with md matching the workflow dot", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=status-dot-examples--sizes&viewMode=story");
+
+  // `md` is 9px because that was the workflow graph's hard-coded dot: promoting
+  // the component out of `workflow/` had to leave the graph pixel-identical.
+  for (const [testId, diameter] of [
+    ["statusDotSm", 7],
+    ["statusDotMd", 9],
+    ["statusDotLg", 11],
+  ] as const) {
+    const box = await page.getByTestId(testId).boundingBox();
+    expect(box?.width).toBeCloseTo(diameter, 0);
+    expect(box?.height).toBeCloseTo(diameter, 0);
+  }
+  // A circle filled with the default theme's mid `primary` accent (#4f7864).
+  const md = page.getByTestId("statusDotMd");
+  await expect(md).toHaveCSS("background-color", "rgb(79, 120, 100)");
+  await expect(md).toHaveCSS("border-radius", "999px");
+});
+
+test("a pulsing badge dot animates opacity without resizing the pill", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=badge-examples--pulsing-dot&viewMode=story");
+
+  const running = page.getByText("Running", { exact: true });
+  const queued = page.getByText("Queued", { exact: true });
+  const pulsingPill = running.locator("xpath=..");
+  const restingPill = queued.locator("xpath=..");
+
+  // The pulse rides opacity only, so a live pill keeps a resting pill's height.
+  const [pulsingBox, restingBox] = await Promise.all([
+    pulsingPill.boundingBox(),
+    restingPill.boundingBox(),
+  ]);
+  expect(pulsingBox?.height).toBeCloseTo(restingBox?.height ?? 0, 0);
+
+  // The animated dot is the pill's first child; a resting dot carries no
+  // inline opacity at all (usePulse returns null rather than a value pinned
+  // at 1), which is what keeps the static case free of an animated style.
+  const pulsingDot = pulsingPill.locator("> div").first();
+  const restingDot = restingPill.locator("> div").first();
+  await expect(pulsingDot).toHaveAttribute("style", /opacity/);
+  await expect(restingDot).not.toHaveAttribute("style", /opacity/);
+});

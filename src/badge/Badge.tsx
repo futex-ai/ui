@@ -1,11 +1,12 @@
 /** Compact status label ("badge" / status pill) — a tinted or solid chip. */
 import { useMemo } from "react";
 import type { ReactNode } from "react";
-import { Platform, Text, View } from "react-native";
+import { Animated, Platform, Text, View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
 
 import type { ControlSize } from "../controlSize";
 import { useSharedUiTheme } from "../theme";
+import { usePulse } from "../usePulse";
 
 import { createBadgeStyles, resolveBadgeColors } from "./badgeStyles";
 import type { BadgeTone, BadgeVariant } from "./badgeStyles";
@@ -40,6 +41,13 @@ export type BadgeProps = {
   dot?: boolean;
   /** Custom dot color, overriding the default (the resolved text color). */
   dotColor?: string;
+  /**
+   * Gently pulse the leading {@link dot} to signal a live or in-progress state
+   * (the "● Running" pill) — the same heartbeat as {@link StatusDot}, honouring
+   * the user's "reduce motion" preference. A no-op without {@link dot}, since
+   * there is nothing to pulse.
+   */
+  pulse?: boolean;
   /** Density on the shared `sm` / `md` (default) / `lg` scale. */
   size?: ControlSize;
   /** Override the container pill style without forking the component. */
@@ -68,7 +76,8 @@ export type BadgeProps = {
  * {@link BadgeTone} and {@link BadgeVariant} resolved against the theme — every
  * tone/variant pair stays ≥4.5:1 (WCAG 1.4.3 AA) on its own fill in both shipped
  * themes — and sizes on the shared {@link ControlSize} scale. An optional
- * leading {@link BadgeProps.dot} adds a tinted status dot, and the
+ * leading {@link BadgeProps.dot} adds a tinted status dot (with
+ * {@link BadgeProps.pulse} for a live state), and the
  * {@link BadgeProps.color} / {@link BadgeProps.textColor} /
  * {@link BadgeProps.borderColor} escape hatches render a status pill from a
  * caller-owned per-option palette. The label text states the status, so the
@@ -81,6 +90,7 @@ export function Badge({
   color,
   dot = false,
   dotColor,
+  pulse = false,
   size = "md",
   style,
   testID,
@@ -97,6 +107,8 @@ export function Badge({
   const labelColor = textColor ?? base.color;
   const resolvedBorderColor = borderColor ?? base.borderColor;
   const resolvedDotColor = dotColor ?? labelColor;
+  // `pulse` only means something when there is a dot to animate.
+  const pulseStyle = usePulse(pulse && dot);
   return (
     <View
       style={[
@@ -110,9 +122,13 @@ export function Badge({
       testID={testID}
     >
       {dot ? (
-        <View
+        <Animated.View
           aria-hidden={Platform.OS === "web" ? true : undefined}
-          style={[styles.dot, { backgroundColor: resolvedDotColor }]}
+          style={[
+            styles.dot,
+            { backgroundColor: resolvedDotColor },
+            pulseStyle,
+          ]}
         />
       ) : null}
       <Text

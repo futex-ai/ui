@@ -79,6 +79,7 @@ const FORWARDING_FILES = [
   "skeleton/Skeleton.tsx",
   "sortable-list/SortableList.tsx",
   "spinner/Spinner.tsx",
+  "status-dot/StatusDot.tsx",
   "switch/Switch.tsx",
   "table/Table.tsx",
   "toast/Toast.tsx",

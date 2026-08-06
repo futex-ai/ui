@@ -155,6 +155,11 @@
       "react-native": "./dist/spinner/index.js",
       "import": "./dist/node/spinner/index.js"
     },
+    "./status-dot": {
+      "types": "./dist/node/status-dot/index.d.ts",
+      "react-native": "./dist/status-dot/index.js",
+      "import": "./dist/node/status-dot/index.js"
+    },
     "./switch": {
       "types": "./dist/node/switch/index.d.ts",
       "react-native": "./dist/switch/index.js",

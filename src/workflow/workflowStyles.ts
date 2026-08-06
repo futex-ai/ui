@@ -238,11 +238,9 @@ export function createWorkflowStyles(
       fontSize: sizing.nameFontSize,
       fontWeight: "600",
     },
-    statusDot: {
-      borderRadius: theme.radii.pill,
-      height: 9,
-      width: 9,
-    },
+    // The run-status dot's geometry lives in `status-dot/statusDotStyles.ts`;
+    // `WorkflowStatusDot` renders the shared primitive so the graph and the rest
+    // of the library cannot drift into two dot sizes.
     // Legend row.
     legend: {
       alignItems: "center",

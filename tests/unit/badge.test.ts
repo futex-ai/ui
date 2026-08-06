@@ -82,9 +82,20 @@ test("badge renders an optional tinted dot and custom color escape hatches", () 
   );
   assert.match(
     componentSource,
-    /style=\{\[styles\.dot, \{ backgroundColor: resolvedDotColor \}\]\}/,
+    /styles\.dot,\s*\{ backgroundColor: resolvedDotColor \},\s*pulseStyle,/,
   );
   assert.match(stylesSource, /dot: \{[\s\S]*?height: sizing\.dotSize/);
+});
+
+test("badge dot pulses only when asked, through the shared pulse hook", () => {
+  const componentSource = readSource("../../src/badge/Badge.tsx");
+
+  assert.match(componentSource, /pulse\?: boolean;/);
+  assert.match(componentSource, /pulse = false/);
+  // `pulse` without `dot` has nothing to animate, so the hook stays inert.
+  assert.match(componentSource, /const pulseStyle = usePulse\(pulse && dot\)/);
+  // The dot is an Animated.View so turning the pulse on does not remount it.
+  assert.match(componentSource, /<Animated\.View/);
 });
 
 test("badge soft tones pair a tinted fill with the deep accent text", () => {

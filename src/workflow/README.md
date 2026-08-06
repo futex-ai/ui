@@ -170,6 +170,12 @@ graph reads at the same density as the controls beside it.
 bespoke canvas: `WorkflowNode`, `WorkflowStatusDot`, `WorkflowConnector`,
 `WorkflowEdgeLabel`, `WorkflowInsertButton`, and `WorkflowLegend`.
 
+`WorkflowStatusDot` is the run-status flavour of the library's
+[`StatusDot`](../status-dot/README.md): it renders that primitive with this
+module's status vocabulary, which supplies the color (from `resolveStatusColor`,
+so `skipped` keeps its deliberately faint fill), the spoken label, and the rule
+that only `running` pulses. Outside a graph, use `StatusDot` directly.
+
 ## Accessibility
 
 - Node cards announce their `type: name` (plus any status); with `onNodePress`

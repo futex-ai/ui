@@ -264,6 +264,7 @@ The package export map intentionally separates runtime targets:
   `Popover/Examples`,
   `Radio/Examples`, `RichText/Examples`,
   `Segmented/Examples`, `SortableList/Examples`, `Spinner/Examples`,
+  `Status dot/Examples`,
   `Switch/Examples`, `Table/Examples`, `Theme/Examples`, and `Toast/Examples`.
 - Required repository variable: `CLOUDFLARE_ACCOUNT_ID`.
 - Required repository secret: `CLOUDFLARE_PAGES_API_TOKEN` or
@@ -294,6 +295,7 @@ The package export map intentionally separates runtime targets:
 - Segmented control component:
   [src/segmented/README.md](src/segmented/README.md)
 - Spinner component: [src/spinner/README.md](src/spinner/README.md)
+- Status dot component: [src/status-dot/README.md](src/status-dot/README.md)
 - Switch component: [src/switch/README.md](src/switch/README.md)
 - Table component: [src/table/README.md](src/table/README.md)
 - Toast component: [src/toast/README.md](src/toast/README.md)
