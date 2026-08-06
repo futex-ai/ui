@@ -1,12 +1,12 @@
 /** A small round status dot — tinted, optionally pulsing, optionally spoken. */
 import { useMemo } from "react";
-import { Animated } from "react-native";
+import { View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
 
 import type { ControlSize } from "../controlSize";
 import { useSharedUiTheme } from "../theme";
-import { usePulse } from "../usePulse";
 
+import { PulseHalo } from "./PulseHalo";
 import {
   createStatusDotStyles,
   resolveStatusDotColor,
@@ -28,9 +28,10 @@ export type StatusDotProps = {
    */
   label?: string;
   /**
-   * Gently pulse the dot's opacity to signal a live or in-progress state. The
-   * pulse honours the user's "reduce motion" preference, where the dot simply
-   * rests at full opacity.
+   * Signal a live or in-progress state with a halo that swells out of the dot
+   * and fades, like a radar ping. The dot itself stays solid. The halo overflows
+   * the dot's box (and any pill around it) without affecting layout, and is not
+   * drawn at all when the user prefers reduced motion.
    */
   pulse?: boolean;
   /** Density on the shared `sm` / `md` (default) / `lg` scale — 7 / 9 / 11px. */
@@ -50,9 +51,9 @@ export type StatusDotProps = {
 /**
  * The status dot: a circle sized on the shared {@link ControlSize} scale and
  * filled from the four-tone {@link StatusDotTone} vocabulary it shares with the
- * {@link Badge}. Pass {@link StatusDotProps.pulse} for a live/in-progress
- * heartbeat, and {@link StatusDotProps.label} when the dot stands alone and must
- * name itself; otherwise it stays decorative and lets the adjacent text speak.
+ * {@link Badge}. Pass {@link StatusDotProps.pulse} for a live/in-progress ping,
+ * and {@link StatusDotProps.label} when the dot stands alone and must name
+ * itself; otherwise it stays decorative and lets the adjacent text speak.
  */
 export function StatusDot({
   color,
@@ -68,25 +69,24 @@ export function StatusDot({
     () => createStatusDotStyles(theme, size),
     [theme, size],
   );
-  const pulseStyle = usePulse(pulse);
   // No label means nothing to announce, so the dot is hidden from assistive tech
   // rather than reported as an unnamed image.
   const decorative = label === undefined;
+  const fill = color ?? resolveStatusDotColor(theme.colors, tone);
 
   return (
-    <Animated.View
+    <View
       accessibilityElementsHidden={decorative}
       accessibilityLabel={label}
       accessibilityRole={decorative ? undefined : "image"}
       aria-hidden={decorative || undefined}
       importantForAccessibility={decorative ? "no-hide-descendants" : undefined}
-      style={[
-        styles.dot,
-        { backgroundColor: color ?? resolveStatusDotColor(theme.colors, tone) },
-        pulseStyle,
-        style,
-      ]}
+      style={[styles.dot, style]}
       testID={testID}
-    />
+    >
+      {/* Behind the fill, so the translucent ping never tints the dot itself. */}
+      {pulse ? <PulseHalo color={fill} /> : null}
+      <View style={[styles.fill, { backgroundColor: fill }]} />
+    </View>
   );
 }

@@ -49,16 +49,26 @@ export function resolveStatusDotColor(
 }
 
 /**
- * Build the size-driven dot style. The component layers the resolved tone (or a
- * custom color) on top as a `backgroundColor`, so this stays a pure circle.
+ * Build the size-driven dot styles. `dot` is the dot-sized box that owns the
+ * layout and the accessibility semantics; `fill` is the visible circle inside
+ * it, which the component tints with the resolved tone (or a custom color).
+ *
+ * They are two elements rather than one so a {@link PulseHalo} can sit between
+ * them: the halo paints behind the fill (earlier sibling) and swells past the
+ * box without disturbing it. The box keeps `overflow` visible — clipping it
+ * would crop the ping.
  */
 export function createStatusDotStyles(theme: SharedUiTheme, size: ControlSize) {
   const diameter = STATUS_DOT_SIZES[size];
   return StyleSheet.create({
     dot: {
-      borderRadius: theme.radii.pill,
       height: diameter,
       width: diameter,
+    },
+    fill: {
+      borderRadius: theme.radii.pill,
+      height: "100%",
+      width: "100%",
     },
   });
 }

@@ -1,12 +1,12 @@
 /** Compact status label ("badge" / status pill) — a tinted or solid chip. */
 import { useMemo } from "react";
 import type { ReactNode } from "react";
-import { Animated, Platform, Text, View } from "react-native";
+import { Platform, Text, View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
 
 import type { ControlSize } from "../controlSize";
+import { PulseHalo } from "../status-dot/PulseHalo";
 import { useSharedUiTheme } from "../theme";
-import { usePulse } from "../usePulse";
 
 import { createBadgeStyles, resolveBadgeColors } from "./badgeStyles";
 import type { BadgeTone, BadgeVariant } from "./badgeStyles";
@@ -42,9 +42,10 @@ export type BadgeProps = {
   /** Custom dot color, overriding the default (the resolved text color). */
   dotColor?: string;
   /**
-   * Gently pulse the leading {@link dot} to signal a live or in-progress state
-   * (the "● Running" pill) — the same heartbeat as {@link StatusDot}, honouring
-   * the user's "reduce motion" preference. A no-op without {@link dot}, since
+   * Signal a live or in-progress state (the "● Running" pill) by swelling a
+   * fading halo out of the leading {@link dot} — the same ping as
+   * {@link StatusDot}, honouring the user's "reduce motion" preference. The halo
+   * overflows the pill without resizing it. A no-op without {@link dot}, since
    * there is nothing to pulse.
    */
   pulse?: boolean;
@@ -107,8 +108,6 @@ export function Badge({
   const labelColor = textColor ?? base.color;
   const resolvedBorderColor = borderColor ?? base.borderColor;
   const resolvedDotColor = dotColor ?? labelColor;
-  // `pulse` only means something when there is a dot to animate.
-  const pulseStyle = usePulse(pulse && dot);
   return (
     <View
       style={[
@@ -122,14 +121,16 @@ export function Badge({
       testID={testID}
     >
       {dot ? (
-        <Animated.View
+        <View
           aria-hidden={Platform.OS === "web" ? true : undefined}
-          style={[
-            styles.dot,
-            { backgroundColor: resolvedDotColor },
-            pulseStyle,
-          ]}
-        />
+          style={styles.dot}
+        >
+          {/* Behind the fill, and free to overflow the pill as it swells. */}
+          {pulse ? <PulseHalo color={resolvedDotColor} /> : null}
+          <View
+            style={[styles.dotFill, { backgroundColor: resolvedDotColor }]}
+          />
+        </View>
       ) : null}
       <Text
         // An explicit `accessibilityLabel` overrides the visible text as the

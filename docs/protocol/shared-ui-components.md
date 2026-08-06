@@ -339,7 +339,7 @@ Required behavior:
   rather than solely conveys the meaning, with an optional accessibility-label
   override for abbreviated or numeric labels.
 - Offer an optional leading status dot, tinted to the resolved label color (or a
-  custom color), which may `pulse` for a live state through the same shared hook
+  custom color), which may `pulse` for a live state through the same shared halo
   as the status dot family.
 - Use shared theme tokens for the fills, the label color, the font, and the pill
   radius, with no consumer-local theme imports.
@@ -360,10 +360,12 @@ Required behavior:
   it takes the mid accent rather than a soft-fill/deep-text pair.
 - Accept a custom color for a caller-owned palette the semantic tones do not
   cover — the route by which the workflow graph keeps its own status palette.
-- Offer an optional `pulse` that eases opacity on a shared hook, so no surface
-  hand-rolls a heartbeat and the reduced-motion guard has a single home. A
-  pulsing element rests at full opacity under reduced motion (2.3.3), and its
-  loop stops on unmount.
+- Offer an optional `pulse` that swells a translucent halo out of the dot and
+  fades it — the design system's live-state ping — while the dot itself stays
+  solid. The halo is drawn out of flow so it overflows the dot (and any pill
+  around it) without affecting layout, it is shared with the badge dot so no
+  surface hand-rolls a heartbeat, it is decorative, and under reduced motion it
+  is not drawn at all (2.3.3). Its loop stops on unmount.
 - Stay decorative unless given a label, on the assumption the adjacent text
   states the status; a labelled dot reports as an `image` with that name, so the
   status is never carried by color alone (WCAG 1.4.1).

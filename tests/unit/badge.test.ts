@@ -82,20 +82,33 @@ test("badge renders an optional tinted dot and custom color escape hatches", () 
   );
   assert.match(
     componentSource,
-    /styles\.dot,\s*\{ backgroundColor: resolvedDotColor \},\s*pulseStyle,/,
+    /styles\.dotFill, \{ backgroundColor: resolvedDotColor \}/,
   );
   assert.match(stylesSource, /dot: \{[\s\S]*?height: sizing\.dotSize/);
 });
 
-test("badge dot pulses only when asked, through the shared pulse hook", () => {
+test("badge dot pings only when asked, through the shared halo", () => {
   const componentSource = readSource("../../src/badge/Badge.tsx");
+  const stylesSource = readSource("../../src/badge/badgeStyles.ts");
 
   assert.match(componentSource, /pulse\?: boolean;/);
   assert.match(componentSource, /pulse = false/);
-  // `pulse` without `dot` has nothing to animate, so the hook stays inert.
-  assert.match(componentSource, /const pulseStyle = usePulse\(pulse && dot\)/);
-  // The dot is an Animated.View so turning the pulse on does not remount it.
-  assert.match(componentSource, /<Animated\.View/);
+  // `pulse` without `dot` has nothing to ping: the halo is nested inside the
+  // dot's own branch, so it cannot render without one.
+  assert.match(
+    componentSource,
+    /\{dot \? \([\s\S]*?\{pulse \? <PulseHalo color=\{resolvedDotColor\} \/> : null\}/,
+  );
+  // The dot splits into a layout box and a fill so the halo can paint between
+  // them; the box keeps the aria-hidden that the single element used to carry.
+  assert.match(
+    stylesSource,
+    /dotFill: \{[\s\S]*?borderRadius: sizing\.dotSize \/ 2/,
+  );
+  assert.match(
+    componentSource,
+    /aria-hidden=\{Platform\.OS === "web" \? true : undefined\}\s*style=\{styles\.dot\}/,
+  );
 });
 
 test("badge soft tones pair a tinted fill with the deep accent text", () => {

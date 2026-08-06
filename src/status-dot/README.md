@@ -10,8 +10,8 @@ signals state beside a label, optionally pulsing to show that state is live.
 - Carry the same four-tone vocabulary as the `Badge` (`neutral`, `primary`,
   `warning`, `danger`), so a dot and the pill beside it describe a status in one
   language.
-- Optionally `pulse` its opacity for a live or in-progress state, honouring the
-  user's "reduce motion" preference.
+- Optionally `pulse` a swelling, fading halo for a live or in-progress state,
+  honouring the user's "reduce motion" preference.
 - Stay decorative unless given a `label`, on the assumption that adjacent text
   states the status.
 - Accept a custom `color` for a caller-owned palette the semantic tones do not
@@ -34,14 +34,21 @@ The default is a `neutral`, `md`, non-pulsing dot.
 
 ### Pulsing
 
-Pass `pulse` for a live or in-progress state. The dot eases its opacity between
-full and 35% on an 800ms leg — a heartbeat, not a blink:
+Pass `pulse` for a live or in-progress state. The dot itself stays solid while a
+translucent halo swells out of it and fades — a radar ping, not a blink:
 
 ```tsx
 <StatusDot pulse tone="primary" />
 ```
 
-Under `prefers-reduced-motion` the dot rests at full opacity instead.
+The halo starts at the dot's edge at 50% opacity and reaches 3⅓× the dot's
+diameter as it fades to nothing, over a 1.6s cycle that rests for its last 30% so
+the pings read as discrete. It is drawn out of flow, so it overflows the dot's
+box (and any pill around it) without moving anything — put a pulsing dot
+somewhere that clips its overflow and the ping gets cropped.
+
+Under `prefers-reduced-motion` no halo is drawn at all, leaving a plain solid
+dot.
 
 ### Inside a badge
 
@@ -95,8 +102,9 @@ For a status outside that vocabulary, pass `color`:
 - Pass `label` when the dot stands alone; it then reports as an `image` with that
   name, so the status is never carried by color alone (WCAG 1.4.1 Use of Color).
 - The `pulse` honours `prefers-reduced-motion` (web) / `isReduceMotionEnabled`
-  (native), satisfying the AAA criterion 2.3.3 Animation from Interactions. The
-  loop also stops on unmount.
+  (native), satisfying the AAA criterion 2.3.3 Animation from Interactions — the
+  halo is not drawn at all, rather than merely slowed. The loop also stops on
+  unmount, and the halo is `aria-hidden` decoration in every case.
 - The dot is non-interactive and never receives focus.
 
 ## Theming

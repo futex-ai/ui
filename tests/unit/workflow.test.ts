@@ -199,9 +199,9 @@ test("status dot carries a spoken status and pulses only when running", () => {
     source,
     /label=\{decorative \? undefined : STATUS_LABELS\[status\]\}/,
   );
-  // The pulse loop (and its unmount teardown) now lives in usePulse.
-  const pulseSource = readSource("../../src/usePulse.ts");
-  assert.match(pulseSource, /return \(\) => loop\.stop\(\)/);
+  // The pulse loop (and its unmount teardown) now lives in PulseHalo.
+  const pulseSource = readSource("../../src/status-dot/PulseHalo.tsx");
+  assert.match(pulseSource, /loop\.stop\(\)/);
 });
 
 test("node carries the composed label only when pressable (Table pattern)", () => {

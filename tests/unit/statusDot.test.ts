@@ -38,6 +38,12 @@ test("status dot sizes follow the control-size scale with md at the workflow 9px
   // A circle, radius from the theme rather than a hardcoded half-diameter.
   assert.match(stylesSource, /borderRadius: theme\.radii\.pill/);
   assert.match(stylesSource, /height: diameter,\s*width: diameter,/);
+  // The visible circle fills the box rather than being the box, so the halo can
+  // sit between them.
+  assert.match(
+    stylesSource,
+    /fill: \{[\s\S]*?height: "100%",\s*width: "100%",/,
+  );
 });
 
 test("status dot is decorative until a caller names it", () => {
@@ -64,32 +70,58 @@ test("status dot layers a custom color over the resolved tone", () => {
 
   assert.match(
     source,
-    /backgroundColor: color \?\? resolveStatusDotColor\(theme\.colors, tone\)/,
+    /const fill = color \?\? resolveStatusDotColor\(theme\.colors, tone\)/,
   );
 });
 
-test("the pulse honours reduced motion and stops on unmount", () => {
-  const source = readSource("../../src/usePulse.ts");
+test("the pulse is a swelling halo, not a fade of the dot itself", () => {
+  const source = readSource("../../src/status-dot/PulseHalo.tsx");
 
-  // Reduced motion suppresses the loop rather than merely shortening it, and
-  // the resting element gets no animated style at all.
-  assert.match(source, /const animate = active && !reduceMotion/);
-  assert.match(source, /return animate \? \{ opacity \} : null/);
-  assert.match(source, /opacity\.setValue\(1\)/);
-  assert.match(source, /return \(\) => loop\.stop\(\)/);
+  // Reproduces the design system's `mcpulse` keyframes: a 1.6s cycle whose halo
+  // starts at the dot's edge at 50% opacity and swells to 3-and-a-bit times the
+  // dot as it fades out, resting for the remainder of the cycle.
+  assert.match(source, /const PULSE_DURATION = 1600/);
+  assert.match(source, /const HALO_OPACITY = 0\.5/);
+  assert.match(source, /const HALO_SCALE = 20 \/ 6/);
+  assert.match(source, /const SWELL = 0\.7/);
+  assert.match(
+    source,
+    /outputRange: \[HALO_OPACITY, 0, 0\]/,
+    "the halo fades out; the dot's own opacity never changes",
+  );
+  assert.match(source, /outputRange: \[1, HALO_SCALE, HALO_SCALE\]/);
+  // Taken out of flow, so a ping never resizes the dot or the pill around it.
+  assert.match(source, /position: "absolute"/);
+});
+
+test("the pulse honours reduced motion and stops on unmount", () => {
+  const source = readSource("../../src/status-dot/PulseHalo.tsx");
+
+  // Reduced motion drops the halo entirely rather than merely slowing it, so
+  // the dot is simply solid.
+  assert.match(source, /if \(reduceMotion\) \{\s*return null;/);
+  assert.match(source, /loop\.stop\(\)/);
   // Native driver everywhere but web, matching the spinner.
   assert.match(source, /useNativeDriver: Platform\.OS !== "web"/);
 });
 
-test("badge and status dot share the pulse rather than duplicating it", () => {
+test("badge and status dot share the halo rather than duplicating it", () => {
   const badgeSource = readSource("../../src/badge/Badge.tsx");
   const dotSource = readSource("../../src/status-dot/StatusDot.tsx");
   const workflowSource = readSource("../../src/workflow/WorkflowNode.tsx");
 
-  assert.match(badgeSource, /import \{ usePulse \} from "\.\.\/usePulse"/);
-  assert.match(dotSource, /import \{ usePulse \} from "\.\.\/usePulse"/);
-  // `pulse` is meaningless without a dot to animate.
-  assert.match(badgeSource, /const pulseStyle = usePulse\(pulse && dot\)/);
+  assert.match(
+    badgeSource,
+    /import \{ PulseHalo \} from "\.\.\/status-dot\/PulseHalo"/,
+  );
+  assert.match(dotSource, /import \{ PulseHalo \} from "\.\/PulseHalo"/);
+  // `pulse` is meaningless without a dot to ping.
+  assert.match(badgeSource, /\{pulse \? <PulseHalo color=\{resolvedDotColor\}/);
+  // The halo is an earlier sibling of the fill, so it paints behind the dot.
+  assert.match(
+    dotSource,
+    /\{pulse \? <PulseHalo color=\{fill\} \/> : null\}\s*<View\s*style=\{\[styles\.fill/,
+  );
   // The workflow keeps its run-status API and delegates the rendering.
   assert.match(
     workflowSource,

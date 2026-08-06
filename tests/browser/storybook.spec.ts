@@ -3675,13 +3675,14 @@ test("status dot sizes step 7 / 9 / 11 with md matching the workflow dot", async
     expect(box?.width).toBeCloseTo(diameter, 0);
     expect(box?.height).toBeCloseTo(diameter, 0);
   }
-  // A circle filled with the default theme's mid `primary` accent (#4f7864).
-  const md = page.getByTestId("statusDotMd");
-  await expect(md).toHaveCSS("background-color", "rgb(79, 120, 100)");
-  await expect(md).toHaveCSS("border-radius", "999px");
+  // The testID lands on the dot-sized layout box; the visible circle is the fill
+  // inside it, in the default theme's mid `primary` accent (#4f7864).
+  const fill = page.getByTestId("statusDotMd").locator("> div").first();
+  await expect(fill).toHaveCSS("background-color", "rgb(79, 120, 100)");
+  await expect(fill).toHaveCSS("border-radius", "999px");
 });
 
-test("a pulsing badge dot animates opacity without resizing the pill", async ({
+test("a pulsing badge dot swells a halo without resizing the pill", async ({
   page,
 }) => {
   await page.goto("/iframe.html?id=badge-examples--pulsing-dot&viewMode=story");
@@ -3691,18 +3692,28 @@ test("a pulsing badge dot animates opacity without resizing the pill", async ({
   const pulsingPill = running.locator("xpath=..");
   const restingPill = queued.locator("xpath=..");
 
-  // The pulse rides opacity only, so a live pill keeps a resting pill's height.
+  // The halo is out of flow, so a live pill keeps a resting pill's height.
   const [pulsingBox, restingBox] = await Promise.all([
     pulsingPill.boundingBox(),
     restingPill.boundingBox(),
   ]);
   expect(pulsingBox?.height).toBeCloseTo(restingBox?.height ?? 0, 0);
 
-  // The animated dot is the pill's first child; a resting dot carries no
-  // inline opacity at all (usePulse returns null rather than a value pinned
-  // at 1), which is what keeps the static case free of an animated style.
+  // The dot box is the pill's first child. A pulsing one holds the halo plus
+  // the fill; a resting one holds only the fill — the ping is an extra element,
+  // not a style, so the static case renders nothing extra at all.
   const pulsingDot = pulsingPill.locator("> div").first();
   const restingDot = restingPill.locator("> div").first();
-  await expect(pulsingDot).toHaveAttribute("style", /opacity/);
-  await expect(restingDot).not.toHaveAttribute("style", /opacity/);
+  await expect(pulsingDot.locator("> div")).toHaveCount(2);
+  await expect(restingDot.locator("> div")).toHaveCount(1);
+
+  // The halo actually animates: its transform scale changes between frames, and
+  // the dot's own fill never dims (that was the pre-mockup behaviour).
+  const halo = pulsingDot.locator("> div").first();
+  const scaleOf = async () =>
+    await halo.evaluate((node) => getComputedStyle(node).transform);
+  const first = await scaleOf();
+  await expect.poll(scaleOf, { timeout: 4000 }).not.toBe(first);
+  const fill = pulsingDot.locator("> div").nth(1);
+  await expect(fill).not.toHaveAttribute("style", /opacity/);
 });

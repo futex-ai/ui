@@ -5,10 +5,10 @@ standalone primitive any surface can use, and give
 [`Badge`](../src/badge/Badge.tsx) a `pulse` prop so the common "● Running" pill
 is a one-liner.
 
-**Status:** M1–M3 delivered. `StatusDot` ships from `src/status-dot` on the
+**Status:** M1–M4 delivered. `StatusDot` ships from `src/status-dot` on the
 badge's four-tone vocabulary with an explicit `pulse` prop, a real `sm`/`md`/`lg`
-scale (7 / 9 / 11px), and a decorative-by-default accessible name. The opacity
-loop it shares with `Badge` lives in the new `usePulse` hook.
+scale (7 / 9 / 11px), and a decorative-by-default accessible name. The ping it
+shares with `Badge` lives in the new `PulseHalo` component.
 [`WorkflowStatusDot`](../src/workflow/WorkflowNode.tsx) keeps its run-status API
 and now delegates. `npm run verify` green.
 
@@ -58,20 +58,52 @@ export type StatusDotProps = {
 The `md` diameter is deliberately 9px — the workflow dot's hard-coded size — so
 the graph is pixel-identical after the move.
 
-### `usePulse`
+### `PulseHalo`
 
-The animation is shared, not the component: `src/usePulse.ts` owns the loop
-(800ms per leg, `Easing.inOut(ease)`, `1 ↔ 0.35`), the `useReducedMotion` guard,
-and the native-driver-off-web rule. It returns `{ opacity }` while animating and
-`null` otherwise, so a resting dot carries no animated style at all — matching
-the behaviour of the code it replaces.
+The pulse is the design system's live-state ping, taken from the `mcpulse`
+keyframes in the Juno mockups (`docs/mockups/app/styles.css`):
 
-Badge shares the hook, not the component: its dot is an inline 5 / 6 / 7px circle
-tinted to the _label_ color, so rendering a `StatusDot` inside it would need size
-and color escape hatches to arrive at an identical pixel result.
+```css
+.mc-ph-pill i {
+  width: 6px;
+  height: 6px;
+  background: var(--good);
+  animation: mcpulse 1.6s ease-in-out infinite;
+}
+@keyframes mcpulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(79, 166, 114, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(79, 166, 114, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(79, 166, 114, 0);
+  }
+}
+```
 
-Module direction is one-way and cycle-free: `badge → usePulse`,
-`status-dot → usePulse` plus a type-only `BadgeTone` import.
+The dot stays **solid**; a translucent halo radiates out of it and fades. React
+Native cannot animate a `box-shadow` spread, so `src/status-dot/PulseHalo.tsx`
+draws the equivalent: an absolutely-positioned circle behind the dot that scales
+1 → 3⅓ while its opacity goes 0.5 → 0 across the first 70% of a 1.6s cycle, then
+rests. Transform and opacity both run on the native driver — the same trade
+`PulseLoader` makes.
+
+The 7px spread becomes a **ratio** (20 / 6, from the mockup's 6px dot) so the
+halo tracks the dot across the `ControlSize` scale. At the badge's 6px `md` dot
+that is pixel-identical to the mockup.
+
+This is a component rather than a hook because the ping is an extra element, not
+a style a dot can wear: it has to paint _behind_ the dot and grow past its
+bounds. So `StatusDot` and the badge dot each split into a layout box plus a
+`fill` circle, with the halo sandwiched between them. Badge shares the halo, not
+`StatusDot` itself: its dot is an inline 5 / 6 / 7px circle tinted to the _label_
+color, so nesting a whole `StatusDot` would need size and color escape hatches to
+land on the same pixels.
+
+Module direction is one-way and cycle-free: `badge → status-dot/PulseHalo`, plus
+a type-only `BadgeTone` import back the other way.
 
 ### Accessibility
 
@@ -87,9 +119,9 @@ This inverts `WorkflowStatusDot`'s default, so the wrapper keeps its own
 
 ## Milestones
 
-### M1 — `StatusDot` and `usePulse`
+### M1 — `StatusDot` and the shared pulse
 
-- `src/usePulse.ts`; `src/status-dot/{StatusDot.tsx,statusDotStyles.ts,index.ts,README.md}`.
+- `src/status-dot/{StatusDot.tsx,PulseHalo.tsx,statusDotStyles.ts,index.ts,README.md}`.
 - Root export in `src/index.ts` and a `./status-dot` subpath in `package.json`
   (with the matching entry in `packageExports.test.ts`).
 - `tests/unit/statusDot.test.ts`; `StatusDot` added to `testIDForwarding.test.ts`.
@@ -97,9 +129,9 @@ This inverts `WorkflowStatusDot`'s default, so the wrapper keeps its own
 
 ### M2 — `Badge` gains `pulse`
 
-- `pulse?: boolean` (default `false`) animating the existing dot through
-  `usePulse`. A no-op without `dot`, which the prop doc states and the
-  `usePulse(pulse && dot)` call encodes.
+- `pulse?: boolean` (default `false`) rendering a `PulseHalo` behind the existing
+  dot. A no-op without `dot`, which the prop doc states and the JSX encodes by
+  nesting the halo inside the dot's own branch.
 - Badge README + story + extended `badge.test.ts`.
 
 ### M3 — Workflow delegates
@@ -113,6 +145,14 @@ This inverts `WorkflowStatusDot`'s default, so the wrapper keeps its own
   geometry behind is exactly the drift being removed.
 - Workflow README + updated `workflow.test.ts` source assertions.
 
+### M4 — Match the mockup's ping
+
+The first cut animated the dot's own opacity (1 ↔ 0.35) with no halo, which is
+not what the design system does. Reworked to the `mcpulse` ping described above:
+`usePulse` is gone, replaced by `PulseHalo`; both dots split into a box plus a
+`fill`; the browser assertion now polls the halo's transform and pins that the
+fill never dims.
+
 ## Behaviour changes
 
 - `WorkflowNode` already forwarded `size` to the dot (`WorkflowNode.tsx:203`),
@@ -120,6 +160,9 @@ This inverts `WorkflowStatusDot`'s default, so the wrapper keeps its own
   while `sm` / `lg` graphs get 7 / 11px instead of a fixed 9 — the documented
   behaviour finally working.
 - `createWorkflowStyles(...).statusDot` is gone (see M3).
+- The workflow graph's `running` dot changes appearance: it was a dot fading its
+  own opacity, and is now a solid dot with the halo ping. That is the point of a
+  single pulse vocabulary, but it is a visible change to a shipped surface.
 
 Everything else is additive.
 
@@ -127,8 +170,8 @@ Everything else is additive.
 
 `tests/unit/statusDot.test.ts` pins the tone vocabulary and the tone → color
 table, the 7 / 9 / 11 scale and `md` default, the decorative-by-default
-accessible-name branch, and the exports. `usePulse`'s reduced-motion guard and
-unmount teardown are asserted at source. `badge.test.ts` and `workflow.test.ts`
+accessible-name branch, and the exports. The halo's `mcpulse` constants, its
+reduced-motion guard, and its unmount teardown are asserted at source. `badge.test.ts` and `workflow.test.ts`
 extend to cover `pulse` and the delegation.
 
 Two browser assertions carry the claims a source grep cannot: that the rendered
