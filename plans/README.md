@@ -2,6 +2,7 @@
 
 ## Active
 
+- [Charts component family](charts-component-family.md) — proposed: the `@firna/ui/chart` family (bar, line, area, sparkline, stat tile, donut, gauge, bullet, funnel, scatter, waterfall, dumbbell, small multiples) built from this library's primitives and `react-native-svg` with no charting dependency. M1 closes the theme's missing series-colour gap with a palette derived and validated against all four shipped themes; M2–M8 build foundations then charts. Design and colour derivation in [charts-design.md](charts-design.md).
 - [Disable the focus ring](disable-focus-ring.md) — M1–M5 delivered: a theme `focusRing` kill switch + per-instance `disableFocusRing` prop on every ring-bearer, backed by one `useFocusRing({ disabled })` / `ringEnabled` / `webOutlineReset` primitive; disabled rings restore the UA outline (WCAG 2.4.7). Unit tests + a `Focus ring/Examples` story added. Deferred: `DateField`/`DateRangeField` composite forwarding.
 - [SortableList component](sortable-list-component.md) — M1 delivered (web pointer + keyboard drag, optional start/end grab handle, vertical/horizontal flow) and `npm run verify` green; M2 (native drag / touch reordering + RTL) deferred.
 - [Easier Component Testing Without Test Ids](easier-component-testing-without-testid.md) — Milestones 1–3 (dropdown, radio, segmented) delivered and `npm run verify` green; Milestones 4–8 remaining.
