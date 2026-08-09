@@ -55,6 +55,25 @@
   under a single top-level title folder (e.g. `title: "Avatar/Examples"`). A
   component is not complete until its story renders in `npm run storybook` and
   the `npm run storybook:build` step of `npm run verify` passes.
+- **Never use a left accent bar.** A colored strip down the left edge of a
+  surface — toast, card, grid cell, banner, callout, alert, list row, chart
+  label, anything — is banned. It is not a house pattern, the user has
+  explicitly rejected it, and it must not be reintroduced in components,
+  stories, mockups, protocol docs, or plans. This covers every way of drawing
+  one: an asymmetric left border (`borderLeftWidth` / `borderStartWidth` /
+  `border-left` / `border-inline-start`, or a uniform `borderWidth` thickened
+  on the left edge), and a narrow absolutely-positioned `View` pinned to the
+  left edge as a bar. A thick tone-colored strip on any other edge is the same
+  pattern rotated and is equally banned; ordinary hairline separators (a 1px
+  cell or divider border, e.g. the calendar and data-grid column rules) are
+  fine.
+- Carry tone or state with something other than an accent bar: the icon color,
+  a tinted fill, a uniform border, an inset focus/selection ring, a badge, or a
+  dot. `tests/unit/noAccentBar.test.ts` enforces the ban across `src`,
+  `docs/mockups`, and `.storybook`, and lists the only sanctioned exception —
+  the rich-text blockquote rule, which is markdown semantics rather than
+  decoration. Do not add entries to that allowlist unless the user asks for
+  them.
 
 ## Readme (README.md)
 
