@@ -109,6 +109,7 @@ export function Popover({
   manageFocus,
   margin,
   maxHeight,
+  maxWidth,
   minHeight,
   minWidth,
   onOpenChange,
@@ -153,6 +154,7 @@ export function Popover({
         gutter={gutter}
         margin={margin}
         maxHeight={maxHeight}
+        maxWidth={maxWidth}
         minHeight={minHeight}
         minWidth={minWidth}
         onClose={close}

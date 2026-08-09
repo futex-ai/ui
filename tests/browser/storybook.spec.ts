@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { DEFAULT_DROPDOWN_MAX_WIDTH } from "../../src/dropdown/dropdownGeometry";
+
 test("dropdown selector opens, navigates with keyboard, and closes outside", async ({
   page,
 }) => {
@@ -20,6 +22,50 @@ test("dropdown selector opens, navigates with keyboard, and closes outside", asy
   await expect(page.getByText("Flat rate")).toBeVisible();
   await page.mouse.click(10, 10);
   await expect(page.getByText("Flat rate")).toBeHidden();
+});
+
+test("dropdown selector grows for wider options and stops at its default cap", async ({
+  page,
+}) => {
+  await page.setViewportSize({ height: 720, width: 800 });
+  await page.goto("/iframe.html?id=dropdown-examples--content-width-selector");
+
+  const trigger = page.getByRole("button", { name: "Compare with baseline" });
+  const triggerBox = await trigger.boundingBox();
+  await trigger.click();
+
+  const listbox = page.getByRole("listbox");
+  const surface = listbox.locator("..");
+  const surfaceBox = await surface.boundingBox();
+  const runLabelBox = await page
+    .getByText("main-97dbf3f070bd", { exact: true })
+    .boundingBox();
+  const gitRefBox = await page
+    .getByText("97dbf3f070bda07611b771bf55ce37f6a859e02d", { exact: true })
+    .boundingBox();
+
+  expect(triggerBox).not.toBeNull();
+  expect(surfaceBox).not.toBeNull();
+  expect(runLabelBox).not.toBeNull();
+  expect(gitRefBox).not.toBeNull();
+  expect(surfaceBox?.width ?? 0).toBeGreaterThan((triggerBox?.width ?? 0) + 20);
+  expect(surfaceBox?.width).toBeCloseTo(DEFAULT_DROPDOWN_MAX_WIDTH, 0);
+  expect(runLabelBox?.height ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(
+    20,
+  );
+  expect(gitRefBox?.height ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(17);
+
+  await page.setViewportSize({ height: 720, width: 320 });
+  await expect
+    .poll(async () => (await surface.boundingBox())?.width ?? 0)
+    .toBeLessThan(DEFAULT_DROPDOWN_MAX_WIDTH);
+  const narrowSurfaceBox = await surface.boundingBox();
+  expect(narrowSurfaceBox).not.toBeNull();
+  expect(narrowSurfaceBox?.x ?? -1).toBeGreaterThanOrEqual(0);
+  expect(
+    (narrowSurfaceBox?.x ?? Number.POSITIVE_INFINITY) +
+      (narrowSurfaceBox?.width ?? Number.POSITIVE_INFINITY),
+  ).toBeLessThanOrEqual(320);
 });
 
 test("dropdown action menu opens from child trigger and closes after selection", async ({

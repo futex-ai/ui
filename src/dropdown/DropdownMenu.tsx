@@ -122,6 +122,7 @@ export function DropdownMenu({
   highlightVariant,
   margin,
   maxHeight,
+  maxWidth,
   minHeight,
   minWidth,
   onActiveIdChange,
@@ -242,6 +243,7 @@ export function DropdownMenu({
         gutter={gutter}
         margin={margin}
         maxHeight={maxHeight}
+        maxWidth={maxWidth}
         minHeight={minHeight}
         minWidth={minWidth}
         onClose={close}

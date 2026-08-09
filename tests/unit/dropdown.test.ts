@@ -3,8 +3,10 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
+  DEFAULT_DROPDOWN_MAX_WIDTH,
   dropdownPlacement,
   dropdownPointWithinRects,
+  dropdownWidthBounds,
 } from "../../src/dropdown/dropdownGeometry";
 import {
   DROPDOWN_LAYERS,
@@ -51,6 +53,38 @@ test("dropdown placement flips above and clamps height near viewport bottom", ()
       { align: "end", maxHeight: 260, minWidth: 220 },
     ),
     { bottom: 86, left: 572, maxHeight: 260, side: "top", width: 220 },
+  );
+});
+
+test("dropdown content width grows from the trigger and stops at the default cap", () => {
+  const anchor = { height: 36, width: 140, x: 20, y: 80 };
+  const viewport = { height: 600, width: 800 };
+  const options = { maxWidth: DEFAULT_DROPDOWN_MAX_WIDTH };
+
+  assert.equal(dropdownPlacement(anchor, viewport, options, 90).width, 140);
+  assert.equal(dropdownPlacement(anchor, viewport, options, 320).width, 320);
+  assert.equal(
+    dropdownPlacement(anchor, viewport, options, 640).width,
+    DEFAULT_DROPDOWN_MAX_WIDTH,
+  );
+});
+
+test("dropdown width bounds clamp content to the viewport without shrinking a visible trigger", () => {
+  assert.deepEqual(
+    dropdownWidthBounds(
+      { height: 36, width: 180, x: 100, y: 80 },
+      { height: 600, width: 300 },
+      { maxWidth: DEFAULT_DROPDOWN_MAX_WIDTH },
+    ),
+    { maxWidth: 284, minWidth: 180 },
+  );
+  assert.deepEqual(
+    dropdownWidthBounds(
+      { height: 36, width: 400, x: 0, y: 80 },
+      { height: 600, width: 800 },
+      { maxWidth: 320 },
+    ),
+    { maxWidth: 400, minWidth: 400 },
   );
 });
 
@@ -309,6 +343,16 @@ test("dropdown selector sizes the field variant from the shared input scale", ()
   assert.match(stylesSource, /const sizing = inputSizeTokens\(size\)/);
   assert.match(stylesSource, /height: sizing\.boxHeight/);
   assert.match(stylesSource, /paddingHorizontal: sizing\.paddingHorizontal/);
+});
+
+test("dropdown selector fits wider content up to an overridable default cap", () => {
+  const source = readSource("../../src/dropdown/DropdownSelector.tsx");
+
+  assert.match(source, /menuMaxWidth\?: number;/);
+  assert.match(source, /menuMinWidth\?: number;/);
+  assert.match(source, /menuMaxWidth = DEFAULT_DROPDOWN_MAX_WIDTH/);
+  assert.match(source, /<DropdownPortal[\s\S]*fitContentWidth/);
+  assert.match(source, /maxWidth=\{menuMaxWidth\}/);
 });
 
 test("dropdown row inverts its subtext on the solid active fill", () => {

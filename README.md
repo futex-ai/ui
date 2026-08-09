@@ -26,8 +26,9 @@ surfaces. The first consumers are the accounting app and the Juno app.
   theme's `focusRing: false` flag or per instance with a `disableFocusRing` prop
   (both fall back to the browser's default focus outline so keyboard focus stays
   visible).
-- Portaled, anchored web date/dropdown/popover overlays with z-index escape
-  hatches, plus touch-friendly native date sheets.
+- Portaled, anchored web date/dropdown/popover overlays with viewport-aware,
+  content-sized selector menus and z-index escape hatches, plus touch-friendly
+  native date sheets.
 - Expo and React Native Web compatible platform files.
 - Focused unit tests, browser interaction tests, and package export checks.
 - Storybook previews for visual review on same-repository non-release PRs.

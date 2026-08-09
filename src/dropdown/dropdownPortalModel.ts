@@ -16,6 +16,8 @@ import type { DropdownHoverProps } from "./useDropdownHover";
 export type DropdownPortalProps = DropdownPlacementOptions & {
   anchorRef: RefObject<View | null>;
   children: (placement: DropdownPlacement) => ReactNode;
+  /** Let the surface grow to its intrinsic content width between its width bounds. */
+  fitContentWidth?: boolean;
   onClose: () => void;
   open: boolean;
   surfaceHoverProps?: DropdownHoverProps;
@@ -25,14 +27,19 @@ export type DropdownPortalProps = DropdownPlacementOptions & {
 };
 
 /** Absolute-position rect that pins a dropdown surface to its placement. */
-export function dropdownSurfaceRect(placement: DropdownPlacement) {
-  return {
+export function dropdownSurfaceRect(
+  placement: DropdownPlacement,
+  fitContentWidth = false,
+) {
+  const position = {
     bottom: placement.bottom,
     left: placement.left,
     maxHeight: placement.maxHeight,
     top: placement.top,
-    width: placement.width,
   } as const;
+  return fitContentWidth
+    ? position
+    : ({ ...position, width: placement.width } as const);
 }
 
 /** Shared dropdown surface chrome used by the portal and combobox paths. */

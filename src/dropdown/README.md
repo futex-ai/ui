@@ -97,6 +97,23 @@ dimensions. `ReadOnlySelector` takes the same `size`:
 />
 ```
 
+Selector popups use the trigger width as their minimum, grow to fit wider option
+content, and stop at a default maximum of `360` pixels or the viewport edge,
+whichever comes first. This keeps short selects compact while labels, secondary
+text, and trailing codes have room before they wrap. Pass `menuMinWidth` or
+`menuMaxWidth` to override those bounds for a specific selector; a wider trigger
+still remains the minimum until the viewport itself is narrower:
+
+```tsx
+<DropdownSelector
+  menuMaxWidth={440}
+  menuMinWidth={280}
+  onValueChange={setRunId}
+  options={runOptions}
+  value={runId}
+/>
+```
+
 Pass `labelInfo` to add an ⓘ button after the selector's label that reveals
 supplementary help text in a small tooltip on press. It reuses the shared
 `LabelInfo` affordance (built on `Popover`, so the bubble is portaled and escapes
