@@ -654,12 +654,14 @@ Required behavior:
   absolutely-positioned, `pointerEvents="box-none"` overlay on native.
 - Auto-dismiss each toast after its resolved duration and pause the countdown
   while the pointer or keyboard focus is over the toast.
-- Carry tone (`info`, `success`, `warning`, `error`) as a left accent strip,
-  leading icon, and screen-reader semantics: errors announce assertively with
-  the `alert` role, other tones politely with the `status` role.
+- Carry tone (`info`, `success`, `warning`, `error`) as the leading icon color
+  and screen-reader semantics: errors announce assertively with the `alert`
+  role, other tones politely with the `status` role. The card keeps a uniform
+  1px border on every edge — tone must never be drawn as a left accent strip
+  (see the accent-bar rule in `AGENTS.md`).
 - Support a compact `solid` variant that uses the tone color as the filled
-  background, hides the default card icon/accent strip, and can match the
-  bottom-center transaction-error style through props.
+  background, hides the default card icon, and can match the bottom-center
+  transaction-error style through props.
 - Support caller-provided leading icons for toast surfaces so in-progress,
   branded, or feature-specific visuals do not require new visual variants.
 - Allow per-toast surface and filled-foreground overrides so compact solid
