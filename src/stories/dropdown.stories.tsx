@@ -17,6 +17,7 @@ import {
   BottomEdgeFlipExample,
   CategorySelectExample,
   ChipMultiSelectExample,
+  ContentWidthSelectorExample,
   ContextMenuExample,
   EdgePlacementGridExample,
   EndAlignedMenuExample,
@@ -59,6 +60,15 @@ export const DropdownSelectorDefault: Story = {
   render: () => (
     <StorySurface>
       <SelectorExample />
+    </StorySurface>
+  ),
+};
+
+export const ContentWidthSelector: Story = {
+  name: "Content-width selector",
+  render: () => (
+    <StorySurface>
+      <ContentWidthSelectorExample />
     </StorySurface>
   ),
 };

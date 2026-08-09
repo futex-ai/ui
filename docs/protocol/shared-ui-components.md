@@ -552,6 +552,11 @@ Required behavior:
   stacking contexts.
 - Place below the trigger when space permits, flip above near the viewport
   bottom, and clamp max height.
+- Treat a selector trigger as the popup's minimum width, grow the popup to its
+  wider option content, and cap that growth at `360px` by default and at the
+  viewport edge in all cases. Per-selector minimum and maximum overrides may
+  change the content bounds, but the configured maximum must not shrink a
+  popup below a wider visible trigger unless the viewport itself is narrower.
 - Support keyboard navigation, disabled row skipping, Enter selection, Escape
   close, hover active state, outside pointer close, loading/empty rows, section
   headers, dividers, footers, secondary text, right-side content, and danger or

@@ -90,6 +90,39 @@ export function SelectorExample() {
   );
 }
 
+const runSelectorOptions = [
+  {
+    label: "main-97dbf3f070bd",
+    secondary: "97dbf3f070bda07611b771bf55ce37f6a859e02d",
+    value: "run-1",
+  },
+  {
+    label: "main-d0030b56b74e",
+    secondary: "d0030b56b74e1c8f4397ccd0c1e51bfbf2031402",
+    value: "run-2",
+  },
+  {
+    label:
+      "An intentionally overlong run label that demonstrates the popup width cap",
+    value: "run-3",
+  },
+];
+
+export function ContentWidthSelectorExample() {
+  const [value, setValue] = useState("");
+  return (
+    <View style={styles.contentWidthSelector}>
+      <DropdownSelector
+        onValueChange={setValue}
+        options={runSelectorOptions}
+        placeholder="Choose a run"
+        triggerLabel="Compare with baseline"
+        value={value}
+      />
+    </View>
+  );
+}
+
 const explicitSelectorOptions = [
   {
     accessibilityLabel: "Standard scheme",
@@ -1394,6 +1427,9 @@ const styles = StyleSheet.create({
   controlledPopover: {
     alignItems: "flex-start",
     gap: 8,
+  },
+  contentWidthSelector: {
+    alignItems: "flex-start",
   },
   edgeButton: {
     alignItems: "center",

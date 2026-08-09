@@ -18,6 +18,7 @@ import {
 import type { DropdownHighlightVariant, DropdownRowSlot } from "./DropdownList";
 import { DropdownPortal } from "./DropdownPortal";
 import { comboboxInputA11y, filterComboboxSections } from "./comboboxModel";
+import { DEFAULT_DROPDOWN_MAX_WIDTH } from "./dropdownGeometry";
 import {
   createDropdownSelectorStyles,
   dropdownMinWidth,
@@ -84,6 +85,10 @@ type DropdownSelectorProps = {
    * `More information about {label}`.
    */
   labelInfoLabel?: string;
+  /** Maximum popup width. Defaults to 360; the trigger remains the minimum. */
+  menuMaxWidth?: number;
+  /** Optional popup minimum above the trigger width or variant default. */
+  menuMinWidth?: number;
   onValueChange?: (value: string) => void;
   options: DropdownSelectorOption[];
   placeholder?: string;
@@ -129,6 +134,8 @@ function DropdownSelectorView({
   labelInfo,
   labelInfoIcon,
   labelInfoLabel,
+  menuMaxWidth = DEFAULT_DROPDOWN_MAX_WIDTH,
+  menuMinWidth,
   onValueChange,
   options,
   placeholder = "Select an option",
@@ -332,7 +339,9 @@ function DropdownSelectorView({
       ) : null}
       <DropdownPortal
         anchorRef={anchorRef}
-        minWidth={dropdownMinWidth(variant)}
+        fitContentWidth
+        maxWidth={menuMaxWidth}
+        minWidth={dropdownMinWidth(variant, menuMinWidth)}
         onClose={() => setOpen(false)}
         open={open}
       >

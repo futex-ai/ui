@@ -39,6 +39,7 @@ export function ComboboxPopover({
   gutter,
   margin,
   maxHeight,
+  maxWidth,
   minHeight,
   minWidth,
   onClose,
@@ -59,6 +60,7 @@ export function ComboboxPopover({
     gutter,
     margin,
     maxHeight,
+    maxWidth,
     minHeight,
     minWidth,
   });

@@ -185,7 +185,14 @@ export function invalidValueStyle(
   return null;
 }
 
-export function dropdownMinWidth(variant: SelectorVariant) {
+export function dropdownMinWidth(variant: SelectorVariant, requested?: number) {
+  const variantMinimum = variantDropdownMinWidth(variant);
+  return requested === undefined
+    ? variantMinimum
+    : Math.max(variantMinimum ?? 0, requested);
+}
+
+function variantDropdownMinWidth(variant: SelectorVariant) {
   if (variant === "map") return 210;
   if (variant === "pill") return 180;
   return undefined;

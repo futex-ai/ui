@@ -7,7 +7,9 @@ import {
   DropdownPoint,
   dropdownPlacement,
   dropdownPointWithinRects,
+  dropdownWidthBounds,
 } from "./dropdownGeometry";
+import { dropdownContentWidthStyle } from "./dropdownContentWidthStyle";
 import {
   DropdownPortalProps,
   dropdownSurfaceRect,
@@ -15,6 +17,7 @@ import {
 } from "./dropdownPortalModel";
 import { DropdownWebLayer } from "./DropdownWebLayer";
 import { useDropdownAnchor } from "./useDropdownAnchor";
+import { useDropdownContentWidth } from "./useDropdownContentWidth";
 import { useDropdownDismiss } from "./useDropdownDismiss";
 
 type DropdownRectNode = { getBoundingClientRect: () => DropdownClientRect };
@@ -44,9 +47,11 @@ export function DropdownPortal({
   align = "start",
   anchorRef,
   children,
+  fitContentWidth = false,
   gutter,
   margin,
   maxHeight,
+  maxWidth,
   minHeight,
   minWidth,
   onClose,
@@ -61,6 +66,7 @@ export function DropdownPortal({
   hoverInRef.current = surfaceHoverProps?.onHoverIn;
   const hoverBacked = Boolean(surfaceHoverProps);
   const { anchor, viewport } = useDropdownAnchor(anchorRef, open);
+  const contentWidth = useDropdownContentWidth(fitContentWidth && open);
   const surfaceStyles = useDropdownSurfaceStyles();
   const surfaceMounted = open && anchor !== null;
   useDropdownDismiss({
@@ -104,14 +110,22 @@ export function DropdownPortal({
     return null;
   }
 
-  const placement = dropdownPlacement(anchor, viewport, {
+  const placementOptions = {
     align,
     gutter,
     margin,
     maxHeight,
+    maxWidth,
     minHeight,
     minWidth,
-  });
+  };
+  const placement = dropdownPlacement(
+    anchor,
+    viewport,
+    placementOptions,
+    contentWidth.width ?? anchor.width,
+  );
+  const widthBounds = dropdownWidthBounds(anchor, viewport, placementOptions);
   const surfaceMouseProps = surfaceHoverProps
     ? ({
         onMouseEnter: surfaceHoverProps.onHoverIn,
@@ -122,10 +136,15 @@ export function DropdownPortal({
     <DropdownWebLayer zIndex={zIndex}>
       <View
         {...surfaceMouseProps}
+        onLayout={contentWidth.onLayout}
         onPointerEnter={surfaceHoverProps?.onHoverIn}
         onPointerLeave={surfaceHoverProps?.onHoverOut}
         ref={surfaceRef}
-        style={[surfaceStyles.surface, dropdownSurfaceRect(placement)]}
+        style={[
+          surfaceStyles.surface,
+          dropdownSurfaceRect(placement, fitContentWidth),
+          fitContentWidth ? dropdownContentWidthStyle(widthBounds) : null,
+        ]}
         testID={testID}
       >
         {children(placement)}

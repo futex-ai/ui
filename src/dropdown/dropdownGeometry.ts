@@ -19,6 +19,7 @@ export type DropdownPlacementOptions = {
   gutter?: number;
   margin?: number;
   maxHeight?: number;
+  maxWidth?: number;
   minHeight?: number;
   minWidth?: number;
 };
@@ -64,18 +65,52 @@ const DEFAULT_MARGIN = 8;
 const DEFAULT_MAX_HEIGHT = 320;
 const DEFAULT_MIN_HEIGHT = 140;
 
+/** Default content-width cap for selector popups before viewport clamping. */
+export const DEFAULT_DROPDOWN_MAX_WIDTH = 360;
+
+/** Resolved horizontal bounds for a dropdown surface. */
+export type DropdownWidthBounds = {
+  maxWidth: number;
+  minWidth: number;
+};
+
+/**
+ * Keeps the trigger as the popup's minimum width, honors caller bounds, and
+ * clamps both to the available viewport width.
+ */
+export function dropdownWidthBounds(
+  anchor: DropdownAnchorRect,
+  viewport: DropdownViewport,
+  options: DropdownPlacementOptions = {},
+): DropdownWidthBounds {
+  const margin = options.margin ?? DEFAULT_MARGIN;
+  const availableWidth = Math.max(1, viewport.width - margin * 2);
+  const minWidth = Math.min(
+    Math.max(anchor.width, options.minWidth ?? 0),
+    availableWidth,
+  );
+  const maxWidth = Math.min(
+    Math.max(minWidth, options.maxWidth ?? availableWidth),
+    availableWidth,
+  );
+  return { maxWidth, minWidth };
+}
+
 export function dropdownPlacement(
   anchor: DropdownAnchorRect,
   viewport: DropdownViewport,
   options: DropdownPlacementOptions = {},
+  preferredWidth = anchor.width,
 ): DropdownPlacement {
   const margin = options.margin ?? DEFAULT_MARGIN;
   const gutter = options.gutter ?? DEFAULT_GUTTER;
   const maxHeight = options.maxHeight ?? DEFAULT_MAX_HEIGHT;
   const minHeight = options.minHeight ?? DEFAULT_MIN_HEIGHT;
-  const width = Math.min(
-    Math.max(options.minWidth ?? 0, anchor.width),
-    Math.max(anchor.width, viewport.width - margin * 2),
+  const widthBounds = dropdownWidthBounds(anchor, viewport, options);
+  const width = clamp(
+    preferredWidth,
+    widthBounds.minWidth,
+    widthBounds.maxWidth,
   );
   const alignedLeft =
     options.align === "end" ? anchor.x + anchor.width - width : anchor.x;

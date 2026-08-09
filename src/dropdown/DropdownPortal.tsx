@@ -1,7 +1,8 @@
 /** Modal-backed native dropdown surface anchored to a measured trigger. */
 import { Modal, Pressable, StyleSheet, View } from "react-native";
 
-import { dropdownPlacement } from "./dropdownGeometry";
+import { dropdownContentWidthStyle } from "./dropdownContentWidthStyle";
+import { dropdownPlacement, dropdownWidthBounds } from "./dropdownGeometry";
 import { dropdownPortalZIndex } from "./dropdownLayers";
 import {
   DropdownPortalProps,
@@ -9,6 +10,7 @@ import {
   useDropdownSurfaceStyles,
 } from "./dropdownPortalModel";
 import { useDropdownAnchor } from "./useDropdownAnchor";
+import { useDropdownContentWidth } from "./useDropdownContentWidth";
 
 /**
  * Native menus render inside a transparent `Modal` so the scrim catches
@@ -20,9 +22,11 @@ export function DropdownPortal({
   align = "start",
   anchorRef,
   children,
+  fitContentWidth = false,
   gutter,
   margin,
   maxHeight,
+  maxWidth,
   minHeight,
   minWidth,
   onClose,
@@ -32,21 +36,32 @@ export function DropdownPortal({
   zIndex,
 }: DropdownPortalProps) {
   const { anchor, viewport } = useDropdownAnchor(anchorRef, open);
+  const contentWidth = useDropdownContentWidth(fitContentWidth && open);
   const surfaceStyles = useDropdownSurfaceStyles();
 
   if (!open) {
     return null;
   }
 
+  const placementOptions = {
+    align,
+    gutter,
+    margin,
+    maxHeight,
+    maxWidth,
+    minHeight,
+    minWidth,
+  };
   const placement = anchor
-    ? dropdownPlacement(anchor, viewport, {
-        align,
-        gutter,
-        margin,
-        maxHeight,
-        minHeight,
-        minWidth,
-      })
+    ? dropdownPlacement(
+        anchor,
+        viewport,
+        placementOptions,
+        contentWidth.width ?? anchor.width,
+      )
+    : null;
+  const widthBounds = anchor
+    ? dropdownWidthBounds(anchor, viewport, placementOptions)
     : null;
 
   return (
@@ -60,9 +75,16 @@ export function DropdownPortal({
         {placement ? (
           <Pressable
             accessibilityViewIsModal
+            onLayout={contentWidth.onLayout}
             onHoverIn={surfaceHoverProps?.onHoverIn}
             onHoverOut={surfaceHoverProps?.onHoverOut}
-            style={[surfaceStyles.surface, dropdownSurfaceRect(placement)]}
+            style={[
+              surfaceStyles.surface,
+              dropdownSurfaceRect(placement, fitContentWidth),
+              fitContentWidth && widthBounds
+                ? dropdownContentWidthStyle(widthBounds)
+                : null,
+            ]}
             testID={testID}
           >
             {children(placement)}

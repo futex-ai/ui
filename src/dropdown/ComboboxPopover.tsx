@@ -23,6 +23,7 @@ type ComboboxPopoverProps = DropdownPlacementOptions & {
 export function ComboboxPopover({
   children,
   maxHeight = 280,
+  maxWidth,
   minWidth = 220,
   open,
   testID,
@@ -58,7 +59,10 @@ export function ComboboxPopover({
     width: minWidth,
   };
   return (
-    <View style={[styles.surface, { maxHeight, minWidth }]} testID={testID}>
+    <View
+      style={[styles.surface, { maxHeight, maxWidth, minWidth }]}
+      testID={testID}
+    >
       {children(placement)}
     </View>
   );
