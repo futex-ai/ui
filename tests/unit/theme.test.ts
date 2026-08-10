@@ -75,6 +75,27 @@ test("focus ring uses the active shared theme primary color", () => {
   assert.match(source, /focusRingStyle/);
 });
 
+test("the focus-ring primitive has public root and subpath exports", () => {
+  // Consumers import every other primitive by subpath, so wiring a custom
+  // control's focus glow through the package root would pull the whole barrel
+  // through Metro. `./focusRing` mirrors `./theme`: a single-module subpath
+  // named after the module it exposes.
+  const rootSource = readFileSync(
+    new URL("../../src/index.ts", import.meta.url),
+    "utf8",
+  );
+  const packageJson = JSON.parse(
+    readFileSync(new URL("../../package.json", import.meta.url), "utf8"),
+  ) as { exports: Record<string, Record<string, string>> };
+
+  assert.match(rootSource, /export \* from "\.\/focusRing"/);
+  assert.deepEqual(packageJson.exports["./focusRing"], {
+    types: "./dist/node/focusRing.d.ts",
+    "react-native": "./dist/focusRing.js",
+    import: "./dist/node/focusRing.js",
+  });
+});
+
 test("theme defaults the focus-ring switch on and honors an override", () => {
   // The global focus-ring kill switch defaults on so existing callers keep the
   // glow, and can be flipped off per-theme without touching any component.

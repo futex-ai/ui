@@ -61,7 +61,19 @@ Recommended path:
    `@firna/ui/avatar`, and web modals from `@firna/ui/modal`.
 4. Keep native iOS/Android sheets, action sheets, and OS pickers in Juno app
    code; this package's `WebModalFrame` remains web-only.
-5. Run Juno app tests, typecheck, browser smoke tests, `cargo xtask check`,
+5. Replace app-owned pressables that only existed because `Button` hardcoded its
+   role — nav rail rows, tabs, checkbox rows, toggle buttons, colour swatches —
+   with `@firna/ui/button` plus `role` and the matching state prop (`selected`
+   for a tab, `checked` for a checkbox / radio / switch, `pressed` for a toggle).
+   They then inherit the shared focus glow instead of falling through to the
+   browser's blue outline. The `tablist` / `radiogroup` / `menu` container and
+   any arrow-key navigation stay in app code.
+6. Wire a focus glow onto any control that must stay hand-rolled with
+   `useFocusRing` from `@firna/ui/focusRing` — spread `webOutlineReset`, apply
+   `focusRingStyle` while `focused`, and pass the hook's `onFocus` / `onBlur` to
+   the pressable. Do not drop `outlineStyle: "none"` on its own: that removes the
+   only keyboard-focus indicator and regresses WCAG 2.1 — 2.4.7.
+7. Run Juno app tests, typecheck, browser smoke tests, `cargo xtask check`,
    commit, push, and run `cargo xtask review`.
 
 ## Follow-Up Gaps

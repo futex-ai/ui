@@ -29,6 +29,10 @@ theme tokens.
 - Expose `button` accessibility semantics with a disabled state, and treat a
   missing `onPress` as a read-only disabled control (matching the library's
   other pressables).
+- Re-point that role with `role` — `checkbox`, `menuitem`, `radio`, `switch`, or
+  `tab` — paired with the state that role must carry (`checked` / `selected` /
+  `pressed` / `expanded`), and bind Spacebar for the roles react-native-web
+  leaves unbound.
 - Support an in-progress `busy` state that stays focusable and announces
   `aria-busy`, blocks the press handler, and swaps the leading icon for a
   spinner.
@@ -151,6 +155,72 @@ being sheared. The example rows in the story set `paddingVertical` for this.
 `block` stretches the button to fill its container (full width), for stacked
 form actions and bottom sheets.
 
+### Roles and states
+
+`role` re-points the button at another single-activation role, so a rail row,
+tab, checkbox, radio, switch, or menu item is a themed `Button` rather than a
+hand-rolled `Pressable` that has to re-derive the tones, sizes, focus glow, and
+disabled/busy handling. Each role carries exactly one state prop:
+
+| `role`     | state prop | announced as    |
+| ---------- | ---------- | --------------- |
+| `button`   | `pressed`  | `aria-pressed`  |
+| `checkbox` | `checked`  | `aria-checked`  |
+| `radio`    | `checked`  | `aria-checked`  |
+| `switch`   | `checked`  | `aria-checked`  |
+| `tab`      | `selected` | `aria-selected` |
+| `menuitem` | —          |                 |
+
+`expanded` is separate and composes with `button`, `checkbox`, `menuitem`, and
+`tab` for a control that reveals a menu, panel, or section.
+
+```tsx
+{
+  /* A settings rail. The `tablist` is the caller's — see the note below. */
+}
+<View accessibilityLabel="Settings sections" accessibilityRole="tablist">
+  {sections.map((item) => (
+    <Button
+      key={item.id}
+      onPress={() => setSection(item.id)}
+      role="tab"
+      selected={section === item.id}
+      tone={section === item.id ? "primary" : "plain"}
+    >
+      {item.label}
+    </Button>
+  ))}
+</View>;
+
+{
+  /* A toggle button. */
+}
+<Button onPress={() => setPinned(!pinned)} pressed={pinned}>
+  {pinned ? "Pinned" : "Pin"}
+</Button>;
+
+{
+  /* A checkbox. */
+}
+<Button checked={notify} onPress={() => setNotify(!notify)} role="checkbox">
+  Email notifications
+</Button>;
+```
+
+Pairing a state with a role ARIA does not allow — or leaving a `checkbox` /
+`radio` / `switch` without `checked`, or a `tab` without `selected` — fires a
+`__DEV__` warning naming the mismatch, because the resulting control announces
+the wrong thing rather than failing loudly.
+
+`link` is deliberately not a member: a re-roled button has no `href`, so it
+cannot be opened in a new tab, middle-clicked, or copied as a URL. Use an anchor
+for a real link.
+
+**`Button` is a single control, not a group.** It does not own roving focus or
+arrow-key navigation, so the `tablist` / `radiogroup` / `menu` container and any
+group keyboard model belong to the caller. `SegmentedControl` already implements
+the radiogroup pattern end to end if that is what you need.
+
 ### Imperative focus
 
 `buttonRef` exposes the underlying pressable for callers that must drive focus
@@ -193,9 +263,21 @@ top for one-off layout tweaks (e.g. margins).
   and swaps the icon for a spinner while keeping the button focusable and
   announced. It is distinct from `disabled` (which removes the control from the
   tab order). The spinner stops animating under `prefers-reduced-motion`.
-- **Keyboard (2.1.1, A).** Enter/Space activation is delegated to React Native
-  Web's `role="button"` synthesis (no explicit `onKeyDown` is wired); a
-  Playwright test asserts both keys still activate to catch RNW regressions.
+- **Keyboard (2.1.1, A).** On the default `button` role, Enter/Space activation
+  is delegated to React Native Web's `role="button"` synthesis (no explicit
+  `onKeyDown` is wired); a Playwright test asserts both keys still activate to
+  catch RNW regressions. React Native Web presses Enter on _every_ role but
+  binds Spacebar to `button` roles alone, so the other `role` values wire Space
+  themselves — swallowing it (rather than scrolling the page) even while
+  disabled or busy, and leaving Enter to the press responder so a press never
+  fires twice.
+- **Role and state (4.1.2, A).** The role state travels on two channels because
+  the renderers disagree: React Native reads `accessibilityState`, while React
+  Native Web honours it only on `TouchableWithoutFeedback` and so needs the
+  literal `aria-*` props. `Button` emits both. `pressed` is the exception — React
+  Native models no pressed toggle and `aria-pressed` is the only toggle state
+  ARIA allows on `role="button"`, so on web it stays `aria-pressed` and on native
+  it degrades to the announced `selected` state.
 - **Focus visible (2.4.7, AA).** The library's shared soft focus glow (the same
   `useFocusRing` box-shadow ring input / switch / radio / segmented use) is shown
   on focus for every tone — including `primary`, where a border-colour ring would
