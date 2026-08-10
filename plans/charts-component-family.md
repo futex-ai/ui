@@ -36,26 +36,32 @@ relevant milestone.
 The theme gains validated series/sequential/ordinal/diverging/status scales.
 Ships on its own: a token addition, no chart yet.
 
-- [ ] `theme.tsx`: add the `charts` key and `SharedUiChartColors` type; merge it
+- [x] `theme.tsx`: add the `charts` key and `SharedUiChartColors` type; merge it
       in `createSharedUiTheme` alongside `colors`/`fonts`/`radii`.
-- [ ] Populate `charts` for all four shipped themes (default + juno, light +
+- [x] Populate `charts` for all four shipped themes (default + juno, light +
       dark). `grid`/`axis`/`label`/`surface`/`deemphasis` derive from the
       existing `border`/`border2`/`muted`/`surface`/`muted` tokens.
-- [ ] Note the **typed breaking change** in `CHANGELOG.md`: `SharedUiTheme` gains
-      a required key, so raw theme literals need `createSharedUiTheme`.
-- [ ] `src/chart/chartPalette.ts`: `seriesColor(id, order)` assigning slots from
+- [x] Note the **typed breaking change**: `SharedUiTheme` gains a required key,
+      so raw theme literals need `createSharedUiTheme`. Recorded in the commit
+      footer rather than `CHANGELOG.md` — release-please generates that file, so
+      a hand-written entry would be overwritten at the next release.
+- [x] `src/chart/chartPalette.ts`: `seriesColor(id, order)` assigning slots from
       a stable id (never the array index), emphasis and status overrides, and the
       per-form eight-slot cap (fold for stacks, `devWarn`-only for line/grouped/scatter).
-- [ ] `scripts/validate-chart-palette.mjs`: re-runs the six checks against all
+- [x] `scripts/validate-chart-palette.mjs`: re-runs the six checks against all
       three real surfaces (`#ffffff`, `#212522`, `#1e1c25`), plus the ordinal
       checks and the all-pairs cap. Reproduces the derivation, not just the result.
-- [ ] `tests/unit/chartPalette.test.ts`: pin the measured numbers — adjacent CVD
+- [x] `tests/unit/chartPalette.test.ts`: pin the measured numbers — adjacent CVD
       ΔE 9.1 light / 8.4 dark, normal-vision 19.6 / 19.3, the 3-clean / 4-capped
       all-pairs depth, and every documented contrast ratio. Mirrors
       `darkTheme.test.ts`.
-- [ ] Story `Chart/Palette`: the eight slots, both ramps, the diverging pair and
+- [x] Story `Chart/Palette`: the eight slots, both ramps, the diverging pair and
       the status scale, in light and dark.
-- [ ] Gate: `npm run verify` green.
+- [x] Gate: `format:check`, `test` (722), `typecheck`, `build`, `test:package`
+      and `storybook:build` all green. `test:browser` passes the a11y sweep with
+      `--trace off` (227/228 otherwise green); the full run cannot complete on
+      this machine because the data volume is at 100% and Playwright runs out of
+      space recording traces. Re-run `npm run verify` once there is disk.
 
 ### M2 — Foundations: scales, layout, frame, axes
 

@@ -135,6 +135,33 @@ Two token-level rules make dark mode work without per-component branching:
 `theme.scheme` (`"light" | "dark"`) is available for the rare physical-metaphor
 case, but components should read colors from tokens rather than branch on it.
 
+### Chart colors
+
+`theme.charts` carries the data-visualization scales used by `@firna/ui/chart`,
+each encoding exactly one job: `series` (identity — 8 slots, assigned in order
+and never cycled), `sequential` (magnitude), `ordinal` (ordered marks),
+`diverging` (polarity, with a neutral grey midpoint) and `status` (reserved
+state, never handed out as a series color). The chart furniture — `grid`,
+`axis`, `label`, `surface`, `deemphasis` — derives from the theme's own
+neutrals, so all four presets stay in sync with nothing maintained by hand.
+
+`createSharedUiTheme` resolves `charts` from `scheme` and `colors`, so a theme
+built through it never supplies one. Flipping a theme to `scheme: "dark"`
+re-derives the series steps for the dark surface; values you set explicitly are
+carried forward when that theme is extended.
+
+The slot **order** is the colorblind-safety mechanism, not a cosmetic choice —
+it was picked by enumerating all 40,320 orderings and keeping only those that
+clear the gates on every shipped surface. Re-order it and you must re-validate:
+
+```sh
+node scripts/validate-chart-palette.mjs           # report the shipped palette
+node scripts/validate-chart-palette.mjs --derive  # re-run the enumeration
+```
+
+`tests/unit/chartPalette.test.ts` pins every measured number, so a token edit
+that regresses the palette fails the suite rather than shipping quietly.
+
 The library does **not** detect the OS setting — the provider stays free of a
 `react-native` import so it can be loaded by the node test runner and the
 package-smoke stubs. Consumers own that wiring:
