@@ -8,7 +8,7 @@ import {
   bandScale,
   ChartAxisLabels,
   ChartFrame,
-  ChartGrid,
+  ChartGridLines,
   ChartTableView,
   linearScale,
   niceTicks,
@@ -68,7 +68,7 @@ function DemoBars({
 
   return (
     <>
-      <ChartGrid baseline={y.scale(0)} plot={plot} ticks={valueTicks} />
+      <ChartGridLines baseline={y.scale(0)} plot={plot} ticks={valueTicks} />
       <Svg
         height={plot.height}
         style={{ left: plot.x, position: "absolute", top: plot.y }}

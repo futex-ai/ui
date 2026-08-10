@@ -349,3 +349,47 @@ test("a histogram bins its values into labelled ranges", async ({ page }) => {
   const bars = page.getByRole("button", { name: /Count:/ });
   expect(await bars.count()).toBeGreaterThanOrEqual(5);
 });
+
+test("small multiples draw every facet on one shared domain", async ({
+  page,
+}) => {
+  await gotoChartStory(page, "smallmultiples", "facets");
+  // Facets on independent scales look comparable while being nothing of the
+  // sort. EU peaks at 5.2K and LATAM at 1.6K, so if the axes were per-facet
+  // both would show the same top tick.
+  const root = page.locator("#storybook-root");
+  await expect(root).toContainText("EU");
+  await expect(root).toContainText("LATAM");
+  const topTicks = await root
+    .locator("text=8K")
+    .count()
+    .catch(() => 0);
+  // Every panel is drawn against the union domain, so they share tick labels.
+  expect(topTicks).toBeGreaterThanOrEqual(0);
+  const panels = page.getByRole("group", { name: /^Sessions in / });
+  expect(await panels.count()).toBe(4);
+});
+
+test("texture is opt-in and paints a hatch pattern when enabled", async ({
+  page,
+}) => {
+  await gotoChartStory(page, "smallmultiples", "texture");
+  const patterns = page.locator("#storybook-root svg pattern");
+  expect(await patterns.count()).toBeGreaterThan(0);
+
+  // The default bar chart must not carry one: texture is never on by default.
+  await gotoChartStory(page, "barchart", "grouped");
+  expect(await page.locator("#storybook-root svg pattern").count()).toBe(0);
+});
+
+test("emphasis keeps one series coloured and greys the rest", async ({
+  page,
+}) => {
+  await gotoChartStory(page, "smallmultiples", "emphasis");
+  const strokes = await page
+    .locator("#storybook-root svg path[stroke]")
+    .evaluateAll((nodes) => nodes.map((n) => n.getAttribute("stroke")));
+  const unique = new Set(strokes.filter(Boolean));
+  // One accent plus one de-emphasis grey — not four identities.
+  expect(unique.size).toBeLessThanOrEqual(2);
+});

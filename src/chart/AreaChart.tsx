@@ -4,7 +4,7 @@ import Svg, { G, Path } from "react-native-svg";
 
 import { useSharedUiTheme } from "../theme";
 
-import { ChartAxisLabels, ChartGrid, type AxisTick } from "./ChartAxis";
+import { ChartAxisLabels, ChartGridLines, type AxisTick } from "./ChartAxis";
 import { ChartFrame } from "./ChartFrame";
 import { ChartHitLayer, type HitTarget } from "./ChartHitLayer";
 import { ChartLegend } from "./ChartLegend";
@@ -212,7 +212,7 @@ export function AreaChart({
 
         return (
           <>
-            <ChartGrid plot={plot} ticks={valueTicks} />
+            <ChartGridLines plot={plot} ticks={valueTicks} />
             <Svg
               height={plot.height}
               pointerEvents="none"
@@ -270,7 +270,6 @@ export function AreaChart({
               ticks={categoryTicks}
             />
             <ChartHitLayer
-              accessibilityLabel={accessibilityLabel}
               activeIndex={active}
               disableFocusRing={disableFocusRing}
               onActivate={(index) => {

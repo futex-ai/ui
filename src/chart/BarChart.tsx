@@ -12,11 +12,12 @@ import {
   type BarOrientation,
   type BarRect,
 } from "./barGeometry";
-import { ChartAxisLabels, ChartGrid, type AxisTick } from "./ChartAxis";
+import { ChartAxisLabels, ChartGridLines, type AxisTick } from "./ChartAxis";
 import { ChartFrame } from "./ChartFrame";
 import { ChartHitLayer, type HitTarget } from "./ChartHitLayer";
 import { ChartLegend } from "./ChartLegend";
 import { assignSeriesColors, OTHER_SERIES_ID } from "./chartPalette";
+import { ChartTextureDefs, textureFill } from "./chartTexture";
 import { CHART_BANDS, usesPerMarkHitTargets } from "./chartLayout";
 import { ChartTableView } from "./ChartTableView";
 import { ChartTooltip, type TooltipRow } from "./ChartTooltip";
@@ -33,6 +34,12 @@ import { resolveValueFormat, type ChartCommonProps } from "./types";
 import { useSeriesVisibility } from "./useSeriesVisibility";
 
 export type BarChartProps = ChartCommonProps & {
+  /**
+   * Carry identity with a hatch as well as a hue. Opt-in only: for full
+   * colour-vision deficiency, greyscale print, or `forced-colors`. Never
+   * decorative — dense angled fills read as noise on a value scale.
+   */
+  texture?: boolean;
   /** Defaults to `"grouped"`. */
   mode?: BarMode;
   /** Columns (`"vertical"`, the default) or horizontal bars. */
@@ -46,6 +53,7 @@ const LEGEND_HEIGHT = 30;
 export function BarChart({
   categories,
   series,
+  texture = false,
   mode = "grouped",
   orientation = "vertical",
   baseline = 0,
@@ -244,7 +252,7 @@ export function BarChart({
 
         return (
           <>
-            <ChartGrid
+            <ChartGridLines
               baseline={mode === "percent" ? null : value.scale(baseline)}
               orientation={horizontal ? "horizontal" : "vertical"}
               plot={plot}
@@ -256,6 +264,14 @@ export function BarChart({
               style={{ left: plot.x, position: "absolute", top: plot.y }}
               width={plot.width}
             >
+              {texture ? (
+                <ChartTextureDefs
+                  series={visible.map((entry) => ({
+                    id: entry.id,
+                    color: colorById.get(entry.id) ?? theme.charts.deemphasis,
+                  }))}
+                />
+              ) : null}
               {rects.map((rect, i) => {
                 const d = barPath(
                   horizontal ? rect : { ...rect, x: rect.x, y: rect.y },
@@ -289,7 +305,6 @@ export function BarChart({
               ticks={categoryTicks}
             />
             <ChartHitLayer
-              accessibilityLabel={accessibilityLabel}
               activeIndex={active}
               disableFocusRing={disableFocusRing}
               onActivate={(index) => {

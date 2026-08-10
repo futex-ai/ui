@@ -10,6 +10,9 @@ surfaces. The first consumers are the accounting app and the Juno app.
   determinate progress bar and ring), button, labelled input/textarea,
   data table,
   editable data grid (Airtable/Notion-style),
+  a from-scratch interactive chart family (bar, line, area, sparkline, stat
+  tile, donut, gauge, bullet, funnel, matrix heatmap, scatter, histogram,
+  waterfall, small multiples) on a colourblind-validated palette,
   cross-platform block rich-text editor with canonical markdown,
   modal, toast provider/controller, avatar, status badge, animated comet-trail
   border, calendar heatmap, full event-calendar (month/week/day/agenda,
@@ -47,6 +50,12 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/button` for the themed button with tone, size, and block variants.
 - `@firna/ui/calendar` for the full event calendar (month, week, day, and agenda
   views, recurring events, and drag-to-create).
+- `@firna/ui/chart` for the interactive chart family — bar, line, area,
+  sparkline, stat tile, donut, gauge, bullet, funnel, matrix heatmap, scatter,
+  bubble, histogram, waterfall and small multiples — built from this library's
+  own primitives and `react-native-svg`, with no charting dependency. Every
+  chart ships a keyboard-navigable hit layer, a hover/scrub readout and an
+  accessible data-table twin.
 - `@firna/ui/data-grid` for the editable Airtable/Notion-style data grid
   (cell-range selection, keyboard nav, virtualized infinite scroll, typed
   editable cells, column menus, and a responsive card stack).

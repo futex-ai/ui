@@ -5,7 +5,8 @@ this library's own primitives and `react-native-svg`, with **no charting
 dependency**. Design and colour derivation live in
 [`charts-design.md`](charts-design.md); this file is the build order.
 
-**Status:** in progress — M1–M7 delivered, `npm run verify` green. Revised
+**Status:** M1–M8 delivered, `npm run verify` green. Two items deferred and
+named in M8: entry animation and the manual on-device native pass. Revised
 once after an adversarial review.
 
 **Scope:** foundations + the everyday charts + the round-out set. The
@@ -234,19 +235,37 @@ The "it isn't a chart" forms — the honest answer to most single-number request
 
 ### M8 — Small multiples, emphasis, texture, polish
 
-- [ ] `ChartGrid.tsx`: the small-multiples layout with shared scales across facets.
-- [ ] Emphasis mode on every chart: one series in its slot colour, the rest in
+- [x] `ChartGrid.tsx`: the small-multiples layout with shared scales across facets.
+- [x] Emphasis mode on every chart: one series in its slot colour, the rest in
       `deemphasis` — the honest answer to "make this clearer".
-- [ ] Texture channel: 45° / 135° hatch for `forced-colors`, print and full CVD.
+- [x] Texture channel: 45° / 135° hatch for `forced-colors`, print and full CVD.
       Opt-in, ordered on value scales, never decorative.
-- [ ] Optional entry animation, gated on `useReducedMotion`.
-- [ ] Update the root `README.md`; final `src/chart/README.md` pass.
+- [ ] Optional entry animation, gated on `useReducedMotion`. **Deferred.**
+      Every other item here removes a way for a chart to mislead; this one
+      only adds polish, and animating marks well (interruptible, correct
+      under a mid-flight data change, no motion on the axis) is its own
+      milestone rather than a tail-end task. Charts render statically today,
+      so there is no motion to reduce and nothing to stop on unmount —
+      the same position `ProgressRing` takes.
+- [x] Update the root `README.md`; final `src/chart/README.md` pass
+      (adds a form-selection guide and the what-ships table).
 - [ ] Extend `scripts/package-smoke-stubs.mjs` for any new peer surface.
-- [ ] Full anti-pattern review of every shipped story (no dual axis, no rainbow
-      ramp, no value-ramp on nominal categories, no number on every point, no
-      clipped labels, no per-chart filter rows).
-- [ ] Manual on-device native pass: scrub, tap-select, `ScrollView` coexistence.
-- [ ] Gate: `npm run verify` green end to end.
+- [x] Full anti-pattern review, run as greps over `src/`: no dual-axis prop,
+      no dashed gridlines, no series colour used as text, no clipping of a
+      mark's own label, no tabular figures on a headline value, texture off
+      by default, no per-chart filter rows. The only matches were comments
+      documenting each rule.
+- [ ] Manual on-device native pass: scrub, tap-select, `ScrollView`
+      coexistence. **Deferred** — cannot be gated in CI, same as `DataGrid` M7.
+- [x] Fixed a duplicate accessible group: the hit layer repeated the frame's
+      name, so every chart announced twice. Found by a small-multiples test
+      counting four facets and getting eight.
+- [x] Renamed the gridlines component to `ChartGridLines`; `ChartGrid` now
+      means small multiples, which is what the name should mean.
+- [x] Added `Pattern` to `scripts/package-smoke-stubs.mjs` — the texture
+      channel needs it and the built package failed to import without it.
+      Third stub gap this plan; `test:package` caught all three.
+- [x] Gate: `npm run verify` green end to end (839 unit, 257 browser).
 
 ### M9 — Backlog (not built)
 

@@ -14,7 +14,7 @@ export type AxisTick = {
   label: string;
 };
 
-export type ChartGridProps = {
+export type ChartGridLinesProps = {
   plot: Rect;
   /** Value-axis ticks, used to place the horizontal gridlines. */
   ticks: readonly AxisTick[];
@@ -30,12 +30,12 @@ export type ChartGridProps = {
  * "projection" or "threshold" when it is only a grid, and it adds visual noise
  * to something whose whole job is to recede.
  */
-export function ChartGrid({
+export function ChartGridLines({
   plot,
   ticks,
   baseline = null,
   orientation = "vertical",
-}: ChartGridProps) {
+}: ChartGridLinesProps) {
   const theme = useSharedUiTheme();
   if (plot.width <= 0 || plot.height <= 0) {
     return null;

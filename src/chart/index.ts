@@ -35,3 +35,7 @@ export * from "./HistogramChart";
 export * from "./ScatterChart";
 export * from "./scatterGeometry";
 export * from "./WaterfallChart";
+export * from "./ChartGrid";
+export * from "./chartFacets";
+export * from "./chartTexture";
+export * from "./chartTextureModel";

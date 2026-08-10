@@ -21,20 +21,36 @@ Design and the colour derivation live in
 - Ship an accessible table twin for every chart, so a tooltip enhances rather
   than gates.
 
-## Status
+## What ships
 
-Milestones 1 and 2 of the family have landed: the colour system and the
-foundations (scales, series maths, layout, frame, axes, table view). The chart
-components themselves — `BarChart`, `LineChart`, `AreaChart`, `Sparkline`,
-`StatTile` and the rest — are M3 onward in
+| Job                          | Component                                                                   |
+| ---------------------------- | --------------------------------------------------------------------------- |
+| Compare magnitude            | `BarChart` (grouped / stacked / percent / diverging, either orientation)    |
+| Trend over time              | `LineChart` (linear / monotone / step, markers, reference lines, time axis) |
+| Composition over time        | `AreaChart` (stacked, percent)                                              |
+| A headline number            | `StatTile`, `StatTileRow`, `Sparkline`                                      |
+| Part-to-whole                | `DonutChart` (pie via `innerRadiusRatio={0}`)                               |
+| Progress to a limit          | `GaugeChart`, `BulletChart`                                                 |
+| Stages of a process          | `FunnelChart`                                                               |
+| Two categories × a value     | `MatrixHeatmap` + `ScaleLegend`                                             |
+| Correlation                  | `ScatterChart` (+ bubble)                                                   |
+| Distribution                 | `HistogramChart`                                                            |
+| Where a number came from     | `WaterfallChart`                                                            |
+| Too many series for one plot | `ChartGrid` (small multiples)                                               |
+
+The specialist tail — candlestick, box plot, gantt, treemap, sankey, radar and
+shared-axis combo — is a documented backlog in
 [`plans/charts-component-family.md`](../../plans/charts-component-family.md).
+**Dual-axis charts are excluded by construction**: there is no `yAxis2` prop
+anywhere, because aligning two scales on one plot invents a correlation that is
+not in the data.
 
 ## Quick start
 
 ```tsx
 import {
   ChartFrame,
-  ChartGrid,
+  ChartGridLines,
   ChartTableView,
   bandScale,
   linearScale,
@@ -99,5 +115,24 @@ via `foldToOther`) or recedes into the de-emphasis grey.
 - `series/stack.ts` — normalize, stack, percent-stack, diverge, bin, fold.
 - `chartLayout.ts` — the plot rect, and the density thresholds.
 - `ChartFrame.tsx` — measurement, empty state, loading hold, table toggle.
-- `ChartAxis.tsx` — hairline solid gridlines and tick labels.
+- `ChartAxis.tsx` — `ChartGridLines` (hairline solid grid) and tick labels.
 - `ChartTableView.tsx` — the accessible twin, on the shared `Table`.
+- `ChartHitLayer.tsx` — the Pressable overlay: roving tabindex, focus ring.
+- `barGeometry.ts`, `lineGeometry.ts`, `arcGeometry.ts`, `scatterGeometry.ts` —
+  the mark maths, all pure.
+- `chartTextureModel.ts` — the opt-in hatch channel for CVD, print and
+  `forced-colors`.
+
+## Choosing a form
+
+- **A single number is not a chart.** A one-bar bar chart and a two-slice pie
+  both say less than a `StatTile` does, in more space.
+- **When the story is one series, use `emphasisId`** rather than eight
+  identities — emphasis is usually the honest answer to "make this clearer".
+- **Past the palette's caps, facet.** `ChartGrid` beats inventing a ninth hue,
+  and beats an eight-line spaghetti plot even when the palette could manage it.
+  Pass every panel the same domain (`sharedExtent`): facets on independent
+  scales look comparable while being nothing of the sort.
+- **Scatter and bubble cap lower than bars.** Any two marks can sit side by
+  side there, so the palette validates four slots rather than eight, and past
+  three every series also takes a distinct marker shape.

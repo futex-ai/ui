@@ -165,7 +165,6 @@ export function FunnelChart({
               );
             })}
             <ChartHitLayer
-              accessibilityLabel={accessibilityLabel}
               activeIndex={active}
               disableFocusRing={disableFocusRing}
               onActivate={(index) => {

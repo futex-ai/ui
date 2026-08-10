@@ -40,8 +40,6 @@ export type ChartHitLayerProps = {
   onActivate: (index: number) => void;
   onHover: (index: number | null) => void;
   disableFocusRing?: boolean;
-  /** Names the interactive group for assistive technology. */
-  accessibilityLabel?: string;
 };
 
 type KeyEvent = {
@@ -58,7 +56,6 @@ export function ChartHitLayer({
   onActivate,
   onHover,
   disableFocusRing = false,
-  accessibilityLabel,
 }: ChartHitLayerProps) {
   // The single tab stop of the plot: only this target is reachable by Tab;
   // arrow keys move it. Without this a 60-category chart would add 60 tab
@@ -102,13 +99,11 @@ export function ChartHitLayer({
     [plot],
   );
 
+  // No role or name on the container: the frame already names the chart
+  // region, and a nested group repeating that name makes a screen reader
+  // announce the chart twice. The individual targets carry the labels.
   return (
-    <View
-      aria-label={accessibilityLabel}
-      role={accessibilityLabel ? "group" : undefined}
-      style={containerStyle}
-      {...keyProps}
-    >
+    <View style={containerStyle} {...keyProps}>
       {targets.map((target, i) => (
         <HitTargetView
           disableFocusRing={disableFocusRing}

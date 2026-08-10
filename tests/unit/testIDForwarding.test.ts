@@ -36,6 +36,7 @@ const FORWARDING_FILES = [
   "chart/BarChart.tsx",
   "chart/BulletChart.tsx",
   "chart/ChartFrame.tsx",
+  "chart/ChartGrid.tsx",
   "chart/ChartTableView.tsx",
   "chart/DonutChart.tsx",
   "chart/FunnelChart.tsx",

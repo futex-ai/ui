@@ -237,7 +237,6 @@ export function DonutChart({
               </View>
             ) : null}
             <ChartHitLayer
-              accessibilityLabel={accessibilityLabel}
               activeIndex={
                 active == null ? null : slices.findIndex((s) => s.id === active)
               }

@@ -153,6 +153,7 @@ export const G = "G";
 export const Line = "Line";
 export const LinearGradient = "LinearGradient";
 export const Path = "Path";
+export const Pattern = "Pattern";
 export const Polygon = "Polygon";
 export const Rect = "Rect";
 export const Stop = "Stop";

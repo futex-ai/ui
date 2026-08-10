@@ -5,7 +5,7 @@ import Svg, { Line, Path } from "react-native-svg";
 import { useSharedUiTheme } from "../theme";
 
 import { barPath, type BarRect } from "./barGeometry";
-import { ChartAxisLabels, ChartGrid, type AxisTick } from "./ChartAxis";
+import { ChartAxisLabels, ChartGridLines, type AxisTick } from "./ChartAxis";
 import { ChartFrame } from "./ChartFrame";
 import { ChartHitLayer, type HitTarget } from "./ChartHitLayer";
 import { CHART_MARKS } from "./chartMarks";
@@ -168,7 +168,7 @@ export function WaterfallChart({
 
         return (
           <>
-            <ChartGrid
+            <ChartGridLines
               baseline={value.scale(0)}
               plot={plot}
               ticks={valueTicks}
@@ -219,7 +219,6 @@ export function WaterfallChart({
               ticks={categoryTicks}
             />
             <ChartHitLayer
-              accessibilityLabel={accessibilityLabel}
               activeIndex={active}
               disableFocusRing={disableFocusRing}
               onActivate={setActive}
