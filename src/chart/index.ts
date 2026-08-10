@@ -31,3 +31,7 @@ export * from "./FunnelChart";
 export * from "./GaugeChart";
 export * from "./MatrixHeatmap";
 export * from "./ScaleLegend";
+export * from "./HistogramChart";
+export * from "./ScatterChart";
+export * from "./scatterGeometry";
+export * from "./WaterfallChart";

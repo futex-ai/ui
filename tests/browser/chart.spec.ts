@@ -303,3 +303,49 @@ test("a gauge announces its readout without needing the dial", async ({
   await expect(root).toContainText("68%");
   await expect(root).toContainText("91%");
 });
+
+test("scatter points get a target far larger than the 8px mark", async ({
+  page,
+}) => {
+  await gotoChartStory(page, "comparison", "scatter");
+  const point = page.getByRole("button", { name: /^EU:/ }).first();
+  const box = await point.boundingBox();
+  // An 8px dot is a pinpoint nobody lands on reliably.
+  expect(box?.width ?? 0).toBeGreaterThanOrEqual(24);
+  expect(box?.height ?? 0).toBeGreaterThanOrEqual(24);
+});
+
+test("a fourth scatter series adds marker shape as secondary encoding", async ({
+  page,
+}) => {
+  await gotoChartStory(page, "comparison", "scatter-at-the-cap");
+  const svg = page.locator("#storybook-root svg").last();
+  // At the all-pairs cap colour alone sits in the colour-vision floor band, so
+  // identity is carried by shape too: circles plus rects/polygons.
+  expect(await svg.locator("circle").count()).toBeGreaterThan(0);
+  const shaped =
+    (await svg.locator("rect").count()) +
+    (await svg.locator("polygon").count());
+  expect(shaped).toBeGreaterThan(0);
+});
+
+test("a waterfall speaks the direction and the running total", async ({
+  page,
+}) => {
+  await gotoChartStory(page, "comparison", "waterfall");
+  const churn = page.getByRole("button", { name: /^Churn:/ });
+  const label = await churn.getAttribute("aria-label");
+  expect(label).toContain("down");
+  expect(label).toContain("running total");
+
+  // A total restates the sum rather than adding to it.
+  const closing = page.getByRole("button", { name: /^Closing:/ });
+  expect(await closing.getAttribute("aria-label")).toContain("total");
+});
+
+test("a histogram bins its values into labelled ranges", async ({ page }) => {
+  await gotoChartStory(page, "comparison", "histogram");
+  // Sturges' rule over 120 samples gives 8 bins; each is a labelled target.
+  const bars = page.getByRole("button", { name: /Count:/ });
+  expect(await bars.count()).toBeGreaterThanOrEqual(5);
+});

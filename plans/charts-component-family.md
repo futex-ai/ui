@@ -5,7 +5,7 @@ this library's own primitives and `react-native-svg`, with **no charting
 dependency**. Design and colour derivation live in
 [`charts-design.md`](charts-design.md); this file is the build order.
 
-**Status:** in progress — M1–M6 delivered, `npm run verify` green. Revised
+**Status:** in progress — M1–M7 delivered, `npm run verify` green. Revised
 once after an adversarial review.
 
 **Scope:** foundations + the everyday charts + the round-out set. The
@@ -214,18 +214,23 @@ The "it isn't a chart" forms — the honest answer to most single-number request
 
 ### M7 — Comparison and distribution
 
-- [ ] `ScatterChart.tsx` (+ bubble sizing): a **nearest-point hit layer** rather
+- [x] `ScatterChart.tsx` (+ bubble sizing): a **nearest-point hit layer** rather
       than per-point rects. Document that this trades per-point accessible
       labels for usable hit targets, so scatter's SR story is table-view-first.
-- [ ] Enforce the all-pairs cap in code: past **4 series** on scatter/bubble,
+- [x] Enforce the all-pairs cap in code: past **4 series** on scatter/bubble,
       `devWarn` and recommend faceting; require secondary encoding (marker shape
       or direct labels) at 4 — see the design doc's measured dark-mode 6.9 ΔE.
-- [ ] `HistogramChart.tsx`: on `binValues` — the distribution answer the family
+- [x] `HistogramChart.tsx`: on `binValues` — the distribution answer the family
       otherwise lacks.
-- [ ] `WaterfallChart.tsx`: deltas bridging to a total, on the diverging pair.
-- [ ] Unit tests: nearest-point lookup, binning edge cases (empty, single value,
+- [x] `WaterfallChart.tsx`: deltas bridging to a total, on the diverging pair.
+- [x] Unit tests: nearest-point lookup, binning edge cases (empty, single value,
       all-equal), waterfall running totals, bubble area scaling (area, never radius).
-- [ ] Stories for each; axe clean.
+- [x] Stories `Scatter`, `ScatterAtTheCap`, `Bubble`, `Histogram`,
+      `Waterfall`, `Dark`; axe clean.
+- [x] Browser tests: scatter targets are >=24px, the fourth series adds
+      marker shapes, waterfall speaks direction + running total, histogram
+      bins into labelled ranges.
+- [x] Gate: `npm run verify` green (833 unit tests, 254 browser tests).
 
 ### M8 — Small multiples, emphasis, texture, polish
 
