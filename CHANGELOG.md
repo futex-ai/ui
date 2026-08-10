@@ -7,11 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.9.0](https://github.com/futex-ai/ui/compare/v1.8.1...v1.9.0) (2026-08-10)
 
-
 ### Features
 
-* **button:** accept a caller role and state ([#146](https://github.com/futex-ai/ui/issues/146)) ([d74baa6](https://github.com/futex-ai/ui/commit/d74baa6485ac08ed18a56c3d233acc5acb352b54))
-* **focus-ring:** export focusRing as a subpath ([d74baa6](https://github.com/futex-ai/ui/commit/d74baa6485ac08ed18a56c3d233acc5acb352b54))
+- **button:** accept a caller role and state ([#146](https://github.com/futex-ai/ui/issues/146)) ([d74baa6](https://github.com/futex-ai/ui/commit/d74baa6485ac08ed18a56c3d233acc5acb352b54))
+- **focus-ring:** export focusRing as a subpath ([d74baa6](https://github.com/futex-ai/ui/commit/d74baa6485ac08ed18a56c3d233acc5acb352b54))
 
 ## [1.8.1](https://github.com/futex-ai/ui/compare/v1.8.0...v1.8.1) (2026-08-09)
 
