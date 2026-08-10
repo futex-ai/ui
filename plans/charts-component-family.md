@@ -5,7 +5,7 @@ this library's own primitives and `react-native-svg`, with **no charting
 dependency**. Design and colour derivation live in
 [`charts-design.md`](charts-design.md); this file is the build order.
 
-**Status:** in progress — M1–M5 delivered, `npm run verify` green. Revised
+**Status:** in progress — M1–M6 delivered, `npm run verify` green. Revised
 once after an adversarial review.
 
 **Scope:** foundations + the everyday charts + the round-out set. The
@@ -184,27 +184,33 @@ The "it isn't a chart" forms — the honest answer to most single-number request
 - [x] **Text-grade delta tokens** (`charts.deltaPositive` / `deltaNegative`).
       `status.good` is validated at the 3:1 _mark_ floor and measures 3.35:1
       on white, failing the 4.5:1 text floor. Found by the axe sweep.
-- [x] Documented that `scheme` and `colors` must agree — `createSharedUiTheme({
-    scheme: "dark" })` alone paints dark series steps on a light surface.
-      `scheme` used to gate four sites; it now selects whole colour scales.
+- [x] Documented that `scheme` and `colors` must agree: passing only a dark
+      `scheme` to `createSharedUiTheme` paints dark series steps on a light
+      surface. `scheme` used to gate four physical-metaphor sites; it now
+      selects whole colour scales, so the mismatch matters far more.
 - [x] Gate: `npm run verify` green (808 unit tests, 245 browser tests).
 
 ### M6 — Part-to-whole, progress, and the sequential scale
 
-- [ ] `DonutChart.tsx`: arc geometry, ≤6 slices with a `devWarn` past that,
+- [x] `DonutChart.tsx`: arc geometry, ≤6 slices with a `devWarn` past that,
       optional centre total, 2px surface gaps between slices.
-- [ ] `GaugeChart.tsx`: radial meter; the unfilled track is a lighter step of
+- [x] `GaugeChart.tsx`: radial meter; the unfilled track is a lighter step of
       the **same** ramp so state reads across the whole arc.
-- [ ] `BulletChart.tsx`: value vs target vs qualitative bands.
-- [ ] `FunnelChart.tsx`: on the **ordinal** ramp (stage order is meaning), with
+- [x] `BulletChart.tsx`: value vs target vs qualitative bands.
+- [x] `FunnelChart.tsx`: on the **ordinal** ramp (stage order is meaning), with
       stage-to-stage conversion in the tooltip and table view.
-- [ ] `MatrixHeatmap.tsx`: categories × categories × value on the **sequential**
+- [x] `MatrixHeatmap.tsx`: categories × categories × value on the **sequential**
       ramp — cohort retention, weekday × hour activity. This is the consumer
       that justifies M1's sequential ramp; distinct from the calendar `Heatmap`.
-- [ ] `ScaleLegend.tsx`: the sequential/diverging gradient key with end labels.
-- [ ] Unit tests: arc/slice math, gauge band selection, funnel conversion,
+- [x] `ScaleLegend.tsx`: the sequential/diverging gradient key with end labels.
+- [x] Unit tests: arc/slice math, gauge band selection, funnel conversion,
       matrix binning to ramp steps.
-- [ ] Stories for each; axe clean.
+- [x] Stories `Donut`, `Pie`, `Gauge`, `Bullet`, `Funnel`, `Matrix`, `Dark`;
+      axe clean.
+- [x] Browser tests: donut slices speak their share, funnel speaks both
+      conversion rates, bullet speaks target met/not met, matrix
+      distinguishes no-data from near-zero, gauge readout.
+- [x] Gate: `npm run verify` green (823 unit tests, 250 browser tests).
 
 ### M7 — Comparison and distribution
 

@@ -252,3 +252,54 @@ test("a stat tile's sparkline is decorative, not a second announcement", async (
   const images = page.locator('#storybook-root [role="img"]');
   expect(await images.count()).toBe(0);
 });
+
+test("a donut's wedges are reachable as labelled targets with their share", async ({
+  page,
+}) => {
+  await gotoChartStory(page, "parttowhole", "donut");
+  // A wedge is an awkward pointer target and an impossible keyboard one, so
+  // each slice gets a comfortable box at its centroid instead.
+  const hosting = page.getByRole("button", { name: /^Hosting:/ });
+  await expect(hosting).toBeVisible();
+  const label = await hosting.getAttribute("aria-label");
+  // Angles are hard to compare by eye, so the share is spoken.
+  expect(label).toMatch(/% of/);
+});
+
+test("a funnel speaks both conversion rates, which the shape cannot", async ({
+  page,
+}) => {
+  await gotoChartStory(page, "parttowhole", "funnel");
+  const activated = page.getByRole("button", { name: /^Activated:/ });
+  const label = await activated.getAttribute("aria-label");
+  // "How many reached here" and "where we lost them" are different questions.
+  expect(label).toContain("of the first stage");
+  expect(label).toContain("of the previous");
+});
+
+test("a bullet row speaks whether its target was met", async ({ page }) => {
+  await gotoChartStory(page, "parttowhole", "bullet");
+  const root = page.locator("#storybook-root");
+  // Whether a bar clears a tick is exactly the judgement a screen-reader user
+  // cannot make from the marks.
+  await expect(root.locator('[aria-label*="not met"]').first()).toBeAttached();
+  await expect(root.locator('[aria-label*="target"]').first()).toBeAttached();
+});
+
+test("a matrix heatmap distinguishes no-data from near-zero", async ({
+  page,
+}) => {
+  await gotoChartStory(page, "parttowhole", "matrix");
+  // "No data" and "near zero" are different facts and must not look identical.
+  const missing = page.getByRole("button", { name: /Fri, 16: no data/ });
+  await expect(missing).toBeAttached();
+});
+
+test("a gauge announces its readout without needing the dial", async ({
+  page,
+}) => {
+  await gotoChartStory(page, "parttowhole", "gauge");
+  const root = page.locator("#storybook-root");
+  await expect(root).toContainText("68%");
+  await expect(root).toContainText("91%");
+});
