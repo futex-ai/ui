@@ -5,7 +5,7 @@ this library's own primitives and `react-native-svg`, with **no charting
 dependency**. Design and colour derivation live in
 [`charts-design.md`](charts-design.md); this file is the build order.
 
-**Status:** in progress — M1 and M2 delivered, `npm run verify` green. Revised
+**Status:** in progress — M1–M3 delivered, `npm run verify` green. Revised
 once after an adversarial review.
 
 **Scope:** foundations + the everyday charts + the round-out set. The
@@ -101,30 +101,39 @@ are built alongside their first real consumer in M3/M4 rather than speculatively
 Columns and bars: grouped, stacked, 100% stacked, and diverging about a
 baseline. The legend and tooltip land here, against a real consumer.
 
-- [ ] `BarChart.tsx` + `barGeometry.ts`: `orientation`, `grouped` / `stacked` /
+- [x] `BarChart.tsx` + `barGeometry.ts`: `orientation`, `grouped` / `stacked` /
       `percent` / `diverging` modes.
-- [ ] Mark specs: bars capped at **24px** thick, **4px rounded data-end, square
+- [x] Mark specs: bars capped at **24px** thick, **4px rounded data-end, square
       at the baseline**, a **2px surface gap** between touching bars and between
       every stacked segment. No borders drawn around marks.
-- [ ] `ChartLegend.tsx` + `useSeriesVisibility.ts`: rect key for bars/areas,
+- [x] `ChartLegend.tsx` + `useSeriesVisibility.ts`: rect key for bars/areas,
       line key for lines; toggle-to-isolate; keyboard operable; controlled +
       uncontrolled. **Shown whenever `series.length >= 2`** — never unmounted
       mid-isolate.
-- [ ] `ChartTooltip.tsx`: an absolutely-positioned, `pointerEvents="none"`,
+- [x] `ChartTooltip.tsx`: an absolutely-positioned, `pointerEvents="none"`,
       `aria-hidden` view inside `ChartFrame`, clamped to the plot rect. **Not**
       a `Popover`. Value leads, series name follows; line keys, not boxes; names
       inserted as text, never markup.
-- [ ] Hit layer: per-bar `Pressable` while the band affords a 24px target,
+- [x] Hit layer: per-bar `Pressable` while the band affords a 24px target,
       switching to a nearest-x layer past that density threshold.
-- [ ] Keyboard: roving index across bars; Enter fires `onDatumPress`; coarse
+- [x] Keyboard: roving index across bars; Enter fires `onDatumPress`; coarse
       stops past the density threshold.
-- [ ] Direct labels **measured before placement** — inside only when they fit
+- [x] Direct labels **measured before placement** — inside only when they fit
       with padding, otherwise outside the bar end, otherwise the tooltip. Never clipped.
-- [ ] Unit tests for stacking, percent-stacking, diverging split, label fit, and
+- [x] Unit tests for stacking, percent-stacking, diverging split, label fit, and
       the density threshold switch.
-- [ ] Stories: `Grouped`, `Stacked`, `Percent`, `Diverging`, `Horizontal`.
-- [ ] Playwright: hover tooltip, keyboard roving, legend isolate, mark labels
-      carry the tooltip's content; axe clean.
+- [x] Stories: `Grouped`, `Stacked`, `Percent`, `Diverging`, `Horizontal`.
+- [x] Playwright (`tests/browser/chart.spec.ts`, 9 tests): hover tooltip,
+      keyboard roving + clamping, legend isolate keeping survivor hues, the
+      legend surviving isolate-to-one, table twin, empty frame; axe clean.
+- [x] `src/chart/chartAria.ts` — **RNW emits neither `aria-checked` for
+      `role="switch"` nor `aria-expanded` for a disclosure button** from
+      `accessibilityState`. Both are now spread as literal props, the same
+      route `progressValue.ts` takes for `aria-value*`. Found by the new
+      browser tests.
+- [x] Legend structure is `list > listitem > switch`; a switch directly
+      inside a list fails axe's `aria-required-children`. Found by the sweep.
+- [x] Gate: `npm run verify` green (783 unit tests, 237 browser tests).
 
 ### M4 — LineChart + AreaChart
 

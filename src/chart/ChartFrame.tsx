@@ -16,11 +16,9 @@ import { useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { chartLayout, type ChartLayout } from "./chartLayout";
-import {
-  CHART_LOADING_OPACITY,
-  createChartStyles,
-  type ChartStyles,
-} from "./chartStyles";
+import { expandedAria } from "./chartAria";
+import { CHART_LOADING_OPACITY } from "./chartMarks";
+import { createChartStyles, type ChartStyles } from "./chartStyles";
 
 export type ChartFrameProps = {
   /** Total frame height, inclusive of the axis, legend and title bands. */
@@ -160,6 +158,7 @@ export function ChartFrame({
       {tableView && !hideTableToggle ? (
         <View style={styles.footer}>
           <Pressable
+            {...expandedAria(showTable)}
             accessibilityRole="button"
             accessibilityState={{ expanded: showTable }}
             onBlur={focus.onBlur}

@@ -32,6 +32,7 @@ const FORWARDING_FILES = [
   "calendar/MonthView.tsx",
   "calendar/TimeGrid.tsx",
   "calendar/WeekView.tsx",
+  "chart/BarChart.tsx",
   "chart/ChartFrame.tsx",
   "chart/ChartTableView.tsx",
   "data-grid/DataGrid.tsx",
@@ -111,6 +112,8 @@ test("forwarding components declare an optional testID prop", () => {
   // The prop is declared in the component file itself unless it lives in a
   // shared props type in the same directory (platform-split components).
   const sharedTypeFiles: Record<string, string> = {
+    // Every chart shares one props contract, so `testID` is declared once.
+    "chart/BarChart.tsx": "chart/types.ts",
     "date/DatePickerOverlay.tsx": "date/types.ts",
     "date/DatePickerOverlay.web.tsx": "date/types.ts",
     "drag-select/DragSelectableProvider.tsx":

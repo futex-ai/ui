@@ -3,23 +3,9 @@ import { StyleSheet } from "react-native";
 
 import type { SharedUiTheme } from "../theme";
 
-/** Mark specs fixed across every chart in the family. */
-export const CHART_MARKS = {
-  /** Bars never fill their slot — the leftover band is air, not ink. */
-  maxBarThickness: 24,
-  /** Rounded at the data end, square at the baseline. */
-  barRadius: 4,
-  lineWidth: 2,
-  /** Markers are hit targets as well as marks, so they have a floor. */
-  markerRadius: 4,
-  /** Area fills are a wash, never a saturated block. */
-  areaOpacity: 0.1,
-  /** White doing the separating: between stacked segments and touching bars. */
-  surfaceGap: 2,
-  /** Ring in the surface colour so overlapping dots stay legible. */
-  surfaceRing: 2,
-  gridWidth: StyleSheet.hairlineWidth,
-} as const;
+import { CHART_MARKS } from "./chartMarks";
+
+export { CHART_LOADING_OPACITY, CHART_MARKS } from "./chartMarks";
 
 export type ChartStyles = ReturnType<typeof createChartStyles>;
 
@@ -104,11 +90,3 @@ export function createChartStyles(theme: SharedUiTheme) {
     },
   });
 }
-
-/**
- * Opacity applied to the previous render while new data loads.
- *
- * Holding the frame at reduced opacity beats a skeleton: no layout jump, no
- * flash, and the reader keeps their place while the numbers refresh.
- */
-export const CHART_LOADING_OPACITY = 0.45;

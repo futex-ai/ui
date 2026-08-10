@@ -5,7 +5,8 @@ import Svg, { Line } from "react-native-svg";
 import { useSharedUiTheme } from "../theme";
 
 import type { Rect } from "./chartLayout";
-import { CHART_MARKS, type ChartStyles } from "./chartStyles";
+import { CHART_MARKS } from "./chartMarks";
+import { type ChartStyles } from "./chartStyles";
 
 export type AxisTick = {
   /** Pixel position along the axis, in frame coordinates. */
