@@ -390,3 +390,25 @@ test("divergingColor reads zero as the neutral midpoint", () => {
   assert.equal(divergingColor(-4, d), d.negative);
   assert.equal(divergingColor(Number.NaN, d), d.neutral);
 });
+
+test("delta text colours clear the 4.5:1 text floor, unlike the status marks", () => {
+  // The trap this guards: `status.good` is validated at the 3:1 *mark* floor
+  // and measures 3.35:1 on white, so using it as delta text fails WCAG 1.4.3.
+  assert.ok(contrast(CHART_STATUS.good, LIGHT_SURFACE) < 4.5);
+  for (const theme of [
+    defaultSharedUiTheme,
+    junoSharedUiTheme,
+    darkSharedUiTheme,
+    junoDarkSharedUiTheme,
+  ]) {
+    for (const token of [
+      theme.charts.deltaPositive,
+      theme.charts.deltaNegative,
+    ]) {
+      assert.ok(
+        contrast(token, theme.charts.surface) >= 4.5,
+        `${token} on ${theme.charts.surface} is ${contrast(token, theme.charts.surface).toFixed(2)}:1`,
+      );
+    }
+  }
+});

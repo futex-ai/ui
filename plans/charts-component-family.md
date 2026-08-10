@@ -5,7 +5,7 @@ this library's own primitives and `react-native-svg`, with **no charting
 dependency**. Design and colour derivation live in
 [`charts-design.md`](charts-design.md); this file is the build order.
 
-**Status:** in progress — M1–M4 delivered, `npm run verify` green. Revised
+**Status:** in progress — M1–M5 delivered, `npm run verify` green. Revised
 once after an adversarial review.
 
 **Scope:** foundations + the everyday charts + the round-out set. The
@@ -170,14 +170,24 @@ readable.
 
 The "it isn't a chart" forms — the honest answer to most single-number requests.
 
-- [ ] `Sparkline.tsx`: line / bar / win-loss, no axes, no legend, inline sizing.
-- [ ] `StatTile.tsx`: `label` · `value` (auto-compact 1,284 / 12.9K / $4.2M,
+- [x] `Sparkline.tsx`: line / bar / win-loss, no axes, no legend, inline sizing.
+- [x] `StatTile.tsx`: `label` · `value` (auto-compact 1,284 / 12.9K / $4.2M,
       **proportional** figures, never `tabular-nums`) · `delta` (signed, vs a
       named period, coloured by direction × whether up is good) · optional
       sparkline in `deemphasis` with the current period in the accent.
-- [ ] `StatTileRow.tsx`: the KPI row layout.
-- [ ] Unit tests: compact formatting, delta direction/goodness, tile contract.
-- [ ] Stories: `Sparkline`, `StatTile`, `KpiRow`; axe clean.
+- [x] `StatTileRow.tsx`: the KPI row layout.
+- [x] Unit tests: compact formatting, delta direction/goodness, tile contract.
+- [x] Stories: `Basic`, `DownIsGood`, `KpiRow`, `Sparklines`, `Dark`; axe clean.
+- [x] **Delta direction is the sign, not the tone.** Falling churn is _down_
+      and _an improvement_ at once; deriving the spoken direction from the
+      tone misreported the number. Both are announced.
+- [x] **Text-grade delta tokens** (`charts.deltaPositive` / `deltaNegative`).
+      `status.good` is validated at the 3:1 _mark_ floor and measures 3.35:1
+      on white, failing the 4.5:1 text floor. Found by the axe sweep.
+- [x] Documented that `scheme` and `colors` must agree — `createSharedUiTheme({
+    scheme: "dark" })` alone paints dark series steps on a light surface.
+      `scheme` used to gate four sites; it now selects whole colour scales.
+- [x] Gate: `npm run verify` green (808 unit tests, 245 browser tests).
 
 ### M6 — Part-to-whole, progress, and the sequential scale
 

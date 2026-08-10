@@ -219,3 +219,36 @@ test("a stacked area separates its bands with a surface-coloured edge", async ({
   // Three series, each contributing a filled band plus its edge stroke.
   expect(await paths.count()).toBeGreaterThanOrEqual(6);
 });
+
+test("a stat tile announces as one unit rather than three fragments", async ({
+  page,
+}) => {
+  await gotoChartStory(page, "stattile", "basic");
+  const tile = page.locator('#storybook-root [aria-label*="Revenue"]').first();
+  const label = await tile.getAttribute("aria-label");
+  // "Revenue, $42.1K, up 12.4% vs last month" — a screen reader should get the
+  // number and its direction together, not disconnected pieces.
+  expect(label).toContain("Revenue");
+  expect(label).toContain("42.1K");
+  expect(label).toContain("up");
+});
+
+test("a falling metric where down is good reads as a win", async ({ page }) => {
+  await gotoChartStory(page, "stattile", "down-is-good");
+  const churn = page.locator('#storybook-root [aria-label*="Churn"]').first();
+  const label = await churn.getAttribute("aria-label");
+  // Churn is down 31%: the delta is negative but the tone is good.
+  expect(label).toContain("down");
+  const root = page.locator("#storybook-root");
+  await expect(root).toContainText("−31%");
+});
+
+test("a stat tile's sparkline is decorative, not a second announcement", async ({
+  page,
+}) => {
+  await gotoChartStory(page, "stattile", "basic");
+  // The tile already announces the number; the trend behind it must not be
+  // read out again as a separate image.
+  const images = page.locator('#storybook-root [role="img"]');
+  expect(await images.count()).toBe(0);
+});

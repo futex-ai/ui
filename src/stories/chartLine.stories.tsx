@@ -1,7 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { ReactNode } from "react";
 import { View } from "react-native";
 
-import { AreaChart, LineChart, compactNumber } from "../index";
+import {
+  darkSharedUiTheme,
+  AreaChart,
+  LineChart,
+  compactNumber,
+} from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -32,7 +38,7 @@ const TRAFFIC = [
   },
 ];
 
-function Frame({ children }: { children: React.ReactNode }) {
+function Frame({ children }: { children: ReactNode }) {
   return (
     <StorySurface>
       <View style={{ maxWidth: 560, width: "100%" }}>{children}</View>
@@ -216,7 +222,7 @@ export const PercentArea: Story = {
 /** The same line chart on a dark surface. */
 export const Dark: Story = {
   render: () => (
-    <StorySurface theme={{ scheme: "dark" }}>
+    <StorySurface theme={darkSharedUiTheme}>
       <View style={{ maxWidth: 560, width: "100%" }}>
         <LineChart
           accessibilityLabel="Sessions by platform"

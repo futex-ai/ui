@@ -37,6 +37,8 @@ const FORWARDING_FILES = [
   "chart/ChartFrame.tsx",
   "chart/ChartTableView.tsx",
   "chart/LineChart.tsx",
+  "chart/Sparkline.tsx",
+  "chart/StatTile.tsx",
   "data-grid/DataGrid.tsx",
   "date/CalendarMonth.tsx",
   "date/DateField.tsx",

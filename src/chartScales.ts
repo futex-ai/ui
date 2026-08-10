@@ -107,6 +107,19 @@ export const CHART_STATUS = {
   critical: "#d03b3b",
 } as const;
 
+/**
+ * Text-grade green for a positive delta.
+ *
+ * `CHART_STATUS.good` is a **mark** colour, validated at ≥3:1 — as text on a
+ * light surface it measures 3.35:1 and fails WCAG 2.1 — 1.4.3 (AA, 4.5:1). So
+ * a delta label takes a darker step: `#006300` reads 7.54:1 on white. In dark
+ * mode the surface flips and the status step is already 4.63:1, so it serves.
+ */
+export const CHART_DELTA_POSITIVE = {
+  light: "#006300",
+  dark: "#0ca30c",
+} as const;
+
 /** Which side of the light/dark divide a set of chart scales belongs to. */
 export type ChartScaleScheme = "light" | "dark";
 

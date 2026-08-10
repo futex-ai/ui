@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { ReactNode } from "react";
 import { View } from "react-native";
 
-import { BarChart, compactNumber } from "../index";
+import { darkSharedUiTheme, BarChart, compactNumber } from "../index";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -23,7 +24,7 @@ const REVENUE = [
 
 const money = (value: number) => `$${compactNumber(value)}`;
 
-function Frame({ children }: { children: React.ReactNode }) {
+function Frame({ children }: { children: ReactNode }) {
   return (
     <StorySurface>
       <View style={{ maxWidth: 560, width: "100%" }}>{children}</View>
@@ -152,7 +153,7 @@ export const Emphasis: Story = {
 /** The same chart on a dark surface, series steps re-derived for it. */
 export const Dark: Story = {
   render: () => (
-    <StorySurface theme={{ scheme: "dark" }}>
+    <StorySurface theme={darkSharedUiTheme}>
       <View style={{ maxWidth: 560, width: "100%" }}>
         <BarChart
           accessibilityLabel="Revenue by channel and quarter"

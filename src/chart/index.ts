@@ -21,3 +21,6 @@ export * from "./AreaChart";
 export * from "./LineChart";
 export * from "./lineGeometry";
 export * from "./useChartScrub";
+export * from "./Sparkline";
+export * from "./StatTile";
+export * from "./statValue";

@@ -4,6 +4,7 @@ import { Pressable, Text, View } from "react-native";
 import Svg, { Rect } from "react-native-svg";
 
 import {
+  darkSharedUiTheme,
   bandScale,
   ChartAxisLabels,
   ChartFrame,
@@ -186,7 +187,7 @@ export const LoadingHold: Story = {
 /** The same frame on a dark surface, marks and furniture re-derived. */
 export const Dark: Story = {
   render: () => (
-    <StorySurface theme={{ scheme: "dark" }}>
+    <StorySurface theme={darkSharedUiTheme}>
       <FramedExample />
     </StorySurface>
   ),

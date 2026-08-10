@@ -7,7 +7,12 @@
  * of them a given theme gets and derives the chart furniture from the theme's
  * own neutrals.
  */
-import { CHART_SEQUENTIAL, CHART_STATUS, chartScalesFor } from "./chartScales";
+import {
+  CHART_DELTA_POSITIVE,
+  CHART_SEQUENTIAL,
+  CHART_STATUS,
+  chartScalesFor,
+} from "./chartScales";
 import type { SharedUiColors, SharedUiScheme, SharedUiTheme } from "./theme";
 
 /**
@@ -39,6 +44,13 @@ export type SharedUiChartColors = {
    * the palette, not the brand: these stay overridable like any other token.
    */
   status: { good: string; warning: string; serious: string; critical: string };
+  /**
+   * Text colours for a signed change, held to the 4.5:1 *text* floor rather
+   * than the 3:1 mark floor. `status.good` is a mark colour and fails as text
+   * on a light surface, so these are separate tokens rather than an alias.
+   */
+  deltaPositive: string;
+  deltaNegative: string;
   /** Hairline gridline. Defaults to `colors.border`. */
   grid: string;
   /** Baseline / axis rule. Defaults to `colors.border2`. */
@@ -61,6 +73,14 @@ export type SharedUiChartColors = {
  * negative reads warm and positive cool; the midpoint and every furniture role
  * come from the theme's own neutrals, which is what keeps all four shipped
  * themes in sync with no values maintained by hand. Explicit overrides win.
+ *
+ * **`scheme` and `colors` must agree.** `createSharedUiTheme({ scheme: "dark" })`
+ * on its own produces a dark-schemed theme with the *light* palette, so the
+ * dark series steps get painted on a white surface and several fall below
+ * their contrast floor. Extend a dark preset instead —
+ * `createSharedUiTheme(overrides, darkSharedUiTheme)`. `scheme` used to affect
+ * only a handful of physical-metaphor sites; now it selects whole colour
+ * scales, so the mismatch matters far more than it did.
  */
 export function resolveChartColors(
   colors: SharedUiColors,
@@ -79,6 +99,10 @@ export function resolveChartColors(
       positive: series[0],
     },
     status: overrides?.status ?? CHART_STATUS,
+    deltaPositive: overrides?.deltaPositive ?? CHART_DELTA_POSITIVE[scheme],
+    // `roseDeep` is the theme's own AA-held deep rose and already inverts for
+    // the dark presets, so a negative delta needs no separate constant.
+    deltaNegative: overrides?.deltaNegative ?? colors.roseDeep,
     grid: overrides?.grid ?? colors.border,
     axis: overrides?.axis ?? colors.border2,
     label: overrides?.label ?? colors.muted,

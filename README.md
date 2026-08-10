@@ -146,9 +146,16 @@ state, never handed out as a series color). The chart furniture — `grid`,
 neutrals, so all four presets stay in sync with nothing maintained by hand.
 
 `createSharedUiTheme` resolves `charts` from `scheme` and `colors`, so a theme
-built through it never supplies one. Flipping a theme to `scheme: "dark"`
-re-derives the series steps for the dark surface; values you set explicitly are
-carried forward when that theme is extended.
+built through it never supplies one. Values you set explicitly are carried
+forward when that theme is extended.
+
+**`scheme` and `colors` must agree.** `createSharedUiTheme({ scheme: "dark" })`
+alone yields a dark-schemed theme still wearing the _light_ palette — the dark
+series steps then paint on a white surface and several drop below their
+contrast floor. Extend a dark preset instead:
+`createSharedUiTheme(overrides, darkSharedUiTheme)`. Before charts, `scheme`
+only affected a few physical-metaphor sites; it now selects whole color scales,
+so the mismatch matters much more than it used to.
 
 The slot **order** is the colorblind-safety mechanism, not a cosmetic choice —
 it was picked by enumerating all 40,320 orderings and keeping only those that
