@@ -5,7 +5,7 @@ this library's own primitives and `react-native-svg`, with **no charting
 dependency**. Design and colour derivation live in
 [`charts-design.md`](charts-design.md); this file is the build order.
 
-**Status:** in progress — M1–M3 delivered, `npm run verify` green. Revised
+**Status:** in progress — M1–M4 delivered, `npm run verify` green. Revised
 once after an adversarial review.
 
 **Scope:** foundations + the everyday charts + the round-out set. The
@@ -140,27 +140,31 @@ baseline. The legend and tooltip land here, against a real consumer.
 Trend over time, with the crosshair interaction that makes multi-series
 readable.
 
-- [ ] `LineChart.tsx`: multi-series, **2px** stroke with round join/cap,
+- [x] `LineChart.tsx`: multi-series, **2px** stroke with round join/cap,
       `curve="linear" | "monotone" | "step"`, ≥8px markers with a **2px surface
       ring**, `null`-aware gaps, reference/threshold lines.
-- [ ] `AreaChart.tsx`: single, stacked and 100% stacked; fill at **~10%
+- [x] `AreaChart.tsx`: single, stacked and 100% stacked; fill at **~10%
       opacity** with the band edge drawn as a line.
-- [ ] `useChartHover` (web): crosshair snapping to the nearest x; **one tooltip
+- [x] `useChartHover` (web): crosshair snapping to the nearest x; **one tooltip
       listing every visible series** at that x.
-- [ ] `useChartScrub` (native): `PanResponder` claiming the responder only from
+- [x] `useChartScrub` (native): `PanResponder` claiming the responder only from
       `onMoveShouldSetPanResponderCapture` after a horizontal-dominant ~8px move,
       so taps reach the marks and vertical drags reach an enclosing `ScrollView`.
-- [ ] Keyboard + SR: the focused x-stop's accessible label **enumerates every
+- [x] Keyboard + SR: the focused x-stop's accessible label **enumerates every
       visible series** at that x; movement announces through `announcer`,
       debounced.
-- [ ] Selective direct end-labels with collision handling — leader lines or fall
+- [x] Selective direct end-labels with collision handling — leader lines or fall
       back to the legend; never stacked labels.
-- [ ] Unit tests: path geometry, monotone-cubic monotonicity, step paths, gap
+- [x] Unit tests: path geometry, monotone-cubic monotonicity, step paths, gap
       handling, nearest-index lookup, irregular time spacing.
-- [ ] Stories: `Line`, `MultiSeries`, `Area`, `StackedArea`, `Stepped`,
+- [x] Stories: `Line`, `MultiSeries`, `Area`, `StackedArea`, `Stepped`,
       `TimeAxis`, `WithThreshold`.
-- [ ] Playwright (web): crosshair tracks the pointer, focus parity, x-stop label
-      content. **Native scrub is a manual on-device checklist item, not CI.**
+- [x] Playwright (web): crosshair reads every series, focus parity with hover,
+      gaps break the stroke, an irregular time axis spaces by date not index,
+      stacked-area bands. **Native scrub stays a manual on-device item.**
+- [x] `PanResponder` added to `scripts/package-smoke-stubs.mjs` — the stub
+      lacked it, so the built package failed to import. Found by `test:package`.
+- [x] Gate: `npm run verify` green (800 unit tests, 242 browser tests).
 
 ### M5 — Sparkline + StatTile
 

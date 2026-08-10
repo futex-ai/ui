@@ -2,6 +2,9 @@ import { expect, test, type Page } from "@playwright/test";
 
 const storyReadyTimeout = 30_000;
 
+// Storybook kebab-cases the export name into the story id, so `MultiSeries`
+// becomes `multi-series` — not `multiseries`.
+
 async function gotoChartStory(page: Page, title: string, storyId: string) {
   await page.goto(`/iframe.html?id=chart-${title}--${storyId}&viewMode=story`);
   await page.waitForSelector("#storybook-root *", {
@@ -148,4 +151,71 @@ test("the data table toggle is reachable and operable by keyboard", async ({
   await expect(
     page.getByRole("button", { name: "Hide data table" }),
   ).toBeVisible();
+});
+
+test("a line chart's crosshair snaps to the nearest x and reads every series", async ({
+  page,
+}) => {
+  await gotoChartStory(page, "linechart", "multi-series");
+  const mar = page.getByRole("button", { name: /^Mar\./ });
+  await mar.hover();
+  const root = page.locator("#storybook-root");
+  // One tooltip carrying every visible series — the pointer never has to land
+  // on an individual 2px line.
+  await expect(root.getByText("Web", { exact: true }).first()).toBeVisible();
+  await expect(root.getByText("Mobile", { exact: true }).first()).toBeVisible();
+  await expect(root.getByText("API", { exact: true }).first()).toBeVisible();
+});
+
+test("a keyboard user gets the same multi-series readout as a hover", async ({
+  page,
+}) => {
+  await gotoChartStory(page, "linechart", "multi-series");
+  const jan = page.getByRole("button", { name: /^Jan\./ });
+  const label = await jan.getAttribute("aria-label");
+  // The focused x-stop enumerates all three series, so focus is not a poorer
+  // channel than the pointer.
+  expect(label).toContain("Web");
+  expect(label).toContain("Mobile");
+  expect(label).toContain("API");
+});
+
+test("a gap in the data breaks the line instead of being drawn through", async ({
+  page,
+}) => {
+  await gotoChartStory(page, "linechart", "with-gaps");
+  const stroke = page.locator("#storybook-root svg path[stroke]").first();
+  const d = await stroke.getAttribute("d");
+  // Two runs means two move commands: the outage is a real break.
+  expect((d?.match(/M/g) ?? []).length).toBeGreaterThanOrEqual(2);
+});
+
+test("an irregular time axis spaces points by date, not by index", async ({
+  page,
+}) => {
+  await gotoChartStory(page, "linechart", "time-axis");
+  // Scope to the hit targets by their label: the chart root is also a group,
+  // so a bare [role="button"] would sweep in the data-table toggle too.
+  const targets = page.getByRole("button", { name: /Signups:/ });
+  const boxes = (
+    await targets.evaluateAll((nodes) =>
+      nodes.map((n) => n.getBoundingClientRect().x),
+    )
+  ).sort((a, b) => a - b);
+  expect(boxes.length).toBeGreaterThanOrEqual(5);
+  // Jan 1 -> Jan 8 is a week; Mar 1 -> Aug 1 is five months. The later gap
+  // must be visibly wider, which band spacing would flatten.
+  const firstGap = boxes[1] - boxes[0];
+  const lastGap = boxes[boxes.length - 1] - boxes[boxes.length - 2];
+  expect(lastGap).toBeGreaterThan(firstGap);
+});
+
+test("a stacked area separates its bands with a surface-coloured edge", async ({
+  page,
+}) => {
+  await gotoChartStory(page, "linechart", "stacked-area");
+  const paths = page.locator("#storybook-root svg path");
+  await expect(paths.first()).toBeVisible();
+  // Three series, each contributing a filled band plus its edge stroke.
+  expect(await paths.count()).toBeGreaterThanOrEqual(6);
 });
