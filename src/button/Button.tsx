@@ -20,6 +20,13 @@ import {
   buttonIconSize,
   createButtonStyles,
 } from "./buttonStyles";
+import {
+  buttonSemantics,
+  buttonSemanticsWarnings,
+  buttonSpaceKeyProps,
+  type ButtonRole,
+  type ButtonRoleState,
+} from "./buttonSemantics";
 import { ButtonSpinner } from "./ButtonSpinner";
 
 /**
@@ -46,7 +53,7 @@ export type ButtonTone = "danger" | "ghost" | "plain" | "primary" | "secondary";
  */
 export type ButtonShape = "circle" | "rounded" | "square";
 
-type ButtonBaseProps = {
+type ButtonBaseProps = ButtonRoleState & {
   /** Spoken hint announced after the label. */
   accessibilityHint?: string;
   /** Stretch to fill the container width (`align-self: stretch`). */
@@ -117,6 +124,18 @@ type ButtonBaseProps = {
   minTouchTarget?: number;
   /** Press handler. Omit for a non-interactive (disabled) button. */
   onPress?: () => void;
+  /**
+   * Accessibility role. Defaults to `button`; the other members of
+   * {@link ButtonRole} let a consumer build a tab, checkbox, radio, switch, or
+   * menu item on the shared button rather than hand-rolling a `Pressable` and
+   * losing the focus glow, tones, sizes, and disabled/busy handling with it.
+   * Pair it with the matching state prop (`checked` / `selected` / `pressed`).
+   *
+   * `Button` is a single control: it does not own group navigation. A roving
+   * arrow-key group wants a container that owns it — `SegmentedControl` already
+   * implements the radiogroup pattern.
+   */
+  role?: ButtonRole;
   /** Container geometry. Defaults to `rounded`. */
   shape?: ButtonShape;
   /** Control density: `sm`, `md` (default), or `lg`. */
@@ -165,6 +184,11 @@ export type ButtonProps = IconOnlyButtonProps | LabelledButtonProps;
  * Applies the library's shared focus glow ({@link useFocusRing}) and hides the
  * browser's default outline, and treats a missing `onPress` as a disabled
  * control (matching the library's other pressables).
+ *
+ * It announces `button` semantics by default; `role` re-points it at any other
+ * single-activation role ({@link ButtonRole}) with the matching state prop, so
+ * a tab, checkbox, radio, switch, or menu item is a themed `Button` rather than
+ * a hand-rolled `Pressable` that has to re-derive all of the above.
  */
 export function Button({
   accessibilityHint,
@@ -172,14 +196,19 @@ export function Button({
   block = false,
   busy = false,
   buttonRef,
+  checked,
   children,
   disabled = false,
   disableFocusRing = false,
+  expanded,
   icon: Icon,
   iconNode,
   inline = false,
   minTouchTarget,
   onPress,
+  pressed,
+  role = "button",
+  selected,
   shape = "rounded",
   size = "md",
   style,
@@ -190,6 +219,18 @@ export function Button({
   const styles = useMemo(() => createButtonStyles(theme, size), [theme, size]);
   const focus = useFocusRing({ disabled: disableFocusRing });
   const disabledState = disabled || !onPress;
+  const isWeb = Platform.OS === "web";
+  const semanticsInput = {
+    busy,
+    checked,
+    disabled: disabledState,
+    expanded,
+    pressed,
+    role,
+    selected,
+    web: isWeb,
+  };
+  const semantics = buttonSemantics(semanticsInput);
   // The label (and any leading lucide icon) colour is driven by the tone, so it
   // is applied inline rather than baked into the stylesheet. `plain` shares the
   // neutral `ink` of `secondary` — it differs only in its (absent) chrome.
@@ -243,16 +284,33 @@ export function Button({
     );
   }
 
+  for (const warning of buttonSemanticsWarnings(semanticsInput)) {
+    // A role paired with state ARIA rejects — or left without the state its
+    // role requires — announces the wrong thing rather than failing loudly, so
+    // say so in development.
+    devWarn(warning);
+  }
+
+  // On web, the non-`button` roles need Spacebar bound by hand; react-native-web
+  // binds it on `button` alone (see `buttonSpaceKeyProps`).
+  const keyProps = buttonSpaceKeyProps({
+    activate: () => onPress?.(),
+    enabled: !disabledState && !busy,
+    role,
+    web: isWeb,
+  });
+
   return (
     <Pressable
       accessibilityHint={accessibilityHint}
       accessibilityLabel={accessibilityLabel}
-      accessibilityRole="button"
-      // `busy` keeps the button focusable and announced while blocking activation.
-      accessibilityState={{ busy, disabled: disabledState }}
-      // RNW maps `accessibilityState.busy` to `aria-busy`; pass it literally too
-      // so the DOM reflects the state regardless of RNW state-merge order.
-      aria-busy={busy || undefined}
+      accessibilityRole={semantics.accessibilityRole}
+      // Native's state channel: `busy` keeps the button focusable and announced
+      // while blocking activation, and any role state (checked / selected /
+      // expanded) rides along. It is inert on web — react-native-web reads
+      // `accessibilityState` only on `TouchableWithoutFeedback` — so the literal
+      // `aria-*` mirror spread in below is what reaches the DOM there.
+      accessibilityState={semantics.accessibilityState}
       disabled={disabledState}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
@@ -311,6 +369,8 @@ export function Button({
         focus.webOutlineReset,
       ]}
       testID={testID}
+      {...semantics.ariaProps}
+      {...keyProps}
     >
       {busy ? (
         <ButtonSpinner color={labelColor} size={buttonIconSize(size)} />

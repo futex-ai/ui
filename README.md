@@ -45,7 +45,10 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/avatar` for the themed initials avatar (circle or rounded square).
 - `@firna/ui/badge` for the themed status badge pill with tone, variant, and
   size variants.
-- `@firna/ui/button` for the themed button with tone, size, and block variants.
+- `@firna/ui/button` for the themed button with tone, size, and block variants,
+  and a `role` that re-points it at another single-activation role (`checkbox`,
+  `menuitem`, `radio`, `switch`, `tab`) with the state that role must carry — so
+  a tab or checkbox keeps the shared focus glow instead of being hand-rolled.
 - `@firna/ui/calendar` for the full event calendar (month, week, day, and agenda
   views, recurring events, and drag-to-create).
 - `@firna/ui/data-grid` for the editable Airtable/Notion-style data grid
@@ -279,6 +282,7 @@ The package export map intentionally separates runtime targets:
 - Avatar component: [src/avatar/README.md](src/avatar/README.md)
 - Badge component: [src/badge/README.md](src/badge/README.md)
 - Shared control-size scale: [src/controlSize.ts](src/controlSize.ts)
+- Shared focus-glow primitive: [src/focusRing.ts](src/focusRing.ts)
 - Button component: [src/button/README.md](src/button/README.md)
 - Calendar component: [src/calendar/README.md](src/calendar/README.md)
 - Input and textarea components: [src/input/README.md](src/input/README.md)

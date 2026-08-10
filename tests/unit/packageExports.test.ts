@@ -29,6 +29,7 @@ test("package exposes every documented public subpath", () => {
     "./date",
     "./drag-select",
     "./dropdown",
+    "./focusRing",
     "./heatmap",
     "./input",
     "./kanban",

@@ -5,17 +5,42 @@ import test from "node:test";
 test("button exposes button semantics and a disabled state", () => {
   const source = readSource("../../src/button/Button.tsx");
 
-  assert.match(source, /accessibilityRole="button"/);
+  // `button` remains the announced role unless the caller re-points it.
+  assert.match(source, /role = "button"/);
+  assert.match(source, /accessibilityRole=\{semantics\.accessibilityRole\}/);
   // The disabled state is exposed alongside the `busy` state (which keeps the
   // button focusable while blocking activation and announces `aria-busy`).
-  assert.match(
-    source,
-    /accessibilityState=\{\{ busy, disabled: disabledState \}\}/,
-  );
-  assert.match(source, /aria-busy=\{busy \|\| undefined\}/);
+  assert.match(source, /accessibilityState=\{semantics\.accessibilityState\}/);
+  // react-native-web ignores `accessibilityState` on a Pressable, so the literal
+  // `aria-*` mirror is what actually reaches the DOM on web.
+  assert.match(source, /\{\.\.\.semantics\.ariaProps\}/);
   // A button without an onPress is a read-only disabled control.
   assert.match(source, /disabledState = disabled \|\| !onPress/);
   assert.match(source, /disabled=\{disabledState\}/);
+});
+
+test("button takes a caller role with the state that role must carry", () => {
+  const source = readSource("../../src/button/Button.tsx");
+  const semanticsSource = readSource("../../src/button/buttonSemantics.ts");
+
+  // The role union covers the single-activation roles only, and excludes `link`
+  // (a re-roled button has no href, so a real link should be an anchor).
+  assert.match(
+    semanticsSource,
+    /export type ButtonRole =\s*\|\s*"button"\s*\|\s*"checkbox"\s*\|\s*"menuitem"\s*\|\s*"radio"\s*\|\s*"switch"\s*\|\s*"tab";/,
+  );
+  assert.doesNotMatch(semanticsSource, /\|\s*"link"/);
+  // The role and its state are resolved by the pure semantics module, and a
+  // pairing ARIA rejects is reported through the shared dev warning.
+  assert.match(source, /const semantics = buttonSemantics\(semanticsInput\)/);
+  assert.match(
+    source,
+    /for \(const warning of buttonSemanticsWarnings\(semanticsInput\)\)/,
+  );
+  assert.match(source, /devWarn\(warning\)/);
+  // Spacebar activation is wired for the roles react-native-web leaves unbound.
+  assert.match(source, /const keyProps = buttonSpaceKeyProps\(\{/);
+  assert.match(source, /\{\.\.\.keyProps\}/);
 });
 
 test("button shows the shared tone-independent focus glow and hides the web outline", () => {

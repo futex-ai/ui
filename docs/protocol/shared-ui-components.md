@@ -250,7 +250,25 @@ Required behavior:
 - Support a full-width block variant for stacked form actions and bottom sheets.
 - Expose `button` accessibility semantics with a disabled state, and treat a
   missing press handler as a read-only disabled control.
-- Own the shared focus ring and hide the browser's default outline.
+- Accept a caller-supplied role in place of `button`, limited to the
+  single-activation roles a button's press behavior stays correct under:
+  `checkbox`, `menuitem`, `radio`, `switch`, and `tab`. `link` is excluded — a
+  re-roled button has no `href`, so a real link must be an anchor.
+- Accept the state that role carries — `checked` for a checkbox / radio /
+  switch, `selected` for a tab, `pressed` for a toggle button, and `expanded`
+  for a control that reveals a menu, panel, or section — and emit it on both the
+  React Native state channel and the literal ARIA attributes web needs, since
+  React Native Web ignores `accessibilityState` on a pressable.
+- Warn in development when a state is paired with a role ARIA does not allow it
+  on, or when a role that requires a state is left without one.
+- Bind Spacebar for every role other than `button`, which is the only role React
+  Native Web's press responder binds it on, and leave Enter to that responder so
+  no press fires twice.
+- Remain a single control: group semantics — the `tablist` / `radiogroup` /
+  `menu` container, roving focus, and arrow-key navigation — stay with the
+  caller or with the segmented control.
+- Own the shared focus ring and hide the browser's default outline, under every
+  role.
 - Use shared theme tokens for fills, borders, label colors, disabled opacity,
   fonts, and radii, and size with the shared control-size scale.
 
@@ -764,6 +782,11 @@ Required behavior:
   imports and re-exports.
 - The `react-native` export condition must continue to point at the normal
   `dist/**` build so React Native platform resolution can choose platform files.
+- Every primitive a consumer is expected to import directly must have its own
+  subpath, not the package root alone. This includes the shared focus-glow
+  primitive (`./focusRing`, mirroring `./theme`): a consumer that imports every
+  component by subpath would otherwise pull the whole barrel through Metro just
+  to wire a focus ring onto its own control.
 - release-please owns release PR creation, changelog updates, npm metadata
   version updates, `vX.Y.Z` Git tags, and GitHub releases.
 - release-please must use the `node` release type so release PRs update

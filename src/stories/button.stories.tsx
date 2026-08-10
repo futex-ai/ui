@@ -271,6 +271,15 @@ export const BlockAndDisabled: Story = {
   ),
 };
 
+export const RolesAndStates: Story = {
+  name: "Roles and states",
+  render: () => (
+    <StorySurface>
+      <RolesAndStatesExample />
+    </StorySurface>
+  ),
+};
+
 export const Interactive: Story = {
   name: "Interactive",
   render: () => (
@@ -279,6 +288,112 @@ export const Interactive: Story = {
     </StorySurface>
   ),
 };
+
+const SECTIONS = ["General", "Apps", "Secrets"];
+const ACCENTS = ["Sage", "Slate", "Clay"];
+
+/**
+ * `role` re-points the button at another single-activation role, paired with
+ * the state that role must carry. Every one keeps the tones, sizes, focus glow,
+ * and disabled/busy handling, so a rail row, tab, checkbox, radio, switch, or
+ * menu item no longer has to be a hand-rolled `Pressable`.
+ *
+ * The `tablist` / `radiogroup` / `menu` containers are the caller's: `Button` is
+ * a single control and does not own group navigation.
+ */
+function RolesAndStatesExample() {
+  const [section, setSection] = useState(SECTIONS[0]);
+  const [accent, setAccent] = useState(ACCENTS[0]);
+  const [notify, setNotify] = useState(false);
+  const [compact, setCompact] = useState(true);
+  const [pinned, setPinned] = useState(false);
+  return (
+    <View style={styles.stack}>
+      {/* role="tab" + `selected` — the settings-rail pattern. */}
+      <View
+        accessibilityLabel="Settings sections"
+        accessibilityRole="tablist"
+        style={styles.row}
+      >
+        {SECTIONS.map((label) => (
+          <Button
+            key={label}
+            onPress={() => setSection(label)}
+            role="tab"
+            selected={section === label}
+            tone={section === label ? "primary" : "plain"}
+          >
+            {label}
+          </Button>
+        ))}
+      </View>
+
+      {/* role="checkbox" + `checked`. */}
+      <Button
+        checked={notify}
+        onPress={() => setNotify(!notify)}
+        role="checkbox"
+        tone={notify ? "primary" : "secondary"}
+      >
+        Email notifications
+      </Button>
+
+      {/* role="switch" + `checked`. */}
+      <Button
+        checked={compact}
+        onPress={() => setCompact(!compact)}
+        role="switch"
+        tone={compact ? "primary" : "secondary"}
+      >
+        Compact rows
+      </Button>
+
+      {/* role="radio" + `checked`, inside the caller's radiogroup. */}
+      <View
+        accessibilityLabel="Accent"
+        accessibilityRole="radiogroup"
+        style={styles.row}
+      >
+        {ACCENTS.map((label) => (
+          <Button
+            checked={accent === label}
+            key={label}
+            onPress={() => setAccent(label)}
+            role="radio"
+            tone={accent === label ? "primary" : "secondary"}
+          >
+            {label}
+          </Button>
+        ))}
+      </View>
+
+      {/* role="button" + `pressed` — a toggle button. `aria-pressed` is the only
+          toggle state ARIA allows on a button, so `selected` would be invalid
+          here; on native it degrades to the announced "selected" state. */}
+      <Button
+        onPress={() => setPinned(!pinned)}
+        pressed={pinned}
+        tone={pinned ? "primary" : "secondary"}
+      >
+        {pinned ? "Pinned" : "Pin"}
+      </Button>
+
+      {/* role="menuitem", inside the caller's menu. */}
+      <View
+        accessibilityLabel="Row actions"
+        accessibilityRole="menu"
+        style={styles.row}
+      >
+        <Button onPress={noop} role="menuitem" tone="plain">
+          Duplicate
+        </Button>
+        <Button onPress={noop} role="menuitem" tone="plain">
+          Archive
+        </Button>
+      </View>
+    </View>
+  );
+}
 
 function InteractiveExample() {
   const [saved, setSaved] = useState(false);

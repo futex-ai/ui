@@ -2543,6 +2543,91 @@ test("button activates with the Space key", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("button announces the caller's role and the state it carries", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=button-examples--roles-and-states");
+
+  // `role` re-points the button, and the paired state prop lands as the ARIA
+  // attribute that role requires (WCAG 2.1 — 4.1.2 Name, Role, Value, A).
+  await expect(page.getByRole("tab", { name: "General" })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await expect(page.getByRole("tab", { name: "Apps" })).toHaveAttribute(
+    "aria-selected",
+    "false",
+  );
+  await expect(
+    page.getByRole("checkbox", { name: "Email notifications" }),
+  ).not.toBeChecked();
+  await expect(
+    page.getByRole("switch", { name: "Compact rows" }),
+  ).toBeChecked();
+  await expect(page.getByRole("radio", { name: "Sage" })).toBeChecked();
+  await expect(page.getByRole("radio", { name: "Slate" })).not.toBeChecked();
+  await expect(page.getByRole("menuitem", { name: "Archive" })).toBeVisible();
+  // A toggle button carries `aria-pressed` — the only toggle state ARIA allows
+  // on `role="button"`, so `aria-selected` must not appear here.
+  const pin = page.getByRole("button", { name: "Pin" });
+  await expect(pin).toHaveAttribute("aria-pressed", "false");
+  await expect(pin).not.toHaveAttribute("aria-selected", /.*/);
+});
+
+test("a re-roled button activates from the keyboard, once per press", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=button-examples--roles-and-states");
+
+  // react-native-web binds Spacebar to `button` roles only, so the library wires
+  // it for every other role (WCAG 2.1 — 2.1.1 Keyboard, A). Exactly once: a
+  // double activation would toggle the checkbox straight back off.
+  const notify = page.getByRole("checkbox", { name: "Email notifications" });
+  await notify.focus();
+  await page.keyboard.press("Space");
+  await expect(notify).toBeChecked();
+
+  // Enter stays with react-native-web's press responder, which presses on every
+  // role — claiming it in the library too would activate twice.
+  await page.keyboard.press("Enter");
+  await expect(notify).not.toBeChecked();
+
+  const apps = page.getByRole("tab", { name: "Apps" });
+  await apps.focus();
+  await page.keyboard.press("Space");
+  await expect(apps).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("tab", { name: "General" })).toHaveAttribute(
+    "aria-selected",
+    "false",
+  );
+});
+
+test("a re-roled button keeps the shared focus glow", async ({ page }) => {
+  await page.goto("/iframe.html?id=button-examples--roles-and-states");
+
+  // The point of re-roling a Button rather than hand-rolling a Pressable: the
+  // control keeps the library's focus affordance instead of falling through to
+  // the browser's own outline.
+  const apps = page.getByRole("tab", { name: "Apps" });
+  await apps.focus();
+  const focusStyle = await apps.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return { boxShadow: style.boxShadow, outlineStyle: style.outlineStyle };
+  });
+  expect(focusStyle.boxShadow).toContain("rgba(79, 120, 100, 0.35)");
+  expect(focusStyle.outlineStyle).toBe("none");
+});
+
+test("a toggle button reports its pressed state", async ({ page }) => {
+  await page.goto("/iframe.html?id=button-examples--roles-and-states");
+
+  await page.getByRole("button", { name: "Pin" }).click();
+  await expect(page.getByRole("button", { name: "Pinned" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+});
+
 test("button with icons renders its labelled actions", async ({ page }) => {
   await page.goto("/iframe.html?id=button-examples--with-icons");
 
