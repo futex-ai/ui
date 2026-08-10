@@ -142,9 +142,13 @@ export function useWindowDimensions() {
   });
   await writeStubPackage(consumerRoot, "react-native-svg", {
     "index.js": `export const Circle = "Circle";
+export const ClipPath = "ClipPath";
 export const Defs = "Defs";
+export const G = "G";
+export const Line = "Line";
 export const LinearGradient = "LinearGradient";
 export const Path = "Path";
+export const Polygon = "Polygon";
 export const Rect = "Rect";
 export const Stop = "Stop";
 export const Svg = "Svg";

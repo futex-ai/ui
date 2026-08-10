@@ -5,7 +5,8 @@ this library's own primitives and `react-native-svg`, with **no charting
 dependency**. Design and colour derivation live in
 [`charts-design.md`](charts-design.md); this file is the build order.
 
-**Status:** proposed (not started). Revised once after an adversarial review.
+**Status:** in progress — M1 and M2 delivered, `npm run verify` green. Revised
+once after an adversarial review.
 
 **Scope:** foundations + the everyday charts + the round-out set. The
 specialist tail (candlestick, box plot, gantt, treemap, sankey, radar, combo) is
@@ -57,11 +58,9 @@ Ships on its own: a token addition, no chart yet.
       `darkTheme.test.ts`.
 - [x] Story `Chart/Palette`: the eight slots, both ramps, the diverging pair and
       the status scale, in light and dark.
-- [x] Gate: `format:check`, `test` (722), `typecheck`, `build`, `test:package`
-      and `storybook:build` all green. `test:browser` passes the a11y sweep with
-      `--trace off` (227/228 otherwise green); the full run cannot complete on
-      this machine because the data volume is at 100% and Playwright runs out of
-      space recording traces. Re-run `npm run verify` once there is disk.
+- [x] Gate: `npm run verify` green. (The first attempt could not finish —
+      the machine's data volume was at 100% and Playwright ran out of space
+      recording traces. Re-ran green once space was freed.)
 
 ### M2 — Foundations: scales, layout, frame, axes
 
@@ -69,28 +68,33 @@ The measuring, scaling and framing layer. Ends with a framed, axed, empty plot
 rendering in Storybook. Legend and tooltip are deliberately **not** here — they
 are built alongside their first real consumer in M3/M4 rather than speculatively.
 
-- [ ] `src/chart/` + `index.ts` barrel; add the `./chart` subpath export to
+- [x] `src/chart/` + `index.ts` barrel; add the `./chart` subpath export to
       `package.json` and `src/index.ts`.
-- [ ] **Update `tests/unit/packageExports.test.ts`** — it `deepEqual`s the exact
+- [x] **Update `tests/unit/packageExports.test.ts`** — it `deepEqual`s the exact
       exports-key list, so the suite fails without this.
-- [ ] `scale/`: `linearScale`, `bandScale`, `timeScale`, `niceTicks`,
+- [x] `scale/`: `linearScale`, `bandScale`, `timeScale`, `niceTicks`,
       `niceTimeTicks`, `clampDomain` — pure, unit-tested.
-- [ ] `series/`: canonical normalize, `stackSeries`, `percentStack`,
+- [x] `series/`: canonical normalize, `stackSeries`, `percentStack`,
       `divergingSplit`, `binValues`, `foldToOther` — `null` is a gap, never a zero.
-- [ ] `chartLayout.ts`: measured size → plot rect. **`height` is the total frame
+- [x] `chartLayout.ts`: measured size → plot rect. **`height` is the total frame
       height**; layout subtracts the axis/legend/title bands from it.
-- [ ] `ChartFrame.tsx`: `onLayout` measurement, title/caption, empty state, the
+- [x] `ChartFrame.tsx`: `onLayout` measurement, title/caption, empty state, the
       loading hold (previous render at reduced opacity — no skeleton flash), the
       table-view toggle, and the **first-render hold** (chrome renders at the
       declared height; marks held at opacity 0 until measured; `defaultWidth`
       for SSR and tests).
-- [ ] `ChartAxis.tsx`: hairline **solid** grid and baseline (never dashed),
+- [x] `ChartAxis.tsx`: hairline **solid** grid and baseline (never dashed),
       `tabular-nums` ticks in `label` ink; band, time and linear tick rendering.
-- [ ] `ChartTableView.tsx`: the WCAG-clean twin, on the existing `Table`.
-- [ ] Unit tests: `chartScale.test.ts`, `chartSeries.test.ts`,
+- [x] `ChartTableView.tsx`: the WCAG-clean twin, on the existing `Table`.
+- [x] Unit tests: `chartScale.test.ts`, `chartSeries.test.ts`,
       `chartLayout.test.ts` (empty data, single point, all-null series, negative
       domains, zero-width container, irregular time domains).
-- [ ] Story `Chart/Foundations`; axe clean.
+- [x] Story `Chart/Foundations` (framed / empty / loading-hold / dark); axe clean.
+- [x] `src/chart/README.md` + `testIDForwarding.test.ts` entries (per-milestone DoD).
+- [x] Added `Line`/`G`/`Polygon`/`ClipPath` to `scripts/package-smoke-stubs.mjs` —
+      the stubbed `react-native-svg` lacked `Line`, so the built package failed
+      to import. Found by `test:package`.
+- [x] Gate: `npm run verify` green (765 unit tests, 228 browser tests).
 
 ### M3 — BarChart (+ legend, + tooltip)
 
