@@ -171,6 +171,7 @@ export const CircleAlert = Icon;
 export const CircleCheck = Icon;
 export const CircleX = Icon;
 export const Code = Icon;
+export const CornerUpLeft = Icon;
 export const EyeOff = Icon;
 export const GitBranch = Icon;
 export const GripHorizontal = Icon;

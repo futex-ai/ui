@@ -14,6 +14,8 @@ import { useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { NativeRichTextEditorSurface } from "./NativeRichTextEditorSurface";
+import type { RichTextAnnotationInput } from "./richTextCollabModel";
+import { richTextCollabPalette } from "./richTextCollabPalette";
 import { parseMarkdown } from "./markdownParse";
 import { serializeMarkdown } from "./markdownSerialize";
 import { marksForNativeSelection } from "./nativeRichTextEditing";
@@ -42,19 +44,46 @@ import { useNativeRichTextHistory } from "./useNativeRichTextHistory";
 
 /** Rich text editor for native iOS and Android using the shared block model. */
 export function RichTextEditor({
+  activeCommentThreadId = null,
   autoFocus = false,
+  collaborators = [],
+  commentThreads = [],
   disableFocusRing = false,
   label,
+  localCollaboratorId,
   maxHeight,
   minHeight = 120,
   onChangeMarkdown,
+  onSelectCommentThread,
   placeholder,
+  presence = [],
   readOnly = false,
+  suggestions = [],
   testID,
   value = "",
 }: RichTextEditorProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createNativeRichTextStyles(theme), [theme]);
+  const collaboratorPalette = useMemo(
+    () => richTextCollabPalette(theme, collaborators),
+    [collaborators, theme],
+  );
+  const collabState = useMemo<RichTextAnnotationInput>(
+    () => ({
+      activeCommentThreadId,
+      commentThreads,
+      localCollaboratorId,
+      presence,
+      suggestions,
+    }),
+    [
+      activeCommentThreadId,
+      commentThreads,
+      localCollaboratorId,
+      presence,
+      suggestions,
+    ],
+  );
   const focus = useFocusRing({ disabled: disableFocusRing });
   const accessoryId = `rich-text-${useId().replace(/:/g, "")}`;
   const initialDocument = useMemo(() => parseMarkdown(value), []);
@@ -229,6 +258,8 @@ export function RichTextEditor({
       activeMarks={activeMarks}
       canRedo={historyAvailability.canRedo}
       canUndo={historyAvailability.canUndo}
+      collabState={collabState}
+      collaboratorPalette={collaboratorPalette}
       document={document}
       editorFocused={editorFocused}
       focusRingStyle={focus.focusRingStyle}
@@ -252,6 +283,7 @@ export function RichTextEditor({
       onKeyPress={handleKeyPress}
       onRedo={() => traverseHistory("redo")}
       onRequestFocus={scheduleFocus}
+      onSelectCommentThread={onSelectCommentThread}
       onSelectionChange={handleSelectionChange}
       onSubmitEditing={handleSubmitEditing}
       onToggleCheck={handleToggleCheck}

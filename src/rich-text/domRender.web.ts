@@ -1,6 +1,25 @@
 /** Imperative DOM renderer for RichTextEditor web documents. */
-import type { SharedUiTheme } from "../theme";
-
+import type {
+  RichTextAnnotationInput,
+  RichTextBlockAnnotations,
+} from "./richTextCollabModel";
+import {
+  annotateRichTextDocument,
+  hasRichTextAnnotations,
+} from "./richTextCollabModel";
+import type { RichTextCollabPalette } from "./richTextCollabPalette";
+import type { RichTextInlineDecoration } from "./domInline.web";
+import {
+  ensureCaretTarget,
+  renderInlineCode,
+  renderInlineSpans,
+} from "./domInline.web";
+import type { RichTextDomRenderTheme } from "./domStyle.web";
+import {
+  applyCheckboxStyle,
+  applyListStyle,
+  applyTextStyle,
+} from "./domStyle.web";
 import type {
   InlineSpan,
   RichTextBlock,
@@ -8,49 +27,50 @@ import type {
 } from "./richTextModel";
 import { normalizeDocument, spansText } from "./richTextModel";
 
-/** Typography and color values used by the raw DOM renderer. */
-export type RichTextDomRenderTheme = {
-  body: TextDomStyle;
-  code: TextDomStyle;
-  h1: TextDomStyle;
-  h2: TextDomStyle;
-  h3: TextDomStyle;
-  theme: SharedUiTheme;
+/** The collaboration overlay drawn over the document, if any. */
+export type RichTextDomCollab = {
+  palette: RichTextCollabPalette;
+  state: RichTextAnnotationInput;
 };
 
-type TextDomStyle = {
-  color?: string;
-  fontFamily?: string;
-  fontSize?: number | string;
-  fontWeight?: number | string;
-  lineHeight?: number | string;
+type BlockContext = {
+  annotations: RichTextBlockAnnotations | null;
+  collab: RichTextDomCollab | null;
+  renderTheme: RichTextDomRenderTheme;
 };
-
-const editorBoundarySpace = "\u00a0";
-const editorCaretBoundary = "\u200b";
 
 /** Re-render the full contentEditable document tree from the canonical model. */
 export function renderRichTextDocument(
   root: HTMLElement,
   document: readonly RichTextBlock[],
   renderTheme: RichTextDomRenderTheme,
+  collab: RichTextDomCollab | null = null,
 ): RichTextDocument {
   const doc = normalizeDocument(document);
+  const overlay =
+    collab && hasRichTextAnnotations(collab.state)
+      ? annotateRichTextDocument(doc, collab.state)
+      : null;
   root.textContent = "";
   let index = 0;
   while (index < doc.length) {
     const block = doc[index];
+    const context: BlockContext = {
+      annotations: overlay?.[index] ?? null,
+      collab,
+      renderTheme,
+    };
     if (
       block.type === "bullet" ||
       block.type === "numbered" ||
       block.type === "check"
     ) {
-      const { nextIndex, wrapper } = renderListRun(doc, index, renderTheme);
-      root.append(wrapper);
-      index = nextIndex;
+      const run = renderListRun(doc, index, renderTheme, overlay, collab);
+      root.append(run.wrapper);
+      index = run.nextIndex;
       continue;
     }
-    root.append(renderBlock(block, index, renderTheme));
+    root.append(renderBlock(block, index, context));
     index += 1;
   }
   return doc;
@@ -60,6 +80,8 @@ function renderListRun(
   doc: RichTextDocument,
   startIndex: number,
   renderTheme: RichTextDomRenderTheme,
+  overlay: readonly RichTextBlockAnnotations[] | null,
+  collab: RichTextDomCollab | null,
 ): { nextIndex: number; wrapper: HTMLElement } {
   const first = doc[startIndex];
   const wrapper = document.createElement(
@@ -74,7 +96,13 @@ function renderListRun(
   applyListStyle(wrapper, renderTheme);
   let index = startIndex;
   while (index < doc.length && doc[index].type === first.type) {
-    wrapper.append(renderListItem(doc[index], index, renderTheme));
+    wrapper.append(
+      renderListItem(doc[index], index, {
+        annotations: overlay?.[index] ?? null,
+        collab,
+        renderTheme,
+      }),
+    );
     index += 1;
   }
   return { nextIndex: index, wrapper };
@@ -83,63 +111,37 @@ function renderListRun(
 function renderBlock(
   block: RichTextBlock,
   index: number,
-  renderTheme: RichTextDomRenderTheme,
+  context: BlockContext,
 ): HTMLElement {
+  const { renderTheme } = context;
   switch (block.type) {
     case "paragraph":
-      return textBlock(
-        "p",
-        "p",
-        block.spans,
-        index,
-        renderTheme,
-        renderTheme.body,
-      );
+      return textBlock("p", "p", block.spans, index, context, renderTheme.body);
     case "heading1":
-      return textBlock(
-        "h1",
-        "h1",
-        block.spans,
-        index,
-        renderTheme,
-        renderTheme.h1,
-      );
+      return textBlock("h1", "h1", block.spans, index, context, renderTheme.h1);
     case "heading2":
-      return textBlock(
-        "h2",
-        "h2",
-        block.spans,
-        index,
-        renderTheme,
-        renderTheme.h2,
-      );
+      return textBlock("h2", "h2", block.spans, index, context, renderTheme.h2);
     case "heading3":
-      return textBlock(
-        "h3",
-        "h3",
-        block.spans,
-        index,
-        renderTheme,
-        renderTheme.h3,
-      );
+      return textBlock("h3", "h3", block.spans, index, context, renderTheme.h3);
     case "quote":
-      return quoteBlock(block.spans, index, renderTheme);
+      return quoteBlock(block.spans, index, context);
     case "codeBlock":
-      return codeBlock(block.code, index, renderTheme);
+      return codeBlock(block.code, index, context);
     case "divider":
       return dividerBlock(index, renderTheme);
     case "bullet":
     case "numbered":
     case "check":
-      return renderListItem(block, index, renderTheme);
+      return renderListItem(block, index, context);
   }
 }
 
 function renderListItem(
   block: RichTextBlock,
   index: number,
-  renderTheme: RichTextDomRenderTheme,
+  context: BlockContext,
 ): HTMLElement {
+  const { renderTheme } = context;
   const item = document.createElement("li");
   item.dataset.rt = "li";
   item.dataset.rtIndex = String(index);
@@ -170,13 +172,13 @@ function renderListItem(
     text.dataset.rt = "checktext";
     text.style.flex = "1";
     text.style.minWidth = "0";
-    renderInline(text, block.spans);
+    renderInlineSpans(text, block.spans, decorationFor(context));
     ensureCaretTarget(text);
     item.append(checkbox, text);
     return item;
   }
   if ("spans" in block) {
-    renderInline(item, block.spans);
+    renderInlineSpans(item, block.spans, decorationFor(context));
     ensureCaretTarget(item);
   }
   return item;
@@ -187,18 +189,18 @@ function textBlock(
   rt: string,
   spans: readonly InlineSpan[],
   index: number,
-  renderTheme: RichTextDomRenderTheme,
-  style: TextDomStyle,
+  context: BlockContext,
+  style: RichTextDomRenderTheme["body"],
 ): HTMLElement {
   const element = document.createElement(tagName);
   element.dataset.rt = rt;
   element.dataset.rtIndex = String(index);
   element.style.margin = tagName === "p" ? "0 0 8px" : "0 0 10px";
   applyTextStyle(element, style);
-  renderInline(element, spans);
+  renderInlineSpans(element, spans, decorationFor(context));
   ensureCaretTarget(element);
-  if (renderTheme.theme.radii.sm) {
-    element.style.borderRadius = `${renderTheme.theme.radii.sm}px`;
+  if (context.renderTheme.theme.radii.sm) {
+    element.style.borderRadius = `${context.renderTheme.theme.radii.sm}px`;
   }
   return element;
 }
@@ -206,16 +208,16 @@ function textBlock(
 function quoteBlock(
   spans: readonly InlineSpan[],
   index: number,
-  renderTheme: RichTextDomRenderTheme,
+  context: BlockContext,
 ): HTMLElement {
   const element = document.createElement("blockquote");
   element.dataset.rt = "quote";
   element.dataset.rtIndex = String(index);
-  element.style.borderLeft = `3px solid ${renderTheme.theme.colors.border2}`;
+  element.style.borderLeft = `3px solid ${context.renderTheme.theme.colors.border2}`;
   element.style.margin = "0 0 10px";
   element.style.padding = "2px 0 2px 12px";
-  applyTextStyle(element, renderTheme.body);
-  renderInline(element, spans);
+  applyTextStyle(element, context.renderTheme.body);
+  renderInlineSpans(element, spans, decorationFor(context));
   ensureCaretTarget(element);
   return element;
 }
@@ -223,8 +225,9 @@ function quoteBlock(
 function codeBlock(
   code: string,
   index: number,
-  renderTheme: RichTextDomRenderTheme,
+  context: BlockContext,
 ): HTMLElement {
+  const { renderTheme } = context;
   const pre = document.createElement("pre");
   const codeElement = document.createElement("code");
   pre.dataset.rt = "code";
@@ -236,7 +239,7 @@ function codeBlock(
   pre.style.overflowX = "auto";
   pre.style.padding = "10px 12px";
   applyTextStyle(pre, renderTheme.code);
-  codeElement.textContent = code;
+  renderInlineCode(codeElement, code, decorationFor(context));
   pre.append(codeElement);
   return pre;
 }
@@ -258,137 +261,11 @@ function dividerBlock(
   return element;
 }
 
-function renderInline(parent: HTMLElement, spans: readonly InlineSpan[]): void {
-  for (const span of spans) {
-    appendMarkedText(parent, span, 0);
-    if (span.marks.length > 0) {
-      parent.appendChild(document.createTextNode(editorCaretBoundary));
-    }
-  }
-}
-
-function appendMarkedText(
-  parent: Node,
-  span: InlineSpan,
-  markIndex: number,
-): void {
-  if (markIndex >= span.marks.length) {
-    appendTextWithBreaks(parent, span.text);
-    return;
-  }
-  const wrapper = document.createElement(markTag(span.marks[markIndex]));
-  parent.appendChild(wrapper);
-  appendMarkedText(wrapper, span, markIndex + 1);
-}
-
-function appendTextWithBreaks(parent: Node, text: string): void {
-  const parts = text.split("\n");
-  parts.forEach((part, index) => {
-    if (index > 0) {
-      parent.appendChild(document.createElement("br"));
-    }
-    if (part.length > 0) {
-      parent.appendChild(document.createTextNode(renderEditableText(part)));
-    }
-  });
-}
-
-function renderEditableText(text: string): string {
-  return text.replace(/^ +| +$/g, (spaces) =>
-    editorBoundarySpace.repeat(spaces.length),
-  );
-}
-
-function ensureCaretTarget(element: HTMLElement): void {
-  if (element.textContent === "" && element.querySelector("br") === null) {
-    element.append(document.createElement("br"));
-  }
-}
-
-function markTag(
-  mark: InlineSpan["marks"][number],
-): "code" | "em" | "s" | "strong" {
-  switch (mark) {
-    case "bold":
-      return "strong";
-    case "italic":
-      return "em";
-    case "strike":
-      return "s";
-    case "code":
-      return "code";
-  }
-}
-
-function applyTextStyle(element: HTMLElement, style: TextDomStyle): void {
-  if (style.color) {
-    element.style.color = style.color;
-  }
-  if (style.fontFamily) {
-    element.style.fontFamily = style.fontFamily;
-  }
-  if (style.fontSize !== undefined) {
-    element.style.fontSize =
-      typeof style.fontSize === "number"
-        ? `${style.fontSize}px`
-        : style.fontSize;
-  }
-  if (style.fontWeight !== undefined) {
-    element.style.fontWeight = String(style.fontWeight);
-  }
-  if (style.lineHeight !== undefined) {
-    element.style.lineHeight =
-      typeof style.lineHeight === "number"
-        ? `${style.lineHeight}px`
-        : style.lineHeight;
-  }
-}
-
-function applyListStyle(
-  element: HTMLElement,
-  renderTheme: RichTextDomRenderTheme,
-): void {
-  element.style.margin = "0 0 8px";
-  // One shared text column for every list kind: bullet/number markers hang
-  // inside a 24px pad, and checklist rows reach the same column with a 16px
-  // box + 8px gap instead of a pad.
-  if (element.dataset.rt === "checklist") {
-    element.style.listStyleType = "none";
-    element.style.paddingLeft = "0";
-  } else {
-    element.style.paddingLeft = "24px";
-  }
-  applyTextStyle(element, renderTheme.body);
-}
-
-function applyCheckboxStyle(
-  element: HTMLElement,
-  checked: boolean,
-  renderTheme: RichTextDomRenderTheme,
-): void {
-  element.style.alignItems = "center";
-  element.style.backgroundColor = checked
-    ? renderTheme.theme.colors.primary
-    : renderTheme.theme.colors.surface;
-  element.style.border = `1px solid ${checked ? renderTheme.theme.colors.primaryDeep : renderTheme.theme.colors.controlBorder}`;
-  element.style.borderRadius = `${renderTheme.theme.radii.sm}px`;
-  element.style.boxSizing = "border-box";
-  element.style.color = renderTheme.theme.colors.onSolid;
-  element.style.display = "inline-flex";
-  element.style.fontFamily = renderTheme.theme.fonts.sans;
-  element.style.fontSize = "10px";
-  element.style.fontWeight = "800";
-  element.style.height = "16px";
-  element.style.justifyContent = "center";
-  element.style.flexShrink = "0";
-  element.style.lineHeight = "14px";
-  element.style.marginRight = "8px";
-  // Center the 16px box on the first text line instead of eyeballing a
-  // translate: (body line height − box height) / 2.
-  const lineHeight =
-    typeof renderTheme.body.lineHeight === "number"
-      ? renderTheme.body.lineHeight
-      : 22;
-  element.style.marginTop = `${Math.max(0, Math.round((lineHeight - 16) / 2))}px`;
-  element.style.width = "16px";
+function decorationFor(context: BlockContext): RichTextInlineDecoration | null {
+  if (!context.annotations || !context.collab) return null;
+  return {
+    annotations: context.annotations,
+    palette: context.collab.palette,
+    theme: context.renderTheme.theme,
+  };
 }

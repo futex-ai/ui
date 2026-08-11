@@ -33,7 +33,9 @@ app, plus labelled text inputs and textareas for shared forms.
 
 The rich-text editor's cross-platform markdown, block-editing, mobile toolbar,
 and accessibility behavior is specified separately in
-[rich-text-editor.md](rich-text-editor.md).
+[rich-text-editor.md](rich-text-editor.md). Its multi-user presentation layer —
+live carets, tracked changes, and comment threads — is specified in
+[rich-text-collaboration.md](rich-text-collaboration.md).
 
 ## Theming Contract
 
