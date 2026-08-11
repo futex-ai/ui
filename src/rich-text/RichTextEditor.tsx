@@ -16,6 +16,12 @@ import { useSharedUiTheme } from "../theme";
 import { NativeRichTextEditorSurface } from "./NativeRichTextEditorSurface";
 import type { RichTextAnnotationInput } from "./richTextCollabModel";
 import { richTextCollabPalette } from "./richTextCollabPalette";
+import type {
+  RichTextCollaborator,
+  RichTextCommentThread,
+  RichTextPresence,
+  RichTextSuggestion,
+} from "./richTextCollabTypes";
 import { parseMarkdown } from "./markdownParse";
 import { serializeMarkdown } from "./markdownSerialize";
 import { marksForNativeSelection } from "./nativeRichTextEditing";
@@ -42,12 +48,22 @@ import type { RichTextEditorProps } from "./richTextTypes";
 import { useNativeRichTextCommands } from "./useNativeRichTextCommands";
 import { useNativeRichTextHistory } from "./useNativeRichTextHistory";
 
+/**
+ * Stable empty defaults. A `= []` default is a new array on every render, which
+ * would invalidate the overlay memo — and re-render the whole document — on
+ * every render of an editor that has no session at all.
+ */
+const NO_COLLABORATORS: readonly RichTextCollaborator[] = [];
+const NO_COMMENT_THREADS: readonly RichTextCommentThread[] = [];
+const NO_PRESENCE: readonly RichTextPresence[] = [];
+const NO_SUGGESTIONS: readonly RichTextSuggestion[] = [];
+
 /** Rich text editor for native iOS and Android using the shared block model. */
 export function RichTextEditor({
   activeCommentThreadId = null,
   autoFocus = false,
-  collaborators = [],
-  commentThreads = [],
+  collaborators = NO_COLLABORATORS,
+  commentThreads = NO_COMMENT_THREADS,
   disableFocusRing = false,
   label,
   localCollaboratorId,
@@ -56,9 +72,9 @@ export function RichTextEditor({
   onChangeMarkdown,
   onSelectCommentThread,
   placeholder,
-  presence = [],
+  presence = NO_PRESENCE,
   readOnly = false,
-  suggestions = [],
+  suggestions = NO_SUGGESTIONS,
   testID,
   value = "",
 }: RichTextEditorProps) {

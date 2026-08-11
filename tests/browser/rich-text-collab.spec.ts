@@ -135,6 +135,31 @@ test("clicking a comment anchor selects its thread", async ({ page }) => {
   );
 });
 
+test("an anchor click still lands after the rail moved the selection", async ({
+  page,
+}) => {
+  await gotoCollabStory(page);
+
+  // The rail selects one thread, then the document selects a different one:
+  // the editor must not treat the second as a repeat of what it last reported.
+  await page.getByTestId("rich-text-rail-comment-t-tracked").click();
+  await expect(page.locator('mark[data-rt-thread="t-tracked"]')).toHaveCSS(
+    "box-shadow",
+    /inset/,
+  );
+
+  await page.locator('mark[data-rt-thread="t-workspaces"]').click();
+
+  await expect(page.locator('mark[data-rt-thread="t-workspaces"]')).toHaveCSS(
+    "box-shadow",
+    /inset/,
+  );
+  await expect(page.locator('mark[data-rt-thread="t-tracked"]')).not.toHaveCSS(
+    "box-shadow",
+    /inset/,
+  );
+});
+
 test("accepting a change clears its decoration and its card", async ({
   page,
 }) => {

@@ -20,6 +20,12 @@ import type { RichTextDomCollab } from "./domRender.web";
 import { renderRichTextDocument } from "./domRender.web";
 import { serializeRichTextDom } from "./domSerialize.web";
 import { richTextCollabPalette } from "./richTextCollabPalette";
+import type {
+  RichTextCollaborator,
+  RichTextCommentThread,
+  RichTextPresence,
+  RichTextSuggestion,
+} from "./richTextCollabTypes";
 import {
   docPositionFromDom,
   docRangeFromDomSelection,
@@ -93,14 +99,24 @@ type LastRule =
     };
 
 /**
+ * Stable empty defaults. A `= []` default is a new array on every render, which
+ * would invalidate the overlay memo — and re-render the whole document — on
+ * every render of an editor that has no session at all.
+ */
+const NO_COLLABORATORS: readonly RichTextCollaborator[] = [];
+const NO_COMMENT_THREADS: readonly RichTextCommentThread[] = [];
+const NO_PRESENCE: readonly RichTextPresence[] = [];
+const NO_SUGGESTIONS: readonly RichTextSuggestion[] = [];
+
+/**
  * ContentEditable rich text editor for React Native Web. The document DOM is
  * managed imperatively; React renders only the labelled frame and placeholder.
  */
 export function RichTextEditor({
   activeCommentThreadId = null,
   autoFocus = false,
-  collaborators = [],
-  commentThreads = [],
+  collaborators = NO_COLLABORATORS,
+  commentThreads = NO_COMMENT_THREADS,
   disableFocusRing = false,
   label,
   localCollaboratorId,
@@ -109,10 +125,10 @@ export function RichTextEditor({
   onChangeMarkdown,
   onSelectCommentThread,
   placeholder,
-  presence = [],
+  presence = NO_PRESENCE,
   readOnly = false,
   slashExtraItems = [],
-  suggestions = [],
+  suggestions = NO_SUGGESTIONS,
   testID,
   value = "",
 }: RichTextEditorProps) {
@@ -166,7 +182,16 @@ export function RichTextEditor({
     onChangeRef.current = onChangeMarkdown;
     onSelectThreadRef.current = onSelectCommentThread;
     readOnlyRef.current = readOnly;
-  }, [onChangeMarkdown, onSelectCommentThread, readOnly]);
+    // Track what the caller settled on, not only what this editor last
+    // reported: a thread selected from the rail must not make a later click on
+    // a different anchor look like a repeat of the one already reported.
+    reportedThreadRef.current = activeCommentThreadId;
+  }, [
+    activeCommentThreadId,
+    onChangeMarkdown,
+    onSelectCommentThread,
+    readOnly,
+  ]);
 
   const restoreSelection = useCallback(
     (target: Exclude<CommitSelection, null>) => {
