@@ -12,11 +12,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
+  applySortableMove,
   applyTimelineEdits,
   DEFAULT_FPS,
   frameDuration,
+  type EffectEntry,
   type InspectorValue,
+  type KeyframeTrack,
   type MediaBinView,
+  moveKeyframe,
+  removeKeyframe,
+  type SortableMove,
   quantizeToFrame,
   type TimelineClipData,
   type TimelineEdit,
@@ -31,6 +37,7 @@ import {
   sampleMarkers,
   sampleTracks,
 } from "./timelineSampleData";
+import { sampleEffects, sampleKeyframeTracks } from "./videoEditorEffects";
 import {
   defaultForProperty,
   inspectorSectionsFor,
@@ -68,6 +75,10 @@ export function useVideoEditorHost() {
   const [overrides, setOverrides] = useState<PropertyOverrides>({});
   const [keyframedIds, setKeyframedIds] = useState<string[]>(["opacity"]);
   const [collapsedSectionIds, setCollapsedSectionIds] = useState<string[]>([]);
+  const [effects, setEffects] = useState<EffectEntry[]>(sampleEffects);
+  const [keyframeTracks, setKeyframeTracks] =
+    useState<KeyframeTrack[]>(sampleKeyframeTracks);
+  const [selectedKeyframeIds, setSelectedKeyframeIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (!playing) {
@@ -156,9 +167,97 @@ export function useVideoEditorHost() {
     [inspectorSections, setProperty],
   );
 
+  const reorderEffects = useCallback(
+    (move: SortableMove) =>
+      setEffects((current) =>
+        applySortableMove(current, move, (effect) => effect.id),
+      ),
+    [],
+  );
+
+  const updateKeyframe = useCallback(
+    (trackId: string, keyframeId: string, time: number, value: number) =>
+      setKeyframeTracks((current) =>
+        current.map((track) =>
+          track.id === trackId
+            ? {
+                ...track,
+                keyframes: moveKeyframe(
+                  track.keyframes,
+                  keyframeId,
+                  time,
+                  value,
+                ),
+              }
+            : track,
+        ),
+      ),
+    [],
+  );
+
+  const deleteKeyframe = useCallback(
+    (trackId: string, keyframeId: string) =>
+      setKeyframeTracks((current) =>
+        current.map((track) =>
+          track.id === trackId
+            ? {
+                ...track,
+                keyframes: removeKeyframe(track.keyframes, keyframeId),
+              }
+            : track,
+        ),
+      ),
+    [],
+  );
+
   return {
     applyEdit,
     assetQuery,
+    deleteKeyframe,
+    effects,
+    keyframeTracks,
+    reorderEffects,
+    selectedKeyframeIds,
+    setSelectedKeyframeIds,
+    updateKeyframe,
+    removeEffect: (effectId: string) =>
+      setEffects((current) => current.filter((entry) => entry.id !== effectId)),
+    toggleEffect: (effectId: string) =>
+      setEffects((current) =>
+        current.map((entry) =>
+          entry.id === effectId ? { ...entry, enabled: !entry.enabled } : entry,
+        ),
+      ),
+    toggleEffectCollapsed: (effectId: string) =>
+      setEffects((current) =>
+        current.map((entry) =>
+          entry.id === effectId
+            ? { ...entry, collapsed: !entry.collapsed }
+            : entry,
+        ),
+      ),
+    setEffectProperty: (
+      effectId: string,
+      propertyId: string,
+      value: InspectorValue,
+    ) =>
+      setEffects((current) =>
+        current.map((entry) =>
+          entry.id === effectId
+            ? {
+                ...entry,
+                properties: entry.properties?.map((property) =>
+                  property.id === propertyId
+                    ? ({
+                        ...property,
+                        value,
+                      } as (typeof entry.properties)[number])
+                    : property,
+                ),
+              }
+            : entry,
+        ),
+      ),
     binView,
     clips,
     collapsedSectionIds,

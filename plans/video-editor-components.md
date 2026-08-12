@@ -93,12 +93,13 @@ and snap indicator.
 
 ## M6 — Effects rack and keyframe editor
 
-- [ ] Add `src/video-editor/EffectsRack.tsx` — reorder via `SortableList`, enable toggle, remove, nested params
-- [ ] Add `src/video-editor/keyframeCurve.ts` — interpolation, bezier evaluation, hit testing
-- [ ] Add `src/video-editor/KeyframeEditor.tsx` — lane mode and curve mode
-- [ ] Add `tests/unit/keyframeCurve.test.ts`
-- [ ] Wire both into the combined story
-- [ ] `npm run verify` green
+- [x] Add `src/video-editor/EffectsRack.tsx` — reorder via `SortableList`, enable toggle, remove, nested params
+- [x] Add `src/video-editor/keyframeCurve.ts` — interpolation, bezier evaluation, hit testing
+- [x] Add `src/video-editor/KeyframeEditor.tsx` — lane mode and curve mode
+- [x] Add `src/stories/videoEditorEffects.ts` — sample chain and keyframe tracks
+- [x] Add `tests/unit/keyframeCurve.test.ts`
+- [x] Wire both into the combined story
+- [x] `npm run verify` green
 
 ## M7 — Export dialog
 

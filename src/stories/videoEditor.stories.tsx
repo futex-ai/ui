@@ -3,7 +3,9 @@ import { Image, StyleSheet, Text, View } from "react-native";
 
 import {
   darkSharedUiTheme,
+  EffectsRack,
   Inspector,
+  KeyframeEditor,
   LevelMeter,
   MediaBin,
   PreviewSurface,
@@ -16,6 +18,7 @@ import {
 
 import { StorySurface } from "./sharedExamples";
 import { useVideoEditorHost } from "./videoEditorHost";
+import { sampleEffectOptions } from "./videoEditorEffects";
 import {
   sampleAssets,
   sampleFrameAt,
@@ -254,6 +257,86 @@ function InspectorHost() {
   );
 }
 
+export const Effects: Story = {
+  render: () => (
+    <StorySurface>
+      <EffectsHost />
+    </StorySurface>
+  ),
+};
+
+function EffectsHost() {
+  const host = useVideoEditorHost();
+  return (
+    <View style={styles.effectsRow}>
+      <EffectsRack
+        accessibilityLabel="Effects"
+        addOptions={sampleEffectOptions}
+        effects={host.effects}
+        onAdd={() => undefined}
+        onPropertyChange={host.setEffectProperty}
+        onRemove={host.removeEffect}
+        onReorder={host.reorderEffects}
+        onToggleCollapsed={host.toggleEffectCollapsed}
+        onToggleEnabled={host.toggleEffect}
+        style={styles.effectsPanel}
+        testID="effects-rack"
+        title="Effects"
+      />
+      <EffectsRack
+        accessibilityLabel="Empty effects"
+        effects={[]}
+        style={styles.effectsPanel}
+        title="Empty"
+      />
+    </View>
+  );
+}
+
+export const Keyframes: Story = {
+  render: () => (
+    <StorySurface>
+      <KeyframeHost />
+    </StorySurface>
+  ),
+};
+
+function KeyframeHost() {
+  const host = useVideoEditorHost();
+  return (
+    <View style={styles.keyframeStack}>
+      <PanelHeading>Lanes</PanelHeading>
+      <KeyframeEditor
+        accessibilityLabel="Keyframe lanes"
+        endTime={host.duration}
+        onKeyframeMove={host.updateKeyframe}
+        onKeyframeRemove={host.deleteKeyframe}
+        onSelectionChange={host.setSelectedKeyframeIds}
+        pixelsPerSecond={host.pixelsPerSecond}
+        playheadTime={host.playheadTime}
+        selectedKeyframeIds={host.selectedKeyframeIds}
+        testID="keyframe-lanes"
+        tracks={host.keyframeTracks}
+      />
+      <PanelHeading>Curves</PanelHeading>
+      <KeyframeEditor
+        accessibilityLabel="Keyframe curves"
+        endTime={host.duration}
+        mode="curve"
+        onKeyframeMove={host.updateKeyframe}
+        onSelectionChange={host.setSelectedKeyframeIds}
+        pixelsPerSecond={host.pixelsPerSecond}
+        playheadTime={host.playheadTime}
+        selectedKeyframeIds={host.selectedKeyframeIds}
+        testID="keyframe-curves"
+        tracks={host.keyframeTracks}
+      />
+      <PanelHeading>Nothing animated</PanelHeading>
+      <KeyframeEditor endTime={10} pixelsPerSecond={40} tracks={[]} />
+    </View>
+  );
+}
+
 // --- the assembled editor --------------------------------------------------
 
 /**
@@ -334,6 +417,37 @@ function FullEditor() {
           title={host.selectedClip?.label ?? "Nothing selected"}
         />
       </View>
+      <View style={styles.lower}>
+        <EffectsRack
+          accessibilityLabel="Effects"
+          addOptions={sampleEffectOptions}
+          effects={host.effects}
+          onAdd={() => undefined}
+          onPropertyChange={host.setEffectProperty}
+          onRemove={host.removeEffect}
+          onReorder={host.reorderEffects}
+          onToggleCollapsed={host.toggleEffectCollapsed}
+          onToggleEnabled={host.toggleEffect}
+          size="sm"
+          style={styles.rack}
+          testID="editor-effects"
+          title="Effects"
+        />
+        <KeyframeEditor
+          accessibilityLabel="Keyframes"
+          endTime={host.duration}
+          onKeyframeMove={host.updateKeyframe}
+          onKeyframeRemove={host.deleteKeyframe}
+          onSelectionChange={host.setSelectedKeyframeIds}
+          pixelsPerSecond={host.pixelsPerSecond}
+          playheadTime={host.playheadTime}
+          selectedKeyframeIds={host.selectedKeyframeIds}
+          size="sm"
+          style={styles.keyframes}
+          testID="editor-keyframes"
+          tracks={host.keyframeTracks}
+        />
+      </View>
       <Timeline
         accessibilityLabel="Sequence"
         clips={host.clips}
@@ -378,6 +492,12 @@ const styles = StyleSheet.create({
   binPanel: { flexGrow: 1, minWidth: 240 },
   binRow: { flexDirection: "row", gap: 16, maxWidth: 760 },
   editor: { gap: 12, maxWidth: 1120 },
+  effectsPanel: { flexGrow: 1, minWidth: 260 },
+  effectsRow: { flexDirection: "row", gap: 16, maxWidth: 680 },
+  keyframeStack: { gap: 8, maxWidth: 940 },
+  keyframes: { flex: 1, overflow: "hidden" },
+  lower: { flexDirection: "row", gap: 12 },
+  rack: { width: 260 },
   inspector: { width: 240 },
   inspectorPanel: { flexGrow: 1, minWidth: 260 },
   inspectorRow: { flexDirection: "row", gap: 16, maxWidth: 640 },
