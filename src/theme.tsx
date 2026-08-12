@@ -1,5 +1,10 @@
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
+import { chartOverridesFrom, resolveChartColors } from "./chartTheme";
+import type { SharedUiChartColors } from "./chartTheme";
+
+export type { SharedUiChartColors };
+
 export type SharedUiColors = {
   amber: string;
   /**
@@ -98,6 +103,12 @@ export type SharedUiScheme = "light" | "dark";
 
 export type SharedUiTheme = {
   colors: SharedUiColors;
+  /**
+   * Data-visualization scales for `@firna/ui/chart`. Resolved from `scheme`
+   * and `colors` by {@link createSharedUiTheme}, so a theme built through that
+   * function never supplies it directly.
+   */
+  charts: SharedUiChartColors;
   fonts: SharedUiFonts;
   radii: SharedUiRadii;
   /**
@@ -120,38 +131,42 @@ export type SharedUiTheme = {
 
 export type SharedUiThemeOverrides = {
   colors?: Partial<SharedUiColors>;
+  charts?: Partial<SharedUiChartColors>;
   fonts?: Partial<SharedUiFonts>;
   radii?: Partial<SharedUiRadii>;
   focusRing?: boolean;
   scheme?: SharedUiScheme;
 };
 
+const defaultColors: SharedUiColors = {
+  amber: "#946727",
+  amberDeep: "#75531a",
+  amberSoft: "#f4ecd8",
+  bg: "#f7f7f3",
+  bg2: "#ecede7",
+  border: "#e5e8e0",
+  border2: "#d3d8cd",
+  controlBorder: "rgba(28, 31, 29, 0.27)", // ink (#1c1f1d) @ 27% — translucent control edge
+  faint: "#a8aea7",
+  ink: "#1c1f1d",
+  ink2: "#3e4540",
+  muted: "#69706a",
+  onSolid: "#ffffff",
+  placeholder: "#6c736c",
+  primary: "#4f7864",
+  primaryBorder: "#d1e2d7",
+  primaryDeep: "#2f5945",
+  primarySoft: "#e3eee6",
+  rose: "#a84f45",
+  roseDeep: "#8f3a30",
+  roseSoft: "#f4e3df",
+  soft: "#eef2ed",
+  surface: "#ffffff",
+};
+
 export const defaultSharedUiTheme: SharedUiTheme = {
-  colors: {
-    amber: "#946727",
-    amberDeep: "#75531a",
-    amberSoft: "#f4ecd8",
-    bg: "#f7f7f3",
-    bg2: "#ecede7",
-    border: "#e5e8e0",
-    border2: "#d3d8cd",
-    controlBorder: "rgba(28, 31, 29, 0.27)", // ink (#1c1f1d) @ 27% — translucent control edge
-    faint: "#a8aea7",
-    ink: "#1c1f1d",
-    ink2: "#3e4540",
-    muted: "#69706a",
-    onSolid: "#ffffff",
-    placeholder: "#6c736c",
-    primary: "#4f7864",
-    primaryBorder: "#d1e2d7",
-    primaryDeep: "#2f5945",
-    primarySoft: "#e3eee6",
-    rose: "#a84f45",
-    roseDeep: "#8f3a30",
-    roseSoft: "#f4e3df",
-    soft: "#eef2ed",
-    surface: "#ffffff",
-  },
+  colors: defaultColors,
+  charts: resolveChartColors(defaultColors, "light", undefined),
   fonts: {
     mono: "Menlo, Consolas, monospace",
     sans: "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
@@ -175,12 +190,19 @@ export function createSharedUiTheme(
   overrides: SharedUiThemeOverrides = {},
   base: SharedUiTheme = defaultSharedUiTheme,
 ): SharedUiTheme {
+  const colors = { ...base.colors, ...overrides.colors };
+  const scheme = overrides.scheme ?? base.scheme;
   return {
-    colors: { ...base.colors, ...overrides.colors },
+    colors,
+    charts: resolveChartColors(
+      colors,
+      scheme,
+      chartOverridesFrom(base, overrides.charts),
+    ),
     fonts: { ...base.fonts, ...overrides.fonts },
     radii: { ...base.radii, ...overrides.radii },
     focusRing: overrides.focusRing ?? base.focusRing,
-    scheme: overrides.scheme ?? base.scheme,
+    scheme,
   };
 }
 

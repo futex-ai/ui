@@ -84,6 +84,11 @@ export const jsxs = jsx;
     "index.js": `export const FlatList = "FlatList";
 export const InputAccessoryView = "InputAccessoryView";
 export const Modal = "Modal";
+export const PanResponder = {
+  create(config) {
+    return { panHandlers: {}, config };
+  },
+};
 export const Pressable = "Pressable";
 export const ScrollView = "ScrollView";
 export const Text = "Text";
@@ -142,9 +147,14 @@ export function useWindowDimensions() {
   });
   await writeStubPackage(consumerRoot, "react-native-svg", {
     "index.js": `export const Circle = "Circle";
+export const ClipPath = "ClipPath";
 export const Defs = "Defs";
+export const G = "G";
+export const Line = "Line";
 export const LinearGradient = "LinearGradient";
 export const Path = "Path";
+export const Pattern = "Pattern";
+export const Polygon = "Polygon";
 export const Rect = "Rect";
 export const Stop = "Stop";
 export const Svg = "Svg";
@@ -266,6 +276,12 @@ export declare const Fragment: unique symbol;
   await writeStubPackage(consumerRoot, "react-native", {
     "index.d.ts": `export type StyleProp<T> = T | readonly T[] | false | null | undefined;
 export type AccessibilityRole = string;
+export interface PanResponderInstance {
+  panHandlers: Record<string, unknown>;
+}
+export declare const PanResponder: {
+  create(config: Record<string, unknown>): PanResponderInstance;
+};
 export interface AccessibilityState {
   [key: string]: unknown;
 }
