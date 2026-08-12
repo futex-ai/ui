@@ -238,6 +238,12 @@ package subpath with Node's native ESM resolver, typechecks those subpaths with
 TypeScript's NodeNext resolver, and then verifies the same subpaths through a
 Vite build.
 
+The axe accessibility gate discovers every Storybook story at runtime and
+splits the sorted story list into four deterministic shards. Playwright runs
+those shards across its workers so the complete sweep does not depend on one
+long-running test. `UPDATE_A11Y_BASELINE=1 npm run test:browser -- a11y.spec.ts`
+uses one serial sweep instead, ensuring `axe-baseline.json` has a single writer.
+
 Playwright uses `STORYBOOK_PORT` when set, then Conductor's workspace-specific
 `CONDUCTOR_PORT`, and otherwise port `6006`. This lets browser checks run safely
 alongside previews from parallel workspaces.
