@@ -195,6 +195,11 @@
       "react-native": "./dist/typography/index.js",
       "import": "./dist/node/typography/index.js"
     },
+    "./video-editor": {
+      "types": "./dist/node/video-editor/index.d.ts",
+      "react-native": "./dist/video-editor/index.js",
+      "import": "./dist/node/video-editor/index.js"
+    },
     "./workflow": {
       "types": "./dist/node/workflow/index.d.ts",
       "react-native": "./dist/workflow/index.js",

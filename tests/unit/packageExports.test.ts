@@ -51,6 +51,7 @@ test("package exposes every documented public subpath", () => {
     "./timeline",
     "./toast",
     "./typography",
+    "./video-editor",
     "./workflow",
   ]);
 

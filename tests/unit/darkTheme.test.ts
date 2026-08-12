@@ -21,6 +21,10 @@ const WHITE_LITERAL_ALLOWLIST: Record<string, number> = {
   "skeleton/Skeleton.tsx": 3, // sheen gradient stops stay white by design
   "workflow/WorkflowNode.tsx": 2, // fixed category palette glyphs (see D6)
   "toast/toastStyles.ts": 1, // the light-scheme arm of the solid hover wash
+  // The preview's letterbox is a fixed near-black standing in for the void
+  // around a frame, so what sits on it — the composition guides, the format
+  // badge, and the empty-state caption — must stay white in every scheme.
+  "video-editor/videoEditorStyles.ts": 4,
 };
 
 function walk(dir: string): string[] {

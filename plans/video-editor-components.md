@@ -69,16 +69,16 @@ and snap indicator.
 
 ## M4 — Preview, transport, and metering
 
-- [ ] Add `src/video-editor/videoEditorStyles.ts`
-- [ ] Add `src/video-editor/PreviewSurface.tsx` — aspect box, letterbox, guides, overlay slot
-- [ ] Add `src/video-editor/Scrubber.tsx` — buffered range, in/out region, markers, slider semantics
-- [ ] Add `src/video-editor/levelMeterScale.ts` and `LevelMeter.tsx`
-- [ ] Add `src/video-editor/TransportBar.tsx` — play/pause, frame step, jump, in/out, loop, timecode, speed
-- [ ] Add `src/video-editor/index.ts`, wire `src/index.ts`, `package.json` exports, `packageExports.test.ts`
-- [ ] Add `tests/unit/levelMeter.test.ts` and `tests/unit/scrubber.test.ts`
-- [ ] Add `src/stories/videoEditor.stories.tsx` with per-component stories and the combined shell scaffold
-- [ ] Add `src/stories/videoEditorSampleData.ts`
-- [ ] `npm run verify` green
+- [x] Add `src/video-editor/videoEditorStyles.ts` and the react-native-free `videoEditorSizing.ts` / `previewAspect.ts`
+- [x] Add `src/video-editor/PreviewSurface.tsx` — aspect box, letterbox, guides, overlay slot
+- [x] Add `src/video-editor/Scrubber.tsx` — buffered range, in/out region, markers, slider semantics
+- [x] Add `src/video-editor/levelMeterScale.ts` and `LevelMeter.tsx`
+- [x] Add `src/video-editor/TransportBar.tsx` — play/pause, frame step, jump, in/out, loop, timecode, speed
+- [x] Add `src/video-editor/index.ts`, wire `src/index.ts`, `package.json` exports, `packageExports.test.ts`
+- [x] Add `tests/unit/levelMeter.test.ts` and `tests/unit/scrubber.test.ts`
+- [x] Add `src/stories/videoEditor.stories.tsx` with per-component stories and the combined shell scaffold
+- [x] Add `src/stories/videoEditorSampleData.ts` and `videoEditorHost.tsx` (shared host state, simulated playback)
+- [x] `npm run verify` green
 
 ## M5 — Media bin and inspector
 

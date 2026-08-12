@@ -32,5 +32,6 @@ export * from "./theme";
 export * from "./timeline";
 export * from "./toast";
 export * from "./typography";
+export * from "./video-editor";
 export * from "./useReducedMotion";
 export * from "./workflow";

@@ -251,7 +251,8 @@ export const ZoomOut = Icon;
 
 export async function writeTypePeerStubs(consumerRoot) {
   await writeStubPackage(consumerRoot, "react", {
-    "index.d.ts": `export type Dispatch<T> = (value: T) => void;
+    "index.d.ts": `export type ComponentType<P = unknown> = (props: P) => ReactNode;
+export type Dispatch<T> = (value: T) => void;
 export type PropsWithChildren<P = unknown> = P & { children?: ReactNode };
 export interface ReactElement<P = unknown> {
   key: unknown;
