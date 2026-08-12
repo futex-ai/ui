@@ -15,6 +15,8 @@ import {
   applyTimelineEdits,
   DEFAULT_FPS,
   frameDuration,
+  type InspectorValue,
+  type MediaBinView,
   quantizeToFrame,
   type TimelineClipData,
   type TimelineEdit,
@@ -29,6 +31,11 @@ import {
   sampleMarkers,
   sampleTracks,
 } from "./timelineSampleData";
+import {
+  defaultForProperty,
+  inspectorSectionsFor,
+  type PropertyOverrides,
+} from "./videoEditorProperties";
 import {
   sampleLevelsAt,
   samplePeakHoldsAt,
@@ -53,6 +60,14 @@ export function useVideoEditorHost() {
   const [tool, setTool] = useState<TimelineTool>("select");
   const [ripple, setRipple] = useState(false);
   const [pixelsPerSecond, setPixelsPerSecond] = useState(44);
+  const [assetQuery, setAssetQuery] = useState("");
+  const [binView, setBinView] = useState<MediaBinView>("grid");
+  const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([
+    "asset-interview",
+  ]);
+  const [overrides, setOverrides] = useState<PropertyOverrides>({});
+  const [keyframedIds, setKeyframedIds] = useState<string[]>(["opacity"]);
+  const [collapsedSectionIds, setCollapsedSectionIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (!playing) {
@@ -112,9 +127,61 @@ export function useVideoEditorHost() {
     [clips, selectedClipIds],
   );
 
+  const inspectorSections = useMemo(
+    () => inspectorSectionsFor(selectedClip, overrides, collapsedSectionIds),
+    [collapsedSectionIds, overrides, selectedClip],
+  );
+
+  const setProperty = useCallback(
+    (propertyId: string, value: InspectorValue) => {
+      const clipId = selectedClip?.id;
+      if (!clipId) {
+        return;
+      }
+      setOverrides((current) => ({
+        ...current,
+        [clipId]: { ...current[clipId], [propertyId]: value },
+      }));
+    },
+    [selectedClip],
+  );
+
+  const resetProperty = useCallback(
+    (propertyId: string) => {
+      const fallback = defaultForProperty(inspectorSections, propertyId);
+      if (fallback !== undefined) {
+        setProperty(propertyId, fallback);
+      }
+    },
+    [inspectorSections, setProperty],
+  );
+
   return {
     applyEdit,
+    assetQuery,
+    binView,
     clips,
+    collapsedSectionIds,
+    inspectorSections,
+    keyframedIds,
+    resetProperty,
+    selectedAssetIds,
+    setAssetQuery,
+    setBinView,
+    setProperty,
+    setSelectedAssetIds,
+    toggleKeyframe: (propertyId: string) =>
+      setKeyframedIds((current) =>
+        current.includes(propertyId)
+          ? current.filter((id) => id !== propertyId)
+          : [...current, propertyId],
+      ),
+    toggleSection: (sectionId: string) =>
+      setCollapsedSectionIds((current) =>
+        current.includes(sectionId)
+          ? current.filter((id) => id !== sectionId)
+          : [...current, sectionId],
+      ),
     duration: sampleDuration,
     frameUri: sampleFrameAt(playheadTime),
     inPoint,

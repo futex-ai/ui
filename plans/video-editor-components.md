@@ -82,12 +82,14 @@ and snap indicator.
 
 ## M5 — Media bin and inspector
 
-- [ ] Add `src/video-editor/MediaBin.tsx` and `MediaBinItem.tsx` — grid/list, search, duration badge, selection
-- [ ] Add `src/video-editor/NumberScrubber.tsx` — drag-to-change numeric field
-- [ ] Add `src/video-editor/Inspector.tsx` — sections, typed rows, reset, keyframe stopwatch
-- [ ] Add `tests/unit/mediaBin.test.ts` and `tests/unit/inspector.test.ts`
-- [ ] Wire both panels into the combined story, with selection driving the inspector
-- [ ] `npm run verify` green
+- [x] Add `src/video-editor/MediaBin.tsx` and `MediaBinItem.tsx` — grid/list, search, duration badge, selection
+- [x] Add `src/video-editor/NumberScrubber.tsx` — drag-to-change numeric field
+- [x] Add `src/video-editor/Inspector.tsx` / `InspectorRow.tsx` — sections, typed rows, reset, keyframe stopwatch
+- [x] Add the pure `mediaBinModel.ts` and `inspectorModel.ts` (filter, group, clamp, describe)
+- [x] Stub the newly-used lucide icons and surface the real import-smoke error
+- [x] Add `tests/unit/mediaBin.test.ts` and `tests/unit/inspector.test.ts`
+- [x] Wire both panels into the combined story, with selection driving the inspector
+- [x] `npm run verify` green
 
 ## M6 — Effects rack and keyframe editor
 

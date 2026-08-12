@@ -3,7 +3,9 @@ import { Image, StyleSheet, Text, View } from "react-native";
 
 import {
   darkSharedUiTheme,
+  Inspector,
   LevelMeter,
+  MediaBin,
   PreviewSurface,
   Scrubber,
   type SharedUiTheme,
@@ -14,7 +16,11 @@ import {
 
 import { StorySurface } from "./sharedExamples";
 import { useVideoEditorHost } from "./videoEditorHost";
-import { sampleFrameAt, sampleScrubMarkers } from "./videoEditorSampleData";
+import {
+  sampleAssets,
+  sampleFrameAt,
+  sampleScrubMarkers,
+} from "./videoEditorSampleData";
 
 const meta = {
   title: "Video editor/Examples",
@@ -175,6 +181,79 @@ function ScrubberHost() {
   );
 }
 
+export const Media: Story = {
+  render: () => (
+    <StorySurface>
+      <MediaBinHost />
+    </StorySurface>
+  ),
+};
+
+function MediaBinHost() {
+  const host = useVideoEditorHost();
+  return (
+    <View style={styles.binRow}>
+      <MediaBin
+        accessibilityLabel="Media bin"
+        assets={sampleAssets}
+        maxHeight={280}
+        onQueryChange={host.setAssetQuery}
+        onSelectionChange={host.setSelectedAssetIds}
+        onViewChange={host.setBinView}
+        query={host.assetQuery}
+        selectedAssetIds={host.selectedAssetIds}
+        style={styles.binPanel}
+        testID="media-bin"
+        title="Media"
+        view={host.binView}
+      />
+      <MediaBin
+        accessibilityLabel="Media bin, list view"
+        assets={sampleAssets}
+        maxHeight={280}
+        style={styles.binPanel}
+        title="List view"
+        view="list"
+      />
+    </View>
+  );
+}
+
+export const Properties: Story = {
+  render: () => (
+    <StorySurface>
+      <InspectorHost />
+    </StorySurface>
+  ),
+};
+
+function InspectorHost() {
+  const host = useVideoEditorHost();
+  return (
+    <View style={styles.inspectorRow}>
+      <Inspector
+        accessibilityLabel="Clip properties"
+        keyframedIds={host.keyframedIds}
+        maxHeight={320}
+        onChange={host.setProperty}
+        onReset={host.resetProperty}
+        onToggleKeyframe={host.toggleKeyframe}
+        onToggleSection={host.toggleSection}
+        sections={host.inspectorSections}
+        style={styles.inspectorPanel}
+        testID="inspector"
+        title={host.selectedClip?.label}
+      />
+      <Inspector
+        accessibilityLabel="Empty properties"
+        sections={[]}
+        style={styles.inspectorPanel}
+        title="Nothing selected"
+      />
+    </View>
+  );
+}
+
 // --- the assembled editor --------------------------------------------------
 
 /**
@@ -189,7 +268,28 @@ function FullEditor() {
   return (
     <View style={styles.editor}>
       <View style={styles.stage}>
-        <View style={[styles.monitor, { borderColor: theme.colors.border }]}>
+        <MediaBin
+          accessibilityLabel="Media bin"
+          assets={sampleAssets}
+          maxHeight={300}
+          onAssetActivate={() => undefined}
+          onQueryChange={host.setAssetQuery}
+          onSelectionChange={host.setSelectedAssetIds}
+          onViewChange={host.setBinView}
+          query={host.assetQuery}
+          selectedAssetIds={host.selectedAssetIds}
+          style={styles.bin}
+          testID="editor-bin"
+          title="Media"
+          view={host.binView}
+        />
+        <View
+          style={[
+            styles.monitor,
+            { borderColor: theme.colors.border },
+            styles.monitorGrow,
+          ]}
+        >
           <PreviewSurface
             accessibilityLabel="Program monitor"
             badge="1920×1080 · 30fps"
@@ -220,6 +320,19 @@ function FullEditor() {
             testID="editor-transport"
           />
         </View>
+        <Inspector
+          accessibilityLabel="Clip properties"
+          keyframedIds={host.keyframedIds}
+          maxHeight={300}
+          onChange={host.setProperty}
+          onReset={host.resetProperty}
+          onToggleKeyframe={host.toggleKeyframe}
+          onToggleSection={host.toggleSection}
+          sections={host.inspectorSections}
+          style={styles.inspector}
+          testID="editor-inspector"
+          title={host.selectedClip?.label ?? "Nothing selected"}
+        />
       </View>
       <Timeline
         accessibilityLabel="Sequence"
@@ -261,7 +374,14 @@ export const FullEditorDark: Story = {
 };
 
 const styles = StyleSheet.create({
-  editor: { gap: 12, maxWidth: 1020 },
+  bin: { width: 210 },
+  binPanel: { flexGrow: 1, minWidth: 240 },
+  binRow: { flexDirection: "row", gap: 16, maxWidth: 760 },
+  editor: { gap: 12, maxWidth: 1120 },
+  inspector: { width: 240 },
+  inspectorPanel: { flexGrow: 1, minWidth: 260 },
+  inspectorRow: { flexDirection: "row", gap: 16, maxWidth: 640 },
+  monitorGrow: { flex: 1, minWidth: 320 },
   frameImage: { height: "100%", width: "100%" },
   heading: {
     fontSize: 11,
@@ -280,6 +400,6 @@ const styles = StyleSheet.create({
   previewCellNarrow: { gap: 6, width: 160 },
   previewRow: { flexDirection: "row", flexWrap: "wrap", gap: 16 },
   scrubberCell: { width: 320 },
-  stage: { alignItems: "stretch" },
+  stage: { alignItems: "stretch", flexDirection: "row", gap: 12 },
   transportStack: { gap: 14, maxWidth: 760 },
 });
