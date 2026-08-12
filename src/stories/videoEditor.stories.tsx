@@ -1,5 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import {
+  Image,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 
 import {
   Button,
@@ -12,6 +19,7 @@ import {
   MediaBin,
   PreviewSurface,
   Scrubber,
+  SegmentedControl,
   type SharedUiTheme,
   Timeline,
   TransportBar,
@@ -403,146 +411,225 @@ function ExportDialogHost({ host }: { host: VideoEditorHost }) {
  * of host state. Nothing here is a layout component from the library — the
  * shell is plain flexbox, which is the point: the family composes.
  */
-function FullEditor() {
+/** Which pane the compact layout is showing. */
+type EditorPane = "effects" | "inspect" | "media" | "timeline";
+
+const PANE_OPTIONS = [
+  { label: "Timeline", value: "timeline" as const },
+  { label: "Media", value: "media" as const },
+  { label: "Inspect", value: "inspect" as const },
+  { label: "Effects", value: "effects" as const },
+];
+
+/**
+ * The headline demo: the panels hand-assembled into an editor, over one piece
+ * of host state. Nothing here is a layout component from the library — the
+ * shell is plain flexbox, which is the point: the family composes.
+ *
+ * Below 900px the same panels rearrange into the phone shape from the mockup:
+ * the monitor stays on top and the side panes become tabs, because three
+ * columns of chrome do not fit beside a frame on a handset.
+ */
+function FullEditor({ compact: forceCompact }: { compact?: boolean }) {
   const host = useVideoEditorHost();
   const theme = useSharedUiTheme();
+  const { width } = useWindowDimensions();
+  const compact = forceCompact ?? width < 900;
+  const [pane, setPane] = useState<EditorPane>("timeline");
+
+  const monitor = (
+    <View
+      style={[
+        styles.monitor,
+        { borderColor: theme.colors.border },
+        compact ? null : styles.monitorGrow,
+      ]}
+    >
+      <PreviewSurface
+        accessibilityLabel="Program monitor"
+        badge="1920×1080 · 30fps"
+        maxHeight={compact ? 200 : 280}
+        showThirds
+        testID="editor-preview"
+      >
+        <SampleFrame uri={host.frameUri} />
+      </PreviewSurface>
+      <TransportBar
+        currentTime={host.playheadTime}
+        duration={host.duration}
+        inPoint={host.inPoint}
+        levels={compact ? undefined : host.levels}
+        loop={host.loop}
+        markers={sampleScrubMarkers}
+        onMarkIn={() => host.setInPoint(host.playheadTime)}
+        onMarkOut={() => host.setOutPoint(host.playheadTime)}
+        onPlayPause={host.togglePlay}
+        onRateChange={compact ? undefined : host.setRate}
+        onSeek={host.setPlayheadTime}
+        onStepFrame={host.stepFrame}
+        onToggleLoop={host.toggleLoop}
+        outPoint={host.outPoint}
+        peakHolds={host.peakHolds}
+        playing={host.playing}
+        rate={host.rate}
+        size={compact ? "sm" : "md"}
+        testID="editor-transport"
+        trailing={
+          <Button
+            onPress={host.openExport}
+            size="sm"
+            testID="editor-export-open"
+            tone="primary"
+          >
+            Export
+          </Button>
+        }
+      />
+    </View>
+  );
+
+  const bin = (
+    <MediaBin
+      accessibilityLabel="Media bin"
+      assets={sampleAssets}
+      maxHeight={300}
+      onAssetActivate={() => undefined}
+      onQueryChange={host.setAssetQuery}
+      onSelectionChange={host.setSelectedAssetIds}
+      onViewChange={host.setBinView}
+      query={host.assetQuery}
+      selectedAssetIds={host.selectedAssetIds}
+      style={compact ? undefined : styles.bin}
+      testID="editor-bin"
+      title="Media"
+      view={host.binView}
+    />
+  );
+
+  const inspector = (
+    <Inspector
+      accessibilityLabel="Clip properties"
+      keyframedIds={host.keyframedIds}
+      maxHeight={300}
+      onChange={host.setProperty}
+      onReset={host.resetProperty}
+      onToggleKeyframe={host.toggleKeyframe}
+      onToggleSection={host.toggleSection}
+      sections={host.inspectorSections}
+      style={compact ? undefined : styles.inspector}
+      testID="editor-inspector"
+      title={host.selectedClip?.label ?? "Nothing selected"}
+    />
+  );
+
+  const effects = (
+    <EffectsRack
+      accessibilityLabel="Effects"
+      addOptions={sampleEffectOptions}
+      effects={host.effects}
+      onAdd={() => undefined}
+      onPropertyChange={host.setEffectProperty}
+      onRemove={host.removeEffect}
+      onReorder={host.reorderEffects}
+      onToggleCollapsed={host.toggleEffectCollapsed}
+      onToggleEnabled={host.toggleEffect}
+      size="sm"
+      style={compact ? undefined : styles.rack}
+      testID="editor-effects"
+      title="Effects"
+    />
+  );
+
+  const keyframes = (
+    <KeyframeEditor
+      accessibilityLabel="Keyframes"
+      endTime={host.duration}
+      onKeyframeMove={host.updateKeyframe}
+      onKeyframeRemove={host.deleteKeyframe}
+      onSelectionChange={host.setSelectedKeyframeIds}
+      pixelsPerSecond={host.pixelsPerSecond}
+      playheadTime={host.playheadTime}
+      selectedKeyframeIds={host.selectedKeyframeIds}
+      size="sm"
+      style={compact ? styles.keyframesCompact : styles.keyframes}
+      testID="editor-keyframes"
+      tracks={host.keyframeTracks}
+    />
+  );
+
+  const timeline = (
+    <Timeline
+      accessibilityLabel="Sequence"
+      clips={host.clips}
+      duration={host.duration}
+      markers={host.markers}
+      onEdit={host.applyEdit}
+      onSeek={host.setPlayheadTime}
+      onSelectionChange={host.setSelectedClipIds}
+      onTrackToggle={host.toggleTrack}
+      pixelsPerSecond={host.pixelsPerSecond}
+      playheadTime={host.playheadTime}
+      ripple={host.ripple}
+      selectedClipIds={host.selectedClipIds}
+      size={compact ? "sm" : "md"}
+      testID="editor-timeline"
+      tool={host.tool}
+      tracks={host.tracks}
+    />
+  );
+
+  if (compact) {
+    return (
+      <View style={styles.editorCompact} testID="editor-compact">
+        {monitor}
+        <SegmentedControl
+          accessibilityLabel="Editor pane"
+          onChange={setPane}
+          options={PANE_OPTIONS}
+          size="sm"
+          value={pane}
+        />
+        {pane === "timeline" ? timeline : null}
+        {pane === "media" ? bin : null}
+        {pane === "inspect" ? inspector : null}
+        {pane === "effects" ? (
+          <View style={styles.compactStack}>
+            {effects}
+            {keyframes}
+          </View>
+        ) : null}
+        <ExportDialogHost host={host} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.editor}>
       <View style={styles.stage}>
-        <MediaBin
-          accessibilityLabel="Media bin"
-          assets={sampleAssets}
-          maxHeight={300}
-          onAssetActivate={() => undefined}
-          onQueryChange={host.setAssetQuery}
-          onSelectionChange={host.setSelectedAssetIds}
-          onViewChange={host.setBinView}
-          query={host.assetQuery}
-          selectedAssetIds={host.selectedAssetIds}
-          style={styles.bin}
-          testID="editor-bin"
-          title="Media"
-          view={host.binView}
-        />
-        <View
-          style={[
-            styles.monitor,
-            { borderColor: theme.colors.border },
-            styles.monitorGrow,
-          ]}
-        >
-          <PreviewSurface
-            accessibilityLabel="Program monitor"
-            badge="1920×1080 · 30fps"
-            maxHeight={280}
-            showThirds
-            testID="editor-preview"
-          >
-            <SampleFrame uri={host.frameUri} />
-          </PreviewSurface>
-          <TransportBar
-            currentTime={host.playheadTime}
-            duration={host.duration}
-            inPoint={host.inPoint}
-            levels={host.levels}
-            loop={host.loop}
-            markers={sampleScrubMarkers}
-            onMarkIn={() => host.setInPoint(host.playheadTime)}
-            onMarkOut={() => host.setOutPoint(host.playheadTime)}
-            onPlayPause={host.togglePlay}
-            onRateChange={host.setRate}
-            onSeek={host.setPlayheadTime}
-            onStepFrame={host.stepFrame}
-            onToggleLoop={host.toggleLoop}
-            outPoint={host.outPoint}
-            peakHolds={host.peakHolds}
-            playing={host.playing}
-            rate={host.rate}
-            testID="editor-transport"
-            trailing={
-              <Button
-                onPress={host.openExport}
-                size="sm"
-                testID="editor-export-open"
-                tone="primary"
-              >
-                Export
-              </Button>
-            }
-          />
-        </View>
-        <Inspector
-          accessibilityLabel="Clip properties"
-          keyframedIds={host.keyframedIds}
-          maxHeight={300}
-          onChange={host.setProperty}
-          onReset={host.resetProperty}
-          onToggleKeyframe={host.toggleKeyframe}
-          onToggleSection={host.toggleSection}
-          sections={host.inspectorSections}
-          style={styles.inspector}
-          testID="editor-inspector"
-          title={host.selectedClip?.label ?? "Nothing selected"}
-        />
+        {bin}
+        {monitor}
+        {inspector}
       </View>
       <View style={styles.lower}>
-        <EffectsRack
-          accessibilityLabel="Effects"
-          addOptions={sampleEffectOptions}
-          effects={host.effects}
-          onAdd={() => undefined}
-          onPropertyChange={host.setEffectProperty}
-          onRemove={host.removeEffect}
-          onReorder={host.reorderEffects}
-          onToggleCollapsed={host.toggleEffectCollapsed}
-          onToggleEnabled={host.toggleEffect}
-          size="sm"
-          style={styles.rack}
-          testID="editor-effects"
-          title="Effects"
-        />
-        <KeyframeEditor
-          accessibilityLabel="Keyframes"
-          endTime={host.duration}
-          onKeyframeMove={host.updateKeyframe}
-          onKeyframeRemove={host.deleteKeyframe}
-          onSelectionChange={host.setSelectedKeyframeIds}
-          pixelsPerSecond={host.pixelsPerSecond}
-          playheadTime={host.playheadTime}
-          selectedKeyframeIds={host.selectedKeyframeIds}
-          size="sm"
-          style={styles.keyframes}
-          testID="editor-keyframes"
-          tracks={host.keyframeTracks}
-        />
+        {effects}
+        {keyframes}
       </View>
-      <Timeline
-        accessibilityLabel="Sequence"
-        clips={host.clips}
-        duration={host.duration}
-        markers={host.markers}
-        onEdit={host.applyEdit}
-        onSeek={host.setPlayheadTime}
-        onSelectionChange={host.setSelectedClipIds}
-        onTrackToggle={host.toggleTrack}
-        pixelsPerSecond={host.pixelsPerSecond}
-        playheadTime={host.playheadTime}
-        ripple={host.ripple}
-        selectedClipIds={host.selectedClipIds}
-        testID="editor-timeline"
-        tool={host.tool}
-        tracks={host.tracks}
-      />
+      {timeline}
       <ExportDialogHost host={host} />
     </View>
   );
 }
 
-function FullEditorStory({ theme }: { theme?: SharedUiTheme }) {
+function FullEditorStory({
+  compact,
+  theme,
+}: {
+  compact?: boolean;
+  theme?: SharedUiTheme;
+}) {
   return (
     <StorySurface theme={theme}>
-      <FullEditor />
+      <FullEditor compact={compact} />
     </StorySurface>
   );
 }
@@ -557,16 +644,29 @@ export const FullEditorDark: Story = {
   render: () => <FullEditorStory theme={darkSharedUiTheme} />,
 };
 
+/**
+ * The same editor at a handset width, with the side panes folded into tabs.
+ * Forced rather than left to the viewport so the layout is always exercised,
+ * including by the axe sweep.
+ */
+export const FullEditorCompact: Story = {
+  name: "Full editor (compact)",
+  render: () => <FullEditorStory compact />,
+};
+
 const styles = StyleSheet.create({
   bin: { width: 210 },
   binPanel: { flexGrow: 1, minWidth: 240 },
   binRow: { flexDirection: "row", gap: 16, maxWidth: 760 },
+  compactStack: { gap: 10 },
   editor: { gap: 12, maxWidth: 1120 },
+  editorCompact: { gap: 10, maxWidth: 390 },
   effectsPanel: { flexGrow: 1, minWidth: 260 },
   effectsRow: { flexDirection: "row", gap: 16, maxWidth: 680 },
   exportStack: { alignItems: "flex-start", gap: 12 },
   keyframeStack: { gap: 8, maxWidth: 940 },
   keyframes: { flex: 1, overflow: "hidden" },
+  keyframesCompact: { overflow: "hidden" },
   lower: { flexDirection: "row", gap: 12 },
   rack: { width: 260 },
   inspector: { width: 240 },

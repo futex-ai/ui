@@ -1,6 +1,6 @@
 # Video editor components
 
-Status: in progress. Design spec:
+Status: complete — M1–M8 delivered and `npm run verify` green. Design spec:
 [`docs/superpowers/specs/2026-08-12-video-editor-ui-design.md`](../docs/superpowers/specs/2026-08-12-video-editor-ui-design.md).
 
 Two new families: a reusable `@firna/ui/timeline`, and `@firna/ui/video-editor`
@@ -112,10 +112,11 @@ and snap indicator.
 
 ## M8 — Combined story, docs, and release readiness
 
-- [ ] Finish `Full editor` and `Full editor (dark)` stories
-- [ ] Add a responsive/mobile layout branch to the combined story
-- [ ] Write `src/video-editor/README.md`
-- [ ] Update `src/timeline/README.md` for the editing model
-- [ ] Update the root `README.md` component list
-- [ ] Move this plan to Completed in `plans/README.md`
-- [ ] Final `npm run verify` green
+- [x] Finish `Full editor` and `Full editor (dark)` stories
+- [x] Add a responsive/mobile layout branch to the combined story
+- [x] Add `tests/browser/videoEditor.spec.ts` — the assembled editor end to end
+- [x] Write `src/video-editor/README.md`
+- [x] Update `src/timeline/README.md` for the editing model
+- [x] Update the root `README.md` component list
+- [x] Move this plan to Completed in `plans/README.md`
+- [x] Final `npm run verify` green
