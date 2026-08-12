@@ -2,8 +2,10 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Image, StyleSheet, Text, View } from "react-native";
 
 import {
+  Button,
   darkSharedUiTheme,
   EffectsRack,
+  ExportDialog,
   Inspector,
   KeyframeEditor,
   LevelMeter,
@@ -17,8 +19,8 @@ import {
 } from "../index";
 
 import { StorySurface } from "./sharedExamples";
-import { useVideoEditorHost } from "./videoEditorHost";
-import { sampleEffectOptions } from "./videoEditorEffects";
+import { useVideoEditorHost, type VideoEditorHost } from "./videoEditorHost";
+import { sampleEffectOptions, sampleExportPresets } from "./videoEditorEffects";
 import {
   sampleAssets,
   sampleFrameAt,
@@ -337,6 +339,63 @@ function KeyframeHost() {
   );
 }
 
+export const Export: Story = {
+  render: () => (
+    <StorySurface>
+      <ExportHost />
+    </StorySurface>
+  ),
+};
+
+function ExportHost() {
+  const host = useVideoEditorHost();
+  return (
+    <View style={styles.exportStack}>
+      <Button onPress={host.openExport} tone="primary">
+        Open export
+      </Button>
+      <ExportDialogHost host={host} />
+    </View>
+  );
+}
+
+/**
+ * The dialog is the same wherever it is mounted, so both the standalone story
+ * and the assembled editor render it through this one component.
+ */
+function ExportDialogHost({ host }: { host: VideoEditorHost }) {
+  return (
+    <ExportDialog
+      duration={host.duration}
+      inPoint={host.inPoint}
+      onCancel={host.cancelExport}
+      onClose={host.closeExport}
+      onPresetChange={(presetId) => {
+        host.setExportPresetId(presetId);
+        const preset = sampleExportPresets.find(
+          (entry) => entry.id === presetId,
+        );
+        if (preset) {
+          host.setExportSettings((current) => ({
+            ...current,
+            ...preset.settings,
+          }));
+        }
+      }}
+      onSettingsChange={host.setExportSettings}
+      onStart={host.startExport}
+      outPoint={host.outPoint}
+      presetId={host.exportPresetId}
+      presets={sampleExportPresets}
+      progress={host.exportProgress}
+      settings={host.exportSettings}
+      status={host.exportStatus}
+      testID="export-dialog"
+      visible={host.exportOpen}
+    />
+  );
+}
+
 // --- the assembled editor --------------------------------------------------
 
 /**
@@ -401,6 +460,16 @@ function FullEditor() {
             playing={host.playing}
             rate={host.rate}
             testID="editor-transport"
+            trailing={
+              <Button
+                onPress={host.openExport}
+                size="sm"
+                testID="editor-export-open"
+                tone="primary"
+              >
+                Export
+              </Button>
+            }
           />
         </View>
         <Inspector
@@ -465,6 +534,7 @@ function FullEditor() {
         tool={host.tool}
         tracks={host.tracks}
       />
+      <ExportDialogHost host={host} />
     </View>
   );
 }
@@ -494,6 +564,7 @@ const styles = StyleSheet.create({
   editor: { gap: 12, maxWidth: 1120 },
   effectsPanel: { flexGrow: 1, minWidth: 260 },
   effectsRow: { flexDirection: "row", gap: 16, maxWidth: 680 },
+  exportStack: { alignItems: "flex-start", gap: 12 },
   keyframeStack: { gap: 8, maxWidth: 940 },
   keyframes: { flex: 1, overflow: "hidden" },
   lower: { flexDirection: "row", gap: 12 },

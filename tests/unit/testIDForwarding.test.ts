@@ -93,6 +93,7 @@ const FORWARDING_FILES = [
   "toast/ToastViewport.web.tsx",
   "typography/Typography.tsx",
   "video-editor/EffectsRack.tsx",
+  "video-editor/ExportDialog.tsx",
   "video-editor/Inspector.tsx",
   "video-editor/InspectorRow.tsx",
   "video-editor/KeyframeEditor.tsx",

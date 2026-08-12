@@ -103,11 +103,12 @@ and snap indicator.
 
 ## M7 — Export dialog
 
-- [ ] Add `src/video-editor/exportEstimate.ts` — bitrate/duration → size and time estimates
-- [ ] Add `src/video-editor/ExportDialog.tsx` — presets, format fields, range, estimate, progress, cancel
-- [ ] Add `tests/unit/exportEstimate.test.ts`
-- [ ] Wire an Export action into the combined story
-- [ ] `npm run verify` green
+- [x] Add `src/video-editor/exportEstimate.ts` — bitrate/duration → size and time estimates
+- [x] Add `src/video-editor/ExportDialog.tsx` — presets, format fields, range, estimate, progress, cancel
+- [x] Add `tests/unit/exportEstimate.test.ts`
+- [x] Wire an Export action into the combined story
+- [x] Add `sampleExportPresets` and a simulated encode to the story host
+- [x] `npm run verify` green
 
 ## M8 — Combined story, docs, and release readiness
 

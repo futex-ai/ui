@@ -5,7 +5,12 @@
  * curve editor, and a hand-authored chain reads more like a real project than
  * anything generated would.
  */
-import type { EffectEntry, EffectOption, KeyframeTrack } from "../index";
+import type {
+  EffectEntry,
+  EffectOption,
+  ExportPreset,
+  KeyframeTrack,
+} from "../index";
 
 export const sampleEffects: EffectEntry[] = [
   {
@@ -106,5 +111,48 @@ export const sampleKeyframeTracks: KeyframeTrack[] = [
     min: 90,
     propertyId: "scale",
     unit: "%",
+  },
+];
+
+/** Export presets offered by the stories' dialog. */
+export const sampleExportPresets: ExportPreset[] = [
+  {
+    detail: "1080p · H.264",
+    id: "preset-web",
+    label: "Web",
+    settings: {
+      audioBitrateKbps: 192,
+      format: "mp4",
+      fps: 30,
+      height: 1080,
+      videoBitrateKbps: 12_000,
+      width: 1920,
+    },
+  },
+  {
+    detail: "4K · ProRes",
+    id: "preset-master",
+    label: "Master",
+    settings: {
+      audioBitrateKbps: 512,
+      format: "mov",
+      fps: 30,
+      height: 2160,
+      videoBitrateKbps: 90_000,
+      width: 3840,
+    },
+  },
+  {
+    detail: "720p · VP9",
+    id: "preset-preview",
+    label: "Preview",
+    settings: {
+      audioBitrateKbps: 128,
+      format: "webm",
+      fps: 30,
+      height: 720,
+      videoBitrateKbps: 4_000,
+      width: 1280,
+    },
   },
 ];

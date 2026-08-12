@@ -1,4 +1,5 @@
 export * from "./EffectsRack";
+export * from "./ExportDialog";
 export * from "./Inspector";
 export * from "./InspectorRow";
 export * from "./KeyframeEditor";
@@ -11,6 +12,8 @@ export * from "./Scrubber";
 export * from "./TransportBar";
 export * from "./TransportButton";
 export * from "./effectsStyles";
+export * from "./exportEstimate";
+export * from "./exportStyles";
 export * from "./inspectorModel";
 export * from "./inspectorStyles";
 export * from "./keyframeCurve";

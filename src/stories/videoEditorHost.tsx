@@ -17,6 +17,8 @@ import {
   DEFAULT_FPS,
   frameDuration,
   type EffectEntry,
+  type ExportSettings,
+  type ExportStatus,
   type InspectorValue,
   type KeyframeTrack,
   type MediaBinView,
@@ -79,6 +81,37 @@ export function useVideoEditorHost() {
   const [keyframeTracks, setKeyframeTracks] =
     useState<KeyframeTrack[]>(sampleKeyframeTracks);
   const [selectedKeyframeIds, setSelectedKeyframeIds] = useState<string[]>([]);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportStatus, setExportStatus] = useState<ExportStatus>("idle");
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportPresetId, setExportPresetId] = useState("preset-web");
+  const [exportSettings, setExportSettings] = useState<ExportSettings>({
+    audioBitrateKbps: 192,
+    format: "mp4",
+    fps: 30,
+    height: 1080,
+    range: "whole",
+    videoBitrateKbps: 12_000,
+    width: 1920,
+  });
+
+  // A simulated encode, so the dialog's progress and finished states can be
+  // seen without the story owning an encoder.
+  useEffect(() => {
+    if (exportStatus !== "exporting") {
+      return undefined;
+    }
+    const timer = setInterval(() => {
+      setExportProgress((current) => {
+        if (current >= 1) {
+          setExportStatus("done");
+          return 1;
+        }
+        return Math.min(1, current + 0.08);
+      });
+    }, 220);
+    return () => clearInterval(timer);
+  }, [exportStatus]);
 
   useEffect(() => {
     if (!playing) {
@@ -213,6 +246,27 @@ export function useVideoEditorHost() {
   return {
     applyEdit,
     assetQuery,
+    exportOpen,
+    exportPresetId,
+    exportProgress,
+    exportSettings,
+    exportStatus,
+    setExportPresetId,
+    setExportSettings,
+    cancelExport: () => {
+      setExportStatus("idle");
+      setExportProgress(0);
+    },
+    closeExport: () => setExportOpen(false),
+    openExport: () => {
+      setExportStatus("idle");
+      setExportProgress(0);
+      setExportOpen(true);
+    },
+    startExport: () => {
+      setExportProgress(0);
+      setExportStatus("exporting");
+    },
     deleteKeyframe,
     effects,
     keyframeTracks,
