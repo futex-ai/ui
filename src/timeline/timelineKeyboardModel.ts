@@ -8,7 +8,77 @@
  * pure so it can be unit tested without a DOM.
  */
 import { clipsOnTrack, type TimelineTrackLayout } from "./timelineLayout";
+import { frameDuration } from "./timelineTime";
 import { clipEnd, type TimelineClipData } from "./timelineTypes";
+
+/**
+ * What an editing key press means. Navigation keys are deliberately *not* in
+ * here: bare arrows move the roving focus, which is what the rest of the
+ * library does and what a screen-reader user expects from a composite widget.
+ * Editing therefore lives on modified arrows and on the single-letter keys a
+ * video editor already uses.
+ */
+export type TimelineKeyIntent =
+  /** Slide the selection along the timeline. */
+  | { type: "nudge"; deltaTime: number }
+  /** Pull one edge of the focused clip. */
+  | { type: "trim"; deltaTime: number; edge: "end" | "start" }
+  /** Razor the focused clip at the playhead. */
+  | { type: "split" }
+  /** Delete the selection. */
+  | { type: "remove" };
+
+/** Modifier state read from the key event. */
+export type TimelineKeyModifiers = {
+  /** Alt/Option — turns an arrow from navigation into a nudge. */
+  alt?: boolean;
+  /** Shift — coarsens a nudge or trim from one frame to one second. */
+  shift?: boolean;
+};
+
+/**
+ * Maps a key press to an edit intent, or `null` when the key is not an editing
+ * key (so the caller can fall through to focus navigation).
+ *
+ * - `Alt` + Left/Right nudges by a frame, `Alt+Shift` by a second.
+ * - `[` and `]` pull the head and tail in, `Shift` reverses them so both edges
+ *   can be pushed out as well as pulled in.
+ * - `S` splits at the playhead; `Delete` / `Backspace` removes.
+ */
+export function keyToEditIntent(
+  key: string,
+  modifiers: TimelineKeyModifiers,
+  fps: number,
+): TimelineKeyIntent | null {
+  const step = modifiers.shift ? 1 : frameDuration(fps);
+
+  if (modifiers.alt && (key === "ArrowLeft" || key === "ArrowRight")) {
+    return { deltaTime: key === "ArrowRight" ? step : -step, type: "nudge" };
+  }
+  switch (key) {
+    case "[":
+      // Shift+[ pushes the head back out; bare [ pulls it in.
+      return {
+        deltaTime: modifiers.shift ? -step : step,
+        edge: "start",
+        type: "trim",
+      };
+    case "]":
+      return {
+        deltaTime: modifiers.shift ? step : -step,
+        edge: "end",
+        type: "trim",
+      };
+    case "s":
+    case "S":
+      return { type: "split" };
+    case "Delete":
+    case "Backspace":
+      return { type: "remove" };
+    default:
+      return null;
+  }
+}
 
 /** The clip a navigation key should move focus to, or `null` to ignore it. */
 export function nextFocusedClipId(

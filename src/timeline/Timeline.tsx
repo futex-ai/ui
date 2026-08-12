@@ -48,7 +48,11 @@ import {
   resolveClipColors,
   timelineSizing,
 } from "./timelineStyles";
+import { announce } from "../announcer";
+
+import { describeTimelineEdit } from "./timelineAnnounce";
 import { applyTimelineEdits } from "./timelineEditApply";
+import { useTimelineKeyboard } from "./useTimelineKeyboard";
 import { resolveClipSelection } from "./timelineSelection";
 import { useTimelineDrag } from "./useTimelineDrag";
 import { DEFAULT_FPS, xToTime } from "./timelineTime";
@@ -173,6 +177,20 @@ export function Timeline({
     start: 0,
   });
 
+  // Every committed edit is narrated, whether it came from a pointer, a touch,
+  // or a key: an edit that only shows as clips shifting on screen is invisible
+  // to a screen-reader user (WCAG 2.1 — 4.1.3 Status Messages, AA).
+  const handleEdit = useCallback(
+    (edit: TimelineEdit) => {
+      onEdit?.(edit);
+      const sentence = describeTimelineEdit(edit, { clips, fps, tracks });
+      if (sentence) {
+        announce(sentence);
+      }
+    },
+    [clips, fps, onEdit, tracks],
+  );
+
   const drag = useTimelineDrag({
     clips,
     duration,
@@ -181,7 +199,7 @@ export function Timeline({
     handleWidth: metrics.handleWidth,
     layouts,
     markers,
-    onEdit,
+    onEdit: onEdit ? handleEdit : undefined,
     onSelectionChange,
     pixelsPerSecond,
     playheadTime,
@@ -226,10 +244,34 @@ export function Timeline({
 
   const trackOrder = useMemo(() => trackOrderOf(layouts), [layouts]);
 
+  const keyboard = useTimelineKeyboard({
+    clips,
+    focusedClipId: activeClipId,
+    fps,
+    onEdit: onEdit ? handleEdit : undefined,
+    playheadTime,
+    ripple,
+    selectedClipIds,
+    trackOrder,
+    tracks,
+  });
+
   const handleClipKeyDown = useCallback(
     (event: TimelineClipKeyEvent) => {
       const key = event.nativeEvent?.key ?? event.key;
       if (!key) {
+        return;
+      }
+      // Editing keys win; anything left over falls through to focus navigation,
+      // so the bare arrows keep their roving-focus meaning.
+      if (
+        keyboard.handleEditKey(key, {
+          alt: event.altKey,
+          shift: event.shiftKey,
+        })
+      ) {
+        event.preventDefault?.();
+        event.stopPropagation?.();
         return;
       }
       const next = nextFocusedClipId(key, activeClipId, clips, trackOrder);
@@ -241,7 +283,7 @@ export function Timeline({
       setFocusedClipId(next);
       clipNodes.current.get(next)?.focus?.();
     },
-    [activeClipId, clips, trackOrder],
+    [activeClipId, clips, keyboard, trackOrder],
   );
 
   const handleClipPress = useCallback(

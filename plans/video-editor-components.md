@@ -56,15 +56,16 @@ and snap indicator.
 
 ## M3 — Native touch, keyboard, and accessibility
 
-- [ ] Implement the native `useTimelineDrag` with `PanResponder` move and trim gestures
-- [ ] Add `src/timeline/timelineKeyboardModel.ts` — key → edit intent
-- [ ] Wire roving-tabindex focus across clips, arrow nudge, `[` / `]` trim, `S` split, `Delete` remove
-- [ ] Announce every committed edit through `announce`
-- [ ] Give the ruler `role="slider"` with literal `aria-value*` props
-- [ ] Add `tests/unit/timelineKeyboard.test.ts`
-- [ ] Add `tests/browser/timeline.spec.ts` — drag, trim, marquee, keyboard nudge
-- [ ] Confirm the axe sweep stays green for the timeline stories
-- [ ] `npm run verify` green
+- [x] Implement the native `useTimelineDrag` with `PanResponder` move and trim gestures
+- [x] Add `src/timeline/timelineAnnounce.ts` and `src/timeline/useTimelineKeyboard.ts`
+- [x] Add `src/timeline/timelineKeyboardModel.ts` — key → edit intent
+- [x] Wire roving-tabindex focus across clips, arrow nudge, `[` / `]` trim, `S` split, `Delete` remove
+- [x] Announce every committed edit through `announce`
+- [x] Give the ruler `role="slider"` with literal `aria-value*` props
+- [x] Add `tests/unit/timelineKeyboard.test.ts`
+- [x] Add `tests/browser/timeline.spec.ts` — drag, trim, marquee, keyboard nudge
+- [x] Confirm the axe sweep stays green for the timeline stories
+- [x] `npm run verify` green
 
 ## M4 — Preview, transport, and metering
 

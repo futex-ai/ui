@@ -209,3 +209,99 @@ test("clips are one tab stop with arrow-key roving focus", async ({ page }) => {
   await page.keyboard.press("ArrowRight");
   await expect(page.getByTestId("timeline-clip-shot-interview")).toBeFocused();
 });
+
+test("alt-arrow nudges the focused clip by a frame", async ({ page }) => {
+  await page.goto(STORY);
+  const clip = page.getByTestId("timeline-clip-shot-interview");
+  await clip.focus();
+  const before = await clipRange(page, "shot-interview");
+
+  await page.keyboard.press("Alt+ArrowRight");
+
+  // A frame at 30fps moves the clip's published timecode by exactly one frame:
+  // the clip started at 8s, so it now starts one frame later.
+  const after = await clipRange(page, "shot-interview");
+  expect(after).not.toEqual(before);
+  expect(after).toContain("00:00:08:01");
+});
+
+test("shift widens a nudge from a frame to a second", async ({ page }) => {
+  await page.goto(STORY);
+  await page.getByTestId("timeline-clip-shot-interview").focus();
+  await page.keyboard.press("Alt+Shift+ArrowRight");
+  expect(await clipRange(page, "shot-interview")).toContain("00:00:09:00");
+});
+
+test("a nudge moves only the focused clip when it is not in the selection", async ({
+  page,
+}) => {
+  await page.goto(STORY);
+  // The story opens with `shot-interview` selected; focus a different clip.
+  const other = page.getByTestId("timeline-clip-shot-harbour");
+  await other.focus();
+  const selectedBefore = await clipRange(page, "shot-interview");
+
+  await page.keyboard.press("Alt+ArrowRight");
+
+  expect(await clipRange(page, "shot-harbour")).toContain("00:00:00:01");
+  expect(await clipRange(page, "shot-interview")).toEqual(selectedBefore);
+});
+
+test("the bracket keys trim the focused clip's edges", async ({ page }) => {
+  await page.goto(STORY);
+  const clip = page.getByTestId("timeline-clip-shot-interview");
+  await clip.focus();
+  const before = await clip.boundingBox();
+
+  // Ten frames off the tail is a third of a second.
+  for (let press = 0; press < 10; press += 1) {
+    await page.keyboard.press("]");
+  }
+
+  const after = await page
+    .getByTestId("timeline-clip-shot-interview")
+    .boundingBox();
+  expect(after?.width ?? 0).toBeLessThan(before?.width ?? 0);
+  expect(Math.abs((after?.x ?? 0) - (before?.x ?? 0))).toBeLessThan(2);
+});
+
+test("S splits the focused clip at the playhead", async ({ page }) => {
+  await page.goto(STORY);
+  // The story's playhead sits at 6.2s, inside the opening picture clip.
+  await page.getByTestId("timeline-clip-shot-harbour").focus();
+  await page.keyboard.press("s");
+
+  await expect(page.getByTestId("timeline-clip-shot-harbour-2")).toBeVisible();
+});
+
+test("Delete removes the focused clip and announces it", async ({ page }) => {
+  await page.goto(STORY);
+  await page.getByTestId("timeline-clip-shot-cutaway").focus();
+  await page.keyboard.press("Delete");
+
+  await expect(page.getByTestId("timeline-clip-shot-cutaway")).toHaveCount(0);
+  await expect(page.locator("#firna-ui-live-region-polite")).toContainText(
+    "Removed Cutaway",
+  );
+});
+
+test("a locked clip refuses a keyboard edit and says why", async ({ page }) => {
+  await page.goto(STORY);
+  await page.getByTestId("timeline-clip-music-bed").focus();
+  await page.keyboard.press("Delete");
+
+  await expect(page.getByTestId("timeline-clip-music-bed")).toBeVisible();
+  await expect(page.locator("#firna-ui-live-region-polite")).toContainText(
+    "Music bed is locked",
+  );
+});
+
+test("a pointer edit is announced too, not just a keyboard one", async ({
+  page,
+}) => {
+  await page.goto(STORY);
+  await dragBy(page, page.getByTestId("timeline-clip-shot-interview"), 72);
+  await expect(page.locator("#firna-ui-live-region-polite")).toContainText(
+    "Moved Interview A",
+  );
+});
