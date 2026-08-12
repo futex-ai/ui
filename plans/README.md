@@ -2,6 +2,7 @@
 
 ## Active
 
+- [Video editor components](video-editor-components.md) — two new families, `@firna/ui/timeline` (controlled multi-track timeline with pro edits) and `@firna/ui/video-editor` (preview, transport, media bin, inspector, effects rack, keyframe editor, export dialog), plus a combined `Full editor` Storybook demo in light and dark. M1–M8.
 - [Disable the focus ring](disable-focus-ring.md) — M1–M5 delivered: a theme `focusRing` kill switch + per-instance `disableFocusRing` prop on every ring-bearer, backed by one `useFocusRing({ disabled })` / `ringEnabled` / `webOutlineReset` primitive; disabled rings restore the UA outline (WCAG 2.4.7). Unit tests + a `Focus ring/Examples` story added. Deferred: `DateField`/`DateRangeField` composite forwarding.
 - [SortableList component](sortable-list-component.md) — M1 delivered (web pointer + keyboard drag, optional start/end grab handle, vertical/horizontal flow) and `npm run verify` green; M2 (native drag / touch reordering + RTL) deferred.
 - [Easier Component Testing Without Test Ids](easier-component-testing-without-testid.md) — Milestones 1–3 (dropdown, radio, segmented) delivered and `npm run verify` green; Milestones 4–8 remaining.

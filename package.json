@@ -180,6 +180,11 @@
       "react-native": "./dist/theme.js",
       "import": "./dist/node/theme.js"
     },
+    "./timeline": {
+      "types": "./dist/node/timeline/index.d.ts",
+      "react-native": "./dist/timeline/index.js",
+      "import": "./dist/node/timeline/index.js"
+    },
     "./toast": {
       "types": "./dist/node/toast/index.d.ts",
       "react-native": "./dist/toast/index.js",
