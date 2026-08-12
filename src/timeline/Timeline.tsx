@@ -27,6 +27,7 @@ import type { FocusableRef } from "../keyboardNavigation";
 import { useSharedUiTheme } from "../theme";
 
 import { TimelineClip, type TimelineClipKeyEvent } from "./TimelineClip";
+import { TimelineMarquee, TimelineSnapLine } from "./TimelineMarquee";
 import { TimelinePlayhead } from "./TimelinePlayhead";
 import { TimelineRuler } from "./TimelineRuler";
 import {
@@ -47,10 +48,15 @@ import {
   resolveClipColors,
   timelineSizing,
 } from "./timelineStyles";
+import { applyTimelineEdits } from "./timelineEditApply";
+import { resolveClipSelection } from "./timelineSelection";
+import { useTimelineDrag } from "./useTimelineDrag";
 import { DEFAULT_FPS, xToTime } from "./timelineTime";
 import type {
   TimelineClipData,
+  TimelineEdit,
   TimelineMarker,
+  TimelineTool,
   TimelineTrack,
 } from "./timelineTypes";
 
@@ -76,13 +82,35 @@ export type TimelineProps = {
   selectedClipIds?: readonly string[];
   /** Height cap in px; beyond it the lanes scroll vertically. */
   maxHeight?: number;
-  /** Show grab affordances at clip edges. Default `true` when `onEdit` is set. */
+  /** Show grab affordances at clip edges. Default `true`. */
   trimmable?: boolean;
+  /**
+   * The active pointer tool. `select` drags and trims, `razor` splits on click,
+   * `slip` slides a clip's source window, and `roll` drags a shared boundary.
+   * Defaults to `select`.
+   */
+  tool?: TimelineTool;
+  /**
+   * Push the clips downstream of an edit aside instead of overlapping them.
+   * Only meaningful alongside `applyTimelineEdits`, which implements it.
+   */
+  ripple?: boolean;
+  /**
+   * Snap edits to clip edges, markers, the playhead, zero, and the project end.
+   * Default `true`.
+   */
+  snapping?: boolean;
 
   onSeek?: (time: number) => void;
   onSelectionChange?: (clipIds: string[]) => void;
   onClipPress?: (clip: TimelineClipData) => void;
   onTrackToggle?: (trackId: string, flag: TimelineTrackFlag) => void;
+  /**
+   * Reports the edit a gesture resolved to. Supplying it turns editing on; the
+   * timeline never mutates the clips itself. Apply it with
+   * {@link applyTimelineEdits}.
+   */
+  onEdit?: (edit: TimelineEdit) => void;
 
   /** Placeholder when there are no tracks at all. */
   emptyLabel?: string;
@@ -107,15 +135,19 @@ export function Timeline({
   markers = [],
   maxHeight,
   onClipPress,
+  onEdit,
   onSeek,
   onSelectionChange,
   onTrackToggle,
   pixelsPerSecond = 60,
   playheadTime,
+  ripple = false,
   selectedClipIds = [],
   size = "md",
+  snapping = true,
   style,
   testID,
+  tool = "select",
   tracks,
   trimmable = true,
 }: TimelineProps) {
@@ -140,9 +172,38 @@ export function Timeline({
     end: Number.POSITIVE_INFINITY,
     start: 0,
   });
+
+  const drag = useTimelineDrag({
+    clips,
+    duration,
+    enabled: Boolean(onEdit),
+    fps,
+    handleWidth: metrics.handleWidth,
+    layouts,
+    markers,
+    onEdit,
+    onSelectionChange,
+    pixelsPerSecond,
+    playheadTime,
+    ripple,
+    selectedClipIds,
+    snapping,
+    tool,
+    tracks,
+  });
+
+  // The in-flight gesture is previewed by running its edit through the very
+  // reducer the consumer will use, so what the drag shows and what the drop
+  // produces cannot disagree. Nothing is mutated: this is a derived array.
+  const preview = drag.dragState.preview;
+  const rendered = useMemo(
+    () => (preview ? applyTimelineEdits(clips, [preview], { tracks }) : clips),
+    [clips, preview, tracks],
+  );
+
   const shown = useMemo(
-    () => visibleClips(clips, viewport.start, viewport.end),
-    [clips, viewport.end, viewport.start],
+    () => visibleClips(rendered, viewport.start, viewport.end),
+    [rendered, viewport.end, viewport.start],
   );
 
   const selected = useMemo(() => new Set(selectedClipIds), [selectedClipIds]);
@@ -185,11 +246,18 @@ export function Timeline({
 
   const handleClipPress = useCallback(
     (clip: TimelineClipData) => {
+      // A committed drag produces a click too; swallow that one so a clip that
+      // was only dragged is not also treated as opened.
+      if (drag.consumePressSuppression()) {
+        return;
+      }
       setFocusedClipId(clip.id);
-      onSelectionChange?.([clip.id]);
+      if (drag.selectsOnPress) {
+        onSelectionChange?.(resolveClipSelection(selectedClipIds, clip, clips));
+      }
       onClipPress?.(clip);
     },
-    [onClipPress, onSelectionChange],
+    [clips, drag, onClipPress, onSelectionChange, selectedClipIds],
   );
 
   const handleScroll = useCallback(
@@ -212,7 +280,11 @@ export function Timeline({
   }
 
   const lanes = (
-    <View style={[styles.lanes, { height: lanesHeight, width }]}>
+    <View
+      style={[styles.lanes, { height: lanesHeight, width }]}
+      testID={testID ? `${testID}-lanes` : undefined}
+      {...drag.bindLanes}
+    >
       {layouts.map((layout) => {
         const track = trackById.get(layout.trackId);
         return (
@@ -255,15 +327,25 @@ export function Timeline({
                 clipNodes.current.delete(clip.id);
               }
             }}
-            selected={selected.has(clip.id)}
+            selected={
+              selected.has(clip.id) ||
+              drag.dragState.draggedIds.includes(clip.id)
+            }
             size={size}
             tabIndex={clip.id === activeClipId ? 0 : -1}
             testID={`${CLIP_TESTID_PREFIX}${clip.id}`}
             trackName={track.name}
-            trimmable={trimmable && !track.locked}
+            trimmable={trimmable && Boolean(onEdit) && !track.locked}
           />
         );
       })}
+      {drag.dragState.marquee ? (
+        <TimelineMarquee
+          pixelsPerSecond={pixelsPerSecond}
+          rect={drag.dragState.marquee}
+          testID={testID ? `${testID}-marquee` : undefined}
+        />
+      ) : null}
     </View>
   );
 
@@ -294,6 +376,14 @@ export function Timeline({
           width={width}
         />
         {lanes}
+        {drag.dragState.snapTarget !== null ? (
+          <TimelineSnapLine
+            height={metrics.rulerHeight + lanesHeight}
+            pixelsPerSecond={pixelsPerSecond}
+            testID={testID ? `${testID}-snap` : undefined}
+            time={drag.dragState.snapTarget}
+          />
+        ) : null}
         <TimelinePlayhead
           height={lanesHeight}
           pixelsPerSecond={pixelsPerSecond}

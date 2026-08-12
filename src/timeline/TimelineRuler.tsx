@@ -11,7 +11,6 @@ import { useCallback, useMemo } from "react";
 import {
   type GestureResponderEvent,
   Platform,
-  Pressable,
   type StyleProp,
   Text,
   View,
@@ -109,12 +108,21 @@ export function TimelineRuler({
 
   const seekTo = useCallback(
     (time: number) => {
+      // A non-finite reading must never reach the playhead: it would poison the
+      // published `aria-valuenow` and every downstream timecode with NaN.
+      if (!Number.isFinite(time)) {
+        return;
+      }
       onSeek?.(Math.min(Math.max(0, time), Math.max(0, duration)));
     },
     [duration, onSeek],
   );
 
-  const handlePress = useCallback(
+  // Seeking runs off the responder rather than `Pressable`'s `onPress`, for two
+  // reasons: react-native-web's press event carries no `locationX` (so a press
+  // handler cannot tell *where* the ruler was clicked), and the responder gives
+  // continuous drag-scrubbing for free on both platforms.
+  const handleSeekAt = useCallback(
     (event: GestureResponderEvent) => {
       seekTo(xToTime(event.nativeEvent.locationX, pixelsPerSecond));
     },
@@ -165,14 +173,16 @@ export function TimelineRuler({
   const labelStyle = { fontSize: Math.max(9, metrics.fontSize - 1) };
 
   return (
-    <Pressable
+    <View
       accessibilityLabel={accessibilityLabel}
       accessibilityRole={web ? undefined : "adjustable"}
       accessibilityValue={scrub.accessibilityValue}
-      disabled={!onSeek}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
-      onPress={handlePress}
+      onMoveShouldSetResponder={() => Boolean(onSeek)}
+      onResponderGrant={handleSeekAt}
+      onResponderMove={handleSeekAt}
+      onStartShouldSetResponder={() => Boolean(onSeek)}
       style={[
         styles.ruler,
         { height: metrics.rulerHeight, width },
@@ -180,6 +190,7 @@ export function TimelineRuler({
         focus.focused && focus.ringEnabled ? styles.rulerFocused : null,
         style,
       ]}
+      tabIndex={onSeek ? 0 : undefined}
       testID={testID}
       {...(web ? { onKeyDown: handleKeyDown } : {})}
       {...sliderRoleProps(web)}
@@ -233,6 +244,6 @@ export function TimelineRuler({
           ]}
         />
       ))}
-    </Pressable>
+    </View>
   );
 }

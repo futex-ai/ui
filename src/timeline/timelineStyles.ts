@@ -238,7 +238,6 @@ export function createTimelineStyles(theme: SharedUiTheme) {
     },
     clipSelected: { borderWidth: 2 },
     clipFocused: focusRingStyleFor({ color: theme.colors.primary, offset: -2 }),
-    clipDragging: { opacity: 0.4 },
     clipHeader: { alignItems: "center", flexDirection: "row", gap: 4 },
     clipLabel: { ...baseText, flexShrink: 1, fontWeight: "700" },
     // Deliberately no `opacity` here. Fading the duration to a "secondary"
@@ -296,11 +295,6 @@ export function createTimelineStyles(theme: SharedUiTheme) {
       borderRadius: theme.radii.sm,
       borderWidth: 1,
       opacity: 0.5,
-      position: "absolute",
-    },
-    ghost: {
-      borderRadius: 6,
-      borderWidth: 2,
       position: "absolute",
     },
     empty: {

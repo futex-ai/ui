@@ -61,8 +61,6 @@ export type TimelineClipProps = {
   fps?: number;
   /** Draw the selection border and ring. */
   selected?: boolean;
-  /** Dim the clip while a drag preview stands in for it. */
-  dragging?: boolean;
   /** Show grab affordances at both edges. */
   trimmable?: boolean;
   /** Name of the owning track, folded into the default accessible label. */
@@ -93,7 +91,6 @@ export function TimelineClip({
   clip,
   colors,
   disableFocusRing = false,
-  dragging = false,
   fps = DEFAULT_FPS,
   onFocus,
   onKeyDown,
@@ -174,7 +171,6 @@ export function TimelineClip({
           width: rect.width,
         },
         selected ? styles.clipSelected : null,
-        dragging ? styles.clipDragging : null,
         focus.webOutlineReset,
         focus.focused && focus.ringEnabled ? styles.clipFocused : null,
         style,

@@ -41,17 +41,18 @@ and a playhead, and seeks on tap. No dragging yet.
 The full pro edit vocabulary, driven by the pointer, with a live ghost preview
 and snap indicator.
 
-- [ ] Add `src/timeline/timelineEditModel.ts` — gesture → `TimelineEdit`, plus `applyTimelineEdits`
-- [ ] Add ripple, magnetic-collapse, roll, and slip math to the edit model
-- [ ] Add `src/timeline/timelineSelection.ts` — click / shift-click / marquee selection resolution
-- [ ] Add `src/timeline/timelineDragDom.ts` — web rect measuring by `data-testid`
-- [ ] Add `src/timeline/useTimelineDrag.web.ts` — pointer capture, move/trim/slip/roll sessions, ghost positioning
-- [ ] Add `src/timeline/useTimelineDrag.ts` — inert native stub (replaced in M3)
-- [ ] Add `src/timeline/TimelineMarquee.tsx` and the snap indicator
-- [ ] Add razor-tool split on click
-- [ ] Add `tests/unit/timelineEdits.test.ts` and `tests/unit/timelineSelection.test.ts`
-- [ ] Extend the timeline story with an editable example
-- [ ] `npm run verify` green
+- [x] Add `src/timeline/timelineEditModel.ts` — gesture → `TimelineEdit`, plus `applyTimelineEdits`
+- [x] Add ripple, magnetic-collapse, roll, and slip math to the edit model
+- [x] Add `src/timeline/timelineSelection.ts` — click / shift-click / marquee selection resolution
+- [x] Add `src/timeline/timelineDragDom.ts` — web rect measuring by `data-testid`
+- [x] Add `src/timeline/useTimelineDrag.web.ts` — pointer capture, move/trim/slip/roll sessions, ghost positioning
+- [x] Add `src/timeline/useTimelineDrag.ts` — inert native stub (replaced in M3)
+- [x] Add `src/timeline/TimelineMarquee.tsx` and the snap indicator
+- [x] Add razor-tool split on click
+- [x] Add `tests/unit/timelineEdits.test.ts` and `tests/unit/timelineSelection.test.ts`
+- [x] Extend the timeline story with an editable example
+- [x] Add `tests/browser/timeline.spec.ts` — pointer move, cross-track drag, edge trim, preview parity, marquee, razor, locked-clip refusal
+- [x] `npm run verify` green
 
 ## M3 — Native touch, keyboard, and accessibility
 
