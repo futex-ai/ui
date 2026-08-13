@@ -50,11 +50,30 @@ export type ButtonRoleState = {
   selected?: boolean;
 };
 
+/**
+ * The kind of overlay a trigger opens, announced as `aria-haspopup`. `true` is
+ * ARIA's synonym for `"menu"`; the named values let a screen reader say which
+ * kind of surface Enter will open before the user commits to opening it.
+ *
+ * There is no React Native equivalent — the mobile accessibility APIs model no
+ * "has popup" relationship — so this is a web-only announcement, like
+ * `aria-pressed`.
+ */
+export type ButtonPopup =
+  | "dialog"
+  | "grid"
+  | "listbox"
+  | "menu"
+  | "tree"
+  | true;
+
 export type ButtonSemanticsInput = ButtonRoleState & {
   /** The button is performing an in-progress action. */
   busy: boolean;
   /** The resolved disabled state (an explicit `disabled`, or no `onPress`). */
   disabled: boolean;
+  /** The overlay this button opens, if any. */
+  hasPopup?: ButtonPopup;
   /** The announced role. */
   role: ButtonRole;
   /** True when rendering through React Native Web. */
@@ -66,6 +85,7 @@ export type ButtonAriaProps = {
   "aria-busy"?: boolean;
   "aria-checked"?: boolean | "mixed";
   "aria-expanded"?: boolean;
+  "aria-haspopup"?: ButtonPopup;
   "aria-pressed"?: boolean;
   "aria-selected"?: boolean;
 };
@@ -92,6 +112,17 @@ const EXPANDED_ROLES: ReadonlySet<ButtonRole> = new Set<ButtonRole>([
 ]);
 
 /**
+ * The {@link ButtonRole}s ARIA allows `aria-haspopup` on. A `checkbox`,
+ * `radio`, or `switch` is a value control rather than a trigger, so ARIA does
+ * not support the attribute there.
+ */
+const POPUP_ROLES: ReadonlySet<ButtonRole> = new Set<ButtonRole>([
+  "button",
+  "menuitem",
+  "tab",
+]);
+
+/**
  * Resolves the role and state a `Button` announces.
  *
  * `pressed` is the one state without a React Native equivalent: RN models no
@@ -107,6 +138,7 @@ export function buttonSemantics({
   checked,
   disabled,
   expanded,
+  hasPopup,
   pressed,
   role,
   selected,
@@ -126,6 +158,7 @@ export function buttonSemantics({
           "aria-busy": busy || undefined,
           "aria-checked": checked,
           "aria-expanded": expanded,
+          "aria-haspopup": hasPopup,
           "aria-pressed": pressed,
           "aria-selected": selected,
         }
@@ -207,6 +240,7 @@ export function buttonSpaceKeyProps({
 export function buttonSemanticsWarnings({
   checked,
   expanded,
+  hasPopup,
   pressed,
   role,
   selected,
@@ -253,6 +287,13 @@ export function buttonSemanticsWarnings({
     warnings.push(
       `Button: \`expanded\` is not allowed on a "${role}" role; ARIA accepts ` +
         "it on a button, checkbox, menuitem, or tab.",
+    );
+  }
+  if (hasPopup !== undefined && !POPUP_ROLES.has(role)) {
+    warnings.push(
+      `Button: \`hasPopup\` is not allowed on a "${role}" role; ARIA accepts ` +
+        "it on a button, menuitem, or tab. A checkbox / radio / switch is a " +
+        "value control rather than a trigger.",
     );
   }
   return warnings;

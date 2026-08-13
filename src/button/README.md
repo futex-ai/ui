@@ -20,10 +20,21 @@ theme tokens.
 - Keep caller-supplied icon nodes decorative and non-interactive so a focusable
   child SVG cannot take pointer focus away from the outer button.
 - Render as an icon-only `square` or `circle` (`shape`) 1:1 tap target, with an
-  optional `minTouchTarget` floor independent of the label height scale.
+  optional `minTouchTarget` floor independent of the label height scale, a
+  `boxSize` that sets that box outright (including below the smallest density),
+  and a `hitSlop` that grows the tap area without growing the control.
 - Render a compact, line-height-neutral `inline` chip that flows inside a line of
   text (an inline "Restore" / "Undo" action) without growing the row's height.
 - Stretch full width with `block`.
+- Carry the whole press lifecycle — `onPressIn`, `onPressOut`, `onLongPress`,
+  `delayLongPress`, and a forwarded gesture event — so push-to-talk and
+  open-at-the-pointer controls do not need a hand-rolled pressable.
+- Give every tone a pressed treatment, and accept a functional `style` so a
+  caller whose own fill has erased those washes can put press feedback back.
+- Sit on photography or video with the `onMedia` tone, whose translucent white
+  veil and label stay white in every scheme.
+- Open the label and the row to the caller: `labelStyle`, `numberOfLines`, a
+  `trailing` slot, and a `content` escape hatch for a pressable card.
 - Own the sage focus ring on the whole control and hide the browser's default
   outline, using shared theme colours and radii.
 - Expose `button` accessibility semantics with a disabled state, and treat a
@@ -34,8 +45,9 @@ theme tokens.
   `pressed` / `expanded`), and bind Spacebar for the roles react-native-web
   leaves unbound.
 - Support an in-progress `busy` state that stays focusable and announces
-  `aria-busy`, blocks the press handler, and swaps the leading icon for a
-  spinner.
+  `aria-busy`, blocks the whole press lifecycle, and swaps the leading icon for
+  a spinner.
+- Announce the overlay a trigger opens with `hasPopup` (`aria-haspopup`).
 
 ## Usage
 
@@ -241,11 +253,154 @@ const cancelRef = useRef<View | null>(null);
 The prop is named rather than a forwarded `ref`, matching `InputFrame`'s
 `inputRef`.
 
+### Press lifecycle
+
+`onPress` is joined by `onPressIn`, `onPressOut`, `onLongPress`, and
+`delayLongPress`, so a control whose meaning is the _hold_ — push-to-talk, a
+press-and-hold confirm — is a `Button` rather than a hand-rolled `Pressable`.
+`busy` gates the whole lifecycle together, so a control can never start on
+press-in and then never be released.
+
+```tsx
+<Button
+  delayLongPress={400}
+  icon={Mic}
+  onPress={sendTapMessage}
+  onPressIn={startRecording}
+  onPressOut={stopRecording}
+  tone="primary"
+>
+  Hold to talk
+</Button>
+```
+
+The gesture event is forwarded to `onPress`, so a menu trigger can open at the
+pointer instead of wrapping the button in a `<View>` and measuring it. It is
+**optional** — a keyboard activation has no pointer, and both Enter and Space
+call the handler with no event — so anchor to the control itself when it is
+absent:
+
+```tsx
+<Button onPress={(event) => openMenu(event ? pointOf(event) : anchorRef)}>
+  Actions
+</Button>
+```
+
+### On media
+
+Every other tone composites against a theme surface, so all of them disappear on
+a photograph. `onMedia` is a translucent white veil that thickens on hover and
+press, with a fixed white label:
+
+```tsx
+<Button
+  accessibilityLabel="Close preview"
+  icon={X}
+  onPress={close}
+  shape="circle"
+  tone="onMedia"
+/>
+```
+
+Its fills and label are deliberately **not** theme tokens. Imagery is dark
+whichever scheme is mounted, so a scheme-aware `onSolid` would invert to dark
+text on dark media in the dark presets.
+
+### Tap target and box size
+
+`minTouchTarget` is a floor: it can only grow the visible box, and one below the
+size's own track is inert (a `__DEV__` warning says so). Two other props cover
+what it cannot:
+
+- `boxSize` sets a `square` / `circle` button's visible dimension outright,
+  including below the smallest density's 30px track, for a glyph a design specs
+  smaller than any control size.
+- `hitSlop` extends the pressable area beyond the visible box, so a compact
+  control still meets a comfortable target (WCAG 2.1 — 2.5.5 AAA / 2.5.8 AA)
+  without growing. React Native reads it off the pressable; on web —
+  where react-native-web's `Pressable` ignores the prop entirely — the same
+  area is drawn as an inset, transparent child whose events bubble to the
+  button. Either way the expanded area overlaps whatever sits beside the
+  control, so reach for it on a control with room around it.
+
+```tsx
+<Button
+  accessibilityLabel="Remove tag"
+  boxSize={16}
+  hitSlop={14}
+  icon={X}
+  onPress={remove}
+  shape="circle"
+  tone="plain"
+/>
+```
+
+### Label, slots, and cards
+
+`labelStyle` merges over the label after the tone's colour, and `numberOfLines`
+truncates it — which has to be set here, because React Native ignores
+`numberOfLines` on a nested `<Text>`. `trailing` renders after the label under
+the same decorative contract as the leading icon, so a selector can pin a
+chevron to its far edge:
+
+```tsx
+<Button
+  block
+  labelStyle={{ flex: 1, textAlign: "left" }}
+  numberOfLines={1}
+  onPress={openSwitcher}
+  trailing={<ChevronDown color={theme.colors.ink} size={16} />}
+>
+  {workspaceName}
+</Button>
+```
+
+`content` replaces the icon + label row entirely, for a pressable card that
+performs an action. The button keeps its role, focus ring, press handling, and
+disabled treatment and stops imposing a label layout; pair it with `style` to
+drop the row direction and the fixed track height. There is no visible text for
+the library to read a name from, so `accessibilityLabel` is required.
+
+### Menu triggers
+
+`hasPopup` announces what a trigger opens (`aria-haspopup`) before the user
+commits to opening it; pair it with `expanded` when the surface opens in place:
+
+```tsx
+<Button expanded={open} hasPopup="menu" icon={MoreHorizontal} onPress={toggle}>
+  Actions
+</Button>
+```
+
+It is web-only — the mobile accessibility APIs model no "has popup" relationship
+— and ARIA supports it on the `button`, `menuitem`, and `tab` roles only; a
+`checkbox` / `radio` / `switch` is a value control rather than a trigger, and a
+`__DEV__` warning says so.
+
 ## Styling
 
 `style` extends the pressable container (`ViewStyle`). Tone, size, the focus
 ring, and the disabled treatment are applied by the component; `style` layers on
 top for one-off layout tweaks (e.g. margins).
+
+Because it layers last, a caller-supplied fill also overrides the tone's own
+hover and pressed washes — which is why `style` accepts a function of the
+interaction state, so that caller can put press feedback back:
+
+```tsx
+<Button
+  onPress={archive}
+  style={({ pressed }) => [
+    { backgroundColor: theme.colors.amberSoft },
+    pressed ? { opacity: 0.82 } : null,
+  ]}
+>
+  Archive
+</Button>
+```
+
+The state is `{ busy, disabled, focused, hovered, pressed }`; `hovered` is
+web-only and stays `false` on native.
 
 ## Accessibility
 
@@ -278,6 +433,13 @@ top for one-off layout tweaks (e.g. margins).
   Native models no pressed toggle and `aria-pressed` is the only toggle state
   ARIA allows on `role="button"`, so on web it stays `aria-pressed` and on native
   it degrades to the announced `selected` state.
+- **Popup triggers (4.1.2, A).** `hasPopup` emits `aria-haspopup` on web so a
+  screen reader can say which kind of surface Enter will open; `expanded`
+  reports whether it is open. ARIA supports the attribute on `button`,
+  `menuitem`, and `tab` only, and a `__DEV__` warning fires on the rest.
+- **Target size (2.5.5 AAA / 2.5.8 AA).** `hitSlop` grows the pressable area
+  without growing the control, so shrinking a glyph with `boxSize` never
+  shrinks its tap target with it.
 - **Focus visible (2.4.7, AA).** The library's shared soft focus glow (the same
   `useFocusRing` box-shadow ring input / switch / radio / segmented use) is shown
   on focus for every tone — including `primary`, where a border-colour ring would
@@ -294,4 +456,8 @@ Buttons read colours and radii from `SharedUiThemeProvider`: the primary tone
 uses `colors.primary`, the ghost label uses `colors.primaryDeep`, the danger
 border/label uses `colors.roseSoft` / `colors.rose`, the secondary fill uses
 `colors.surface` with the `colors.controlBorder` boundary, the focus ring uses
-`colors.primary`, and the corner radius uses `radii.md`.
+`colors.primary`, and the corner radius uses `radii.md`. The pressed treatments
+use `colors.bg2` (secondary) and `colors.roseDeep` (danger); `primary` dims
+instead, because `primaryDeep` is already the darkest accent the theme contract
+defines. The `onMedia` tone is the one exception to all of this — see
+[On media](#on-media).

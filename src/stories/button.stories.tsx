@@ -2,12 +2,16 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
   Bell,
   Check,
+  ChevronDown,
+  Download,
+  Mic,
   MoreHorizontal,
   Pencil,
   Plus,
   RotateCcw,
   Settings,
   Trash2,
+  X,
 } from "lucide-react-native";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
@@ -437,10 +441,171 @@ function BusyExample() {
   );
 }
 
+export const OnMedia: Story = {
+  name: "On media",
+  render: () => (
+    <StorySurface>
+      {/* A control over photography has no theme surface to sit on: the
+          translucent white veil is what separates it from the picture, and it
+          stays white in every scheme because imagery is dark in every scheme. */}
+      <View style={styles.media}>
+        <Button
+          accessibilityLabel="Close preview"
+          icon={X}
+          onPress={noop}
+          shape="circle"
+          tone="onMedia"
+        />
+        <Button icon={Download} onPress={noop} tone="onMedia">
+          Download
+        </Button>
+      </View>
+    </StorySurface>
+  ),
+};
+
+export const PressLifecycle: Story = {
+  name: "Press lifecycle",
+  render: () => <PressLifecycleExample />,
+};
+
+function PressLifecycleExample() {
+  const [state, setState] = useState("idle");
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        {/* Push-to-talk needs the press to start and end, not just fire. The
+            whole lifecycle is gated by `busy` together, so a control cannot
+            start on press-in and then never be released. */}
+        <Button
+          delayLongPress={400}
+          icon={Mic}
+          onLongPress={() => setState("held")}
+          onPress={noop}
+          onPressIn={() => setState("recording")}
+          onPressOut={() => setState("idle")}
+          tone="primary"
+        >
+          Hold to talk
+        </Button>
+        <Text style={styles.inlineText}>{state}</Text>
+      </View>
+    </StorySurface>
+  );
+}
+
+export const TapTarget: Story = {
+  name: "Tap target",
+  render: () => <TapTargetExample />,
+};
+
+function TapTargetExample() {
+  const [presses, setPresses] = useState(0);
+  return (
+    <StorySurface>
+      <View style={styles.row}>
+        {/* `boxSize` sets the visible 1:1 box outright — including below the
+            smallest size's 30px track — while `hitSlop` keeps the tap area
+            comfortable without the control growing with it. */}
+        <Button
+          accessibilityLabel="Remove tag"
+          boxSize={16}
+          hitSlop={14}
+          icon={X}
+          onPress={() => setPresses((count) => count + 1)}
+          shape="circle"
+          tone="plain"
+        />
+        <Text style={styles.inlineText}>{`presses: ${presses}`}</Text>
+      </View>
+    </StorySurface>
+  );
+}
+
+export const LabelAndSlots: Story = {
+  name: "Label and slots",
+  render: () => (
+    <StorySurface>
+      <View style={styles.stack}>
+        {/* A trailing slot plus a flexed, truncating label: the shape a
+            workspace selector needs. `numberOfLines` has to be set here because
+            React Native ignores it on a nested <Text>. */}
+        <Button
+          block
+          labelStyle={styles.flexLabel}
+          numberOfLines={1}
+          onPress={noop}
+          trailing={<ChevronDown color="#1c1f1d" size={16} />}
+        >
+          A workspace name long enough to need truncating
+        </Button>
+        {/* `content` hands the whole row back to the caller, for a pressable
+            card that still announces as a button. */}
+        <Button
+          accessibilityLabel="Open quarterly report"
+          content={
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Quarterly report</Text>
+              <Text style={styles.inlineText}>Updated 2 hours ago</Text>
+            </View>
+          }
+          onPress={noop}
+          style={styles.cardButton}
+        />
+      </View>
+    </StorySurface>
+  ),
+};
+
+export const MenuTrigger: Story = {
+  name: "Menu trigger",
+  render: () => <MenuTriggerExample />,
+};
+
+function MenuTriggerExample() {
+  const [open, setOpen] = useState(false);
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        {/* `hasPopup` tells a screen reader what Enter will open before the
+            user commits; `expanded` says whether it is open yet. */}
+        <Button
+          expanded={open}
+          hasPopup="menu"
+          icon={MoreHorizontal}
+          onPress={() => setOpen((wasOpen) => !wasOpen)}
+        >
+          Actions
+        </Button>
+        {open ? <Text style={styles.inlineText}>Menu open</Text> : null}
+      </View>
+    </StorySurface>
+  );
+}
+
 const styles = StyleSheet.create({
+  card: {
+    alignItems: "flex-start",
+    gap: 2,
+  },
+  cardButton: {
+    alignItems: "flex-start",
+    height: "auto",
+    paddingVertical: 12,
+  },
+  cardTitle: {
+    color: "#1c1f1d",
+    fontSize: 14,
+    fontWeight: "700",
+    lineHeight: 20,
+  },
   emoji: {
     fontSize: 16,
     lineHeight: 20,
+  },
+  flexLabel: {
+    flex: 1,
+    textAlign: "left",
   },
   inlineRow: {
     alignItems: "center",
@@ -457,6 +622,16 @@ const styles = StyleSheet.create({
     color: "#1c1f1d",
     fontSize: 14,
     lineHeight: 20,
+  },
+  media: {
+    alignItems: "center",
+    backgroundColor: "#241f2c",
+    borderRadius: 12,
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "center",
+    minWidth: 320,
+    padding: 24,
   },
   row: {
     alignItems: "center",
