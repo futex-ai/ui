@@ -287,6 +287,15 @@ export interface AccessibilityState {
 }
 export type ColorValue = string | OpaqueColorValue;
 export type DimensionValue = number | string | null | undefined;
+export interface GestureResponderEvent {
+  [key: string]: unknown;
+}
+export interface Insets {
+  bottom?: number;
+  left?: number;
+  right?: number;
+  top?: number;
+}
 export declare const OpaqueColorValue: unique symbol;
 export type OpaqueColorValue = typeof OpaqueColorValue;
 export interface TextInputProps {

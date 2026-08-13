@@ -21,6 +21,11 @@ const WHITE_LITERAL_ALLOWLIST: Record<string, number> = {
   "skeleton/Skeleton.tsx": 3, // sheen gradient stops stay white by design
   "workflow/WorkflowNode.tsx": 2, // fixed category palette glyphs (see D6)
   "toast/toastStyles.ts": 1, // the light-scheme arm of the solid hover wash
+  // The `onMedia` tone's three translucent veils + its label: a control on
+  // photography composites against the image, not a theme surface, and imagery
+  // is dark in every scheme — a scheme-aware `onSolid` would invert to dark
+  // text on dark media in the dark presets.
+  "button/buttonStyles.ts": 4,
 };
 
 function walk(dir: string): string[] {

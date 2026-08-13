@@ -2,10 +2,12 @@
 import { LucideIcon } from "lucide-react-native";
 import { ReactNode, Ref, useMemo } from "react";
 import {
+  GestureResponderEvent,
+  Insets,
   Platform,
   Pressable,
   StyleProp,
-  Text,
+  TextStyle,
   View,
   ViewStyle,
 } from "react-native";
@@ -19,15 +21,18 @@ import {
   buttonHeight,
   buttonIconSize,
   createButtonStyles,
+  onMediaLabelColor,
 } from "./buttonStyles";
 import {
   buttonSemantics,
   buttonSemanticsWarnings,
   buttonSpaceKeyProps,
+  type ButtonPopup,
   type ButtonRole,
   type ButtonRoleState,
 } from "./buttonSemantics";
-import { ButtonSpinner } from "./ButtonSpinner";
+import { ButtonContent } from "./ButtonContent";
+import { HitSlopExpander } from "./HitSlopExpander";
 
 /**
  * Visual emphasis of the button:
@@ -37,8 +42,17 @@ import { ButtonSpinner } from "./ButtonSpinner";
  * - `plain` — no fill or border, neutral `ink` label / icon (a flush, chrome-less
  *   header / composer icon button), with a neutral hover / pressed wash.
  * - `danger` — neutral fill with a rose border and label (destructive action).
+ * - `onMedia` — a translucent white control for a button sitting on photography
+ *   or video, where every theme-surface tone would disappear. Its fills and
+ *   label stay white in every scheme, because imagery is dark in every scheme.
  */
-export type ButtonTone = "danger" | "ghost" | "plain" | "primary" | "secondary";
+export type ButtonTone =
+  | "danger"
+  | "ghost"
+  | "onMedia"
+  | "plain"
+  | "primary"
+  | "secondary";
 
 /**
  * Container geometry:
@@ -49,15 +63,41 @@ export type ButtonTone = "danger" | "ghost" | "plain" | "primary" | "secondary";
  *
  * `square` / `circle` are intended for icon-only buttons; combine them with
  * `minTouchTarget` to floor the box at a comfortable touch size independent of
- * the label height scale.
+ * the label height scale, or with `boxSize` to set it outright.
  */
 export type ButtonShape = "circle" | "rounded" | "square";
+
+/**
+ * The interaction state handed to a functional {@link ButtonBaseProps.style}.
+ * `hovered` is web-only and stays false on native, matching the underlying
+ * pressable.
+ */
+export type ButtonStateStyleArgs = {
+  /** The press handler is blocked by an in-progress action. */
+  busy: boolean;
+  /** Explicitly disabled, or left without an `onPress`. */
+  disabled: boolean;
+  /** The control holds keyboard/pointer focus. */
+  focused: boolean;
+  /** The pointer is over the control (web only). */
+  hovered: boolean;
+  /** The control is being pressed. */
+  pressed: boolean;
+};
 
 type ButtonBaseProps = ButtonRoleState & {
   /** Spoken hint announced after the label. */
   accessibilityHint?: string;
   /** Stretch to fill the container width (`align-self: stretch`). */
   block?: boolean;
+  /**
+   * Exact visible dimension for a `square` / `circle` button, in px, replacing
+   * the box the `size` scale would derive. Unlike `minTouchTarget` — a floor
+   * that can only grow the box — this also goes *below* the smallest size's
+   * 30px track, for a glyph a design specs smaller than any control density.
+   * Pair it with `hitSlop` so a small visible box keeps a comfortable target.
+   */
+  boxSize?: number;
   /**
    * Mark the button as performing an in-progress action. While busy the button
    * stays focusable and announces `aria-busy`, but its press handler is blocked
@@ -71,6 +111,15 @@ type ButtonBaseProps = ButtonRoleState & {
    * one. Named rather than a forwarded `ref`, matching `InputFrame.inputRef`.
    */
   buttonRef?: Ref<View>;
+  /**
+   * Replace the icon + label row with caller-owned nodes, for a pressable card
+   * that performs an action. The button keeps its role, focus ring, press
+   * handling, and disabled treatment and stops imposing a label layout; pair it
+   * with `style` to drop the row direction and the fixed track height.
+   */
+  content?: ReactNode;
+  /** Milliseconds held before `onLongPress` fires. Defaults to the platform value. */
+  delayLongPress?: number;
   /** Disable the button; a button without `onPress` is also treated as disabled. */
   disabled?: boolean;
   /**
@@ -80,6 +129,25 @@ type ButtonBaseProps = ButtonRoleState & {
    * `focusRing: false` flag instead.
    */
   disableFocusRing?: boolean;
+  /**
+   * Announce that this button opens an overlay (`aria-haspopup`), so a screen
+   * reader can say what Enter will open before the user commits. Pair it with
+   * `expanded` on a trigger whose surface opens in place, so the open/closed
+   * state is announced too. Web-only — see {@link ButtonPopup}.
+   */
+  hasPopup?: ButtonPopup;
+  /**
+   * Extend the pressable area beyond the visible box, in px (or per edge). The
+   * tap target grows without the control growing with it, so a compact glyph
+   * can still meet the ≥44px comfortable target (WCAG 2.1 — 2.5.5 Target Size,
+   * AAA / 2.5.8 AA). `minTouchTarget` grows the *visible* box instead.
+   *
+   * Honoured on both platforms: React Native reads it off the pressable, and on
+   * web — where react-native-web's `Pressable` ignores it — the equivalent area
+   * is drawn by {@link HitSlopExpander}. The expanded area overlaps whatever
+   * sits beside the control, so reach for it on a control with room around it.
+   */
+  hitSlop?: number | Insets;
   /** Leading lucide icon shown before the label, tinted to match the label colour. */
   icon?: LucideIcon;
   /**
@@ -115,6 +183,8 @@ type ButtonBaseProps = ButtonRoleState & {
    * the pill from being sheared there.
    */
   inline?: boolean;
+  /** Extra style merged over the label, after the tone's colour. */
+  labelStyle?: StyleProp<TextStyle>;
   /**
    * Floor the tap target at this many px (min width AND height). Independent of
    * the `size` label scale, so a compact icon-only button can still meet a
@@ -122,8 +192,27 @@ type ButtonBaseProps = ButtonRoleState & {
    * 1:1 box to this dimension when it exceeds the size's height.
    */
   minTouchTarget?: number;
-  /** Press handler. Omit for a non-interactive (disabled) button. */
-  onPress?: () => void;
+  /**
+   * Truncate the label to this many lines with an ellipsis. It has to be set
+   * here rather than on a nested `<Text>` child, which React Native ignores.
+   */
+  numberOfLines?: number;
+  /** Long-press handler. Blocked while `busy`, like `onPress`. */
+  onLongPress?: (event: GestureResponderEvent) => void;
+  /**
+   * Press handler. Omit for a non-interactive (disabled) button.
+   *
+   * The gesture event is forwarded, so a trigger can open its overlay at the
+   * pointer rather than wrapping the button in a `<View>` and measuring it. It
+   * is optional because a keyboard activation has no pointer: Enter and Space
+   * both call this handler with no event, so anchor to the control itself when
+   * it is absent.
+   */
+  onPress?: (event?: GestureResponderEvent) => void;
+  /** Press-in handler, for push-to-talk and other press-lifecycle controls. */
+  onPressIn?: (event: GestureResponderEvent) => void;
+  /** Press-out handler, the release half of the press lifecycle. */
+  onPressOut?: (event: GestureResponderEvent) => void;
   /**
    * Accessibility role. Defaults to `button`; the other members of
    * {@link ButtonRole} let a consumer build a tab, checkbox, radio, switch, or
@@ -140,12 +229,25 @@ type ButtonBaseProps = ButtonRoleState & {
   shape?: ButtonShape;
   /** Control density: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
-  /** Extra style for the pressable container. */
-  style?: StyleProp<ViewStyle>;
+  /**
+   * Extra style for the pressable container, layered last so it wins over the
+   * tone. Pass a function to style by interaction state: a control with a
+   * caller-supplied fill overrides the tone's own hover / pressed washes, so
+   * the functional form is how it puts press feedback back.
+   */
+  style?:
+    | StyleProp<ViewStyle>
+    | ((state: ButtonStateStyleArgs) => StyleProp<ViewStyle>);
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
   /** Visual emphasis. Defaults to `secondary`. */
   tone?: ButtonTone;
+  /**
+   * Node rendered after the label — a right-pinned chevron on a selector, say.
+   * Decorative and inert like `iconNode`. Give `labelStyle` a `flex: 1` to push
+   * it to the far edge of a `block` button.
+   */
+  trailing?: ReactNode;
 };
 
 /**
@@ -162,17 +264,19 @@ export type LabelledButtonProps = ButtonBaseProps & {
 };
 
 /**
- * Props for an icon-only button (no visible text). An icon alone is not an
- * accessible name, so `accessibilityLabel` is **required** here to satisfy WCAG
- * 2.1 — 1.1.1 Non-text Content / 4.1.2 Name, Role, Value (A). At least one icon
- * source is required — a lucide `icon` or a caller-supplied `iconNode` — so the
- * button is never a nameless empty box.
+ * Props for a button with no visible text label — an icon-only control, or a
+ * `content` card whose nodes the library cannot read a name from. A glyph or a
+ * custom layout is not an accessible name, so `accessibilityLabel` is
+ * **required** here to satisfy WCAG 2.1 — 1.1.1 Non-text Content / 4.1.2 Name,
+ * Role, Value (A). At least one content source is required — a lucide `icon`, a
+ * caller-supplied `iconNode`, or `content` — so the button is never a nameless
+ * empty box.
  */
 export type IconOnlyButtonProps = ButtonBaseProps & {
   /** Accessible name. Required because there is no visible label to name it. */
   accessibilityLabel: string;
   children?: never;
-} & ({ icon: LucideIcon } | { iconNode: ReactNode });
+} & ({ icon: LucideIcon } | { iconNode: ReactNode } | { content: ReactNode });
 
 export type ButtonProps = IconOnlyButtonProps | LabelledButtonProps;
 
@@ -194,18 +298,28 @@ export function Button({
   accessibilityHint,
   accessibilityLabel,
   block = false,
+  boxSize,
   busy = false,
   buttonRef,
   checked,
   children,
+  content,
+  delayLongPress,
   disabled = false,
   disableFocusRing = false,
   expanded,
+  hasPopup,
+  hitSlop,
   icon: Icon,
   iconNode,
   inline = false,
+  labelStyle,
   minTouchTarget,
+  numberOfLines,
+  onLongPress,
   onPress,
+  onPressIn,
+  onPressOut,
   pressed,
   role = "button",
   selected,
@@ -214,6 +328,7 @@ export function Button({
   style,
   testID,
   tone = "secondary",
+  trailing,
 }: ButtonProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createButtonStyles(theme, size), [theme, size]);
@@ -225,6 +340,7 @@ export function Button({
     checked,
     disabled: disabledState,
     expanded,
+    hasPopup,
     pressed,
     role,
     selected,
@@ -233,7 +349,8 @@ export function Button({
   const semantics = buttonSemantics(semanticsInput);
   // The label (and any leading lucide icon) colour is driven by the tone, so it
   // is applied inline rather than baked into the stylesheet. `plain` shares the
-  // neutral `ink` of `secondary` — it differs only in its (absent) chrome.
+  // neutral `ink` of `secondary` — it differs only in its (absent) chrome, and
+  // `onMedia` keeps a fixed white because it sits on imagery, not a surface.
   const labelColor =
     tone === "primary"
       ? theme.colors.onSolid
@@ -241,15 +358,19 @@ export function Button({
         ? theme.colors.rose
         : tone === "ghost"
           ? theme.colors.primaryDeep
-          : theme.colors.ink;
+          : tone === "onMedia"
+            ? onMediaLabelColor()
+            : theme.colors.ink;
 
-  // `square` / `circle` render a 1:1 box (equal padding) floored at any
+  // `square` / `circle` render a 1:1 box (equal padding): `boxSize` sets it
+  // outright, otherwise the size's track height floored at any
   // `minTouchTarget`; `circle` swaps in the pill radius. On the default
   // `rounded` shape a bare `minTouchTarget` still enforces a min tap target
   // without forcing the aspect ratio.
   const shapeStyle = useMemo<ViewStyle | null>(() => {
     if (shape === "square" || shape === "circle") {
-      const dimension = Math.max(buttonHeight(size), minTouchTarget ?? 0);
+      const dimension =
+        boxSize ?? Math.max(buttonHeight(size), minTouchTarget ?? 0);
       return {
         height: dimension,
         paddingHorizontal: 0,
@@ -261,7 +382,7 @@ export function Button({
       return { minHeight: minTouchTarget, minWidth: minTouchTarget };
     }
     return null;
-  }, [minTouchTarget, shape, size, theme.radii.pill]);
+  }, [boxSize, minTouchTarget, shape, size, theme.radii.pill]);
 
   const hasVisibleLabel = children != null && children !== "";
 
@@ -275,12 +396,30 @@ export function Button({
     inline && !block && shape === "rounded" && minTouchTarget == null;
 
   if (!hasVisibleLabel && !accessibilityLabel) {
-    // An icon-only button with no accessible name is invisible to assistive
-    // technology (WCAG 2.1 — 1.1.1 / 4.1.2). The type system enforces this for
-    // the icon-only union, but guard at runtime for untyped/JS callers too.
+    // A button with no visible text — icon-only, or a `content` card — has no
+    // accessible name for assistive technology (WCAG 2.1 — 1.1.1 / 4.1.2). The
+    // type system enforces this for that union, but guard at runtime for
+    // untyped/JS callers too.
     devWarn(
-      "Button: an icon-only button (no visible text children) must be given an " +
+      "Button: a button with no visible text children must be given an " +
         "`accessibilityLabel` so assistive technology can name it.",
+    );
+  }
+
+  if (
+    minTouchTarget != null &&
+    boxSize == null &&
+    (shape === "square" || shape === "circle") &&
+    minTouchTarget < buttonHeight(size)
+  ) {
+    // `minTouchTarget` is a floor and never a ceiling, so one below the size's
+    // own track silently does nothing. Say so rather than leaving a caller to
+    // wonder why the box never shrank — `boxSize` is the prop that sets it.
+    devWarn(
+      `Button: \`minTouchTarget\` (${minTouchTarget}) is below the "${size}" ` +
+        `size's ${buttonHeight(size)}px box, so it has no effect. Use ` +
+        "`boxSize` to make the control smaller, and `hitSlop` to keep its tap " +
+        "target comfortable.",
     );
   }
 
@@ -311,18 +450,26 @@ export function Button({
       // `accessibilityState` only on `TouchableWithoutFeedback` — so the literal
       // `aria-*` mirror spread in below is what reaches the DOM there.
       accessibilityState={semantics.accessibilityState}
+      delayLongPress={delayLongPress}
       disabled={disabledState}
+      hitSlop={hitSlop}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
-      // Block activation while busy without unfocusing/hiding the control.
+      // Block activation while busy without unfocusing/hiding the control. The
+      // whole press lifecycle is gated together, so a push-to-talk control
+      // cannot start on press-in and then never be released.
+      onLongPress={busy ? undefined : onLongPress}
       onPress={busy ? undefined : onPress}
+      onPressIn={busy ? undefined : onPressIn}
+      onPressOut={busy ? undefined : onPressOut}
       ref={buttonRef}
-      style={({ hovered, pressed }: PressableHoverState) => [
+      style={({ hovered = false, pressed }: PressableHoverState) => [
         styles.button,
         tone === "primary" ? styles.primary : null,
         tone === "ghost" ? styles.ghost : null,
         tone === "plain" ? styles.plain : null,
         tone === "danger" ? styles.danger : null,
+        tone === "onMedia" ? styles.onMedia : null,
         block ? styles.block : null,
         // The inline chip drops the fixed track height and collapses to the label
         // line height, layering after the tone styles so the tone fill/border
@@ -351,19 +498,45 @@ export function Button({
         hovered && !disabledState && !busy && tone === "danger"
           ? styles.dangerHover
           : null,
-        // The borderless tones (`ghost` / `plain`) also take a pressed wash,
-        // deeper than hover, so an active press reads on a control with no
-        // resting fill. It layers after hover so a pressed + hovered button
-        // shows the pressed depth.
+        hovered && !disabledState && !busy && tone === "onMedia"
+          ? styles.onMediaHover
+          : null,
+        // Every tone takes a pressed treatment, deeper than its hover, so an
+        // active press reads on a filled control as well as a borderless one.
+        // It layers after hover so a pressed + hovered button shows the pressed
+        // depth.
+        pressed && !disabledState && !busy && tone === "primary"
+          ? styles.primaryPressed
+          : null,
+        pressed && !disabledState && !busy && tone === "secondary"
+          ? styles.secondaryPressed
+          : null,
         pressed && !disabledState && !busy && tone === "ghost"
           ? styles.ghostPressed
           : null,
         pressed && !disabledState && !busy && tone === "plain"
           ? styles.plainPressed
           : null,
+        pressed && !disabledState && !busy && tone === "danger"
+          ? styles.dangerPressed
+          : null,
+        pressed && !disabledState && !busy && tone === "onMedia"
+          ? styles.onMediaPressed
+          : null,
         focus.focused ? focus.focusRingStyle : null,
         disabledState ? styles.disabled : null,
-        style,
+        // The caller's style layers last so it wins over the tone — which is
+        // also why a caller-supplied fill erases the tone's washes. The
+        // functional form exists so that caller can re-add press feedback.
+        typeof style === "function"
+          ? style({
+              busy,
+              disabled: disabledState,
+              focused: focus.focused,
+              hovered,
+              pressed,
+            })
+          : style,
         // Suppress the UA outline while the glow is the focus affordance; with
         // the ring disabled the reset is skipped so the UA outline returns.
         focus.webOutlineReset,
@@ -372,36 +545,21 @@ export function Button({
       {...semantics.ariaProps}
       {...keyProps}
     >
-      {busy ? (
-        <ButtonSpinner color={labelColor} size={buttonIconSize(size)} />
-      ) : iconNode != null ? (
-        // A caller-supplied icon node renders as-is (never inside `<Text>`) and
-        // is decorative: hide it from assistive technology on web and prevent
-        // pointer targeting so even a click-focusable child SVG cannot take
-        // focus from the outer button. The label / required `accessibilityLabel`
-        // is the name.
-        <View
-          aria-hidden={Platform.OS === "web" ? true : undefined}
-          pointerEvents="none"
-          style={styles.iconNode}
-        >
-          {iconNode}
-        </View>
-      ) : Icon ? (
-        // The leading icon is decorative when a visible label names the button,
-        // so hide it from assistive technology to avoid a redundant/raw-name
-        // announcement (WCAG 2.1 — 1.1.1 decorative content). When there is no
-        // visible label the `accessibilityLabel` (required by the type) names
-        // the control, so the glyph is still hidden and the name is authoritative.
-        Platform.OS === "web" ? (
-          <Icon aria-hidden color={labelColor} size={buttonIconSize(size)} />
-        ) : (
-          <Icon color={labelColor} size={buttonIconSize(size)} />
-        )
-      ) : null}
-      {hasVisibleLabel ? (
-        <Text style={[styles.label, { color: labelColor }]}>{children}</Text>
-      ) : null}
+      <HitSlopExpander hitSlop={hitSlop} />
+      <ButtonContent
+        color={labelColor}
+        content={content}
+        icon={Icon}
+        iconNode={iconNode}
+        iconSize={buttonIconSize(size)}
+        labelStyle={labelStyle}
+        numberOfLines={numberOfLines}
+        showSpinner={busy}
+        styles={styles}
+        trailing={trailing}
+      >
+        {children}
+      </ButtonContent>
     </Pressable>
   );
 }

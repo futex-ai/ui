@@ -60,6 +60,31 @@ const BUTTON_SIZES: Record<
   },
 };
 
+/**
+ * The `onMedia` tone's translucent white scale, for a control sitting on
+ * photography or video rather than an app surface.
+ *
+ * These are deliberately fixed rather than theme tokens. Every other tone
+ * composites against a theme surface and so has to follow the active scheme;
+ * imagery is dark in every scheme, so the resting/hover/pressed fills and the
+ * label stay white whichever theme is mounted. A scheme-aware `onSolid` would
+ * invert to dark text on dark media in the dark presets.
+ */
+const ON_MEDIA = {
+  fill: "rgba(255, 255, 255, 0.14)",
+  fillHover: "rgba(255, 255, 255, 0.2)",
+  fillPressed: "rgba(255, 255, 255, 0.24)",
+  label: "#ffffff",
+} as const;
+
+/**
+ * Label / leading-icon colour for the `onMedia` tone. Exposed so the component
+ * resolves it from the same place as the fills rather than repeating the hex.
+ */
+export function onMediaLabelColor() {
+  return ON_MEDIA.label;
+}
+
 /** Diameter of the leading icon for a given button size, in px. */
 export function buttonIconSize(size: ControlSize) {
   return BUTTON_SIZES[size].iconSize;
@@ -109,6 +134,10 @@ export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
     // the warning edge from `roseSoft` to full `rose` and keeps the surface
     // fill, so the label's contrast stays at its (AA-passing) resting ratio.
     dangerHover: { borderColor: theme.colors.rose },
+    // Pressed sharpens the edge one step further, to `roseDeep`. Danger is the
+    // one tone that cannot take a pressed *fill* — see `dangerHover` — so the
+    // border carries both steps and the label's contrast never moves.
+    dangerPressed: { borderColor: theme.colors.roseDeep },
     disabled: { opacity: 0.55 },
     ghost: { backgroundColor: "transparent", borderColor: "transparent" },
     // The accent's pale tint surfaces on hover (ghost's label is already
@@ -146,6 +175,17 @@ export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
       fontWeight: "700",
       lineHeight: sizing.lineHeight,
     },
+    // The `onMedia` tone: a translucent white control for photography or video.
+    // Borderless, because a hairline edge disappears against a busy image; the
+    // fill is what separates it from the picture behind.
+    onMedia: {
+      backgroundColor: ON_MEDIA.fill,
+      borderColor: "transparent",
+    },
+    onMediaHover: { backgroundColor: ON_MEDIA.fillHover },
+    // A press on media has to read without a surface to tint against, so the
+    // white veil thickens rather than shifting hue.
+    onMediaPressed: { backgroundColor: ON_MEDIA.fillPressed },
     // The `plain` tone: a flush, borderless neutral button (an `ink` label /
     // icon on no resting fill or border) for chrome-less header / composer icon
     // buttons. Distinct from `ghost`, whose label carries the brand accent.
@@ -165,9 +205,18 @@ export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
       backgroundColor: theme.colors.primaryDeep,
       borderColor: theme.colors.primaryDeep,
     },
+    // `primaryDeep` is the darkest accent the theme contract defines, so a
+    // pressed primary cannot deepen its fill a second time. It dims the whole
+    // control instead — the same feedback `TouchableOpacity` gives natively, and
+    // a shallow enough step (12%) that the white label stays above AA on the
+    // composited fill.
+    primaryPressed: { opacity: 0.88 },
     // The neutral hover, reused verbatim from the calendar cells: swap the white
     // surface for `soft`, holding the `border2` edge.
     secondaryHover: { backgroundColor: theme.colors.soft },
+    // One step past the hover wash, mirroring the `plain` pair so a bordered
+    // and a borderless neutral control press to the same depth.
+    secondaryPressed: { backgroundColor: theme.colors.bg2 },
   });
 }
 

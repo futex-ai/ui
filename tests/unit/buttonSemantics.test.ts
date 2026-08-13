@@ -296,3 +296,56 @@ function keyEvent(key: string) {
   };
   return state;
 }
+
+test("a trigger announces the overlay it opens, on web only", () => {
+  const menu = buttonSemantics(input({ expanded: false, hasPopup: "menu" }));
+  assert.equal(menu.ariaProps["aria-haspopup"], "menu");
+  // Paired with the disclosure state, so a reader hears both what opens and
+  // whether it is open.
+  assert.equal(menu.ariaProps["aria-expanded"], false);
+
+  // `true` is ARIA's synonym for a menu, and the named surfaces pass through.
+  assert.equal(
+    buttonSemantics(input({ hasPopup: true })).ariaProps["aria-haspopup"],
+    true,
+  );
+  assert.equal(
+    buttonSemantics(input({ hasPopup: "dialog" })).ariaProps["aria-haspopup"],
+    "dialog",
+  );
+
+  // There is no React Native equivalent, so native emits nothing rather than
+  // inventing a state the platform cannot announce.
+  const native = buttonSemantics(input({ hasPopup: "menu", web: false }));
+  assert.deepEqual(native.ariaProps, {});
+  assert.equal("hasPopup" in native.accessibilityState, false);
+
+  // Absent by default: an ordinary button must not claim to open anything.
+  assert.equal(buttonSemantics(input()).ariaProps["aria-haspopup"], undefined);
+});
+
+test("hasPopup is refused on the roles ARIA does not support it on", () => {
+  // A checkbox / radio / switch is a value control, not a trigger.
+  for (const role of ["checkbox", "radio", "switch"] as ButtonRole[]) {
+    const warnings = buttonSemanticsWarnings(
+      input({ checked: false, hasPopup: "menu", role }),
+    );
+    assert.equal(
+      warnings.some((warning) => warning.includes("`hasPopup` is not allowed")),
+      true,
+      role,
+    );
+  }
+  // Button, menuitem, and tab are the roles ARIA does support it on.
+  assert.deepEqual(buttonSemanticsWarnings(input({ hasPopup: "menu" })), []);
+  assert.deepEqual(
+    buttonSemanticsWarnings(input({ hasPopup: "menu", role: "menuitem" })),
+    [],
+  );
+  assert.deepEqual(
+    buttonSemanticsWarnings(
+      input({ hasPopup: "listbox", role: "tab", selected: true }),
+    ),
+    [],
+  );
+});
