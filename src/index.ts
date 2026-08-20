@@ -4,6 +4,8 @@ export * from "./avatar";
 export * from "./badge";
 export * from "./button";
 export * from "./calendar";
+export * from "./chart";
+export * from "./chartScales";
 export * from "./controlSize";
 export * from "./data-grid";
 export * from "./date";
