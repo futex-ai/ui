@@ -59,7 +59,9 @@ test("button shows the shared tone-independent focus glow and hides the web outl
 });
 
 test("button renders an optional leading icon tinted and sized with the button", () => {
-  const source = readSource("../../src/button/Button.tsx");
+  // The slot markup lives in `ButtonContent`; `Button` resolves the tone colour
+  // and the per-size diameter and hands them down.
+  const source = readSource("../../src/button/ButtonContent.tsx");
 
   // The icon is conditional, shares the tone's label colour, and uses the
   // per-size icon diameter. On web the decorative glyph is hidden from
@@ -68,11 +70,12 @@ test("button renders an optional leading icon tinted and sized with the button",
   // icon-only button, is the authoritative accessible name.
   assert.match(
     source,
-    /<Icon aria-hidden color=\{labelColor\} size=\{buttonIconSize\(size\)\} \/>/,
+    /<Icon aria-hidden color=\{color\} size=\{iconSize\} \/>/,
   );
+  assert.match(source, /<Icon color=\{color\} size=\{iconSize\} \/>/);
   assert.match(
-    source,
-    /<Icon color=\{labelColor\} size=\{buttonIconSize\(size\)\} \/>/,
+    readSource("../../src/button/Button.tsx"),
+    /iconSize=\{buttonIconSize\(size\)\}/,
   );
 });
 
@@ -85,9 +88,10 @@ test("button label colour follows the tone", () => {
   assert.match(source, /theme\.colors\.primaryDeep/);
   assert.match(source, /theme\.colors\.ink/);
   assert.match(
-    source,
-    /<Text style=\{\[styles\.label, \{ color: labelColor \}\]\}>/,
+    readSource("../../src/button/ButtonContent.tsx"),
+    /style=\{\[styles\.label, \{ color \}, labelStyle\]\}/,
   );
+  assert.match(source, /color=\{labelColor\}/);
 });
 
 test("button tone and block styles layer over the base button", () => {
@@ -107,7 +111,7 @@ test("button shows a per-tone hover state, suppressed when disabled", () => {
   // pressed flags.
   assert.match(
     source,
-    /style=\{\(\{ hovered, pressed \}: PressableHoverState\) =>/,
+    /style=\{\(\{ hovered = false, pressed \}: PressableHoverState\) =>/,
   );
   // Every tone has a hover style, gated off while the button is disabled or
   // busy (a busy button blocks activation, so its hover affordance is hidden).
@@ -178,7 +182,7 @@ test("button adds a borderless neutral `plain` tone with hover + pressed washes"
   // `plain` joins the tone union and layers a transparent base like `ghost`.
   assert.match(
     source,
-    /"danger" \| "ghost" \| "plain" \| "primary" \| "secondary"/,
+    /export type ButtonTone =\s*\| "danger"\s*\| "ghost"\s*\| "onMedia"\s*\| "plain"\s*\| "primary"\s*\| "secondary";/,
   );
   assert.match(source, /tone === "plain" \? styles\.plain : null/);
   // The borderless tones (ghost + plain) take a pressed wash deeper than hover.
@@ -275,23 +279,33 @@ test("button renders a compact, line-height-neutral inline chip", () => {
 
 test("button renders a caller-supplied iconNode as-is, not inside Text", () => {
   const source = readSource("../../src/button/Button.tsx");
+  const contentSource = readSource("../../src/button/ButtonContent.tsx");
 
   // iconNode takes precedence over a lucide icon and renders in a bare centred
   // View (never a <Text>), hidden from assistive tech on web. Pointer events are
   // disabled on that decorative wrapper so a caller-supplied focusable SVG
-  // cannot take click focus away from the outer button.
+  // cannot take click focus away from the outer button. The trailing slot is
+  // the same decorative contract, so both share one wrapper.
   assert.match(source, /iconNode\?: ReactNode;/);
-  assert.match(source, /iconNode != null \? \(/);
+  assert.match(contentSource, /iconNode != null \? \(/);
   assert.match(
-    source,
+    contentSource,
     /aria-hidden=\{Platform\.OS === "web" \? true : undefined\}/,
   );
-  assert.match(source, /pointerEvents="none"/);
-  assert.match(source, /style=\{styles\.iconNode\}/);
+  assert.match(contentSource, /pointerEvents="none"/);
+  assert.match(contentSource, /style=\{styles\.iconNode\}/);
   // The bare node is rendered directly (no <Text> wrapper).
-  assert.match(source, />\s*\{iconNode\}\s*<\/View>/);
-  // The icon-only union accepts either a lucide `icon` or an `iconNode`.
-  assert.match(source, /\{ icon: LucideIcon \} \| \{ iconNode: ReactNode \}/);
+  assert.match(contentSource, />\s*\{children\}\s*<\/View>/);
+  assert.match(
+    contentSource,
+    /<DecorativeSlot styles=\{styles\}>\{iconNode\}<\/DecorativeSlot>/,
+  );
+  // The no-visible-label union accepts a lucide `icon`, an `iconNode`, or a
+  // caller-owned `content` card.
+  assert.match(
+    source,
+    /\{ icon: LucideIcon \} \| \{ iconNode: ReactNode \} \| \{ content: ReactNode \}/,
+  );
 });
 
 test("button exposes its pressable for imperative focus", () => {
