@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0](https://github.com/futex-ai/ui/compare/v1.9.0...v2.0.0) (2026-08-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* **chart:** `SharedUiTheme` gains a required `charts` key. Themes built with `createSharedUiTheme` (the documented path) are unaffected, but code constructing a `SharedUiTheme` object literal directly must either add `charts` or switch to `createSharedUiTheme`.
+
+### Features
+
+* add the timeline and video-editor component families ([#153](https://github.com/futex-ai/ui/issues/153)) ([d998e0b](https://github.com/futex-ai/ui/commit/d998e0bc97f6b9bf3a2b9b8e850ec37d8a398b35))
+* **button:** close consumer capability gaps ([#151](https://github.com/futex-ai/ui/issues/151)) ([2cf3610](https://github.com/futex-ai/ui/commit/2cf36103bea8677b1702e7e70789d839a26b8952))
+* **chart:** add the @firna/ui/chart family — 15 interactive charts ([#148](https://github.com/futex-ai/ui/issues/148)) ([173d5cd](https://github.com/futex-ai/ui/commit/173d5cdc804588b5d5130f8d549219470c95adff))
+* **rich-text:** track changes, comments, and live two-user editing ([#152](https://github.com/futex-ai/ui/issues/152)) ([7ccba8e](https://github.com/futex-ai/ui/commit/7ccba8eb30d67a45104166e60bda48aa63363dbb))
+
+
+### Bug Fixes
+
+* **ci:** shard Storybook axe sweep ([#150](https://github.com/futex-ai/ui/issues/150)) ([a1d361d](https://github.com/futex-ai/ui/commit/a1d361da57440008ebc981e6fe398b472e743f05))
+* **package-smoke:** stub the CornerUpLeft lucide icon ([7ccba8e](https://github.com/futex-ai/ui/commit/7ccba8eb30d67a45104166e60bda48aa63363dbb))
+* **timeline:** stop the ruler seeking to NaN ([d998e0b](https://github.com/futex-ai/ui/commit/d998e0bc97f6b9bf3a2b9b8e850ec37d8a398b35))
+* **video-editor:** count decimals in an exponential step ([d998e0b](https://github.com/futex-ai/ui/commit/d998e0bc97f6b9bf3a2b9b8e850ec37d8a398b35))
+* **video-editor:** hold the meter scale to AA contrast ([d998e0b](https://github.com/futex-ai/ui/commit/d998e0bc97f6b9bf3a2b9b8e850ec37d8a398b35))
+
 ## [1.9.0](https://github.com/futex-ai/ui/compare/v1.8.1...v1.9.0) (2026-08-10)
 
 ### Features
