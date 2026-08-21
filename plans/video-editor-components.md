@@ -1,0 +1,122 @@
+# Video editor components
+
+Status: complete — M1–M8 delivered and `npm run verify` green. Design spec:
+[`docs/superpowers/specs/2026-08-12-video-editor-ui-design.md`](../docs/superpowers/specs/2026-08-12-video-editor-ui-design.md).
+
+Two new families: a reusable `@firna/ui/timeline`, and `@firna/ui/video-editor`
+for the surrounding panels. Chrome only — no media APIs, no new runtime
+dependency. Components are controlled; a pure `applyTimelineEdits` reducer ships
+alongside so consumers get the canonical ripple/magnetic behaviour for free.
+
+Every milestone ends with `npm run verify` green.
+
+## M1 — Time foundation and a read-only timeline
+
+Pure time/layout/snap math plus a timeline that renders tracks, clips, a ruler,
+and a playhead, and seeks on tap. No dragging yet.
+
+- [x] Add `src/timeline/timelineTypes.ts` — `TimelineTrack`, `TimelineClip`, `TimelineEdit` union, tool and tone vocabularies
+- [x] Add `src/timeline/timelineTime.ts` — seconds ↔ frames, `formatTimecode` / `parseTimecode`, `timeToX` / `xToTime`, tick-step selection
+- [x] Add `src/timeline/timelineLayout.ts` — track offsets, clip rects, visible-window culling
+- [x] Add `src/timeline/timelineSnap.ts` — snap candidates and pixel-tolerance resolution
+- [x] Add `src/timeline/timelineStyles.ts` — themed stylesheet factory
+- [x] Add `src/timeline/TimelineRuler.tsx` — adaptive ticks and timecode labels
+- [x] Add `src/timeline/TimelineTrackHeader.tsx` — name, kind icon, mute/solo/lock/hide toggles
+- [x] Add `src/timeline/TimelineClip.tsx` — label, waveform, filmstrip, tone fill (no accent bar)
+- [x] Add `src/timeline/TimelinePlayhead.tsx` — head and hairline
+- [x] Add `src/timeline/Timeline.tsx` — controlled root, synced horizontal scroll, pinned gutter, tap-to-seek
+- [x] Add `src/timeline/index.ts` and wire `src/index.ts`
+- [x] Add the `./timeline` entry to `package.json` exports and `tests/unit/packageExports.test.ts`
+- [x] Add `tests/unit/timelineTime.test.ts`, `timelineLayout.test.ts`, `timelineSnap.test.ts`
+- [x] Register the new components in `tests/unit/testIDForwarding.test.ts`
+- [x] Add `src/stories/timelineSampleData.ts` — deterministic peaks and data-URI filmstrip frames
+- [x] Add `src/stories/timeline.stories.tsx` (`Timeline/Examples`)
+- [x] Add `docs/mockups/video-editor.html` with mobile and desktop variants
+- [x] Add the new lucide icons and React Native `Image` to `scripts/package-smoke-stubs.mjs`
+- [x] Add `src/timeline/README.md`
+- [x] `npm run verify` green
+
+## M2 — Pointer editing on the web
+
+The full pro edit vocabulary, driven by the pointer, with a live ghost preview
+and snap indicator.
+
+- [x] Add `src/timeline/timelineEditModel.ts` — gesture → `TimelineEdit`, plus `applyTimelineEdits`
+- [x] Add ripple, magnetic-collapse, roll, and slip math to the edit model
+- [x] Add `src/timeline/timelineSelection.ts` — click / shift-click / marquee selection resolution
+- [x] Add `src/timeline/timelineDragDom.ts` — web rect measuring by `data-testid`
+- [x] Add `src/timeline/useTimelineDrag.web.ts` — pointer capture, move/trim/slip/roll sessions, ghost positioning
+- [x] Add `src/timeline/useTimelineDrag.ts` — inert native stub (replaced in M3)
+- [x] Add `src/timeline/TimelineMarquee.tsx` and the snap indicator
+- [x] Add razor-tool split on click
+- [x] Add `tests/unit/timelineEdits.test.ts` and `tests/unit/timelineSelection.test.ts`
+- [x] Extend the timeline story with an editable example
+- [x] Add `tests/browser/timeline.spec.ts` — pointer move, cross-track drag, edge trim, preview parity, marquee, razor, locked-clip refusal
+- [x] `npm run verify` green
+
+## M3 — Native touch, keyboard, and accessibility
+
+- [x] Implement the native `useTimelineDrag` with `PanResponder` move and trim gestures
+- [x] Add `src/timeline/timelineAnnounce.ts` and `src/timeline/useTimelineKeyboard.ts`
+- [x] Add `src/timeline/timelineKeyboardModel.ts` — key → edit intent
+- [x] Wire roving-tabindex focus across clips, arrow nudge, `[` / `]` trim, `S` split, `Delete` remove
+- [x] Announce every committed edit through `announce`
+- [x] Give the ruler `role="slider"` with literal `aria-value*` props
+- [x] Add `tests/unit/timelineKeyboard.test.ts`
+- [x] Add `tests/browser/timeline.spec.ts` — drag, trim, marquee, keyboard nudge
+- [x] Confirm the axe sweep stays green for the timeline stories
+- [x] `npm run verify` green
+
+## M4 — Preview, transport, and metering
+
+- [x] Add `src/video-editor/videoEditorStyles.ts` and the react-native-free `videoEditorSizing.ts` / `previewAspect.ts`
+- [x] Add `src/video-editor/PreviewSurface.tsx` — aspect box, letterbox, guides, overlay slot
+- [x] Add `src/video-editor/Scrubber.tsx` — buffered range, in/out region, markers, slider semantics
+- [x] Add `src/video-editor/levelMeterScale.ts` and `LevelMeter.tsx`
+- [x] Add `src/video-editor/TransportBar.tsx` — play/pause, frame step, jump, in/out, loop, timecode, speed
+- [x] Add `src/video-editor/index.ts`, wire `src/index.ts`, `package.json` exports, `packageExports.test.ts`
+- [x] Add `tests/unit/levelMeter.test.ts` and `tests/unit/scrubber.test.ts`
+- [x] Add `src/stories/videoEditor.stories.tsx` with per-component stories and the combined shell scaffold
+- [x] Add `src/stories/videoEditorSampleData.ts` and `videoEditorHost.tsx` (shared host state, simulated playback)
+- [x] `npm run verify` green
+
+## M5 — Media bin and inspector
+
+- [x] Add `src/video-editor/MediaBin.tsx` and `MediaBinItem.tsx` — grid/list, search, duration badge, selection
+- [x] Add `src/video-editor/NumberScrubber.tsx` — drag-to-change numeric field
+- [x] Add `src/video-editor/Inspector.tsx` / `InspectorRow.tsx` — sections, typed rows, reset, keyframe stopwatch
+- [x] Add the pure `mediaBinModel.ts` and `inspectorModel.ts` (filter, group, clamp, describe)
+- [x] Stub the newly-used lucide icons and surface the real import-smoke error
+- [x] Add `tests/unit/mediaBin.test.ts` and `tests/unit/inspector.test.ts`
+- [x] Wire both panels into the combined story, with selection driving the inspector
+- [x] `npm run verify` green
+
+## M6 — Effects rack and keyframe editor
+
+- [x] Add `src/video-editor/EffectsRack.tsx` — reorder via `SortableList`, enable toggle, remove, nested params
+- [x] Add `src/video-editor/keyframeCurve.ts` — interpolation, bezier evaluation, hit testing
+- [x] Add `src/video-editor/KeyframeEditor.tsx` — lane mode and curve mode
+- [x] Add `src/stories/videoEditorEffects.ts` — sample chain and keyframe tracks
+- [x] Add `tests/unit/keyframeCurve.test.ts`
+- [x] Wire both into the combined story
+- [x] `npm run verify` green
+
+## M7 — Export dialog
+
+- [x] Add `src/video-editor/exportEstimate.ts` — bitrate/duration → size and time estimates
+- [x] Add `src/video-editor/ExportDialog.tsx` — presets, format fields, range, estimate, progress, cancel
+- [x] Add `tests/unit/exportEstimate.test.ts`
+- [x] Wire an Export action into the combined story
+- [x] Add `sampleExportPresets` and a simulated encode to the story host
+- [x] `npm run verify` green
+
+## M8 — Combined story, docs, and release readiness
+
+- [x] Finish `Full editor` and `Full editor (dark)` stories
+- [x] Add a responsive/mobile layout branch to the combined story
+- [x] Add `tests/browser/videoEditor.spec.ts` — the assembled editor end to end
+- [x] Write `src/video-editor/README.md`
+- [x] Update `src/timeline/README.md` for the editing model
+- [x] Update the root `README.md` component list
+- [x] Move this plan to Completed in `plans/README.md`
+- [x] Final `npm run verify` green

@@ -185,6 +185,11 @@
       "react-native": "./dist/theme.js",
       "import": "./dist/node/theme.js"
     },
+    "./timeline": {
+      "types": "./dist/node/timeline/index.d.ts",
+      "react-native": "./dist/timeline/index.js",
+      "import": "./dist/node/timeline/index.js"
+    },
     "./toast": {
       "types": "./dist/node/toast/index.d.ts",
       "react-native": "./dist/toast/index.js",
@@ -194,6 +199,11 @@
       "types": "./dist/node/typography/index.d.ts",
       "react-native": "./dist/typography/index.js",
       "import": "./dist/node/typography/index.js"
+    },
+    "./video-editor": {
+      "types": "./dist/node/video-editor/index.d.ts",
+      "react-native": "./dist/video-editor/index.js",
+      "import": "./dist/node/video-editor/index.js"
     },
     "./workflow": {
       "types": "./dist/node/workflow/index.d.ts",

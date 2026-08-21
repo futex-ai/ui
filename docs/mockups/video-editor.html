@@ -1,0 +1,995 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Video editor — mobile and desktop</title>
+    <style>
+      :root {
+        color: #1c1f1d;
+        background: #eef0eb;
+        font-family:
+          Inter,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 32px;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 24px;
+      }
+      h2 {
+        margin: 40px 0 12px;
+        font-size: 16px;
+      }
+      .lede {
+        color: #69706a;
+        font-size: 14px;
+        margin: 0 0 24px;
+        max-width: 760px;
+      }
+      .variants {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 32px;
+        align-items: flex-start;
+      }
+      .variant {
+        display: grid;
+        gap: 10px;
+      }
+      .caption {
+        color: #69706a;
+        font-size: 13px;
+        max-width: 720px;
+      }
+      .screen {
+        background: #fff;
+        border: 1px solid #d3d8cd;
+        box-shadow: 0 18px 52px rgba(28, 31, 29, 0.12);
+        overflow: hidden;
+      }
+      .desktop {
+        width: 1160px;
+        height: 720px;
+        border-radius: 14px;
+        display: grid;
+        grid-template-rows: 46px 1fr 268px;
+      }
+      .mobile {
+        width: 390px;
+        height: 760px;
+        border-radius: 28px;
+        display: grid;
+        grid-template-rows: 42px 46px auto 1fr 62px;
+      }
+
+      /* --- shared chrome ------------------------------------------------ */
+      .bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 14px;
+        background: #f7f7f3;
+        border-bottom: 1px solid #e5e8e0;
+      }
+      .title {
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .spacer {
+        flex: 1;
+      }
+      .btn {
+        height: 28px;
+        padding: 0 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(28, 31, 29, 0.27);
+        background: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .btn.primary {
+        background: #2f5945;
+        border-color: #2f5945;
+        color: #fff;
+      }
+      .icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        background: #eef2ed;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: #3e4540;
+      }
+      .icon.on {
+        background: #e3eee6;
+        color: #2f5945;
+      }
+      .tc {
+        font-family: Menlo, Consolas, monospace;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .panel-title {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #69706a;
+        padding: 10px 12px 6px;
+      }
+
+      /* --- desktop middle row ------------------------------------------- */
+      .middle {
+        display: grid;
+        grid-template-columns: 244px 1fr 268px;
+        min-height: 0;
+      }
+      .bin,
+      .inspector {
+        background: #f7f7f3;
+        overflow: hidden;
+      }
+      .bin {
+        border-right: 1px solid #e5e8e0;
+      }
+      .inspector {
+        box-shadow: inset 1px 0 0 #e5e8e0;
+      }
+      .search {
+        margin: 0 12px 10px;
+        height: 30px;
+        border-radius: 8px;
+        border: 1px solid rgba(28, 31, 29, 0.27);
+        background: #fff;
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+        font-size: 12px;
+        color: #6c736c;
+      }
+      .bin-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 0 12px;
+      }
+      .asset {
+        border-radius: 8px;
+        border: 1px solid #e5e8e0;
+        background: #fff;
+        overflow: hidden;
+      }
+      .asset.sel {
+        border-color: #4f7864;
+        box-shadow: 0 0 0 3px rgba(79, 120, 100, 0.28);
+      }
+      .thumb {
+        height: 54px;
+        background: linear-gradient(135deg, #7fa8bd, #3f6070);
+        position: relative;
+      }
+      .thumb.warm {
+        background: linear-gradient(135deg, #d6a373, #8a5a33);
+      }
+      .thumb.green {
+        background: linear-gradient(135deg, #8fbf95, #3f7050);
+      }
+      .thumb.audio {
+        background: linear-gradient(135deg, #efe0bd, #c19a4d);
+      }
+      .dur {
+        position: absolute;
+        right: 4px;
+        bottom: 4px;
+        background: rgba(20, 22, 19, 0.72);
+        color: #fff;
+        border-radius: 4px;
+        padding: 1px 4px;
+        font-size: 10px;
+        font-family: Menlo, Consolas, monospace;
+      }
+      .asset-name {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 5px 6px;
+      }
+
+      .stage {
+        background: #ecede7;
+        display: grid;
+        grid-template-rows: 1fr 52px;
+        min-height: 0;
+      }
+      .monitor {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+      }
+      .frame {
+        aspect-ratio: 16 / 9;
+        width: 100%;
+        max-height: 100%;
+        background: linear-gradient(150deg, #56798c 0%, #2c4351 55%, #1d2c36 100%);
+        border-radius: 8px;
+        position: relative;
+        overflow: hidden;
+      }
+      .sun {
+        position: absolute;
+        left: 22%;
+        top: 26%;
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background: #f0d9a8;
+        opacity: 0.85;
+      }
+      .hill {
+        position: absolute;
+        inset: auto 0 0 0;
+        height: 38%;
+        background: #23343d;
+        border-radius: 40% 55% 0 0;
+      }
+      .guides {
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(to right, transparent 33.3%, rgba(255, 255, 255, 0.22) 33.3% 33.4%, transparent 33.4%),
+          linear-gradient(to right, transparent 66.6%, rgba(255, 255, 255, 0.22) 66.6% 66.7%, transparent 66.7%),
+          linear-gradient(to bottom, transparent 33.3%, rgba(255, 255, 255, 0.22) 33.3% 33.4%, transparent 33.4%),
+          linear-gradient(to bottom, transparent 66.6%, rgba(255, 255, 255, 0.22) 66.6% 66.7%, transparent 66.7%);
+      }
+      .transport {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 14px;
+        background: #f7f7f3;
+        box-shadow: inset 0 1px 0 #e5e8e0;
+      }
+      .scrub {
+        flex: 1;
+        height: 6px;
+        border-radius: 999px;
+        background: #d3d8cd;
+        position: relative;
+      }
+      .scrub .buffered {
+        position: absolute;
+        inset: 0 32% 0 0;
+        background: #c2cbc0;
+        border-radius: 999px;
+      }
+      .scrub .played {
+        position: absolute;
+        inset: 0 68% 0 0;
+        background: #4f7864;
+        border-radius: 999px;
+      }
+      .scrub .knob {
+        position: absolute;
+        left: 32%;
+        top: -4px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #2f5945;
+        transform: translateX(-7px);
+      }
+      .meter {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        width: 74px;
+      }
+      .meter .lane {
+        height: 5px;
+        border-radius: 3px;
+        background: #dfe3da;
+        overflow: hidden;
+      }
+      .meter .fill {
+        height: 100%;
+        background: linear-gradient(to right, #4f7864 0 62%, #946727 62% 84%, #a84f45 84% 100%);
+      }
+
+      .prop {
+        display: grid;
+        grid-template-columns: 84px 1fr 22px;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 12px;
+        font-size: 12px;
+      }
+      .prop .name {
+        color: #3e4540;
+      }
+      .prop .field {
+        height: 26px;
+        border-radius: 7px;
+        border: 1px solid rgba(28, 31, 29, 0.27);
+        background: #fff;
+        display: flex;
+        align-items: center;
+        padding: 0 8px;
+        font-family: Menlo, Consolas, monospace;
+        font-size: 11px;
+      }
+      .stopwatch {
+        width: 20px;
+        height: 20px;
+        border-radius: 5px;
+        background: #eef2ed;
+        color: #69706a;
+        font-size: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .stopwatch.on {
+        background: #e3eee6;
+        color: #2f5945;
+      }
+      .effect {
+        margin: 0 12px 6px;
+        border: 1px solid #e5e8e0;
+        border-radius: 8px;
+        background: #fff;
+        padding: 7px 9px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .grip {
+        color: #a8aea7;
+        font-size: 12px;
+      }
+      .switch {
+        width: 28px;
+        height: 16px;
+        border-radius: 999px;
+        background: #4f7864;
+        position: relative;
+        margin-left: auto;
+      }
+      .switch::after {
+        content: "";
+        position: absolute;
+        right: 2px;
+        top: 2px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #fff;
+      }
+      .switch.off {
+        background: #cfd6cc;
+      }
+      .switch.off::after {
+        right: auto;
+        left: 2px;
+      }
+
+      /* --- timeline ------------------------------------------------------ */
+      .timeline {
+        background: #fff;
+        box-shadow: inset 0 1px 0 #e5e8e0;
+        display: grid;
+        grid-template-columns: 164px 1fr;
+        min-height: 0;
+      }
+      .gutter {
+        background: #f7f7f3;
+        border-right: 1px solid #e5e8e0;
+      }
+      .gutter .rulerpad {
+        height: 26px;
+        background: #ecede7;
+        border-bottom: 1px solid #e5e8e0;
+      }
+      .thead {
+        border-bottom: 1px solid #e5e8e0;
+        padding: 6px 8px;
+        display: grid;
+        gap: 3px;
+        align-content: center;
+      }
+      .thead .row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .thead .nm {
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .tog {
+        width: 20px;
+        height: 20px;
+        border-radius: 5px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        color: #69706a;
+      }
+      .tog.on {
+        background: #e3eee6;
+        color: #2f5945;
+      }
+      .lanes {
+        position: relative;
+        overflow: hidden;
+      }
+      .ruler {
+        height: 26px;
+        background: #ecede7;
+        border-bottom: 1px solid #e5e8e0;
+        position: relative;
+      }
+      .ruler .t {
+        position: absolute;
+        bottom: 0;
+        width: 1px;
+        height: 8px;
+        background: #d3d8cd;
+      }
+      .ruler .lbl {
+        position: absolute;
+        top: 3px;
+        font-family: Menlo, Consolas, monospace;
+        font-size: 10px;
+        color: #3e4540;
+      }
+      .lane-row {
+        border-bottom: 1px solid #e5e8e0;
+        position: relative;
+      }
+      .lane-row.alt {
+        background: #f7f7f3;
+      }
+      .clip {
+        position: absolute;
+        top: 4px;
+        bottom: 4px;
+        border-radius: 6px;
+        border: 1px solid;
+        padding: 4px 6px;
+        overflow: hidden;
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .clip.video {
+        background: #e3eee6;
+        border-color: #d1e2d7;
+        color: #2f5945;
+      }
+      .clip.audio {
+        background: #f4ecd8;
+        border-color: #946727;
+        color: #75531a;
+      }
+      .clip.title {
+        background: #eef2ed;
+        border-color: #d3d8cd;
+        color: #3e4540;
+      }
+      .clip.sel {
+        border-width: 2px;
+        border-color: #4f7864;
+        box-shadow: inset 0 0 0 2px rgba(79, 120, 100, 0.3);
+      }
+      .strip {
+        position: absolute;
+        inset: 20px 0 0 0;
+        display: flex;
+      }
+      .strip i {
+        flex: 1;
+        display: block;
+      }
+      .wave {
+        position: absolute;
+        inset: 19px 4px 3px 4px;
+        display: flex;
+        align-items: flex-end;
+        gap: 1px;
+      }
+      .wave b {
+        flex: 1;
+        background: #946727;
+        opacity: 0.55;
+        border-radius: 1px;
+      }
+      .playhead {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #a84f45;
+      }
+      .playhead::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        background: #a84f45;
+      }
+
+      /* --- mobile -------------------------------------------------------- */
+      .status {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 22px 0;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .m-monitor {
+        background: #1d2c36;
+        aspect-ratio: 16 / 9;
+        position: relative;
+        overflow: hidden;
+      }
+      .m-tabs {
+        display: flex;
+        gap: 6px;
+        padding: 8px 12px;
+        background: #f7f7f3;
+        border-bottom: 1px solid #e5e8e0;
+      }
+      .tab {
+        flex: 1;
+        text-align: center;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 6px 0;
+        border-radius: 7px;
+        color: #3e4540;
+      }
+      .tab.on {
+        background: #2f5945;
+        color: #fff;
+      }
+      .m-timeline {
+        display: grid;
+        grid-template-rows: 22px 1fr;
+        min-height: 0;
+        overflow: hidden;
+      }
+      .m-ruler {
+        background: #ecede7;
+        border-bottom: 1px solid #e5e8e0;
+        position: relative;
+      }
+      .m-lanes {
+        position: relative;
+        overflow: hidden;
+      }
+      .m-lane {
+        height: 46px;
+        border-bottom: 1px solid #e5e8e0;
+        position: relative;
+      }
+      .m-lane .tag {
+        position: absolute;
+        top: 3px;
+        left: 4px;
+        font-size: 9px;
+        font-weight: 800;
+        color: #69706a;
+        z-index: 2;
+      }
+      .m-transport {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        background: #f7f7f3;
+        box-shadow: inset 0 1px 0 #e5e8e0;
+      }
+      .round {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #eef2ed;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        color: #2f5945;
+      }
+      .round.play {
+        width: 44px;
+        height: 44px;
+        background: #2f5945;
+        color: #fff;
+        font-size: 16px;
+      }
+      .notes {
+        margin-top: 28px;
+        max-width: 900px;
+        color: #3e4540;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .notes code {
+        font-family: Menlo, Consolas, monospace;
+        background: #e7ebe1;
+        border-radius: 4px;
+        padding: 1px 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Video editor</h1>
+    <p class="lede">
+      The assembled editor: media bin, program monitor with transport and
+      metering, inspector with effects and keyframes, and the multi-track
+      timeline across the bottom.
+    </p>
+
+    <h2>Desktop / web</h2>
+    <div class="variants">
+      <div class="variant">
+        <div class="screen desktop">
+          <div class="bar">
+            <span class="title">Harbour cut — v4</span>
+            <span class="icon on">⌖</span>
+            <span class="icon">✂</span>
+            <span class="icon">⇔</span>
+            <span class="spacer"></span>
+            <span class="tc">00:00:09:14</span>
+            <button class="btn">Share</button>
+            <button class="btn primary">Export</button>
+          </div>
+
+          <div class="middle">
+            <div class="bin">
+              <div class="panel-title">Media</div>
+              <div class="search">Search media</div>
+              <div class="bin-grid">
+                <div class="asset sel">
+                  <div class="thumb"><span class="dur">0:22</span></div>
+                  <div class="asset-name">Harbour wide</div>
+                </div>
+                <div class="asset">
+                  <div class="thumb warm"><span class="dur">0:40</span></div>
+                  <div class="asset-name">Interview A</div>
+                </div>
+                <div class="asset">
+                  <div class="thumb green"><span class="dur">0:14</span></div>
+                  <div class="asset-name">Cutaway</div>
+                </div>
+                <div class="asset">
+                  <div class="thumb audio"><span class="dur">2:00</span></div>
+                  <div class="asset-name">Music bed</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="stage">
+              <div class="monitor">
+                <div class="frame">
+                  <div class="sun"></div>
+                  <div class="hill"></div>
+                  <div class="guides"></div>
+                </div>
+              </div>
+              <div class="transport">
+                <span class="icon">⏮</span>
+                <span class="icon on">▶</span>
+                <span class="icon">⏭</span>
+                <span class="tc">00:00:09:14</span>
+                <div class="scrub">
+                  <div class="buffered"></div>
+                  <div class="played"></div>
+                  <div class="knob"></div>
+                </div>
+                <span class="tc">00:00:22:00</span>
+                <div class="meter">
+                  <div class="lane"><div class="fill" style="width: 68%"></div></div>
+                  <div class="lane"><div class="fill" style="width: 55%"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="inspector">
+              <div class="panel-title">Interview A</div>
+              <div class="prop">
+                <span class="name">Position</span>
+                <span class="field">0, −24</span>
+                <span class="stopwatch on">◷</span>
+              </div>
+              <div class="prop">
+                <span class="name">Scale</span>
+                <span class="field">112%</span>
+                <span class="stopwatch">◷</span>
+              </div>
+              <div class="prop">
+                <span class="name">Opacity</span>
+                <span class="field">100%</span>
+                <span class="stopwatch on">◷</span>
+              </div>
+              <div class="prop">
+                <span class="name">Volume</span>
+                <span class="field">−3.0 dB</span>
+                <span class="stopwatch">◷</span>
+              </div>
+              <div class="panel-title">Effects</div>
+              <div class="effect">
+                <span class="grip">⠿</span> Colour balance
+                <span class="switch"></span>
+              </div>
+              <div class="effect">
+                <span class="grip">⠿</span> Gaussian blur
+                <span class="switch off"></span>
+              </div>
+              <div class="panel-title">Opacity keyframes</div>
+              <div style="padding: 0 12px">
+                <svg viewBox="0 0 240 56" width="100%" height="56">
+                  <rect width="240" height="56" fill="#f7f7f3" rx="6" />
+                  <path
+                    d="M8 44 C 60 44, 70 12, 120 12 S 190 40, 232 40"
+                    fill="none"
+                    stroke="#4f7864"
+                    stroke-width="2"
+                  />
+                  <circle cx="8" cy="44" r="4" fill="#2f5945" />
+                  <circle cx="120" cy="12" r="4" fill="#2f5945" />
+                  <circle cx="232" cy="40" r="4" fill="#2f5945" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline">
+            <div class="gutter">
+              <div class="rulerpad"></div>
+              <div class="thead" style="height: 46px">
+                <div class="row"><span class="nm">Titles</span></div>
+                <div class="row">
+                  <span class="tog">👁</span><span class="tog">🔓</span>
+                </div>
+              </div>
+              <div class="thead" style="height: 62px">
+                <div class="row"><span class="nm">Picture</span></div>
+                <div class="row">
+                  <span class="tog on">👁</span><span class="tog">🔓</span>
+                </div>
+              </div>
+              <div class="thead" style="height: 52px">
+                <div class="row"><span class="nm">Dialogue</span></div>
+                <div class="row">
+                  <span class="tog">🔊</span><span class="tog on">🎧</span
+                  ><span class="tog">🔓</span>
+                </div>
+              </div>
+              <div class="thead" style="height: 46px">
+                <div class="row"><span class="nm">Music</span></div>
+                <div class="row">
+                  <span class="tog">🔊</span><span class="tog">🎧</span
+                  ><span class="tog">🔒</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="lanes">
+              <div class="ruler">
+                <span class="t" style="left: 0"></span>
+                <span class="lbl" style="left: 4px">0:00</span>
+                <span class="t" style="left: 180px"></span>
+                <span class="lbl" style="left: 184px">0:05</span>
+                <span class="t" style="left: 360px"></span>
+                <span class="lbl" style="left: 364px">0:10</span>
+                <span class="t" style="left: 540px"></span>
+                <span class="lbl" style="left: 544px">0:15</span>
+                <span class="t" style="left: 720px"></span>
+                <span class="lbl" style="left: 724px">0:20</span>
+              </div>
+
+              <div class="lane-row" style="height: 46px">
+                <div class="clip title" style="left: 0; width: 126px">
+                  Opening card
+                </div>
+              </div>
+              <div class="lane-row alt" style="height: 62px">
+                <div class="clip video" style="left: 0; width: 288px">
+                  Harbour wide
+                  <div class="strip">
+                    <i style="background: #4e7d92"></i><i style="background: #55849a"></i
+                    ><i style="background: #5c8ba1"></i><i style="background: #6392a8"></i
+                    ><i style="background: #6a99af"></i><i style="background: #71a0b6"></i>
+                  </div>
+                </div>
+                <div class="clip video sel" style="left: 288px; width: 234px">
+                  Interview A
+                  <div class="strip">
+                    <i style="background: #9a7350"></i><i style="background: #a37b57"></i
+                    ><i style="background: #ac835e"></i><i style="background: #b58b65"></i
+                    ><i style="background: #be936c"></i>
+                  </div>
+                </div>
+                <div class="clip video" style="left: 558px; width: 180px">
+                  Cutaway
+                  <div class="strip">
+                    <i style="background: #567f61"></i><i style="background: #5f8a6a"></i
+                    ><i style="background: #689573"></i><i style="background: #71a07c"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="lane-row" style="height: 52px">
+                <div class="clip audio" style="left: 14px; width: 223px">
+                  VO intro
+                  <div class="wave">
+                    <b style="height: 40%"></b><b style="height: 72%"></b
+                    ><b style="height: 55%"></b><b style="height: 88%"></b
+                    ><b style="height: 34%"></b><b style="height: 61%"></b
+                    ><b style="height: 79%"></b><b style="height: 46%"></b
+                    ><b style="height: 66%"></b><b style="height: 30%"></b
+                    ><b style="height: 58%"></b><b style="height: 83%"></b
+                    ><b style="height: 49%"></b><b style="height: 71%"></b>
+                  </div>
+                </div>
+                <div class="clip audio" style="left: 288px; width: 266px">
+                  Interview audio
+                  <div class="wave">
+                    <b style="height: 62%"></b><b style="height: 38%"></b
+                    ><b style="height: 77%"></b><b style="height: 52%"></b
+                    ><b style="height: 85%"></b><b style="height: 44%"></b
+                    ><b style="height: 69%"></b><b style="height: 31%"></b
+                    ><b style="height: 74%"></b><b style="height: 57%"></b
+                    ><b style="height: 90%"></b><b style="height: 41%"></b
+                    ><b style="height: 64%"></b><b style="height: 36%"></b>
+                  </div>
+                </div>
+              </div>
+              <div class="lane-row alt" style="height: 46px">
+                <div class="clip audio" style="left: 18px; width: 684px">
+                  Music bed
+                  <div class="wave">
+                    <b style="height: 48%"></b><b style="height: 63%"></b
+                    ><b style="height: 55%"></b><b style="height: 70%"></b
+                    ><b style="height: 51%"></b><b style="height: 66%"></b
+                    ><b style="height: 58%"></b><b style="height: 73%"></b
+                    ><b style="height: 49%"></b><b style="height: 61%"></b
+                    ><b style="height: 68%"></b><b style="height: 53%"></b
+                    ><b style="height: 71%"></b><b style="height: 46%"></b
+                    ><b style="height: 64%"></b><b style="height: 57%"></b>
+                  </div>
+                </div>
+              </div>
+
+              <div class="playhead" style="left: 340px"></div>
+            </div>
+          </div>
+        </div>
+        <p class="caption">
+          The timeline gutter stays pinned while the ruler, lanes, and playhead
+          scroll together. The selected clip carries a thicker uniform border and
+          an inset ring — tone never sits in an edge strip.
+        </p>
+      </div>
+    </div>
+
+    <h2>Mobile</h2>
+    <div class="variants">
+      <div class="variant">
+        <div class="screen mobile">
+          <div class="status"><span>9:41</span><span>▮▮▮</span></div>
+          <div class="bar">
+            <span class="title">Harbour cut</span>
+            <span class="spacer"></span>
+            <span class="tc">00:00:09:14</span>
+            <button class="btn primary">Export</button>
+          </div>
+          <div class="m-monitor">
+            <div class="frame" style="border-radius: 0">
+              <div class="sun"></div>
+              <div class="hill"></div>
+            </div>
+          </div>
+          <div class="m-tabs">
+            <span class="tab on">Timeline</span>
+            <span class="tab">Media</span>
+            <span class="tab">Inspect</span>
+            <span class="tab">Effects</span>
+          </div>
+          <div class="m-timeline">
+            <div class="m-ruler">
+              <span class="lbl" style="left: 6px; position: absolute; top: 4px"
+                >0:00</span
+              >
+              <span class="lbl" style="left: 150px; position: absolute; top: 4px"
+                >0:10</span
+              >
+              <span class="lbl" style="left: 296px; position: absolute; top: 4px"
+                >0:20</span
+              >
+            </div>
+            <div class="m-lanes">
+              <div class="m-lane">
+                <span class="tag">PICTURE</span>
+                <div class="clip video" style="left: 0; width: 118px; top: 12px">
+                  Harbour
+                </div>
+                <div
+                  class="clip video sel"
+                  style="left: 118px; width: 96px; top: 12px"
+                >
+                  Interview
+                </div>
+                <div class="clip video" style="left: 228px; width: 74px; top: 12px">
+                  Cutaway
+                </div>
+              </div>
+              <div class="m-lane">
+                <span class="tag">DIALOGUE</span>
+                <div class="clip audio" style="left: 6px; width: 92px; top: 12px">
+                  VO intro
+                </div>
+                <div class="clip audio" style="left: 118px; width: 110px; top: 12px">
+                  Interview
+                </div>
+              </div>
+              <div class="m-lane">
+                <span class="tag">MUSIC</span>
+                <div class="clip audio" style="left: 8px; width: 280px; top: 12px">
+                  Music bed
+                </div>
+              </div>
+              <div class="playhead" style="left: 140px"></div>
+            </div>
+          </div>
+          <div class="m-transport">
+            <span class="round">⏮</span>
+            <span class="round">◀◀</span>
+            <span class="round play">▶</span>
+            <span class="round">▶▶</span>
+            <span class="round">✂</span>
+          </div>
+        </div>
+        <p class="caption">
+          On a phone the panels become tabs under the monitor, the track gutter
+          collapses into an in-lane label, and the transport grows to touch-sized
+          targets.
+        </p>
+      </div>
+    </div>
+
+    <div class="notes">
+      <p>
+        Timeline components: <code>Timeline</code>, <code>TimelineRuler</code>,
+        <code>TimelineTrackHeader</code>, <code>TimelineClip</code>,
+        <code>TimelinePlayhead</code>. Editor components:
+        <code>PreviewSurface</code>, <code>TransportBar</code>,
+        <code>Scrubber</code>, <code>LevelMeter</code>, <code>MediaBin</code>,
+        <code>Inspector</code>, <code>EffectsRack</code>,
+        <code>KeyframeEditor</code>, <code>ExportDialog</code>.
+      </p>
+    </div>
+  </body>
+</html>
