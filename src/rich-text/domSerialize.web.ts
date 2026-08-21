@@ -1,4 +1,5 @@
 /** Tolerant DOM-to-document serializer for RichTextEditor web documents. */
+import { editableTextContent } from "./domInline.web";
 import {
   InlineMark,
   InlineSpan,
@@ -42,7 +43,7 @@ function serializeElementBlock(element: HTMLElement): RichTextBlock[] {
     case "quote":
       return [{ spans: inlineSpans(element), type: "quote" }];
     case "code":
-      return [{ code: element.textContent ?? "", type: "codeBlock" }];
+      return [{ code: editableTextContent(element), type: "codeBlock" }];
     case "divider":
       return [{ type: "divider" }];
     case "ul":
@@ -76,7 +77,7 @@ function serializeNativeElement(element: HTMLElement): RichTextBlock[] {
     return [{ spans: inlineSpans(element), type: "quote" }];
   }
   if (tag === "pre") {
-    return [{ code: element.textContent ?? "", type: "codeBlock" }];
+    return [{ code: editableTextContent(element), type: "codeBlock" }];
   }
   if (tag === "hr") {
     return [{ type: "divider" }];
@@ -142,6 +143,12 @@ function marksForElement(
   element: HTMLElement,
   marks: readonly InlineMark[],
 ): readonly InlineMark[] {
+  // Collaboration decorations wrap document text without being part of it. The
+  // wrapper is transparent here so its children still serialize — and crucially
+  // so a tracked deletion's <del> is not mistaken for a strikethrough mark.
+  if (element.dataset.rtDeco !== undefined) {
+    return marks;
+  }
   const tag = element.tagName.toLowerCase();
   if (tag === "strong" || tag === "b") {
     return addMark(marks, "bold");

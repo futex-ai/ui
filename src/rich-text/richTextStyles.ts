@@ -6,6 +6,8 @@ import { fieldChromeTokens } from "../input/inputStyles";
 import type { SharedUiTheme } from "../theme";
 import { createTypographyStyles } from "../typography/typographyStyles";
 
+import type { RichTextDomRenderTheme } from "./domStyle.web";
+
 /** Build themed React Native styles for the editor frame. */
 export function createRichTextStyles(theme: SharedUiTheme) {
   const chrome = fieldChromeTokens(theme);
@@ -51,7 +53,9 @@ export function createRichTextStyles(theme: SharedUiTheme) {
 }
 
 /** Raw text metrics used by the imperative DOM renderer. */
-export function createRichTextDomTheme(theme: SharedUiTheme) {
+export function createRichTextDomTheme(
+  theme: SharedUiTheme,
+): RichTextDomRenderTheme {
   const typography = createTypographyStyles(theme);
   return {
     body: domTextStyle(typography.body),

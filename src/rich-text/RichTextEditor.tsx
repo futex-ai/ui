@@ -14,6 +14,14 @@ import { useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { NativeRichTextEditorSurface } from "./NativeRichTextEditorSurface";
+import type { RichTextAnnotationInput } from "./richTextCollabModel";
+import { richTextCollabPalette } from "./richTextCollabPalette";
+import type {
+  RichTextCollaborator,
+  RichTextCommentThread,
+  RichTextPresence,
+  RichTextSuggestion,
+} from "./richTextCollabTypes";
 import { parseMarkdown } from "./markdownParse";
 import { serializeMarkdown } from "./markdownSerialize";
 import { marksForNativeSelection } from "./nativeRichTextEditing";
@@ -40,21 +48,58 @@ import type { RichTextEditorProps } from "./richTextTypes";
 import { useNativeRichTextCommands } from "./useNativeRichTextCommands";
 import { useNativeRichTextHistory } from "./useNativeRichTextHistory";
 
+/**
+ * Stable empty defaults. A `= []` default is a new array on every render, which
+ * would invalidate the overlay memo — and re-render the whole document — on
+ * every render of an editor that has no session at all.
+ */
+const NO_COLLABORATORS: readonly RichTextCollaborator[] = [];
+const NO_COMMENT_THREADS: readonly RichTextCommentThread[] = [];
+const NO_PRESENCE: readonly RichTextPresence[] = [];
+const NO_SUGGESTIONS: readonly RichTextSuggestion[] = [];
+
 /** Rich text editor for native iOS and Android using the shared block model. */
 export function RichTextEditor({
+  activeCommentThreadId = null,
   autoFocus = false,
+  collaborators = NO_COLLABORATORS,
+  commentThreads = NO_COMMENT_THREADS,
   disableFocusRing = false,
   label,
+  localCollaboratorId,
   maxHeight,
   minHeight = 120,
   onChangeMarkdown,
+  onSelectCommentThread,
   placeholder,
+  presence = NO_PRESENCE,
   readOnly = false,
+  suggestions = NO_SUGGESTIONS,
   testID,
   value = "",
 }: RichTextEditorProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createNativeRichTextStyles(theme), [theme]);
+  const collaboratorPalette = useMemo(
+    () => richTextCollabPalette(theme, collaborators),
+    [collaborators, theme],
+  );
+  const collabState = useMemo<RichTextAnnotationInput>(
+    () => ({
+      activeCommentThreadId,
+      commentThreads,
+      localCollaboratorId,
+      presence,
+      suggestions,
+    }),
+    [
+      activeCommentThreadId,
+      commentThreads,
+      localCollaboratorId,
+      presence,
+      suggestions,
+    ],
+  );
   const focus = useFocusRing({ disabled: disableFocusRing });
   const accessoryId = `rich-text-${useId().replace(/:/g, "")}`;
   const initialDocument = useMemo(() => parseMarkdown(value), []);
@@ -229,6 +274,8 @@ export function RichTextEditor({
       activeMarks={activeMarks}
       canRedo={historyAvailability.canRedo}
       canUndo={historyAvailability.canUndo}
+      collabState={collabState}
+      collaboratorPalette={collaboratorPalette}
       document={document}
       editorFocused={editorFocused}
       focusRingStyle={focus.focusRingStyle}
@@ -252,6 +299,7 @@ export function RichTextEditor({
       onKeyPress={handleKeyPress}
       onRedo={() => traverseHistory("redo")}
       onRequestFocus={scheduleFocus}
+      onSelectCommentThread={onSelectCommentThread}
       onSelectionChange={handleSelectionChange}
       onSubmitEditing={handleSubmitEditing}
       onToggleCheck={handleToggleCheck}

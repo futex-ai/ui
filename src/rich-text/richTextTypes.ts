@@ -1,4 +1,5 @@
 /** Shared public prop types for the web and native rich-text editors. */
+import type { RichTextCollabProps } from "./richTextCollabTypes";
 import type {
   DocPosition,
   InlineMark,
@@ -28,8 +29,14 @@ export type SlashMenuItem = {
   section?: string;
 };
 
-/** Public props shared by the web and native block editors. */
-export type RichTextEditorProps = {
+/**
+ * Public props shared by the web and native block editors. The collaboration
+ * half of the surface — `collaborators`, `suggestions`, `commentThreads`,
+ * `presence`, and their callbacks — is documented on {@link RichTextCollabProps}
+ * and is entirely presentational: the editor draws the overlay it is given and
+ * never syncs or resolves it.
+ */
+export type RichTextEditorProps = RichTextCollabProps & {
   /** Focus the editor after it mounts. */
   autoFocus?: boolean;
   /**

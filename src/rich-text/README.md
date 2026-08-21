@@ -27,11 +27,19 @@ reporting canonical markdown through `onChangeMarkdown`.
   composition, through the shared document model without exposing raw markdown
   as the editing surface.
 
+- Draw a multi-user session over the document — remote carets and selections,
+  tracked changes, and comment anchors — from caller-supplied state, without
+  syncing, merging, or resolving any of it.
+
 ## Components
 
 - `RichTextEditor` — the public editor. Web uses an imperative
   `contentEditable` surface; native uses block-level `TextInput` surfaces and a
   mobile formatting toolbar.
+- `RichTextPresenceBar` — who else is live in the document, as tinted avatar
+  discs plus a sentence naming them.
+- `RichTextCollabRail` — open tracked changes and comment threads in one list
+  ordered by position in the document, with accept / reject / resolve / reply.
 
 ## Usage
 
@@ -102,6 +110,61 @@ of extending the delimiter-applied mark. An input-rule transformation records
 the literal markdown as its first undo target, and unchanged model results do
 not create undo entries.
 
+### Collaboration
+
+The editor can draw a multi-user session over the same document. Every part is
+optional; with none supplied the editor renders exactly as it does alone.
+
+```tsx
+const people = [
+  { id: "cal", name: "Cal Moore" },
+  { id: "robin", name: "Robin Alvarez" },
+];
+
+<RichTextPresenceBar
+  collaborators={people}
+  localCollaboratorId="cal"
+  presence={presence}
+/>
+<RichTextEditor
+  activeCommentThreadId={activeThreadId}
+  collaborators={people}
+  commentThreads={threads}
+  localCollaboratorId="cal"
+  onChangeMarkdown={setValue}
+  onSelectCommentThread={setActiveThreadId}
+  presence={presence}
+  suggestions={suggestions}
+  value={value}
+/>
+<RichTextCollabRail
+  activeCommentThreadId={activeThreadId}
+  collaborators={people}
+  commentThreads={threads}
+  localCollaboratorId="cal"
+  onAcceptSuggestion={accept}
+  onRejectSuggestion={reject}
+  onResolveThread={resolve}
+  onSelectItem={select}
+  suggestions={suggestions}
+  value={value}
+/>;
+```
+
+Suggestions, threads, and presence are anchored with document ranges
+(`{ from: { block, offset }, to: { block, offset } }`) over the same positions
+the editor uses for selection. Insertions render underlined in the author's
+colour, deletions struck through, comment anchors in a fixed highlighter tone,
+and a remote caret as a bar with a name flag. On native a caret cannot live
+inside a `TextInput`, so the block a collaborator is in carries their initials
+disc instead.
+
+This layer is presentation only. Accepting a change or resolving a thread does
+not edit the document — the callbacks report intent and the consumer applies the
+edit. Ranges are not re-anchored as the document changes; keeping them in step
+is the consumer's job. See
+[the collaboration protocol](../../docs/protocol/rich-text-collaboration.md).
+
 ### Mobile Toolbar
 
 On iOS the horizontally scrollable toolbar is attached with
@@ -119,6 +182,10 @@ undo/redo, inline marks, divider insertion, and keyboard dismissal with
   `Rich text editor`.
 - Checklist controls expose checkbox role, checked state, disabled state, and a
   44-point native target.
+- Nothing in the collaboration layer depends on colour alone: changes and live
+  presence are captioned in words, and `<ins>` / `<del>` name their author.
+  Remote caret markers are hidden from assistive tech — the presence bar is the
+  accessible account of who is in the document.
 - Native toolbar buttons expose names plus selected and disabled states.
 - The frame uses the shared focus-ring convention so keyboard focus remains
   visible without changing layout.

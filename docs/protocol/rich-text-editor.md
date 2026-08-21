@@ -15,6 +15,11 @@ and emit the same document without platform-specific conversion by consumers.
 The paired mobile and desktop presentation is captured in
 [the rich-text editor mockup](../mockups/rich-text-editor.html).
 
+The multi-user layer on top of this editor — live carets, tracked changes, and
+comment threads — is specified in
+[rich-text-collaboration.md](rich-text-collaboration.md). It is presentation
+only, and an editor given none of its props behaves exactly as documented here.
+
 ## Public Contract
 
 - `value` is controlled markdown. An omitted value is an empty document.

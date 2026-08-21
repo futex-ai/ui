@@ -7,6 +7,12 @@ import { Label } from "../typography";
 
 import { NativeRichTextBlock, nativeBlockKind } from "./NativeRichTextBlock";
 import { NativeRichTextToolbar } from "./NativeRichTextToolbar";
+import type { RichTextAnnotationInput } from "./richTextCollabModel";
+import {
+  annotateRichTextDocument,
+  hasRichTextAnnotations,
+} from "./richTextCollabModel";
+import type { RichTextCollabPalette } from "./richTextCollabPalette";
 import type { NativeRichTextTarget } from "./nativeRichTextEditing";
 import {
   nativeRichTextAccessoryID,
@@ -27,6 +33,9 @@ export type NativeRichTextEditorSurfaceProps = {
   activeMarks: readonly InlineMark[];
   canRedo: boolean;
   canUndo: boolean;
+  /** Collaboration overlay to project onto the document, or `null` for none. */
+  collabState: RichTextAnnotationInput | null;
+  collaboratorPalette: RichTextCollabPalette;
   document: RichTextDocument;
   editorFocused: boolean;
   focusRingStyle: StyleProp<ViewStyle>;
@@ -44,6 +53,7 @@ export type NativeRichTextEditorSurfaceProps = {
   onRedo: () => void;
   onRequestFocus: (target: NativeRichTextTarget) => void;
   onSelectionChange: (block: number, selection: NativeTextSelection) => void;
+  onSelectCommentThread?: (threadId: string | null) => void;
   onSubmitEditing: (block: number) => void;
   onToggleCheck: (block: number) => void;
   onToggleMark: (mark: InlineMark) => void;
@@ -63,6 +73,8 @@ export function NativeRichTextEditorSurface({
   activeMarks,
   canRedo,
   canUndo,
+  collabState,
+  collaboratorPalette,
   document,
   editorFocused,
   focusRingStyle,
@@ -80,6 +92,7 @@ export function NativeRichTextEditorSurface({
   onRedo,
   onRequestFocus,
   onSelectionChange,
+  onSelectCommentThread,
   onSubmitEditing,
   onToggleCheck,
   onToggleMark,
@@ -99,6 +112,10 @@ export function NativeRichTextEditorSurface({
   ];
   const activeType = document[activeBlock]?.type ?? "paragraph";
   const testIDs = buildNativeRichTextTestIDs(document, testID);
+  const annotations =
+    collabState && hasRichTextAnnotations(collabState)
+      ? annotateRichTextDocument(document, collabState)
+      : null;
   const iosToolbarTargets = nativeRichTextAccessoryTargets(
     accessoryId,
     document.map((block) => block.type),
@@ -123,6 +140,16 @@ export function NativeRichTextEditorSurface({
               accessibilityLabel={`${label ?? "Rich text editor"}, ${nativeBlockKind(block)}, block ${index + 1} of ${document.length}`}
               active={activeBlock === index}
               block={block}
+              decoration={
+                annotations
+                  ? {
+                      annotations: annotations[index],
+                      onSelectCommentThread,
+                      palette: collaboratorPalette,
+                      theme,
+                    }
+                  : null
+              }
               index={index}
               inputAccessoryViewID={nativeRichTextAccessoryID(
                 accessoryId,

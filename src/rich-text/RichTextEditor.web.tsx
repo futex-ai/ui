@@ -16,8 +16,16 @@ import { useSharedUiTheme } from "../theme";
 import { Label } from "../typography";
 
 import { SlashMenu } from "./SlashMenu.web";
+import type { RichTextDomCollab } from "./domRender.web";
 import { renderRichTextDocument } from "./domRender.web";
 import { serializeRichTextDom } from "./domSerialize.web";
+import { richTextCollabPalette } from "./richTextCollabPalette";
+import type {
+  RichTextCollaborator,
+  RichTextCommentThread,
+  RichTextPresence,
+  RichTextSuggestion,
+} from "./richTextCollabTypes";
 import {
   docPositionFromDom,
   docRangeFromDomSelection,
@@ -91,19 +99,36 @@ type LastRule =
     };
 
 /**
+ * Stable empty defaults. A `= []` default is a new array on every render, which
+ * would invalidate the overlay memo — and re-render the whole document — on
+ * every render of an editor that has no session at all.
+ */
+const NO_COLLABORATORS: readonly RichTextCollaborator[] = [];
+const NO_COMMENT_THREADS: readonly RichTextCommentThread[] = [];
+const NO_PRESENCE: readonly RichTextPresence[] = [];
+const NO_SUGGESTIONS: readonly RichTextSuggestion[] = [];
+
+/**
  * ContentEditable rich text editor for React Native Web. The document DOM is
  * managed imperatively; React renders only the labelled frame and placeholder.
  */
 export function RichTextEditor({
+  activeCommentThreadId = null,
   autoFocus = false,
+  collaborators = NO_COLLABORATORS,
+  commentThreads = NO_COMMENT_THREADS,
   disableFocusRing = false,
   label,
+  localCollaboratorId,
   maxHeight,
   minHeight = 120,
   onChangeMarkdown,
+  onSelectCommentThread,
   placeholder,
+  presence = NO_PRESENCE,
   readOnly = false,
   slashExtraItems = [],
+  suggestions = NO_SUGGESTIONS,
   testID,
   value = "",
 }: RichTextEditorProps) {
@@ -119,13 +144,54 @@ export function RichTextEditor({
   const lastEmittedRef = useRef(value);
   const lastRuleRef = useRef<LastRule | null>(null);
   const onChangeRef = useRef(onChangeMarkdown);
+  const onSelectThreadRef = useRef(onSelectCommentThread);
   const readOnlyRef = useRef(readOnly);
+  const reportedThreadRef = useRef<string | null>(activeCommentThreadId);
   const [empty, setEmpty] = useState(() => isEmptyDocument(docRef.current));
+
+  const palette = useMemo(
+    () => richTextCollabPalette(theme, collaborators),
+    [collaborators, theme],
+  );
+  const collab = useMemo<RichTextDomCollab>(
+    () => ({
+      palette,
+      state: {
+        activeCommentThreadId,
+        commentThreads,
+        localCollaboratorId,
+        presence,
+        suggestions,
+      },
+    }),
+    [
+      activeCommentThreadId,
+      commentThreads,
+      localCollaboratorId,
+      palette,
+      presence,
+      suggestions,
+    ],
+  );
+  // Renders driven by edits happen inside event handlers, which cannot read
+  // `collab` from the render that scheduled them; the ref carries the current
+  // overlay into those imperative paths.
+  const collabRef = useRef(collab);
 
   useEffect(() => {
     onChangeRef.current = onChangeMarkdown;
+    onSelectThreadRef.current = onSelectCommentThread;
     readOnlyRef.current = readOnly;
-  }, [onChangeMarkdown, readOnly]);
+    // Track what the caller settled on, not only what this editor last
+    // reported: a thread selected from the rail must not make a later click on
+    // a different anchor look like a repeat of the one already reported.
+    reportedThreadRef.current = activeCommentThreadId;
+  }, [
+    activeCommentThreadId,
+    onChangeMarkdown,
+    onSelectCommentThread,
+    readOnly,
+  ]);
 
   const restoreSelection = useCallback(
     (target: Exclude<CommitSelection, null>) => {
@@ -154,13 +220,40 @@ export function RichTextEditor({
     }
   }, []);
 
+  /**
+   * Report which comment thread the given node sits inside, or `null` for text
+   * with no thread. Only fires on a change, so moving the caret through a
+   * commented run does not restate the same thread on every keystroke.
+   */
+  const reportCommentThread = useCallback((node: Node | null) => {
+    const select = onSelectThreadRef.current;
+    if (!select) {
+      return;
+    }
+    const element =
+      node instanceof Element ? node : (node?.parentElement ?? null);
+    const threadId =
+      element?.closest<HTMLElement>("[data-rt-thread]")?.dataset.rtThread ??
+      null;
+    if (threadId === reportedThreadRef.current) {
+      return;
+    }
+    reportedThreadRef.current = threadId;
+    select(threadId);
+  }, []);
+
   const commitDocument = useCallback(
     (document: readonly RichTextBlock[], selection: CommitSelection) => {
       const root = rootRef.current;
       if (!root) {
         return;
       }
-      const normalized = renderRichTextDocument(root, document, domTheme);
+      const normalized = renderRichTextDocument(
+        root,
+        document,
+        domTheme,
+        collabRef.current,
+      );
       docRef.current = normalized;
       setEmpty(isEmptyDocument(normalized));
       if (selection) {
@@ -222,7 +315,7 @@ export function RichTextEditor({
     }
     if (!hasRenderedRef.current || value !== lastEmittedRef.current) {
       const next = parseMarkdown(value);
-      renderRichTextDocument(root, next, domTheme);
+      renderRichTextDocument(root, next, domTheme, collabRef.current);
       docRef.current = next;
       setEmpty(isEmptyDocument(next));
       lastEmittedRef.current = value;
@@ -234,21 +327,25 @@ export function RichTextEditor({
   }, [restoreSelection, value]);
 
   useLayoutEffect(() => {
+    collabRef.current = collab;
     const root = rootRef.current;
     if (!root || !hasRenderedRef.current) {
       return;
     }
+    // Re-rendering the tree throws away the DOM selection, so a focused editor
+    // re-anchors it afterwards: a collaborator's caret arriving must not move
+    // the local one.
     const focused = document.activeElement === root;
     const selection = focused
       ? docRangeFromDomSelection(root, window.getSelection())
       : null;
-    const next = renderRichTextDocument(root, docRef.current, domTheme);
+    const next = renderRichTextDocument(root, docRef.current, domTheme, collab);
     docRef.current = next;
     setEmpty(isEmptyDocument(next));
     if (focused && selection) {
       restoreSelection(selection);
     }
-  }, [domTheme, restoreSelection]);
+  }, [collab, domTheme, restoreSelection]);
 
   useEffect(() => {
     if (autoFocus) {
@@ -718,6 +815,9 @@ export function RichTextEditor({
     };
     const selectionChange = () => {
       slashMenu.handleSelectionChange();
+      if (root.contains(document.activeElement)) {
+        reportCommentThread(window.getSelection()?.focusNode ?? null);
+      }
       const lastRule = lastRuleRef.current;
       if (!lastRule) {
         return;
@@ -761,6 +861,7 @@ export function RichTextEditor({
     handleMouseDown,
     handlePaste,
     recordHistory,
+    reportCommentThread,
     slashMenu,
   ]);
 
@@ -848,6 +949,9 @@ export function RichTextEditor({
             contentEditable={!readOnly}
             data-testid={testID}
             onBlur={focus.onBlur}
+            // A read-only document never moves the DOM selection, so the
+            // pointer is the only way its comment anchors can be picked.
+            onClick={(event) => reportCommentThread(event.target as Node)}
             onFocus={focus.onFocus}
             ref={rootRef}
             role="textbox"

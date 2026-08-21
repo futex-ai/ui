@@ -188,6 +188,7 @@ export const CircleCheck = Icon;
 export const CircleX = Icon;
 export const Clock = Icon;
 export const Code = Icon;
+export const CornerUpLeft = Icon;
 export const Diamond = Icon;
 export const Download = Icon;
 export const Eye = Icon;

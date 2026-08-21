@@ -13,7 +13,8 @@ surfaces. The first consumers are the accounting app and the Juno app.
   a from-scratch interactive chart family (bar, line, area, sparkline, stat
   tile, donut, gauge, bullet, funnel, matrix heatmap, scatter, histogram,
   waterfall, small multiples) on a colourblind-validated palette,
-  cross-platform block rich-text editor with canonical markdown,
+  cross-platform block rich-text editor with canonical markdown and a
+  collaboration layer (live carets, tracked changes, comment threads),
   modal, toast provider/controller, avatar, status badge, animated comet-trail
   border, calendar heatmap, full event-calendar (month/week/day/agenda,
   recurring events, drag-to-create), branching workflow-builder step-graph
@@ -84,7 +85,9 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/popover` for generic anchored popovers.
 - `@firna/ui/radio` for themed titled radio-option cards.
 - `@firna/ui/rich-text` for the Notion-style block editor with markdown in/out,
-  inline formatting, lists/checklists, and native keyboard toolbars.
+  inline formatting, lists/checklists, native keyboard toolbars, and the
+  collaboration layer (live carets, tracked changes, comment threads) with its
+  `RichTextPresenceBar` and `RichTextCollabRail` surfaces.
 - `@firna/ui/segmented` for themed single-select segmented controls.
 - `@firna/ui/sortable-list` for the drag-and-drop sortable list (pointer +
   keyboard reordering, an optional start/end grab handle, and vertical or
@@ -318,7 +321,7 @@ The package export map intentionally separates runtime targets:
   `Input/Examples`, `Kanban/Examples`, `List/Examples`, `Loader/Examples`,
   `Modal/Examples`,
   `Popover/Examples`,
-  `Radio/Examples`, `RichText/Examples`,
+  `Radio/Examples`, `RichText/Examples`, `RichText/Collaboration`,
   `Segmented/Examples`, `SortableList/Examples`, `Spinner/Examples`,
   `Status dot/Examples`,
   `Switch/Examples`, `Table/Examples`, `Theme/Examples`, `Timeline/Examples`,
@@ -366,6 +369,8 @@ The package export map intentionally separates runtime targets:
 - Repository automation: [xtask/README.md](xtask/README.md)
 - Shared component protocol:
   [docs/protocol/shared-ui-components.md](docs/protocol/shared-ui-components.md)
+- Rich-text collaboration protocol:
+  [docs/protocol/rich-text-collaboration.md](docs/protocol/rich-text-collaboration.md)
 - Consumer migration handoff: [docs/consumer-migration.md](docs/consumer-migration.md)
 - Active and completed implementation plans: [plans/README.md](plans/README.md)
 

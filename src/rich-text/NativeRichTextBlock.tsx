@@ -6,14 +6,21 @@ import type { StyleProp, TextStyle } from "react-native";
 import type { SharedUiTheme } from "../theme";
 
 import { nativeBlockText } from "./nativeRichTextEditing";
+import type { NativeInlineDecoration } from "./nativeRichTextInline";
+import {
+  NativeRichTextPresence,
+  nativeInlineContent,
+} from "./nativeRichTextInline";
 import type { NativeTextSelection } from "./nativeTextEdit";
 import type { NativeRichTextStyles } from "./nativeRichTextStyles";
-import type { InlineMark, RichTextBlock } from "./richTextModel";
+import type { RichTextBlock } from "./richTextModel";
 
 export type NativeRichTextBlockProps = {
   accessibilityLabel: string;
   active: boolean;
   block: RichTextBlock;
+  /** Collaboration overlay for this block, or `null` when there is none. */
+  decoration: NativeInlineDecoration | null;
   index: number;
   inputAccessoryViewID?: string;
   inputRef: (input: TextInput | null) => void;
@@ -39,6 +46,7 @@ export function NativeRichTextBlock({
   accessibilityLabel,
   active,
   block,
+  decoration,
   index,
   inputAccessoryViewID,
   inputRef,
@@ -73,7 +81,7 @@ export function NativeRichTextBlock({
     );
   }
 
-  const content = renderInlineContent(block, styles);
+  const content = nativeInlineContent(block, styles, decoration);
   const textStyle = blockTextStyle(block, styles);
   const rowStyle = [
     styles.block,
@@ -145,6 +153,14 @@ export function NativeRichTextBlock({
           </TextInput>
         )}
       </View>
+      {decoration ? (
+        <NativeRichTextPresence
+          annotations={decoration.annotations}
+          palette={decoration.palette}
+          styles={styles}
+          theme={decoration.theme}
+        />
+      ) : null}
     </View>
   );
 }
@@ -165,23 +181,6 @@ function BlockMarker({
         ? `${listNumber ?? 1}.`
         : null;
   return marker ? <Text style={styles.listMarker}>{marker}</Text> : null;
-}
-
-function renderInlineContent(
-  block: Exclude<RichTextBlock, { type: "divider" }>,
-  styles: NativeRichTextStyles,
-) {
-  if (block.type === "codeBlock") {
-    return block.code.length > 0 ? <Text>{block.code}</Text> : null;
-  }
-  return block.spans.map((span, index) => (
-    <Text
-      key={`${index}:${span.marks.join("-")}`}
-      style={inlineMarkStyle(span.marks, styles)}
-    >
-      {span.text}
-    </Text>
-  ));
 }
 
 function blockTextStyle(
@@ -206,18 +205,6 @@ function blockTextStyle(
     default:
       return styles.paragraph;
   }
-}
-
-function inlineMarkStyle(
-  marks: readonly InlineMark[],
-  styles: NativeRichTextStyles,
-): StyleProp<TextStyle> {
-  return [
-    marks.includes("bold") ? styles.inlineBold : null,
-    marks.includes("italic") ? styles.inlineItalic : null,
-    marks.includes("strike") ? styles.inlineStrike : null,
-    marks.includes("code") ? styles.inlineCode : null,
-  ];
 }
 
 function isHeading(block: RichTextBlock): boolean {

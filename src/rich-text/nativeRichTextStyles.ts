@@ -100,6 +100,23 @@ export function createNativeRichTextStyles(theme: SharedUiTheme) {
     inlineStrike: {
       textDecorationLine: "line-through",
     },
+    // A comment anchor is one fixed highlighter tone rather than the
+    // commenter's colour: several people can comment on the same words, and a
+    // run of text can only carry one tint.
+    inlineComment: {
+      backgroundColor: theme.colors.amberSoft,
+    },
+    inlineCommentActive: {
+      backgroundColor: theme.colors.amberSoft,
+      textDecorationLine: "underline",
+    },
+    inlineDeleted: {
+      color: theme.colors.muted,
+      textDecorationLine: "line-through",
+    },
+    inlineInserted: {
+      textDecorationLine: "underline",
+    },
     input: {
       ...typography.body,
       flex: 1,
@@ -117,6 +134,28 @@ export function createNativeRichTextStyles(theme: SharedUiTheme) {
       width: 25,
     },
     paragraph: typography.body,
+    // A native text input cannot host a caret marker inside its own text, so a
+    // remote caret is reported as a disc on the block the collaborator is in.
+    presenceChip: {
+      alignItems: "center",
+      flexDirection: "row",
+      marginStart: 6,
+      paddingTop: 4,
+    },
+    presenceDisc: {
+      alignItems: "center",
+      borderRadius: theme.radii.pill,
+      height: 18,
+      justifyContent: "center",
+      minWidth: 18,
+      paddingHorizontal: 4,
+    },
+    presenceInitials: {
+      fontFamily: theme.fonts.sans,
+      fontSize: 10,
+      fontWeight: "800",
+      lineHeight: 14,
+    },
     quoteBlock: {
       borderLeftColor: theme.colors.border2,
       borderLeftWidth: 3,

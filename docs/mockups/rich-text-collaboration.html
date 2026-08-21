@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rich text collaboration — mobile and desktop</title>
+    <style>
+      :root {
+        color: #1c1f1d;
+        background: #eef0eb;
+        font-family:
+          Inter,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 32px;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 24px;
+      }
+      .intro {
+        color: #69706a;
+        font-size: 14px;
+        margin: 0 0 24px;
+        max-width: 760px;
+      }
+      .variants {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 32px;
+        align-items: flex-start;
+      }
+      .variant {
+        display: grid;
+        gap: 10px;
+      }
+      .caption {
+        color: #69706a;
+        font-size: 13px;
+        max-width: 680px;
+      }
+      .screen {
+        background: #fff;
+        border: 1px solid #d3d8cd;
+        box-shadow: 0 18px 52px rgba(28, 31, 29, 0.12);
+        overflow: hidden;
+      }
+
+      /* --- shared collaboration marks ---------------------------------- */
+
+      /* Insertion: underline in the author's accent, text in their deep tone. */
+      ins {
+        text-decoration: underline 2px #4f7864;
+        text-underline-offset: 2px;
+        color: #2f5945;
+      }
+      /* Deletion: struck through in the accent, text stepped back to muted. */
+      del {
+        text-decoration: line-through 2px #a84f45;
+        color: #69706a;
+      }
+      /* Comment anchor: one fixed highlighter tone, never the commenter's. */
+      mark {
+        background: #f4ecd8;
+        border-radius: 3px;
+        color: inherit;
+        text-decoration: underline 2px #946727;
+        text-underline-offset: 2px;
+      }
+      mark.active {
+        box-shadow: inset 0 0 0 1px #75531a;
+        text-decoration-color: #75531a;
+      }
+      .sel {
+        background: rgba(168, 79, 69, 0.22);
+        border-radius: 2px;
+      }
+      /* Remote caret: a zero-width marker carrying a bar and a name flag. */
+      .caret {
+        position: relative;
+        display: inline-block;
+        width: 0;
+        height: 1em;
+        vertical-align: -0.15em;
+      }
+      .caret i {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        border-radius: 1px;
+        background: #a84f45;
+      }
+      .caret b {
+        position: absolute;
+        bottom: 100%;
+        margin-bottom: -3px;
+        padding: 0 5px;
+        border-radius: 6px 6px 6px 0;
+        background: #a84f45;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 13px;
+        white-space: nowrap;
+      }
+      .disc {
+        display: inline-grid;
+        place-items: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 999px;
+        border: 2px solid #fff;
+        background: #4f7864;
+        color: #fff;
+        font-size: 9px;
+        font-weight: 800;
+      }
+      .disc.peer {
+        background: #a84f45;
+      }
+      .stack .disc + .disc {
+        margin-left: -8px;
+      }
+      .presence {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #69706a;
+        font-size: 13px;
+      }
+
+      /* --- review rail --------------------------------------------------- */
+
+      .rail-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+      }
+      .count {
+        border-radius: 999px;
+        background: #eef2ed;
+        color: #3e4540;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0;
+        padding: 2px 9px;
+      }
+      /* Selection is a uniform border plus a soft fill — never an edge strip. */
+      .card {
+        background: #fff;
+        border: 1px solid #d3d8cd;
+        border-radius: 8px;
+        padding: 12px;
+        display: grid;
+        gap: 8px;
+      }
+      .card.active {
+        background: #e3eee6;
+        border-color: #4f7864;
+      }
+      .who {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .who .disc {
+        width: 22px;
+        height: 22px;
+        border: 0;
+      }
+      .when {
+        margin-left: auto;
+        color: #6c736c;
+        font-size: 12px;
+        font-weight: 400;
+      }
+      .card.active .when {
+        color: #3e4540;
+      }
+      .said {
+        color: #3e4540;
+        font-size: 14px;
+        line-height: 20px;
+      }
+      .summary {
+        color: #3e4540;
+        font-size: 13px;
+        line-height: 18px;
+      }
+      .quote {
+        background: #f4ecd8;
+        border-radius: 6px;
+        color: #3e4540;
+        font-size: 13px;
+        line-height: 18px;
+        padding: 6px 8px;
+      }
+      .acts {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .btn {
+        border: 1px solid #d3d8cd;
+        border-radius: 8px;
+        background: #fff;
+        color: #3e4540;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 650;
+        padding: 5px 10px;
+      }
+      .btn.primary {
+        background: #4f7864;
+        border-color: #2f5945;
+        color: #fff;
+      }
+      .btn.ghost {
+        border-color: transparent;
+        background: transparent;
+        color: #2f5945;
+      }
+
+      /* --- mobile -------------------------------------------------------- */
+
+      .mobile {
+        width: 390px;
+        height: 800px;
+        border-radius: 28px;
+        display: flex;
+        flex-direction: column;
+      }
+      .status {
+        height: 42px;
+        padding: 15px 22px 0;
+        font-size: 12px;
+        font-weight: 700;
+        display: flex;
+        justify-content: space-between;
+      }
+      .mobile-header {
+        height: 50px;
+        padding: 6px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #e5e8e0;
+        font-weight: 650;
+      }
+      .icon-button {
+        border: 0;
+        background: transparent;
+        color: #3e4540;
+        font: inherit;
+        font-size: 18px;
+        padding: 8px;
+      }
+      .mobile-body {
+        flex: 1;
+        padding: 14px 18px;
+        overflow: hidden;
+        display: grid;
+        gap: 14px;
+        align-content: start;
+      }
+      .doc {
+        display: grid;
+        gap: 7px;
+      }
+      .doc h2 {
+        font-size: 24px;
+        line-height: 30px;
+        margin: 0;
+      }
+      .block {
+        font-size: 16px;
+        line-height: 24px;
+        margin: 0;
+      }
+      .bullet {
+        display: grid;
+        grid-template-columns: 20px 1fr;
+        font-size: 16px;
+        line-height: 24px;
+      }
+      /* Native cannot host a caret inside a text input, so a block reports the
+         collaborators in it as an initials disc beside the text. */
+      .chip {
+        display: inline-grid;
+        place-items: center;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 4px;
+        border-radius: 999px;
+        background: #a84f45;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 800;
+        vertical-align: 2px;
+      }
+      .sheet {
+        border-top: 1px solid #d3d8cd;
+        background: #f7f7f3;
+        padding: 14px 18px 18px;
+        display: grid;
+        gap: 10px;
+      }
+      .grabber {
+        width: 38px;
+        height: 4px;
+        border-radius: 999px;
+        background: #d3d8cd;
+        justify-self: center;
+      }
+
+      /* --- desktop ------------------------------------------------------- */
+
+      .desktop {
+        width: min(900px, calc(100vw - 64px));
+        border-radius: 14px;
+        padding: 24px;
+        display: grid;
+        gap: 16px;
+      }
+      .desktop-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .desktop-split {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 20px;
+        align-items: start;
+      }
+      .desktop-editor {
+        min-height: 380px;
+        border: 1px solid rgba(28, 31, 29, 0.27);
+        border-radius: 8px;
+        padding: 22px 26px;
+      }
+      .desktop-editor h2 {
+        font-size: 30px;
+        line-height: 36px;
+        margin: 0 0 14px;
+      }
+      .desktop-list {
+        display: grid;
+        grid-template-columns: 22px 1fr;
+        font-size: 15px;
+        line-height: 24px;
+        margin: 5px 0;
+      }
+      .desktop-editor p {
+        font-size: 15px;
+        line-height: 24px;
+        margin: 0 0 10px;
+      }
+      .rail {
+        display: grid;
+        gap: 12px;
+      }
+      @media (max-width: 560px) {
+        body {
+          padding: 18px;
+        }
+        .mobile {
+          width: calc(100vw - 36px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Rich text collaboration</h1>
+    <p class="intro">
+      Track changes, comment threads, and two people editing at once. The editor
+      draws the session it is given; accepting a change or resolving a thread is
+      the consumer's edit to apply.
+    </p>
+    <main class="variants">
+      <section class="variant">
+        <div class="screen mobile">
+          <div class="status"><span>9:41</span><span>● ● ▰</span></div>
+          <div class="mobile-header">
+            <button class="icon-button">‹</button><span>Launch note</span
+            ><button class="icon-button">⋯</button>
+          </div>
+          <div class="mobile-body">
+            <div class="presence">
+              <span class="stack"
+                ><span class="disc">CM</span
+                ><span class="disc peer">RA</span></span
+              ><span>Robin Alvarez is editing</span>
+            </div>
+            <div class="doc">
+              <h2>Launch note</h2>
+              <p class="block">
+                We are shipping the collaborative editor to
+                <mark class="active">every workspace</mark>
+                <del>this Thursday</del>. <span class="chip">RA</span>
+              </p>
+              <div class="bullet">
+                <span>•</span
+                ><span>Live carets <ins>for everyone</ins> in the document</span>
+              </div>
+              <div class="bullet">
+                <span>•</span
+                ><span
+                  ><mark>Tracked changes</mark> they can accept or reject</span
+                >
+              </div>
+            </div>
+          </div>
+          <div class="sheet">
+            <span class="grabber"></span>
+            <div class="rail-title">
+              Comments &amp; changes <span class="count">4</span>
+            </div>
+            <div class="card active">
+              <div class="who">
+                <span class="disc peer">RA</span>Robin Alvarez
+                <span class="when">6m ago</span>
+              </div>
+              <div class="quote">every workspace</div>
+              <div class="said">
+                Can we name the workspaces explicitly? “every workspace” reads
+                broader than the rollout.
+              </div>
+              <div class="acts">
+                <button class="btn ghost">Reply</button
+                ><button class="btn">Resolve</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="caption">
+          Mobile: the rail becomes a sheet below the document. A remote caret
+          cannot live inside a native text input, so the block the collaborator
+          is in carries their initials disc instead.
+        </div>
+      </section>
+
+      <section class="variant">
+        <div class="screen desktop">
+          <div class="desktop-top">
+            <div class="presence">
+              <span class="stack"><span class="disc peer">RA</span></span
+              ><span>Robin Alvarez is editing</span>
+            </div>
+          </div>
+          <div class="desktop-split">
+            <div class="desktop-editor">
+              <h2>Launch note</h2>
+              <p>
+                We are shipping the collaborative editor to
+                <span class="sel"
+                  ><mark class="active">every workspace</mark></span
+                ><span class="caret"><i></i><b>Robin Alvarez</b></span>
+                <del>this Thursday</del>.
+              </p>
+              <div class="desktop-list">
+                <span>•</span
+                ><span>Live carets <ins>for everyone</ins> in the document</span>
+              </div>
+              <div class="desktop-list">
+                <span>•</span
+                ><span
+                  ><mark>Tracked changes</mark> they can accept or reject</span
+                >
+              </div>
+              <div class="desktop-list">
+                <span>•</span
+                ><span>Comment threads anchored to the words they discuss</span>
+              </div>
+            </div>
+            <div class="rail">
+              <div class="rail-title">
+                Comments &amp; changes <span class="count">4</span>
+              </div>
+              <div class="card active">
+                <div class="who">
+                  <span class="disc peer">RA</span>Robin Alvarez
+                  <span class="when">6m ago</span>
+                </div>
+                <div class="quote">every workspace</div>
+                <div class="said">
+                  Can we name the workspaces explicitly?
+                </div>
+                <div class="acts">
+                  <button class="btn ghost">Reply</button
+                  ><button class="btn">Resolve</button>
+                </div>
+              </div>
+              <div class="card">
+                <div class="who">
+                  <span class="disc peer">RA</span>Robin Alvarez
+                  <span class="when">4m ago</span>
+                </div>
+                <div class="summary">Robin Alvarez suggested deleting text</div>
+                <div class="summary"><del>this Thursday</del></div>
+                <div class="acts">
+                  <button class="btn primary">Accept</button
+                  ><button class="btn">Reject</button>
+                </div>
+              </div>
+              <div class="card">
+                <div class="who">
+                  <span class="disc peer">RA</span>Robin Alvarez
+                  <span class="when">3m ago</span>
+                </div>
+                <div class="summary">Robin Alvarez suggested adding text</div>
+                <div class="summary"><ins>for everyone</ins></div>
+                <div class="acts">
+                  <button class="btn primary">Accept</button
+                  ><button class="btn">Reject</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="caption">
+          Desktop/web: remote carets sit in the text flow with a name flag, live
+          selections tint behind the words, and one rail lists suggestions and
+          threads together in document order.
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
