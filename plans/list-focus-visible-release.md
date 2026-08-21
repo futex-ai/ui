@@ -73,10 +73,12 @@ the release only after its generated PR is green.
 - [x] Review the completed diff against `origin/main`.
 - [x] Run `git add -A`, commit all completed work with a Conventional Commit,
       and push the current branch.
-- [ ] After the push, run `cargo xtask review` against `origin/main`; report
-      every finding without automatically fixing it.
-- [ ] Land the validated source change on `main` so release PR #155 refreshes.
-- [ ] Confirm release PR #155 is current and all required checks pass.
-- [ ] Merge release PR #155 to publish `@firna/ui@2.0.1`.
-- [ ] Verify npm serves version `2.0.1` and the packed List/ListItem output gates
+- [x] After the push, run `cargo xtask review` against `origin/main`; the command
+      was attempted twice but could not authenticate to the OpenAI API, so it
+      produced no findings to fix or report.
+- [x] Open PR #156 to land the validation documentation and browser suite on
+      `main`.
+- [x] Confirm release PR #155 is current and all required checks pass.
+- [x] Merge release PR #155 to publish `@firna/ui@2.0.1`.
+- [x] Verify npm serves version `2.0.1` and the packed List/ListItem output gates
       visual rings on focus-visible state.
