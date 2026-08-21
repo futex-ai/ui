@@ -47,7 +47,7 @@ try {
   await prepareConsumer(nodeConsumerRoot, tarballPath);
   await writeNodePeerStubs(nodeConsumerRoot);
   await writeImportSmoke(nodeConsumerRoot, subpaths);
-  await execFileAsync("node", ["import-smoke.mjs"], { cwd: nodeConsumerRoot });
+  await runNodeSmoke(nodeConsumerRoot);
 
   const typesConsumerRoot = join(smokeRoot, "types-consumer");
   await prepareConsumer(typesConsumerRoot, tarballPath);
@@ -75,6 +75,33 @@ try {
   );
 } finally {
   await rm(smokeRoot, { force: true, recursive: true });
+}
+
+/**
+ * Runs the packed package's import smoke test, surfacing the real error.
+ * Node floods stderr with `DEP0151` warnings for every stubbed peer, so a raw
+ * failure reads only as "Command failed"; the noise is filtered out here so a
+ * missing export is legible at a glance.
+ */
+async function runNodeSmoke(consumerRoot) {
+  try {
+    await execFileAsync("node", ["import-smoke.mjs"], { cwd: consumerRoot });
+  } catch (error) {
+    const detail = String(error.stderr ?? "")
+      .split("\n")
+      .filter(
+        (line) =>
+          line.trim() !== "" &&
+          !/DeprecationWarning|Default "index" lookups|trace-deprecation/.test(
+            line,
+          ),
+      )
+      .join("\n");
+    if (detail) {
+      console.error(`Import smoke failed:\n${detail}`);
+    }
+    throw error;
+  }
 }
 
 async function prepareConsumer(consumerRoot, tarballPath) {

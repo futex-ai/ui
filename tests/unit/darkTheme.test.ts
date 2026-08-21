@@ -26,6 +26,14 @@ const WHITE_LITERAL_ALLOWLIST: Record<string, number> = {
   // is dark in every scheme — a scheme-aware `onSolid` would invert to dark
   // text on dark media in the dark presets.
   "button/buttonStyles.ts": 4,
+  // The preview's letterbox is a fixed near-black standing in for the void
+  // around a frame, so what sits on it — the composition guides, the format
+  // badge, and the empty-state caption — must stay white in every scheme.
+  "video-editor/videoEditorStyles.ts": 4,
+  // The bin's duration pill sits on a dark scrim over an arbitrary thumbnail,
+  // so it stays white whatever the scheme — the frame behind it is not a
+  // theme surface.
+  "video-editor/mediaBinStyles.ts": 1,
 };
 
 function walk(dir: string): string[] {

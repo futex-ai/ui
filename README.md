@@ -17,8 +17,11 @@ surfaces. The first consumers are the accounting app and the Juno app.
   collaboration layer (live carets, tracked changes, comment threads),
   modal, toast provider/controller, avatar, status badge, animated comet-trail
   border, calendar heatmap, full event-calendar (month/week/day/agenda,
-  recurring events, drag-to-create), and branching workflow-builder step-graph
-  primitives.
+  recurring events, drag-to-create), branching workflow-builder step-graph
+  primitives, a multi-track editing timeline with pro clip edits, and the
+  video-editor panels that surround it (program monitor, transport, level
+  meter, media bin, property inspector, effects rack, keyframe editor, export
+  dialog).
 - A shared `sm` / `md` / `lg` size scale (`ControlSize`) across the interactive
   controls — buttons, inputs, dropdown selectors, date fields, segmented
   controls, and switches.
@@ -321,7 +324,10 @@ The package export map intentionally separates runtime targets:
   `Radio/Examples`, `RichText/Examples`, `RichText/Collaboration`,
   `Segmented/Examples`, `SortableList/Examples`, `Spinner/Examples`,
   `Status dot/Examples`,
-  `Switch/Examples`, `Table/Examples`, `Theme/Examples`, and `Toast/Examples`.
+  `Switch/Examples`, `Table/Examples`, `Theme/Examples`, `Timeline/Examples`,
+  `Toast/Examples`, and `Video editor/Examples` (whose `Full editor` story
+  assembles the whole family into a working editor, in light, dark, and
+  compact).
 - Required repository variable: `CLOUDFLARE_ACCOUNT_ID`.
 - Required repository secret: `CLOUDFLARE_PAGES_API_TOKEN` or
   `CLOUDFLARE_API_TOKEN`.
@@ -355,7 +361,9 @@ The package export map intentionally separates runtime targets:
 - Status dot component: [src/status-dot/README.md](src/status-dot/README.md)
 - Switch component: [src/switch/README.md](src/switch/README.md)
 - Table component: [src/table/README.md](src/table/README.md)
+- Timeline component: [src/timeline/README.md](src/timeline/README.md)
 - Toast component: [src/toast/README.md](src/toast/README.md)
+- Video-editor panels: [src/video-editor/README.md](src/video-editor/README.md)
 - Workflow builder component: [src/workflow/README.md](src/workflow/README.md)
 - Browser tests: [tests/browser/storybook.spec.ts](tests/browser/storybook.spec.ts)
 - Repository automation: [xtask/README.md](xtask/README.md)
