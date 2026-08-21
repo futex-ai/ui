@@ -3,8 +3,8 @@
 ## Status
 
 Implemented contract for the dropdown, drag-select, segmented control, radio
-card, switch, spinner, loader, animated border, button, data table, workflow
-builder, modal, toast,
+card, switch, spinner, loader, animated border, button, list, data table,
+workflow builder, modal, toast,
 avatar, status badge, rich-text editor, and event-calendar extraction,
 including the shared control-size scale for buttons, inputs, and textareas.
 
@@ -478,6 +478,30 @@ Required behavior:
   colors instead of consumer-local theme imports.
 - Label each in-range cell for assistive technology, hide padding cells from it,
   and make cells focusable, pressable buttons when a press handler is supplied.
+
+## List Contract
+
+The List family covers vertical, optionally interactive rows with separators
+and a standard leading/title/description/trailing layout.
+
+Required behavior:
+
+- `List.onItemPress` makes the complete row one button and paints an inset,
+  full-row focus ring. This is the normal interaction for rows with decorative
+  trailing content such as a chevron.
+- `ListItem.onPress` makes only the title/description column a button. Use this
+  model when a trailing control, such as a switch, must remain an independent
+  sibling target; do not nest it inside a full-row `List.onItemPress` target.
+- On web, visual focus rings must follow `:focus-visible`, not raw focus. Pointer
+  focus remains real for behavior but does not paint a ring; keyboard input can
+  reveal the ring without requiring a new focus event. Native keeps its
+  platform focus behavior.
+- `disableFocusRing` is an explicit customization and must not be required to
+  suppress rings after ordinary pointer interaction. Disabling the custom ring
+  restores the browser's default keyboard-focus outline.
+- Modality tracking belongs to the shared `useFocusRing` hook. List and
+  ListItem must consume its visible-focus state rather than implement local
+  pointer/keyboard tracking.
 
 ## Table Contract
 

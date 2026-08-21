@@ -56,12 +56,16 @@ text past a leading avatar.
 ### Clickable items
 
 Pass `onItemPress` to make every item a pressable button. Items then gain a
-hover wash, the sage focus ring, a pressed state, and keyboard activation (Enter
-/ Space), and announce themselves as buttons inside the list. Use `itemLabel` to
-give each item an accessible name, `itemDisabled` to make individual items
-non-pressable, and `itemTestID` to identify each item's actual press target in
-tests. Without `onItemPress`, items render as plain static rows and `itemTestID`
-identifies the row view instead.
+hover wash, a pressed state, keyboard activation (Enter / Space), and an inset
+focus ring around the complete row. They announce themselves as buttons inside
+the list. This is the normal model for a row whose trailing content is
+decorative, such as a chevron: the whole row communicates and performs one
+action.
+
+Use `itemLabel` to give each item an accessible name, `itemDisabled` to make
+individual items non-pressable, and `itemTestID` to identify each item's actual
+press target in tests. Without `onItemPress`, items render as plain static rows
+and `itemTestID` identifies the row view instead.
 
 ```tsx
 <List<Person>
@@ -73,6 +77,21 @@ identifies the row view instead.
   renderItem={(person) => <ListItem title={person.name} />}
 />
 ```
+
+### Focus behavior
+
+On web, a List focus ring renders only while the focused press target matches
+the browser's `:focus-visible` pseudo-class. A pointer click still gives the
+row or title button real focus for activation and other behavior, but does not
+paint the keyboard-style ring. Changing to keyboard input while that same
+element remains focused makes the ring visible. Moving focus with the pointer
+hides the old ring and does not paint one on the new pointer target. Native
+keeps its platform focus behavior.
+
+`disableFocusRing` is an explicit visual customization, not a workaround for
+ordinary pointer interaction. Pointer clicks already suppress the custom ring
+on web. Disabling the custom ring restores the browser's default outline so a
+keyboard user does not lose the focus indicator.
 
 ### Loading
 
@@ -102,9 +121,17 @@ bold `title` with an optional muted `description` beneath it, and an optional
 the themed typography when passed a string/number, or render any node as-is.
 `renderItem` can return any node, so a list is never limited to `ListItem`.
 
-When `ListItem` has an `onPress`, its `testID` is forwarded to the title
-`Pressable`, so `fireEvent.press(getByTestId(...))` reaches the handler. For a
-static `ListItem`, the same prop identifies the outer row view.
+When `ListItem` has an `onPress`, only its title/description column is a
+pressable button and receives the intentionally narrower focus ring. Use this
+model for a row with a separate interactive trailing control, such as a switch.
+The leading and trailing slots remain outside the title button, so the targets
+do not nest and the trailing control stays independently operable. For one row
+action with decorative trailing content, prefer `List.onItemPress` and its
+full-row target instead.
+
+For a pressable `ListItem`, `testID` is forwarded to the title `Pressable`, so
+`fireEvent.press(getByTestId(...))` reaches the handler. For a static
+`ListItem`, the same prop identifies the outer row view.
 
 ### Sizes
 

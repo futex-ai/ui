@@ -2,6 +2,7 @@
 
 ## Active
 
+- [List focus-visible regression and 2.0.1 release](list-focus-visible-release.md) — validates the shared PR #154 fix against the exact List pointer/keyboard regression, documents full-row versus title-column interaction, and carries the green fix through the 2.0.1 npm release.
 - [Button consumer capability gaps](button-consumer-capability-gaps.md) — M1–M6 delivered: the press lifecycle (`onPressIn` / `onPressOut` / `onLongPress` / `delayLongPress` + a forwarded gesture event), a functional `style` plus a pressed treatment on every tone, the `onMedia` tone for controls on imagery, `hitSlop` and `boxSize`, `labelStyle` / `numberOfLines` / `trailing` / `content`, and `hasPopup`. Closes every Button item on the consumer capability list except `SegmentedControl`, which stays open in its own plan.
 - [Disable the focus ring](disable-focus-ring.md) — M1–M5 delivered: a theme `focusRing` kill switch + per-instance `disableFocusRing` prop on every ring-bearer, backed by one `useFocusRing({ disabled })` / `ringEnabled` / `webOutlineReset` primitive; disabled rings restore the UA outline (WCAG 2.4.7). Unit tests + a `Focus ring/Examples` story added. Deferred: `DateField`/`DateRangeField` composite forwarding.
 - [SortableList component](sortable-list-component.md) — M1 delivered (web pointer + keyboard drag, optional start/end grab handle, vertical/horizontal flow) and `npm run verify` green; M2 (native drag / touch reordering + RTL) deferred.
