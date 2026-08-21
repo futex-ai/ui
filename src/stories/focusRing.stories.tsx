@@ -71,6 +71,34 @@ export const RingDisabledPerControl: Story = {
   ),
 };
 
+export const DynamicDisabled: Story = {
+  name: "Dynamic disabled state",
+  render: () => (
+    <StorySurface>
+      <DynamicDisabledExample />
+    </StorySurface>
+  ),
+};
+
+function DynamicDisabledExample() {
+  const [exporting, setExporting] = useState(false);
+  return (
+    <View style={styles.row}>
+      <Button
+        disabled={exporting}
+        onPress={() => setExporting(true)}
+        tone="primary"
+      >
+        Export
+      </Button>
+      <Button disabled={!exporting} onPress={() => setExporting(false)}>
+        Finish export
+      </Button>
+      <Button onPress={() => undefined}>Search</Button>
+    </View>
+  );
+}
+
 function ControlRow({
   caption,
   disableFocusRing = false,

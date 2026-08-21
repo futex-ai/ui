@@ -132,6 +132,24 @@ test("useFocusRing exposes the disable primitive and outline fallback", () => {
   assert.match(source, /:\s*EMPTY_RING_STYLE/);
   // The hook returns both the Family-B gate flag and the web outline reset.
   assert.match(source, /ringEnabled,/);
+  assert.match(source, /focusVisible:\s*focusState\.focusVisible/);
+  assert.match(source, /target\?\.matches\(":focus-visible"\) \?\? true/);
+  // A native DOM blur subscription covers React's missed synthetic onBlur when
+  // a focused web button becomes disabled during its own press handler.
+  assert.match(
+    source,
+    /target\?\.addEventListener\("blur", clearFocus, \{ once: true \}\)/,
+  );
+  // Modality can switch while the same element remains focused, so the custom
+  // ring must re-read the browser pseudo-class without waiting for another focus.
+  assert.match(
+    source,
+    /target\?\.addEventListener\("keydown", syncFocusVisible\)/,
+  );
+  assert.match(
+    source,
+    /target\?\.addEventListener\("pointerdown", syncFocusVisible\)/,
+  );
   assert.match(
     source,
     /webOutlineReset:\s*ringEnabled \? hideWebOutlineView : null/,

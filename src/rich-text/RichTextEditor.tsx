@@ -232,7 +232,7 @@ export function RichTextEditor({
       document={document}
       editorFocused={editorFocused}
       focusRingStyle={focus.focusRingStyle}
-      focusVisible={focus.focused}
+      focusVisible={focus.focusVisible}
       label={label}
       maxHeight={maxHeight}
       minHeight={minHeight}

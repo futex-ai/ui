@@ -70,9 +70,10 @@ Recommended path:
    any arrow-key navigation stay in app code.
 6. Wire a focus glow onto any control that must stay hand-rolled with
    `useFocusRing` from `@firna/ui/focusRing` — spread `webOutlineReset`, apply
-   `focusRingStyle` while `focused`, and pass the hook's `onFocus` / `onBlur` to
-   the pressable. Do not drop `outlineStyle: "none"` on its own: that removes the
-   only keyboard-focus indicator and regresses WCAG 2.1 — 2.4.7.
+   `focusRingStyle` while `focusVisible`, and pass the hook's `onFocus` / `onBlur`
+   to the pressable. Keep `focused` for behavior that needs actual focus rather
+   than ring visibility. Do not drop `outlineStyle: "none"` on its own: that
+   removes the only keyboard-focus indicator and regresses WCAG 2.1 — 2.4.7.
 7. Run Juno app tests, typecheck, browser smoke tests, `cargo xtask check`,
    commit, push, and run `cargo xtask review`.
 

@@ -235,7 +235,9 @@ function RemoveButton({
       style={[
         styles.iconButton,
         focus.webOutlineReset,
-        focus.focused && focus.ringEnabled ? styles.iconButtonFocused : null,
+        focus.focusVisible && focus.ringEnabled
+          ? styles.iconButtonFocused
+          : null,
       ]}
       testID={testID}
     >

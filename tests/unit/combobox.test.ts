@@ -122,7 +122,7 @@ test("combobox multi-select wires a labelled field surface", () => {
     /invalid\s*\? styles\.controlInvalid\s*:\s*focus\.focused\s*\? styles\.controlActive/,
   );
   assert.match(source, /useFocusRing\(\{ disabled: disableFocusRing \}\)/);
-  assert.match(source, /focus\.focused \? focus\.focusRingStyle : null/);
+  assert.match(source, /focus\.focusVisible \? focus\.focusRingStyle : null/);
   assert.match(source, /aria-invalid=\{invalid\}/);
   assert.match(source, /accessibilityRole="alert"/);
   assert.match(source, /"aria-describedby": describedBy/);

@@ -76,7 +76,7 @@ export function TransportButton({
         hovered && !primary && !active ? styles.buttonHovered : null,
         disabled ? styles.buttonDisabled : null,
         focus.webOutlineReset,
-        focus.focused && focus.ringEnabled ? styles.buttonFocused : null,
+        focus.focusVisible && focus.ringEnabled ? styles.buttonFocused : null,
         style,
       ]}
       testID={testID}

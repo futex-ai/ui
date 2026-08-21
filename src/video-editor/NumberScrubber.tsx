@@ -141,7 +141,7 @@ export function NumberScrubber({
           opacity: disabled ? 0.5 : 1,
         },
         focus.webOutlineReset,
-        focus.focused && focus.ringEnabled ? styles.fieldFocused : null,
+        focus.focusVisible && focus.ringEnabled ? styles.fieldFocused : null,
         style,
       ]}
       testID={testID}

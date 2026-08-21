@@ -152,8 +152,8 @@ function HitTargetView({
         focus.onBlur();
         onHoverOut();
       }}
-      onFocus={() => {
-        focus.onFocus();
+      onFocus={(event) => {
+        focus.onFocus(event);
         onFocusTarget();
       }}
       onHoverIn={onFocusTarget}
@@ -174,7 +174,7 @@ function HitTargetView({
         // The hovered/focused mark lifts so the reader sees it respond. A wash
         // rather than an outline: an outline around a mark reads as data ink.
         isActive ? { backgroundColor: "rgba(127,127,127,0.10)" } : null,
-        focus.focused && focus.ringEnabled
+        focus.focusVisible && focus.ringEnabled
           ? { backgroundColor: "rgba(127,127,127,0.18)" }
           : null,
       ]}

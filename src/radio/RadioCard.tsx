@@ -11,6 +11,7 @@ import {
 } from "react";
 import type { ReactNode, RefObject } from "react";
 import {
+  type FocusEvent,
   Platform,
   Pressable,
   StyleProp,
@@ -128,8 +129,8 @@ export function RadioCard({
 
   const keyProps = Platform.OS === "web" ? { onKeyDown: handleKeyDown } : {};
 
-  const handleFocus = () => {
-    focus.onFocus();
+  const handleFocus = (event: FocusEvent) => {
+    focus.onFocus(event);
     // Keep the single roving Tab stop on whichever card actually has focus,
     // however focus arrived (Tab, click, or arrow-key movement).
     if (inGroup && !disabledState) {
@@ -164,7 +165,7 @@ export function RadioCard({
         // geometry-bearing outline (not just a border recolor) so it stays
         // visible on a checked card whose border is already `primary`
         // (WCAG 2.1 — 2.4.7 Focus Visible, AA).
-        focus.focused ? focus.focusRingStyle : null,
+        focus.focusVisible ? focus.focusRingStyle : null,
         focus.webOutlineReset,
       ]}
     >

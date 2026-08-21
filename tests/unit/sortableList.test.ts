@@ -85,7 +85,7 @@ test("sortable rows are listitems with a button drag target and the focus ring",
   assert.match(source, /role="listitem"/);
   assert.match(source, /accessibilityRole="button"/);
   assert.match(source, /useFocusRing/);
-  assert.match(source, /focus\.focused \? focus\.focusRingStyle : null/);
+  assert.match(source, /focus\.focusVisible \? focus\.focusRingStyle : null/);
   assert.match(source, /focus\.webOutlineReset/);
   // onKeyDown / tabIndex are web-only and gated behind Platform.OS.
   assert.match(source, /Platform\.OS === "web"/);

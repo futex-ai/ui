@@ -175,7 +175,7 @@ function SortableRowButton({
         grabCursor,
         dragging ? grabbingCursor : null,
         dragging ? styles.dragging : null,
-        focus.focused ? focus.focusRingStyle : null,
+        focus.focusVisible ? focus.focusRingStyle : null,
         focus.webOutlineReset,
       ]}
     >
@@ -246,7 +246,7 @@ export function SortableHandle({
         grabCursor,
         dragging ? grabbingCursor : null,
         hovered ? styles.handleHover : null,
-        focus.focused ? focus.focusRingStyle : null,
+        focus.focusVisible ? focus.focusRingStyle : null,
         focus.webOutlineReset,
       ]}
     >

@@ -482,9 +482,7 @@ test("in-cell editors square off their box to match the grid", async ({
   ).toBe("0px");
 });
 
-test("select and date editors match the focused text editor chrome", async ({
-  page,
-}) => {
+test("editor chrome keeps focus rings modality-aware", async ({ page }) => {
   await gotoDataGridStory(page, "editable");
 
   await page.getByText("Migrate your CRM in one dry-run").dblclick();
@@ -500,6 +498,15 @@ test("select and date editors match the focused text editor chrome", async ({
 
   await page.getByText("Approved").first().dblclick();
   const selectTrigger = page.getByRole("button", { name: "Edit Status" });
+  await expect(selectTrigger).toBeFocused();
+  expect(await editorChrome(selectTrigger)).toEqual({
+    ...expectedChrome,
+    boxShadow: "none",
+  });
+  await page.keyboard.press("Escape");
+
+  // The same editor entered from the keyboard gets the focus-visible ring.
+  await page.keyboard.press("Enter");
   await expect(selectTrigger).toBeFocused();
   expect(await editorChrome(selectTrigger)).toEqual(expectedChrome);
   await page.keyboard.press("Escape");

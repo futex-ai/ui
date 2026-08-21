@@ -153,7 +153,7 @@ test("node becomes a pressable button with selected and focus rings", () => {
   assert.match(source, /selected \? styles\.nodeSelected : null/);
   assert.match(
     source,
-    /focus\.focused && !selected && focus\.ringEnabled[\s\S]*?styles\.nodeFocused/,
+    /focus\.focusVisible && !selected && focus\.ringEnabled[\s\S]*?styles\.nodeFocused/,
   );
   assert.match(source, /focus\.webOutlineReset/);
   assert.match(source, /hovered \? styles\.nodeHover : null/);

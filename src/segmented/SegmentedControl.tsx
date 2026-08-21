@@ -549,7 +549,7 @@ function SegmentedControlButton<T extends string>({
         pill ? styles.pill : styles.cell,
         sizing === "equal" ? styles.equalSegment : styles.contentSegment,
         selectedStyle,
-        focus.focused ? focus.focusRingStyle : null,
+        focus.focusVisible ? focus.focusRingStyle : null,
         disabled ? styles.disabled : null,
         focus.webOutlineReset,
       ]}

@@ -369,7 +369,7 @@ function KeyframeDiamond({
           top: top - 6,
         },
         focus.webOutlineReset,
-        focus.focused && focus.ringEnabled ? styles.keyframeFocused : null,
+        focus.focusVisible && focus.ringEnabled ? styles.keyframeFocused : null,
       ]}
       testID={testID}
       {...(Platform.OS === "web" ? { onKeyDown } : {})}

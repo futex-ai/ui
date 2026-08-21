@@ -60,7 +60,7 @@ test("kanban makes cards pressable buttons when given onCardPress", () => {
   assert.match(source, /useFocusRing/);
   assert.match(
     source,
-    /focus\.focused && focus\.ringEnabled \? styles\.cardFocused : null/,
+    /focus\.focusVisible && focus\.ringEnabled \? styles\.cardFocused : null/,
   );
   assert.match(source, /focus\.webOutlineReset/);
   assert.match(source, /hovered && !disabled \? styles\.cardHover : null/);

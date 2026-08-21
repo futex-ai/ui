@@ -395,7 +395,7 @@ function WheelRow({
       onBlur={ring.onBlur}
       onFocus={ring.onFocus}
       onPress={onPress}
-      style={[styles.item, ring.focused ? ring.focusRingStyle : null]}
+      style={[styles.item, ring.focusVisible ? ring.focusRingStyle : null]}
       {...keyProps}
     >
       <Text

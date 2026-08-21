@@ -187,7 +187,7 @@ export function WorkflowNode({
           hovered ? styles.nodeHover : null,
           pressed ? styles.nodePressed : null,
           selected ? styles.nodeSelected : null,
-          focus.focused && !selected && focus.ringEnabled
+          focus.focusVisible && !selected && focus.ringEnabled
             ? styles.nodeFocused
             : null,
           style,

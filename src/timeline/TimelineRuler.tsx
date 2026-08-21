@@ -187,7 +187,7 @@ export function TimelineRuler({
         styles.ruler,
         { height: metrics.rulerHeight, width },
         focus.webOutlineReset,
-        focus.focused && focus.ringEnabled ? styles.rulerFocused : null,
+        focus.focusVisible && focus.ringEnabled ? styles.rulerFocused : null,
         style,
       ]}
       tabIndex={onSeek ? 0 : undefined}

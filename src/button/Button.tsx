@@ -523,7 +523,7 @@ export function Button({
         pressed && !disabledState && !busy && tone === "onMedia"
           ? styles.onMediaPressed
           : null,
-        focus.focused ? focus.focusRingStyle : null,
+        focus.focusVisible ? focus.focusRingStyle : null,
         disabledState ? styles.disabled : null,
         // The caller's style layers last so it wins over the tone — which is
         // also why a caller-supplied fill erases the tone's washes. The

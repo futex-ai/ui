@@ -251,7 +251,7 @@ function PressableListItem({
           styles.itemPressable,
           hovered && !disabled ? styles.itemHover : null,
           pressed && !disabled ? styles.itemPressed : null,
-          focus.focused && focus.ringEnabled ? styles.itemFocused : null,
+          focus.focusVisible && focus.ringEnabled ? styles.itemFocused : null,
           disabled ? styles.itemDisabled : null,
           focus.webOutlineReset,
         ]}

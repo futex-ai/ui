@@ -155,7 +155,7 @@ Items are tagged `[Criterion № Name (Level)] — Severity — file:line`. Wher
 - **[1.1.1 Non-text Content / 4.1.2 name: icon-only (A)] — High — `Button.tsx:118-119`** — Type-enforce that an icon-only button (no children) requires `accessibilityLabel` (discriminated union) + `__DEV__` warning when no non-empty name resolves. **M**
 - **[1.1.1 decorative icon exposure (A)] — Med — `Button.tsx:118`** — Hide the leading icon from AT when a visible label exists (web `aria-hidden`; native `importantForAccessibility="no-hide-descendants"`). **S**
 - **[1.4.11 boundary (AA)] — Med — `buttonStyles.ts:66-77,93`** — Raise secondary resting border to ≥3:1 _(via F1)_; document ghost's label-as-affordance decision (ghost has no border/fill at rest). **S**
-- **[2.4.7 focus-visible vs focus (AA)] — Low — `Button.tsx:88-89`** — Already passes (shows ring on all focus, which satisfies AA). Optional polish: gate ring to keyboard focus. Not required. **M**
+- **[2.4.7 focus-visible vs focus (AA)] — Resolved — `focusRing.ts`** — The shared hook tracks actual focus separately from `:focus-visible`, gates web rings to the latter, and clears stale state through a native blur listener when a focused control becomes disabled. **M**
 - **[2.1.1 native parity (A)] — Low — `Button.tsx:82-117`** — Document RNW key delegation + add regression test _(via F3)_. **S**
 
 ### 4.2 Input + InputFrame (`src/input/`)
@@ -363,7 +363,8 @@ _Dependency:_ Phase 1 focus/role work (some announcements assume correct roles).
 - 1.4.12 text-spacing (`minHeight`) in Input/Segmented/Radio (AA — low risk, deferred polish).
 - Target-size `hitSlop` (Toast 2.5.5 AAA, Heatmap 2.5.8 WCAG-2.2).
 - Avatar decorative opt-out; Toast focus-on-dismiss; Date input-purpose; disabled-token cleanup.
-- Optional `:focus-visible` gating; consumer-override contrast docs.
+- Consumer-override contrast docs. `:focus-visible` gating is complete in the
+  shared focus hook.
 
 _Exit:_ AAA/best-practice backlog closed or explicitly deferred with rationale.
 

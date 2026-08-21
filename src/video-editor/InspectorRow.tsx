@@ -237,7 +237,7 @@ function ColorSwatch({
         { backgroundColor: color },
         selected ? styles.swatchSelected : null,
         focus.webOutlineReset,
-        focus.focused && focus.ringEnabled ? styles.swatchFocused : null,
+        focus.focusVisible && focus.ringEnabled ? styles.swatchFocused : null,
       ]}
     />
   );
@@ -272,7 +272,9 @@ function RowAction({
         styles.iconButton,
         active ? styles.iconButtonOn : null,
         focus.webOutlineReset,
-        focus.focused && focus.ringEnabled ? styles.iconButtonFocused : null,
+        focus.focusVisible && focus.ringEnabled
+          ? styles.iconButtonFocused
+          : null,
       ]}
       testID={testID}
     >

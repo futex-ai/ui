@@ -167,7 +167,9 @@ export function ChartFrame({
             style={[
               styles.toggle,
               focus.webOutlineReset,
-              focus.focused && focus.ringEnabled ? styles.toggleFocused : null,
+              focus.focusVisible && focus.ringEnabled
+                ? styles.toggleFocused
+                : null,
             ]}
           >
             <Text style={styles.toggleText}>
