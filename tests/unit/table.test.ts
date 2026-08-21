@@ -63,7 +63,7 @@ test("table makes rows pressable buttons when given onRowPress", () => {
   assert.match(source, /useFocusRing/);
   assert.match(
     source,
-    /focus\.focused && focus\.ringEnabled \? styles\.rowFocused : null/,
+    /focus\.focusVisible && focus\.ringEnabled \? styles\.rowFocused : null/,
   );
   assert.match(source, /focus\.webOutlineReset/);
   assert.match(

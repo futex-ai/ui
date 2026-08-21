@@ -168,7 +168,9 @@ function SectionHeader({
       style={[
         styles.sectionHeader,
         focus.webOutlineReset,
-        focus.focused && focus.ringEnabled ? styles.sectionHeaderFocused : null,
+        focus.focusVisible && focus.ringEnabled
+          ? styles.sectionHeaderFocused
+          : null,
       ]}
       testID={testID}
       // react-native-web does not emit `aria-expanded` from

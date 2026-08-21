@@ -236,7 +236,7 @@ export function InputFrame({
         // visible even on an invalid (rose-bordered) field — WCAG 2.1 2.4.7
         // Focus Visible (AA). Only paints when the input itself is focused
         // (not for the `active`/popover-open border).
-        focus.focused ? focus.focusRingStyle : null,
+        focus.focusVisible ? focus.focusRingStyle : null,
       ]}
     >
       {PrefixIcon ? (
@@ -262,7 +262,7 @@ export function InputFrame({
           props.onContentSizeChange?.(event);
         }}
         onFocus={(event) => {
-          focus.onFocus();
+          focus.onFocus(event);
           props.onFocus?.(event);
         }}
         style={[

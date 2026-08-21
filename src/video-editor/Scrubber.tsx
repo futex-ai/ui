@@ -185,7 +185,7 @@ export function Scrubber({
         styles.scrubber,
         { height: Math.max(metrics.knobSize, metrics.trackHeight) },
         focus.webOutlineReset,
-        focus.focused && focus.ringEnabled ? styles.scrubberFocused : null,
+        focus.focusVisible && focus.ringEnabled ? styles.scrubberFocused : null,
         style,
       ]}
       tabIndex={onSeek ? 0 : undefined}

@@ -169,7 +169,7 @@ function LegendEntry({
           // them back is still visible and still in the tab order.
           hidden ? { opacity: 0.4 } : null,
           focus.webOutlineReset,
-          focus.focused && focus.ringEnabled
+          focus.focusVisible && focus.ringEnabled
             ? {
                 backgroundColor: theme.colors.soft,
                 borderRadius: theme.radii.sm,

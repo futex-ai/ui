@@ -223,7 +223,7 @@ export function useDragSelectableTarget(
         ...(disabled ? {} : { tabIndex }),
       },
       dragging: state.dragging,
-      focused: focus.focused,
+      focused: focus.focusVisible,
       focusRingStyle: focus.focusRingStyle,
       matching: matchedIdSet.has(id),
       ref: targetRef,
@@ -232,7 +232,7 @@ export function useDragSelectableTarget(
     [
       disabled,
       focus.focusRingStyle,
-      focus.focused,
+      focus.focusVisible,
       focus.onBlur,
       focus.onFocus,
       handleKeyDown,

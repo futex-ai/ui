@@ -152,8 +152,8 @@ export function TimelineClip({
       accessibilityLabel={label}
       accessibilityRole="button"
       onBlur={focus.onBlur}
-      onFocus={() => {
-        focus.onFocus();
+      onFocus={(event) => {
+        focus.onFocus(event);
         onFocus?.();
       }}
       onPress={onPress ? () => onPress(clip) : undefined}
@@ -172,7 +172,7 @@ export function TimelineClip({
         },
         selected ? styles.clipSelected : null,
         focus.webOutlineReset,
-        focus.focused && focus.ringEnabled ? styles.clipFocused : null,
+        focus.focusVisible && focus.ringEnabled ? styles.clipFocused : null,
         style,
       ]}
       tabIndex={tabIndex}

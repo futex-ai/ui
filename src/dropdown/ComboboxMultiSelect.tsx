@@ -258,7 +258,7 @@ export function ComboboxMultiSelect({
               : focus.focused
                 ? styles.controlActive
                 : null,
-            focus.focused ? focus.focusRingStyle : null,
+            focus.focusVisible ? focus.focusRingStyle : null,
           ]}
           tabIndex={-1}
         >
@@ -318,8 +318,8 @@ export function ComboboxMultiSelect({
                 inputRef.current?.focus();
               }
             }}
-            onFocus={() => {
-              focus.onFocus();
+            onFocus={(event) => {
+              focus.onFocus(event);
               setOpen(true);
             }}
             placeholder={placeholder}

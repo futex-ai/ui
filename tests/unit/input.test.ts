@@ -87,7 +87,7 @@ test("input frame plain variant drops border/fill/padding, keeps the ring", () =
     /boxPlain: \{\s*backgroundColor: "transparent",\s*borderWidth: 0,\s*paddingHorizontal: 0,\s*\}/,
   );
   // The focus ring is still applied on focus (the plain box only strips chrome).
-  assert.match(source, /focus\.focused \? focus\.focusRingStyle : null/);
+  assert.match(source, /focus\.focusVisible \? focus\.focusRingStyle : null/);
 });
 
 test("input frame supports multiline textarea geometry", () => {
@@ -177,7 +177,7 @@ test("input frame seamless variant drops chrome, height, and padding, grows to f
   // The focus ring still paints on focus (seamless only strips chrome), and a
   // chrome-less field can opt into an inset ring so an overflow:hidden ancestor
   // does not clip its only focus indicator (WCAG 2.4.7).
-  assert.match(source, /focus\.focused \? focus\.focusRingStyle : null/);
+  assert.match(source, /focus\.focusVisible \? focus\.focusRingStyle : null/);
   assert.match(
     source,
     /useFocusRing\(\{[\s\S]*?focusRingInset \? \{ offset: -2 \} : \{\}[\s\S]*?disabled: disableFocusRing[\s\S]*?\}\)/,
@@ -355,7 +355,7 @@ test("label info exposes the detail on the button and reveals a visual-only bubb
   // The trigger is an accessible, keyboard-reachable button with its own ring.
   assert.match(source, /accessibilityRole="button"/);
   assert.match(source, /accessibilityLabel=\{accessibilityLabel\}/);
-  assert.match(source, /focus\.focused \? focus\.focusRingStyle : null/);
+  assert.match(source, /focus\.focusVisible \? focus\.focusRingStyle : null/);
   // The default glyph is lucide `Info`, overridable via the `icon` prop.
   assert.match(source, /icon: Icon = Info/);
 });

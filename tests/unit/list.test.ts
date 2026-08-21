@@ -65,7 +65,7 @@ test("list makes items pressable buttons when given onItemPress", () => {
   assert.match(source, /useFocusRing/);
   assert.match(
     source,
-    /focus\.focused && focus\.ringEnabled \? styles\.itemFocused : null/,
+    /focus\.focusVisible && focus\.ringEnabled \? styles\.itemFocused : null/,
   );
   assert.match(source, /focus\.webOutlineReset/);
   assert.match(
@@ -130,7 +130,7 @@ test("list item makes only the title column pressable, leaving trailing free", (
   assert.match(source, /accessibilityState=\{\{ disabled \}\}/);
   // The button still owns the shared focus ring + hidden outline + pressed dim.
   assert.match(source, /useFocusRing/);
-  assert.match(source, /focus\.focused \? focus\.focusRingStyle : null/);
+  assert.match(source, /focus\.focusVisible \? focus\.focusRingStyle : null/);
   assert.match(source, /focus\.webOutlineReset/);
   assert.match(
     source,

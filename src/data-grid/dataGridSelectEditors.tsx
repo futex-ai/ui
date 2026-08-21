@@ -86,7 +86,7 @@ export function SingleSelectEditor({
           inputStyles.box,
           focus.focused ? inputStyles.boxActive : null,
           editorStyles.squareFrame,
-          focus.focused ? focus.focusRingStyle : null,
+          focus.focusVisible ? focus.focusRingStyle : null,
           focus.webOutlineReset,
         ]}
       >

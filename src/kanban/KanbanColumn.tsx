@@ -277,7 +277,7 @@ function PressableCard({
         styles.cardPressable,
         hovered && !disabled ? styles.cardHover : null,
         pressed && !disabled ? styles.cardPressed : null,
-        focus.focused && focus.ringEnabled ? styles.cardFocused : null,
+        focus.focusVisible && focus.ringEnabled ? styles.cardFocused : null,
         disabled ? styles.cardDisabled : null,
         grabbed ? styles.cardGrabbed : null,
         focus.webOutlineReset,
@@ -345,7 +345,7 @@ function ColumnAddButton({
         afterAccessory ? styles.addButtonAfterAccessory : null,
         styles.addButtonPressable,
         hovered ? styles.addButtonHover : null,
-        focus.focused ? focus.focusRingStyle : null,
+        focus.focusVisible ? focus.focusRingStyle : null,
         focus.webOutlineReset,
       ]}
     >

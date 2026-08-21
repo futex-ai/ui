@@ -309,7 +309,7 @@ function PressableTableRow({
         customStyle,
         hovered && !disabled ? styles.rowHover : null,
         pressed && !disabled ? styles.rowPressed : null,
-        focus.focused && focus.ringEnabled ? styles.rowFocused : null,
+        focus.focusVisible && focus.ringEnabled ? styles.rowFocused : null,
         disabled ? styles.rowDisabled : null,
         focus.webOutlineReset,
       ]}

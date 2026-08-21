@@ -36,7 +36,9 @@ theme tokens.
 - Open the label and the row to the caller: `labelStyle`, `numberOfLines`, a
   `trailing` slot, and a `content` escape hatch for a pressable card.
 - Own the sage focus ring on the whole control and hide the browser's default
-  outline, using shared theme colours and radii.
+  outline, using shared theme colours and radii. On web the ring follows
+  `:focus-visible`, and disabling a focused button clears its tracked focus so a
+  stale ring cannot return when the button is re-enabled.
 - Expose `button` accessibility semantics with a disabled state, and treat a
   missing `onPress` as a read-only disabled control (matching the library's
   other pressables).
@@ -442,8 +444,11 @@ web-only and stays `false` on native.
   shrinks its tap target with it.
 - **Focus visible (2.4.7, AA).** The library's shared soft focus glow (the same
   `useFocusRing` box-shadow ring input / switch / radio / segmented use) is shown
-  on focus for every tone — including `primary`, where a border-colour ring would
-  be invisible — and the browser's default outline is suppressed.
+  for `:focus-visible` focus on web and all platform focus on native. It covers
+  every tone — including `primary`, where a border-colour ring would be invisible
+  — and suppresses the browser's default outline. The hook listens for native web
+  blur as well as React `onBlur`, so disabling and later re-enabling a focused
+  button cannot restore a stale glow.
 - **Resting border.** The secondary button's resting edge uses the
   `controlBorder` token — a soft, translucent-ink line (intentionally below the
   1.4.11 ≥3:1 non-text-contrast floor, for a calmer edge). The `ghost` tone

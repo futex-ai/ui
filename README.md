@@ -29,10 +29,11 @@ surfaces. The first consumers are the accounting app and the Juno app.
   with four shipped presets — the accounting default and Juno, each in a light
   and a dark variant. Every component reads its colors from the tokens, so dark
   mode is a preset swap rather than a per-component opt-in.
-- A shared, calm focus glow across every control, disable-able globally via the
-  theme's `focusRing: false` flag or per instance with a `disableFocusRing` prop
-  (both fall back to the browser's default focus outline so keyboard focus stays
-  visible).
+- A shared, calm focus glow across every control. On web it follows
+  `:focus-visible`, so keyboard focus is clear without painting a keyboard-style
+  ring after a pointer click; native keeps its platform focus behavior. Disable
+  it globally via the theme's `focusRing: false` flag or per instance with a
+  `disableFocusRing` prop (both restore the browser's default focus outline).
 - Portaled, anchored web date/dropdown/popover overlays with viewport-aware,
   content-sized selector menus and z-index escape hatches, plus touch-friendly
   native date sheets.
@@ -104,9 +105,12 @@ The package name is `@firna/ui`. Public exports are available from:
   (`SharedUiThemeProvider theme={{ focusRing: false }}` disables every control's
   focus glow at once). See [Theming](#theming) for the dark-mode contract.
 - `@firna/ui/focusRing` for `useFocusRing` and `focusRingStyleFor` — the shared
-  focus-glow primitive every control uses. Pass `disableFocusRing` to a single
-  control to drop only that instance's glow; both paths fall back to the
-  browser's default focus outline so keyboard focus stays visible (WCAG 2.4.7).
+  focus-glow primitive every control uses. The hook exposes `focused` for actual
+  focus and `focusVisible` for deciding when to paint the ring; on web the latter
+  follows `:focus-visible` and is cleared by the target's native blur event even
+  when React misses a blur during a disabled-state transition. Pass
+  `disableFocusRing` to a single control to drop only that instance's glow; both
+  disable paths restore the browser's default focus outline (WCAG 2.4.7).
 - `@firna/ui/toast` for the toast provider, the `useToast` hook, the
   `toastController` method API, and transient notification toasts including
   card and solid variants with optional custom leading icons.

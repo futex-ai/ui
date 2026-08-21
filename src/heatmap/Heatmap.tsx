@@ -649,8 +649,8 @@ function HeatmapPressableCell({
       accessibilityLabel={label}
       accessibilityRole="button"
       onBlur={focus.onBlur}
-      onFocus={() => {
-        focus.onFocus();
+      onFocus={(event) => {
+        focus.onFocus(event);
         onFocusCell();
       }}
       onPress={() => onPress(cell)}
@@ -670,7 +670,9 @@ function HeatmapPressableCell({
         // is skipped so the UA outline returns on this focusable gridcell (WCAG
         // 2.1 — 2.4.7 Focus Visible, AA).
         focus.webOutlineReset,
-        focus.focused && focus.ringEnabled ? styles.cellPressableFocused : null,
+        focus.focusVisible && focus.ringEnabled
+          ? styles.cellPressableFocused
+          : null,
       ]}
       tabIndex={tabIndex}
     />

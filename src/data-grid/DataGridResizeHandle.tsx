@@ -88,7 +88,7 @@ export function DataGridResizeHandle({
         styles.resizeHandle,
         colResizeCursor,
         focus.webOutlineReset,
-        focus.focused ? focus.focusRingStyle : null,
+        focus.focusVisible ? focus.focusRingStyle : null,
       ]}
     >
       {({ hovered }: PressableHoverState) => (

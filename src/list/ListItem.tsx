@@ -166,7 +166,7 @@ function PressableTitle({
         styles.itemMain,
         styles.itemMainPressable,
         pressed && !disabled ? styles.itemMainPressed : null,
-        focus.focused ? focus.focusRingStyle : null,
+        focus.focusVisible ? focus.focusRingStyle : null,
         disabled ? styles.itemDisabled : null,
         focus.webOutlineReset,
       ]}

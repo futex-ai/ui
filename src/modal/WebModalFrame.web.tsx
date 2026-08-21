@@ -247,7 +247,7 @@ export function WebModalFrame({
           style={[
             styles.closeButton,
             closeDisabled ? styles.disabled : null,
-            closeRing.focused ? closeRing.focusRingStyle : null,
+            closeRing.focusVisible ? closeRing.focusRingStyle : null,
           ]}
         >
           <X aria-hidden color={theme.colors.ink2} size={18} />

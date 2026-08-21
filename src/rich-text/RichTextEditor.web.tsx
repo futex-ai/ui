@@ -906,9 +906,15 @@ export function RichTextEditor({
       styles.frame,
       minHeight === undefined ? null : { minHeight },
       maxHeight === undefined ? null : { maxHeight },
-      focus.focused ? focus.focusRingStyle : null,
+      focus.focusVisible ? focus.focusRingStyle : null,
     ],
-    [focus.focusRingStyle, focus.focused, maxHeight, minHeight, styles.frame],
+    [
+      focus.focusRingStyle,
+      focus.focusVisible,
+      maxHeight,
+      minHeight,
+      styles.frame,
+    ],
   );
   const scrollFrameStyle = useMemo(
     () => [

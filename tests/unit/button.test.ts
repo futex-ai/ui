@@ -52,7 +52,7 @@ test("button shows the shared tone-independent focus glow and hides the web outl
   // `primary` (whose border already matches the theme primary), with the
   // browser's default outline suppressed.
   assert.match(source, /useFocusRing/);
-  assert.match(source, /focus\.focused \? focus\.focusRingStyle : null/);
+  assert.match(source, /focus\.focusVisible \? focus\.focusRingStyle : null/);
   // The outline reset is web-only and skipped when the ring is disabled, so the
   // UA outline returns as the focus affordance.
   assert.match(source, /focus\.webOutlineReset/);

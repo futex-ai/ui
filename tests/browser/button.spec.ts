@@ -14,6 +14,77 @@ async function gotoButtonStory(page: Page, storyId: string) {
   });
 }
 
+async function gotoFocusRingStory(page: Page, storyId: string) {
+  await page.goto(
+    `/iframe.html?id=focus-ring-examples--${storyId}&viewMode=story`,
+  );
+  await page.waitForSelector("#storybook-root *", {
+    timeout: storyReadyTimeout,
+  });
+}
+
+test("the custom ring follows focus-visible input modality", async ({
+  page,
+}) => {
+  await gotoButtonStory(page, "tones");
+  const primary = page.getByRole("button", { name: "Primary" });
+  const secondary = page.getByRole("button", { name: "Secondary" });
+
+  await primary.click();
+  await expect(primary).toBeFocused();
+  expect(
+    await primary.evaluate((element) => element.matches(":focus-visible")),
+  ).toBe(false);
+  await expect(primary).toHaveCSS("box-shadow", "none");
+
+  await page.keyboard.press("Space");
+  expect(
+    await primary.evaluate((element) => element.matches(":focus-visible")),
+  ).toBe(true);
+  expect(
+    await primary.evaluate((element) => getComputedStyle(element).boxShadow),
+  ).not.toBe("none");
+
+  await page.keyboard.press("Tab");
+  await expect(secondary).toBeFocused();
+  expect(
+    await secondary.evaluate((element) => element.matches(":focus-visible")),
+  ).toBe(true);
+  expect(
+    await secondary.evaluate((element) => getComputedStyle(element).boxShadow),
+  ).not.toBe("none");
+});
+
+test("disabling a focused button cannot leave a stale ring", async ({
+  page,
+}) => {
+  await gotoFocusRingStory(page, "dynamic-disabled");
+  const exportButton = page.getByRole("button", {
+    exact: true,
+    name: "Export",
+  });
+  const finishButton = page.getByRole("button", { name: "Finish export" });
+  const searchButton = page.getByRole("button", { name: "Search" });
+
+  await exportButton.click();
+  await expect(exportButton).toBeDisabled();
+  expect(
+    await page.evaluate(() => document.activeElement === document.body),
+  ).toBe(true);
+  await expect(exportButton).toHaveCSS("box-shadow", "none");
+
+  await finishButton.dispatchEvent("click");
+  await expect(exportButton).toBeEnabled();
+  expect(
+    await page.evaluate(() => document.activeElement === document.body),
+  ).toBe(true);
+  await expect(exportButton).toHaveCSS("box-shadow", "none");
+
+  await searchButton.click();
+  await expect(searchButton).toBeFocused();
+  await expect(exportButton).toHaveCSS("box-shadow", "none");
+});
+
 test("hit slop presses the button from outside its visible box", async ({
   page,
 }) => {

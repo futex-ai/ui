@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Platform, TextStyle, ViewStyle } from "react-native";
 
 import { useSharedUiTheme } from "./theme";
@@ -50,6 +50,32 @@ export type FocusRingOptions = {
 
 /** Stable empty style returned for a disabled ring, so identity never churns. */
 const EMPTY_RING_STYLE = Object.freeze({}) as ViewStyle;
+
+type FocusState = {
+  focused: boolean;
+  focusVisible: boolean;
+};
+
+type FocusEventLike = {
+  currentTarget?: unknown;
+};
+
+type WebFocusEventType = "blur" | "keydown" | "pointerdown";
+
+type WebFocusTarget = {
+  addEventListener: (
+    type: WebFocusEventType,
+    listener: () => void,
+    options?: { once?: boolean },
+  ) => void;
+  matches: (selector: string) => boolean;
+  removeEventListener: (type: WebFocusEventType, listener: () => void) => void;
+};
+
+const UNFOCUSED_STATE = Object.freeze({
+  focused: false,
+  focusVisible: false,
+}) as FocusState;
 
 /**
  * Parses a `#rgb`/`#rrggbb` hex color into an `"r, g, b"` channel triplet for
@@ -107,18 +133,25 @@ export function focusRingStyleFor(options: FocusRingOptions): ViewStyle {
   } as unknown as ViewStyle;
 }
 
+/**
+ * Tracks actual focus and visible-focus modality independently. Web controls
+ * render the custom glow only when `:focus-visible` matches; native controls
+ * treat every focus as visible. Direct web listeners keep state aligned when
+ * input modality changes without another focus event, or when disabling a
+ * focused element bypasses React's synthetic `onBlur`.
+ */
 export function useFocusRing(options: FocusRingOptions = {}) {
-  const [focused, setFocused] = useState(false);
+  const [focusState, setFocusState] = useState<FocusState>(UNFOCUSED_STATE);
+  const focusedTargetRef = useRef<WebFocusTarget | null>(null);
   const theme = useSharedUiTheme();
   const color = options.color ?? theme.colors.primary;
   const { width, offset, alpha, disabled } = options;
   // The ring is on unless this instance opts out (`disabled`) or the whole theme
   // turns rings off (`focusRing: false`). When off, `focusRingStyle` collapses
-  // to `{}`, so the usual `focused ? focusRingStyle : null` idiom paints no glow
-  // with no gate change. `ringEnabled` is for the callers that draw their glow
-  // from a local StyleSheet (List, Table, Kanban card, Heatmap, Workflow) and so
-  // never read `focusRingStyle`; they AND it into their own gate. It also drives
-  // the web outline reset below.
+  // to `{}`, so the usual `focusVisible ? focusRingStyle : null` idiom paints no
+  // glow with no gate change. `ringEnabled` is for callers that draw their glow
+  // from a local StyleSheet and never read `focusRingStyle`; they AND it into
+  // their own gate. It also drives the web outline reset below.
   const ringEnabled = !disabled && theme.focusRing !== false;
   const focusRingStyle = useMemo<ViewStyle>(
     () =>
@@ -127,6 +160,54 @@ export function useFocusRing(options: FocusRingOptions = {}) {
         : EMPTY_RING_STYLE,
     [ringEnabled, color, width, offset, alpha],
   );
+  const syncFocusVisible = useCallback(() => {
+    const target = focusedTargetRef.current;
+    if (!target) return;
+    const focusVisible = target.matches(":focus-visible");
+    setFocusState((current) =>
+      current.focused && current.focusVisible === focusVisible
+        ? current
+        : { focused: true, focusVisible },
+    );
+  }, []);
+  const clearFocus = useCallback(
+    function clearTrackedFocus() {
+      const target = focusedTargetRef.current;
+      target?.removeEventListener("blur", clearTrackedFocus);
+      target?.removeEventListener("keydown", syncFocusVisible);
+      target?.removeEventListener("pointerdown", syncFocusVisible);
+      focusedTargetRef.current = null;
+      setFocusState(UNFOCUSED_STATE);
+    },
+    [syncFocusVisible],
+  );
+  const onFocus = useCallback(
+    (event?: FocusEventLike) => {
+      clearFocus();
+      const target = webFocusTarget(event);
+      target?.addEventListener("blur", clearFocus, { once: true });
+      target?.addEventListener("keydown", syncFocusVisible);
+      target?.addEventListener("pointerdown", syncFocusVisible);
+      focusedTargetRef.current = target;
+      setFocusState({
+        focused: true,
+        focusVisible: target?.matches(":focus-visible") ?? true,
+      });
+    },
+    [clearFocus, syncFocusVisible],
+  );
+
+  useEffect(
+    () => () => {
+      const target = focusedTargetRef.current;
+      target?.removeEventListener("blur", clearFocus);
+      target?.removeEventListener("keydown", syncFocusVisible);
+      target?.removeEventListener("pointerdown", syncFocusVisible);
+      focusedTargetRef.current = null;
+    },
+    [clearFocus, syncFocusVisible],
+  );
+
   return {
     focusRingStyle,
     ringEnabled,
@@ -135,8 +216,19 @@ export function useFocusRing(options: FocusRingOptions = {}) {
     // outline return once the ring is disabled so keyboard focus stays visible
     // (WCAG 2.1 — 2.4.7 Focus Visible, AA). Web-only, matching the glow.
     webOutlineReset: ringEnabled ? hideWebOutlineView : null,
-    focused,
-    onBlur: () => setFocused(false),
-    onFocus: () => setFocused(true),
+    focused: focusState.focused,
+    focusVisible: focusState.focusVisible,
+    onBlur: clearFocus,
+    onFocus,
   };
+}
+
+function webFocusTarget(event?: FocusEventLike): WebFocusTarget | null {
+  if (Platform.OS !== "web") return null;
+  const target = event?.currentTarget as Partial<WebFocusTarget> | undefined;
+  return typeof target?.addEventListener === "function" &&
+    typeof target.matches === "function" &&
+    typeof target.removeEventListener === "function"
+    ? (target as WebFocusTarget)
+    : null;
 }

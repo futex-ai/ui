@@ -85,7 +85,7 @@ export function LabelInfo({
           style={[
             styles.labelInfoButton,
             focus.webOutlineReset,
-            focus.focused ? focus.focusRingStyle : null,
+            focus.focusVisible ? focus.focusRingStyle : null,
           ]}
         >
           <Icon color={theme.colors.muted} size={LABEL_INFO_ICON_SIZE} />

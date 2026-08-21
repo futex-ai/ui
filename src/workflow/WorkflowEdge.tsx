@@ -107,7 +107,9 @@ export function WorkflowInsertButton({
       style={({ hovered }: PressableHoverState) => [
         styles.insertButton,
         hovered ? styles.insertButtonHover : null,
-        focus.focused && focus.ringEnabled ? styles.insertButtonFocused : null,
+        focus.focusVisible && focus.ringEnabled
+          ? styles.insertButtonFocused
+          : null,
         style,
         focus.webOutlineReset,
       ]}

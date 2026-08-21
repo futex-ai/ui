@@ -122,7 +122,7 @@ export function Switch({
           // and stays visible (WCAG 2.1 — 2.4.7 Focus Visible, AA). With the ring
           // disabled the reset is skipped so the UA outline returns instead.
           focus.webOutlineReset,
-          focus.focused ? focus.focusRingStyle : null,
+          focus.focusVisible ? focus.focusRingStyle : null,
         ]}
       >
         <View

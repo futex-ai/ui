@@ -199,7 +199,7 @@ export function NativeTrigger({
       style={[
         styles.trigger,
         triggerBorder(styles, invalid, field.open || focus.focused),
-        focus.focused ? focus.focusRingStyle : null,
+        focus.focusVisible ? focus.focusRingStyle : null,
       ]}
       testID={testID}
     >

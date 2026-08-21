@@ -107,7 +107,7 @@ export function MediaBinItem({
         selected ? styles.cardSelected : null,
         hovered && !selected ? styles.cardHovered : null,
         focus.webOutlineReset,
-        focus.focused && focus.ringEnabled ? styles.cardFocused : null,
+        focus.focusVisible && focus.ringEnabled ? styles.cardFocused : null,
       ]}
       testID={testID}
     >

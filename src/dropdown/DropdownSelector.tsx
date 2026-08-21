@@ -293,7 +293,7 @@ function DropdownSelectorView({
         ref={anchorRef}
         style={[
           triggerStyle(styles, variant),
-          focus.focused ? focus.focusRingStyle : null,
+          focus.focusVisible ? focus.focusRingStyle : null,
           invalid ? styles.invalid : null,
           invalid && variant === "map" ? styles.mapInvalid : null,
           !interactive ? styles.readOnly : null,

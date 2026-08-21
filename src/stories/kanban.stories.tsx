@@ -413,7 +413,7 @@ function AgentToggle({
       style={[
         styles.agentToggle,
         on ? styles.agentToggleOn : null,
-        focus.focused ? focus.focusRingStyle : null,
+        focus.focusVisible ? focus.focusRingStyle : null,
         focus.webOutlineReset,
       ]}
       {...keyProps}

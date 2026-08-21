@@ -177,7 +177,9 @@ function HeaderToggle({
         { height: box, width: box },
         active ? styles.headerToggleOn : null,
         focus.webOutlineReset,
-        focus.focused && focus.ringEnabled ? styles.headerToggleFocused : null,
+        focus.focusVisible && focus.ringEnabled
+          ? styles.headerToggleFocused
+          : null,
       ]}
       testID={testID}
     >

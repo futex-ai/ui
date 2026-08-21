@@ -269,8 +269,10 @@ Required behavior:
 - Remain a single control: group semantics — the `tablist` / `radiogroup` /
   `menu` container, roving focus, and arrow-key navigation — stay with the
   caller or with the segmented control.
-- Own the shared focus ring and hide the browser's default outline, under every
-  role.
+- Own the shared focus ring and hide the browser's default outline under every
+  role. On web the custom ring must follow `:focus-visible`, not raw focus, and
+  disabling a focused button must clear the tracked state so re-enabling it
+  cannot restore a stale ring. Native keeps its platform focus behavior.
 - Use shared theme tokens for fills, borders, label colors, disabled opacity,
   fonts, and radii, and size with the shared control-size scale.
 
@@ -763,8 +765,9 @@ Required behavior:
 - Component source contracts that protect web/native boundaries must have tests.
 - Browser interaction tests must cover opening, keyboard navigation, outside
   dismissal, segmented selection, switch toggling, table row press (click and
-  keyboard), focus retention/restoration, and portal layering for dropdowns,
-  comboboxes, and web modals.
+  keyboard), focus retention/restoration, pointer-versus-keyboard focus-ring
+  modality, focused-control disable/re-enable, and portal layering for
+  dropdowns, comboboxes, and web modals.
 - The package must typecheck and build before it is used by accounting or Juno.
 - `npm run test:package` must pack the built library, install the tarball into a
   temporary consumer, import every public package subpath with Node's native ESM
