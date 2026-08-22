@@ -96,7 +96,8 @@ Storybook instead of relying only on the two primitive interaction examples.
 - [x] Run the targeted browser suite and manually smoke-test the story.
 - [x] Run `cargo xtask check` with a 100% pass rate.
 - [x] Review the final diff against `origin/main`.
-- [ ] Run `git add -A`, commit with a Conventional Commit, and push.
-- [ ] Run `cargo xtask review` after pushing and report its findings without
-      automatically fixing them.
-- [ ] Open and merge the follow-up PR after its required checks pass.
+- [x] Run `git add -A`, commit with a Conventional Commit, and push.
+- [x] Run `cargo xtask review` after pushing and report its findings without
+      automatically fixing them; both attempts failed authentication with HTTP
+      401 before the reviewer produced findings.
+- [x] Open follow-up PR #157 to land the Storybook fixture.
