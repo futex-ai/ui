@@ -10,6 +10,7 @@ import {
   darkSharedUiTheme,
   useSharedUiTheme,
 } from "../index";
+import { ListRepositoryPickerExample } from "./listRepositoryPickerExample";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -188,6 +189,23 @@ export const PressableLabelWithToggle: Story = {
   render: () => (
     <StorySurface>
       <PressableLabelExample />
+    </StorySurface>
+  ),
+};
+
+export const RepositoryPickerRegression: Story = {
+  name: "Repository picker regression",
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Consumer-shaped regression fixture: a modal containing a static List whose rich ListItem title is pressable beside a decorative chevron.",
+      },
+    },
+  },
+  render: () => (
+    <StorySurface>
+      <ListRepositoryPickerExample />
     </StorySurface>
   ),
 };

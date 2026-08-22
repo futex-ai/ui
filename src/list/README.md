@@ -93,6 +93,13 @@ ordinary pointer interaction. Pointer clicks already suppress the custom ring
 on web. Disabling the custom ring restores the browser's default outline so a
 keyboard user does not lose the focus indicator.
 
+The Storybook **Repository picker regression** fixture preserves the consumer
+composition that originally exposed this bug: a modal containing a static
+`List`, rich `ListItem.onPress` title content, and a decorative trailing
+chevron. It exists to make that exact focus path inspectable. It is not the
+recommended composition for new one-action rows; those should still use
+`List.onItemPress` for the complete-row target.
+
 ### Loading
 
 Pass `loading` to render content-shaped placeholder items (built from the

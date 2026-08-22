@@ -82,3 +82,21 @@ the release only after its generated PR is green.
 - [x] Merge release PR #155 to publish `@firna/ui@2.0.1`.
 - [x] Verify npm serves version `2.0.1` and the packed List/ListItem output gates
       visual rings on focus-visible state.
+
+## Milestone 5: Add The Consumer-Shaped Story
+
+Summary: make the original application composition directly reproducible in
+Storybook instead of relying only on the two primitive interaction examples.
+
+- [x] Add a List story that mirrors a modal repository picker built from a
+      static `List`, rich `ListItem.onPress` title, and decorative chevron.
+- [x] Add browser coverage for pointer and keyboard focus in that exact story.
+- [x] Document how the regression fixture differs from the recommended
+      full-row `List.onItemPress` composition.
+- [x] Run the targeted browser suite and manually smoke-test the story.
+- [x] Run `cargo xtask check` with a 100% pass rate.
+- [x] Review the final diff against `origin/main`.
+- [ ] Run `git add -A`, commit with a Conventional Commit, and push.
+- [ ] Run `cargo xtask review` after pushing and report its findings without
+      automatically fixing them.
+- [ ] Open and merge the follow-up PR after its required checks pass.

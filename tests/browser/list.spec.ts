@@ -1,7 +1,8 @@
 /**
  * Browser coverage for List focus modality and its two deliberate press-target
  * models. Source assertions cannot prove Chromium's `:focus-visible` state or
- * the ring's computed geometry, so these checks exercise the existing stories.
+ * the ring's computed geometry, so these checks exercise the List stories,
+ * including the consumer-shaped modal regression fixture.
  */
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
@@ -100,4 +101,51 @@ test("a ListItem title keeps a narrow ring beside an independent switch", async 
   await page.keyboard.press("Space");
   await expect(toggle).not.toBeChecked();
   await expect(page.getByText("Opened Notifications")).toBeVisible();
+});
+
+test("a modal repository picker preserves pointer modality on its rich title", async ({
+  page,
+}) => {
+  await gotoListStory(page, "repository-picker-regression");
+  await page.getByRole("button", { name: "Open repository picker" }).click();
+  const title = page.getByRole("button", { name: "acme/marketing-site" });
+  const nextTitle = page.getByRole("button", {
+    name: "acme-ops/data-pipeline",
+  });
+  const listItem = page.getByRole("listitem").filter({ has: title });
+  const chevron = page.getByTestId("repository-chevron-marketing-site");
+
+  // Pointer-opening the modal moves real focus to its first caller control
+  // without turning that programmatic handoff into keyboard-visible focus.
+  await expect(title).toBeFocused();
+  await expectFocusVisible(title, false);
+  await expect(title).toHaveCSS("box-shadow", "none");
+
+  await title.click();
+  await expect(title).toBeFocused();
+  await expectFocusVisible(title, false);
+  await expect(title).toHaveCSS("box-shadow", "none");
+  await expect(page.getByText("Selected acme/marketing-site")).toBeVisible();
+
+  const titleBox = await title.boundingBox();
+  const listItemBox = await listItem.boundingBox();
+  const chevronBox = await chevron.boundingBox();
+  expect(titleBox).not.toBeNull();
+  expect(listItemBox).not.toBeNull();
+  expect(chevronBox).not.toBeNull();
+  expect(titleBox?.width).toBeLessThan(listItemBox?.width ?? 0);
+  expect((titleBox?.x ?? 0) + (titleBox?.width ?? 0)).toBeLessThanOrEqual(
+    chevronBox?.x ?? 0,
+  );
+
+  await page.keyboard.press("Space");
+  await expect(title).toBeFocused();
+  await expectFocusVisible(title, true);
+  await expect.poll(() => computedBoxShadow(title)).not.toBe("none");
+
+  await nextTitle.click();
+  await expect(nextTitle).toBeFocused();
+  await expectFocusVisible(nextTitle, false);
+  await expect(nextTitle).toHaveCSS("box-shadow", "none");
+  await expect(title).toHaveCSS("box-shadow", "none");
 });
