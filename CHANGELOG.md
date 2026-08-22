@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1](https://github.com/futex-ai/ui/compare/v2.0.0...v2.0.1) (2026-08-21)
+
+### Bug Fixes
+
+- **focus:** clear stale web rings ([#154](https://github.com/futex-ai/ui/issues/154)) ([e418cd9](https://github.com/futex-ai/ui/commit/e418cd944366b2dc97ff6510ee2376f15dd2c877))
+
 ## [2.0.0](https://github.com/futex-ai/ui/compare/v1.9.0...v2.0.0) (2026-08-21)
 
 ### ⚠ BREAKING CHANGES
