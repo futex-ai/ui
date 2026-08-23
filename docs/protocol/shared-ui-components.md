@@ -155,6 +155,9 @@ Required behavior:
   on iOS and Android and renders identically on web. Stagger elements by
   interpolating that one driver at a phase offset rather than by running one
   loop per element.
+- Give the `dots` variant non-overlapping rise-and-fall windows on that shared
+  driver. At most one dot may be lifted at a time, followed by a resting pause
+  before the three-dot sequence repeats.
 - Honour "reduce motion" by slowing the loop and animating brightness alone —
   no translation, scale, or rotation — rather than freezing.
 - Expose `progressbar` accessibility semantics with a busy state and an

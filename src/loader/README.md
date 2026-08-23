@@ -112,13 +112,13 @@ instance with `color` and `trackColor`.
 ## Motion
 
 Every shape runs off one linear 0 → 1 `Animated` loop. Per-element stagger comes
-from interpolating that single driver at a phase offset rather than from N
-parallel loops, so elements cannot drift apart, only one animation is scheduled,
-and the curves stay limited to opacity and transform — which is what keeps the
-loader on the native driver on iOS and Android.
+from interpolating that single driver rather than from N parallel loops, so
+elements cannot drift apart, only one animation is scheduled, and the curves
+stay limited to opacity and transform — which is what keeps the loader on the
+native driver on iOS and Android.
 
-Two curve shapes cover every variant, and both are pure functions in
-`loaderWaveMath.ts` so their behaviour is unit-tested directly:
+The curve builders are pure functions so their behaviour is unit-tested
+directly:
 
 - `buildWaveRange` — a travelling highlight that peaks at a phase and eases back
   down half a cycle away, wrapping seamlessly. Used for dot brightness and scale,
@@ -126,6 +126,10 @@ Two curve shapes cover every variant, and both are pure functions in
 - `buildSawtoothRange` — a one-way ramp that restarts each cycle, offset per
   element. Used for the ripple's expanding rings, which hide the reset by fading
   to nothing at the rim.
+- `buildDotBounceRange` — three explicit, non-overlapping rise-and-fall windows
+  followed by a resting pause. Used by the `dots` variant so only one dot can be
+  lifted at a time, even when the JavaScript animation resumes after a delayed
+  frame.
 
 Under reduced motion the loop keeps running at 2400ms and each shape animates
 brightness alone: dots hold their size, bars hold full height, ripple rings sit
@@ -137,6 +141,7 @@ concern.
 
 - `Loader.tsx` — the public component, the ring delegation, and the shape switch
 - `loaderWave.ts` / `loaderWaveMath.ts` — the shared animation driver and curves
+- `loaderDotsMath.ts` — the exclusive bounce windows for the three-dot variant
 - `loaderGeometry.ts` — per-shape pixel geometry derived from the box size
 - `loaderStyles.ts` — per-variant durations, size resolution, container styles
 - `ProgressBar.tsx` / `ProgressRing.tsx` — the determinate counterparts

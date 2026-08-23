@@ -15,6 +15,11 @@ import {
   pulseGeometry,
 } from "../../src/loader/loaderGeometry";
 import {
+  buildDotBounceRange,
+  DOT_BOUNCE_START,
+  DOT_BOUNCE_WINDOW,
+} from "../../src/loader/loaderDotsMath";
+import {
   buildSawtoothRange,
   buildWaveRange,
   SAWTOOTH_EPSILON,
@@ -129,6 +134,37 @@ test("sawtooth range folds an offset of a whole cycle back to no offset", () => 
   assert.deepEqual(
     buildSawtoothRange({ from: 0, offset: 1, to: 1 }),
     buildSawtoothRange({ from: 0, offset: 0, to: 1 }),
+  );
+});
+
+test("dot bounce ranges give each dot an exclusive turn", () => {
+  const ranges = Array.from({ length: DOTS_COUNT }, (_, index) =>
+    buildDotBounceRange({ from: 0, index, to: 1 }),
+  );
+
+  for (const [index, { inputRange, outputRange }] of ranges.entries()) {
+    const start = DOT_BOUNCE_START + index * DOT_BOUNCE_WINDOW;
+    assert.deepEqual(inputRange, [
+      0,
+      start,
+      start + DOT_BOUNCE_WINDOW / 2,
+      start + DOT_BOUNCE_WINDOW,
+      1,
+    ]);
+    assert.deepEqual(outputRange, [0, 0, 1, 0, 0]);
+
+    if (index > 0) {
+      assert.equal(
+        inputRange[1],
+        ranges[index - 1].inputRange[3],
+        "one dot starts only after the previous dot has settled",
+      );
+    }
+  }
+
+  assert.ok(
+    ranges[DOTS_COUNT - 1].inputRange[3] < 1,
+    "the sequence leaves a resting pause before it repeats",
   );
 });
 
