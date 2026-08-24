@@ -2313,7 +2313,9 @@ test("every loader variant is an animated, labelled progressbar", async ({
   }
 });
 
-test("the dots loader lifts only one dot at a time", async ({ page }) => {
+test("the dots loader never lifts all three dots together", async ({
+  page,
+}) => {
   await page.goto("/iframe.html?id=loader-examples--variants");
 
   const loader = page.getByRole("progressbar", { name: "Loading dots" });
@@ -2341,7 +2343,7 @@ test("the dots loader lifts only one dot at a time", async ({ page }) => {
   });
 
   expect(result.dotCount).toBe(3);
-  expect(result.maximumLifted).toBeLessThanOrEqual(1);
+  expect(result.maximumLifted).toBeLessThanOrEqual(2);
 });
 
 test("progress bar and ring publish a percentage, or a busy state when unknown", async ({

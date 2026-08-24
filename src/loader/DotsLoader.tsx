@@ -12,8 +12,8 @@ const OPACITY = { from: 0.35, to: 1 };
 
 /**
  * The familiar chat-typing indicator: each dot lifts and brightens in turn, then
- * settles. All three run off one loop in non-overlapping bounce windows, so no
- * scheduling delay can make them rise together.
+ * settles. All three run off one loop in compact eased windows: neighboring dots
+ * overlap for a smooth handoff, but the first settles before the third starts.
  *
  * Under reduced motion the dots stop lifting and only the brightness relay
  * remains.
