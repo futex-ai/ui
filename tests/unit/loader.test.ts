@@ -15,6 +15,13 @@ import {
   pulseGeometry,
 } from "../../src/loader/loaderGeometry";
 import {
+  buildDotBounceRange,
+  DOT_BOUNCE_SAMPLES,
+  DOT_BOUNCE_START,
+  DOT_BOUNCE_STEP,
+  DOT_BOUNCE_WINDOW,
+} from "../../src/loader/loaderDotsMath";
+import {
   buildSawtoothRange,
   buildWaveRange,
   SAWTOOTH_EPSILON,
@@ -129,6 +136,67 @@ test("sawtooth range folds an offset of a whole cycle back to no offset", () => 
   assert.deepEqual(
     buildSawtoothRange({ from: 0, offset: 1, to: 1 }),
     buildSawtoothRange({ from: 0, offset: 0, to: 1 }),
+  );
+});
+
+test("dot bounce ranges overlap only neighboring dots", () => {
+  const ranges = Array.from({ length: DOTS_COUNT }, (_, index) =>
+    buildDotBounceRange({ from: 0, index, to: 1 }),
+  );
+
+  for (const [index, { inputRange, outputRange }] of ranges.entries()) {
+    const start = DOT_BOUNCE_START + index * DOT_BOUNCE_STEP;
+    const end = start + DOT_BOUNCE_WINDOW;
+    assert.equal(inputRange.length, DOT_BOUNCE_SAMPLES + 3);
+    assert.equal(inputRange[0], 0);
+    assert.equal(inputRange[1], start);
+    assert.equal(inputRange[inputRange.length - 2], end);
+    assert.equal(inputRange[inputRange.length - 1], 1);
+    assert.equal(outputRange[0], 0);
+    assert.equal(outputRange[1], 0);
+    assert.equal(outputRange[outputRange.length - 2], 0);
+    assert.equal(outputRange[outputRange.length - 1], 0);
+    assert.equal(Math.max(...outputRange), 1);
+
+    if (index > 0) {
+      assert.ok(
+        inputRange[1] < ranges[index - 1].inputRange.at(-2)!,
+        "neighboring dots overlap for a smooth handoff",
+      );
+    }
+    if (index > 1) {
+      assert.ok(
+        inputRange[1] > ranges[index - 2].inputRange.at(-2)!,
+        "the first dot settles before the third starts",
+      );
+    }
+  }
+
+  assert.ok(
+    ranges[DOTS_COUNT - 1].inputRange.at(-2)! < 1,
+    "the sequence leaves a resting pause before it repeats",
+  );
+});
+
+test("dot bounce ranges ease away from rest and into the apex", () => {
+  const { inputRange, outputRange } = buildDotBounceRange({
+    from: 0,
+    index: 0,
+    to: 1,
+  });
+
+  assert.ok(
+    inputRange.length > 5,
+    "the bounce is sampled into a curve rather than drawn as a triangle",
+  );
+  const peak = outputRange.indexOf(1);
+  const rising = outputRange.slice(1, peak + 1);
+  const steps = rising.slice(1).map((value, index) => value - rising[index]);
+
+  assert.ok(steps[0] < steps[1], "the dot accelerates smoothly from rest");
+  assert.ok(
+    steps[steps.length - 1] < steps[steps.length - 2],
+    "the dot eases smoothly into its apex",
   );
 });
 
