@@ -406,6 +406,9 @@ Required behavior:
 - Render an identical styled trigger on every platform and resolve only the
   opened picker per platform: an editable type-or-pick text input plus anchored
   calendar popover on web, and a tap-to-pick calendar sheet on native.
+- Keep the web calendar popover at its compact `280px` width below wider form
+  fields, shrinking it only when required by the viewport; the field width must
+  not spread the seven day columns across the form.
 - Give editable and tap-to-pick triggers the shared input border and focus glow,
   and let the bare `DateInput` autofocus when mounted as an embedded editor.
 - Clamp selections and typed values to the inclusive `min`/`max` bounds.
@@ -596,6 +599,9 @@ Required behavior:
 
 - Measure an anchor and render a portal surface that escapes ordinary page
   stacking contexts.
+- Treat the anchor width as the portal surface minimum by default, while
+  allowing fixed-width custom surfaces to opt out when their content contract
+  is intentionally narrower than a wide anchor.
 - Place below the trigger when space permits, flip above near the viewport
   bottom, and clamp max height.
 - Treat a selector trigger as the popup's minimum width, grow the popup to its

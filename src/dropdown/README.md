@@ -275,7 +275,13 @@ These ARIA roles/attributes are emitted on web only; native keeps the tappable
 `button` row role and `accessibilityState` so OS screen readers are unaffected.
 
 Use `DropdownPortal` plus `DropdownList` directly for custom pickers that need
-to own the anchor ref, surface body, or list wiring.
+to own the anchor ref, surface body, or list wiring. The portal treats the
+anchor width as its minimum by default, matching menus and selectors. A compact
+fixed-width surface that may be narrower than a wide anchor can pass
+`anchorWidthAsMinimum={false}` with explicit `minWidth` / `maxWidth` bounds; the
+web date calendar uses this policy to remain `280px` wide below a full-width
+field. `DropdownMenu`, `Popover`, and `ComboboxPopover` forward the option with
+their other shared placement props.
 
 `trigger="hover"` covers the common hover menu. For custom hover timing, keep
 `trigger="press"` and wire `useDropdownHover` on the trigger yourself, passing

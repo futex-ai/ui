@@ -46,6 +46,7 @@ type DropdownRectNode = { getBoundingClientRect: () => DropdownClientRect };
 export function DropdownPortal({
   align = "start",
   anchorRef,
+  anchorWidthAsMinimum,
   children,
   fitContentWidth = false,
   gutter,
@@ -112,6 +113,7 @@ export function DropdownPortal({
 
   const placementOptions = {
     align,
+    anchorWidthAsMinimum,
     gutter,
     margin,
     maxHeight,

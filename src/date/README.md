@@ -59,7 +59,9 @@ shared `CalendarMonth` itself and the wheel variant renders our own
 trigger is an `InputFrame`, so it scales exactly like the text input; the native
 trigger mirrors the same box height, padding, value text, and icon diameter — so
 a date field and a text input stay the same height in a form. The opened picker
-(calendar popover or wheel sheet) keeps its natural size.
+(calendar popover or wheel sheet) keeps its natural size. In particular, the web
+calendar stays at its compact `280px` width even when its field stretches across
+a wide form; it only shrinks when the viewport cannot fit that width.
 
 ```tsx
 <DateField label="Year ends" onChange={setIso} size="sm" value={iso} />
@@ -228,7 +230,8 @@ locales.
 `dateFieldLayers.ts` are unit-tested with the repo's Node test runner. Both the
 calendar and wheel variants are exercised by the Storybook Playwright spec
 (`tests/browser/storybook.spec.ts`) against the `Date/Examples` stories —
-covering month navigation and day picking for the calendar, and draft
-staging/commit, day-and-bounds clamping, Cancel, clearing, and the range field
-for the wheel. The editable data-grid story additionally verifies that web date
-cells open the inline calendar and commit without sheet actions.
+covering the calendar's compact width below a wider trigger, month navigation,
+and day picking, plus draft staging/commit, day-and-bounds clamping, Cancel,
+clearing, and the range field for the wheel. The editable data-grid story
+additionally verifies that web date cells open the inline calendar and commit
+without sheet actions.

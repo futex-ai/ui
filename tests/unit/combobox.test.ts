@@ -70,6 +70,15 @@ test("combobox popover uses a non-modal portal with outside-close detection", ()
   assert.doesNotMatch(source, /<Modal/);
 });
 
+test("combobox popover forwards the anchor-width sizing policy", () => {
+  const source = readSource("../../src/dropdown/ComboboxPopover.web.tsx");
+
+  assert.match(
+    source,
+    /dropdownPlacement\([\s\S]*?\{[\s\S]*?anchorWidthAsMinimum,/,
+  );
+});
+
 test("combobox controls use shared input keyboard navigation", () => {
   const multiSelectSource = readSource(
     "../../src/dropdown/ComboboxMultiSelect.tsx",

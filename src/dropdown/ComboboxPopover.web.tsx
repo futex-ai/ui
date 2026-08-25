@@ -35,6 +35,7 @@ type ComboboxPopoverProps = DropdownPlacementOptions & {
 export function ComboboxPopover({
   align = "start",
   anchorRef,
+  anchorWidthAsMinimum,
   children,
   gutter,
   margin,
@@ -57,6 +58,7 @@ export function ComboboxPopover({
 
   const placement = dropdownPlacement(anchor, viewport, {
     align,
+    anchorWidthAsMinimum,
     gutter,
     margin,
     maxHeight,

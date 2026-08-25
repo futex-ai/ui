@@ -18,6 +18,8 @@ import { dateFieldZIndex } from "./dateFieldLayers";
 import { DatePickerOverlayProps } from "./types";
 import { createWebCalendarStyles } from "./webCalendarStyles";
 
+const CALENDAR_POPOVER_WIDTH = 280;
+
 export function DatePickerOverlay({
   anchorRef,
   value,
@@ -90,7 +92,9 @@ function CalendarPopover({
   return (
     <DropdownPortal
       anchorRef={anchorRef}
-      minWidth={280}
+      anchorWidthAsMinimum={false}
+      maxWidth={CALENDAR_POPOVER_WIDTH}
+      minWidth={CALENDAR_POPOVER_WIDTH}
       onClose={onClose}
       open
       zIndex={dateFieldZIndex(zIndex)}
