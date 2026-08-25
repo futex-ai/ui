@@ -1387,11 +1387,21 @@ test("date calendar z-index override clears overlapping content", async ({
 }) => {
   await page.goto("/iframe.html?id=date-examples--calendar-layering");
 
-  const input = page.getByLabel("Layered date");
+  const input = page.getByRole("textbox", { name: "Layered date" });
   await input.click();
   await expect(page.getByText("Overlapping panel")).toBeVisible();
+  const calendar = page.getByRole("dialog", { name: "Layered date" });
   const day = page.getByRole("button", { name: "15 Mar 2026" });
   await expect(day).toBeVisible();
+
+  const inputWidth = await input.evaluate(
+    (element) => element.getBoundingClientRect().width,
+  );
+  const calendarWidth = await calendar.evaluate(
+    (element) => element.parentElement?.getBoundingClientRect().width ?? 0,
+  );
+  expect(inputWidth).toBeGreaterThan(280);
+  expect(calendarWidth).toBeCloseTo(280, 0);
 
   const topLabel = await day.evaluate((element) => {
     const rect = element.getBoundingClientRect();

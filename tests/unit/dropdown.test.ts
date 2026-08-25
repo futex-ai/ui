@@ -88,6 +88,26 @@ test("dropdown width bounds clamp content to the viewport without shrinking a vi
   );
 });
 
+test("dropdown width bounds can ignore a wider trigger for fixed popovers", () => {
+  const anchor = { height: 40, width: 640, x: 20, y: 80 };
+  const viewport = { height: 600, width: 800 };
+  const options = {
+    anchorWidthAsMinimum: false,
+    maxWidth: 280,
+    minWidth: 280,
+  };
+
+  assert.deepEqual(dropdownWidthBounds(anchor, viewport, options), {
+    maxWidth: 280,
+    minWidth: 280,
+  });
+  assert.equal(dropdownPlacement(anchor, viewport, options).width, 280);
+  assert.deepEqual(
+    dropdownWidthBounds(anchor, { height: 600, width: 260 }, options),
+    { maxWidth: 244, minWidth: 244 },
+  );
+});
+
 test("dropdown navigation skips disabled and structural rows", () => {
   assert.equal(firstSelectableId(items), "a");
   assert.equal(nextSelectableId(items, "a", 1), "c");

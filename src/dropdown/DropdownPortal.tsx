@@ -21,6 +21,7 @@ import { useDropdownContentWidth } from "./useDropdownContentWidth";
 export function DropdownPortal({
   align = "start",
   anchorRef,
+  anchorWidthAsMinimum,
   children,
   fitContentWidth = false,
   gutter,
@@ -45,6 +46,7 @@ export function DropdownPortal({
 
   const placementOptions = {
     align,
+    anchorWidthAsMinimum,
     gutter,
     margin,
     maxHeight,

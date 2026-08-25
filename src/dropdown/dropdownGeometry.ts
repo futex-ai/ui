@@ -16,6 +16,8 @@ export type DropdownPlacementSide = "bottom" | "top";
 
 export type DropdownPlacementOptions = {
   align?: "end" | "start";
+  /** Keep the popup at least as wide as its anchor. Defaults to `true`. */
+  anchorWidthAsMinimum?: boolean;
   gutter?: number;
   margin?: number;
   maxHeight?: number;
@@ -75,8 +77,8 @@ export type DropdownWidthBounds = {
 };
 
 /**
- * Keeps the trigger as the popup's minimum width, honors caller bounds, and
- * clamps both to the available viewport width.
+ * Uses the trigger as the popup's minimum width by default, honors an explicit
+ * opt-out for compact surfaces, and clamps caller bounds to the viewport.
  */
 export function dropdownWidthBounds(
   anchor: DropdownAnchorRect,
@@ -85,8 +87,10 @@ export function dropdownWidthBounds(
 ): DropdownWidthBounds {
   const margin = options.margin ?? DEFAULT_MARGIN;
   const availableWidth = Math.max(1, viewport.width - margin * 2);
+  const anchorMinimum =
+    options.anchorWidthAsMinimum === false ? 0 : anchor.width;
   const minWidth = Math.min(
-    Math.max(anchor.width, options.minWidth ?? 0),
+    Math.max(anchorMinimum, options.minWidth ?? 0),
     availableWidth,
   );
   const maxWidth = Math.min(
