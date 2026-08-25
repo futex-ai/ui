@@ -91,7 +91,8 @@ export type PopoverProps = DropdownPlacementOptions & {
  *
  * The trigger is wrapped in a self-hugging `View` that the portal measures, so
  * a small trigger keeps a small anchor. Pass `minWidth` to size the content
- * surface, and `style` to change how the wrapper lays out (e.g.
+ * surface, `anchorWidthAsMinimum={false}` to permit a compact surface below a
+ * wider trigger, and `style` to change how the wrapper lays out (e.g.
  * `alignSelf: "stretch"`).
  *
  * Accessibility: pass `label` to name the surface and relate it to the trigger
@@ -101,6 +102,7 @@ export type PopoverProps = DropdownPlacementOptions & {
  */
 export function Popover({
   align,
+  anchorWidthAsMinimum,
   children,
   defaultOpen = false,
   gutter,
@@ -151,6 +153,7 @@ export function Popover({
       <DropdownPortal
         align={align}
         anchorRef={anchorRef}
+        anchorWidthAsMinimum={anchorWidthAsMinimum}
         gutter={gutter}
         margin={margin}
         maxHeight={maxHeight}

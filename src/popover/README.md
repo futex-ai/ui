@@ -120,11 +120,13 @@ WCAG 1.4.13 do not apply to the default model.
 
 The trigger is wrapped in a self-hugging `View` (`alignSelf: "flex-start"`) so a
 small trigger keeps a small anchor. Because the surface width follows the anchor
-(clamped to `minWidth`), pass `minWidth` to size content popovers. The placement
-options — `align`, `gutter`, `margin`, `maxHeight`, `minHeight`, `minWidth` —
-are forwarded straight to `DropdownPortal`. Pass `style` to change how the
-wrapper lays out (for example `alignSelf: "stretch"` to match the trigger to its
-parent width).
+(clamped to `minWidth`), pass `minWidth` to size content popovers. For a compact
+surface below a wider trigger, pass `anchorWidthAsMinimum={false}` together with
+explicit `minWidth` / `maxWidth` bounds. The placement options — `align`,
+`anchorWidthAsMinimum`, `gutter`, `margin`, `maxHeight`, `maxWidth`, `minHeight`,
+and `minWidth` — are forwarded straight to `DropdownPortal`. Pass `style` to
+change how the wrapper lays out (for example `alignSelf: "stretch"` to match the
+trigger to its parent width).
 
 The portal defaults to the high shared dropdown layer
 (`DROPDOWN_LAYERS.portal`, currently `1_000_000`). Pass `zIndex` to `Popover`

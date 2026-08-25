@@ -112,6 +112,7 @@ export function DropdownMenu({
   accessibilityLabel = "Menu",
   activeId,
   align,
+  anchorWidthAsMinimum,
   children,
   closeOnSelect = true,
   defaultOpen = false,
@@ -240,6 +241,7 @@ export function DropdownMenu({
       <DropdownPortal
         align={align}
         anchorRef={anchorRef}
+        anchorWidthAsMinimum={anchorWidthAsMinimum}
         gutter={gutter}
         margin={margin}
         maxHeight={maxHeight}

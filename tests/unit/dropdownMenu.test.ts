@@ -291,6 +291,12 @@ test("dropdown menu composes the shared portal and list primitives", () => {
   assert.match(entrypoint, /dropdownMenuModel/);
 });
 
+test("dropdown menu forwards the anchor-width sizing policy", () => {
+  const source = readSource("../../src/dropdown/DropdownMenu.tsx");
+
+  assert.match(source, /anchorWidthAsMinimum=\{anchorWidthAsMinimum\}/);
+});
+
 function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
 }

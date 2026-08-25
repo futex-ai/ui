@@ -62,6 +62,12 @@ test("popover forwards z-index overrides to its dropdown portal", () => {
   assert.match(source, /zIndex=\{zIndex\}/);
 });
 
+test("popover forwards the anchor-width sizing policy", () => {
+  const source = readSource("../../src/popover/Popover.tsx");
+
+  assert.match(source, /anchorWidthAsMinimum=\{anchorWidthAsMinimum\}/);
+});
+
 function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
 }
