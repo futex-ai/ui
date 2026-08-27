@@ -43,6 +43,45 @@ import { DropdownSelector } from "@firna/ui/dropdown";
 />;
 ```
 
+### Imperative focus after async hydration
+
+`triggerRef` exposes the selector's underlying pressable when a caller must
+move focus itself. The selector still keeps that same node internally for popup
+measurement and placement. A common case is a modal form that initially renders
+a skeleton: the modal's one-time focus pass runs before the field exists, so the
+form must focus its first real field when hydration completes.
+
+```tsx
+import { useEffect, useRef } from "react";
+import { View } from "react-native";
+import { DropdownSelector } from "@firna/ui/dropdown";
+import { WebModalFrame } from "@firna/ui/modal";
+
+const firstFieldRef = useRef<View | null>(null);
+
+useEffect(() => {
+  if (hydrated) firstFieldRef.current?.focus();
+}, [hydrated]);
+
+<WebModalFrame initialFocusRef={firstFieldRef} /* … */>
+  {hydrated ? (
+    <DropdownSelector
+      label="Holiday year starts"
+      onValueChange={setMonth}
+      options={monthOptions}
+      triggerRef={firstFieldRef}
+      value={month}
+    />
+  ) : (
+    <FormSkeleton />
+  )}
+</WebModalFrame>;
+```
+
+Keep `initialFocusRef` as well as the hydration effect: it handles a form whose
+field already exists when the modal opens (including later reopens), while the
+effect handles the initial skeleton-to-form transition.
+
 Pass `header` and/or `footer` to pin custom content above and below the option
 list. Both accept any node (a title, a hint, an action button), and they stay
 fixed while the options scroll between them. The same props are available on the

@@ -71,7 +71,8 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/date` for single-date and date-range fields.
 - `@firna/ui/drag-select` for web drag-selection providers, target hooks, and
   geometry helpers.
-- `@firna/ui/dropdown` for dropdown menu, selector, combobox, and layer helpers.
+- `@firna/ui/dropdown` for dropdown menu, selector, combobox, layer helpers, and
+  selector trigger refs for imperative focus after async form hydration.
 - `@firna/ui/heatmap` for the calendar contribution heatmap and its pure layout
   and color-scale helpers.
 - `@firna/ui/input` for the labelled text input, textarea, and bare input

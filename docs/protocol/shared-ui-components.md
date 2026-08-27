@@ -618,6 +618,10 @@ Required behavior:
 - Include the field label in selector accessible names when a visual label is
   supplied, so repeated selectors remain distinguishable to assistive
   technology.
+- Expose a selector's pressable trigger through an optional caller ref without
+  giving up the internal anchor ref used for popup placement. Async modal forms
+  own their hydration timing and must use that handle to focus the first real
+  field after replacing a loading placeholder.
 - Preserve no-match empty rows even when combobox footers are present.
 - Keep input-backed comboboxes on a non-modal web portal so text inputs retain
   focus while results are open.
@@ -796,8 +800,9 @@ Required behavior:
 - Browser interaction tests must cover opening, keyboard navigation, outside
   dismissal, segmented selection, switch toggling, table row press (click and
   keyboard), focus retention/restoration, pointer-versus-keyboard focus-ring
-  modality, focused-control disable/re-enable, and portal layering for
-  dropdowns, comboboxes, and web modals.
+  modality, focused-control disable/re-enable, async modal-form handoff to its
+  first hydrated field, and portal layering for dropdowns, comboboxes, and web
+  modals.
 - The package must typecheck and build before it is used by accounting or Juno.
 - `npm run test:package` must pack the built library, install the tarball into a
   temporary consumer, import every public package subpath with Node's native ESM

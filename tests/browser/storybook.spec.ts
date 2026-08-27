@@ -24,6 +24,30 @@ test("dropdown selector opens, navigates with keyboard, and closes outside", asy
   await expect(page.getByText("Flat rate")).toBeHidden();
 });
 
+test("async form focuses its first dropdown after hydration", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=dropdown-examples--async-form-focus&viewMode=story",
+  );
+
+  await expect(page.getByTestId("async-selector-skeleton")).toBeVisible();
+
+  const firstField = page.getByRole("button", {
+    name: "Holiday year starts, April",
+  });
+  await expect(firstField).toBeVisible();
+  await expect(firstField).toBeFocused();
+
+  // Enter now operates the first field instead of the formerly focused Close
+  // button, so the modal remains open and its month options are available.
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("listbox")).toBeVisible();
+  await expect(
+    page.getByRole("dialog", { name: "Holiday rules" }),
+  ).toBeVisible();
+});
+
 test("dropdown selector grows for wider options and stops at its default cap", async ({
   page,
 }) => {

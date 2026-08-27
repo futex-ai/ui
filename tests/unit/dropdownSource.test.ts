@@ -36,6 +36,18 @@ test("selector labels are part of the accessible trigger name", () => {
   assert.match(selectorSource, /accessibilityLabel=\{accessibleLabel\}/);
 });
 
+test("selector exposes its trigger for imperative focus", () => {
+  const selectorSource = readSource("../../src/dropdown/DropdownSelector.tsx");
+
+  // Async forms need to move focus to the first field after their loading
+  // placeholder is replaced. The selector keeps its own anchor ref for portal
+  // placement while forwarding the same pressable to the caller.
+  assert.match(selectorSource, /triggerRef\?: Ref<View>;/);
+  assert.match(selectorSource, /const setTriggerRef = useCallback\(/);
+  assert.match(selectorSource, /anchorRef\.current = node;/);
+  assert.match(selectorSource, /ref=\{setTriggerRef\}/);
+});
+
 test("shared dropdown hover support bridges trigger and portal surface", () => {
   const modelSource = readSource("../../src/dropdown/dropdownPortalModel.ts");
   const webPortalSource = readSource(
