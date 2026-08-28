@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0](https://github.com/futex-ai/ui/compare/v2.0.1...v2.1.0) (2026-08-28)
+
+
+### Features
+
+* **dropdown:** expose selector trigger ref ([#161](https://github.com/futex-ai/ui/issues/161)) ([2033217](https://github.com/futex-ai/ui/commit/2033217996f90da8c04ad38763a2ca800f1e8d7a))
+
+
+### Bug Fixes
+
+* **date:** keep calendar popover compact ([#159](https://github.com/futex-ai/ui/issues/159)) ([9ac64fc](https://github.com/futex-ai/ui/commit/9ac64fcb6b53dfed6f8c66bdc3b71b6803bd872b))
+
 ## [2.0.1](https://github.com/futex-ai/ui/compare/v2.0.0...v2.0.1) (2026-08-21)
 
 ### Bug Fixes
