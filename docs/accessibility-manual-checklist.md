@@ -23,8 +23,9 @@ changes.
       borderless ones (switch track, segmented pill) (2.4.7 Focus Visible, AA).
 - [ ] Overlays (modal, popover, dropdown, calendar) move focus into the surface
       on open, trap it sensibly, and restore it to the trigger on close; `Escape`
-      dismisses the top-most layer only (2.4.3 Focus Order, A; 2.1.2 No Keyboard
-      Trap, A).
+      dismisses the top-most layer only. If a modal replaces a loading skeleton
+      with a form, focus moves to the first real field once it mounts (2.4.3
+      Focus Order, A; 2.1.2 No Keyboard Trap, A).
 - [ ] No control changes context merely on focus (3.2.1 On Focus, A).
 
 ### Screen readers

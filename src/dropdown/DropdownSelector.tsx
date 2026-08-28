@@ -1,6 +1,15 @@
 /** Single-value selector and read-only selector input surfaces. */
 import { ChevronDown, LucideIcon, Search } from "lucide-react-native";
-import { ReactNode, useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  ReactNode,
+  Ref,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Platform, Pressable, Text, TextInput, View } from "react-native";
 
 import { announce } from "../announcer";
@@ -102,6 +111,12 @@ type DropdownSelectorProps = {
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
   /**
+   * Handle on the underlying pressable trigger for callers that must move
+   * focus imperatively, such as a modal form whose first field mounts after
+   * async hydration. The selector keeps the same node as its popup anchor.
+   */
+  triggerRef?: Ref<View>;
+  /**
    * Stable, value-independent accessible name for the trigger. When set, the
    * trigger name stays constant as the selected value changes (the value stays
    * visible in the trigger text), so `getByRole("button", { name })` keeps
@@ -148,6 +163,7 @@ function DropdownSelectorView({
   styles,
   testID,
   triggerLabel,
+  triggerRef,
   value,
   variant = "field",
 }: DropdownSelectorProps & {
@@ -156,6 +172,17 @@ function DropdownSelectorView({
 }) {
   const theme = useSharedUiTheme();
   const anchorRef = useRef<View>(null);
+  const setTriggerRef = useCallback(
+    (node: View | null) => {
+      anchorRef.current = node;
+      if (typeof triggerRef === "function") {
+        triggerRef(node);
+      } else if (triggerRef) {
+        (triggerRef as { current: View | null }).current = node;
+      }
+    },
+    [triggerRef],
+  );
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const grouped = sections ?? [{ options }];
@@ -290,7 +317,7 @@ function DropdownSelectorView({
         onBlur={focus.onBlur}
         onFocus={focus.onFocus}
         onPress={() => setOpen((current) => !current)}
-        ref={anchorRef}
+        ref={setTriggerRef}
         style={[
           triggerStyle(styles, variant),
           focus.focusVisible ? focus.focusRingStyle : null,

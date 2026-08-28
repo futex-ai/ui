@@ -10,6 +10,7 @@ import {
 } from "../index";
 import type { DropdownHighlightVariant } from "../index";
 
+import { DropdownAsyncFocusExample } from "./dropdownAsyncFocusExample";
 import {
   ActionMenuExample,
   ActionMenuSubtextExample,
@@ -60,6 +61,15 @@ export const DropdownSelectorDefault: Story = {
   render: () => (
     <StorySurface>
       <SelectorExample />
+    </StorySurface>
+  ),
+};
+
+export const AsyncFormFocus: Story = {
+  name: "Selector focused after async hydration",
+  render: () => (
+    <StorySurface>
+      <DropdownAsyncFocusExample />
     </StorySurface>
   ),
 };
