@@ -289,6 +289,9 @@ export interface Context<T> {
 export interface RefObject<T> {
   current: T;
 }
+export interface MutableRefObject<T> {
+  current: T;
+}
 export type SetStateAction<T> = T | ((previous: T) => T);
 export declare function cloneElement<P>(
   element: ReactElement<P>,

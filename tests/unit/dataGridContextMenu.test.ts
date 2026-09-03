@@ -62,12 +62,15 @@ test("the keyboard route to the menu precedes grid navigation", () => {
   );
 });
 
-test("the grid renders exactly one ContextMenu", () => {
-  // One instance for the whole grid: a menu per cell would mount a portal per
+test("the grid renders one ContextMenu per layout branch, never per cell", () => {
+  // One instance per mutually-exclusive layout — the card stack returns early,
+  // so exactly one is ever mounted. A menu per cell would mount a portal per
   // cell in a virtualized body, each with its own open state.
   const source = read("../../src/data-grid/DataGrid.tsx");
   const matches = source.match(/<ContextMenu\b/g) ?? [];
-  assert.equal(matches.length, 1);
+  assert.equal(matches.length, 2);
+  // Both sit at a layout root, not inside a row or cell map.
+  assert.doesNotMatch(source, /\.map\([^)]*\)[\s\S]{0,400}<ContextMenu/);
 });
 
 test("the context menu is opt-in and gates every region", () => {

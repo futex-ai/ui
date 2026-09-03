@@ -98,6 +98,23 @@ function DataGridRowComponent({
   registerGutterNode,
   onContextMenu,
 }: DataGridRowProps) {
+  const web = Platform.OS === "web";
+  // As in the header: a `View` has no press responder, so native swaps the
+  // gutter's root element to pick up the long press. `accessible={false}` keeps
+  // the nested expand button independently reachable by a screen reader — an
+  // accessible parent would merge it into one node.
+  const GutterCell = web ? View : Pressable;
+  const nativeGutterProps =
+    !web && onContextMenu
+      ? {
+          accessible: false,
+          ...contextMenuTriggerProps({
+            isWeb: false,
+            onOpen: (point) =>
+              onContextMenu({ region: "row", rowId: row.id }, point),
+          }),
+        }
+      : {};
   const gutterWebProps =
     Platform.OS === "web"
       ? ({
@@ -118,7 +135,7 @@ function DataGridRowComponent({
   return (
     <View role="row" style={styles.bodyRow}>
       {showGutter ? (
-        <View
+        <GutterCell
           ref={
             Platform.OS === "web"
               ? (node) =>
@@ -132,6 +149,7 @@ function DataGridRowComponent({
           }
           role="rowheader"
           {...gutterWebProps}
+          {...nativeGutterProps}
           style={[styles.gutterCell, stickyGutterStyle]}
         >
           <Text style={styles.gutterNumber}>{rowIndex + 1}</Text>
@@ -149,7 +167,7 @@ function DataGridRowComponent({
               <Maximize2 color={theme.colors.muted} size={iconSize - 2} />
             </Pressable>
           ) : null}
-        </View>
+        </GutterCell>
       ) : null}
       {columns.map((column, colIndex) => {
         const cellRef: DataGridCellRef = {

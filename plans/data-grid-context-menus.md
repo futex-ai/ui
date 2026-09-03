@@ -847,7 +847,9 @@ sheet.
       builders): `useDataGridClipboard` reads the OS clipboard and is web-only
       (`src/data-grid/README.md:118-127`).
 - [ ] **Not done: the on-device native pass.** Long-press timing, sheet
-      dismissal, and VoiceOver/TalkBack behaviour need a real device. This joins
+      dismissal, and VoiceOver/TalkBack behaviour need a real device — the web
+      Storybook only ever renders the `.web` code path, so none of the native
+      branches above are exercised by the gate. This joins
       the existing deferred native item in
       [Data Grid component](data-grid-component.md) M7 and the manual pass in
       [WCAG 2.1 AA Accessibility](wcag-2-1-accessibility.md) §7.

@@ -4,7 +4,7 @@ import { Platform, Pressable, View } from "react-native";
 
 import type { DropdownPoint } from "../dropdown";
 import { hideWebOutlineView } from "../focusRing";
-import { contextMenuTriggerProps } from "../popover";
+import { contextMenuPoint, contextMenuTriggerProps } from "../popover";
 import type { SharedUiTheme } from "../theme";
 
 import { DataGridCellContent } from "./dataGridCellContent";
@@ -239,6 +239,17 @@ export function DataGridCell({
           ? undefined
           : () =>
               active && !loading ? onBeginEdit(cellRef) : onActivate(cellRef)
+      }
+      // Native opens the cell menu on a long press. `Pressable` runs it instead
+      // of `onPress`, so a plain tap still selects or edits as before.
+      onLongPress={
+        !web && onContextMenu
+          ? (event: unknown) =>
+              onContextMenu(
+                { ref: cellRef, region: "cell" },
+                contextMenuPoint(event),
+              )
+          : undefined
       }
       ref={setRef}
       tabIndex={tabStop ? 0 : -1}

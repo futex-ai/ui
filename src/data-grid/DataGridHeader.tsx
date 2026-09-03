@@ -1,6 +1,6 @@
 /** The grid's sticky header row: typed column headers, sort state, and chrome. */
 import { type ReactNode } from "react";
-import { Platform, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "react-native";
 
 import type { DropdownPoint } from "../dropdown";
 import { contextMenuTriggerProps } from "../popover";
@@ -87,6 +87,10 @@ export function DataGridHeader({
   onContextMenu,
 }: DataGridHeaderProps) {
   const web = Platform.OS === "web";
+  // Native carries the column menu on a long press, and a `View` has no press
+  // responder. Swapping the root element (rather than wrapping it) keeps the
+  // flex layout and the `columnheader` role exactly where they were.
+  const HeaderCell = web ? View : Pressable;
   return (
     <View role="row" style={styles.headerRow}>
       {showGutter ? (
@@ -132,8 +136,19 @@ export function DataGridHeader({
                 : {}),
             } as Record<string, unknown>)
           : {};
+        const nativeContextProps =
+          !web && onContextMenu
+            ? contextMenuTriggerProps({
+                isWeb: false,
+                onOpen: (point) =>
+                  onContextMenu(
+                    { columnId: column.id, region: "column" },
+                    point,
+                  ),
+              })
+            : {};
         return (
-          <View
+          <HeaderCell
             key={column.id}
             ref={
               web
@@ -155,6 +170,7 @@ export function DataGridHeader({
             accessibilityState={column.loading ? { busy: true } : undefined}
             aria-busy={column.loading || undefined}
             {...webProps}
+            {...nativeContextProps}
             style={[
               styles.headerCell,
               columnLayoutStyle(column),
@@ -193,7 +209,7 @@ export function DataGridHeader({
                 styles={styles}
               />
             ) : null}
-          </View>
+          </HeaderCell>
         );
       })}
       {renderAddColumn?.()}

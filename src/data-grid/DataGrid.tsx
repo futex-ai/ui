@@ -331,10 +331,19 @@ export function DataGrid({
           columns={controller.visibleColumns}
           fontSize={metrics.fontSize}
           iconSize={metrics.iconSize}
+          onContextMenu={onContextMenu}
           onRowExpand={onRowExpand}
           rows={rows}
           styles={styles}
           theme={theme}
+        />
+        <ContextMenu
+          accessibilityLabel={menu.label}
+          entries={menu.entries}
+          onClose={menu.close}
+          open={menu.open}
+          point={menu.point}
+          title={menu.title}
         />
       </View>
     );
