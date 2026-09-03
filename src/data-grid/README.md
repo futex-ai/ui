@@ -184,10 +184,20 @@ the bottom) by fetching and appending rows; show the loading row with
 ### Column menus, add column / row
 
 Pass `onColumnMenuAction(columnId, action)` to show each header's caret menu
-(`sortAsc` / `sortDesc` / `clearSort` / `hide` / `delete`); reflect the result by
-updating your `columns` (`sortDirection`, `hidden`) and `rows`. `onAddColumn(type)`
-adds the (+) header picker; `onAddRow` adds the trailing "+ New record" row;
-`onRowExpand(rowId)` wires the gutter expand icon.
+(`sortAsc` / `sortDesc` / `clearSort` / `insertLeft` / `insertRight` / `hide` /
+`delete`); reflect the result by updating your `columns` (`sortDirection`,
+`hidden`) and `rows`. `onAddColumn(type)` adds the (+) header picker; `onAddRow`
+adds the trailing "+ New record" row; `onRowExpand(rowId)` wires the gutter
+expand icon.
+
+`insertLeft` / `insertRight` report only the position, not a field type — pick
+one the way you already do for `onAddColumn`, and splice the new column beside
+`columnId`. The sort rows are hidden for a column with `sortable: false`, and
+`clearSort` only appears once `sortDirection` is set.
+
+The caret menu renders from the same descriptors as the header context menu
+(see [Context menus](#context-menus)), so there is one column action vocabulary
+rather than two.
 
 ### Loading columns
 

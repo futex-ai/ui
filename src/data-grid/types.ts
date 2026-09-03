@@ -113,13 +113,31 @@ export type DataGridSelection = {
   focus: DataGridCellRef | null;
 };
 
-/** An action dispatched from a column's header menu. */
+/** An action dispatched from a column's header menu or header context menu. */
 export type DataGridColumnAction =
   | "sortAsc"
   | "sortDesc"
   | "clearSort"
   | "hide"
+  | "delete"
+  | "insertLeft"
+  | "insertRight";
+
+/**
+ * An action dispatched from a row's context menu. Reported with the row ids it
+ * applies to, so a multi-row selection deletes as one operation.
+ */
+export type DataGridRowAction =
+  | "insertAbove"
+  | "insertBelow"
+  | "duplicate"
   | "delete";
+
+/** The grid region a context menu was opened from. */
+export type DataGridContextMenuTarget =
+  | { region: "cell"; ref: DataGridCellRef }
+  | { region: "column"; columnId: string }
+  | { region: "row"; rowId: string };
 
 /** Row heights (px) per control size — fixed so windowing math stays exact. */
 export const DATA_GRID_ROW_HEIGHT = { sm: 32, md: 40, lg: 48 } as const;
