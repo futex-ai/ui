@@ -78,7 +78,7 @@ There is **no** `Shift+F10` or `ContextMenu` key handler anywhere in the repo
 
 ## Public API
 
-### New — `@firna/ui/dropdown`
+### New — `@firna/ui/popover`
 
 ```ts
 /** A menu positioned at a point rather than anchored to an element. */
@@ -212,9 +212,9 @@ Copy/Cut/Paste/Clear are web-only — `useDataGridClipboard` reads the OS clipbo
 
 | File                                        | Responsibility                                                                                                                         |
 | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/dropdown/contextMenuModel.ts`          | `ContextMenuProps`, `contextMenuPoint`, `contextMenuTriggerProps`. Pure; no JSX, no RN runtime import, so `node --test` can import it. |
-| `src/dropdown/ContextMenu.web.tsx`          | Point-anchored `DropdownPortal` + `DropdownList`, plus scroll dismissal.                                                               |
-| `src/dropdown/ContextMenu.tsx`              | Native: delegates to `ResponsiveMenu` (bottom sheet).                                                                                  |
+| `src/popover/contextMenuModel.ts`           | `ContextMenuProps`, `contextMenuPoint`, `contextMenuTriggerProps`. Pure; no JSX, no RN runtime import, so `node --test` can import it. |
+| `src/popover/ContextMenu.web.tsx`           | Point-anchored `DropdownPortal` + `DropdownList`, plus scroll dismissal.                                                               |
+| `src/popover/ContextMenu.tsx`               | Native: delegates to `ResponsiveMenu` (bottom sheet).                                                                                  |
 | `src/data-grid/dataGridContextMenuModel.ts` | Pure entry _descriptors_ per region + gating rules. No JSX.                                                                            |
 | `src/data-grid/dataGridContextSelection.ts` | Pure spreadsheet selection rules (`contextSelectionFor`, `contextRowIds`).                                                             |
 | `src/data-grid/dataGridContextMenu.tsx`     | Maps descriptors → `DropdownListEntry[]` with lucide icons and `onPress`.                                                              |
@@ -257,11 +257,20 @@ a `DropdownMenu` per cell.
 
 ## Key design decisions (resolved forks)
 
-1. **`ContextMenu` lives in `src/dropdown`, not a new `@firna/ui/context-menu`
-   subpath.** It is a `DropdownList` in a `DropdownPortal` — the same family. A
-   new subpath would cost a `package.json` exports block, a
-   `tests/unit/packageExports.test.ts` entry, and three README lists for no
-   conceptual gain.
+1. **`ContextMenu` lives in `src/popover`, not `src/dropdown` and not a new
+   `@firna/ui/context-menu` subpath.** A new subpath would cost a
+   `package.json` exports block, a `tests/unit/packageExports.test.ts` entry,
+   and three README lists for no conceptual gain. `src/dropdown` was the first
+   choice — it is a `DropdownList` in a `DropdownPortal` — but the native build
+   must render `ResponsiveMenu`, and `src/popover` already imports
+   `src/dropdown` in four files, so hosting it there created a genuinely **new**
+   `dropdown ⇄ popover` barrel cycle. (The claim that `src/input` already
+   created such a cycle is false: `src/input` imports nothing from
+   `src/dropdown`.) `npm run build` and `npm run test:package` do **not** catch
+   it — the node consumer resolves `ContextMenu.web`, which never touches
+   popover — so the cycle would have shipped undetected to native only.
+   `src/popover` is also the better home on the merits: it is the family for
+   "anchored on web, bottom sheet on native", which is exactly what this is.
 
 2. **One shared menu instance, not one `DropdownMenu` per target.**
    `DropdownMenu` wraps its trigger in its own anchor `View` and owns its own
@@ -392,7 +401,7 @@ instead of a measured element, and every existing caller behaves identically.
 At the end: `ContextMenu` is exported and usable by anything in the library —
 a cursor-anchored menu on web, a bottom sheet on native.
 
-- [ ] `src/dropdown/contextMenuModel.ts` — pure, no JSX, no `react-native`
+- [ ] `src/popover/contextMenuModel.ts` — pure, no JSX, no `react-native`
       runtime import (type-only imports are fine):
 
       ```ts
@@ -432,7 +441,7 @@ a cursor-anchored menu on web, a bottom sheet on native.
 
       `ContextMenuProps` is declared here so both platform builds share it.
 
-- [ ] `src/dropdown/ContextMenu.web.tsx`:
+- [ ] `src/popover/ContextMenu.web.tsx`:
 
       ```tsx
       export function ContextMenu({
@@ -510,7 +519,7 @@ a cursor-anchored menu on web, a bottom sheet on native.
       fill inverts library-owned row text to white
       (`src/data-grid/README.md:262-265`).
 
-- [ ] `src/dropdown/ContextMenu.tsx` (native) — same props, sheet surface:
+- [ ] `src/popover/ContextMenu.tsx` (native) — same props, sheet surface:
 
       ```tsx
       export function ContextMenu({
@@ -862,7 +871,7 @@ At the end: the feature is documented, swept by axe, and the full gate is green.
       `/index.json`; no list to update.
 - [ ] Add a `Dark` variant if the open-menu story needs one to pin the danger
       row's contrast under `darkSharedUiTheme`.
-- [ ] `src/dropdown/README.md`: a `ContextMenu` section — the point anchor, the
+- [ ] `src/popover/README.md`: a `ContextMenu` section — the point anchor, the
       `minWidth` requirement, scroll dismissal, the native sheet, and how it
       differs from `DropdownMenu trigger="contextMenu"`.
 - [ ] `src/data-grid/README.md`: a "Context menus" section covering the three
