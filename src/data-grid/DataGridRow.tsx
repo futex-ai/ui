@@ -3,7 +3,9 @@ import { Maximize2 } from "lucide-react-native";
 import { memo } from "react";
 import { Platform, Pressable, Text, View } from "react-native";
 
+import type { DropdownPoint } from "../dropdown";
 import { hideWebOutlineView, type PressableHoverState } from "../focusRing";
+import { contextMenuTriggerProps } from "../popover";
 import type { SharedUiTheme } from "../theme";
 
 import { DataGridCell } from "./DataGridCell";
@@ -15,6 +17,7 @@ import type { DataGridStyles } from "./dataGridStyles";
 import type {
   DataGridCellRef,
   DataGridColumn,
+  DataGridContextMenuTarget,
   DataGridRow as DataGridRowData,
 } from "./types";
 
@@ -55,6 +58,11 @@ export type DataGridRowProps = {
   trailingWidth: number;
   /** Start a whole-row drag selection from the gutter (web). */
   onBeginRowDrag: (rowId: string, event: unknown) => void;
+  /** Opens the row / cell context menus; omitted when `contextMenu` is off. */
+  onContextMenu?: (
+    target: DataGridContextMenuTarget,
+    point: DropdownPoint | null,
+  ) => void;
   /** Register the gutter node for drag hit-testing. */
   registerGutterNode: (
     rowId: string,
@@ -88,6 +96,7 @@ function DataGridRowComponent({
   trailingWidth,
   onBeginRowDrag,
   registerGutterNode,
+  onContextMenu,
 }: DataGridRowProps) {
   const gutterWebProps =
     Platform.OS === "web"
@@ -97,6 +106,13 @@ function DataGridRowComponent({
               onBeginRowDrag(row.id, event);
             }
           },
+          ...(onContextMenu
+            ? contextMenuTriggerProps({
+                isWeb: true,
+                onOpen: (point) =>
+                  onContextMenu({ region: "row", rowId: row.id }, point),
+              })
+            : {}),
         } as Record<string, unknown>)
       : {};
   return (
@@ -155,6 +171,7 @@ function DataGridRowComponent({
             onActivate={onActivate}
             onBeginDrag={onBeginDrag}
             onBeginEdit={onBeginEdit}
+            onContextMenu={onContextMenu}
             onKeyDown={onKeyDown}
             registerNode={registerNode}
             selected={rectContains(rect, rowIndex, colIndex)}

@@ -2,6 +2,8 @@
 import { type ReactNode } from "react";
 import { Platform, Text, View } from "react-native";
 
+import type { DropdownPoint } from "../dropdown";
+import { contextMenuTriggerProps } from "../popover";
 import { Spinner } from "../spinner";
 import type { SharedUiTheme } from "../theme";
 
@@ -15,7 +17,7 @@ import {
 } from "./dataGridLayout";
 import { DataGridResizeHandle } from "./DataGridResizeHandle";
 import type { DataGridStyles } from "./dataGridStyles";
-import type { DataGridColumn } from "./types";
+import type { DataGridColumn, DataGridContextMenuTarget } from "./types";
 
 export type DataGridHeaderProps = {
   columns: DataGridColumn[];
@@ -50,6 +52,11 @@ export type DataGridHeaderProps = {
   resizingColumnId: string | null;
   /** Disable the shared focus glow on the resize handles (falls back to the UA outline). */
   disableFocusRing: boolean;
+  /** Opens the column context menu; omitted when `contextMenu` is off. */
+  onContextMenu?: (
+    target: DataGridContextMenuTarget,
+    point: DropdownPoint | null,
+  ) => void;
 };
 
 /** A small ↑/↓ glyph for a sorted column. */
@@ -77,6 +84,7 @@ export function DataGridHeader({
   onColumnResizeStep,
   resizingColumnId,
   disableFocusRing,
+  onContextMenu,
 }: DataGridHeaderProps) {
   const web = Platform.OS === "web";
   return (
@@ -109,6 +117,19 @@ export function DataGridHeader({
                   onBeginColumnDrag(column.id, event);
                 }
               },
+              // Built inline beside the drag props (and not hoisted into a
+              // per-column closure) so the header keeps rendering from one
+              // stable callback.
+              ...(onContextMenu
+                ? contextMenuTriggerProps({
+                    isWeb: true,
+                    onOpen: (point) =>
+                      onContextMenu(
+                        { columnId: column.id, region: "column" },
+                        point,
+                      ),
+                  })
+                : {}),
             } as Record<string, unknown>)
           : {};
         return (

@@ -2,16 +2,20 @@
 import { type ReactNode, useCallback, useRef } from "react";
 import { Platform, Pressable, View } from "react-native";
 
+import type { DropdownPoint } from "../dropdown";
 import { hideWebOutlineView } from "../focusRing";
+import { contextMenuTriggerProps } from "../popover";
 import type { SharedUiTheme } from "../theme";
 
 import { DataGridCellContent } from "./dataGridCellContent";
 import { DataGridCellLoadingContent } from "./DataGridCellLoadingIndicator";
+import type { DataGridCellNode } from "./dataGridDragDom";
 import type { DataGridStyles } from "./dataGridStyles";
 import { columnLayoutStyle, resolveColumnAlign } from "./dataGridLayout";
 import type {
   DataGridCellRef,
   DataGridColumn,
+  DataGridContextMenuTarget,
   DataGridCellValue,
 } from "./types";
 
@@ -39,10 +43,15 @@ export type DataGridCellProps = {
     onTap?: () => void,
   ) => void;
   onBeginEdit: (ref: DataGridCellRef) => void;
+  /** Opens the cell context menu; omitted when `contextMenu` is off. */
+  onContextMenu?: (
+    target: DataGridContextMenuTarget,
+    point: DropdownPoint | null,
+  ) => void;
   onKeyDown: (event: unknown) => void;
   registerNode: (
     ref: DataGridCellRef,
-    node: { focus?: () => void } | null,
+    node: DataGridCellNode["node"] | null,
   ) => void;
   /** Editor element shown in place of the content while this cell edits. */
   editor?: ReactNode;
@@ -70,6 +79,7 @@ export function DataGridCell({
   onActivate,
   onBeginDrag,
   onBeginEdit,
+  onContextMenu,
   onKeyDown,
   registerNode,
   editor,
@@ -85,7 +95,7 @@ export function DataGridCell({
     column.fieldType === "singleSelect" || column.fieldType === "multiSelect";
   const setRef = useCallback(
     (node: unknown) => {
-      registerNode(cellRef, node as { focus?: () => void } | null);
+      registerNode(cellRef, node as DataGridCellNode["node"] | null);
     },
     [cellRef, registerNode],
   );
@@ -173,7 +183,27 @@ export function DataGridCell({
         role: "gridcell",
         "aria-selected": selected,
         onKeyDown,
+        ...(onContextMenu
+          ? contextMenuTriggerProps({
+              isWeb: true,
+              onOpen: (point) =>
+                onContextMenu({ ref: cellRef, region: "cell" }, point),
+            })
+          : {}),
         onPointerDown: (event: unknown) => {
+          // Secondary buttons belong to the context menu. Bail before the
+          // double-press timer and the editor checks below: `beginSession`
+          // filters non-primary buttons downstream, but by then a right-click
+          // on an active select cell (or two right-clicks inside 350ms) would
+          // already have opened the editor.
+          const pointer = event as {
+            button?: number;
+            nativeEvent?: { button?: number };
+          };
+          const button = pointer.button ?? pointer.nativeEvent?.button;
+          if (button !== undefined && button !== 0) {
+            return;
+          }
           const now = Date.now();
           const isDouble = now - lastDownRef.current < 350;
           lastDownRef.current = now;
