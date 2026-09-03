@@ -1,5 +1,8 @@
 /** Modal-backed native dropdown surface anchored to a measured trigger. */
+import { useRef } from "react";
 import { Modal, Pressable, StyleSheet, View } from "react-native";
+
+import { devWarn } from "../devWarn";
 
 import { dropdownContentWidthStyle } from "./dropdownContentWidthStyle";
 import { dropdownPlacement, dropdownWidthBounds } from "./dropdownGeometry";
@@ -20,6 +23,7 @@ import { useDropdownContentWidth } from "./useDropdownContentWidth";
  */
 export function DropdownPortal({
   align = "start",
+  anchorRect,
   anchorRef,
   anchorWidthAsMinimum,
   children,
@@ -36,7 +40,17 @@ export function DropdownPortal({
   testID,
   zIndex,
 }: DropdownPortalProps) {
-  const { anchor, viewport } = useDropdownAnchor(anchorRef, open);
+  // A virtual anchor carries its own geometry, so there is no element to
+  // measure; the fallback ref keeps the hook's signature satisfied.
+  const fallbackAnchorRef = useRef<View>(null);
+  if (!anchorRef && !anchorRect) {
+    devWarn("DropdownPortal needs an anchorRef or an anchorRect.");
+  }
+  const { anchor, viewport } = useDropdownAnchor(
+    anchorRef ?? fallbackAnchorRef,
+    open,
+    anchorRect,
+  );
   const contentWidth = useDropdownContentWidth(fitContentWidth && open);
   const surfaceStyles = useDropdownSurfaceStyles();
 

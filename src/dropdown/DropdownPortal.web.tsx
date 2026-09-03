@@ -2,6 +2,8 @@
 import { useEffect, useRef } from "react";
 import { View } from "react-native";
 
+import { devWarn } from "../devWarn";
+
 import {
   DropdownClientRect,
   DropdownPoint,
@@ -45,6 +47,7 @@ type DropdownRectNode = { getBoundingClientRect: () => DropdownClientRect };
  */
 export function DropdownPortal({
   align = "start",
+  anchorRect,
   anchorRef,
   anchorWidthAsMinimum,
   children,
@@ -66,12 +69,25 @@ export function DropdownPortal({
   const hoverInRef = useRef(surfaceHoverProps?.onHoverIn);
   hoverInRef.current = surfaceHoverProps?.onHoverIn;
   const hoverBacked = Boolean(surfaceHoverProps);
-  const { anchor, viewport } = useDropdownAnchor(anchorRef, open);
+  // A virtual anchor has no element, so dismissal gets a permanently-null ref.
+  // `dropdownShouldClose` is `nodes.every((node) => !node?.contains(target))`,
+  // so a null anchor node never blocks a close — outside-press dismissal works
+  // unchanged with no trigger to exclude.
+  const fallbackAnchorRef = useRef<View>(null);
+  const resolvedAnchorRef = anchorRef ?? fallbackAnchorRef;
+  if (!anchorRef && !anchorRect) {
+    devWarn("DropdownPortal needs an anchorRef or an anchorRect.");
+  }
+  const { anchor, viewport } = useDropdownAnchor(
+    resolvedAnchorRef,
+    open,
+    anchorRect,
+  );
   const contentWidth = useDropdownContentWidth(fitContentWidth && open);
   const surfaceStyles = useDropdownSurfaceStyles();
   const surfaceMounted = open && anchor !== null;
   useDropdownDismiss({
-    anchorRef,
+    anchorRef: resolvedAnchorRef,
     onClose,
     open,
     surfaceRef,
@@ -96,7 +112,8 @@ export function DropdownPortal({
     if (!surfaceMounted || !hoverBacked || !point) {
       return;
     }
-    const anchorNode = anchorRef.current as unknown as DropdownRectNode | null;
+    const anchorNode =
+      resolvedAnchorRef.current as unknown as DropdownRectNode | null;
     const surfaceNode =
       surfaceRef.current as unknown as DropdownRectNode | null;
     const rects = [anchorNode, surfaceNode].map(
@@ -105,7 +122,7 @@ export function DropdownPortal({
     if (dropdownPointWithinRects(point, rects)) {
       hoverInRef.current?.();
     }
-  }, [anchorRef, hoverBacked, surfaceMounted]);
+  }, [hoverBacked, resolvedAnchorRef, surfaceMounted]);
 
   if (!open || !anchor) {
     return null;
