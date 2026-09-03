@@ -24,12 +24,16 @@ that one-off into a real primitive and then spends it on the grid.
 **Visual reference:** the `DataGrid/Examples` Storybook folder — the new
 `Context menus` and `Context menu (open)` stories are the living spec.
 
-**Status:** proposed (not started). Scope and behaviour were settled in
-brainstorming: DataGrid only (not `Table`), three distinct menus, library
-defaults with a consumer extension hook, cursor-anchored on web, bottom sheet on
-native. Items flagged in [§ Open questions](#open-questions) should be confirmed
-before M4. **`node_modules` is absent in this worktree — run `npm install` and
-`npx playwright install chromium` before M1.**
+**Status:** delivered. M1–M7 complete and `npm run verify` green. Right-click
+(web) and long-press (native) menus are live on `DataGrid` column headers, the
+row gutter, and cells, behind an opt-in `contextMenu` prop. The point anchor
+landed on `DropdownPortal` as `anchorRect`, and the `ContextMenu` primitive
+built on it lives in `src/popover` alongside `ResponsiveMenu` (whose native
+sheet it reuses) rather than in `src/dropdown` as first sketched. The one
+deferred item is the manual on-device native pass in M6 — long-press timing,
+sheet dismissal, and VoiceOver / TalkBack behaviour still need a real device,
+and join the existing deferred native item in
+[Data Grid component](data-grid-component.md) M7.
 
 ---
 
@@ -309,14 +313,14 @@ a `DropdownMenu` per cell.
 
 ## Milestones
 
-### M1 — Point anchoring in the dropdown portal
+### M1 — Point anchoring in the dropdown portal ✅
 
 At the end: any `DropdownPortal` caller can position a surface at a virtual rect
 instead of a measured element, and every existing caller behaves identically.
 
-- [ ] `npm install` and `npx playwright install chromium` (this worktree has no
+- [x] `npm install` and `npx playwright install chromium` (this worktree has no
       `node_modules`; nothing below runs without them).
-- [ ] `npm run format`. `cargo xtask check` is literally `npm run verify`
+- [x] `npm run format`. `cargo xtask check` is literally `npm run verify`
       (`xtask/src/check.rs:9`), whose **first** step is
       `prettier --check "**/*.{ts,tsx,js,json,md,yml,yaml}"`, and `.prettierignore`
       does not exclude `plans/` — so unformatted markdown fails the gate before a
@@ -326,7 +330,7 @@ instead of a measured element, and every existing caller behaves identically.
       idempotent** on this file's wide tables — it took three `--write` passes to
       converge, so re-run `format` until `format:check` is clean rather than
       assuming one pass is enough.
-- [ ] `src/dropdown/useDropdownAnchor.ts`: add a third optional parameter.
+- [x] `src/dropdown/useDropdownAnchor.ts`: add a third optional parameter.
 
       ```ts
       export function useDropdownAnchor(
@@ -362,9 +366,9 @@ instead of a measured element, and every existing caller behaves identically.
       }
       ```
 
-- [ ] `src/dropdown/dropdownPortalModel.ts`: relax `anchorRef` to optional and
+- [x] `src/dropdown/dropdownPortalModel.ts`: relax `anchorRef` to optional and
       add `anchorRect`, with the doc comments from [§ Public API](#public-api).
-- [ ] `src/dropdown/DropdownPortal.web.tsx`: accept `anchorRect`, and keep
+- [x] `src/dropdown/DropdownPortal.web.tsx`: accept `anchorRect`, and keep
       `useDropdownDismiss` unchanged by substituting a stable fallback ref.
 
       ```ts
@@ -380,12 +384,12 @@ instead of a measured element, and every existing caller behaves identically.
       so a permanently-null anchor node never blocks a close — outside-click
       dismissal works with no trigger element.
 
-- [ ] `src/dropdown/DropdownPortal.tsx` (native): same `anchorRect` pass-through
+- [x] `src/dropdown/DropdownPortal.tsx` (native): same `anchorRect` pass-through
       and fallback ref, for API symmetry. The grid does not use this path (native
       uses the sheet), but the prop must not be silently ignored.
-- [ ] `devWarn` from `src/devWarn.ts` when neither `anchorRef` nor `anchorRect`
+- [x] `devWarn` from `src/devWarn.ts` when neither `anchorRef` nor `anchorRect`
       is supplied: `"DropdownPortal needs an anchorRef or an anchorRect."`
-- [ ] Unit test `tests/unit/dropdownPointAnchor.test.ts` against
+- [x] Unit test `tests/unit/dropdownPointAnchor.test.ts` against
       `dropdownPlacement` / `dropdownWidthBounds` directly (both pure, both
       already imported by `tests/unit/dropdown.test.ts` with literal rects): - a zero-size rect at `{x: 100, y: 200}` with `align: "start"`,
       `gutter: 2`, `minWidth: 220`, `anchorWidthAsMinimum: false` places
@@ -394,14 +398,14 @@ instead of a measured element, and every existing caller behaves identically.
       `bottom`; - **the trap:** a zero-size rect with no `minWidth` and
       `anchorWidthAsMinimum` left at its default resolves to `width === 0` —
       pin it so the reason `ContextMenu` sets both is documented in a test.
-- [ ] `npm run format:check`, `npm run test`, and `npm run typecheck` green.
+- [x] `npm run format:check`, `npm run test`, and `npm run typecheck` green.
 
-### M2 — The `ContextMenu` primitive
+### M2 — The `ContextMenu` primitive ✅
 
 At the end: `ContextMenu` is exported and usable by anything in the library —
 a cursor-anchored menu on web, a bottom sheet on native.
 
-- [ ] `src/popover/contextMenuModel.ts` — pure, no JSX, no `react-native`
+- [x] `src/popover/contextMenuModel.ts` — pure, no JSX, no `react-native`
       runtime import (type-only imports are fine):
 
       ```ts
@@ -441,7 +445,7 @@ a cursor-anchored menu on web, a bottom sheet on native.
 
       `ContextMenuProps` is declared here so both platform builds share it.
 
-- [ ] `src/popover/ContextMenu.web.tsx`:
+- [x] `src/popover/ContextMenu.web.tsx`:
 
       ```tsx
       export function ContextMenu({
@@ -519,7 +523,7 @@ a cursor-anchored menu on web, a bottom sheet on native.
       fill inverts library-owned row text to white
       (`src/data-grid/README.md:262-265`).
 
-- [ ] `src/popover/ContextMenu.tsx` (native) — same props, sheet surface:
+- [x] `src/popover/ContextMenu.tsx` (native) — same props, sheet surface:
 
       ```tsx
       export function ContextMenu({
@@ -551,33 +555,33 @@ a cursor-anchored menu on web, a bottom sheet on native.
       `npm run test:package`); if it does, move both `ContextMenu` builds to
       `src/popover` and re-export from `src/dropdown/index.ts`.
 
-- [ ] `src/dropdown/index.ts`: `export * from "./ContextMenu";` and
+- [x] `src/dropdown/index.ts`: `export * from "./ContextMenu";` and
       `export * from "./contextMenuModel";`.
-- [ ] `tests/unit/testIDForwarding.test.ts`: add
+- [x] `tests/unit/testIDForwarding.test.ts`: add
       `dropdown/ContextMenu.tsx` and `dropdown/ContextMenu.web.tsx` to
       `FORWARDING_FILES`, and register `dropdown/contextMenuModel.ts` as their
       shared type file in the `sharedTypeFiles` map (the `sheet/types.ts`
       precedent) since `testID?: string` is declared there.
-- [ ] Unit test `tests/unit/contextMenu.test.ts` (imports only
+- [x] Unit test `tests/unit/contextMenu.test.ts` (imports only
       `contextMenuModel.ts`, so `node --test` can load it): - `contextMenuPoint` reads top-level `clientX/clientY`; - falls back to `nativeEvent.clientX/clientY`; - falls back to `nativeEvent.pageX/pageY` (the native long-press shape); - returns `null` when neither is present; - `contextMenuTriggerProps({ isWeb: true, ... })` returns an
       `onContextMenu` that calls `preventDefault` and reports the point, and
       **no** `onLongPress` and **no** `onPress` (a plain tap is never hijacked
       — the contract `tests/unit/dropdownMenu.test.ts:115-124` already pins for
       `DropdownMenu`); - `contextMenuTriggerProps({ isWeb: false, ... })` returns `onLongPress`
       and no `onContextMenu`.
-- [ ] `npm run format:check`, `npm run test`, `npm run typecheck`,
+- [x] `npm run format:check`, `npm run test`, `npm run typecheck`,
       `npm run build`, `npm run test:package` green.
 
-### M3 — One column-action vocabulary and the entry builders
+### M3 — One column-action vocabulary and the entry builders ✅
 
 At the end: the header caret menu renders from the shared builder and gains
 Insert left / Insert right, with no context menu wired yet — the grid is fully
 working and visibly improved on its own.
 
-- [ ] `src/data-grid/types.ts`: extend `DataGridColumnAction` with
+- [x] `src/data-grid/types.ts`: extend `DataGridColumnAction` with
       `insertLeft` / `insertRight`; add `DataGridRowAction`,
       `DataGridContextMenuTarget`, `DataGridContextMenuContext`.
-- [ ] `src/data-grid/dataGridContextMenuModel.ts` — pure descriptors:
+- [x] `src/data-grid/dataGridContextMenuModel.ts` — pure descriptors:
 
       ```ts
       export type DataGridMenuDescriptor =
@@ -608,7 +612,7 @@ working and visibly improved on its own.
       key resolved to a component in the `.tsx` layer, so this module stays free
       of `lucide-react-native`.
 
-- [ ] `src/data-grid/dataGridContextMenu.tsx`: `MENU_ICONS`, a
+- [x] `src/data-grid/dataGridContextMenu.tsx`: `MENU_ICONS`, a
       `Record<string, LucideIcon>`, plus
       `buildMenuEntries(descriptors, theme, onAction): DropdownListEntry[]`
       mapping `danger` to `tone: "danger"` and a `theme.colors.roseDeep` glyph
@@ -618,36 +622,36 @@ working and visibly improved on its own.
       `ArrowRightToLine`, `EyeOff`, `Trash2`, `ArrowUpToLine`,
       `ArrowDownToLine`, `CopyPlus`, `Copy`, `Scissors`, `ClipboardPaste`,
       `Eraser`, `Pencil`.
-- [ ] `scripts/package-smoke-stubs.mjs`: add the seven icons not already stubbed
+- [x] `scripts/package-smoke-stubs.mjs`: add the seven icons not already stubbed
       — `ArrowDownToLine`, `ArrowUpToLine`, `ClipboardPaste`, `Copy`, `CopyPlus`,
       `Eraser`, `Pencil` — to the alphabetical `export const X = Icon;` list.
       (`ArrowLeftToLine`, `ArrowRightToLine`, `Scissors` are already there;
       `ArrowUpAZ`, `ArrowDownAZ`, `EyeOff`, `Trash2`, `X` are already in use.)
       A missing stub fails `npm run test:package`, and it has caught this exact
       gap three times before — see `plans/charts-component-family.md:265-267`.
-- [ ] `src/data-grid/DataGridColumnMenu.tsx`: replace the inline `entries` array
+- [x] `src/data-grid/DataGridColumnMenu.tsx`: replace the inline `entries` array
       with `buildMenuEntries(columnMenuDescriptors(column), theme, onAction)`.
       The caret menu's rendered output must be unchanged except for the two new
       Insert rows.
-- [ ] `src/data-grid/README.md`: document `insertLeft` / `insertRight` in the
+- [x] `src/data-grid/README.md`: document `insertLeft` / `insertRight` in the
       "Column menus" section.
-- [ ] Unit test `tests/unit/dataGridContextMenuModel.test.ts`: - a sortable, unsorted column yields Sort asc, Sort desc, divider, Insert
+- [x] Unit test `tests/unit/dataGridContextMenuModel.test.ts`: - a sortable, unsorted column yields Sort asc, Sort desc, divider, Insert
       left, Insert right, Hide, Delete — and **no** Clear sort; - `sortDirection: "asc"` inserts Clear sort; - `sortable: false` drops all three sort rows _and_ their trailing divider
       (no leading divider on the rendered menu); - exactly one descriptor is `danger` in each region; - `rowMenuDescriptors({ rowCount: 5, web: true })` labels the delete
       `"Delete 5 rows"`; `rowCount: 1` gives `"Delete row"`; - `web: false` omits Copy from the row menu and Copy/Cut/Paste from the
       cell menu; - `cellMenuDescriptors({ editable: false })` omits Edit **and** does not
       leave a leading divider.
-- [ ] `npm run format:check`, `npm run test`, `npm run typecheck`,
+- [x] `npm run format:check`, `npm run test`, `npm run typecheck`,
       `npm run test:package` green.
-- [ ] Storybook: the existing `FullFeatured` story ("Column menu, add column &
+- [x] Storybook: the existing `FullFeatured` story ("Column menu, add column &
       row") shows the two new caret rows.
 
-### M4 — Wire the three regions on web
+### M4 — Wire the three regions on web ✅
 
 At the end: right-clicking a header, gutter, or cell opens the right menu at the
 cursor, with spreadsheet selection semantics.
 
-- [ ] **Fix the latent right-click editor bug first.**
+- [x] **Fix the latent right-click editor bug first.**
       `src/data-grid/DataGridCell.tsx:171-195` runs its 350ms double-press check
       and its active-select-cell check _before_ any button test — the
       `button !== 0` bail lives downstream in `useDataGridDrag.ts:253`. So a
@@ -674,7 +678,7 @@ cursor, with spreadsheet selection semantics.
       `tests/unit/table.test.ts` and `dropdownSource.test.ts` both do it.) The
       real behavioural coverage is the browser test below.
 
-- [ ] `src/data-grid/dataGridContextSelection.ts` — pure:
+- [x] `src/data-grid/dataGridContextSelection.ts` — pure:
 
       ```ts
       /** Spreadsheet rule: a secondary press inside the current selection keeps
@@ -704,7 +708,7 @@ cursor, with spreadsheet selection semantics.
       spans it *and* is full-width (`minCol === 0 && maxCol === columnIds.length - 1`);
       a column, only when the rect spans it and is full-height.
 
-- [ ] `src/data-grid/useDataGridContextMenu.ts`: owns
+- [x] `src/data-grid/useDataGridContextMenu.ts`: owns
       `{ target, point }` state, resolves entries for the current target, applies
       `onContextMenuEntries`, and exposes a **stable**
       `onContextMenu(target, point)`. Returns `{ close, entries, label, open,
@@ -713,7 +717,7 @@ point, title }` for `DataGrid` to spread onto one `<ContextMenu>`.
       Cell-region handlers come from the existing
       `useDataGridClipboard()` return value plus `controller.requestEdit`; no new
       callbacks.
-- [ ] **Gate the grid's own key handler while a menu is open.** Nothing moves DOM
+- [x] **Gate the grid's own key handler while a menu is open.** Nothing moves DOM
       focus when the menu opens (`DropdownPortal.web.tsx` is non-modal;
       `DropdownList` never focuses itself), so the cell keeps focus and its
       `onKeyDown` — `controller.handleCellKeyDown` — keeps firing.
@@ -750,7 +754,7 @@ point, title }` for `DataGrid` to spread onto one `<ContextMenu>`.
       break the roving tab stop and the Escape-returns-to-cell behaviour M5
       relies on.
 
-- [ ] Thread one stable `onContextMenu?: (target, point) => void` through
+- [x] Thread one stable `onContextMenu?: (target, point) => void` through
       `DataGrid.tsx` → `DataGridHeader.tsx` (header cells) and
       `DataGrid.tsx` → `DataGridBody.tsx` → `DataGridRow.tsx` → `DataGridCell.tsx`.
       Each host builds its own gesture props inline next to its existing
@@ -758,14 +762,14 @@ point, title }` for `DataGrid` to spread onto one `<ContextMenu>`.
       `isInteractiveDragTarget(event)` so a right-click on the caret button or
       the expand icon does not also open the region menu.
       **Do not** pass a per-row or per-cell closure: `DataGridRow` is `memo`'d.
-- [ ] `DataGrid.tsx`: add the `contextMenu`, `onRowMenuAction`, and
+- [x] `DataGrid.tsx`: add the `contextMenu`, `onRowMenuAction`, and
       `onContextMenuEntries` props; render one `<ContextMenu>` after
       `<DataGridMarquee>`; pass `onContextMenu` only when `contextMenu` is true.
-- [ ] Unit test `tests/unit/dataGridContextSelection.test.ts`: - cell inside the current rect → `null` (selection preserved); - cell outside → collapses to `singleCell(ref)`; - row inside a full-width multi-row rect → `null`; - row inside a rect that spans the rows but **not** all columns → selects
+- [x] Unit test `tests/unit/dataGridContextSelection.test.ts`: - cell inside the current rect → `null` (selection preserved); - cell outside → collapses to `singleCell(ref)`; - row inside a full-width multi-row rect → `null`; - row inside a rect that spans the rows but **not** all columns → selects
       the whole row (the rect does not "cover" it); - row outside → selects the whole row; - column, both transposed cases; - an empty selection (`{anchor: null, focus: null}`) always collapses; - a selection whose endpoints reference a hidden/removed column
       (`rangeRect` returns `null`) always collapses rather than throwing; - `contextRowIds` returns the full span for a covered row and `[rowId]`
       otherwise.
-- [ ] Browser tests in `tests/browser/data-grid.spec.ts` against a new
+- [x] Browser tests in `tests/browser/data-grid.spec.ts` against a new
       `context-menus` story: - right-click a column header → `role="menu"` visible, containing
       "Delete field"; - the menu's bounding box left/top is within a few px of the click point
       (this is the whole point of M1 — assert it, do not assume it); - right-click a cell outside the current selection → that cell becomes the
@@ -775,28 +779,28 @@ point, title }` for `DataGrid` to spread onto one `<ContextMenu>`.
       and **no editor appears** (the M4 bug fix); - left-click still selects and double-click still edits (no regression); - **with the menu open, `Delete` leaves every cell value unchanged**, and
       `ArrowLeft` / `Home` / `Tab` do not move the grid selection (the
       key-gating fix above — this is destructive if it regresses).
-- [ ] Add a unit pin for the gate in `tests/unit/dataGridContextMenu.test.ts`:
+- [x] Add a unit pin for the gate in `tests/unit/dataGridContextMenu.test.ts`:
       a source assertion that `handleCellKeyDown` returns on `contextMenuOpen`
       before reading `event.key` (the same shape as the `DataGridCell` button
       assertion, and the family's established route for hook-resident logic —
       see `tests/unit/dropdownSource.test.ts` and `dragSelect.test.ts:212`).
-- [ ] `npm run format`, `npm run test`, `npm run typecheck`,
+- [x] `npm run format`, `npm run test`, `npm run typecheck`,
       `npm run test:browser` green.
 
-### M5 — Keyboard route and accessibility
+### M5 — Keyboard route and accessibility ✅
 
 At the end: the menu is reachable without a mouse, so it passes WCAG 2.1.1.
 
-- [ ] Widen `registerCellNode`'s parameter type in
+- [x] Widen `registerCellNode`'s parameter type in
       `src/data-grid/useDataGridController.ts:129` from `{ focus?: () => void }`
       to `DataGridCellNode["node"]` — the stored type already declares
       `getBoundingClientRect` (`dataGridDragDom.ts:12-19`), only the registration
       signature narrows it away.
-- [ ] Add `contextMenuPointForCell(ref): DropdownPoint | null` to the controller,
+- [x] Add `contextMenuPointForCell(ref): DropdownPoint | null` to the controller,
       reading the registered node's `getBoundingClientRect()` and returning
       `{ x: rect.left, y: rect.bottom }` so the menu opens under the focused cell.
       Returns `null` off-web or when the node is unregistered.
-- [ ] `src/data-grid/useDataGridKeyboard.ts`: add
+- [x] `src/data-grid/useDataGridKeyboard.ts`: add
       `onContextMenuKey?: (ref: DataGridCellRef) => void` to
       `UseDataGridKeyboardOptions` and handle it in `handleCellKeyDown` —
       `key === "ContextMenu"`, or `shiftKey && key === "F10"` — reading both
@@ -805,45 +809,45 @@ At the end: the menu is reachable without a mouse, so it passes WCAG 2.1.1.
       `isGridNavigationKey` movement check, but **after** the `contextMenuOpen`
       early return added in M4 — pressing the context-menu key again while the
       menu is open must not reopen it.
-- [ ] Wire it to open the **cell** menu for the active cell at that point.
-- [ ] Focus handling: `DropdownPortal.web.tsx` is non-modal and does not move
+- [x] Wire it to open the **cell** menu for the active cell at that point.
+- [x] Focus handling: `DropdownPortal.web.tsx` is non-modal and does not move
       focus, and `useDropdownSelectorNavigation`'s listener is document-level, so
       arrows and Enter work with focus still on the cell. Confirm the cell keeps
       DOM focus while the menu is open, and that Escape returns control to it
       with the roving tab stop intact. The M4 `contextMenuOpen` gate is what
       makes this safe — without it the still-focused cell would also act on
       every key the menu's navigation does not consume.
-- [ ] Extend `tests/unit/dataGridKeyboard.test.ts`: `Shift+F10` and the
+- [x] Extend `tests/unit/dataGridKeyboard.test.ts`: `Shift+F10` and the
       `ContextMenu` key both invoke `onContextMenuKey` with the active cell and
       call `preventDefault`; a bare `F10` does not; the branch does not swallow
       arrow keys.
-- [ ] Browser test: focus a cell, press `Shift+F10` → the menu opens; `ArrowDown`
+- [x] Browser test: focus a cell, press `Shift+F10` → the menu opens; `ArrowDown`
       moves the active row; `Enter` fires the action; `Escape` closes and focus
       is back on the cell.
-- [ ] `src/data-grid/README.md`: add `Shift+F10` / `ContextMenu` to the keyboard
+- [x] `src/data-grid/README.md`: add `Shift+F10` / `ContextMenu` to the keyboard
       table (`README.md:96-110`) — the family's convention is doc-and-code parity.
-- [ ] `docs/accessibility-manual-checklist.md`: add the grid context menu to the
+- [x] `docs/accessibility-manual-checklist.md`: add the grid context menu to the
       composite-widget list if it is not covered by the existing menu entry.
-- [ ] `npm run format:check`, `npm run test`, `npm run test:browser` green.
+- [x] `npm run format:check`, `npm run test`, `npm run test:browser` green.
 
-### M6 — Native long-press and the card stack
+### M6 — Native long-press and the card stack ✅
 
 At the end: the same menus are reachable by long-press on native, as a bottom
 sheet.
 
-- [ ] The gesture props from `contextMenuTriggerProps` already resolve to
+- [x] The gesture props from `contextMenuTriggerProps` already resolve to
       `onLongPress` off-web; verify each host actually forwards it —
       `DataGridCell` renders a `Pressable` (fine), but the header cell and the
       row gutter are plain `View`s, which do **not** accept `onLongPress`. Wrap
       each in a `Pressable` on native only, or attach the gesture to the existing
       `Pressable` where one is present. Do not change the web DOM.
-- [ ] `src/data-grid/DataGridCardStack.tsx`: long-press a card → the **row**
+- [x] `src/data-grid/DataGridCardStack.tsx`: long-press a card → the **row**
       menu, titled with the card's primary field. This is the only menu reachable
       in the responsive card layout, so it must include the row actions.
-- [ ] Set `ContextMenu`'s `title` per region so the sheet header reads
+- [x] Set `ContextMenu`'s `title` per region so the sheet header reads
       `"Status field"` / `"Row 4"` / the column label — a sheet has no pointer
       context to imply what it acts on.
-- [ ] Omit Copy / Cut / Paste on native (`web: false` in the descriptor
+- [x] Omit Copy / Cut / Paste on native (`web: false` in the descriptor
       builders): `useDataGridClipboard` reads the OS clipboard and is web-only
       (`src/data-grid/README.md:118-127`).
 - [ ] **Not done: the on-device native pass.** Long-press timing, sheet
@@ -853,38 +857,38 @@ sheet.
       the existing deferred native item in
       [Data Grid component](data-grid-component.md) M7 and the manual pass in
       [WCAG 2.1 AA Accessibility](wcag-2-1-accessibility.md) §7.
-- [ ] `npm run format:check`, `npm run test`, `npm run typecheck`,
+- [x] `npm run format:check`, `npm run test`, `npm run typecheck`,
       `npm run build` green.
 
-### M7 — Stories, docs, export, and the verify gate
+### M7 — Stories, docs, export, and the verify gate ✅
 
 At the end: the feature is documented, swept by axe, and the full gate is green.
 
-- [ ] `src/stories/data-grid.stories.tsx`: add `ContextMenus`
+- [x] `src/stories/data-grid.stories.tsx`: add `ContextMenus`
       (`name: "Context menus"`, story id `datagrid-examples--context-menus`) — a
       stateful example wiring `contextMenu`, `onColumnMenuAction`,
       `onRowMenuAction`, and an `onContextMenuEntries` that appends one custom
       row, so the extension point is demonstrated, not just documented.
-- [ ] Add `ContextMenuOpen` (`name: "Context menu (open)"`, story id
+- [x] Add `ContextMenuOpen` (`name: "Context menu (open)"`, story id
       `datagrid-examples--context-menu-open`) rendering the menu **already
       open**. The axe sweep is a static scanner — it only sees the rendered DOM
       (`tests/browser/a11y.spec.ts:7-27`), so without this story `role="menu"`
       and its rows are never scanned. Discovery is automatic from Storybook's
       `/index.json`; no list to update.
-- [ ] Add a `Dark` variant if the open-menu story needs one to pin the danger
+- [x] Add a `Dark` variant if the open-menu story needs one to pin the danger
       row's contrast under `darkSharedUiTheme`.
-- [ ] `src/popover/README.md`: a `ContextMenu` section — the point anchor, the
+- [x] `src/popover/README.md`: a `ContextMenu` section — the point anchor, the
       `minWidth` requirement, scroll dismissal, the native sheet, and how it
       differs from `DropdownMenu trigger="contextMenu"`.
-- [ ] `src/data-grid/README.md`: a "Context menus" section covering the three
+- [x] `src/data-grid/README.md`: a "Context menus" section covering the three
       regions, the default entries, `onRowMenuAction`, `onContextMenuEntries`,
       the spreadsheet selection rule, the keyboard route, and the native sheet.
       Add the new files to the "Key code" index.
-- [ ] Root `README.md`: no new subpath, so no exports list change — but confirm
+- [x] Root `README.md`: no new subpath, so no exports list change — but confirm
       `tests/unit/packageExports.test.ts` still passes unchanged.
-- [ ] `npm run verify` green (record the unit and browser test counts) and
+- [x] `npm run verify` green (record the unit and browser test counts) and
       `cargo xtask check` green.
-- [ ] `plans/README.md`: move this plan to **Completed** with a prose summary of
+- [x] `plans/README.md`: move this plan to **Completed** with a prose summary of
       what shipped and what was deferred.
 
 ---

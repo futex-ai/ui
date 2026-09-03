@@ -3,8 +3,11 @@ import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
+  ContextMenu,
   DataGrid,
+  buildMenuEntries,
   darkSharedUiTheme,
+  dataGridContextMenuModel,
   dataGridSelectionModel,
   useSharedUiTheme,
   type DataGridCellRef,
@@ -630,6 +633,7 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: "#3e4540", fontSize: 13, fontWeight: "600" },
   frame: { width: 940 },
+  openMenu: { height: 380, width: 320 },
   frameWide: { width: 1000 },
   hint: { color: "#69706a", fontSize: 12 },
   responsive: { padding: 16, width: "100%" },
@@ -712,4 +716,57 @@ function ContextMenuExample() {
 export const ContextMenus: Story = {
   name: "Context menus (right-click)",
   render: () => <ContextMenuExample />,
+};
+
+/*
+ * The menu rendered open on mount. The axe sweep is a static scanner — it only
+ * sees the DOM as rendered — so without this story `role="menu"` and its rows
+ * are never scanned. Uses `ContextMenu` directly rather than driving a gesture,
+ * which a story cannot do.
+ */
+function OpenContextMenuExample() {
+  const theme = useSharedUiTheme();
+  const entries = useMemo(
+    () =>
+      buildMenuEntries(
+        dataGridContextMenuModel.columnMenuDescriptors({
+          sortDirection: "asc",
+        }),
+        theme,
+        () => {},
+      ),
+    [theme],
+  );
+  return (
+    <View style={styles.openMenu}>
+      <ContextMenu
+        accessibilityLabel="Status field options"
+        entries={entries}
+        onClose={() => {}}
+        open
+        point={{ x: 40, y: 40 }}
+        testID="open-context-menu"
+      />
+    </View>
+  );
+}
+
+export const ContextMenuOpen: Story = {
+  name: "Context menu (open)",
+  parameters: { layout: "fullscreen" },
+  render: () => (
+    <StorySurface>
+      <OpenContextMenuExample />
+    </StorySurface>
+  ),
+};
+
+export const ContextMenuOpenDark: Story = {
+  name: "Context menu (open, dark)",
+  parameters: { layout: "fullscreen" },
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <OpenContextMenuExample />
+    </StorySurface>
+  ),
 };
