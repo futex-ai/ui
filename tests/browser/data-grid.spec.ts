@@ -1071,3 +1071,223 @@ test("collapses to a card stack below the breakpoint", async ({ page }) => {
   await page.keyboard.press("Enter");
   await expect(page.getByText("Expanded r2")).toBeVisible();
 });
+
+const revealTooltip = (page: Page) =>
+  page.getByTestId("data-grid-overflow-tooltip");
+
+// Give the open delay time to elapse, then assert nothing appeared. Without the
+// wait these would pass while the popover was merely still pending.
+async function expectNoReveal(page: Page) {
+  await page.waitForTimeout(900);
+  await expect(revealTooltip(page)).toHaveCount(0);
+}
+
+test("a clipped column heading reveals its full name on hover", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await gotoDataGridStory(page, "clipped-text");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  await page
+    .getByRole("columnheader")
+    .filter({ hasText: "Campaign performance summary" })
+    .hover();
+
+  await expect(revealTooltip(page)).toHaveText("Campaign performance summary");
+});
+
+test("a heading that already fits stays quiet on hover", async ({ page }) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await gotoDataGridStory(page, "clipped-text");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  await page.getByRole("columnheader").filter({ hasText: "Owner" }).hover();
+
+  await expectNoReveal(page);
+});
+
+test("moving off a clipped heading hides the reveal again", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await gotoDataGridStory(page, "clipped-text");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  await page
+    .getByRole("columnheader")
+    .filter({ hasText: "Campaign performance summary" })
+    .hover();
+  await expect(revealTooltip(page)).toBeVisible();
+
+  await page.getByRole("columnheader").filter({ hasText: "Owner" }).hover();
+  await expect(revealTooltip(page)).toHaveCount(0);
+});
+
+test("Escape dismisses the reveal", async ({ page }) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await gotoDataGridStory(page, "clipped-text");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  await page
+    .getByRole("columnheader")
+    .filter({ hasText: "Campaign performance summary" })
+    .hover();
+  await expect(revealTooltip(page)).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(revealTooltip(page)).toHaveCount(0);
+});
+
+test("a clipped text cell reveals its full value on hover", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await gotoDataGridStory(page, "clipped-text");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  await page
+    .getByText("Waiting on legal review before the second send goes out.")
+    .hover();
+
+  await expect(revealTooltip(page)).toHaveText(
+    "Waiting on legal review before the second send goes out.",
+  );
+});
+
+test("a text cell that already fits stays quiet on hover", async ({ page }) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await gotoDataGridStory(page, "clipped-text");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  await page.getByText("Short note.").hover();
+
+  await expectNoReveal(page);
+});
+
+test("the reveal never appears while a range drag is in flight", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await gotoDataGridStory(page, "clipped-text");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  // Press on a short cell, then drag across the clipped one. A popover opening
+  // under the cursor would cover the cells the drag is painting.
+  const start = page.getByText("Short note.");
+  const box = await start.boundingBox();
+  if (!box) {
+    throw new Error("drag start cell not found");
+  }
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  const target = page.getByText(
+    "Waiting on legal review before the second send goes out.",
+  );
+  const targetBox = await target.boundingBox();
+  if (!targetBox) {
+    throw new Error("drag target cell not found");
+  }
+  await page.mouse.move(
+    targetBox.x + targetBox.width / 2,
+    targetBox.y + targetBox.height / 2,
+    { steps: 8 },
+  );
+
+  await expectNoReveal(page);
+  await page.mouse.up();
+});
+
+test("overflowTooltip='headers' reveals headings but leaves cells quiet", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await gotoDataGridStory(page, "clipped-headers-only");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  await page
+    .getByText("Waiting on legal review before the second send goes out.")
+    .hover();
+  await expectNoReveal(page);
+
+  await page
+    .getByRole("columnheader")
+    .filter({ hasText: "Campaign performance summary" })
+    .hover();
+  await expect(revealTooltip(page)).toHaveText("Campaign performance summary");
+});
+
+test("overflowTooltip='none' never reveals clipped text", async ({ page }) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await gotoDataGridStory(page, "clipped-text-off");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  await page
+    .getByRole("columnheader")
+    .filter({ hasText: "Campaign performance summary" })
+    .hover();
+  await expectNoReveal(page);
+});
+
+test("a press just after the pointer arrives cancels the pending reveal", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await gotoDataGridStory(page, "clipped-text");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  // A click moves the pointer and presses within a few milliseconds, so the
+  // press can land before a state-driven effect would have subscribed to it.
+  // The scheduled reveal still has to be cancelled, or it pops up over the very
+  // cell that was just clicked — and duplicates its text in the DOM.
+  await page
+    .getByText("Waiting on legal review before the second send goes out.")
+    .click();
+
+  await expectNoReveal(page);
+});
+
+test("the reveal stays open while the pointer moves onto it", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await gotoDataGridStory(page, "clipped-text");
+  await expect(page.getByRole("grid")).toBeVisible();
+
+  await page
+    .getByRole("columnheader")
+    .filter({ hasText: "Campaign performance summary" })
+    .hover();
+  const reveal = revealTooltip(page);
+  await expect(reveal).toBeVisible();
+
+  // WCAG 2.1 1.4.13 (Content on Hover or Focus, AA) requires hover-triggered
+  // content to be *hoverable*: a magnifier user has to be able to move the
+  // pointer onto a long name to read it without it vanishing on the way.
+  const box = await reveal.boundingBox();
+  if (!box) {
+    throw new Error("reveal not found");
+  }
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.waitForTimeout(500);
+
+  await expect(reveal).toBeVisible();
+});
+
+test("the card stack reveals a clipped field value on hover", async ({
+  page,
+}) => {
+  // Below cardBreakpoint the grid becomes a card stack — still a web
+  // presentation with a real pointer, so clipped card values reveal too.
+  await page.setViewportSize({ width: 460, height: 900 });
+  await gotoDataGridStory(page, "clipped-text-cards");
+  await expect(page.getByRole("list")).toBeVisible();
+
+  await page
+    .getByText("Waiting on legal review before the second send goes out.")
+    .hover();
+
+  await expect(revealTooltip(page)).toHaveText(
+    "Waiting on legal review before the second send goes out.",
+  );
+});

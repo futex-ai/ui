@@ -11,6 +11,7 @@ import { Text, View } from "react-native";
 
 import type { SharedUiTheme } from "../theme";
 
+import { DataGridClippedText } from "./DataGridClippedText";
 import type { DataGridStyles } from "./dataGridStyles";
 import type {
   DataGridColumn,
@@ -187,15 +188,18 @@ export function DataGridCellContent({
   switch (column.fieldType) {
     case "number":
       return (
-        <Text numberOfLines={1} style={[styles.cellText, styles.cellNumeric]}>
+        <DataGridClippedText
+          style={[styles.cellText, styles.cellNumeric]}
+          surface="cells"
+        >
           {String(value)}
-        </Text>
+        </DataGridClippedText>
       );
     case "date":
       return (
-        <Text numberOfLines={1} style={styles.cellText}>
+        <DataGridClippedText style={styles.cellText} surface="cells">
           {formatDateValue(String(value))}
-        </Text>
+        </DataGridClippedText>
       );
     case "singleSelect": {
       const id = String(value);
@@ -224,9 +228,9 @@ export function DataGridCellContent({
     }
     default:
       return (
-        <Text numberOfLines={1} style={styles.cellText}>
+        <DataGridClippedText style={styles.cellText} surface="cells">
           {String(value)}
-        </Text>
+        </DataGridClippedText>
       );
   }
 }

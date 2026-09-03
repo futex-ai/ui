@@ -123,3 +123,10 @@ export type DataGridColumnAction =
 
 /** Row heights (px) per control size — fixed so windowing math stays exact. */
 export const DATA_GRID_ROW_HEIGHT = { sm: 32, md: 40, lg: 48 } as const;
+
+/**
+ * How much of the grid reveals its full text on hover when a label or value is
+ * clipped by its column width: `"all"` (headers + text cells, the default),
+ * `"headers"`, or `"none"`. Web only — there is no hover on touch.
+ */
+export type DataGridOverflowTooltipMode = "all" | "headers" | "none";

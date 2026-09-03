@@ -6,6 +6,7 @@ import { Spinner } from "../spinner";
 import type { SharedUiTheme } from "../theme";
 
 import { fieldTypeIcon } from "./dataGridCellContent";
+import { DataGridClippedText } from "./DataGridClippedText";
 import type { ResolvedColumn } from "./dataGridColumnWidths";
 import { isInteractiveDragTarget } from "./dataGridDragDom";
 import {
@@ -157,9 +158,9 @@ export function DataGridHeader({
             ) : (
               <Icon color={theme.colors.muted} size={iconSize - 1} />
             )}
-            <Text numberOfLines={1} style={styles.headerLabel}>
+            <DataGridClippedText style={styles.headerLabel} surface="headers">
               {column.label}
-            </Text>
+            </DataGridClippedText>
             {glyph ? <Text style={styles.headerSort}>{glyph}</Text> : null}
             {renderColumnMenuButton?.(column)}
             {canResize ? (
