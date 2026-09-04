@@ -453,6 +453,143 @@ test("number cell rejects non-numeric input", async ({ page }) => {
   await expect(page.getByText("Enter a number")).toBeVisible();
 });
 
+test("decimalString cells render and commit exact values", async ({ page }) => {
+  await gotoDataGridStory(page, "exact-decimal");
+  const grid = page.getByRole("grid", { name: "Ledger" });
+  await expect(grid).toBeVisible({ timeout: storyReadyTimeout });
+
+  // Number("0.1000000000000000055") is 0.1, so this text can only appear if the
+  // value never went through a float.
+  await expect(grid.getByText("0.1000000000000000055")).toBeVisible();
+  await expect(page.getByTestId("amount-types")).toHaveText(
+    "string, string, string",
+  );
+
+  // Editing keeps the digits and the trailing zero (scale) intact.
+  await grid.getByText("1234.50").dblclick();
+  await page.getByLabel("Edit number").fill("9007199254740993.250");
+  await page.keyboard.press("Enter");
+  await expect(grid.getByText("9007199254740993.250")).toBeVisible();
+  await expect(page.getByTestId("amount-types")).toHaveText(
+    "string, string, string",
+  );
+});
+
+test("decimalString rejects input a plain number column accepts", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "exact-decimal");
+  const grid = page.getByRole("grid", { name: "Ledger" });
+  await expect(grid).toBeVisible({ timeout: storyReadyTimeout });
+
+  // "1e5" discriminates the two modes: Number("1e5") is 100000, so a plain
+  // number column takes it, while the exact mode refuses the exponent form
+  // (nothing may expand 1e999999999). A test using text both modes reject
+  // would still pass with the decimalString branch deleted.
+  await grid.getByText("1234.50").dblclick();
+  await page.getByLabel("Edit number").fill("1e5");
+  await page.keyboard.press("Enter");
+  await expect(grid.getByText("Enter a number, e.g. 1234.50")).toBeVisible();
+  await expect(page.getByTestId("amount-values")).toContainText("1234.50");
+  // Escape re-focuses the cell it was editing, so walk right from there. A
+  // click here would land on the already-active cell and just reopen its editor.
+  await page.keyboard.press("Escape");
+  await expect(page.getByLabel("Edit number")).toHaveCount(0);
+
+  // The same text one column right, in the plain Qty column, still commits as a
+  // JS number — the mode is per column, not a global switch.
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("Enter");
+  await page.getByLabel("Edit number").fill("1e5");
+  await page.keyboard.press("Enter");
+  await expect(page.getByTestId("qty-values")).toHaveText("1, 100000, 1");
+  await expect(page.getByTestId("qty-types")).toHaveText(
+    "number, number, number",
+  );
+});
+
+test("an invalid paste is aborted rather than clearing the cells", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "exact-decimal");
+  const grid = page.getByRole("grid", { name: "Ledger" });
+  await expect(grid).toBeVisible({ timeout: storyReadyTimeout });
+
+  // Copy a text cell, then paste it over two Amount cells. Neither can be read
+  // as a decimal, so the whole paste is dropped and both cells survive.
+  await grid.getByText("Invoice 2043").click();
+  await page.keyboard.press("Control+c");
+  await grid.getByText("1234.50").click();
+  await page.keyboard.press("Shift+ArrowDown");
+  await page.keyboard.press("Control+v");
+
+  // Wait for the refusal to land before asserting anything survived it: the
+  // paste is async (it awaits the clipboard read), so a "nothing changed"
+  // assertion fired immediately would pass by observing the pre-paste state.
+  await expect(page.locator("#firna-ui-live-region-polite")).toHaveText(
+    "Paste cancelled, 1 invalid value",
+  );
+  await expect(page.getByTestId("amount-values")).toHaveText(
+    "0.1000000000000000055, 1234.50, -0.01",
+  );
+  await expect(grid.getByText("Invoice 2043")).toHaveCount(1);
+});
+
+test("an aborted paste discards the valid cells of the block too", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "exact-decimal");
+  const grid = page.getByRole("grid", { name: "Ledger" });
+  await expect(grid).toBeVisible({ timeout: storyReadyTimeout });
+
+  // Copy Item + Amount from row 1, then paste anchored on row 2's Amount: the
+  // text lands on Amount (invalid) and the decimal on Qty (valid). Committing
+  // the valid half would be a partial paste that could not be rolled back.
+  await grid.getByText("Rounding probe").click();
+  await page.keyboard.press("Shift+ArrowRight");
+  await page.keyboard.press("Control+c");
+  await grid.getByText("1234.50").click();
+  await page.keyboard.press("Control+v");
+
+  // Wait for the refusal to land before asserting anything survived it: the
+  // paste is async (it awaits the clipboard read), so a "nothing changed"
+  // assertion fired immediately would pass by observing the pre-paste state.
+  await expect(page.locator("#firna-ui-live-region-polite")).toHaveText(
+    "Paste cancelled, 1 invalid value",
+  );
+  await expect(page.getByTestId("amount-values")).toHaveText(
+    "0.1000000000000000055, 1234.50, -0.01",
+  );
+  await expect(page.getByTestId("qty-values")).toHaveText("1, 3, 1");
+});
+
+test("an aborted paste preserves a pending cut source", async ({ page }) => {
+  await gotoDataGridStory(page, "exact-decimal");
+  const grid = page.getByRole("grid", { name: "Ledger" });
+  await expect(grid).toBeVisible({ timeout: storyReadyTimeout });
+
+  // Cut a text cell, then paste it over an Amount cell that cannot hold it.
+  await grid.getByText("Invoice 2043").click();
+  await page.keyboard.press("Control+x");
+  await grid.getByText("1234.50").click();
+  await page.keyboard.press("Control+v");
+
+  // Wait for the refusal to land before asserting anything survived it: the
+  // paste is async (it awaits the clipboard read), so a "nothing changed"
+  // assertion fired immediately would pass by observing the pre-paste state.
+  await expect(page.locator("#firna-ui-live-region-polite")).toHaveText(
+    "Paste cancelled, 1 invalid value",
+  );
+
+  // A refused paste never completes the cut, so the source keeps its value and
+  // the marquee stays up for a later paste somewhere it fits.
+  await expect(grid.getByText("Invoice 2043")).toHaveCount(1);
+  await expect(page.getByTestId("amount-values")).toHaveText(
+    "0.1000000000000000055, 1234.50, -0.01",
+  );
+  await expect(page.getByTestId("data-grid-copy-marquee")).toHaveCount(1);
+});
+
 test("in-cell editors square off their box to match the grid", async ({
   page,
 }) => {

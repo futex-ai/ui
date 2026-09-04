@@ -34,6 +34,18 @@ export type DataGridSelectOption = {
 /** Horizontal alignment of a column's header and cells. */
 export type DataGridColumnAlign = "left" | "center" | "right";
 
+/**
+ * How a `number` column represents its values.
+ *
+ * - `number` (default) — a JavaScript number. Fine for counts and scores.
+ * - `decimalString` — an exact decimal string such as `"7.500"`. The editor and
+ *   the paste path validate the text and hand it back verbatim, never routing
+ *   it through `Number`, so arbitrary-precision values (money, ledger amounts)
+ *   survive a round-trip digit-for-digit. See {@link parseDecimalString} for
+ *   the accepted syntax.
+ */
+export type DataGridNumberValueMode = "number" | "decimalString";
+
 /** A column / field definition. */
 export type DataGridColumn = {
   /** Stable id, used as the cell key in {@link DataGridRow.cells}. */
@@ -42,6 +54,13 @@ export type DataGridColumn = {
   label: string;
   /** Field type, which selects the cell renderer and editor. */
   fieldType: DataGridFieldType;
+  /**
+   * For `number` columns: how values are represented. Defaults to `"number"`.
+   * Set `"decimalString"` to keep exact decimal strings — the `#` icon, the
+   * right alignment and the typed editor are unchanged, but no value is ever
+   * converted through `Number`.
+   */
+  numberValueMode?: DataGridNumberValueMode;
   /** Fixed column width in px. Takes precedence over `flex`. */
   width?: number;
   /**
@@ -89,7 +108,8 @@ export type DataGridColumn = {
 
 /**
  * A cell value. Its shape depends on the column's field type:
- * text → string; number → number; date → ISO `YYYY-MM-DD` string;
+ * text → string; number → number, or an exact decimal string under
+ * `numberValueMode: "decimalString"`; date → ISO `YYYY-MM-DD` string;
  * singleSelect → option id; multiSelect → array of option ids; `null` when empty.
  */
 export type DataGridCellValue = string | number | string[] | null;

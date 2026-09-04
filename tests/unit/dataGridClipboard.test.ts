@@ -8,7 +8,9 @@ import {
   clearRectWrites,
   coerceCellValue,
   emptyCellValue,
+  invalidSourceCount,
   parseClipboardGrid,
+  pasteRejectedMessage,
   planPaste,
 } from "../../src/data-grid/dataGridClipboard";
 import type { DataGridColumn, DataGridRow } from "../../src/data-grid/types";
@@ -34,6 +36,13 @@ const columns: DataGridColumn[] = [
       { id: "b", label: "Beta" },
     ],
   },
+  { id: "due", label: "Due", fieldType: "date" },
+  {
+    id: "amount",
+    label: "Amount",
+    fieldType: "number",
+    numberValueMode: "decimalString",
+  },
 ];
 
 const rows: DataGridRow[] = [
@@ -55,15 +64,101 @@ test("cellCopyText renders display text per field type", () => {
 });
 
 test("coerceCellValue parses pasted text into typed values", () => {
-  assert.equal(coerceCellValue(byId("score"), "7"), 7);
-  assert.equal(coerceCellValue(byId("score"), "x"), null);
-  assert.equal(coerceCellValue(byId("status"), "Done"), "done"); // by label
-  assert.equal(coerceCellValue(byId("status"), "todo"), "todo"); // by id
-  assert.equal(coerceCellValue(byId("status"), "nope"), null);
-  assert.deepEqual(coerceCellValue(byId("tags"), "Alpha, Beta"), ["a", "b"]);
-  assert.deepEqual(coerceCellValue(byId("tags"), ""), []);
-  assert.equal(coerceCellValue(byId("name"), "hi"), "hi");
-  assert.equal(coerceCellValue(byId("name"), ""), null);
+  assert.deepEqual(coerceCellValue(byId("score"), "7"), { ok: true, value: 7 });
+  assert.deepEqual(coerceCellValue(byId("status"), "Done"), {
+    ok: true,
+    value: "done",
+  }); // by label
+  assert.deepEqual(coerceCellValue(byId("status"), "todo"), {
+    ok: true,
+    value: "todo",
+  }); // by id
+  assert.deepEqual(coerceCellValue(byId("tags"), "Alpha, Beta"), {
+    ok: true,
+    value: ["a", "b"],
+  });
+  assert.deepEqual(coerceCellValue(byId("name"), "hi"), {
+    ok: true,
+    value: "hi",
+  });
+  assert.deepEqual(coerceCellValue(byId("due"), "2026-03-04"), {
+    ok: true,
+    value: "2026-03-04",
+  });
+});
+
+test("coerceCellValue reports unreadable text as invalid, not as a clear", () => {
+  // The distinction that matters: `ok: false` must never reach a cell as a
+  // value, or a bad paste would silently wipe the data it landed on.
+  assert.deepEqual(coerceCellValue(byId("score"), "x"), { ok: false });
+  assert.deepEqual(coerceCellValue(byId("status"), "nope"), { ok: false });
+  assert.deepEqual(coerceCellValue(byId("due"), "hello"), { ok: false });
+  // A real calendar date, not just the shape: 30 February does not exist.
+  assert.deepEqual(coerceCellValue(byId("due"), "2026-02-30"), { ok: false });
+  assert.deepEqual(coerceCellValue(byId("due"), "04/03/2026"), { ok: false });
+});
+
+test("coerceCellValue invalidates a whole multiSelect on one unknown token", () => {
+  // Never silently drop just the bad token — half a value is worse than none.
+  assert.deepEqual(coerceCellValue(byId("tags"), "Alpha, Nope"), { ok: false });
+  assert.deepEqual(coerceCellValue(byId("tags"), "Nope"), { ok: false });
+  // Empty tokens are formatting, not missing options.
+  assert.deepEqual(coerceCellValue(byId("tags"), "Alpha,,Beta"), {
+    ok: true,
+    value: ["a", "b"],
+  });
+  assert.deepEqual(coerceCellValue(byId("tags"), "Alpha, "), {
+    ok: true,
+    value: ["a"],
+  });
+  // ...but punctuation alone is not an empty cell: only genuinely empty text
+  // may clear one, or a stray "," column would silently wipe a selection.
+  assert.deepEqual(coerceCellValue(byId("tags"), ","), { ok: false });
+  assert.deepEqual(coerceCellValue(byId("tags"), " , , "), { ok: false });
+});
+
+test("coerceCellValue treats empty text as an intentional clear", () => {
+  assert.deepEqual(coerceCellValue(byId("name"), ""), {
+    ok: true,
+    value: null,
+  });
+  assert.deepEqual(coerceCellValue(byId("score"), "  "), {
+    ok: true,
+    value: null,
+  });
+  assert.deepEqual(coerceCellValue(byId("status"), ""), {
+    ok: true,
+    value: null,
+  });
+  assert.deepEqual(coerceCellValue(byId("due"), ""), { ok: true, value: null });
+  assert.deepEqual(coerceCellValue(byId("tags"), ""), { ok: true, value: [] });
+});
+
+test("coerceCellValue keeps decimalString columns exact", () => {
+  // The value a float silently corrupts: Number(...) rounds this to 0.1.
+  const exact = "0.1000000000000000055";
+  assert.deepEqual(coerceCellValue(byId("amount"), exact), {
+    ok: true,
+    value: exact,
+  });
+  // Scale survives; only the integer part is normalized.
+  assert.deepEqual(coerceCellValue(byId("amount"), "007.500"), {
+    ok: true,
+    value: "7.500",
+  });
+  // The default `number` column still parses to a JS number.
+  assert.deepEqual(coerceCellValue(byId("score"), "7.500"), {
+    ok: true,
+    value: 7.5,
+  });
+  // No locale guessing and no exponent: these are invalid, not reinterpreted.
+  for (const text of ["1,234.50", "0,001", "$5", "1e5", "1 2"]) {
+    assert.deepEqual(
+      coerceCellValue(byId("amount"), text),
+      { ok: false },
+      text,
+    );
+  }
 });
 
 test("buildClipboardText serializes a rectangle to TSV", () => {
@@ -272,6 +367,120 @@ test("planPaste with an empty clipboard is a no-op", () => {
   );
   assert.deepEqual(writes, []);
   assert.deepEqual(target, { minRow: 2, maxRow: 2, minCol: 1, maxCol: 1 });
+});
+
+test("planPaste reports invalid cells instead of writing them", () => {
+  // A text column pasted over a number column: every cell is unreadable, so the
+  // caller can abort rather than blanking four populated cells.
+  const { writes, invalid } = planPaste(
+    [["Ann"], ["Bo"]],
+    { row: 0, col: 1 },
+    2,
+    1,
+    rowIds,
+    columnIds,
+    columns,
+  );
+  assert.deepEqual(writes, []);
+  assert.deepEqual(invalid, [
+    { rowId: "r1", columnId: "score", text: "Ann", source: { row: 0, col: 0 } },
+    { rowId: "r2", columnId: "score", text: "Bo", source: { row: 1, col: 0 } },
+  ]);
+  assert.equal(invalidSourceCount(invalid), 2);
+});
+
+test("invalidSourceCount counts clipboard values, not the cells they tiled onto", () => {
+  // One unreadable clipboard cell tiled across a big selection is ONE bad
+  // value; counting targets would announce "200000 invalid values" for it.
+  const { invalid } = planPaste(
+    [["Ann"]],
+    { row: 0, col: 1 },
+    4,
+    1,
+    rowIds,
+    columnIds,
+    columns,
+  );
+  assert.equal(invalid.length, 4);
+  assert.equal(invalidSourceCount(invalid), 1);
+  assert.equal(
+    pasteRejectedMessage(invalidSourceCount(invalid)),
+    "Paste cancelled, 1 invalid value",
+  );
+});
+
+test("planPaste reports one invalid cell alongside otherwise-valid writes", () => {
+  // `writes` still lists the readable cells; it is the caller's job to discard
+  // them wholesale when `invalid` is non-empty (see useDataGridClipboard).
+  const { writes, invalid } = planPaste(
+    [["Ann", "nope"]],
+    { row: 0, col: 0 },
+    1,
+    2,
+    rowIds,
+    columnIds,
+    columns,
+  );
+  assert.deepEqual(writes, [{ rowId: "r1", columnId: "name", value: "Ann" }]);
+  assert.equal(invalid.length, 1);
+  assert.equal(invalid[0].columnId, "score");
+});
+
+test("planPaste does not report invalid text that would never be written", () => {
+  // Junk landing on a non-editable column or past the grid's last row is
+  // dropped as it always was — it must not block an otherwise valid paste.
+  const locked: DataGridColumn[] = columns.map((c) =>
+    c.id === "score" ? { ...c, editable: false } : c,
+  );
+  const { writes, invalid } = planPaste(
+    [["Ann", "junk"]],
+    { row: 0, col: 0 },
+    1,
+    1,
+    rowIds,
+    columnIds,
+    locked,
+  );
+  assert.deepEqual(writes, [{ rowId: "r1", columnId: "name", value: "Ann" }]);
+  assert.deepEqual(invalid, []);
+
+  // Same for rows clamped off the bottom edge: only r4 is in bounds.
+  const clamped = planPaste(
+    [["1"], ["junk"], ["junk"]],
+    { row: 3, col: 1 },
+    1,
+    1,
+    rowIds,
+    columnIds,
+    columns,
+  );
+  assert.deepEqual(clamped.writes, [
+    { rowId: "r4", columnId: "score", value: 1 },
+  ]);
+  assert.deepEqual(clamped.invalid, []);
+});
+
+test("planPaste keeps decimalString values exact through tiling", () => {
+  const ids = ["name", "score", "status", "tags", "due", "amount"];
+  const { writes, invalid } = planPaste(
+    [["1234.50"]],
+    { row: 0, col: 5 },
+    2,
+    1,
+    rowIds,
+    ids,
+    columns,
+  );
+  assert.deepEqual(invalid, []);
+  assert.deepEqual(
+    writes.map((w) => w.value),
+    ["1234.50", "1234.50"], // trailing zero intact, never a JS number
+  );
+});
+
+test("pasteRejectedMessage counts values in singular and plural", () => {
+  assert.equal(pasteRejectedMessage(1), "Paste cancelled, 1 invalid value");
+  assert.equal(pasteRejectedMessage(3), "Paste cancelled, 3 invalid values");
 });
 
 test("clearRectWrites empties every editable cell in the rectangle", () => {

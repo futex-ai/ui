@@ -7,12 +7,15 @@
  */
 import { useCallback, useRef, useState } from "react";
 
+import { announceGrid } from "./dataGridAnnounce";
 import {
   buildClipboardText,
   clearCellsWrites,
   clearRectWrites,
+  invalidSourceCount,
   parseClipboardGrid,
   planPaste,
+  pasteRejectedMessage,
   type DataGridCellWrite,
 } from "./dataGridClipboard";
 import { rangeBetween } from "./dataGridSelectionModel";
@@ -112,7 +115,13 @@ export function useDataGridClipboard() {
       .readText()
       .then((text) => {
         const source = parseClipboardGrid(text);
-        const { writes, target } = planPaste(
+        // Only act when something was actually pasted. An empty or non-text
+        // clipboard must leave a pending cut untouched — never destroy its
+        // source (or drop the marquee) with nothing pasted.
+        if (source.length === 0) {
+          return;
+        }
+        const { writes, target, invalid } = planPaste(
           source,
           { row: rect.minRow, col: rect.minCol },
           rect.maxRow - rect.minRow + 1,
@@ -121,6 +130,18 @@ export function useDataGridClipboard() {
           columnIds,
           visibleColumns,
         );
+        // Validate the whole block before writing any of it: `onCellChange` is
+        // fire-and-forget, so a half-applied paste could not be rolled back. A
+        // single unreadable value aborts everything and leaves the grid exactly
+        // as it was — including a pending cut's source and its marquee, so the
+        // cut can still be completed by a later paste.
+        if (invalid.length > 0) {
+          // Count the clipboard values that were unreadable, not the cells they
+          // tiled across — one bad cell pasted over a large selection is still
+          // one bad value.
+          announceGrid(pasteRejectedMessage(invalidSourceCount(invalid)));
+          return;
+        }
         const commit = (write: DataGridCellWrite) =>
           void onCellChange(
             { rowId: write.rowId, columnId: write.columnId },
@@ -128,12 +149,6 @@ export function useDataGridClipboard() {
           );
         writes.forEach(commit);
 
-        // Only act when something was actually pasted. An empty or non-text
-        // clipboard must leave a pending cut untouched — never destroy its
-        // source (or drop the marquee) with nothing pasted.
-        if (source.length === 0) {
-          return;
-        }
         if (mark?.mode === "cut") {
           clearCellsWrites(
             mark.refs,
