@@ -95,19 +95,20 @@ const [rows, setRows] = useState<DataGridRow[]>([
 
 The grid is one Tab stop (roving tabindex). With a cell focused:
 
-| Keys                   | Action                                                  |
-| ---------------------- | ------------------------------------------------------- |
-| Arrows                 | Move the active cell (clamps at edges)                  |
-| `Shift`+Arrows         | Extend the rectangular selection from the anchor        |
-| `Home` / `End`         | First / last column of the row (`Ctrl`+ = grid corners) |
-| `Tab` / `Shift+Tab`    | Walk cells in reading order                             |
-| `Ctrl/Cmd-A`           | Select all cells                                        |
-| `Ctrl/Cmd-C`           | Copy the selection (TSV — pastes into spreadsheets)     |
-| `Ctrl/Cmd-X`           | Cut the selection (source clears on the next paste)     |
-| `Ctrl/Cmd-V`           | Paste into the selection (coerced to each field type)   |
-| `Delete` / `Backspace` | Clear the selected cells                                |
-| `Enter`                | Edit the active cell                                    |
-| `Escape`               | Cancel the edit, or dismiss the copy/cut marquee        |
+| Keys                        | Action                                                                   |
+| --------------------------- | ------------------------------------------------------------------------ |
+| Arrows                      | Move the active cell (clamps at edges)                                   |
+| `Shift`+Arrows              | Extend the rectangular selection from the anchor                         |
+| `Home` / `End`              | First / last column of the row (`Ctrl`+ = grid corners)                  |
+| `Tab` / `Shift+Tab`         | Walk cells in reading order                                              |
+| `Ctrl/Cmd-A`                | Select all cells                                                         |
+| `Ctrl/Cmd-C`                | Copy the selection (TSV — pastes into spreadsheets)                      |
+| `Ctrl/Cmd-X`                | Cut the selection (source clears on the next paste)                      |
+| `Ctrl/Cmd-V`                | Paste into the selection (coerced to each field type)                    |
+| `Delete` / `Backspace`      | Clear the selected cells                                                 |
+| `Enter`                     | Edit the active cell                                                     |
+| `Shift+F10` / `ContextMenu` | Open the cell context menu (needs `contextMenu`)                         |
+| `Escape`                    | Cancel the edit, dismiss the copy/cut marquee, or close the context menu |
 
 On web, a pointer drag selects: from a **cell** it paints a rectangle with a
 marquee box; from the **row-number gutter** it selects whole rows; from a
@@ -184,10 +185,94 @@ the bottom) by fetching and appending rows; show the loading row with
 ### Column menus, add column / row
 
 Pass `onColumnMenuAction(columnId, action)` to show each header's caret menu
-(`sortAsc` / `sortDesc` / `clearSort` / `hide` / `delete`); reflect the result by
-updating your `columns` (`sortDirection`, `hidden`) and `rows`. `onAddColumn(type)`
-adds the (+) header picker; `onAddRow` adds the trailing "+ New record" row;
-`onRowExpand(rowId)` wires the gutter expand icon.
+(`sortAsc` / `sortDesc` / `clearSort` / `insertLeft` / `insertRight` / `hide` /
+`delete`); reflect the result by updating your `columns` (`sortDirection`,
+`hidden`) and `rows`. `onAddColumn(type)` adds the (+) header picker; `onAddRow`
+adds the trailing "+ New record" row; `onRowExpand(rowId)` wires the gutter
+expand icon.
+
+`insertLeft` / `insertRight` report only the position, not a field type — pick
+one the way you already do for `onAddColumn`, and splice the new column beside
+`columnId`. The sort rows are hidden for a column with `sortable: false`, and
+`clearSort` only appears once `sortDirection` is set.
+
+The caret menu renders from the same descriptors as the header context menu
+(see [Context menus](#context-menus)), so there is one column action vocabulary
+rather than two.
+
+### Context menus
+
+Pass `contextMenu` to open a menu on a secondary gesture — right-click on web,
+long-press on native. Opting in also suppresses the browser's own menu over the
+grid, so it is off by default.
+
+There are three menus, one per region:
+
+| Region            | Rows                                                                                                  |
+| ----------------- | ----------------------------------------------------------------------------------------------------- |
+| Column header     | Sort ascending / descending / Clear sort · Insert left · Insert right · Hide field · **Delete field** |
+| Row-number gutter | Insert row above / below · Duplicate · Copy · **Delete row**                                          |
+| Cell              | Edit · Copy · Cut · Paste · Clear                                                                     |
+
+The header menu shows exactly what the caret menu shows — both render from the
+same descriptors, so `onColumnMenuAction` services both. Row rows need
+`onRowMenuAction(rowIds, action)`; without it the gutter opens nothing. The cell
+menu needs no callback at all: the grid already owns the clipboard and the
+editor. Rows are gated the way you would expect — no sort rows on a
+`sortable: false` column, no Edit or Clear on `editable: false`, and no
+clipboard rows on native, where the OS clipboard is out of reach.
+
+**Opening a menu on the gutter or a header never changes the selection.**
+Reaching for a menu is not the same gesture as selecting, so a right-click there
+leaves whatever you had selected exactly as it was. The menu still knows its
+target: a row menu acts on the row under the pointer, and a header menu on the
+column it was opened from.
+
+Cells are the one exception, because the cell menu's Copy / Cut / Clear act on
+the selection — a menu opened on a cell outside it would otherwise operate on
+something else entirely, possibly off screen. So a cell press **inside** the
+current selection keeps it, and a press **outside** collapses to that cell.
+
+Where a row action spans more than one row, the selection still decides: a
+gutter menu opened inside a five-row selection reads "Delete 5 rows" and reports
+all five ids in one call. A row counts as inside only when the selection spans
+it at full width, so a small cell range that merely overlaps a row yields just
+that row.
+
+`onContextMenuEntries(entries, context)` is the extension point: add, reorder, or
+replace the default rows, or return `[]` to suppress the menu for that target.
+`context` is discriminated by `region`, carrying the `column`, the `rowIds`, or
+the cell `ref` plus the current selection `rect`.
+
+```tsx
+<DataGrid
+  columns={columns}
+  contextMenu
+  onColumnMenuAction={(columnId, action) => {
+    /* sort / hide / delete / insert beside columnId */
+  }}
+  onContextMenuEntries={(entries, context) =>
+    context.region === "cell"
+      ? [
+          ...entries,
+          { id: "ask", label: "Ask an agent", onPress: ask, type: "item" },
+        ]
+      : entries
+  }
+  onRowMenuAction={(rowIds, action) => {
+    /* one call for the whole selected span */
+  }}
+  rows={rows}
+/>
+```
+
+`Shift+F10` (or the dedicated `ContextMenu` key) opens the cell menu from the
+keyboard, positioned under the focused cell — the menu is never mouse-only
+(WCAG 2.1.1). While it is open the menu owns the keyboard: the grid's own
+shortcuts stand down, so `Delete` cannot clear cells underneath it and the
+arrows cannot walk the selection away from it. On web the menu opens at the
+pointer and closes on Escape, an outside press, or a scroll; on native it is the
+house bottom sheet, titled with the field or row it acts on.
 
 ### Loading columns
 
@@ -266,8 +351,16 @@ wide-viewport experience.
 - **Multi-select selects from existing options** (no create-new-option yet —
   `ComboboxMultiSelect` limitation).
 - **Touch drag-marquee and on-device native interactions** (keyboard reliability,
-  editor focus) are not yet verified on a real device; web is the primary
-  interactive surface, native renders via `FlatList` + tap/keyboard.
+  editor focus, context-menu long-press) are not yet verified on a real device;
+  web is the primary interactive surface, native renders via `FlatList` +
+  tap/keyboard.
+- **Row deletion is a gutter action.** The three context menus are kept
+  distinct, so deleting a row means opening the menu on the row-number gutter,
+  not on a cell in that row. Add a row entry to the cell menu through
+  `onContextMenuEntries` if you want it in both places.
+- **No submenus.** `DropdownListEntry` has no nested variant, so `insertLeft` /
+  `insertRight` report position only and leave the new column's field type to
+  the consumer, the way `onAddColumn` already does.
 
 ## Styling & theming
 
@@ -307,6 +400,11 @@ toggled off.
 - `dataGridSelectionModel.ts` / `dataGridKeyboardModel.ts` — pure, React-free
   models (unit-tested), exported as `dataGridSelectionModel` /
   `dataGridKeyboardModel` namespaces.
+- `useDataGridContextMenu.ts` — owns the grid's single context menu (target,
+  point, entries), bound late so it and the controller can see each other.
+- `dataGridContextMenuModel.ts` / `dataGridContextSelection.ts` — pure menu
+  descriptors with their gating rules, and the spreadsheet selection rule;
+  `dataGridContextMenu.tsx` attaches the icons.
 - `dataGridCellContent.tsx` / `dataGridCellEditors.tsx` — per-field renderers and
   editors.
 - `DataGridBody.tsx` (`FlatList`), `DataGridHeader.tsx`, `DataGridColumnMenu.tsx`,

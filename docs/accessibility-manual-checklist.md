@@ -26,6 +26,11 @@ changes.
       dismisses the top-most layer only. If a modal replaces a loading skeleton
       with a form, focus moves to the first real field once it mounts (2.4.3
       Focus Order, A; 2.1.2 No Keyboard Trap, A).
+- [ ] **Context menus** (data grid header / row / cell) open from the keyboard
+      with `Shift+F10` or the `ContextMenu` key, not only by right-click; the
+      open menu takes the arrows and `Enter` while the host surface's own
+      shortcuts stand down, and `Escape` closes it and leaves focus where it was
+      (2.1.1 Keyboard, A; 2.1.2 No Keyboard Trap, A).
 - [ ] No control changes context merely on focus (3.2.1 On Focus, A).
 
 ### Screen readers

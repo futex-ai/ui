@@ -14,29 +14,36 @@ type DropdownAnchorState = {
  * Measures the trigger in window coordinates while the dropdown is open and
  * re-measures on open, viewport changes, and page scroll so placement keeps
  * tracking the anchor.
+ *
+ * A caller that has no trigger element — a context menu opened at the pointer,
+ * a caret-anchored menu — can pass `anchorRect` instead. A virtual rect is
+ * already in viewport coordinates, so there is nothing to measure and nothing
+ * to re-measure: it is returned verbatim and both effects stand down.
  */
 export function useDropdownAnchor(
   anchorRef: RefObject<View | null>,
   open: boolean,
+  anchorRect?: DropdownAnchorRect | null,
 ): DropdownAnchorState {
   const viewport = useWindowDimensions();
-  const [anchor, setAnchor] = useState<DropdownAnchorRect | null>(null);
+  const [measured, setMeasured] = useState<DropdownAnchorRect | null>(null);
+  const isVirtual = anchorRect != null;
 
   const measure = useCallback(() => {
     anchorRef.current?.measureInWindow((x, y, width, height) => {
-      setAnchor({ height, width, x, y });
+      setMeasured({ height, width, x, y });
     });
   }, [anchorRef]);
 
   useEffect(() => {
-    if (!open) {
-      setAnchor(null);
+    if (!open || isVirtual) {
+      setMeasured(null);
       return;
     }
     measure();
     const timer = setTimeout(measure, 0);
     return () => clearTimeout(timer);
-  }, [measure, open, viewport.height, viewport.width]);
+  }, [isVirtual, measure, open, viewport.height, viewport.width]);
 
   // Follow the trigger while the page scrolls. The web surface lives in a
   // `position: fixed` portal layer pinned to viewport coordinates, so when the
@@ -46,8 +53,15 @@ export function useDropdownAnchor(
   // Scroll is listened in the capture phase because scroll events do not bubble
   // but are observable during capture, so nested scrollers are caught too.
   // Web-only: native renders the menu in a full-screen Modal with no DOM scroll.
+  // A virtual anchor has no element to follow — a point menu closes on scroll
+  // instead (see `ContextMenu.web.tsx`), so tracking here would be wrong.
   useEffect(() => {
-    if (!open || Platform.OS !== "web" || typeof window === "undefined") {
+    if (
+      !open ||
+      isVirtual ||
+      Platform.OS !== "web" ||
+      typeof window === "undefined"
+    ) {
       return;
     }
     let frame = 0;
@@ -69,7 +83,7 @@ export function useDropdownAnchor(
         window.cancelAnimationFrame(frame);
       }
     };
-  }, [measure, open]);
+  }, [isVirtual, measure, open]);
 
-  return { anchor, viewport };
+  return { anchor: open ? (anchorRect ?? measured) : null, viewport };
 }

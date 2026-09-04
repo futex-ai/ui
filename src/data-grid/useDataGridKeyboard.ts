@@ -32,6 +32,16 @@ type GridKeyEvent = {
 };
 
 export type UseDataGridKeyboardOptions = {
+  /**
+   * A context menu is open and owns the keyboard. Its navigation runs on a
+   * document-level listener that only stops propagation for the keys it
+   * handles, and nothing moves DOM focus off the cell — so without this gate
+   * every other key still reaches the grid, and Delete would clear the
+   * selected cells underneath the open menu.
+   */
+  contextMenuOpen?: boolean;
+  /** Open the context menu for a cell (Shift+F10 / the ContextMenu key). */
+  onContextMenuKey?: (ref: DataGridCellRef) => void;
   rowIds: readonly string[];
   columnIds: readonly string[];
   activeCell: DataGridCellRef | null;
@@ -52,6 +62,8 @@ export type UseDataGridKeyboardOptions = {
 };
 
 export function useDataGridKeyboard({
+  contextMenuOpen = false,
+  onContextMenuKey,
   rowIds,
   columnIds,
   activeCell,
@@ -107,12 +119,30 @@ export function useDataGridKeyboard({
 
   const handleCellKeyDown = useCallback(
     (raw: unknown) => {
+      // Hand the keyboard to an open context menu. Deliberately no
+      // `preventDefault` / `stopPropagation`: the menu's own document-level
+      // navigation and the shared escape layer both need the event to carry on.
+      if (contextMenuOpen) {
+        return;
+      }
       const event = raw as GridKeyEvent;
       const key = event.nativeEvent?.key ?? event.key ?? "";
       const shift = event.shiftKey ?? event.nativeEvent?.shiftKey ?? false;
       const ctrl =
         (event.ctrlKey ?? event.nativeEvent?.ctrlKey ?? false) ||
         (event.metaKey ?? event.nativeEvent?.metaKey ?? false);
+
+      // The keyboard route to the context menu (WCAG 2.1.1): Shift+F10 is the
+      // universal binding, `ContextMenu` the dedicated key where a board has
+      // one. Placed before the movement check so neither reaches navigation.
+      if (key === "ContextMenu" || (shift && key === "F10")) {
+        const origin = activeCell ?? tabStop;
+        if (origin && onContextMenuKey) {
+          event.preventDefault?.();
+          onContextMenuKey(origin);
+        }
+        return;
+      }
 
       if (ctrl && (key === "a" || key === "A")) {
         event.preventDefault?.();
@@ -196,12 +226,14 @@ export function useDataGridKeyboard({
       activate,
       activeCell,
       columnIds,
+      contextMenuOpen,
       focusWithScroll,
+      onCancelCopy,
+      onClearSelection,
+      onContextMenuKey,
       onCopy,
       onCut,
       onPaste,
-      onClearSelection,
-      onCancelCopy,
       onRequestEdit,
       refAt,
       rowIds,

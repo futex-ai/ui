@@ -16,5 +16,12 @@ export {
 export { columnLayoutStyle, resolveColumnAlign } from "./dataGridLayout";
 
 // Pure, React-free models exported as namespaces for advanced use and testing.
+export { buildMenuEntries } from "./dataGridContextMenu";
+export type {
+  DataGridContextMenuContext,
+  DataGridContextMenuEntries,
+} from "./useDataGridContextMenu";
+export * as dataGridContextMenuModel from "./dataGridContextMenuModel";
+export * as dataGridContextSelection from "./dataGridContextSelection";
 export * as dataGridSelectionModel from "./dataGridSelectionModel";
 export * as dataGridKeyboardModel from "./dataGridKeyboardModel";

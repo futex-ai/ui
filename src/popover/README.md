@@ -24,6 +24,9 @@ dismissal. `Popover` adds only the open-state controller and the trigger props.
 - Name the surface (`label`) and relate it to the trigger, and — on web —
   manage focus order: focus moves into the surface on open and back to the
   trigger on close.
+- Serve the trigger-less case too: `ContextMenu` opens at a gesture's point
+  rather than against a measured element, so a right-click or long-press menu
+  lands under the pointer instead of at the edge of whatever was pressed.
 
 ## Usage
 
@@ -224,6 +227,75 @@ const [open, setOpen] = useState(false);
   ]}
 />;
 ```
+
+## ContextMenu
+
+`ContextMenu` is the menu a secondary gesture opens — right-click on web,
+long-press on native. It differs from every other surface here in one way that
+drives its whole design: **it has no trigger element.** It is positioned at the
+_point_ of the gesture through the portal's virtual `anchorRect`, not measured
+against a box. On native there is no cursor to anchor to, so it renders as a
+bottom sheet via `ResponsiveMenu`.
+
+The gesture itself comes from `contextMenuTriggerProps`, which returns
+`onContextMenu` on web (suppressing the browser's own menu) and `onLongPress` on
+native. Neither branch wires `onPress`, so a plain tap or click is always left to
+the host — the same contract `DropdownMenu`'s `contextMenu` trigger mode keeps.
+`contextMenuPoint` reads the viewport coordinates back out of the event.
+
+```tsx
+import { ContextMenu, contextMenuTriggerProps } from "@firna/ui/popover";
+import { Platform } from "react-native";
+
+const [point, setPoint] = useState<DropdownPoint | null>(null);
+
+<View
+  {...contextMenuTriggerProps({
+    isWeb: Platform.OS === "web",
+    onOpen: setPoint,
+  })}
+>
+  <Text>Right-click me</Text>
+</View>
+<ContextMenu
+  accessibilityLabel="Row actions"
+  entries={[
+    { id: "rename", label: "Rename", onPress: rename, type: "item" },
+    { id: "sep", label: "", type: "divider" },
+    { id: "delete", label: "Delete", onPress: remove, tone: "danger", type: "item" },
+  ]}
+  onClose={() => setPoint(null)}
+  open={point !== null}
+  point={point}
+  title="Row 4"
+/>;
+```
+
+`point` doubles as the open guard: the menu stays closed while it is `null`, so
+a gesture that yields no coordinates (a handler invoked with no event) is a
+no-op rather than a menu in the corner. Set `title` for native — a sheet slides
+up detached from whatever was pressed, so without it there is nothing to say
+which row or column the actions apply to.
+
+Two defaults are deliberately not left to callers. `minWidth` (220) is required
+arithmetic, not taste: a point anchor is zero-width, `dropdownPlacement`'s
+preferred width falls back to the anchor's width, and `dropdownWidthBounds`
+treats that width as a minimum — so without it the surface resolves to 0px wide
+and disappears. And `highlightVariant` is pinned to `"ring"` because the solid
+active fill inverts row text to white, which a caller's `leading` icons cannot
+opt out of.
+
+Keyboard navigation runs on the same `useDropdownSelectorNavigation`
+document-level listener as `ResponsiveMenu`, for the same reason: with nothing
+focusing the surface, `DropdownList`'s own key handler — bound to its inner
+`ScrollView` — never fires. Dismissal adds one rule the anchored surfaces do not
+need: **the menu closes on scroll.** `useDropdownDismiss` closes on an outside
+`pointerdown`, which a wheel is not, so a scroll would otherwise leave the menu
+pinned to a point whose content had moved out from under it. Scrolls originating
+inside the menu's own list are ignored, so a long menu still scrolls.
+
+[`DataGrid`](../data-grid/README.md) is the reference consumer: it drives one
+`ContextMenu` for header, row-gutter, and cell regions.
 
 ## Theming
 

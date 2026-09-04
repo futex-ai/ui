@@ -1,7 +1,9 @@
 /** The grid's sticky header row: typed column headers, sort state, and chrome. */
 import { type ReactNode } from "react";
-import { Platform, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "react-native";
 
+import type { DropdownPoint } from "../dropdown";
+import { contextMenuTriggerProps } from "../popover";
 import { Spinner } from "../spinner";
 import type { SharedUiTheme } from "../theme";
 
@@ -15,7 +17,7 @@ import {
 } from "./dataGridLayout";
 import { DataGridResizeHandle } from "./DataGridResizeHandle";
 import type { DataGridStyles } from "./dataGridStyles";
-import type { DataGridColumn } from "./types";
+import type { DataGridColumn, DataGridContextMenuTarget } from "./types";
 
 export type DataGridHeaderProps = {
   columns: DataGridColumn[];
@@ -50,6 +52,11 @@ export type DataGridHeaderProps = {
   resizingColumnId: string | null;
   /** Disable the shared focus glow on the resize handles (falls back to the UA outline). */
   disableFocusRing: boolean;
+  /** Opens the column context menu; omitted when `contextMenu` is off. */
+  onContextMenu?: (
+    target: DataGridContextMenuTarget,
+    point: DropdownPoint | null,
+  ) => void;
 };
 
 /** A small ↑/↓ glyph for a sorted column. */
@@ -77,8 +84,13 @@ export function DataGridHeader({
   onColumnResizeStep,
   resizingColumnId,
   disableFocusRing,
+  onContextMenu,
 }: DataGridHeaderProps) {
   const web = Platform.OS === "web";
+  // Native carries the column menu on a long press, and a `View` has no press
+  // responder. Swapping the root element (rather than wrapping it) keeps the
+  // flex layout and the `columnheader` role exactly where they were.
+  const HeaderCell = web ? View : Pressable;
   return (
     <View role="row" style={styles.headerRow}>
       {showGutter ? (
@@ -109,10 +121,34 @@ export function DataGridHeader({
                   onBeginColumnDrag(column.id, event);
                 }
               },
+              // Built inline beside the drag props (and not hoisted into a
+              // per-column closure) so the header keeps rendering from one
+              // stable callback.
+              ...(onContextMenu
+                ? contextMenuTriggerProps({
+                    isWeb: true,
+                    onOpen: (point) =>
+                      onContextMenu(
+                        { columnId: column.id, region: "column" },
+                        point,
+                      ),
+                  })
+                : {}),
             } as Record<string, unknown>)
           : {};
+        const nativeContextProps =
+          !web && onContextMenu
+            ? contextMenuTriggerProps({
+                isWeb: false,
+                onOpen: (point) =>
+                  onContextMenu(
+                    { columnId: column.id, region: "column" },
+                    point,
+                  ),
+              })
+            : {};
         return (
-          <View
+          <HeaderCell
             key={column.id}
             ref={
               web
@@ -134,6 +170,7 @@ export function DataGridHeader({
             accessibilityState={column.loading ? { busy: true } : undefined}
             aria-busy={column.loading || undefined}
             {...webProps}
+            {...nativeContextProps}
             style={[
               styles.headerCell,
               columnLayoutStyle(column),
@@ -172,7 +209,7 @@ export function DataGridHeader({
                 styles={styles}
               />
             ) : null}
-          </View>
+          </HeaderCell>
         );
       })}
       {renderAddColumn?.()}

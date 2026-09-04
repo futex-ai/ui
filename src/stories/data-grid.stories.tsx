@@ -3,8 +3,11 @@ import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
+  ContextMenu,
   DataGrid,
+  buildMenuEntries,
   darkSharedUiTheme,
+  dataGridContextMenuModel,
   dataGridSelectionModel,
   useSharedUiTheme,
   type DataGridCellRef,
@@ -630,9 +633,140 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: "#3e4540", fontSize: 13, fontWeight: "600" },
   frame: { width: 940 },
+  openMenu: { height: 380, width: 320 },
   frameWide: { width: 1000 },
   hint: { color: "#69706a", fontSize: 12 },
   responsive: { padding: 16, width: "100%" },
   stack: { gap: 10 },
   status: { color: "#3e4540", fontSize: 13, fontWeight: "700" },
 });
+
+/*
+ * The three context-menu regions in one place. Right-click (or long-press) a
+ * column header, the row-number gutter, or any cell; the status line records
+ * what the grid reported so a test can assert on it without a spy.
+ *
+ * `onContextMenuEntries` appends a custom row to the cell menu, exercising the
+ * extension point rather than only documenting it.
+ */
+function ContextMenuExample() {
+  const [columns, setColumns] = useState(contentColumns);
+  const [rows, setRows] = useState(contentRows);
+  const [lastAction, setLastAction] = useState("none");
+
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        <Text style={styles.status} testID="menu-status">
+          {rows.length} rows · last: {lastAction}
+        </Text>
+        <View style={styles.frame}>
+          <DataGrid
+            accessibilityLabel="Content"
+            columns={columns}
+            contextMenu
+            maxHeight={220}
+            onCellChange={(ref, value) =>
+              setRows((current) =>
+                current.map((row) =>
+                  row.id === ref.rowId
+                    ? { ...row, cells: { ...row.cells, [ref.columnId]: value } }
+                    : row,
+                ),
+              )
+            }
+            onColumnMenuAction={(columnId, action) => {
+              setLastAction(`column ${action} ${columnId}`);
+              if (action === "delete") {
+                setColumns((current) =>
+                  current.filter((column) => column.id !== columnId),
+                );
+              }
+            }}
+            onContextMenuEntries={(entries, context) =>
+              context.region === "cell"
+                ? [
+                    ...entries,
+                    { id: "sep-custom", label: "", type: "divider" },
+                    {
+                      id: "custom",
+                      label: "Ask an agent",
+                      onPress: () => setLastAction("custom action"),
+                      type: "item",
+                    },
+                  ]
+                : entries
+            }
+            onRowMenuAction={(rowIds, action) => {
+              setLastAction(`row ${action} ${rowIds.length}`);
+              if (action === "delete") {
+                setRows((current) =>
+                  current.filter((row) => !rowIds.includes(row.id)),
+                );
+              }
+            }}
+            rows={rows}
+          />
+        </View>
+      </View>
+    </StorySurface>
+  );
+}
+
+export const ContextMenus: Story = {
+  name: "Context menus (right-click)",
+  render: () => <ContextMenuExample />,
+};
+
+/*
+ * The menu rendered open on mount. The axe sweep is a static scanner — it only
+ * sees the DOM as rendered — so without this story `role="menu"` and its rows
+ * are never scanned. Uses `ContextMenu` directly rather than driving a gesture,
+ * which a story cannot do.
+ */
+function OpenContextMenuExample() {
+  const theme = useSharedUiTheme();
+  const entries = useMemo(
+    () =>
+      buildMenuEntries(
+        dataGridContextMenuModel.columnMenuDescriptors({
+          sortDirection: "asc",
+        }),
+        theme,
+        () => {},
+      ),
+    [theme],
+  );
+  return (
+    <View style={styles.openMenu}>
+      <ContextMenu
+        accessibilityLabel="Status field options"
+        entries={entries}
+        onClose={() => {}}
+        open
+        point={{ x: 40, y: 40 }}
+        testID="open-context-menu"
+      />
+    </View>
+  );
+}
+
+export const ContextMenuOpen: Story = {
+  name: "Context menu (open)",
+  parameters: { layout: "fullscreen" },
+  render: () => (
+    <StorySurface>
+      <OpenContextMenuExample />
+    </StorySurface>
+  ),
+};
+
+export const ContextMenuOpenDark: Story = {
+  name: "Context menu (open, dark)",
+  parameters: { layout: "fullscreen" },
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <OpenContextMenuExample />
+    </StorySurface>
+  ),
+};
