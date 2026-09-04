@@ -454,6 +454,94 @@ export const Editable: Story = {
   render: () => <EditableExample />,
 };
 
+// `Amount` opts into exact decimal strings; `Qty` is a plain number column, so
+// the two editors sit side by side under the same `#` icon and right alignment.
+const ledgerColumns: DataGridColumn[] = [
+  { id: "item", label: "Item", fieldType: "text", flex: 2 },
+  {
+    id: "amount",
+    label: "Amount",
+    fieldType: "number",
+    numberValueMode: "decimalString",
+    width: 260,
+  },
+  { id: "qty", label: "Qty", fieldType: "number", width: 90 },
+];
+
+const ledgerRows: DataGridRow[] = [
+  // Number("0.1000000000000000055") is 0.1 — this row renders unrounded only
+  // because the value never becomes a JS number.
+  {
+    id: "l1",
+    cells: { item: "Rounding probe", amount: "0.1000000000000000055", qty: 1 },
+  },
+  { id: "l2", cells: { item: "Invoice 2043", amount: "1234.50", qty: 3 } },
+  { id: "l3", cells: { item: "Refund", amount: "-0.01", qty: 1 } },
+];
+
+function ExactDecimalExample() {
+  const [rows, setRows] = useState(ledgerRows);
+  const typesOf = (columnId: string) =>
+    rows.map((row) => typeof row.cells[columnId]).join(", ");
+  const valuesOf = (columnId: string) =>
+    rows.map((row) => String(row.cells[columnId])).join(", ");
+
+  // Readouts of the committed cell values and their runtime types. The grid's
+  // own cells can't carry these assertions: the row-number gutter renders bare
+  // integers too, so a small Qty is not addressable by its text alone.
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        <Text style={styles.status} testID="amount-types">
+          {typesOf("amount")}
+        </Text>
+        <Text style={styles.status} testID="amount-values">
+          {valuesOf("amount")}
+        </Text>
+        {/* The plain number column next door must keep committing JS numbers —
+            the mode is per-column, not a global switch. */}
+        <Text style={styles.status} testID="qty-types">
+          {typesOf("qty")}
+        </Text>
+        <Text style={styles.status} testID="qty-values">
+          {valuesOf("qty")}
+        </Text>
+        <View style={styles.frame}>
+          <DataGrid
+            accessibilityLabel="Ledger"
+            columns={ledgerColumns}
+            onCellChange={(ref, value) =>
+              setRows((current) =>
+                current.map((row) =>
+                  row.id === ref.rowId
+                    ? { ...row, cells: { ...row.cells, [ref.columnId]: value } }
+                    : row,
+                ),
+              )
+            }
+            rows={rows}
+          />
+        </View>
+        <Text style={styles.hint}>
+          Amount keeps exact decimal strings: edit or paste a 30-digit value and
+          every digit survives, where a JS number would round it. Qty is an
+          ordinary number column for comparison.
+        </Text>
+      </View>
+    </StorySurface>
+  );
+}
+
+/**
+ * `numberValueMode: "decimalString"` — the editor and the paste path validate
+ * the text and hand back the string itself, so ledger amounts round-trip
+ * digit-for-digit while keeping the `#` header icon and numeric alignment.
+ */
+export const ExactDecimal: Story = {
+  name: "Exact decimal values",
+  render: () => <ExactDecimalExample />,
+};
+
 function FullFeaturedExample() {
   const [columns, setColumns] = useState(contentColumns);
   const [rows, setRows] = useState(contentRows);

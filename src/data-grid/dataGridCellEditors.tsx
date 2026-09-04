@@ -1,8 +1,10 @@
 /**
  * Typed in-cell editors. Each reuses a library primitive and commits an
  * already-typed value: text → `InputFrame`, number → `InputFrame` (decimal, with
- * validation), date → responsive `DateInput` (anchored calendar on web, wheel
- * sheet on native). Single/multi-select live in {@link dataGridSelectEditors}.
+ * validation — committing a JS number, or an exact decimal string when the
+ * column sets `numberValueMode: "decimalString"`), date → responsive `DateInput`
+ * (anchored calendar on web, wheel sheet on native). Single/multi-select live in
+ * {@link dataGridSelectEditors}.
  *
  * `onCommit(value, moveNext)` — moveNext (Enter) advances the active cell down.
  */
@@ -18,6 +20,7 @@ import {
   useEscapeKey,
 } from "./dataGridEditorHooks";
 import { dataGridDatePickerVariant } from "./dataGridDateEditorModel";
+import { parseDecimalString } from "./dataGridNumberValue";
 import { MultiSelectEditor, SingleSelectEditor } from "./dataGridSelectEditors";
 import type { DataGridFieldType } from "./types";
 
@@ -75,7 +78,13 @@ function TextEditor({ value, onCommit, onCancel }: CellEditorProps) {
   );
 }
 
-function NumberEditor({ value, onCommit, onCancel, theme }: CellEditorProps) {
+function NumberEditor({
+  column,
+  value,
+  onCommit,
+  onCancel,
+  theme,
+}: CellEditorProps) {
   const [text, setText] = useState(value == null ? "" : String(value));
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<TextInput>(null);
@@ -85,6 +94,21 @@ function NumberEditor({ value, onCommit, onCancel, theme }: CellEditorProps) {
     const trimmed = text.trim();
     if (trimmed === "") {
       onCommit(null, moveNext);
+      return;
+    }
+    // A `decimalString` column commits the text itself, validated but never
+    // routed through `Number` — which would quietly round a value the consumer
+    // stores exactly (`0.1000000000000000055` → `0.1`).
+    if (column.numberValueMode === "decimalString") {
+      const decimal = parseDecimalString(trimmed);
+      if (decimal === null) {
+        // The bare "Enter a number" reads as wrong to someone who typed
+        // "1,234.50" — they did enter a number. Show the accepted shape.
+        setError("Enter a number, e.g. 1234.50");
+        return;
+      }
+      setError(null);
+      onCommit(decimal, moveNext);
       return;
     }
     const parsed = Number(trimmed);

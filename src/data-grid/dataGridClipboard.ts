@@ -6,11 +6,23 @@
  * pastes cleanly into spreadsheets. Paste parses TSV back and coerces each value
  * to the target column's field type (numbers parsed, select labels/ids matched).
  *
+ * Coercion is *validating*: {@link coerceCellValue} answers with a
+ * {@link DataGridCoercedValue}, so a value that cannot be read for its column is
+ * reported as invalid rather than folded into `null`. That keeps an unreadable
+ * value distinct from an intentional clear — a blank source cell still clears
+ * its target, but junk never silently wipes one. {@link planPaste} collects the
+ * invalid cells so the caller can validate the whole block before committing
+ * anything and abort as a unit (`onCellChange` is fire-and-forget, so a partial
+ * paste could not be rolled back).
+ *
  * Paste follows Excel / Google-Sheets semantics: {@link planPaste} grows the
  * target to at least the copied block and *tiles* the source across it, so a
  * single copied cell fills the whole selection, a single row/column repeats down
  * or across, and a block pasted onto one cell drops in at full size.
  */
+import { isValidIso } from "../date/dateMath";
+
+import { parseDecimalString } from "./dataGridNumberValue";
 import type { DataGridRangeRect } from "./dataGridSelectionModel";
 import type {
   DataGridCellRef,
@@ -25,6 +37,33 @@ export type DataGridCellWrite = {
   columnId: string;
   value: DataGridCellValue;
 };
+
+/** A clipboard cell that could not be read as a value for its column. */
+export type DataGridInvalidCell = {
+  rowId: string;
+  columnId: string;
+  /** The offending clipboard text, for diagnostics. */
+  text: string;
+  /**
+   * Where the text came from in the clipboard block. Tiling repeats one source
+   * cell across many targets, so counting *these* — not the target cells —
+   * is what tells a user how many clipboard values were actually unreadable.
+   */
+  source: { row: number; col: number };
+};
+
+/** How many distinct clipboard values the invalid target cells came from. */
+export function invalidSourceCount(
+  invalid: readonly DataGridInvalidCell[],
+): number {
+  return new Set(invalid.map((cell) => `${cell.source.row}:${cell.source.col}`))
+    .size;
+}
+
+/** Polite live-region copy for a paste aborted by invalid values. */
+export function pasteRejectedMessage(count: number): string {
+  return `Paste cancelled, ${count} invalid value${count === 1 ? "" : "s"}`;
+}
 
 /** The clipboard text for one cell in its column. */
 export function cellCopyText(
@@ -52,29 +91,72 @@ export function cellCopyText(
   }
 }
 
-/** Coerce pasted clipboard text into a value for the target column's field type. */
+/**
+ * The outcome of coercing one clipboard cell. `ok: false` means the text cannot
+ * be read as a value for that column; it is deliberately *not* a value, so a
+ * legitimate empty result (`null`, or `[]` for a multi-select) stays distinct
+ * from unreadable input.
+ */
+export type DataGridCoercedValue =
+  | { ok: true; value: DataGridCellValue }
+  | { ok: false };
+
+/**
+ * Coerce pasted clipboard text into a value for the target column's field type,
+ * or report it invalid. Empty text is always a valid, intentional clear.
+ *
+ * Per field type: `number` parses (exactly, as a decimal string, under
+ * `numberValueMode: "decimalString"`); `date` must be a real ISO `YYYY-MM-DD`
+ * calendar date; `singleSelect` must match an option by id or label;
+ * `multiSelect` must match *every* comma-separated token — one unknown token
+ * invalidates the whole cell rather than silently dropping just that token;
+ * `text` accepts anything.
+ */
 export function coerceCellValue(
   column: DataGridColumn,
   text: string,
-): DataGridCellValue {
+): DataGridCoercedValue {
   const trimmed = text.trim();
   if (trimmed === "") {
-    return column.fieldType === "multiSelect" ? [] : null;
+    return { ok: true, value: emptyCellValue(column) };
   }
   switch (column.fieldType) {
     case "number": {
+      if (column.numberValueMode === "decimalString") {
+        const decimal = parseDecimalString(trimmed);
+        return decimal === null ? { ok: false } : { ok: true, value: decimal };
+      }
       const parsed = Number(trimmed);
-      return Number.isFinite(parsed) ? parsed : null;
+      return Number.isFinite(parsed)
+        ? { ok: true, value: parsed }
+        : { ok: false };
     }
-    case "singleSelect":
-      return matchOption(column, trimmed) ?? null;
-    case "multiSelect":
-      return trimmed
-        .split(",")
-        .map((part) => matchOption(column, part.trim()))
-        .filter((id): id is string => id !== undefined);
+    case "date":
+      return isValidIso(trimmed) ? { ok: true, value: trimmed } : { ok: false };
+    case "singleSelect": {
+      const id = matchOption(column, trimmed);
+      return id === undefined ? { ok: false } : { ok: true, value: id };
+    }
+    case "multiSelect": {
+      const ids: string[] = [];
+      for (const part of trimmed.split(",")) {
+        const token = part.trim();
+        // "Alpha, " and "Alpha,,Beta" are formatting, not a missing option.
+        if (token === "") {
+          continue;
+        }
+        const id = matchOption(column, token);
+        if (id === undefined) {
+          return { ok: false };
+        }
+        ids.push(id);
+      }
+      // Non-empty text that yields no token at all (",", ", ,") is punctuation,
+      // not a clear — only genuinely empty text may empty a cell.
+      return ids.length === 0 ? { ok: false } : { ok: true, value: ids };
+    }
     default:
-      return trimmed;
+      return { ok: true, value: trimmed };
   }
 }
 
@@ -136,6 +218,12 @@ export function emptyCellValue(column: DataGridColumn): DataGridCellValue {
  * column repeats across it; a block pasted onto one cell drops in at full size.
  * Writes are clamped to the grid and skip non-editable columns; `target` is the
  * (clamped) rectangle actually written, so the caller can reselect it.
+ *
+ * `invalid` lists the cells whose clipboard text could not be read for their
+ * column, so the caller can abort the paste as a unit. Only cells that would
+ * actually have been written can appear there — text landing past the grid's
+ * edge or on a non-editable column is dropped as before and never blocks an
+ * otherwise legitimate paste.
  */
 export function planPaste(
   source: string[][],
@@ -145,7 +233,11 @@ export function planPaste(
   rowIds: readonly string[],
   columnIds: readonly string[],
   columns: DataGridColumn[],
-): { writes: DataGridCellWrite[]; target: DataGridRangeRect } {
+): {
+  writes: DataGridCellWrite[];
+  target: DataGridRangeRect;
+  invalid: DataGridInvalidCell[];
+} {
   const single: DataGridRangeRect = {
     minRow: anchor.row,
     maxRow: anchor.row,
@@ -154,7 +246,7 @@ export function planPaste(
   };
   if (source.length === 0) {
     // Nothing on the clipboard → no-op (never clear the selection).
-    return { writes: [], target: single };
+    return { writes: [], target: single, invalid: [] };
   }
   const columnById = new Map(columns.map((column) => [column.id, column]));
   const srcRows = source.length;
@@ -162,6 +254,7 @@ export function planPaste(
   const targetRows = Math.max(selRows, srcRows);
   const targetCols = Math.max(selCols, srcCols);
   const writes: DataGridCellWrite[] = [];
+  const invalid: DataGridInvalidCell[] = [];
   let maxRow = anchor.row;
   let maxCol = anchor.col;
   for (let i = 0; i < targetRows; i += 1) {
@@ -185,13 +278,26 @@ export function planPaste(
       // Tile within the block's width (`srcCols`), not the individual row's — a
       // ragged clipboard row is padded with empty trailing cells (`?? ""`) rather
       // than repeating its own leading cells.
-      const text = source[i % srcRows][j % srcCols] ?? "";
-      writes.push({ rowId, columnId, value: coerceCellValue(column, text) });
+      const sourceRow = i % srcRows;
+      const sourceCol = j % srcCols;
+      const text = source[sourceRow][sourceCol] ?? "";
+      const coerced = coerceCellValue(column, text);
+      if (!coerced.ok) {
+        invalid.push({
+          rowId,
+          columnId,
+          text,
+          source: { row: sourceRow, col: sourceCol },
+        });
+        continue;
+      }
+      writes.push({ rowId, columnId, value: coerced.value });
     }
   }
   return {
     writes,
     target: { minRow: anchor.row, maxRow, minCol: anchor.col, maxCol },
+    invalid,
   };
 }
 
