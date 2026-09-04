@@ -7,16 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.0.0](https://github.com/futex-ai/ui/compare/v2.1.0...v3.0.0) (2026-09-04)
 
-
 ### ⚠ BREAKING CHANGES
 
-* **data-grid:** pasted values are validated per field type instead of being coerced to null. Text that cannot be read for its column now aborts the paste rather than silently clearing the cells it lands on: date columns require a real ISO YYYY-MM-DD calendar day, select columns require a matching option, and one unknown token invalidates a whole multi-select.
+- **data-grid:** pasted values are validated per field type instead of being coerced to null. Text that cannot be read for its column now aborts the paste rather than silently clearing the cells it lands on: date columns require a real ISO YYYY-MM-DD calendar day, select columns require a matching option, and one unknown token invalidates a whole multi-select.
 
 ### Features
 
-* **data-grid:** add exact decimal-string number mode ([#163](https://github.com/futex-ai/ui/issues/163)) ([3eb9639](https://github.com/futex-ai/ui/commit/3eb96397ea4febd6b66db32f6667acfd648e127a))
-* **data-grid:** reveal clipped text on hover ([#162](https://github.com/futex-ai/ui/issues/162)) ([f515cbf](https://github.com/futex-ai/ui/commit/f515cbfa6450ca4a07904cff74c53ff6323222ff))
-* **data-grid:** right-click and long-press context menus ([#164](https://github.com/futex-ai/ui/issues/164)) ([40c4a2a](https://github.com/futex-ai/ui/commit/40c4a2a8e2607c4bc2397ef5c2328eb195cfa727))
+- **data-grid:** add exact decimal-string number mode ([#163](https://github.com/futex-ai/ui/issues/163)) ([3eb9639](https://github.com/futex-ai/ui/commit/3eb96397ea4febd6b66db32f6667acfd648e127a))
+- **data-grid:** reveal clipped text on hover ([#162](https://github.com/futex-ai/ui/issues/162)) ([f515cbf](https://github.com/futex-ai/ui/commit/f515cbfa6450ca4a07904cff74c53ff6323222ff))
+- **data-grid:** right-click and long-press context menus ([#164](https://github.com/futex-ai/ui/issues/164)) ([40c4a2a](https://github.com/futex-ai/ui/commit/40c4a2a8e2607c4bc2397ef5c2328eb195cfa727))
 
 ## [2.1.0](https://github.com/futex-ai/ui/compare/v2.0.1...v2.1.0) (2026-08-28)
 
