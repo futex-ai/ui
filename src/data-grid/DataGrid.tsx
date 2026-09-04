@@ -13,12 +13,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   type LayoutChangeEvent,
+  Platform,
   ScrollView,
   useWindowDimensions,
   View,
 } from "react-native";
 
 import type { ControlSize } from "../controlSize";
+import { ContextMenu } from "../popover";
 import { useSharedUiTheme } from "../theme";
 
 import { DataGridAddRow } from "./DataGridAddRow";
@@ -38,6 +40,10 @@ import {
 import { useDataGridClipboard } from "./useDataGridClipboard";
 import { useDataGridColumnResize } from "./useDataGridColumnResize";
 import { useDataGridController } from "./useDataGridController";
+import {
+  useDataGridContextMenu,
+  type DataGridContextMenuEntries,
+} from "./useDataGridContextMenu";
 import { useDataGridEditing } from "./useDataGridEditing";
 import { useDataGridEditorRenderer } from "./useDataGridEditorRenderer";
 import { DataGridFooter } from "./DataGridFooter";
@@ -49,6 +55,7 @@ import type {
   DataGridFieldType,
   DataGridOverflowTooltipMode,
   DataGridRow as DataGridRowData,
+  DataGridRowAction,
   DataGridSelection,
 } from "./types";
 
@@ -112,6 +119,28 @@ export type DataGridProps = {
   maxHeight?: number;
   /** Below this viewport width, render the read-only card stack (mobile). */
   cardBreakpoint?: number;
+  /**
+   * Enable right-click (web) / long-press (native) menus on column headers, the
+   * row gutter, and cells. Off by default: opting in also suppresses the
+   * browser's own menu over the grid.
+   *
+   * Each region's rows are gated by the callback that services them —
+   * `onColumnMenuAction` for headers, `onRowMenuAction` for the gutter. The
+   * cell menu needs no callback: the grid already owns the clipboard and the
+   * editor.
+   */
+  contextMenu?: boolean;
+  /**
+   * Row actions from the gutter context menu. `rowIds` is the whole selected
+   * row span when the pressed row sits inside it, otherwise just that row, so
+   * "Delete 5 rows" arrives as one call.
+   */
+  onRowMenuAction?: (rowIds: string[], action: DataGridRowAction) => void;
+  /**
+   * Add to, reorder, or replace the default context-menu entries. Return an
+   * empty array to suppress the menu for that target.
+   */
+  onContextMenuEntries?: DataGridContextMenuEntries;
   /** Accessible name for the whole grid (WCAG 4.1.2). */
   accessibilityLabel?: string;
   /**
@@ -154,6 +183,9 @@ export function DataGrid({
   footerText,
   maxHeight,
   cardBreakpoint,
+  contextMenu = false,
+  onRowMenuAction,
+  onContextMenuEntries,
   accessibilityLabel,
   disableFocusRing = false,
   overflowTooltip,
@@ -195,6 +227,10 @@ export function DataGrid({
   const clipboard = useDataGridClipboard();
 
   const editing = useDataGridEditing({ cellLoading, columns, onCellChange });
+  const menu = useDataGridContextMenu({
+    theme,
+    web: Platform.OS === "web",
+  });
   const controller = useDataGridController({
     columns,
     rows,
@@ -207,8 +243,27 @@ export function DataGrid({
     onPaste: clipboard.onPaste,
     onClearSelection: clipboard.onClearSelection,
     onCancelCopy: clipboard.onCancelCopy,
+    // While a menu is open it owns the keyboard: its navigation runs on a
+    // document listener that only stops propagation for the keys it handles,
+    // and focus never leaves the cell, so ungated Delete would clear the
+    // selection underneath the menu.
+    contextMenuOpen: menu.open,
+    onContextMenuKey: contextMenu ? menu.onContextMenuKey : undefined,
   });
   clipboard.bind({ controller, rows, onCellChange });
+  menu.bind({
+    columns,
+    controller,
+    onCellChange: Boolean(onCellChange),
+    onClearSelection: clipboard.onClearSelection,
+    onColumnMenuAction,
+    onContextMenuEntries,
+    onCopy: clipboard.onCopy,
+    onCut: clipboard.onCut,
+    onPaste: clipboard.onPaste,
+    onRowMenuAction,
+  });
+  const onContextMenu = contextMenu ? menu.onContextMenu : undefined;
 
   // The copy/cut marquee: the set of marked cell keys. Cells are addressed by id,
   // so the dashed outline follows them through a sort/filter and simply drops any
@@ -292,10 +347,19 @@ export function DataGrid({
             columns={controller.visibleColumns}
             fontSize={metrics.fontSize}
             iconSize={metrics.iconSize}
+            onContextMenu={onContextMenu}
             onRowExpand={onRowExpand}
             rows={rows}
             styles={styles}
             theme={theme}
+          />
+          <ContextMenu
+            accessibilityLabel={menu.label}
+            entries={menu.entries}
+            onClose={menu.close}
+            open={menu.open}
+            point={menu.point}
+            title={menu.title}
           />
         </View>
       </DataGridOverflowProvider>
@@ -366,6 +430,7 @@ export function DataGrid({
                   : undefined
               }
               onBeginColumnDrag={controller.beginColumnDrag}
+              onContextMenu={onContextMenu}
               onBeginColumnResize={resize.beginColumnResize}
               onColumnResizeStep={resize.resizeColumnByStep}
               registerHeaderNode={controller.registerHeaderNode}
@@ -394,6 +459,7 @@ export function DataGrid({
               loadingMore={loadingMore}
               maxHeight={maxHeight}
               metrics={metrics}
+              onContextMenu={onContextMenu}
               onEndReached={onEndReached}
               onRegisterScroll={registerScroll}
               onRowExpand={onRowExpand}
@@ -407,6 +473,14 @@ export function DataGrid({
           </View>
         </ScrollView>
         <DataGridMarquee box={controller.dragBox} styles={styles} />
+        <ContextMenu
+          accessibilityLabel={menu.label}
+          entries={menu.entries}
+          onClose={menu.close}
+          open={menu.open}
+          point={menu.point}
+          title={menu.title}
+        />
         {footerText ? (
           <DataGridFooter footerText={footerText} styles={styles} />
         ) : null}

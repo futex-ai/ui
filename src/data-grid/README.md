@@ -93,23 +93,56 @@ const [rows, setRows] = useState<DataGridRow[]>([
 (`{ id, label, color? }`); `color` maps to an AA-contrast pill palette
 (`gray` / `blue` / `green` / `amber` / `purple` / `rose` / `teal`).
 
+### Exact decimal numbers
+
+A `number` column holds a JavaScript number by default, which silently rounds
+anything past a float's precision — `Number("0.1000000000000000055")` is `0.1`.
+For money, ledger amounts, or any value a backend stores as an exact decimal,
+set `numberValueMode: "decimalString"`:
+
+```tsx
+{ id: "amount", label: "Amount", fieldType: "number", numberValueMode: "decimalString" }
+```
+
+The cell value is then the decimal **string**. The field type is unchanged, so
+the column keeps its `#` header icon, its right alignment, and the same typed
+editor — but neither the editor nor the paste path ever calls `Number`, so a
+30-digit value round-trips digit-for-digit.
+
+Accepted syntax is canonical dot-decimal only: an optional sign, digits, an
+optional `.` fraction (`007`, `-12.50`, `+5`, `.5`, `1.`). Grouping separators,
+currency symbols, internal whitespace and exponents are rejected — `1,234` and
+`0,001` would need a locale to read, and `1e999999999` would expand into a
+gigabyte-scale allocation. Invalid text shows the inline editor error, or aborts
+a paste (below).
+
+Valid input is normalized but never rounded: a leading `+` is dropped, redundant
+leading zeros go, a missing integer digit is supplied, a trailing bare `.` is
+dropped, and a zero value loses its sign — so `007.500` becomes `7.500` and
+`-0.00` becomes `0.00`. **Trailing zeros are preserved**, because the library
+returns the representation you entered rather than imposing a canonical form.
+Deciding that `7.500` should be stored as `7.5` is the consumer's policy; do
+that in the adapter that persists the value. `parseDecimalString` is exported so
+a consumer can validate with exactly the rules the grid uses.
+
 ### Selection & keyboard
 
 The grid is one Tab stop (roving tabindex). With a cell focused:
 
-| Keys                   | Action                                                  |
-| ---------------------- | ------------------------------------------------------- |
-| Arrows                 | Move the active cell (clamps at edges)                  |
-| `Shift`+Arrows         | Extend the rectangular selection from the anchor        |
-| `Home` / `End`         | First / last column of the row (`Ctrl`+ = grid corners) |
-| `Tab` / `Shift+Tab`    | Walk cells in reading order                             |
-| `Ctrl/Cmd-A`           | Select all cells                                        |
-| `Ctrl/Cmd-C`           | Copy the selection (TSV — pastes into spreadsheets)     |
-| `Ctrl/Cmd-X`           | Cut the selection (source clears on the next paste)     |
-| `Ctrl/Cmd-V`           | Paste into the selection (coerced to each field type)   |
-| `Delete` / `Backspace` | Clear the selected cells                                |
-| `Enter`                | Edit the active cell                                    |
-| `Escape`               | Cancel the edit, or dismiss the copy/cut marquee        |
+| Keys                        | Action                                                                   |
+| --------------------------- | ------------------------------------------------------------------------ |
+| Arrows                      | Move the active cell (clamps at edges)                                   |
+| `Shift`+Arrows              | Extend the rectangular selection from the anchor                         |
+| `Home` / `End`              | First / last column of the row (`Ctrl`+ = grid corners)                  |
+| `Tab` / `Shift+Tab`         | Walk cells in reading order                                              |
+| `Ctrl/Cmd-A`                | Select all cells                                                         |
+| `Ctrl/Cmd-C`                | Copy the selection (TSV — pastes into spreadsheets)                      |
+| `Ctrl/Cmd-X`                | Cut the selection (source clears on the next paste)                      |
+| `Ctrl/Cmd-V`                | Paste into the selection (coerced to each field type)                    |
+| `Delete` / `Backspace`      | Clear the selected cells                                                 |
+| `Enter`                     | Edit the active cell                                                     |
+| `Shift+F10` / `ContextMenu` | Open the cell context menu (needs `contextMenu`)                         |
+| `Escape`                    | Cancel the edit, dismiss the copy/cut marquee, or close the context menu |
 
 On web, a pointer drag selects: from a **cell** it paints a rectangle with a
 marquee box; from the **row-number gutter** it selects whole rows; from a
@@ -127,6 +160,24 @@ pasted onto one cell drops in at full size. A cut clears its source cells once
 pasted; `Delete` / `Backspace` clear the selection in place. All of this needs an
 `onCellChange` handler and is web-only (it reads the OS clipboard). Copy/cut/paste
 respect `editable: false` columns and clamp writes to the grid's edges.
+
+Paste is validated as a unit. A value that cannot be read for its column —
+unparseable text in a number column, a date that is not a real ISO `YYYY-MM-DD`
+calendar day, a select label matching no option, a multi-select with any unknown
+token — aborts the **whole** paste: nothing is written, a pending cut keeps its
+source and its marquee, and the grid announces "Paste cancelled, _n_ invalid
+values" to the polite live region (_n_ counts the unreadable **clipboard**
+values, not the cells they tiled onto). This keeps unreadable input distinct from
+an intentional clear, so a stray column of text can never blank the cells it
+lands on. A blank source cell is still a deliberate clear, and text landing past
+the grid's edge or on a non-editable column is dropped as before without blocking
+the paste.
+
+What counts as parseable in a number column depends on the mode. A default
+`number` column uses JavaScript number semantics, so it still accepts forms like
+`1e5` and `0x1f`; a `decimalString` column accepts only the canonical
+dot-decimal syntax above. A multi-select cell of pure punctuation (`,`) is
+refused rather than treated as empty — only genuinely blank text clears a cell.
 
 ### Layout
 
@@ -193,7 +244,9 @@ normal dropdown). Dragging from the active cell still paints a range, so only a
 click that never dragged edits. **Enter** commits and moves down; **Escape** reverts;
 blur commits. `onCellChange(ref, value)` may return a promise — a rejection
 keeps the editor open so you can surface an error. Number cells reject
-non-numeric input with an inline error.
+non-numeric input with an inline error — under `numberValueMode: "decimalString"`
+they reject anything outside canonical dot-decimal syntax and commit the string
+itself.
 
 Date editing adapts by platform. Web renders the editable date trigger and an
 anchored calendar through `DropdownPortal`, so it stays beside the cell while
@@ -218,10 +271,94 @@ the bottom) by fetching and appending rows; show the loading row with
 ### Column menus, add column / row
 
 Pass `onColumnMenuAction(columnId, action)` to show each header's caret menu
-(`sortAsc` / `sortDesc` / `clearSort` / `hide` / `delete`); reflect the result by
-updating your `columns` (`sortDirection`, `hidden`) and `rows`. `onAddColumn(type)`
-adds the (+) header picker; `onAddRow` adds the trailing "+ New record" row;
-`onRowExpand(rowId)` wires the gutter expand icon.
+(`sortAsc` / `sortDesc` / `clearSort` / `insertLeft` / `insertRight` / `hide` /
+`delete`); reflect the result by updating your `columns` (`sortDirection`,
+`hidden`) and `rows`. `onAddColumn(type)` adds the (+) header picker; `onAddRow`
+adds the trailing "+ New record" row; `onRowExpand(rowId)` wires the gutter
+expand icon.
+
+`insertLeft` / `insertRight` report only the position, not a field type — pick
+one the way you already do for `onAddColumn`, and splice the new column beside
+`columnId`. The sort rows are hidden for a column with `sortable: false`, and
+`clearSort` only appears once `sortDirection` is set.
+
+The caret menu renders from the same descriptors as the header context menu
+(see [Context menus](#context-menus)), so there is one column action vocabulary
+rather than two.
+
+### Context menus
+
+Pass `contextMenu` to open a menu on a secondary gesture — right-click on web,
+long-press on native. Opting in also suppresses the browser's own menu over the
+grid, so it is off by default.
+
+There are three menus, one per region:
+
+| Region            | Rows                                                                                                  |
+| ----------------- | ----------------------------------------------------------------------------------------------------- |
+| Column header     | Sort ascending / descending / Clear sort · Insert left · Insert right · Hide field · **Delete field** |
+| Row-number gutter | Insert row above / below · Duplicate · Copy · **Delete row**                                          |
+| Cell              | Edit · Copy · Cut · Paste · Clear                                                                     |
+
+The header menu shows exactly what the caret menu shows — both render from the
+same descriptors, so `onColumnMenuAction` services both. Row rows need
+`onRowMenuAction(rowIds, action)`; without it the gutter opens nothing. The cell
+menu needs no callback at all: the grid already owns the clipboard and the
+editor. Rows are gated the way you would expect — no sort rows on a
+`sortable: false` column, no Edit or Clear on `editable: false`, and no
+clipboard rows on native, where the OS clipboard is out of reach.
+
+**Opening a menu on the gutter or a header never changes the selection.**
+Reaching for a menu is not the same gesture as selecting, so a right-click there
+leaves whatever you had selected exactly as it was. The menu still knows its
+target: a row menu acts on the row under the pointer, and a header menu on the
+column it was opened from.
+
+Cells are the one exception, because the cell menu's Copy / Cut / Clear act on
+the selection — a menu opened on a cell outside it would otherwise operate on
+something else entirely, possibly off screen. So a cell press **inside** the
+current selection keeps it, and a press **outside** collapses to that cell.
+
+Where a row action spans more than one row, the selection still decides: a
+gutter menu opened inside a five-row selection reads "Delete 5 rows" and reports
+all five ids in one call. A row counts as inside only when the selection spans
+it at full width, so a small cell range that merely overlaps a row yields just
+that row.
+
+`onContextMenuEntries(entries, context)` is the extension point: add, reorder, or
+replace the default rows, or return `[]` to suppress the menu for that target.
+`context` is discriminated by `region`, carrying the `column`, the `rowIds`, or
+the cell `ref` plus the current selection `rect`.
+
+```tsx
+<DataGrid
+  columns={columns}
+  contextMenu
+  onColumnMenuAction={(columnId, action) => {
+    /* sort / hide / delete / insert beside columnId */
+  }}
+  onContextMenuEntries={(entries, context) =>
+    context.region === "cell"
+      ? [
+          ...entries,
+          { id: "ask", label: "Ask an agent", onPress: ask, type: "item" },
+        ]
+      : entries
+  }
+  onRowMenuAction={(rowIds, action) => {
+    /* one call for the whole selected span */
+  }}
+  rows={rows}
+/>
+```
+
+`Shift+F10` (or the dedicated `ContextMenu` key) opens the cell menu from the
+keyboard, positioned under the focused cell — the menu is never mouse-only
+(WCAG 2.1.1). While it is open the menu owns the keyboard: the grid's own
+shortcuts stand down, so `Delete` cannot clear cells underneath it and the
+arrows cannot walk the selection away from it. On web the menu opens at the
+pointer and closes on Escape, an outside press, or a scroll; on native it is the
+house bottom sheet, titled with the field or row it acts on.
 
 ### Loading columns
 
@@ -300,8 +437,16 @@ wide-viewport experience.
 - **Multi-select selects from existing options** (no create-new-option yet —
   `ComboboxMultiSelect` limitation).
 - **Touch drag-marquee and on-device native interactions** (keyboard reliability,
-  editor focus) are not yet verified on a real device; web is the primary
-  interactive surface, native renders via `FlatList` + tap/keyboard.
+  editor focus, context-menu long-press) are not yet verified on a real device;
+  web is the primary interactive surface, native renders via `FlatList` +
+  tap/keyboard.
+- **Row deletion is a gutter action.** The three context menus are kept
+  distinct, so deleting a row means opening the menu on the row-number gutter,
+  not on a cell in that row. Add a row entry to the cell menu through
+  `onContextMenuEntries` if you want it in both places.
+- **No submenus.** `DropdownListEntry` has no nested variant, so `insertLeft` /
+  `insertRight` report position only and leave the new column's field type to
+  the consumer, the way `onAddColumn` already does.
 
 ## Styling & theming
 
@@ -341,6 +486,11 @@ toggled off.
 - `dataGridSelectionModel.ts` / `dataGridKeyboardModel.ts` — pure, React-free
   models (unit-tested), exported as `dataGridSelectionModel` /
   `dataGridKeyboardModel` namespaces.
+- `useDataGridContextMenu.ts` — owns the grid's single context menu (target,
+  point, entries), bound late so it and the controller can see each other.
+- `dataGridContextMenuModel.ts` / `dataGridContextSelection.ts` — pure menu
+  descriptors with their gating rules, and the spreadsheet selection rule;
+  `dataGridContextMenu.tsx` attaches the icons.
 - `dataGridCellContent.tsx` / `dataGridCellEditors.tsx` — per-field renderers and
   editors.
 - `DataGridClippedText.tsx` / `useOverflowTooltip.ts` / `dataGridOverflowModel.ts`

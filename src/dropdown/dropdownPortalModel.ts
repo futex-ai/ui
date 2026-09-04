@@ -7,6 +7,7 @@ import { useSharedUiTheme } from "../theme";
 
 import { DROPDOWN_LAYERS } from "./dropdownLayers";
 import type {
+  DropdownAnchorRect,
   DropdownPlacement,
   DropdownPlacementOptions,
 } from "./dropdownGeometry";
@@ -14,7 +15,18 @@ import type { DropdownHoverProps } from "./useDropdownHover";
 
 /** Props accepted by both the native and web `DropdownPortal` implementations. */
 export type DropdownPortalProps = DropdownPlacementOptions & {
-  anchorRef: RefObject<View | null>;
+  /**
+   * The trigger element the surface is measured against. Supply exactly one of
+   * `anchorRef` / `anchorRect`.
+   */
+  anchorRef?: RefObject<View | null>;
+  /**
+   * A virtual anchor in viewport coordinates, used when there is no trigger
+   * element to measure. Takes precedence over `anchorRef`. A zero-size rect
+   * anchors the surface at a point — pass `anchorWidthAsMinimum: false` and an
+   * explicit `minWidth` with one, or the resolved surface width is `0`.
+   */
+  anchorRect?: DropdownAnchorRect | null;
   children: (placement: DropdownPlacement) => ReactNode;
   /** Let the surface grow to its intrinsic content width between its width bounds. */
   fitContentWidth?: boolean;

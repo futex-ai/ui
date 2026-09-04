@@ -31,6 +31,10 @@ import type {
 const EMPTY_SELECTION: DataGridSelection = { anchor: null, focus: null };
 
 export type DataGridControllerOptions = {
+  /** A context menu is open and owns the keyboard (see `useDataGridKeyboard`). */
+  contextMenuOpen?: boolean;
+  /** Open the context menu for a cell (Shift+F10 / the ContextMenu key). */
+  onContextMenuKey?: (ref: DataGridCellRef) => void;
   columns: DataGridColumn[];
   rows: DataGridRow[];
   selection?: DataGridSelection;
@@ -52,6 +56,8 @@ export type DataGridControllerOptions = {
 };
 
 export function useDataGridController({
+  contextMenuOpen,
+  onContextMenuKey,
   columns,
   rows,
   selection: controlledSelection,
@@ -127,7 +133,7 @@ export function useDataGridController({
   const [dragBox, setDragBox] = useState<DataGridDragBox | null>(null);
 
   const registerCellNode = useCallback(
-    (ref: DataGridCellRef, node: { focus?: () => void } | null) => {
+    (ref: DataGridCellRef, node: DataGridCellNode["node"] | null) => {
       const key = cellKey(ref);
       if (node) {
         cellNodesRef.current.set(key, { node, ref });
@@ -162,6 +168,15 @@ export function useDataGridController({
   }, []);
   const focusCell = useCallback((ref: DataGridCellRef) => {
     cellNodesRef.current.get(cellKey(ref))?.node?.focus?.();
+  }, []);
+
+  // Where a keyboard-opened menu should appear: under the focused cell's
+  // bottom-left corner, in viewport coordinates. `ContextMenu` takes a point
+  // rather than a rect, so the keyboard and pointer routes stay one concept.
+  const contextMenuPointForCell = useCallback((ref: DataGridCellRef) => {
+    const node = cellNodesRef.current.get(cellKey(ref))?.node;
+    const rect = node?.getBoundingClientRect?.();
+    return rect ? { x: rect.left, y: rect.bottom } : null;
   }, []);
 
   const announceActive = useCallback(
@@ -226,6 +241,8 @@ export function useDataGridController({
   );
 
   const { handleCellKeyDown, moveActiveDown } = useDataGridKeyboard({
+    contextMenuOpen,
+    onContextMenuKey,
     rowIds,
     columnIds,
     activeCell,
@@ -266,6 +283,7 @@ export function useDataGridController({
     registerHeaderNode,
     registerGridNode,
     focusCell,
+    contextMenuPointForCell,
     isActiveCell: (ref: DataGridCellRef) => cellRefEquals(ref, activeCell),
     isTabStop: (ref: DataGridCellRef) => cellRefEquals(ref, tabStop),
   };

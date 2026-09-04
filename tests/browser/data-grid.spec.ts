@@ -453,6 +453,143 @@ test("number cell rejects non-numeric input", async ({ page }) => {
   await expect(page.getByText("Enter a number")).toBeVisible();
 });
 
+test("decimalString cells render and commit exact values", async ({ page }) => {
+  await gotoDataGridStory(page, "exact-decimal");
+  const grid = page.getByRole("grid", { name: "Ledger" });
+  await expect(grid).toBeVisible({ timeout: storyReadyTimeout });
+
+  // Number("0.1000000000000000055") is 0.1, so this text can only appear if the
+  // value never went through a float.
+  await expect(grid.getByText("0.1000000000000000055")).toBeVisible();
+  await expect(page.getByTestId("amount-types")).toHaveText(
+    "string, string, string",
+  );
+
+  // Editing keeps the digits and the trailing zero (scale) intact.
+  await grid.getByText("1234.50").dblclick();
+  await page.getByLabel("Edit number").fill("9007199254740993.250");
+  await page.keyboard.press("Enter");
+  await expect(grid.getByText("9007199254740993.250")).toBeVisible();
+  await expect(page.getByTestId("amount-types")).toHaveText(
+    "string, string, string",
+  );
+});
+
+test("decimalString rejects input a plain number column accepts", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "exact-decimal");
+  const grid = page.getByRole("grid", { name: "Ledger" });
+  await expect(grid).toBeVisible({ timeout: storyReadyTimeout });
+
+  // "1e5" discriminates the two modes: Number("1e5") is 100000, so a plain
+  // number column takes it, while the exact mode refuses the exponent form
+  // (nothing may expand 1e999999999). A test using text both modes reject
+  // would still pass with the decimalString branch deleted.
+  await grid.getByText("1234.50").dblclick();
+  await page.getByLabel("Edit number").fill("1e5");
+  await page.keyboard.press("Enter");
+  await expect(grid.getByText("Enter a number, e.g. 1234.50")).toBeVisible();
+  await expect(page.getByTestId("amount-values")).toContainText("1234.50");
+  // Escape re-focuses the cell it was editing, so walk right from there. A
+  // click here would land on the already-active cell and just reopen its editor.
+  await page.keyboard.press("Escape");
+  await expect(page.getByLabel("Edit number")).toHaveCount(0);
+
+  // The same text one column right, in the plain Qty column, still commits as a
+  // JS number — the mode is per column, not a global switch.
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("Enter");
+  await page.getByLabel("Edit number").fill("1e5");
+  await page.keyboard.press("Enter");
+  await expect(page.getByTestId("qty-values")).toHaveText("1, 100000, 1");
+  await expect(page.getByTestId("qty-types")).toHaveText(
+    "number, number, number",
+  );
+});
+
+test("an invalid paste is aborted rather than clearing the cells", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "exact-decimal");
+  const grid = page.getByRole("grid", { name: "Ledger" });
+  await expect(grid).toBeVisible({ timeout: storyReadyTimeout });
+
+  // Copy a text cell, then paste it over two Amount cells. Neither can be read
+  // as a decimal, so the whole paste is dropped and both cells survive.
+  await grid.getByText("Invoice 2043").click();
+  await page.keyboard.press("Control+c");
+  await grid.getByText("1234.50").click();
+  await page.keyboard.press("Shift+ArrowDown");
+  await page.keyboard.press("Control+v");
+
+  // Wait for the refusal to land before asserting anything survived it: the
+  // paste is async (it awaits the clipboard read), so a "nothing changed"
+  // assertion fired immediately would pass by observing the pre-paste state.
+  await expect(page.locator("#firna-ui-live-region-polite")).toHaveText(
+    "Paste cancelled, 1 invalid value",
+  );
+  await expect(page.getByTestId("amount-values")).toHaveText(
+    "0.1000000000000000055, 1234.50, -0.01",
+  );
+  await expect(grid.getByText("Invoice 2043")).toHaveCount(1);
+});
+
+test("an aborted paste discards the valid cells of the block too", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "exact-decimal");
+  const grid = page.getByRole("grid", { name: "Ledger" });
+  await expect(grid).toBeVisible({ timeout: storyReadyTimeout });
+
+  // Copy Item + Amount from row 1, then paste anchored on row 2's Amount: the
+  // text lands on Amount (invalid) and the decimal on Qty (valid). Committing
+  // the valid half would be a partial paste that could not be rolled back.
+  await grid.getByText("Rounding probe").click();
+  await page.keyboard.press("Shift+ArrowRight");
+  await page.keyboard.press("Control+c");
+  await grid.getByText("1234.50").click();
+  await page.keyboard.press("Control+v");
+
+  // Wait for the refusal to land before asserting anything survived it: the
+  // paste is async (it awaits the clipboard read), so a "nothing changed"
+  // assertion fired immediately would pass by observing the pre-paste state.
+  await expect(page.locator("#firna-ui-live-region-polite")).toHaveText(
+    "Paste cancelled, 1 invalid value",
+  );
+  await expect(page.getByTestId("amount-values")).toHaveText(
+    "0.1000000000000000055, 1234.50, -0.01",
+  );
+  await expect(page.getByTestId("qty-values")).toHaveText("1, 3, 1");
+});
+
+test("an aborted paste preserves a pending cut source", async ({ page }) => {
+  await gotoDataGridStory(page, "exact-decimal");
+  const grid = page.getByRole("grid", { name: "Ledger" });
+  await expect(grid).toBeVisible({ timeout: storyReadyTimeout });
+
+  // Cut a text cell, then paste it over an Amount cell that cannot hold it.
+  await grid.getByText("Invoice 2043").click();
+  await page.keyboard.press("Control+x");
+  await grid.getByText("1234.50").click();
+  await page.keyboard.press("Control+v");
+
+  // Wait for the refusal to land before asserting anything survived it: the
+  // paste is async (it awaits the clipboard read), so a "nothing changed"
+  // assertion fired immediately would pass by observing the pre-paste state.
+  await expect(page.locator("#firna-ui-live-region-polite")).toHaveText(
+    "Paste cancelled, 1 invalid value",
+  );
+
+  // A refused paste never completes the cut, so the source keeps its value and
+  // the marquee stays up for a later paste somewhere it fits.
+  await expect(grid.getByText("Invoice 2043")).toHaveCount(1);
+  await expect(page.getByTestId("amount-values")).toHaveText(
+    "0.1000000000000000055, 1234.50, -0.01",
+  );
+  await expect(page.getByTestId("data-grid-copy-marquee")).toHaveCount(1);
+});
+
 test("in-cell editors square off their box to match the grid", async ({
   page,
 }) => {
@@ -1290,4 +1427,321 @@ test("the card stack reveals a clipped field value on hover", async ({
   await expect(revealTooltip(page)).toHaveText(
     "Waiting on legal review before the second send goes out.",
   );
+});
+
+// --- Context menus -------------------------------------------------------
+//
+// These carry what a source grep and a pure test cannot: that the menu really
+// lands at the pointer, that the spreadsheet selection rule holds through a
+// real drag, and that an open menu genuinely owns the keyboard.
+
+/** Right-click at the centre of a locator and return the point pressed. */
+async function rightClickCentre(page: Page, locator: Locator) {
+  const box = await locator.boundingBox();
+  if (!box) {
+    throw new Error("target not found");
+  }
+  const point = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  await page.mouse.click(point.x, point.y, { button: "right" });
+  return point;
+}
+
+test("right-clicking a header opens a column menu at the pointer", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "context-menus");
+
+  const header = page.getByRole("columnheader").filter({ hasText: "Status" });
+  const point = await rightClickCentre(page, header);
+
+  const menu = page.getByRole("menu");
+  await expect(menu).toBeVisible();
+  await expect(menu.getByText("Delete field")).toBeVisible();
+  await expect(menu.getByText("Insert left")).toBeVisible();
+
+  // The whole point of the point anchor: the surface is placed at the cursor,
+  // not against the header's box. Assert it rather than assume it.
+  const box = await menu.boundingBox();
+  if (!box) {
+    throw new Error("menu has no box");
+  }
+  expect(Math.abs(box.x - point.x)).toBeLessThan(12);
+  expect(box.y).toBeGreaterThanOrEqual(point.y);
+  expect(box.y - point.y).toBeLessThan(12);
+});
+
+test("a column menu action reports the column it was opened on", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "context-menus");
+
+  await rightClickCentre(
+    page,
+    page.getByRole("columnheader").filter({ hasText: "Status" }),
+  );
+  await page
+    .getByRole("menuitem")
+    .filter({ hasText: "Sort ascending" })
+    .click();
+  await expect(page.getByTestId("menu-status")).toHaveText(
+    /column sortAsc status/,
+  );
+  await expect(page.getByRole("menu")).toHaveCount(0);
+});
+
+test("right-clicking a gutter or header leaves the selection alone", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "context-menus");
+
+  // Build a 2x2 cell range.
+  await page.getByText("Why we moved every workflow").click();
+  await page.keyboard.press("Shift+ArrowRight");
+  await page.keyboard.press("Shift+ArrowDown");
+  const selected = page.locator('[role="gridcell"][aria-selected="true"]');
+  await expect(selected).toHaveCount(4);
+
+  // A gutter press well outside that range opens the row menu and changes
+  // nothing about the selection.
+  const gutter = page.getByText("4", { exact: true }).first();
+  await rightClickCentre(page, gutter);
+  await expect(page.getByRole("menu")).toBeVisible();
+  await expect(selected).toHaveCount(4);
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("menu")).toBeHidden();
+
+  // Same for a header, which used to promote to the whole column.
+  await rightClickCentre(page, page.getByRole("columnheader").nth(2));
+  await expect(page.getByRole("menu")).toBeVisible();
+  await expect(selected).toHaveCount(4);
+});
+
+test("right-clicking a cell outside the selection collapses to it", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "context-menus");
+
+  // Select a 2x2 range, then right-click well outside it.
+  const start = page.getByText("Why we moved every workflow");
+  await start.click();
+  await page.keyboard.press("Shift+ArrowRight");
+  await page.keyboard.press("Shift+ArrowDown");
+  await expect(
+    page.locator('[role="gridcell"][aria-selected="true"]'),
+  ).toHaveCount(4);
+
+  await rightClickCentre(page, page.getByText("0.55").first());
+  await expect(page.getByRole("menu")).toBeVisible();
+  await expect(
+    page.locator('[role="gridcell"][aria-selected="true"]'),
+  ).toHaveCount(1);
+});
+
+test("right-clicking inside the selection preserves it", async ({ page }) => {
+  await gotoDataGridStory(page, "context-menus");
+
+  const start = page.getByText("Why we moved every workflow");
+  await start.click();
+  await page.keyboard.press("Shift+ArrowRight");
+  await page.keyboard.press("Shift+ArrowDown");
+  await expect(
+    page.locator('[role="gridcell"][aria-selected="true"]'),
+  ).toHaveCount(4);
+
+  await rightClickCentre(page, start);
+  await expect(page.getByRole("menu")).toBeVisible();
+  // All four stay selected, so a menu action still acts on the whole range.
+  await expect(
+    page.locator('[role="gridcell"][aria-selected="true"]'),
+  ).toHaveCount(4);
+});
+
+test("a gutter menu inside a multi-row selection counts the rows", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "context-menus");
+
+  const g2 = await page.getByText("2", { exact: true }).first().boundingBox();
+  const g4 = await page.getByText("4", { exact: true }).first().boundingBox();
+  if (!g2 || !g4) {
+    throw new Error("gutter cells not found");
+  }
+  await page.mouse.move(g2.x + g2.width / 2, g2.y + g2.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(g4.x + g4.width / 2, g4.y + g4.height / 2, {
+    steps: 6,
+  });
+  await page.mouse.up();
+
+  await page.mouse.click(g4.x + g4.width / 2, g4.y + g4.height / 2, {
+    button: "right",
+  });
+  const menu = page.getByRole("menu");
+  await expect(menu.getByText("Delete 3 rows")).toBeVisible();
+
+  await menu.getByRole("menuitem").filter({ hasText: "Delete 3 rows" }).click();
+  await expect(page.getByTestId("menu-status")).toHaveText(/row delete 3/);
+  await expect(page.getByTestId("menu-status")).toHaveText(/^4 rows/);
+});
+
+test("a right-click never opens the editor on an active select cell", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "context-menus");
+
+  // A single left-click on an already-active select cell opens its editor, so
+  // this cell is exactly where an ungated secondary press would misfire.
+  const cell = page.getByText("Drafted").first();
+  await cell.click();
+  await page.keyboard.press("Escape");
+
+  await rightClickCentre(page, cell);
+  await expect(page.getByRole("menu")).toBeVisible();
+  // The select editor renders a listbox; the context menu is a menu.
+  await expect(page.getByRole("listbox")).toHaveCount(0);
+});
+
+test("two quick right-clicks do not trip the double-press editor", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "context-menus");
+
+  const cell = page.getByText("Why we moved every workflow");
+  const box = await cell.boundingBox();
+  if (!box) {
+    throw new Error("cell not found");
+  }
+  const x = box.x + 20;
+  const y = box.y + box.height / 2;
+  await page.mouse.click(x, y, { button: "right" });
+  await page.mouse.click(x, y, { button: "right" });
+
+  await expect(page.getByRole("menu")).toBeVisible();
+  await expect(page.locator("textarea, input")).toHaveCount(0);
+});
+
+test("an open menu owns the keyboard: Delete does not clear cells", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "context-menus");
+
+  const cell = page.getByText("Why we moved every workflow");
+  await cell.click();
+  await rightClickCentre(page, cell);
+  await expect(page.getByRole("menu")).toBeVisible();
+
+  // Without the contextMenuOpen gate this clears the selected cells underneath
+  // the open menu — the destructive failure mode this test exists for.
+  await page.keyboard.press("Delete");
+  await expect(cell).toBeVisible();
+
+  // Movement keys must not walk the selection out from under the menu either.
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("Home");
+  await expect(
+    page.locator('[role="gridcell"][aria-selected="true"]'),
+  ).toHaveCount(1);
+  await expect(cell).toBeVisible();
+});
+
+test("the menu dismisses on Escape, outside click, and scroll", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "context-menus");
+  const cell = page.getByText("Why we moved every workflow");
+
+  await rightClickCentre(page, cell);
+  await expect(page.getByRole("menu")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("menu")).toHaveCount(0);
+
+  await rightClickCentre(page, cell);
+  await expect(page.getByRole("menu")).toBeVisible();
+  await page.getByTestId("menu-status").click();
+  await expect(page.getByRole("menu")).toHaveCount(0);
+
+  await rightClickCentre(page, cell);
+  await expect(page.getByRole("menu")).toBeVisible();
+  // The menu opens under the cursor, so a wheel here would scroll the menu's
+  // own list (which it ignores by design). Move off it first, the way a user
+  // would, then scroll the grid body underneath.
+  const grid = await page.getByRole("grid").boundingBox();
+  if (!grid) {
+    throw new Error("grid not found");
+  }
+  await page.mouse.move(grid.x + 40, grid.y + grid.height - 12);
+  await page.mouse.wheel(0, 200);
+  await expect(page.getByRole("menu")).toHaveCount(0);
+});
+
+test("arrow keys drive the open menu and Enter fires the row", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "context-menus");
+
+  await rightClickCentre(
+    page,
+    page.getByRole("columnheader").filter({ hasText: "Status" }),
+  );
+  await expect(page.getByRole("menu")).toBeVisible();
+  // No trigger element is focused, so this only works because the menu drives
+  // navigation from a document-level listener. The first row is already active
+  // on open, so one ArrowDown lands on the second — "Sort descending".
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Enter");
+  await expect(page.getByTestId("menu-status")).toHaveText(
+    /column sortDesc status/,
+  );
+
+  // And Enter with no arrow press fires the first row.
+  await rightClickCentre(
+    page,
+    page.getByRole("columnheader").filter({ hasText: "Status" }),
+  );
+  await page.keyboard.press("Enter");
+  await expect(page.getByTestId("menu-status")).toHaveText(
+    /column sortAsc status/,
+  );
+});
+
+test("the consumer's extra entry appears on the cell menu only", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "context-menus");
+
+  await rightClickCentre(page, page.getByText("Why we moved every workflow"));
+  await expect(page.getByRole("menu").getByText("Ask an agent")).toBeVisible();
+  await page.getByRole("menuitem").filter({ hasText: "Ask an agent" }).click();
+  await expect(page.getByTestId("menu-status")).toHaveText(/custom action/);
+
+  await rightClickCentre(
+    page,
+    page.getByRole("columnheader").filter({ hasText: "Status" }),
+  );
+  await expect(page.getByRole("menu")).toBeVisible();
+  await expect(page.getByRole("menu").getByText("Ask an agent")).toHaveCount(0);
+});
+
+test("Shift+F10 opens the cell menu from the keyboard", async ({ page }) => {
+  await gotoDataGridStory(page, "context-menus");
+
+  await page.getByText("Why we moved every workflow").click();
+  await page.keyboard.press("Shift+F10");
+  await expect(page.getByRole("menu")).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("menu")).toHaveCount(0);
+  // Focus is still on the cell, so the grid's own keys work again immediately.
+  await page.keyboard.press("ArrowDown");
+  await expect(
+    page.locator('[role="gridcell"][aria-selected="true"]'),
+  ).toHaveCount(1);
+});
+
+test("a grid without contextMenu leaves the browser menu alone", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "full-featured");
+  await rightClickCentre(page, page.getByText("Why we moved every workflow"));
+  await expect(page.getByRole("menu")).toHaveCount(0);
 });

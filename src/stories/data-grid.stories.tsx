@@ -3,8 +3,11 @@ import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
+  ContextMenu,
   DataGrid,
+  buildMenuEntries,
   darkSharedUiTheme,
+  dataGridContextMenuModel,
   dataGridSelectionModel,
   useSharedUiTheme,
   type DataGridCellRef,
@@ -454,6 +457,94 @@ export const Editable: Story = {
   render: () => <EditableExample />,
 };
 
+// `Amount` opts into exact decimal strings; `Qty` is a plain number column, so
+// the two editors sit side by side under the same `#` icon and right alignment.
+const ledgerColumns: DataGridColumn[] = [
+  { id: "item", label: "Item", fieldType: "text", flex: 2 },
+  {
+    id: "amount",
+    label: "Amount",
+    fieldType: "number",
+    numberValueMode: "decimalString",
+    width: 260,
+  },
+  { id: "qty", label: "Qty", fieldType: "number", width: 90 },
+];
+
+const ledgerRows: DataGridRow[] = [
+  // Number("0.1000000000000000055") is 0.1 — this row renders unrounded only
+  // because the value never becomes a JS number.
+  {
+    id: "l1",
+    cells: { item: "Rounding probe", amount: "0.1000000000000000055", qty: 1 },
+  },
+  { id: "l2", cells: { item: "Invoice 2043", amount: "1234.50", qty: 3 } },
+  { id: "l3", cells: { item: "Refund", amount: "-0.01", qty: 1 } },
+];
+
+function ExactDecimalExample() {
+  const [rows, setRows] = useState(ledgerRows);
+  const typesOf = (columnId: string) =>
+    rows.map((row) => typeof row.cells[columnId]).join(", ");
+  const valuesOf = (columnId: string) =>
+    rows.map((row) => String(row.cells[columnId])).join(", ");
+
+  // Readouts of the committed cell values and their runtime types. The grid's
+  // own cells can't carry these assertions: the row-number gutter renders bare
+  // integers too, so a small Qty is not addressable by its text alone.
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        <Text style={styles.status} testID="amount-types">
+          {typesOf("amount")}
+        </Text>
+        <Text style={styles.status} testID="amount-values">
+          {valuesOf("amount")}
+        </Text>
+        {/* The plain number column next door must keep committing JS numbers —
+            the mode is per-column, not a global switch. */}
+        <Text style={styles.status} testID="qty-types">
+          {typesOf("qty")}
+        </Text>
+        <Text style={styles.status} testID="qty-values">
+          {valuesOf("qty")}
+        </Text>
+        <View style={styles.frame}>
+          <DataGrid
+            accessibilityLabel="Ledger"
+            columns={ledgerColumns}
+            onCellChange={(ref, value) =>
+              setRows((current) =>
+                current.map((row) =>
+                  row.id === ref.rowId
+                    ? { ...row, cells: { ...row.cells, [ref.columnId]: value } }
+                    : row,
+                ),
+              )
+            }
+            rows={rows}
+          />
+        </View>
+        <Text style={styles.hint}>
+          Amount keeps exact decimal strings: edit or paste a 30-digit value and
+          every digit survives, where a JS number would round it. Qty is an
+          ordinary number column for comparison.
+        </Text>
+      </View>
+    </StorySurface>
+  );
+}
+
+/**
+ * `numberValueMode: "decimalString"` — the editor and the paste path validate
+ * the text and hand back the string itself, so ledger amounts round-trip
+ * digit-for-digit while keeping the `#` header icon and numeric alignment.
+ */
+export const ExactDecimal: Story = {
+  name: "Exact decimal values",
+  render: () => <ExactDecimalExample />,
+};
+
 function FullFeaturedExample() {
   const [columns, setColumns] = useState(contentColumns);
   const [rows, setRows] = useState(contentRows);
@@ -726,9 +817,140 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: "#3e4540", fontSize: 13, fontWeight: "600" },
   frame: { width: 940 },
+  openMenu: { height: 380, width: 320 },
   frameWide: { width: 1000 },
   hint: { color: "#69706a", fontSize: 12 },
   responsive: { padding: 16, width: "100%" },
   stack: { gap: 10 },
   status: { color: "#3e4540", fontSize: 13, fontWeight: "700" },
 });
+
+/*
+ * The three context-menu regions in one place. Right-click (or long-press) a
+ * column header, the row-number gutter, or any cell; the status line records
+ * what the grid reported so a test can assert on it without a spy.
+ *
+ * `onContextMenuEntries` appends a custom row to the cell menu, exercising the
+ * extension point rather than only documenting it.
+ */
+function ContextMenuExample() {
+  const [columns, setColumns] = useState(contentColumns);
+  const [rows, setRows] = useState(contentRows);
+  const [lastAction, setLastAction] = useState("none");
+
+  return (
+    <StorySurface>
+      <View style={styles.stack}>
+        <Text style={styles.status} testID="menu-status">
+          {rows.length} rows · last: {lastAction}
+        </Text>
+        <View style={styles.frame}>
+          <DataGrid
+            accessibilityLabel="Content"
+            columns={columns}
+            contextMenu
+            maxHeight={220}
+            onCellChange={(ref, value) =>
+              setRows((current) =>
+                current.map((row) =>
+                  row.id === ref.rowId
+                    ? { ...row, cells: { ...row.cells, [ref.columnId]: value } }
+                    : row,
+                ),
+              )
+            }
+            onColumnMenuAction={(columnId, action) => {
+              setLastAction(`column ${action} ${columnId}`);
+              if (action === "delete") {
+                setColumns((current) =>
+                  current.filter((column) => column.id !== columnId),
+                );
+              }
+            }}
+            onContextMenuEntries={(entries, context) =>
+              context.region === "cell"
+                ? [
+                    ...entries,
+                    { id: "sep-custom", label: "", type: "divider" },
+                    {
+                      id: "custom",
+                      label: "Ask an agent",
+                      onPress: () => setLastAction("custom action"),
+                      type: "item",
+                    },
+                  ]
+                : entries
+            }
+            onRowMenuAction={(rowIds, action) => {
+              setLastAction(`row ${action} ${rowIds.length}`);
+              if (action === "delete") {
+                setRows((current) =>
+                  current.filter((row) => !rowIds.includes(row.id)),
+                );
+              }
+            }}
+            rows={rows}
+          />
+        </View>
+      </View>
+    </StorySurface>
+  );
+}
+
+export const ContextMenus: Story = {
+  name: "Context menus (right-click)",
+  render: () => <ContextMenuExample />,
+};
+
+/*
+ * The menu rendered open on mount. The axe sweep is a static scanner — it only
+ * sees the DOM as rendered — so without this story `role="menu"` and its rows
+ * are never scanned. Uses `ContextMenu` directly rather than driving a gesture,
+ * which a story cannot do.
+ */
+function OpenContextMenuExample() {
+  const theme = useSharedUiTheme();
+  const entries = useMemo(
+    () =>
+      buildMenuEntries(
+        dataGridContextMenuModel.columnMenuDescriptors({
+          sortDirection: "asc",
+        }),
+        theme,
+        () => {},
+      ),
+    [theme],
+  );
+  return (
+    <View style={styles.openMenu}>
+      <ContextMenu
+        accessibilityLabel="Status field options"
+        entries={entries}
+        onClose={() => {}}
+        open
+        point={{ x: 40, y: 40 }}
+        testID="open-context-menu"
+      />
+    </View>
+  );
+}
+
+export const ContextMenuOpen: Story = {
+  name: "Context menu (open)",
+  parameters: { layout: "fullscreen" },
+  render: () => (
+    <StorySurface>
+      <OpenContextMenuExample />
+    </StorySurface>
+  ),
+};
+
+export const ContextMenuOpenDark: Story = {
+  name: "Context menu (open, dark)",
+  parameters: { layout: "fullscreen" },
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <OpenContextMenuExample />
+    </StorySurface>
+  ),
+};

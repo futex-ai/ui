@@ -1,3 +1,5 @@
+export * from "./ContextMenu";
+export * from "./contextMenuModel";
 export * from "./Popover";
 export * from "./popoverModel";
 export * from "./PopoverSurface";

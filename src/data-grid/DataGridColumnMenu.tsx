@@ -3,15 +3,7 @@
  * add-column (+) field-type picker. Both are `DropdownMenu`s with
  * `highlightVariant="ring"` (the solid fill would invert the row text).
  */
-import {
-  ArrowDownAZ,
-  ArrowUpAZ,
-  ChevronDown,
-  EyeOff,
-  Plus,
-  Trash2,
-  X,
-} from "lucide-react-native";
+import { ChevronDown, Plus } from "lucide-react-native";
 import { Pressable, View } from "react-native";
 
 import { DropdownMenu, type DropdownListEntry } from "../dropdown";
@@ -19,6 +11,8 @@ import { hideWebOutlineView, type PressableHoverState } from "../focusRing";
 import type { SharedUiTheme } from "../theme";
 
 import { fieldTypeIcon, fieldTypeLabel } from "./dataGridCellContent";
+import { buildMenuEntries } from "./dataGridContextMenu";
+import { columnMenuDescriptors } from "./dataGridContextMenuModel";
 import type { DataGridStyles } from "./dataGridStyles";
 import type {
   DataGridColumn,
@@ -48,48 +42,11 @@ export function DataGridColumnMenu({
   theme: SharedUiTheme;
   iconSize: number;
 }) {
-  const entries: DropdownListEntry[] = [];
-  if (column.sortable !== false) {
-    entries.push({
-      id: "sortAsc",
-      label: "Sort ascending",
-      leading: <ArrowUpAZ color={theme.colors.muted} size={16} />,
-      onPress: () => onAction("sortAsc"),
-      type: "item",
-    });
-    entries.push({
-      id: "sortDesc",
-      label: "Sort descending",
-      leading: <ArrowDownAZ color={theme.colors.muted} size={16} />,
-      onPress: () => onAction("sortDesc"),
-      type: "item",
-    });
-    if (column.sortDirection) {
-      entries.push({
-        id: "clearSort",
-        label: "Clear sort",
-        leading: <X color={theme.colors.muted} size={16} />,
-        onPress: () => onAction("clearSort"),
-        type: "item",
-      });
-    }
-    entries.push({ id: "sep", label: "", type: "divider" });
-  }
-  entries.push({
-    id: "hide",
-    label: "Hide field",
-    leading: <EyeOff color={theme.colors.muted} size={16} />,
-    onPress: () => onAction("hide"),
-    type: "item",
-  });
-  entries.push({
-    id: "delete",
-    label: "Delete field",
-    leading: <Trash2 color={theme.colors.roseDeep} size={16} />,
-    onPress: () => onAction("delete"),
-    tone: "danger",
-    type: "item",
-  });
+  // The caret menu and the header context menu render from the same
+  // descriptors, so the column action vocabulary is defined in one place.
+  const entries = buildMenuEntries(columnMenuDescriptors(column), theme, (id) =>
+    onAction(id as DataGridColumnAction),
+  );
 
   return (
     // `DropdownMenu`'s anchor defaults to `alignSelf: flex-start`; center it so

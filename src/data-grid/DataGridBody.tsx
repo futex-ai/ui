@@ -13,10 +13,12 @@ import type { SharedUiTheme } from "../theme";
 import { DataGridRow } from "./DataGridRow";
 import { gridcellRole } from "./dataGridLayout";
 import type { DataGridMetrics, DataGridStyles } from "./dataGridStyles";
+import type { DropdownPoint } from "../dropdown";
 import type { DataGridController } from "./useDataGridController";
 import type {
   DataGridCellRef,
   DataGridColumn,
+  DataGridContextMenuTarget,
   DataGridRow as DataGridRowData,
 } from "./types";
 
@@ -43,6 +45,11 @@ export type DataGridBodyProps = {
   copiedKeys: Set<string> | null;
   /** Trailing "+ New record" row rendered after the data rows. */
   addRow?: ReactNode;
+  /** Opens the row / cell context menus; omitted when `contextMenu` is off. */
+  onContextMenu?: (
+    target: DataGridContextMenuTarget,
+    point: DropdownPoint | null,
+  ) => void;
   /** Receive a `scrollToRow(index)` fn so keyboard nav can scroll into view. */
   onRegisterScroll?: (scrollToRow: (rowIndex: number) => void) => void;
 };
@@ -52,6 +59,7 @@ export function DataGridBody({
   columns,
   trailingWidth,
   controller,
+  onContextMenu,
   styles,
   theme,
   metrics,
@@ -92,6 +100,7 @@ export function DataGridBody({
       onBeginDrag={controller.beginDrag}
       onBeginEdit={controller.requestEdit}
       onBeginRowDrag={controller.beginRowDrag}
+      onContextMenu={onContextMenu}
       onKeyDown={controller.handleCellKeyDown}
       onRowExpand={onRowExpand}
       rect={controller.rect}

@@ -108,3 +108,13 @@ test("navigation and edit-entry key predicates", () => {
   assert.equal(isEditEntryKey(" "), false);
   assert.equal(isEditEntryKey("ArrowDown"), false);
 });
+
+test("the context-menu keys are not grid navigation or edit-entry keys", () => {
+  // Shift+F10 and the ContextMenu key open the menu (WCAG 2.1.1). They must
+  // not also read as movement or start an edit — `handleCellKeyDown` returns
+  // after handling them, but the pure predicates should agree.
+  assert.equal(isGridNavigationKey("ContextMenu"), false);
+  assert.equal(isGridNavigationKey("F10"), false);
+  assert.equal(isEditEntryKey("ContextMenu"), false);
+  assert.equal(isEditEntryKey("F10"), false);
+});

@@ -5,15 +5,22 @@
  * as label/value rows. Tapping a card opens the record (`onRowExpand`). Read-only
  * — the full interactive grid is the wide-viewport experience.
  */
-import { Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "react-native";
 
+import type { DropdownPoint } from "../dropdown";
 import { hideWebOutlineView, type PressableHoverState } from "../focusRing";
+import { contextMenuTriggerProps } from "../popover";
 import type { SharedUiTheme } from "../theme";
 
 import { DataGridCellContent } from "./dataGridCellContent";
 import { DataGridCellLoadingContent } from "./DataGridCellLoadingIndicator";
 import type { DataGridStyles } from "./dataGridStyles";
-import type { DataGridCellRef, DataGridColumn, DataGridRow } from "./types";
+import type {
+  DataGridCellRef,
+  DataGridColumn,
+  DataGridContextMenuTarget,
+  DataGridRow,
+} from "./types";
 
 export function DataGridCardStack({
   rows,
@@ -24,6 +31,7 @@ export function DataGridCardStack({
   iconSize,
   cellLoading,
   onRowExpand,
+  onContextMenu,
   accessibilityLabel,
 }: {
   rows: DataGridRow[];
@@ -34,6 +42,10 @@ export function DataGridCardStack({
   iconSize: number;
   cellLoading?: (ref: DataGridCellRef) => boolean;
   onRowExpand?: (rowId: string) => void;
+  onContextMenu?: (
+    target: DataGridContextMenuTarget,
+    point: DropdownPoint | null,
+  ) => void;
   accessibilityLabel?: string;
 }) {
   const [titleColumn, ...fieldColumns] = columns;
@@ -114,7 +126,16 @@ export function DataGridCardStack({
             })}
           </>
         );
-        return onRowExpand ? (
+        // The card is the only affordance in this layout, so it carries the
+        // row menu — otherwise a mobile user could never delete a row.
+        const contextProps = onContextMenu
+          ? contextMenuTriggerProps({
+              isWeb: Platform.OS === "web",
+              onOpen: (point) =>
+                onContextMenu({ region: "row", rowId: row.id }, point),
+            })
+          : {};
+        return onRowExpand || onContextMenu ? (
           // The list semantics go on a wrapper, not on the pressable itself:
           // react-native-web resolves the DOM role as `role || accessibilityRole`,
           // so a `role="listitem"` on the Pressable would win over the button
@@ -125,7 +146,8 @@ export function DataGridCardStack({
             <Pressable
               accessibilityLabel={`Open record ${row.id}`}
               accessibilityRole="button"
-              onPress={() => onRowExpand(row.id)}
+              onPress={onRowExpand ? () => onRowExpand(row.id) : undefined}
+              {...contextProps}
               style={({ hovered }: PressableHoverState) => [
                 styles.card,
                 hovered ? { borderColor: theme.colors.primaryBorder } : null,
