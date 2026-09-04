@@ -26,6 +26,8 @@ portals; the grid contributes the selection model, keyboard model, and chrome.
   scroll-end via `onEndReached`.
 - Offer column header menus (sort / hide / delete), an add-column field-type
   picker, an add-record row, and a per-row expand affordance.
+- Reveal a clipped heading or value in full on hover (web), gated by
+  `overflowTooltip`.
 - Collapse to a read-only card stack below `cardBreakpoint` (mobile).
 - Read colors, fonts, and radii from `SharedUiThemeProvider`; size on the shared
   `ControlSize` scale.
@@ -201,6 +203,38 @@ the dragged column's edge moves (the rest stay put and the grid scrolls if the
 total outgrows the container). Pass `onColumnResize(columnId, width)` to persist a
 width (e.g. to storage); opt a column out with `resizable: false`. Native renders
 no handle.
+
+### Clipped text
+
+A column narrower than its heading or values clips them with an ellipsis.
+Resting the pointer on clipped text reveals the whole string in a small popover
+anchored to it:
+
+```tsx
+<DataGrid columns={columns} overflowTooltip="headers" rows={rows} />
+```
+
+`overflowTooltip` takes `"all"` (headings **and** text cells — the default),
+`"headers"`, or `"none"`. The popover only opens for text that is genuinely cut
+off, measured at hover time, so it never repeats a label already fully on screen
+and stays correct after a column resize. Select-option pills are not covered.
+
+It is web only: hover has no touch equivalent, so the hook is inert on native.
+The card stack below `cardBreakpoint` is still a web presentation with a real
+pointer, so a clipped card field value reveals the same way. Nothing is hidden
+from assistive tech either way — the
+clipping is purely visual (CSS `text-overflow`), so the full string remains the
+element's accessible name, and the popover itself is `aria-hidden` to avoid
+announcing it twice.
+
+The reveal waits for the pointer to rest (~400ms) and never opens while a
+pointer button is held, so sweeping across a row and dragging a range, column,
+or resize handle are all unaffected. It dismisses on pointer-out, on any press,
+and on **Escape**. Moving the pointer off the text onto the popover itself keeps
+it up — a short grace period covers the gap — so a magnified reader can travel
+to a long name instead of watching it vanish (WCAG 2.1 — 1.4.13 Content on Hover
+or Focus, AA: dismissible, hoverable, persistent). A press dismisses it until
+the pointer leaves and re-enters the text.
 
 ### Editing
 
@@ -459,5 +493,9 @@ toggled off.
   `dataGridContextMenu.tsx` attaches the icons.
 - `dataGridCellContent.tsx` / `dataGridCellEditors.tsx` — per-field renderers and
   editors.
+- `DataGridClippedText.tsx` / `useOverflowTooltip.ts` / `dataGridOverflowModel.ts`
+  — the hover reveal for clipped text: the shared text + popover, the hover state
+  machine, and the pure rules (unit-tested); `dataGridOverflowContext.tsx` carries
+  `overflowTooltip` down to both surfaces.
 - `DataGridBody.tsx` (`FlatList`), `DataGridHeader.tsx`, `DataGridColumnMenu.tsx`,
   `DataGridCardStack.tsx` — view + chrome.

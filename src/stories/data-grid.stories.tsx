@@ -690,6 +690,102 @@ export const Responsive: Story = {
   render: () => <ResponsiveExample />,
 };
 
+// Deliberately narrow columns so text is cut off: the first column clips its
+// heading, "Notes" clips its values while its own heading fits, and "Owner"
+// clips nothing — the case that must stay quiet on hover.
+const clippedColumns: DataGridColumn[] = [
+  {
+    id: "campaign",
+    label: "Campaign performance summary",
+    fieldType: "text",
+    width: 130,
+  },
+  { id: "owner", label: "Owner", fieldType: "text", width: 170 },
+  { id: "notes", label: "Notes", fieldType: "text", width: 150 },
+  { id: "created", label: "Created", fieldType: "date", width: 124 },
+];
+
+const clippedRows: DataGridRow[] = [
+  {
+    id: "r1",
+    cells: {
+      campaign: "Q3 lifecycle relaunch",
+      owner: "Cal",
+      notes: "Waiting on legal review before the second send goes out.",
+      created: "2026-06-29",
+    },
+  },
+  {
+    id: "r2",
+    cells: {
+      campaign: "Docs refresh",
+      owner: "Priya",
+      notes: "Short note.",
+      created: "2026-07-02",
+    },
+  },
+];
+
+function ClippedGrid({
+  overflowTooltip,
+}: {
+  overflowTooltip?: "all" | "headers" | "none";
+}) {
+  return (
+    <StorySurface>
+      <View style={styles.frame}>
+        <DataGrid
+          accessibilityLabel="Content"
+          columns={clippedColumns}
+          overflowTooltip={overflowTooltip}
+          rows={clippedRows}
+        />
+      </View>
+    </StorySurface>
+  );
+}
+
+/**
+ * Hovering a heading or value that its column is too narrow to show reveals the
+ * full text in a popover. Text that already fits stays quiet, so the popover
+ * never just repeats what is on screen.
+ */
+export const ClippedText: Story = {
+  name: "Clipped text (hover to reveal)",
+  render: () => <ClippedGrid />,
+};
+
+export const ClippedHeadersOnly: Story = {
+  name: "Clipped text (headings only)",
+  render: () => <ClippedGrid overflowTooltip="headers" />,
+};
+
+export const ClippedTextOff: Story = {
+  name: "Clipped text (reveal off)",
+  render: () => <ClippedGrid overflowTooltip="none" />,
+};
+
+/**
+ * The card stack is a web presentation too, so a card field value the layout
+ * shrinks past its text reveals itself the same way the grid's cells do.
+ */
+export const ClippedTextCards: Story = {
+  name: "Clipped text (card stack)",
+  parameters: { layout: "fullscreen" },
+  render: () => (
+    <StorySurface>
+      <View style={styles.responsive}>
+        <DataGrid
+          accessibilityLabel="Content"
+          cardBreakpoint={700}
+          columns={clippedColumns}
+          rows={clippedRows}
+        />
+      </View>
+    </StorySurface>
+  ),
+};
+
 function ResponsiveExample() {
   const [expanded, setExpanded] = useState<string | null>(null);
   return (

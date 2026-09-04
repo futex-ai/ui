@@ -24,6 +24,7 @@ import { ContextMenu } from "../popover";
 import { useSharedUiTheme } from "../theme";
 
 import { DataGridAddRow } from "./DataGridAddRow";
+import { DataGridOverflowProvider } from "./dataGridOverflowContext";
 import { DataGridCardStack } from "./DataGridCardStack";
 import { DataGridMarquee } from "./DataGridMarquee";
 import { DataGridBody } from "./DataGridBody";
@@ -52,6 +53,7 @@ import type {
   DataGridColumn,
   DataGridColumnAction,
   DataGridFieldType,
+  DataGridOverflowTooltipMode,
   DataGridRow as DataGridRowData,
   DataGridRowAction,
   DataGridSelection,
@@ -148,6 +150,15 @@ export type DataGridProps = {
    * theme's `focusRing: false` flag instead.
    */
   disableFocusRing?: boolean;
+  /**
+   * Reveal the full text in a popover when a column is too narrow to show it:
+   * `"all"` (headings + text cells, the default), `"headers"`, or `"none"`.
+   * Only fires for text that is actually clipped, so the popover never just
+   * repeats something already fully on screen. Web only — hover has no touch
+   * equivalent, and the clipping is visual, so the full string stays the
+   * element's accessible name either way.
+   */
+  overflowTooltip?: DataGridOverflowTooltipMode;
   testID?: string;
 };
 
@@ -177,6 +188,7 @@ export function DataGrid({
   onContextMenuEntries,
   accessibilityLabel,
   disableFocusRing = false,
+  overflowTooltip,
   testID,
 }: DataGridProps) {
   const theme = useSharedUiTheme();
@@ -324,19 +336,143 @@ export function DataGrid({
 
   if (asCards) {
     return (
-      <View testID={testID}>
-        <DataGridCardStack
-          accessibilityLabel={accessibilityLabel}
-          cellLoading={cellLoading}
-          columns={controller.visibleColumns}
-          fontSize={metrics.fontSize}
-          iconSize={metrics.iconSize}
-          onContextMenu={onContextMenu}
-          onRowExpand={onRowExpand}
-          rows={rows}
-          styles={styles}
-          theme={theme}
-        />
+      <DataGridOverflowProvider
+        fontSize={metrics.fontSize}
+        mode={overflowTooltip}
+      >
+        <View testID={testID}>
+          <DataGridCardStack
+            accessibilityLabel={accessibilityLabel}
+            cellLoading={cellLoading}
+            columns={controller.visibleColumns}
+            fontSize={metrics.fontSize}
+            iconSize={metrics.iconSize}
+            onContextMenu={onContextMenu}
+            onRowExpand={onRowExpand}
+            rows={rows}
+            styles={styles}
+            theme={theme}
+          />
+          <ContextMenu
+            accessibilityLabel={menu.label}
+            entries={menu.entries}
+            onClose={menu.close}
+            open={menu.open}
+            point={menu.point}
+            title={menu.title}
+          />
+        </View>
+      </DataGridOverflowProvider>
+    );
+  }
+
+  return (
+    <DataGridOverflowProvider
+      fontSize={metrics.fontSize}
+      mode={overflowTooltip}
+    >
+      <View
+        onLayout={onGridLayout}
+        ref={(node) =>
+          controller.registerGridNode(node as unknown as Element | null)
+        }
+        style={styles.grid}
+        testID={testID}
+      >
+        <ScrollView
+          horizontal
+          // Fixed content width overflows the viewport → horizontal scroll; the
+          // header scrolls in lockstep with the body since both live in here.
+          // `minWidth: 100%` floors the content at the viewport so that when
+          // capped columns leave it narrower (sparse grids), the header/rows still
+          // span the full width — the leftover reads as a clean empty grid area
+          // instead of a table that stops short with a broken border.
+          contentContainerStyle={
+            layoutReady
+              ? { minWidth: "100%", width: resolved.contentWidth }
+              : { minWidth: "100%" }
+          }
+          showsHorizontalScrollIndicator
+        >
+          <View
+            accessibilityLabel={accessibilityLabel}
+            role="grid"
+            style={styles.gridContent}
+          >
+            <DataGridHeader
+              columns={renderColumns}
+              iconSize={metrics.iconSize}
+              renderAddColumn={
+                onAddColumn
+                  ? () => (
+                      <DataGridAddColumn
+                        iconSize={metrics.iconSize}
+                        onAddColumn={onAddColumn}
+                        styles={styles}
+                        theme={theme}
+                      />
+                    )
+                  : undefined
+              }
+              renderColumnMenuButton={
+                onColumnMenuAction
+                  ? (column) => (
+                      <DataGridColumnMenu
+                        column={column}
+                        iconSize={metrics.iconSize}
+                        onAction={(action) =>
+                          onColumnMenuAction(column.id, action)
+                        }
+                        styles={styles}
+                        theme={theme}
+                      />
+                    )
+                  : undefined
+              }
+              onBeginColumnDrag={controller.beginColumnDrag}
+              onContextMenu={onContextMenu}
+              onBeginColumnResize={resize.beginColumnResize}
+              onColumnResizeStep={resize.resizeColumnByStep}
+              registerHeaderNode={controller.registerHeaderNode}
+              resizingColumnId={resize.resizingColumnId}
+              showGutter={showGutter}
+              disableFocusRing={disableFocusRing}
+              styles={styles}
+              theme={theme}
+            />
+            <DataGridBody
+              addRow={
+                onAddRow ? (
+                  <DataGridAddRow
+                    iconSize={metrics.iconSize}
+                    onPress={onAddRow}
+                    styles={styles}
+                    theme={theme}
+                  />
+                ) : undefined
+              }
+              columns={renderColumns}
+              cellLoading={cellLoading}
+              controller={controller}
+              copiedKeys={copiedKeys}
+              editingCell={editing.editingCell}
+              loadingMore={loadingMore}
+              maxHeight={maxHeight}
+              metrics={metrics}
+              onContextMenu={onContextMenu}
+              onEndReached={onEndReached}
+              onRegisterScroll={registerScroll}
+              onRowExpand={onRowExpand}
+              renderEditor={renderEditor}
+              rows={rows}
+              showGutter={showGutter}
+              styles={styles}
+              theme={theme}
+              trailingWidth={hasAddColumn ? ADD_COLUMN_WIDTH : 0}
+            />
+          </View>
+        </ScrollView>
+        <DataGridMarquee box={controller.dragBox} styles={styles} />
         <ContextMenu
           accessibilityLabel={menu.label}
           entries={menu.entries}
@@ -345,124 +481,10 @@ export function DataGrid({
           point={menu.point}
           title={menu.title}
         />
+        {footerText ? (
+          <DataGridFooter footerText={footerText} styles={styles} />
+        ) : null}
       </View>
-    );
-  }
-
-  return (
-    <View
-      onLayout={onGridLayout}
-      ref={(node) =>
-        controller.registerGridNode(node as unknown as Element | null)
-      }
-      style={styles.grid}
-      testID={testID}
-    >
-      <ScrollView
-        horizontal
-        // Fixed content width overflows the viewport → horizontal scroll; the
-        // header scrolls in lockstep with the body since both live in here.
-        // `minWidth: 100%` floors the content at the viewport so that when
-        // capped columns leave it narrower (sparse grids), the header/rows still
-        // span the full width — the leftover reads as a clean empty grid area
-        // instead of a table that stops short with a broken border.
-        contentContainerStyle={
-          layoutReady
-            ? { minWidth: "100%", width: resolved.contentWidth }
-            : { minWidth: "100%" }
-        }
-        showsHorizontalScrollIndicator
-      >
-        <View
-          accessibilityLabel={accessibilityLabel}
-          role="grid"
-          style={styles.gridContent}
-        >
-          <DataGridHeader
-            columns={renderColumns}
-            iconSize={metrics.iconSize}
-            renderAddColumn={
-              onAddColumn
-                ? () => (
-                    <DataGridAddColumn
-                      iconSize={metrics.iconSize}
-                      onAddColumn={onAddColumn}
-                      styles={styles}
-                      theme={theme}
-                    />
-                  )
-                : undefined
-            }
-            renderColumnMenuButton={
-              onColumnMenuAction
-                ? (column) => (
-                    <DataGridColumnMenu
-                      column={column}
-                      iconSize={metrics.iconSize}
-                      onAction={(action) =>
-                        onColumnMenuAction(column.id, action)
-                      }
-                      styles={styles}
-                      theme={theme}
-                    />
-                  )
-                : undefined
-            }
-            onBeginColumnDrag={controller.beginColumnDrag}
-            onContextMenu={onContextMenu}
-            onBeginColumnResize={resize.beginColumnResize}
-            onColumnResizeStep={resize.resizeColumnByStep}
-            registerHeaderNode={controller.registerHeaderNode}
-            resizingColumnId={resize.resizingColumnId}
-            showGutter={showGutter}
-            disableFocusRing={disableFocusRing}
-            styles={styles}
-            theme={theme}
-          />
-          <DataGridBody
-            addRow={
-              onAddRow ? (
-                <DataGridAddRow
-                  iconSize={metrics.iconSize}
-                  onPress={onAddRow}
-                  styles={styles}
-                  theme={theme}
-                />
-              ) : undefined
-            }
-            columns={renderColumns}
-            cellLoading={cellLoading}
-            controller={controller}
-            copiedKeys={copiedKeys}
-            editingCell={editing.editingCell}
-            loadingMore={loadingMore}
-            maxHeight={maxHeight}
-            metrics={metrics}
-            onContextMenu={onContextMenu}
-            onEndReached={onEndReached}
-            onRegisterScroll={registerScroll}
-            onRowExpand={onRowExpand}
-            renderEditor={renderEditor}
-            rows={rows}
-            showGutter={showGutter}
-            styles={styles}
-            theme={theme}
-            trailingWidth={hasAddColumn ? ADD_COLUMN_WIDTH : 0}
-          />
-        </View>
-      </ScrollView>
-      <DataGridMarquee box={controller.dragBox} styles={styles} />
-      <ContextMenu
-        accessibilityLabel={menu.label}
-        entries={menu.entries}
-        onClose={menu.close}
-        open={menu.open}
-        point={menu.point}
-        title={menu.title}
-      />
-      {footerText ? (
-        <DataGridFooter footerText={footerText} styles={styles} />
-      ) : null}
-    </View>
+    </DataGridOverflowProvider>
   );
 }
