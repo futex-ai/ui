@@ -35,6 +35,10 @@ sheet dismissal, and VoiceOver / TalkBack behaviour still need a real device,
 and join the existing deferred native item in
 [Data Grid component](data-grid-component.md) M7.
 
+M8 amends the delivered behaviour: a right-click on the gutter or a header no
+longer selects the row or column. Only a cell press can move the selection, and
+only when it landed outside it.
+
 ---
 
 ## Goal
@@ -681,10 +685,9 @@ cursor, with spreadsheet selection semantics.
 - [x] `src/data-grid/dataGridContextSelection.ts` — pure:
 
       ```ts
-      /** Spreadsheet rule: a secondary press inside the current selection keeps
-       *  it, so "Delete 5 rows" acts on all five; a press outside collapses to
-       *  the pressed cell / whole row / whole column. Returns `null` when the
-       *  current selection already covers the target and must not change. */
+      /** Spreadsheet rule for cells: a press inside the current selection
+       *  keeps it, a press outside collapses to the pressed cell. Rows and
+       *  columns always return `null` — see M8. */
       export function contextSelectionFor(args: {
         columnIds: readonly string[];
         ref: DataGridCellRef;
@@ -890,6 +893,34 @@ At the end: the feature is documented, swept by axe, and the full gate is green.
       `cargo xtask check` green.
 - [x] `plans/README.md`: move this plan to **Completed** with a prose summary of
       what shipped and what was deferred.
+
+### M8 — Stop a right-click from selecting the row or column ✅
+
+Post-delivery change. Shipped behaviour promoted a gutter press to the whole
+row and a header press to the whole column when the gesture landed outside the
+current selection. In use that read as destructive: reaching for a menu threw
+away a carefully built selection, and the promotion bought nothing, because
+`contextRowIds` already reads the pressed row directly.
+
+At the end: opening a gutter or header menu never touches the selection, and
+the cell rule is unchanged.
+
+- [x] `contextSelectionFor` returns `null` for the `row` and `column` regions.
+      `wholeRow` / `wholeColumn` deleted with it.
+- [x] Cells keep the spreadsheet rule. The cell menu's Copy / Cut / Clear act on
+      the selection, so a menu opened on a cell outside it would otherwise
+      operate on something else entirely, off screen — that one has to move.
+- [x] `contextRowIds` untouched, so a row menu opened inside a five-row
+      selection still says "Delete 5 rows" and one opened outside it still acts
+      on the row under the pointer.
+- [x] Unit tests rewritten as two rule-shaped cases — "a row press never changes
+      the selection" and the column equivalent — each covering inside-full-span,
+      inside-partial-range, outside, and empty-selection.
+- [x] Browser test `right-clicking a gutter or header leaves the selection
+alone`: build a 2×2 range, right-click a distant gutter cell and then a
+      header, assert the four cells stay selected both times.
+- [x] `src/data-grid/README.md` selection paragraph rewritten.
+- [x] `npm run verify` green.
 
 ---
 

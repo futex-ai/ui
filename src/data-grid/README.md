@@ -222,12 +222,22 @@ editor. Rows are gated the way you would expect — no sort rows on a
 `sortable: false` column, no Edit or Clear on `editable: false`, and no
 clipboard rows on native, where the OS clipboard is out of reach.
 
-Selection follows the spreadsheet rule. A press **inside** the current selection
-keeps it, so a gutter menu opened inside a five-row selection reads "Delete 5
-rows" and reports all five ids in one call. A press **outside** collapses first —
-to that cell, that whole row, or that whole column. A row counts as inside only
-when the selection spans it at full width, so a small cell range that happens to
-overlap a row still promotes to the row.
+**Opening a menu on the gutter or a header never changes the selection.**
+Reaching for a menu is not the same gesture as selecting, so a right-click there
+leaves whatever you had selected exactly as it was. The menu still knows its
+target: a row menu acts on the row under the pointer, and a header menu on the
+column it was opened from.
+
+Cells are the one exception, because the cell menu's Copy / Cut / Clear act on
+the selection — a menu opened on a cell outside it would otherwise operate on
+something else entirely, possibly off screen. So a cell press **inside** the
+current selection keeps it, and a press **outside** collapses to that cell.
+
+Where a row action spans more than one row, the selection still decides: a
+gutter menu opened inside a five-row selection reads "Delete 5 rows" and reports
+all five ids in one call. A row counts as inside only when the selection spans
+it at full width, so a small cell range that merely overlaps a row yields just
+that row.
 
 `onContextMenuEntries(entries, context)` is the extension point: add, reorder, or
 replace the default rows, or return `[]` to suppress the menu for that target.

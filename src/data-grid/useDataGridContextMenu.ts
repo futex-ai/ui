@@ -231,9 +231,11 @@ export function useDataGridContextMenu({
             ? { rowId: target.rowId, columnId: columnIds[0] ?? "" }
             : { rowId: rowIds[0] ?? "", columnId: target.columnId };
 
-      // Spreadsheet rule: keep a selection the gesture landed inside, collapse
-      // to the target otherwise. Applied before resolving entries so a row menu
-      // opened inside a five-row selection says "Delete 5 rows".
+      // Only a cell press can move the selection, and only when it landed
+      // outside it — the cell menu acts on the selection, so it has to cover
+      // what was right-clicked. Gutter and header presses leave the selection
+      // alone. Resolved before the entries either way, so a row menu opened
+      // inside a five-row selection still says "Delete 5 rows".
       const nextSelection = contextSelectionFor({
         columnIds,
         ref,

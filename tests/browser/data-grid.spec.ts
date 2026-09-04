@@ -1132,6 +1132,33 @@ test("a column menu action reports the column it was opened on", async ({
   await expect(page.getByRole("menu")).toHaveCount(0);
 });
 
+test("right-clicking a gutter or header leaves the selection alone", async ({
+  page,
+}) => {
+  await gotoDataGridStory(page, "context-menus");
+
+  // Build a 2x2 cell range.
+  await page.getByText("Why we moved every workflow").click();
+  await page.keyboard.press("Shift+ArrowRight");
+  await page.keyboard.press("Shift+ArrowDown");
+  const selected = page.locator('[role="gridcell"][aria-selected="true"]');
+  await expect(selected).toHaveCount(4);
+
+  // A gutter press well outside that range opens the row menu and changes
+  // nothing about the selection.
+  const gutter = page.getByText("4", { exact: true }).first();
+  await rightClickCentre(page, gutter);
+  await expect(page.getByRole("menu")).toBeVisible();
+  await expect(selected).toHaveCount(4);
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("menu")).toBeHidden();
+
+  // Same for a header, which used to promote to the whole column.
+  await rightClickCentre(page, page.getByRole("columnheader").nth(2));
+  await expect(page.getByRole("menu")).toBeVisible();
+  await expect(selected).toHaveCount(4);
+});
+
 test("right-clicking a cell outside the selection collapses to it", async ({
   page,
 }) => {
