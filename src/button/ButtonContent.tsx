@@ -8,9 +8,15 @@
  * from assistive technology, never a pointer target) live in one place rather
  * than being restated per slot.
  */
-import { LucideIcon } from "lucide-react-native";
+import { IconComponent } from "../primitives/icons";
 import { ReactNode } from "react";
-import { Platform, StyleProp, Text, TextStyle, View } from "react-native";
+import {
+  Platform,
+  StyleProp,
+  Text,
+  TextStyle,
+  View,
+} from "../primitives/reactNative";
 
 import { ButtonSpinner } from "./ButtonSpinner";
 import type { ButtonStyles } from "./buttonStyles";
@@ -28,7 +34,7 @@ export type ButtonContentProps = {
   /** Visible label text. */
   children?: ReactNode;
   /** Leading lucide glyph, tinted to {@link color}. */
-  icon?: LucideIcon;
+  icon?: IconComponent;
   /** Diameter for the leading glyph and the busy spinner. */
   iconSize: number;
   /** Leading node rendered as-is, taking precedence over {@link icon}. */

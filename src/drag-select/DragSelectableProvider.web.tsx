@@ -1,6 +1,6 @@
 /** Web drag-select provider with DOM target measurement and marquee overlay. */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { View } from "react-native";
+import { View } from "../primitives/reactNative";
 
 import { announce } from "../announcer";
 import { DragSelectableContext } from "./DragSelectableContext";

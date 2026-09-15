@@ -8,7 +8,11 @@
  */
 import type { ComponentType } from "react";
 import { useMemo } from "react";
-import { Pressable, type StyleProp, type ViewStyle } from "react-native";
+import {
+  Pressable,
+  type StyleProp,
+  type ViewStyle,
+} from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { useFocusRing, type PressableHoverState } from "../focusRing";

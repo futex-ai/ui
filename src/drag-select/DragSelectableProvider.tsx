@@ -1,6 +1,6 @@
 /** Native-safe drag-select provider fallback. */
 import { useCallback, useMemo, useRef } from "react";
-import { View } from "react-native";
+import { View } from "../primitives/reactNative";
 
 import {
   DragSelectableContext,

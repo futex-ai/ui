@@ -1,6 +1,6 @@
 /** Four vertical bars rising and falling like an equalizer. */
 import { useMemo } from "react";
-import { Animated, StyleSheet, View } from "react-native";
+import { Animated, StyleSheet, View } from "../primitives/reactNative";
 
 import { barsGeometry, BARS_COUNT } from "./loaderGeometry";
 import { useLoaderWave, waveInterpolation } from "./loaderWave";

@@ -5,7 +5,7 @@
  * occurrence expansion so it can be dropped in without `CalendarView`.
  */
 import { useMemo } from "react";
-import { StyleProp, ViewStyle } from "react-native";
+import { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import { weekDates } from "./calendarMath";
 import { getOccurrences } from "./recurrence";

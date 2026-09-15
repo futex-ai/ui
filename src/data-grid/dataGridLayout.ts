@@ -1,5 +1,5 @@
 /** Pure column layout helpers shared by the header and body cells. */
-import { Platform, type ViewStyle } from "react-native";
+import { Platform, type ViewStyle } from "../primitives/reactNative";
 
 import type { DataGridColumn, DataGridColumnAlign } from "./types";
 

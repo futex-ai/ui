@@ -29,6 +29,18 @@ const subpaths = Object.keys(packageJson.exports).map((key) =>
 );
 
 assert.equal(packageJson.name, packageName);
+const WEB_PEER_DEPENDENCIES = [
+  "lucide-react",
+  "react",
+  "react-dom",
+  "react-native-web",
+];
+for (const peerName of WEB_PEER_DEPENDENCIES) {
+  assert.ok(
+    peerName in packageJson.peerDependencies,
+    `${peerName} is a declared peer dependency`,
+  );
+}
 
 const smokeRoot = await mkdtemp(join(tmpdir(), "firna-ui-package-"));
 
@@ -62,10 +74,10 @@ try {
 
   const viteConsumerRoot = join(smokeRoot, "vite-consumer");
   await prepareConsumer(viteConsumerRoot, tarballPath);
-  await linkPeerDependencies(
-    viteConsumerRoot,
-    Object.keys(packageJson.peerDependencies),
-  );
+  // Only the web peer set is linked: proving the web build bundles without
+  // `react-native`, `react-native-svg`, or `lucide-react-native` installed is
+  // the point of this consumer.
+  await linkPeerDependencies(viteConsumerRoot, WEB_PEER_DEPENDENCIES);
   await writeImportSmoke(viteConsumerRoot, subpaths);
   await writeViteConfig(viteConsumerRoot);
   await execFileAsync(
@@ -126,9 +138,7 @@ async function prepareConsumer(consumerRoot, tarballPath) {
 
 async function linkPeerDependencies(consumerRoot, peerNames) {
   for (const peerName of peerNames) {
-    const sourceName =
-      peerName === "react-native" ? "react-native-web" : peerName;
-    const source = join(workspaceRoot, "node_modules", sourceName);
+    const source = join(workspaceRoot, "node_modules", peerName);
     const target = join(consumerRoot, "node_modules", peerName);
     await mkdir(resolve(target, ".."), { recursive: true });
     await symlink(source, target, "junction");
@@ -191,11 +201,9 @@ async function writeViteConfig(consumerRoot) {
   build: {
     rollupOptions: {
       external: [
-        /^lucide-react-native(\\/.*)?$/,
+        /^lucide-react(\\/.*)?$/,
         /^react(\\/.*)?$/,
         /^react-dom(\\/.*)?$/,
-        /^react-native(\\/.*)?$/,
-        /^react-native-svg(\\/.*)?$/,
         /^react-native-web(\\/.*)?$/,
       ],
       input: "import-smoke.mjs",

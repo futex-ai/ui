@@ -7,7 +7,7 @@
  *   draft that Cancel discards and Done commits, matching the native sheet.
  */
 import { useMemo } from "react";
-import { View } from "react-native";
+import { View } from "../primitives/reactNative";
 
 import { DropdownPortal } from "../dropdown";
 import { useSharedUiTheme } from "../theme";

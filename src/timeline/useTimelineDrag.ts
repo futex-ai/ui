@@ -8,7 +8,10 @@
  * differs — every rule is shared.
  */
 import { useCallback, useMemo, useRef, useState } from "react";
-import { PanResponder, type GestureResponderEvent } from "react-native";
+import {
+  PanResponder,
+  type GestureResponderEvent,
+} from "../primitives/reactNative";
 
 import {
   resolveMove,

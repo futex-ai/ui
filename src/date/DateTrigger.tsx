@@ -1,7 +1,7 @@
 /** The platform-specific date-field triggers (web text input vs native tap). */
-import { CalendarDays, CircleX } from "lucide-react-native";
+import { CalendarDays, CircleX } from "../primitives/icons";
 import { useEffect, useRef, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, Text, TextInput, View } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { useFocusRing } from "../focusRing";

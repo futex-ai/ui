@@ -1,5 +1,5 @@
 /** Theme-derived layout and typography for the native rich-text editor. */
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import { fieldChromeTokens } from "../input/inputStyles";
 import type { SharedUiTheme } from "../theme";

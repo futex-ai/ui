@@ -1,6 +1,6 @@
 /** Non-modal web dropdown surface anchored to a measured trigger. */
 import { useEffect, useRef } from "react";
-import { View } from "react-native";
+import { View } from "../primitives/reactNative";
 
 import { devWarn } from "../devWarn";
 

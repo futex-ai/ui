@@ -25,9 +25,14 @@ app, plus labelled text inputs and textareas for shared forms.
 - Consumer apps provide data, callbacks, labels, and theme overrides.
 - The library owns component presentation, keyboard behavior, focus treatment,
   portal behavior, layering, and pure interaction helpers.
-- `react`, `react-native`, `react-native-web`, `react-dom`, and
-  `lucide-react-native` are external peer/runtime dependencies, not copied app
-  code.
+- `react`, `react-native`, `react-native-web`, `react-dom`, `react-native-svg`,
+  `lucide-react-native`, and `lucide-react` are external peer/runtime
+  dependencies, not copied app code.
+- Components never import `react-native`, `react-native-svg`, or a Lucide
+  package directly. They import from `src/primitives`, whose native and `.web`
+  files pick the backend, so the web build has no dependency on `react-native`
+  at runtime. A unit test enforces the rule and keeps the two export lists in
+  sync.
 
 ## Rich Text Editor Contract
 

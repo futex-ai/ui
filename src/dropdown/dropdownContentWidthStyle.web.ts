@@ -1,5 +1,5 @@
 /** Web intrinsic-width constraints for content-sized dropdown surfaces. */
-import type { ViewStyle } from "react-native";
+import type { ViewStyle } from "../primitives/reactNative";
 
 import type { DropdownWidthBounds } from "./dropdownGeometry";
 

@@ -9,7 +9,13 @@
  * `onCommit(value, moveNext)` — moveNext (Enter) advances the active cell down.
  */
 import { useRef, useState } from "react";
-import { Platform, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "../primitives/reactNative";
 
 import { DateInput } from "../date";
 import { InputFrame } from "../input";

@@ -1,5 +1,5 @@
 /** Shared styles for the spinning day/month/year wheel and its bottom sheets. */
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
 

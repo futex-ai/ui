@@ -12,7 +12,7 @@
  */
 import { useMemo } from "react";
 import type { ReactNode } from "react";
-import { Text, View } from "react-native";
+import { Text, View } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { useSharedUiTheme } from "../theme";

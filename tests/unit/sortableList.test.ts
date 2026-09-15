@@ -56,7 +56,7 @@ test("sortable list places an optional grab handle at the start or end", () => {
   // The default handle glyph is a themed grip icon, picked by orientation.
   assert.match(
     source,
-    /import \{ GripHorizontal, GripVertical \} from "lucide-react-native";/,
+    /import \{ GripHorizontal, GripVertical \} from "\.\.\/primitives\/icons";/,
   );
   assert.match(
     source,

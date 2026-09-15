@@ -6,7 +6,7 @@ import {
   Text,
   useWindowDimensions,
   View,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import {
   Button,

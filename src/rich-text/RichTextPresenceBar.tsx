@@ -1,7 +1,7 @@
 /** Who is live in a rich-text document, as a stack of tinted avatar discs. */
 import { useMemo } from "react";
-import { Text, View } from "react-native";
-import type { StyleProp, ViewStyle } from "react-native";
+import { Text, View } from "../primitives/reactNative";
+import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import { Avatar } from "../avatar";
 import { useSharedUiTheme } from "../theme";

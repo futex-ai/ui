@@ -1,7 +1,7 @@
 /** Branded start–end date range built from two independent single-date inputs. */
-import { LucideIcon } from "lucide-react-native";
+import { IconComponent } from "../primitives/icons";
 import { useId, useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import type { SharedUiTheme } from "../theme";
@@ -35,7 +35,7 @@ export type DateRangeFieldProps = {
    */
   labelInfo?: string;
   /** Icon for the {@link labelInfo} button. Defaults to the lucide `Info` glyph. */
-  labelInfoIcon?: LucideIcon;
+  labelInfoIcon?: IconComponent;
   /**
    * Accessible name for the {@link labelInfo} button. Defaults to
    * `More information about {label}`.

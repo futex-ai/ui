@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import type { CSSProperties } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "../primitives/reactNative";
 
 import { useFocusRing } from "../focusRing";
 import { useDocumentKeyCapture } from "../keyboardNavigation";

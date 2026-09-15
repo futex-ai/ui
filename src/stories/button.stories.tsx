@@ -12,9 +12,9 @@ import {
   Settings,
   Trash2,
   X,
-} from "lucide-react-native";
+} from "../primitives/icons";
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "../primitives/reactNative";
 
 import { Button, darkSharedUiTheme } from "../index";
 import { StorySurface } from "./sharedExamples";

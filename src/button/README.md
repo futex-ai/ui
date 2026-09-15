@@ -55,7 +55,7 @@ theme tokens.
 
 ```tsx
 import { Button } from "@firna/ui/button";
-import { Plus, Settings } from "lucide-react-native";
+import { Plus, Settings } from "lucide-react-native"; // or "lucide-react" on web
 
 <Button icon={Plus} onPress={addAccount} tone="primary">
   Add account

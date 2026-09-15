@@ -3,7 +3,7 @@
  * portal, height animation, focus trap, escape-layer dismissal) so the web
  * sheet and the web modal share one implementation. Native uses `Sheet.tsx`.
  */
-import { useWindowDimensions } from "react-native";
+import { useWindowDimensions } from "../primitives/reactNative";
 
 import { WebModalFrame } from "../modal";
 

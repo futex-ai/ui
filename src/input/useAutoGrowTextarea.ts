@@ -16,7 +16,7 @@ import type {
   TextInput,
   TextInputContentSizeChangeEventData,
   TextStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 /** Options for {@link useAutoGrowTextarea}, shared by the web and native builds. */
 export type AutoGrowTextareaOptions = {

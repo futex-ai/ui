@@ -1,6 +1,12 @@
 /** Shared on/off toggle switch. */
 import { useMemo } from "react";
-import { Platform, Pressable, StyleProp, View, ViewStyle } from "react-native";
+import {
+  Platform,
+  Pressable,
+  StyleProp,
+  View,
+  ViewStyle,
+} from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";

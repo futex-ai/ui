@@ -3,8 +3,8 @@
  * add-column (+) field-type picker. Both are `DropdownMenu`s with
  * `highlightVariant="ring"` (the solid fill would invert the row text).
  */
-import { ChevronDown, Plus } from "lucide-react-native";
-import { Pressable, View } from "react-native";
+import { ChevronDown, Plus } from "../primitives/icons";
+import { Pressable, View } from "../primitives/reactNative";
 
 import { DropdownMenu, type DropdownListEntry } from "../dropdown";
 import { hideWebOutlineView, type PressableHoverState } from "../focusRing";

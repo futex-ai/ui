@@ -1,6 +1,6 @@
 /** The dependable identity channel: a legend, present whenever there are ≥2 series. */
 import { useMemo } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "../primitives/reactNative";
 
 import { useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";

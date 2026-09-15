@@ -1,7 +1,7 @@
 /** Shared contract and surface chrome for portal-backed dropdown menus. */
 import { useMemo } from "react";
 import type { ReactNode, RefObject } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "../primitives/reactNative";
 
 import { useSharedUiTheme } from "../theme";
 

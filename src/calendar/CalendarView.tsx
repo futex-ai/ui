@@ -8,7 +8,7 @@
  * its own occurrences over its window.
  */
 import { useCallback, useMemo, useRef, useState } from "react";
-import { StyleProp, View, ViewStyle } from "react-native";
+import { StyleProp, View, ViewStyle } from "../primitives/reactNative";
 
 import { todayIso } from "../date/dateMath";
 import { useSharedUiTheme } from "../theme";

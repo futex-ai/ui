@@ -7,9 +7,9 @@ import {
   Mail,
   Search,
   ShieldQuestionMark,
-} from "lucide-react-native";
+} from "../primitives/icons";
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "../primitives/reactNative";
 
 import {
   InputFrame,

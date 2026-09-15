@@ -1,7 +1,12 @@
 /** Value against a target, over qualitative bands. */
 import { useState } from "react";
-import { Text, View } from "react-native";
-import Svg, { Line, Rect } from "react-native-svg";
+import {
+  type StyleProp,
+  Text,
+  View,
+  type ViewStyle,
+} from "../primitives/reactNative";
+import Svg, { Line, Rect } from "../primitives/svg";
 
 import { useSharedUiTheme } from "../theme";
 
@@ -24,7 +29,7 @@ export type BulletChartProps = {
   min?: number;
   valueFormat?: (value: number) => string;
   accessibilityLabel?: string;
-  style?: import("react-native").StyleProp<import("react-native").ViewStyle>;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 };
 

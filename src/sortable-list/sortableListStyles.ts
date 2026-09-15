@@ -1,4 +1,4 @@
-import { StyleSheet, type ViewStyle } from "react-native";
+import { StyleSheet, type ViewStyle } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import type { SharedUiTheme } from "../theme";

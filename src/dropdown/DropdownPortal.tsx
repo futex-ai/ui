@@ -1,6 +1,6 @@
 /** Modal-backed native dropdown surface anchored to a measured trigger. */
 import { useRef } from "react";
-import { Modal, Pressable, StyleSheet, View } from "react-native";
+import { Modal, Pressable, StyleSheet, View } from "../primitives/reactNative";
 
 import { devWarn } from "../devWarn";
 

@@ -304,7 +304,7 @@ test("button renders a caller-supplied iconNode as-is, not inside Text", () => {
   // caller-owned `content` card.
   assert.match(
     source,
-    /\{ icon: LucideIcon \} \| \{ iconNode: ReactNode \} \| \{ content: ReactNode \}/,
+    /\{ icon: IconComponent \}\s*\|\s*\{ iconNode: ReactNode \}\s*\|\s*\{ content: ReactNode \}/,
   );
 });
 

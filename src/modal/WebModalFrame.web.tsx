@@ -1,5 +1,5 @@
 /** Portal-backed modal frame for Expo web surfaces. */
-import { X } from "lucide-react-native";
+import { X } from "../primitives/icons";
 import {
   useCallback,
   useEffect,
@@ -9,8 +9,8 @@ import {
   useState,
 } from "react";
 import type { RefObject } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import type { ViewStyle } from "react-native";
+import { Pressable, ScrollView, Text, View } from "../primitives/reactNative";
+import type { ViewStyle } from "../primitives/reactNative";
 
 import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
 import { useFocusRing } from "../focusRing";

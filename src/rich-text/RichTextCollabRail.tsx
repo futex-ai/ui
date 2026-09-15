@@ -3,8 +3,8 @@
  * comment thread, in document order, with the controls to act on them.
  */
 import { useMemo } from "react";
-import { Text, View } from "react-native";
-import type { StyleProp, ViewStyle } from "react-native";
+import { Text, View } from "../primitives/reactNative";
+import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import { Badge } from "../badge";
 import { useSharedUiTheme } from "../theme";

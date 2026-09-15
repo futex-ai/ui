@@ -1,7 +1,7 @@
 /** Non-modal web portal for input-backed combobox result popovers. */
 import { useRef } from "react";
 import type { ReactNode, RefObject } from "react";
-import { View } from "react-native";
+import { View } from "../primitives/reactNative";
 
 import {
   DropdownPlacement,

@@ -4,7 +4,7 @@
  * `DatePickerOverlayProps` so the `DateField` seam is identical on every platform.
  */
 import type { RefObject } from "react";
-import type { View } from "react-native";
+import type { View } from "../primitives/reactNative";
 
 // Defined in the shared focus-ring helper; re-exported here so date consumers
 // (and the `@firna/ui/date` subpath) keep importing it from this module.

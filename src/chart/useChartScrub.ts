@@ -17,7 +17,10 @@
  * the marks, and a vertical drag still scrolls the page.
  */
 import { useMemo, useRef } from "react";
-import { PanResponder, type PanResponderInstance } from "react-native";
+import {
+  PanResponder,
+  type PanResponderInstance,
+} from "../primitives/reactNative";
 
 import { shouldClaimScrub } from "./chartScrubModel";
 

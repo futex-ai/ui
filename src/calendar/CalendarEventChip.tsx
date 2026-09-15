@@ -7,7 +7,13 @@
  * accessible so the parent day cell's own press target never swallows it.
  */
 import { useMemo } from "react";
-import { Pressable, StyleProp, Text, View, ViewStyle } from "react-native";
+import {
+  Pressable,
+  StyleProp,
+  Text,
+  View,
+  ViewStyle,
+} from "../primitives/reactNative";
 
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";
 import { useSharedUiTheme } from "../theme";

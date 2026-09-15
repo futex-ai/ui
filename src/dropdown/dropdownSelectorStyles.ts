@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { inputSizeTokens } from "../input";

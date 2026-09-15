@@ -1,5 +1,5 @@
 /** The drag-selection marquee: a primary-bordered box over the selected cells. */
-import { View } from "react-native";
+import { View } from "../primitives/reactNative";
 
 import type { DataGridStyles } from "./dataGridStyles";
 import type { DataGridDragBox } from "./useDataGridDrag";

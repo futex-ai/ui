@@ -57,7 +57,7 @@ test("animated border draws the trail with react-native-svg rects", () => {
   // the fully-rounded case of that rect, so one shape element covers every case.
   assert.match(
     source,
-    /import Svg, \{ Defs, LinearGradient, Rect, Stop \} from "react-native-svg"/,
+    /import Svg, \{ Defs, LinearGradient, Rect, Stop \} from "\.\.\/primitives\/svg"/,
   );
   assert.match(source, /Animated\.createAnimatedComponent\(DomSafeRect\)/);
   // The Animated wrapper's `collapsable` prop is stripped before it reaches the

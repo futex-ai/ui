@@ -1,5 +1,5 @@
 /** Single-select segmented controls for compact one-of-N choices. */
-import { LucideIcon } from "lucide-react-native";
+import { IconComponent } from "../primitives/icons";
 import {
   type ReactNode,
   useCallback,
@@ -16,7 +16,7 @@ import {
   type TextStyle,
   View,
   type ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
@@ -60,7 +60,7 @@ export type SegmentOption<T extends string> = {
    * text colour and sized to the control. Use {@link iconNode} for a non-lucide
    * glyph.
    */
-  icon?: LucideIcon;
+  icon?: IconComponent;
   /**
    * A caller-supplied leading icon node (e.g. an `@expo/vector-icons` glyph),
    * rendered as-is — the caller owns its colour and size. Takes precedence over
@@ -110,7 +110,7 @@ export type SegmentedControlProps<T extends string> = {
    */
   labelInfo?: string;
   /** Icon for the {@link labelInfo} button. Defaults to the lucide `Info` glyph. */
-  labelInfoIcon?: LucideIcon;
+  labelInfoIcon?: IconComponent;
   /**
    * Accessible name for the {@link labelInfo} button. Defaults to
    * `More information about {label}`.

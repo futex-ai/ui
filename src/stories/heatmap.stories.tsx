@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { Text, View } from "react-native";
+import { Text, View } from "../primitives/reactNative";
 
 import { Heatmap, darkSharedUiTheme, type HeatmapDatum } from "../index";
 import { StorySurface } from "./sharedExamples";

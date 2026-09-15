@@ -1,7 +1,7 @@
 /** Accessible wrapper around popover content (native + non-web fallback). */
 import type { ReactNode, RefObject } from "react";
-import { View } from "react-native";
-import type { StyleProp, ViewStyle } from "react-native";
+import { View } from "../primitives/reactNative";
+import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import type { PopoverSurfaceRole } from "./popoverModel";
 

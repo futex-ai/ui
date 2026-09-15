@@ -2,7 +2,7 @@
  * Styles for the {@link KeyframeEditor}: the lane rows, the plotted area, and
  * the keyframe diamonds themselves.
  */
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import { focusRingStyleFor } from "../focusRing";
 import type { SharedUiTheme } from "../theme";

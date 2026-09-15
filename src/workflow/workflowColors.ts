@@ -5,7 +5,7 @@
  * {@link SharedUiColors} (not a per-size stylesheet) and are shared by several
  * of the graph primitives.
  */
-import type { ViewStyle } from "react-native";
+import type { ViewStyle } from "../primitives/reactNative";
 
 import type { SharedUiColors } from "../theme";
 

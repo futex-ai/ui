@@ -1,6 +1,12 @@
 /** User avatar that renders initials on a themed disc or rounded square. */
 import { useMemo } from "react";
-import { StyleProp, Text, TextStyle, View, ViewStyle } from "react-native";
+import {
+  StyleProp,
+  Text,
+  TextStyle,
+  View,
+  ViewStyle,
+} from "../primitives/reactNative";
 
 import { DotGridLoader } from "../loader/DotGridLoader";
 import { LOADER_DURATIONS } from "../loader/loaderStyles";

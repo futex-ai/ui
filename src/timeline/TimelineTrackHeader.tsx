@@ -20,7 +20,7 @@ import {
   Video,
   Volume2,
   VolumeX,
-} from "lucide-react-native";
+} from "../primitives/icons";
 import type { ComponentType } from "react";
 import { useMemo } from "react";
 import {
@@ -29,7 +29,7 @@ import {
   Text,
   View,
   type ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { useFocusRing } from "../focusRing";

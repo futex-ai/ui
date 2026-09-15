@@ -10,7 +10,7 @@ import {
   Text,
   View,
   type ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import { useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";

@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import type { RefObject } from "react";
-import { View } from "react-native";
+import { View } from "../primitives/reactNative";
 
 import { dropdownRowDomId, nextSelectableId } from "../dropdown";
 import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";

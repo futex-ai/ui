@@ -1,7 +1,7 @@
 /** Consumer-shaped List focus regression fixture for Storybook. */
-import { ChevronRight } from "lucide-react-native";
+import { ChevronRight } from "../primitives/icons";
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "../primitives/reactNative";
 
 import {
   Button,

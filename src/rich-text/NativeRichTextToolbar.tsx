@@ -18,7 +18,7 @@ import {
   Strikethrough,
   TextQuote,
   Undo2,
-} from "lucide-react-native";
+} from "../primitives/icons";
 import type { ComponentType } from "react";
 import {
   InputAccessoryView,
@@ -27,7 +27,7 @@ import {
   Pressable,
   ScrollView,
   View,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
 

@@ -5,8 +5,8 @@ import {
   type StyleProp,
   View,
   type ViewStyle,
-} from "react-native";
-import Svg, { Circle, Path, Rect } from "react-native-svg";
+} from "../primitives/reactNative";
+import Svg, { Circle, Path, Rect } from "../primitives/svg";
 
 import { useSharedUiTheme } from "../theme";
 

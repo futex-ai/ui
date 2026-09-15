@@ -10,7 +10,13 @@
  * (`DatePickerOverlay.web.tsx`) mirrors this seam.
  */
 import { useMemo, useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";

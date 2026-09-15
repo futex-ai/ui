@@ -396,7 +396,7 @@ test("progress bar sweeps a measured segment and pulses under reduced motion", (
 test("progress ring draws a clamped arc from twelve o'clock", () => {
   const source = readSource("../../src/loader/ProgressRing.tsx");
 
-  assert.match(source, /import Svg, \{ Circle \} from "react-native-svg"/);
+  assert.match(source, /import Svg, \{ Circle \} from "\.\.\/primitives\/svg"/);
   assert.match(source, /rotation=\{-90\}/);
   assert.match(source, /originX=\{center\}/);
   assert.match(

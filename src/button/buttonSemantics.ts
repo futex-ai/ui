@@ -14,7 +14,7 @@
  * both keeps one contract across both renderers, and matches the pairing
  * `SegmentedControl` already uses for its radios.
  */
-import type { AccessibilityState } from "react-native";
+import type { AccessibilityState } from "../primitives/reactNative";
 
 /**
  * The roles a `Button` may announce. Every member is a single-activation

@@ -7,7 +7,7 @@
  * clip positions themselves, so neither needs to reach assistive tech.
  */
 import { useMemo } from "react";
-import { View } from "react-native";
+import { View } from "../primitives/reactNative";
 
 import { useSharedUiTheme } from "../theme";
 

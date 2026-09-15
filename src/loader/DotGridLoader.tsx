@@ -1,6 +1,6 @@
 /** Nine dots on a 3×3 grid, lit by a wave travelling down the diagonal. */
 import { useMemo } from "react";
-import { Animated, StyleSheet, View } from "react-native";
+import { Animated, StyleSheet, View } from "../primitives/reactNative";
 
 import { dotGridGeometry, DOT_GRID_TRACKS } from "./loaderGeometry";
 import { useLoaderWave, waveInterpolation } from "./loaderWave";

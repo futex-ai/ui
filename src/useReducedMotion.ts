@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AccessibilityInfo, Platform } from "react-native";
+import { AccessibilityInfo, Platform } from "./primitives/reactNative";
 
 /**
  * Tracks the user's "reduce motion" preference.

@@ -6,7 +6,7 @@
  * `ResponsivePopoverProps`, so a single body works on both platforms.
  */
 import type { ReactNode, RefObject } from "react";
-import type { View } from "react-native";
+import type { View } from "../primitives/reactNative";
 
 import type { DropdownPlacement } from "../dropdown";
 

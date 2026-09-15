@@ -13,7 +13,7 @@ import {
   Text,
   View,
   ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import { addDays, parseIso, SHORT_MONTHS } from "../date/dateMath";
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";

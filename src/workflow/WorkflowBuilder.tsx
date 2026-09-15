@@ -8,9 +8,14 @@
  * a step editor) when `onNodePress` is supplied. Given `onInsertStep`, each
  * transition instead shows a `+` button to insert a step in between.
  */
-import { Plus } from "lucide-react-native";
+import { Plus } from "../primitives/icons";
 import { Fragment, ReactNode, useMemo } from "react";
-import { Platform, StyleProp, View, ViewStyle } from "react-native";
+import {
+  Platform,
+  StyleProp,
+  View,
+  ViewStyle,
+} from "../primitives/reactNative";
 
 import { Button } from "../button";
 import type { ControlSize } from "../controlSize";

@@ -3,7 +3,7 @@
  * than in the family sheet: the bin is the one panel with real card geometry,
  * and folding it in would make the shared sheet the biggest file in the family.
  */
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import { focusRingStyleFor } from "../focusRing";
 import type { SharedUiTheme } from "../theme";

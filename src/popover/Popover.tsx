@@ -1,8 +1,8 @@
 /** Anchored content popover built on the shared dropdown portal. */
 import { useCallback, useId, useRef, useState } from "react";
 import type { ReactNode, RefObject } from "react";
-import { StyleSheet, View } from "react-native";
-import type { StyleProp, ViewStyle } from "react-native";
+import { StyleSheet, View } from "../primitives/reactNative";
+import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import {
   DropdownPortal,

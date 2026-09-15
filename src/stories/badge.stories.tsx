@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "../primitives/reactNative";
 
 import { Badge } from "../index";
 import { darkSharedUiTheme, junoSharedUiTheme } from "../index";

@@ -8,10 +8,10 @@
  * Both actions name what they will do and what they act on, rather than being
  * an anonymous glyph in a row of identical glyphs.
  */
-import { Clock, RotateCcw } from "lucide-react-native";
+import { Clock, RotateCcw } from "../primitives/icons";
 import type { ComponentType } from "react";
 import { useMemo } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, Text, TextInput, View } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { DropdownMenu, type DropdownListEntry } from "../dropdown";

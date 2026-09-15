@@ -1,6 +1,6 @@
 /** Stacked and percent-stacked areas: composition over time. */
 import { useMemo, useState } from "react";
-import Svg, { G, Path } from "react-native-svg";
+import Svg, { G, Path } from "../primitives/svg";
 
 import { useSharedUiTheme } from "../theme";
 

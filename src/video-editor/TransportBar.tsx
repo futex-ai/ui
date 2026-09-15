@@ -18,10 +18,15 @@ import {
   Repeat,
   SkipBack,
   SkipForward,
-} from "lucide-react-native";
+} from "../primitives/icons";
 import type { ComponentType, ReactNode } from "react";
 import { useMemo } from "react";
-import { type StyleProp, Text, View, type ViewStyle } from "react-native";
+import {
+  type StyleProp,
+  Text,
+  View,
+  type ViewStyle,
+} from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { DropdownMenu, type DropdownListEntry } from "../dropdown";

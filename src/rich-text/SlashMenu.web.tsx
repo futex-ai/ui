@@ -10,11 +10,11 @@ import {
   Minus,
   Pilcrow,
   TextQuote,
-} from "lucide-react-native";
+} from "../primitives/icons";
 import { useEffect, useMemo } from "react";
 import type { RefObject } from "react";
-import { View } from "react-native";
-import type { LucideIcon } from "lucide-react-native";
+import { View } from "../primitives/reactNative";
+import type { IconComponent } from "../primitives/icons";
 
 import {
   DropdownIconBox,
@@ -45,7 +45,7 @@ type SlashMenuProps = {
   surfaceRef: RefObject<View | null>;
 };
 
-const BUILTIN_ICONS: Record<BuiltInSlashMenuIcon, LucideIcon> = {
+const BUILTIN_ICONS: Record<BuiltInSlashMenuIcon, IconComponent> = {
   Code,
   Heading1,
   Heading2,
@@ -180,10 +180,10 @@ function SlashMenuIcon({ item }: { item: SlashMenuModelItem }) {
   return Icon ? <DropdownIconBox Icon={Icon} /> : null;
 }
 
-function extraIcon(icon: unknown): LucideIcon | null {
+function extraIcon(icon: unknown): IconComponent | null {
   return typeof icon === "function" ||
     (typeof icon === "object" && icon !== null)
-    ? (icon as LucideIcon)
+    ? (icon as IconComponent)
     : null;
 }
 

@@ -8,7 +8,7 @@
  * to the band rather than to the painted pixels.
  */
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Platform, Pressable, View } from "react-native";
+import { Platform, Pressable, View } from "../primitives/reactNative";
 
 import { useFocusRing } from "../focusRing";
 import {

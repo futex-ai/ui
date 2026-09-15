@@ -1,7 +1,7 @@
 /** Caret-anchored virtual rect measurement for the web slash menu. */
 import { useCallback, useEffect, useState } from "react";
 import type { RefObject } from "react";
-import { Platform, useWindowDimensions } from "react-native";
+import { Platform, useWindowDimensions } from "../primitives/reactNative";
 
 import type { DropdownAnchorRect, DropdownViewport } from "../dropdown";
 

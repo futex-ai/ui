@@ -1,6 +1,6 @@
 /** A native context menu: the same entries as a bottom sheet. */
 import { useRef } from "react";
-import { View } from "react-native";
+import { View } from "../primitives/reactNative";
 
 import type { ContextMenuProps } from "./contextMenuModel";
 import { ResponsiveMenu } from "./ResponsiveMenu";

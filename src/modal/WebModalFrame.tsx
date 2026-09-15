@@ -16,7 +16,7 @@
  * `accessibilityViewIsModal` confines assistive tech to the surface (works
  * natively, unlike RNW — hence the web frame's manual `inert` focus trap).
  */
-import { X } from "lucide-react-native";
+import { X } from "../primitives/icons";
 import { useCallback, useMemo, useRef } from "react";
 import {
   KeyboardAvoidingView,
@@ -27,7 +27,7 @@ import {
   StyleSheet,
   Text,
   View,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import { BottomSheetShell } from "../sheet/BottomSheetShell";
 import type { BottomSheetHandle } from "../sheet/BottomSheetShell";

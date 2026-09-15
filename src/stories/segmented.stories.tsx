@@ -5,9 +5,9 @@ import {
   ShieldQuestionMark,
   Table,
   User,
-} from "lucide-react-native";
+} from "../primitives/icons";
 import { useState } from "react";
-import { View } from "react-native";
+import { View } from "../primitives/reactNative";
 
 import { SegmentedControl, darkSharedUiTheme } from "../index";
 import { StorySurface } from "./sharedExamples";

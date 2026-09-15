@@ -1,7 +1,7 @@
 /** DOM-portalled toast region for React Native Web surfaces. */
 import { createPortal } from "react-dom";
-import { View } from "react-native";
-import type { ViewStyle } from "react-native";
+import { View } from "../primitives/reactNative";
+import type { ViewStyle } from "../primitives/reactNative";
 
 import { Toast } from "./Toast";
 import { ToastLiveRegion } from "./ToastLiveRegion";

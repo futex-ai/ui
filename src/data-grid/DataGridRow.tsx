@@ -1,7 +1,7 @@
 /** One grid row: the left gutter (row number + expand) followed by typed cells. */
-import { Maximize2 } from "lucide-react-native";
+import { Maximize2 } from "../primitives/icons";
 import { memo } from "react";
-import { Platform, Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "../primitives/reactNative";
 
 import type { DropdownPoint } from "../dropdown";
 import { hideWebOutlineView, type PressableHoverState } from "../focusRing";

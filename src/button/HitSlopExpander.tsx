@@ -16,7 +16,7 @@
  * native `hitSlop` does — so slop is for a control with room around it, not one
  * packed against its neighbours.
  */
-import { Insets, Platform, StyleSheet, View } from "react-native";
+import { Insets, Platform, StyleSheet, View } from "../primitives/reactNative";
 
 /** Resolves the shorthand (`number`) and per-edge (`Insets`) forms to insets. */
 export function hitSlopInsets(hitSlop: number | Insets): Required<Insets> {

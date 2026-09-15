@@ -1,6 +1,6 @@
 /** Trend over time: multi-series lines with a snapping crosshair. */
 import { useMemo, useState } from "react";
-import Svg, { Circle, G, Line, Path } from "react-native-svg";
+import Svg, { Circle, G, Line, Path } from "../primitives/svg";
 
 import { announce } from "../announcer";
 import { useSharedUiTheme } from "../theme";

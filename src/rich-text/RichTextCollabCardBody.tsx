@@ -3,7 +3,7 @@
  * anchored to, and what it says. Split out of `RichTextCollabCard` so the card
  * file stays about layout, selection, and the review actions.
  */
-import { Text, View } from "react-native";
+import { Text, View } from "../primitives/reactNative";
 
 import { Avatar } from "../avatar";
 

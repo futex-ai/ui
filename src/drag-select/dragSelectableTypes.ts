@@ -6,7 +6,7 @@ import type {
   StyleProp,
   View,
   ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import type { DragSelectableBox } from "./dragSelectableModel";
 

@@ -14,8 +14,8 @@ import {
   StyleProp,
   View,
   ViewStyle,
-} from "react-native";
-import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
+} from "../primitives/reactNative";
+import Svg, { Defs, LinearGradient, Rect, Stop } from "../primitives/svg";
 
 import { devWarn } from "../devWarn";
 import { useSharedUiTheme } from "../theme";

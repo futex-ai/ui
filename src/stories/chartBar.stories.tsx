@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ReactNode } from "react";
-import { View } from "react-native";
+import { View } from "../primitives/reactNative";
 
 import { darkSharedUiTheme, BarChart, compactNumber } from "../index";
 import { StorySurface } from "./sharedExamples";

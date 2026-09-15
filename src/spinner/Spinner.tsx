@@ -7,8 +7,8 @@ import {
   StyleProp,
   View,
   ViewStyle,
-} from "react-native";
-import Svg, { Circle } from "react-native-svg";
+} from "../primitives/reactNative";
+import Svg, { Circle } from "../primitives/svg";
 
 import type { ControlSize } from "../controlSize";
 import { useSharedUiTheme } from "../theme";

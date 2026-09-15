@@ -1,4 +1,4 @@
-import { AccessibilityInfo, Platform } from "react-native";
+import { AccessibilityInfo, Platform } from "./primitives/reactNative";
 
 /**
  * Shared screen-reader announcer for transient status messages.

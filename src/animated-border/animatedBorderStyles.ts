@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 export const animatedBorderStyles = StyleSheet.create({
   // Wraps the bordered content so the absolutely-positioned border can be

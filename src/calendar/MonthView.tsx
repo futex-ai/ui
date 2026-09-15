@@ -8,7 +8,13 @@
  * gotcha from `DateTrigger.tsx`. Self-contained: it expands its own occurrences.
  */
 import { useMemo } from "react";
-import { Pressable, StyleProp, Text, View, ViewStyle } from "react-native";
+import {
+  Pressable,
+  StyleProp,
+  Text,
+  View,
+  ViewStyle,
+} from "../primitives/reactNative";
 
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";
 import { compareIso, parseIso } from "../date/dateMath";

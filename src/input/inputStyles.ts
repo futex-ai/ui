@@ -1,5 +1,5 @@
 /** Shared chrome for the {@link Input} field and bare {@link InputFrame} box. */
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import type { SharedUiTheme } from "../theme";

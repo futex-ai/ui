@@ -10,7 +10,7 @@
  * a rack row and the clip's own property panel are built from the same rows and
  * behave identically.
  */
-import { Plus, Trash2 } from "lucide-react-native";
+import { Plus, Trash2 } from "../primitives/icons";
 import { useMemo } from "react";
 import {
   Pressable,
@@ -18,7 +18,7 @@ import {
   Text,
   View,
   type ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { DropdownMenu, type DropdownListEntry } from "../dropdown";

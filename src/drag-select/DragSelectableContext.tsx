@@ -7,7 +7,7 @@ import {
   useMemo,
   useRef,
 } from "react";
-import { Platform } from "react-native";
+import { Platform } from "../primitives/reactNative";
 
 import { useFocusRing } from "../focusRing";
 import { nextNavIndex, rovingTabIndex } from "../keyboardNavigation";

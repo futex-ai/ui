@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import type { BadgeTone } from "../badge/badgeStyles";
 import type { ControlSize } from "../controlSize";

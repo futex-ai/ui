@@ -1,5 +1,5 @@
 /** Shared styles for the calendar family (toolbar, month grid, time grid, agenda). */
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
 

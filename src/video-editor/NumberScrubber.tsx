@@ -16,7 +16,7 @@ import {
   TextInput,
   View,
   type ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { useFocusRing } from "../focusRing";

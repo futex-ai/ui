@@ -1,11 +1,114 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
+/**
+ * Every Lucide glyph the library imports through `src/primitives/icons.ts`.
+ * The web build resolves those to `lucide-react`, so the stubbed package must
+ * export each name or the import smoke fails on a missing binding.
+ */
+const ICON_NAMES = [
+  "Archive",
+  "ArrowDownAZ",
+  "ArrowDownToLine",
+  "ArrowLeftToLine",
+  "ArrowRightToLine",
+  "ArrowUpAZ",
+  "ArrowUpToLine",
+  "Bell",
+  "Bold",
+  "Brain",
+  "Calendar",
+  "CalendarDays",
+  "Check",
+  "ChevronDown",
+  "ChevronFirst",
+  "ChevronLast",
+  "ChevronLeft",
+  "ChevronRight",
+  "ChevronUp",
+  "CircleAlert",
+  "CircleCheck",
+  "CircleX",
+  "ClipboardPaste",
+  "Clock",
+  "Code",
+  "Columns2",
+  "Copy",
+  "CopyPlus",
+  "CornerUpLeft",
+  "DollarSign",
+  "Download",
+  "Eraser",
+  "Eye",
+  "EyeOff",
+  "GitBranch",
+  "Grid2x2",
+  "GripHorizontal",
+  "GripVertical",
+  "Hash",
+  "Heading1",
+  "Heading2",
+  "Heading3",
+  "Headphones",
+  "Image",
+  "Inbox",
+  "Info",
+  "Italic",
+  "LayoutGrid",
+  "List",
+  "ListChecks",
+  "ListOrdered",
+  "LoaderCircle",
+  "Lock",
+  "LockOpen",
+  "Mail",
+  "Maximize2",
+  "Mic",
+  "Minus",
+  "MoreHorizontal",
+  "Music",
+  "Paperclip",
+  "Pause",
+  "Pencil",
+  "Pilcrow",
+  "Pin",
+  "Play",
+  "Plus",
+  "Redo2",
+  "Repeat",
+  "RotateCcw",
+  "Scissors",
+  "Search",
+  "Settings",
+  "ShieldQuestionMark",
+  "SkipBack",
+  "SkipForward",
+  "Sparkles",
+  "SquareTerminal",
+  "Strikethrough",
+  "Table",
+  "Tags",
+  "TextQuote",
+  "Trash2",
+  "TriangleAlert",
+  "Type",
+  "Undo2",
+  "User",
+  "Video",
+  "Volume2",
+  "VolumeX",
+  "X",
+  "Zap",
+];
+
 export async function writeNodePeerStubs(consumerRoot) {
   await writeStubPackage(consumerRoot, "react", {
     "index.js": `export const Fragment = Symbol.for("react.fragment");
 export function createContext(defaultValue) {
   return { Provider: ({ children }) => children, _currentValue: defaultValue };
+}
+export function createElement(type, props, ...children) {
+  return { type, props: { ...(props ?? {}), children } };
 }
 export function cloneElement(element, props) {
   return { ...element, props: { ...(element?.props ?? {}), ...props } };
@@ -44,6 +147,7 @@ export default {
   Fragment,
   cloneElement,
   createContext,
+  createElement,
   forwardRef,
   isValidElement,
   memo,
@@ -80,7 +184,7 @@ export const jsxs = jsx;
 `,
     "package.json": JSON.stringify({ name: "react-dom", type: "module" }),
   });
-  await writeStubPackage(consumerRoot, "react-native", {
+  await writeStubPackage(consumerRoot, "react-native-web", {
     "index.js": `export const FlatList = "FlatList";
 export const Image = "Image";
 export const InputAccessoryView = "InputAccessoryView";
@@ -98,6 +202,7 @@ export const View = "View";
 export const Keyboard = {
   dismiss() {},
 };
+export const KeyboardAvoidingView = "KeyboardAvoidingView";
 export const AccessibilityInfo = {
   announceForAccessibility() {},
   isReduceMotionEnabled() {
@@ -144,134 +249,23 @@ export function useWindowDimensions() {
   return { fontScale: 1, height: 768, scale: 1, width: 1024 };
 }
 `,
-    "package.json": JSON.stringify({ name: "react-native", type: "module" }),
-  });
-  await writeStubPackage(consumerRoot, "react-native-svg", {
-    "index.js": `export const Circle = "Circle";
-export const ClipPath = "ClipPath";
-export const Defs = "Defs";
-export const G = "G";
-export const Line = "Line";
-export const LinearGradient = "LinearGradient";
-export const Path = "Path";
-export const Pattern = "Pattern";
-export const Polygon = "Polygon";
-export const Rect = "Rect";
-export const Stop = "Stop";
-export const Svg = "Svg";
-export default Svg;
-`,
     "package.json": JSON.stringify({
-      name: "react-native-svg",
+      name: "react-native-web",
       type: "module",
     }),
   });
-  await writeStubPackage(consumerRoot, "lucide-react-native", {
+  await writeStubPackage(consumerRoot, "lucide-react", {
     "index.js": `const Icon = () => null;
-export const ArrowDownAZ = Icon;
-export const ArrowDownToLine = Icon;
-export const ArrowLeftToLine = Icon;
-export const ArrowRightToLine = Icon;
-export const ArrowUpAZ = Icon;
-export const ArrowUpToLine = Icon;
-export const AudioWaveform = Icon;
-export const Bold = Icon;
-export const Brain = Icon;
-export const Calendar = Icon;
-export const CalendarDays = Icon;
-export const Check = Icon;
-export const ChevronDown = Icon;
-export const ChevronFirst = Icon;
-export const ChevronLast = Icon;
-export const ChevronLeft = Icon;
-export const ChevronRight = Icon;
-export const CircleAlert = Icon;
-export const CircleCheck = Icon;
-export const CircleX = Icon;
-export const ClipboardPaste = Icon;
-export const Clock = Icon;
-export const Code = Icon;
-export const Copy = Icon;
-export const CopyPlus = Icon;
-export const CornerUpLeft = Icon;
-export const Diamond = Icon;
-export const Download = Icon;
-export const Eraser = Icon;
-export const Eye = Icon;
-export const EyeOff = Icon;
-export const Film = Icon;
-export const Gauge = Icon;
-export const GitBranch = Icon;
-export const Grid2x2 = Icon;
-export const GripHorizontal = Icon;
-export const GripVertical = Icon;
-export const Hash = Icon;
-export const Heading1 = Icon;
-export const Heading2 = Icon;
-export const Heading3 = Icon;
-export const Headphones = Icon;
-export const Image = Icon;
-export const Inbox = Icon;
-export const Info = Icon;
-export const Italic = Icon;
-export const Layers = Icon;
-export const LayoutGrid = Icon;
-export const List = Icon;
-export const ListChecks = Icon;
-export const ListOrdered = Icon;
-export const LoaderCircle = Icon;
-export const Lock = Icon;
-export const LockOpen = Icon;
-export const Magnet = Icon;
-export const Maximize2 = Icon;
-export const Minus = Icon;
-export const MousePointer2 = Icon;
-export const Move = Icon;
-export const Music = Icon;
-export const Pause = Icon;
-export const Pencil = Icon;
-export const Pilcrow = Icon;
-export const Play = Icon;
-export const Plus = Icon;
-export const Redo2 = Icon;
-export const Repeat = Icon;
-export const RotateCcw = Icon;
-export const Ruler = Icon;
-export const Scissors = Icon;
-export const Search = Icon;
-export const Settings2 = Icon;
-export const SkipBack = Icon;
-export const SkipForward = Icon;
-export const SlidersHorizontal = Icon;
-export const Sparkles = Icon;
-export const SquareTerminal = Icon;
-export const Strikethrough = Icon;
-export const Tags = Icon;
-export const TextQuote = Icon;
-export const Timer = Icon;
-export const Trash2 = Icon;
-export const TriangleAlert = Icon;
-export const Type = Icon;
-export const Undo2 = Icon;
-export const Video = Icon;
-export const Volume2 = Icon;
-export const VolumeX = Icon;
-export const WandSparkles = Icon;
-export const X = Icon;
-export const Zap = Icon;
-export const ZoomIn = Icon;
-export const ZoomOut = Icon;
+${ICON_NAMES.map((name) => `export const ${name} = Icon;`).join("\n")}
 `,
-    "package.json": JSON.stringify({
-      name: "lucide-react-native",
-      type: "module",
-    }),
+    "package.json": JSON.stringify({ name: "lucide-react", type: "module" }),
   });
 }
 
 export async function writeTypePeerStubs(consumerRoot) {
   await writeStubPackage(consumerRoot, "react", {
-    "index.d.ts": `export type ComponentType<P = unknown> = (props: P) => ReactNode;
+    "index.d.ts": `export type ComponentProps<T> = T extends ComponentType<infer P> ? P : T extends new (props: infer P) => unknown ? P : never;
+export type ComponentType<P = unknown> = (props: P) => ReactNode;
 export type Dispatch<T> = (value: T) => void;
 export type PropsWithChildren<P = unknown> = P & { children?: ReactNode };
 export interface ReactElement<P = unknown> {
@@ -359,8 +353,54 @@ export interface TextStyle {
 export interface ViewStyle {
   [key: string]: unknown;
 }
+export interface FocusEvent {
+  [key: string]: unknown;
+}
+export interface LayoutChangeEvent {
+  [key: string]: unknown;
+}
+export interface NativeScrollEvent {
+  [key: string]: unknown;
+}
+export interface NativeSyntheticEvent<T> {
+  nativeEvent: T;
+}
+export interface TextInputContentSizeChangeEventData {
+  [key: string]: unknown;
+}
+export interface TextProps {
+  [key: string]: unknown;
+}
+export interface ViewProps {
+  [key: string]: unknown;
+}
+export declare class FlatList<ItemT = unknown> {
+  protected itemType?: ItemT;
+}
+export declare class Image {}
+export declare class InputAccessoryView {}
+export declare class KeyboardAvoidingView {}
+export declare class Modal {}
+export declare class ScrollView {}
+export declare class Text {}
 export declare class TextInput {}
 export declare class View {}
+export declare const AccessibilityInfo: Record<string, unknown>;
+export declare const Easing: Record<string, unknown>;
+export declare const Keyboard: Record<string, unknown>;
+export declare const Platform: { OS: string };
+export declare const Pressable: unknown;
+export declare const StyleSheet: Record<string, unknown>;
+export declare function useWindowDimensions(): {
+  height: number;
+  width: number;
+};
+export declare namespace Animated {
+  class Value {
+    constructor(value: number);
+  }
+  const View: unknown;
+}
 `,
     "package.json": JSON.stringify({
       name: "react-native",
@@ -368,11 +408,12 @@ export declare class View {}
       types: "./index.d.ts",
     }),
   });
-  await writeStubPackage(consumerRoot, "lucide-react-native", {
-    "index.d.ts": `export type LucideIcon = (props: unknown) => unknown;
+  await writeStubPackage(consumerRoot, "lucide-react", {
+    "index.d.ts": `type Icon = (props: unknown) => unknown;
+${ICON_NAMES.map((name) => `export declare const ${name}: Icon;`).join("\n")}
 `,
     "package.json": JSON.stringify({
-      name: "lucide-react-native",
+      name: "lucide-react",
       type: "module",
       types: "./index.d.ts",
     }),

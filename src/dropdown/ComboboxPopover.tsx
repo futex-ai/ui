@@ -1,7 +1,7 @@
 /** Native-safe fallback for input-backed combobox popovers. */
 import { useMemo } from "react";
 import { ReactNode, RefObject } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "../primitives/reactNative";
 
 import { useSharedUiTheme } from "../theme";
 

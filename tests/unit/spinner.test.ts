@@ -54,8 +54,7 @@ test("spinner draws the ring with react-native-svg so the arc renders on iOS", (
 
   // The single-edge CSS border trick collapses to a uniform color on a circle
   // on iOS, so the moving arc must be real SVG geometry instead.
-  assert.match(source, /from "react-native-svg"/);
-  assert.match(source, /import Svg, \{ Circle \} from "react-native-svg"/);
+  assert.match(source, /import Svg, \{ Circle \} from "\.\.\/primitives\/svg"/);
   // A faint full-circle track sits under the accent leading arc.
   assert.match(source, /stroke=\{track\}/);
   assert.match(source, /stroke=\{accent\}/);

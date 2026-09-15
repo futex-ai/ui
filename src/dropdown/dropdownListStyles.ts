@@ -1,5 +1,5 @@
 /** Shared style factory for dropdown list rows. */
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
 

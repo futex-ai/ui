@@ -7,7 +7,13 @@
  * native), and the in-progress draft is drawn as a translucent ghost block.
  */
 import { useMemo } from "react";
-import { ScrollView, StyleProp, Text, View, ViewStyle } from "react-native";
+import {
+  ScrollView,
+  StyleProp,
+  Text,
+  View,
+  ViewStyle,
+} from "../primitives/reactNative";
 
 import { parseIso } from "../date/dateMath";
 import { useSharedUiTheme } from "../theme";

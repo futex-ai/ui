@@ -1,5 +1,5 @@
 /** Native toast region: an absolutely-positioned overlay within the provider. */
-import { View } from "react-native";
+import { View } from "../primitives/reactNative";
 
 import { Toast } from "./Toast";
 import { ToastLiveRegion } from "./ToastLiveRegion";

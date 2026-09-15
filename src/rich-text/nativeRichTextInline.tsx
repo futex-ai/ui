@@ -5,8 +5,8 @@
  * styling on top of its own marks — all of it plain `Text` styling, because a
  * native `TextInput` can only host text nodes.
  */
-import { Text, View } from "react-native";
-import type { StyleProp, TextStyle } from "react-native";
+import { Text, View } from "../primitives/reactNative";
+import type { StyleProp, TextStyle } from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
 

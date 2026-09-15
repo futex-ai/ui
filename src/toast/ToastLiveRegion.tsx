@@ -1,7 +1,7 @@
 /** Persistent, always-mounted screen-reader live region for the toast stack. */
 import { useEffect, useRef, useState } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
-import type { TextProps } from "react-native";
+import { Platform, StyleSheet, Text, View } from "../primitives/reactNative";
+import type { TextProps } from "../primitives/reactNative";
 
 import type { ToastItem } from "./toastModel";
 

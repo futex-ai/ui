@@ -21,7 +21,7 @@ import {
   ScrollView,
   Text,
   View,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import { useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";

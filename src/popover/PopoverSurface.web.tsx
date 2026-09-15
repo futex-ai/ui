@@ -1,8 +1,8 @@
 /** Accessible, focus-managed wrapper around popover content (web). */
 import { useEffect, useRef } from "react";
 import type { ReactNode, RefObject } from "react";
-import { View } from "react-native";
-import type { StyleProp, ViewStyle } from "react-native";
+import { View } from "../primitives/reactNative";
+import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import { hideWebOutlineView } from "../focusRing";
 

@@ -18,7 +18,7 @@
  */
 import { useCallback, useId, useMemo } from "react";
 import type { ReactNode, RefObject } from "react";
-import type { View } from "react-native";
+import type { View } from "../primitives/reactNative";
 
 import {
   DropdownList,

@@ -1,6 +1,6 @@
 /** Axis chrome: hairline gridlines, a baseline, and tick labels. */
-import { Text, View } from "react-native";
-import Svg, { Line } from "react-native-svg";
+import { Text, View } from "../primitives/reactNative";
+import Svg, { Line } from "../primitives/svg";
 
 import { useSharedUiTheme } from "../theme";
 

@@ -1,5 +1,5 @@
 /** Shared pressable button with tone, size, optional icon, and block variants. */
-import { LucideIcon } from "lucide-react-native";
+import { IconComponent } from "../primitives/icons";
 import { ReactNode, Ref, useMemo } from "react";
 import {
   GestureResponderEvent,
@@ -10,7 +10,7 @@ import {
   TextStyle,
   View,
   ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
@@ -149,7 +149,7 @@ type ButtonBaseProps = ButtonRoleState & {
    */
   hitSlop?: number | Insets;
   /** Leading lucide icon shown before the label, tinted to match the label colour. */
-  icon?: LucideIcon;
+  icon?: IconComponent;
   /**
    * A caller-supplied icon node rendered as-is (e.g. an `@expo/vector-icons`
    * glyph), for when a lucide `icon` is not the right glyph. It is NOT wrapped
@@ -276,7 +276,11 @@ export type IconOnlyButtonProps = ButtonBaseProps & {
   /** Accessible name. Required because there is no visible label to name it. */
   accessibilityLabel: string;
   children?: never;
-} & ({ icon: LucideIcon } | { iconNode: ReactNode } | { content: ReactNode });
+} & (
+    | { icon: IconComponent }
+    | { iconNode: ReactNode }
+    | { content: ReactNode }
+  );
 
 export type ButtonProps = IconOnlyButtonProps | LabelledButtonProps;
 

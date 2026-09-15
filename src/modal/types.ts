@@ -5,7 +5,11 @@
  * every platform. Mirrors the date module's `types.ts` convention.
  */
 import type { ReactNode, RefObject } from "react";
-import type { StyleProp, TextStyle, ViewStyle } from "react-native";
+import type {
+  StyleProp,
+  TextStyle,
+  ViewStyle,
+} from "../primitives/reactNative";
 
 import type { WebModalPlacement, WebModalSize } from "./webModalModel";
 

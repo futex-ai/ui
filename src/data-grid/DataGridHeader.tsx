@@ -1,6 +1,6 @@
 /** The grid's sticky header row: typed column headers, sort state, and chrome. */
 import { type ReactNode } from "react";
-import { Platform, Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "../primitives/reactNative";
 
 import type { DropdownPoint } from "../dropdown";
 import { contextMenuTriggerProps } from "../popover";

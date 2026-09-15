@@ -90,7 +90,7 @@ option must supply an `icon` or `iconNode` (a dev-warned fallback to the label
 text otherwise).
 
 ```tsx
-import { LayoutGrid, User } from "lucide-react-native";
+import { LayoutGrid, User } from "lucide-react-native"; // or "lucide-react" on web
 
 <SegmentedControl
   accessibilityLabel="Scope"

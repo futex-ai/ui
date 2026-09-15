@@ -5,7 +5,7 @@
  * as label/value rows. Tapping a card opens the record (`onRowExpand`). Read-only
  * — the full interactive grid is the wide-viewport experience.
  */
-import { Platform, Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "../primitives/reactNative";
 
 import type { DropdownPoint } from "../dropdown";
 import { hideWebOutlineView, type PressableHoverState } from "../focusRing";

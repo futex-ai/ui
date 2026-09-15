@@ -1,6 +1,6 @@
 /** Inline loading content shared by grid cells and responsive cards. */
 import type { ReactNode } from "react";
-import { View } from "react-native";
+import { View } from "../primitives/reactNative";
 
 import { Spinner } from "../spinner";
 import type { SharedUiTheme } from "../theme";

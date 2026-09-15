@@ -12,8 +12,13 @@
  * (transform and opacity only), the same trade the {@link PulseLoader} makes.
  */
 import { useEffect, useRef } from "react";
-import { Animated, Easing, Platform, StyleSheet } from "react-native";
-import type { ColorValue } from "react-native";
+import {
+  Animated,
+  Easing,
+  Platform,
+  StyleSheet,
+} from "../primitives/reactNative";
+import type { ColorValue } from "../primitives/reactNative";
 
 import { useReducedMotion } from "../useReducedMotion";
 

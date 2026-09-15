@@ -1,6 +1,11 @@
 /** Presentational native rich-text frame, blocks, and mobile toolbar. */
-import { Platform, ScrollView, TextInput, View } from "react-native";
-import type { StyleProp, ViewStyle } from "react-native";
+import {
+  Platform,
+  ScrollView,
+  TextInput,
+  View,
+} from "../primitives/reactNative";
+import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
 import { Label } from "../typography";

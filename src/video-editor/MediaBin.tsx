@@ -10,7 +10,7 @@
  * press, a long press, or Enter on a focused item. Dragging an asset onto a
  * timeline is left to the consumer: the drop target is theirs, not the bin's.
  */
-import { Grid2x2, List as ListIcon, Search } from "lucide-react-native";
+import { Grid2x2, List as ListIcon, Search } from "../primitives/icons";
 import type { ComponentType } from "react";
 import { useMemo } from "react";
 import {
@@ -20,7 +20,7 @@ import {
   Text,
   View,
   type ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { useFocusRing } from "../focusRing";

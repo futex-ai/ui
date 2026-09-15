@@ -1,6 +1,6 @@
 /** Three dots in a row, bouncing in sequence. */
 import { useMemo } from "react";
-import { Animated, StyleSheet, View } from "react-native";
+import { Animated, StyleSheet, View } from "../primitives/reactNative";
 
 import { dotsGeometry, DOTS_COUNT } from "./loaderGeometry";
 import { useLoaderWave, waveInterpolation } from "./loaderWave";

@@ -7,7 +7,12 @@
  * `ScaleLegend`.
  */
 import { useMemo, useState } from "react";
-import { Text, View } from "react-native";
+import {
+  type StyleProp,
+  Text,
+  View,
+  type ViewStyle,
+} from "../primitives/reactNative";
 
 import { useSharedUiTheme } from "../theme";
 
@@ -43,7 +48,7 @@ export type MatrixHeatmapProps = {
     column: number;
     value: number | null;
   }) => void;
-  style?: import("react-native").StyleProp<import("react-native").ViewStyle>;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 };
 

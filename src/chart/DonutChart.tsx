@@ -1,7 +1,7 @@
 /** Part-to-whole at a glance. Six slices maximum — past that, a bar. */
 import { useMemo, useState } from "react";
-import { Text, View } from "react-native";
-import Svg, { Path } from "react-native-svg";
+import { Text, View } from "../primitives/reactNative";
+import Svg, { Path } from "../primitives/svg";
 
 import { devWarn } from "../devWarn";
 import { useSharedUiTheme } from "../theme";

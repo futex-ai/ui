@@ -4,7 +4,7 @@
  * standalone without `CalendarView`.
  */
 import { useMemo } from "react";
-import { StyleProp, ViewStyle } from "react-native";
+import { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import { getOccurrences } from "./recurrence";
 import { TimeGrid } from "./TimeGrid";

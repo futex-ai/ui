@@ -1,7 +1,12 @@
 /** A dial: one ratio against its limit. */
 import { useMemo } from "react";
-import { Text, View } from "react-native";
-import Svg, { Path } from "react-native-svg";
+import {
+  type StyleProp,
+  Text,
+  View,
+  type ViewStyle,
+} from "../primitives/reactNative";
+import Svg, { Path } from "../primitives/svg";
 
 import { useSharedUiTheme } from "../theme";
 
@@ -34,7 +39,7 @@ export type GaugeChartProps = {
   bands?: readonly GaugeBand[];
   loading?: boolean;
   accessibilityLabel?: string;
-  style?: import("react-native").StyleProp<import("react-native").ViewStyle>;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 };
 

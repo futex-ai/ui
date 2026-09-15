@@ -58,7 +58,7 @@ test("web modal uses a document body portal with Escape and focus handling", () 
   // native frame renders through a React Native `Modal` instead.
   assert.doesNotMatch(
     nativePortalFallback,
-    /createPortal|document\.body|<Modal|from "react-native"/,
+    /createPortal|document\.body|<Modal|from "\.\.\/primitives\/reactNative"/,
   );
   assert.match(nativePortalFallback, /return null/);
 });
@@ -66,7 +66,7 @@ test("web modal uses a document body portal with Escape and focus handling", () 
 test("native modal frame renders an RN Modal sheet with native a11y containment", () => {
   const nativeSource = readSource("../../src/modal/WebModalFrame.tsx");
 
-  assert.match(nativeSource, /from "react-native"/);
+  assert.match(nativeSource, /from "\.\.\/primitives\/reactNative"/);
   assert.match(nativeSource, /<Modal/);
   assert.match(nativeSource, /animationType=/);
   assert.match(nativeSource, /onRequestClose=/);
