@@ -6,10 +6,10 @@ import {
   Plus,
   Settings,
   Trash2,
-} from "lucide-react-native";
+} from "../primitives/icons";
 import type { ReactNode } from "react";
 import { useMemo, useRef, useState } from "react";
-import type { GestureResponderEvent } from "react-native";
+import type { GestureResponderEvent } from "../primitives/reactNative";
 import {
   Pressable,
   StyleSheet,
@@ -17,7 +17,7 @@ import {
   TextInput,
   View,
   useWindowDimensions,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import {
   ComboboxMultiSelect,

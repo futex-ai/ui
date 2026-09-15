@@ -9,8 +9,8 @@ import {
   useState,
 } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { Platform, StyleSheet, View } from "react-native";
-import type { StyleProp, ViewStyle } from "react-native";
+import { Platform, StyleSheet, View } from "../primitives/reactNative";
+import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import { DropdownList } from "./DropdownList";
 import type {

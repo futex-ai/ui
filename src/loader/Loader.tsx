@@ -1,6 +1,6 @@
 /** Indeterminate loading indicator with a switchable shape. */
 import { useMemo } from "react";
-import { StyleProp, View, ViewStyle } from "react-native";
+import { StyleProp, View, ViewStyle } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { Spinner } from "../spinner";

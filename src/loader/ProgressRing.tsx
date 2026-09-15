@@ -1,7 +1,7 @@
 /** Determinate circular progress: an arc filling clockwise from 12 o'clock. */
 import { useMemo } from "react";
-import { StyleProp, View, ViewStyle } from "react-native";
-import Svg, { Circle } from "react-native-svg";
+import { StyleProp, View, ViewStyle } from "../primitives/reactNative";
+import Svg, { Circle } from "../primitives/svg";
 
 import type { ControlSize } from "../controlSize";
 import { resolveSpinnerSize } from "../spinner/spinnerStyles";

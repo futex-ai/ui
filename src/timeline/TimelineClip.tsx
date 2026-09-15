@@ -7,7 +7,7 @@
  * arrays that describe the *whole source*, so trimming reveals a different
  * window of the same data instead of needing fresh data.
  */
-import { Lock } from "lucide-react-native";
+import { Lock } from "../primitives/icons";
 import { useMemo } from "react";
 import {
   Image,
@@ -16,7 +16,7 @@ import {
   Text,
   View,
   type ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { useFocusRing } from "../focusRing";

@@ -8,7 +8,7 @@ import {
   Text,
   View,
   ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import { compareIso, formatDisplay, parseIso } from "../date/dateMath";
 import { useFocusRing } from "../focusRing";

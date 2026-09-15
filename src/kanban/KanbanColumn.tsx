@@ -12,7 +12,7 @@
  * skeleton cards.
  */
 import { Fragment, type ReactNode } from "react";
-import { Platform, Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "../primitives/reactNative";
 
 import type { BadgeTone } from "../badge/badgeStyles";
 import type { ControlSize } from "../controlSize";

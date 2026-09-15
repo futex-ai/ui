@@ -8,7 +8,7 @@
  * One directional hatch, used at 45° and its 135° mirror only. Horizontal and
  * vertical are deliberately excluded — they read as gridlines and as bars.
  */
-import { Defs, Line, Pattern } from "react-native-svg";
+import { Defs, Line, Pattern } from "../primitives/svg";
 
 import { TEXTURE_ANGLES, texturePatternId } from "./chartTextureModel";
 

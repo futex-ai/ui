@@ -1,7 +1,7 @@
 /** One styled, independently editable block in the native rich-text editor. */
-import { Check } from "lucide-react-native";
-import { Pressable, Text, TextInput, View } from "react-native";
-import type { StyleProp, TextStyle } from "react-native";
+import { Check } from "../primitives/icons";
+import { Pressable, Text, TextInput, View } from "../primitives/reactNative";
+import type { StyleProp, TextStyle } from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
 

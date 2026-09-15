@@ -1,5 +1,5 @@
 /** Styles for the {@link EffectsRack} and its effect cards. */
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import { focusRingStyleFor } from "../focusRing";
 import type { SharedUiTheme } from "../theme";

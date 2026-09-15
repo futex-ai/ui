@@ -1,5 +1,5 @@
 /** Branded single-date input with a calendar picker. */
-import { LucideIcon } from "lucide-react-native";
+import { IconComponent } from "../primitives/icons";
 import {
   useEffect,
   useId,
@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Platform, Text, View } from "react-native";
+import { Platform, Text, View } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { LabelInfo } from "../input";
@@ -52,7 +52,7 @@ export type DateFieldProps = {
    */
   labelInfo?: string;
   /** Icon for the {@link labelInfo} button. Defaults to the lucide `Info` glyph. */
-  labelInfoIcon?: LucideIcon;
+  labelInfoIcon?: IconComponent;
   /**
    * Accessible name for the {@link labelInfo} button. Defaults to
    * `More information about {label}`.
@@ -352,7 +352,7 @@ export function FieldLabel({
 }: {
   label: string;
   labelInfo?: string;
-  labelInfoIcon?: LucideIcon;
+  labelInfoIcon?: IconComponent;
   labelInfoLabel?: string;
   required: boolean;
 }) {

@@ -1,5 +1,5 @@
 /** Shared chart chrome styles, driven entirely by theme tokens. */
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
 

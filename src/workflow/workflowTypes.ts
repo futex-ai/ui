@@ -8,7 +8,7 @@
  * {@link WorkflowEdge} label (e.g. `success`, `failure`, a branch condition) so
  * the graph reads as a routed flow rather than a plain list.
  */
-import type { LucideIcon } from "lucide-react-native";
+import type { IconComponent } from "../primitives/icons";
 import {
   Brain,
   GitBranch,
@@ -16,7 +16,7 @@ import {
   LayoutGrid,
   SquareTerminal,
   Zap,
-} from "lucide-react-native";
+} from "../primitives/icons";
 
 /**
  * The kind of an executable step. Drives the node's default icon and its
@@ -87,8 +87,8 @@ export type WorkflowNodeData = {
   status?: WorkflowNodeStatus;
   /** Render the node de-emphasised (e.g. a skipped branch). */
   dim?: boolean;
-  /** Override the default type icon with any `lucide-react-native` icon. */
-  icon?: LucideIcon;
+  /** Override the default type icon with any Lucide icon. */
+  icon?: IconComponent;
 };
 
 /** A node step: an optional incoming edge and the node it routes to. */
@@ -148,14 +148,15 @@ export function isWorkflowForkStep(
  * Default icon per node type. Consumers can override per node (`node.icon`) or
  * wholesale via the builder's `nodeIcons` prop.
  */
-export const defaultWorkflowNodeIcons: Record<WorkflowNodeType, LucideIcon> = {
-  agent: Brain,
-  app: LayoutGrid,
-  branch: GitBranch,
-  code: SquareTerminal,
-  outcome: Inbox,
-  trigger: Zap,
-};
+export const defaultWorkflowNodeIcons: Record<WorkflowNodeType, IconComponent> =
+  {
+    agent: Brain,
+    app: LayoutGrid,
+    branch: GitBranch,
+    code: SquareTerminal,
+    outcome: Inbox,
+    trigger: Zap,
+  };
 
 /**
  * Default category color per node type — the white-glyph icon chip fill. These

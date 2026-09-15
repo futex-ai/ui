@@ -13,7 +13,7 @@
  * of a value: the mark's own accessible label and the table view both hold it.
  */
 import { useMemo } from "react";
-import { Text, View } from "react-native";
+import { Text, View } from "../primitives/reactNative";
 
 import { useSharedUiTheme } from "../theme";
 

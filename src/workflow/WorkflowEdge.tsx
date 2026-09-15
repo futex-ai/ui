@@ -4,10 +4,10 @@
  * {@link WorkflowLegend} that keys the edge tones. {@link WorkflowBuilder}
  * composes these, but they are exported so a bespoke canvas can be hand-built.
  */
-import { Plus } from "lucide-react-native";
+import { Plus } from "../primitives/icons";
 import { useMemo } from "react";
-import type { StyleProp, ViewStyle } from "react-native";
-import { Platform, Pressable, Text, View } from "react-native";
+import type { StyleProp, ViewStyle } from "../primitives/reactNative";
+import { Platform, Pressable, Text, View } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { PressableHoverState, useFocusRing } from "../focusRing";

@@ -1,7 +1,12 @@
 /** Stages of a process, on the ordinal ramp — order is the meaning. */
 import { useState } from "react";
-import { Text, View } from "react-native";
-import Svg, { Polygon } from "react-native-svg";
+import {
+  type StyleProp,
+  Text,
+  View,
+  type ViewStyle,
+} from "../primitives/reactNative";
+import Svg, { Polygon } from "../primitives/svg";
 
 import { useSharedUiTheme } from "../theme";
 
@@ -35,7 +40,7 @@ export type FunnelChartProps = {
     index: number;
     value: number | null;
   }) => void;
-  style?: import("react-native").StyleProp<import("react-native").ViewStyle>;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 };
 

@@ -1,6 +1,6 @@
 /** Shared wheel-picker bottom sheet used by the web and native overlays. */
 import { useMemo, useState } from "react";
-import { Pressable, Text } from "react-native";
+import { Pressable, Text } from "../primitives/reactNative";
 
 import { WebModalFrame } from "../modal";
 import { useSharedUiTheme } from "../theme";

@@ -21,8 +21,8 @@ import {
   Text,
   View,
   type ViewStyle,
-} from "react-native";
-import Svg, { Path } from "react-native-svg";
+} from "../primitives/reactNative";
+import Svg, { Path } from "../primitives/svg";
 
 import type { ControlSize } from "../controlSize";
 import { useFocusRing } from "../focusRing";

@@ -6,7 +6,7 @@
  * selection and focus treatments. Every color comes from the active theme, so
  * the timeline reads correctly under all four presets.
  */
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { focusRingStyleFor } from "../focusRing";

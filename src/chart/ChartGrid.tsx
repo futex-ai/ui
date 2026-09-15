@@ -12,7 +12,7 @@ import {
   Text,
   View,
   type ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import { useSharedUiTheme } from "../theme";
 

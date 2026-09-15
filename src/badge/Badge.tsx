@@ -1,8 +1,8 @@
 /** Compact status label ("badge" / status pill) — a tinted or solid chip. */
 import { useMemo } from "react";
 import type { ReactNode } from "react";
-import { Platform, Text, View } from "react-native";
-import type { StyleProp, ViewStyle } from "react-native";
+import { Platform, Text, View } from "../primitives/reactNative";
+import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { PulseHalo } from "../status-dot/PulseHalo";

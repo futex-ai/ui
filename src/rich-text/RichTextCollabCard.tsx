@@ -1,6 +1,6 @@
 /** One review-rail card: a tracked change to accept, or a comment thread. */
-import { Check, CornerUpLeft, X } from "lucide-react-native";
-import { Pressable, View } from "react-native";
+import { Check, CornerUpLeft, X } from "../primitives/icons";
+import { Pressable, View } from "../primitives/reactNative";
 
 import { Button } from "../button";
 import type { SharedUiTheme } from "../theme";

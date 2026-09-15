@@ -6,7 +6,12 @@
  * the chart.
  */
 import { useMemo, type ReactNode } from "react";
-import { type StyleProp, Text, View, type ViewStyle } from "react-native";
+import {
+  type StyleProp,
+  Text,
+  View,
+  type ViewStyle,
+} from "../primitives/reactNative";
 
 import { useSharedUiTheme } from "../theme";
 

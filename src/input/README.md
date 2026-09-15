@@ -40,7 +40,7 @@ web trigger) build on it.
 
 ```tsx
 import { Input } from "@firna/ui/input";
-import { Search } from "lucide-react-native";
+import { Search } from "lucide-react-native"; // or "lucide-react" on web
 
 <Input
   clearable
@@ -95,7 +95,8 @@ the underlying `<textarea>` to its natural height and re-measures on every chang
 
 ### Icons
 
-`prefixIcon` and `suffixIcon` take a `lucide-react-native` icon component and are
+`prefixIcon` and `suffixIcon` take an icon component (`IconComponent`: any
+`lucide-react-native` or `lucide-react` icon) and are
 decorative by default (hidden from assistive tech). Give the suffix an
 `onSuffixIconPress` to make it pressable; add `suffixIconLabel` to make it a
 focusable, keyboard-reachable button (e.g. a show/hide-password toggle). Without
@@ -123,7 +124,7 @@ guidance in `hint`.
 />
 ```
 
-Override the glyph with `labelInfoIcon` (any `lucide-react-native` icon) and the
+Override the glyph with `labelInfoIcon` (any Lucide icon) and the
 button's accessible name with `labelInfoLabel` (defaults to
 `More information about {label}`). `labelInfo` needs a `label` to anchor the
 button — it is a dev-warned no-op on the bare (label-less) variant. The reusable

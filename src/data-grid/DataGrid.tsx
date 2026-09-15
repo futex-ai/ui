@@ -17,7 +17,7 @@ import {
   ScrollView,
   useWindowDimensions,
   View,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { ContextMenu } from "../popover";

@@ -1,6 +1,6 @@
 /** Deltas bridging to a total — where a number came from, step by step. */
 import { useMemo, useState } from "react";
-import Svg, { Line, Path } from "react-native-svg";
+import Svg, { Line, Path } from "../primitives/svg";
 
 import { useSharedUiTheme } from "../theme";
 
@@ -21,6 +21,7 @@ import {
   type WaterfallInput,
 } from "./scatterGeometry";
 import { resolveValueFormat } from "./types";
+import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 export type WaterfallChartProps = {
   data: readonly WaterfallInput[];
@@ -33,7 +34,7 @@ export type WaterfallChartProps = {
   showTableView?: boolean;
   accessibilityLabel?: string;
   disableFocusRing?: boolean;
-  style?: import("react-native").StyleProp<import("react-native").ViewStyle>;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 };
 

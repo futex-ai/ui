@@ -1,4 +1,4 @@
-import { StyleSheet, TextStyle } from "react-native";
+import { StyleSheet, TextStyle } from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
 

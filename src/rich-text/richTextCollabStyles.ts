@@ -3,7 +3,7 @@
  * presence bar and the review rail. Cross-platform React Native styles, so the
  * same rail renders on web and on a phone.
  */
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
 

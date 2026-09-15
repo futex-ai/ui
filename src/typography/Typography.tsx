@@ -1,7 +1,11 @@
 /** Themed text and heading family: H1–H5 plus Body, Label, Caption, Overline. */
 import { useMemo } from "react";
 import type { ReactNode } from "react";
-import { Text as RNText, StyleProp, TextStyle } from "react-native";
+import {
+  Text as RNText,
+  StyleProp,
+  TextStyle,
+} from "../primitives/reactNative";
 
 import { useSharedUiTheme } from "../theme";
 

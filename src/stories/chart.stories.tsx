@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Text, View } from "react-native";
+import { Text, View } from "../primitives/reactNative";
 
 import {
   createSharedUiTheme,

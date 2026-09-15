@@ -5,7 +5,7 @@
  * the internal contract every shape renderer receives once {@link Loader} has
  * resolved the theme color, the cycle length, and the pixel box.
  */
-import type { ColorValue } from "react-native";
+import type { ColorValue } from "../primitives/reactNative";
 
 /**
  * The indeterminate loading shapes.

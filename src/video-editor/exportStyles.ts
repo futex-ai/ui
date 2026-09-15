@@ -1,5 +1,5 @@
 /** Styles for the {@link ExportDialog}'s body, progress, and status lines. */
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
 

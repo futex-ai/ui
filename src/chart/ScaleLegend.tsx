@@ -1,5 +1,5 @@
 /** The key for a continuous scale: a gradient strip with labelled ends. */
-import { Text, View } from "react-native";
+import { Text, View } from "../primitives/reactNative";
 
 import { useSharedUiTheme } from "../theme";
 

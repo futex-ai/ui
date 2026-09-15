@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useEffect } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "../primitives/reactNative";
 
 import {
   Button,

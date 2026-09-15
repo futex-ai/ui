@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Platform, TextStyle, ViewStyle } from "react-native";
+import { Platform, TextStyle, ViewStyle } from "./primitives/reactNative";
 
 import { useSharedUiTheme } from "./theme";
 

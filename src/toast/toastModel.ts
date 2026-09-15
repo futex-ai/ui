@@ -1,6 +1,10 @@
 /** Pure types and helpers for the toast notification system. */
 import type { ReactNode } from "react";
-import type { StyleProp, TextStyle, ViewStyle } from "react-native";
+import type {
+  StyleProp,
+  TextStyle,
+  ViewStyle,
+} from "../primitives/reactNative";
 
 /**
  * Visual + semantic tone of a toast:

@@ -7,7 +7,7 @@
  * Importing `StyleSheet` here would drag React Native's entry point into the
  * test runner, which cannot parse it.
  */
-import type { DimensionValue } from "react-native";
+import type { DimensionValue } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 

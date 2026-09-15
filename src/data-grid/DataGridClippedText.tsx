@@ -8,7 +8,12 @@
  * outside-press dismissal.
  */
 import { useMemo } from "react";
-import { StyleSheet, Text, type StyleProp, type TextStyle } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  type StyleProp,
+  type TextStyle,
+} from "../primitives/reactNative";
 
 import { DropdownPortal } from "../dropdown";
 import { useSharedUiTheme } from "../theme";

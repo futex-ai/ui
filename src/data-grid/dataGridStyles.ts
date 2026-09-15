@@ -1,5 +1,5 @@
 /** Themed styles + fixed metrics for the data grid, on the shared size scale. */
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import type { SharedUiTheme } from "../theme";

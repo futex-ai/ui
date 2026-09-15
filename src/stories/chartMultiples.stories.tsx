@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { View } from "react-native";
+import { View } from "../primitives/reactNative";
 
 import {
   BarChart,

@@ -1,6 +1,6 @@
 /** The prop contract shared by every chart in the family. */
 import type { ReactNode } from "react";
-import type { StyleProp, ViewStyle } from "react-native";
+import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import type { ChartSeries } from "./series/stack";
 

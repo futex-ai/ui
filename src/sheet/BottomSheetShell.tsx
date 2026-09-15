@@ -18,8 +18,8 @@ import BottomSheet, {
 import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
 import { useCallback, useMemo, useRef } from "react";
 import type { ComponentRef, ReactNode, RefObject } from "react";
-import { Modal, StyleSheet } from "react-native";
-import type { StyleProp, ViewStyle } from "react-native";
+import { Modal, StyleSheet } from "../primitives/reactNative";
+import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import type { SharedUiTheme } from "../theme";

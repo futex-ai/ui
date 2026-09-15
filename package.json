@@ -18,6 +18,7 @@
   "keywords": [
     "expo",
     "react",
+    "react-dom",
     "react-native",
     "react-native-web",
     "ui"
@@ -227,6 +228,7 @@
   },
   "peerDependencies": {
     "@gorhom/bottom-sheet": ">=5 <6",
+    "lucide-react": ">=0.560.0 <1",
     "lucide-react-native": ">=0.560.0 <1",
     "react": ">=19 <20",
     "react-dom": ">=19 <20",
@@ -240,10 +242,25 @@
     "@gorhom/bottom-sheet": {
       "optional": true
     },
+    "lucide-react": {
+      "optional": true
+    },
+    "lucide-react-native": {
+      "optional": true
+    },
+    "react-native": {
+      "optional": true
+    },
     "react-native-gesture-handler": {
       "optional": true
     },
     "react-native-reanimated": {
+      "optional": true
+    },
+    "react-native-svg": {
+      "optional": true
+    },
+    "react-native-web": {
       "optional": true
     }
   },
@@ -257,6 +274,7 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
+    "lucide-react": "0.562.0",
     "lucide-react-native": "^0.562.0",
     "prettier": "^3.7.4",
     "react": "19.2.3",

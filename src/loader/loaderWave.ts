@@ -7,7 +7,7 @@
  * than by parallel loops.
  */
 import { useEffect, useRef } from "react";
-import { Animated, Easing, Platform } from "react-native";
+import { Animated, Easing, Platform } from "../primitives/reactNative";
 
 import { useReducedMotion } from "../useReducedMotion";
 

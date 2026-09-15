@@ -8,7 +8,7 @@
  * to the header's column-select drag, so grabbing the edge resizes instead of
  * selecting the column.
  */
-import { Pressable, View, type ViewStyle } from "react-native";
+import { Pressable, View, type ViewStyle } from "../primitives/reactNative";
 
 import { useFocusRing, type PressableHoverState } from "../focusRing";
 

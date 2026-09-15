@@ -1,6 +1,6 @@
 /** The trailing "+ New record" row at the bottom of the grid body. */
-import { Plus } from "lucide-react-native";
-import { Pressable, Text, View } from "react-native";
+import { Plus } from "../primitives/icons";
+import { Pressable, Text, View } from "../primitives/reactNative";
 
 import { hideWebOutlineView, type PressableHoverState } from "../focusRing";
 import type { SharedUiTheme } from "../theme";

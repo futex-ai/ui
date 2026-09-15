@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { TextInput } from "react-native";
+import { TextInput } from "../primitives/reactNative";
 
 import { useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";

@@ -5,9 +5,9 @@
  * caller's `onStep`; "Today" jumps to today. When `views` has a single entry the
  * switcher is hidden — the view is enforced.
  */
-import { ChevronLeft, ChevronRight } from "lucide-react-native";
+import { ChevronLeft, ChevronRight } from "../primitives/icons";
 import { useMemo } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "../primitives/reactNative";
 
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";
 import { SegmentedControl } from "../segmented";

@@ -20,7 +20,7 @@ test("skeleton sweeps a white sheen drawn with react-native-svg", () => {
   // the same reason the Spinner uses react-native-svg.
   assert.match(
     source,
-    /import Svg, \{ Defs, LinearGradient, Rect, Stop \} from "react-native-svg"/,
+    /import Svg, \{ Defs, LinearGradient, Rect, Stop \} from "\.\.\/primitives\/svg"/,
   );
   assert.match(source, /<LinearGradient id=\{gradientId\}/);
   assert.match(source, /stopOpacity=\{sheenOpacity\}/);

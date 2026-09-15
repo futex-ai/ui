@@ -6,7 +6,7 @@ import {
   Text,
   View,
   useWindowDimensions,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";

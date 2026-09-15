@@ -1,7 +1,7 @@
 /** Anchor measurement state for portal-backed dropdown surfaces. */
 import { useCallback, useEffect, useState } from "react";
 import type { RefObject } from "react";
-import { Platform, useWindowDimensions, View } from "react-native";
+import { Platform, useWindowDimensions, View } from "../primitives/reactNative";
 
 import type { DropdownAnchorRect, DropdownViewport } from "./dropdownGeometry";
 

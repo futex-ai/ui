@@ -10,7 +10,7 @@
  * clickable heading, and publishes its expanded state — the one place a
  * disclosure has to say what it is doing (WCAG 2.1 — 4.1.2, A).
  */
-import { ChevronDown, ChevronRight } from "lucide-react-native";
+import { ChevronDown, ChevronRight } from "../primitives/icons";
 import { useMemo } from "react";
 import {
   Platform,
@@ -20,7 +20,7 @@ import {
   Text,
   View,
   type ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { useFocusRing } from "../focusRing";

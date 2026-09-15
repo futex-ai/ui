@@ -1,7 +1,7 @@
 /** Labelled text input field with validation, icons, and an optional clear button. */
-import { LucideIcon } from "lucide-react-native";
+import { IconComponent } from "../primitives/icons";
 import { useId, useMemo } from "react";
-import { Text, View } from "react-native";
+import { Text, View } from "../primitives/reactNative";
 
 import { devWarn } from "../devWarn";
 import { useSharedUiTheme } from "../theme";
@@ -27,7 +27,7 @@ export type InputProps = InputFrameProps & {
    */
   labelInfo?: string;
   /** Icon for the {@link labelInfo} button. Defaults to the lucide `Info` glyph. */
-  labelInfoIcon?: LucideIcon;
+  labelInfoIcon?: IconComponent;
   /**
    * Accessible name for the {@link labelInfo} button. Defaults to
    * `More information about {label}`.

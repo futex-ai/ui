@@ -12,7 +12,7 @@ import {
   StyleProp,
   Text,
   ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";
 import { useSharedUiTheme } from "../theme";

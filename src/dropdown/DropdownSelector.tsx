@@ -1,5 +1,5 @@
 /** Single-value selector and read-only selector input surfaces. */
-import { ChevronDown, LucideIcon, Search } from "lucide-react-native";
+import { ChevronDown, IconComponent, Search } from "../primitives/icons";
 import {
   ReactNode,
   Ref,
@@ -10,7 +10,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { Platform, Pressable, Text, TextInput, View } from "react-native";
+import {
+  Platform,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+} from "../primitives/reactNative";
 
 import { announce } from "../announcer";
 import type { ControlSize } from "../controlSize";
@@ -88,7 +94,7 @@ type DropdownSelectorProps = {
    */
   labelInfo?: string;
   /** Icon for the {@link labelInfo} button. Defaults to the lucide `Info` glyph. */
-  labelInfoIcon?: LucideIcon;
+  labelInfoIcon?: IconComponent;
   /**
    * Accessible name for the {@link labelInfo} button. Defaults to
    * `More information about {label}`.
@@ -531,7 +537,7 @@ function SelectorLabel({
 }: {
   label: string;
   labelInfo?: string;
-  labelInfoIcon?: LucideIcon;
+  labelInfoIcon?: IconComponent;
   labelInfoLabel?: string;
   required: boolean;
   styles: DropdownSelectorStyles;

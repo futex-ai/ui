@@ -3,11 +3,11 @@ import {
   Calendar,
   Hash,
   List,
-  type LucideIcon,
+  type IconComponent,
   Tags,
   Type,
-} from "lucide-react-native";
-import { Text, View } from "react-native";
+} from "../primitives/icons";
+import { Text, View } from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
 
@@ -21,7 +21,7 @@ import type {
 } from "./types";
 
 /** The lucide icon shown beside a column's header for its field type. */
-export function fieldTypeIcon(type: DataGridFieldType): LucideIcon {
+export function fieldTypeIcon(type: DataGridFieldType): IconComponent {
   switch (type) {
     case "number":
       return Hash;

@@ -1,6 +1,6 @@
 /** Bars and columns: grouped, stacked, 100% stacked, and diverging. */
 import { useMemo, useState } from "react";
-import Svg, { Path } from "react-native-svg";
+import Svg, { Path } from "../primitives/svg";
 
 import { useSharedUiTheme } from "../theme";
 

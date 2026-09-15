@@ -1,6 +1,6 @@
 /** Ten spokes around a circle, brightening in turn. */
 import { useMemo } from "react";
-import { Animated, StyleSheet, View } from "react-native";
+import { Animated, StyleSheet, View } from "../primitives/reactNative";
 
 import { bladesGeometry, BLADES_COUNT } from "./loaderGeometry";
 import { useLoaderWave, waveInterpolation } from "./loaderWave";

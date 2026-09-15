@@ -1,8 +1,8 @@
 /** Small rounded tag for a Kanban column-header status or a card chip. */
 import { useMemo } from "react";
 import type { ReactNode } from "react";
-import { Text, View } from "react-native";
-import type { StyleProp, ViewStyle } from "react-native";
+import { Text, View } from "../primitives/reactNative";
+import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import { resolveBadgeColors } from "../badge/badgeStyles";
 import type { BadgeTone } from "../badge/badgeStyles";

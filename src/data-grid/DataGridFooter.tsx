@@ -1,5 +1,5 @@
 /** The grid's footer strip: record counts and view summary text. */
-import { Text, View } from "react-native";
+import { Text, View } from "../primitives/reactNative";
 
 import type { DataGridStyles } from "./dataGridStyles";
 

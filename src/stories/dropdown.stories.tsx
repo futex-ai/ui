@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ShieldQuestionMark } from "lucide-react-native";
+import { ShieldQuestionMark } from "../primitives/icons";
 import { useState } from "react";
-import { View } from "react-native";
+import { View } from "../primitives/reactNative";
 
 import {
   ComboboxMultiSelect,

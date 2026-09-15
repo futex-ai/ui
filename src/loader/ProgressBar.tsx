@@ -8,7 +8,7 @@ import {
   StyleSheet,
   View,
   ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import { useReducedMotion } from "../useReducedMotion";
 import { useSharedUiTheme } from "../theme";

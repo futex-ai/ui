@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import { RadioCard, RadioCardGroup, darkSharedUiTheme } from "../index";
 import { StorySurface } from "./sharedExamples";

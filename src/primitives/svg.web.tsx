@@ -1,3 +1,12 @@
+/**
+ * SVG primitives, web resolution: plain DOM `<svg>` elements.
+ *
+ * `react-native-svg`'s web build imports from `react-native`, so using it here
+ * would force every web consumer to alias `react-native` in their bundler. The
+ * library only needs a small subset of SVG, and every prop it passes is a
+ * DOM-valid SVG attribute, so a thin shim over the DOM elements keeps web
+ * builds free of that dependency. The export list mirrors `svg.ts`.
+ */
 import React, { forwardRef } from "react";
 
 type SvgProps = React.SVGProps<SVGSVGElement> & {
@@ -45,7 +54,7 @@ function createChildElement(tag: keyof SVGElementTagNameMap) {
   });
 }
 
-export const Svg = forwardRef<SVGSVGElement, SvgProps>(function Svg(
+const Svg = forwardRef<SVGSVGElement, SvgProps>(function Svg(
   { children, color, height, size, style, width, ...props },
   ref,
 ) {
@@ -64,23 +73,14 @@ export const Svg = forwardRef<SVGSVGElement, SvgProps>(function Svg(
 });
 
 export const Circle = createChildElement("circle");
-export const ClipPath = createChildElement("clipPath");
 export const Defs = createChildElement("defs");
-export const Ellipse = createChildElement("ellipse");
 export const G = createChildElement("g");
 export const Line = createChildElement("line");
 export const LinearGradient = createChildElement("linearGradient");
-export const Mask = createChildElement("mask");
 export const Path = createChildElement("path");
 export const Pattern = createChildElement("pattern");
 export const Polygon = createChildElement("polygon");
-export const Polyline = createChildElement("polyline");
-export const RadialGradient = createChildElement("radialGradient");
 export const Rect = createChildElement("rect");
 export const Stop = createChildElement("stop");
-export const Symbol = createChildElement("symbol");
-export const Text = createChildElement("text");
-export const TSpan = createChildElement("tspan");
-export const Use = createChildElement("use");
 
 export default Svg;

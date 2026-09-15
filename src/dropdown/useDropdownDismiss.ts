@@ -1,7 +1,7 @@
 /** Document-level dismissal for non-modal web dropdown portals. */
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
-import { View } from "react-native";
+import { View } from "../primitives/reactNative";
 
 import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
 

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { View } from "react-native";
+import { View } from "../primitives/reactNative";
 
 import {
   SharedUiThemeProvider,

@@ -21,8 +21,8 @@ import {
   useMemo,
   useRef,
 } from "react";
-import { View } from "react-native";
-import type { StyleProp, ViewStyle } from "react-native";
+import { View } from "../primitives/reactNative";
+import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";

@@ -5,7 +5,7 @@
  * unbounded grid it renders every row in a plain `rowgroup` (natural height).
  */
 import { type ReactNode, useEffect, useRef } from "react";
-import { FlatList, Text, View } from "react-native";
+import { FlatList, Text, View } from "../primitives/reactNative";
 
 import { Spinner } from "../spinner";
 import type { SharedUiTheme } from "../theme";

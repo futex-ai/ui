@@ -1,7 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Paperclip, Pause, Play } from "lucide-react-native";
+import { Paperclip, Pause, Play } from "../primitives/icons";
 import { useState } from "react";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "../primitives/reactNative";
 
 import {
   Avatar,

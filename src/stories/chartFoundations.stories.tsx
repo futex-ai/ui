@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
-import Svg, { Rect } from "react-native-svg";
+import { Pressable, Text, View } from "../primitives/reactNative";
+import Svg, { Rect } from "../primitives/svg";
 
 import {
   darkSharedUiTheme,

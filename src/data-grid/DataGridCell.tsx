@@ -1,6 +1,6 @@
 /** A single grid cell: read-only content or an open editor, with selection a11y. */
 import { type ReactNode, useCallback, useRef } from "react";
-import { Platform, Pressable, View } from "react-native";
+import { Platform, Pressable, View } from "../primitives/reactNative";
 
 import type { DropdownPoint } from "../dropdown";
 import { hideWebOutlineView } from "../focusRing";

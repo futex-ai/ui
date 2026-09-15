@@ -18,7 +18,7 @@ import {
   Text,
   View,
   ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import { useFocusRing } from "../focusRing";
 import {

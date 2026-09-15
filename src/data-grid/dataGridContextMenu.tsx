@@ -19,8 +19,8 @@ import {
   Scissors,
   Trash2,
   X,
-  type LucideIcon,
-} from "lucide-react-native";
+  type IconComponent,
+} from "../primitives/icons";
 
 import type { DropdownListEntry } from "../dropdown";
 import type { SharedUiTheme } from "../theme";
@@ -30,7 +30,7 @@ import type {
   DataGridMenuIcon,
 } from "./dataGridContextMenuModel";
 
-const MENU_ICONS: Record<DataGridMenuIcon, LucideIcon> = {
+const MENU_ICONS: Record<DataGridMenuIcon, IconComponent> = {
   clearSort: X,
   copy: Copy,
   cut: Scissors,

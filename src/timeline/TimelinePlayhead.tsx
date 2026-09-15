@@ -7,7 +7,11 @@
  * clips without any of them having to know it exists.
  */
 import { useMemo } from "react";
-import { type StyleProp, View, type ViewStyle } from "react-native";
+import {
+  type StyleProp,
+  View,
+  type ViewStyle,
+} from "../primitives/reactNative";
 
 import { useSharedUiTheme } from "../theme";
 

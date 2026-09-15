@@ -8,7 +8,7 @@
  * pressable label with an independently-interactive trailing control.
  */
 import { ReactNode, useMemo } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";

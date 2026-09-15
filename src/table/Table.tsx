@@ -9,7 +9,13 @@
  * button with the shared hover / focus-ring treatment.
  */
 import { ReactNode, useMemo } from "react";
-import { Pressable, StyleProp, Text, View, ViewStyle } from "react-native";
+import {
+  Pressable,
+  StyleProp,
+  Text,
+  View,
+  ViewStyle,
+} from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { PressableHoverState, useFocusRing } from "../focusRing";

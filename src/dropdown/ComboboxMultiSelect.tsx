@@ -1,7 +1,13 @@
 /** Input-backed chip multi-select for combobox forms. */
-import { Check, LucideIcon } from "lucide-react-native";
+import { Check, IconComponent } from "../primitives/icons";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "../primitives/reactNative";
 
 import { announce } from "../announcer";
 import type { ControlSize } from "../controlSize";
@@ -65,7 +71,7 @@ export type ComboboxMultiSelectProps = {
    */
   labelInfo?: string;
   /** Icon for the {@link labelInfo} button. Defaults to the lucide `Info` glyph. */
-  labelInfoIcon?: LucideIcon;
+  labelInfoIcon?: IconComponent;
   /**
    * Accessible name for the {@link labelInfo} button. Defaults to
    * `More information about {label}`.

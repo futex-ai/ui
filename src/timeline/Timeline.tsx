@@ -20,7 +20,7 @@ import {
   Text,
   View,
   type ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import type { FocusableRef } from "../keyboardNavigation";

@@ -1,5 +1,5 @@
 /** The bare bordered input box: prefix/suffix icons, clear button, focus ring. */
-import { CircleX, LucideIcon } from "lucide-react-native";
+import { CircleX, IconComponent } from "../primitives/icons";
 import { Ref, useCallback, useMemo, useRef } from "react";
 import {
   Pressable,
@@ -9,7 +9,7 @@ import {
   TextStyle,
   View,
   ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { hideWebOutline, hideWebOutlineView, useFocusRing } from "../focusRing";
@@ -86,9 +86,9 @@ export type InputFrameProps = Omit<TextInputProps, "style"> & {
   /** Marks the input required (wires `aria-required`). */
   required?: boolean;
   /** Leading decorative icon shown inside the box. */
-  prefixIcon?: LucideIcon;
+  prefixIcon?: IconComponent;
   /** Trailing icon shown inside the box, after the clear button. */
-  suffixIcon?: LucideIcon;
+  suffixIcon?: IconComponent;
   /**
    * Accessible label for the suffix icon. When set together with
    * {@link onSuffixIconPress} the icon becomes a focusable button; without it,
@@ -327,7 +327,7 @@ function SuffixAdornment({
   size,
   style,
 }: {
-  Icon: LucideIcon;
+  Icon: IconComponent;
   color: string;
   label?: string;
   onPress?: () => void;

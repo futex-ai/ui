@@ -7,10 +7,10 @@
  * name, so it stays hidden from assistive tech rather than being announced
  * twice.
  */
-import { Image as ImageIcon, Music, Type, Video } from "lucide-react-native";
+import { Image as ImageIcon, Music, Type, Video } from "../primitives/icons";
 import type { ComponentType } from "react";
 import { useMemo } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { useFocusRing, type PressableHoverState } from "../focusRing";

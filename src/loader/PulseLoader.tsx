@@ -1,6 +1,6 @@
 /** Concentric rings expanding outward and fading, like a ripple. */
 import { useMemo } from "react";
-import { Animated, StyleSheet, View } from "react-native";
+import { Animated, StyleSheet, View } from "../primitives/reactNative";
 
 import { pulseGeometry, PULSE_RINGS } from "./loaderGeometry";
 import {

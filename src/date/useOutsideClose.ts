@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Platform, View } from "react-native";
+import { Platform, View } from "../primitives/reactNative";
 
 type NodeLike = { contains: (target: EventTarget | null) => boolean };
 

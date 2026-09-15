@@ -1,7 +1,7 @@
 /** Rotating spinner shown in place of the leading icon while a button is busy. */
-import { LoaderCircle } from "lucide-react-native";
+import { LoaderCircle } from "../primitives/icons";
 import { useEffect, useRef } from "react";
-import { Animated, Easing, Platform } from "react-native";
+import { Animated, Easing, Platform } from "../primitives/reactNative";
 
 import { useReducedMotion } from "../useReducedMotion";
 

@@ -1,7 +1,7 @@
 /** Fixed, pointer-transparent body portal layer for web dropdown surfaces. */
 import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "../primitives/reactNative";
 
 import { dropdownPortalZIndex } from "./dropdownLayers";
 

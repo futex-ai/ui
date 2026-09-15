@@ -1,10 +1,5 @@
 import type { StorybookConfig } from "@storybook/react-vite";
-import { fileURLToPath } from "node:url";
 import { mergeConfig } from "vite";
-
-const svgShim = fileURLToPath(
-  new URL("./react-native-svg-shim.tsx", import.meta.url),
-);
 
 const config: StorybookConfig = {
   addons: ["@storybook/addon-a11y"],
@@ -13,19 +8,12 @@ const config: StorybookConfig = {
     options: {},
   },
   stories: ["../src/**/*.stories.@(ts|tsx)"],
+  // No `react-native` alias: every component reaches React Native through
+  // `src/primitives`, whose `.web` files delegate to `react-native-web`,
+  // `lucide-react`, and DOM SVG. Storybook only has to prefer those files.
   viteFinal: async (baseConfig) =>
     mergeConfig(baseConfig, {
       resolve: {
-        alias: [
-          {
-            find: /^react-native$/,
-            replacement: "react-native-web",
-          },
-          {
-            find: /^react-native-svg$/,
-            replacement: svgShim,
-          },
-        ],
         extensions: [
           ".web.tsx",
           ".web.ts",

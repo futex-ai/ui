@@ -1,6 +1,6 @@
 /** Shared style helpers for the RichTextEditor frame and web DOM renderer. */
-import { StyleSheet } from "react-native";
-import type { TextStyle } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
+import type { TextStyle } from "../primitives/reactNative";
 
 import { fieldChromeTokens } from "../input/inputStyles";
 import type { SharedUiTheme } from "../theme";

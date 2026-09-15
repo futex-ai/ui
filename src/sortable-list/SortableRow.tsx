@@ -17,9 +17,9 @@
  * These are internal to the list and are not part of the public export surface.
  */
 import type { ReactNode } from "react";
-import { GripHorizontal, GripVertical } from "lucide-react-native";
-import { Platform, Pressable, View } from "react-native";
-import type { StyleProp, ViewStyle } from "react-native";
+import { GripHorizontal, GripVertical } from "../primitives/icons";
+import { Platform, Pressable, View } from "../primitives/reactNative";
+import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import { useFocusRing } from "../focusRing";
 import type { PressableHoverState } from "../focusRing";

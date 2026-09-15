@@ -2,7 +2,7 @@
  * Styles for the {@link Inspector}, its property rows, and the
  * {@link NumberScrubber} field they are built from.
  */
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import { focusRingStyleFor } from "../focusRing";
 import type { SharedUiTheme } from "../theme";

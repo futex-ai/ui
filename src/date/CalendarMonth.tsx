@@ -6,7 +6,7 @@
  * jump away. Holds no platform code — the web popover and the native sheet both
  * render it.
  */
-import { ChevronLeft, ChevronRight } from "lucide-react-native";
+import { ChevronLeft, ChevronRight } from "../primitives/icons";
 import type { ReactNode, RefObject } from "react";
 import {
   forwardRef,
@@ -16,7 +16,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Platform, Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "../primitives/reactNative";
 
 import { announce } from "../announcer";
 import { useFocusRing } from "../focusRing";

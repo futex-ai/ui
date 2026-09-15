@@ -1,7 +1,11 @@
 /** Correlation between two measures, with optional bubble magnitude. */
 import { useMemo, useState } from "react";
-import { View } from "react-native";
-import Svg, { Circle, Polygon, Rect } from "react-native-svg";
+import {
+  type StyleProp,
+  View,
+  type ViewStyle,
+} from "../primitives/reactNative";
+import Svg, { Circle, Polygon, Rect } from "../primitives/svg";
 
 import { useSharedUiTheme } from "../theme";
 
@@ -52,7 +56,7 @@ export type ScatterChartProps = {
   onHiddenSeriesIdsChange?: (ids: string[]) => void;
   accessibilityLabel?: string;
   disableFocusRing?: boolean;
-  style?: import("react-native").StyleProp<import("react-native").ViewStyle>;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 };
 

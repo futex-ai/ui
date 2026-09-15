@@ -125,9 +125,31 @@ The package name is `@firna/ui`. Public exports are available from:
 npm install @firna/ui
 ```
 
-Consumers must provide the peer dependencies listed in `package.json`: React,
-React DOM, React Native, React Native Web, React Native SVG, and
-lucide-react-native.
+All platform packages are optional peer dependencies; install the set for
+your target:
+
+- **Web only (Vite, Next.js, any DOM bundler):** `react`, `react-dom`,
+  `react-native-web`, and `lucide-react`. No `react-native` install and no
+  bundler alias is needed: the `import` condition resolves to `dist/node`,
+  whose files reach React Native only through `react-native-web`. Strict
+  TypeScript consumers also need `react-native` as a dev dependency for its
+  type declarations, because `react-native-web` ships none and the emitted
+  `.d.ts` files reference `ViewStyle`-style types from it.
+- **Expo / React Native (iOS, Android, and Expo web):** `react`, `react-dom`,
+  `react-native`, `react-native-web`, `react-native-svg`,
+  `lucide-react-native`, and `lucide-react`. Metro's `react-native` condition
+  resolves `dist/**`, where platform files pick native or web implementations
+  per file.
+- **Optional on native:** `@gorhom/bottom-sheet`, `react-native-gesture-handler`,
+  and `react-native-reanimated` power the native bottom sheet.
+
+Every component reaches the platform through `src/primitives`, a small set of
+modules with a native file and a `.web` sibling: React Native primitives
+(`react-native` on native, `react-native-web` on web), SVG (`react-native-svg`
+on native, DOM `<svg>` on web), and icons (`lucide-react-native` on native,
+`lucide-react` on web). Icon props accept `IconComponent`, a type both Lucide
+packages' icons satisfy, so a consumer passes whichever matches their
+platform.
 
 ## Theming
 
@@ -263,7 +285,9 @@ The package export map intentionally separates runtime targets:
 
 - The standard `import` condition points at `dist/node/**`, where relative ESM
   specifiers include explicit `.js` files and web platform files are selected
-  when they exist.
+  when they exist. Because the platform seam's `.web` files delegate to
+  `react-native-web`, `lucide-react`, and DOM SVG, this tree never imports
+  `react-native`, `react-native-svg`, or `lucide-react-native` at runtime.
 - Type declarations also point at `dist/node/**`, where relative declaration
   specifiers use NodeNext-compatible `.js` paths.
 - The `react-native` condition points at `dist/**`, preserving extensionless
@@ -339,6 +363,7 @@ The package export map intentionally separates runtime targets:
 
 ## Key Code Jumping Points
 
+- Platform seam (React Native, SVG, icons): [src/primitives](src/primitives)
 - Shared theme boundary: [src/theme.tsx](src/theme.tsx)
 - Animated border component:
   [src/animated-border/README.md](src/animated-border/README.md)

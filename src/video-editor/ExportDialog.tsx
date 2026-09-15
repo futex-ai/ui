@@ -12,7 +12,7 @@
  * ffmpeg.wasm, a server job, or a native pipeline.
  */
 import { useMemo } from "react";
-import { Text, View } from "react-native";
+import { Text, View } from "../primitives/reactNative";
 
 import { Button } from "../button";
 import type { ControlSize } from "../controlSize";

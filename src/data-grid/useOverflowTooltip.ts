@@ -6,7 +6,7 @@
  * {@link DataGridClippedText}.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Platform, type View } from "react-native";
+import { Platform, type View } from "../primitives/reactNative";
 
 import {
   shouldRevealOnHover,

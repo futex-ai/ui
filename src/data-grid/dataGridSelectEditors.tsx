@@ -4,7 +4,7 @@
  * Both use `highlightVariant="ring"` to avoid the solid-fill text-inversion.
  */
 import { useEffect, useMemo, useRef } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "../primitives/reactNative";
 
 import { useFocusRing } from "../focusRing";
 import { createInputStyles } from "../input";

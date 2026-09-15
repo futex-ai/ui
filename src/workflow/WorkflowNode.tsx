@@ -12,7 +12,7 @@ import {
   Text,
   View,
   ViewStyle,
-} from "react-native";
+} from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { PressableHoverState, useFocusRing } from "../focusRing";

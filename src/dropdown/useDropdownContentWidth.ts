@@ -1,6 +1,6 @@
 /** Measured-width state for aligning an intrinsically sized dropdown surface. */
 import { useCallback, useState } from "react";
-import type { LayoutChangeEvent } from "react-native";
+import type { LayoutChangeEvent } from "../primitives/reactNative";
 
 const WIDTH_TOLERANCE = 0.5;
 

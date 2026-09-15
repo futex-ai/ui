@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { Text, View } from "react-native";
+import { Text, View } from "../primitives/reactNative";
 
 import {
   AgendaView,

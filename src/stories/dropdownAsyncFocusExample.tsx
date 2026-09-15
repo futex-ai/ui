@@ -1,6 +1,6 @@
 /** Consumer-shaped async form focus regression fixture for Storybook. */
 import { useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "../primitives/reactNative";
 
 import {
   DropdownSelector,

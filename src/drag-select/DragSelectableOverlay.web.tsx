@@ -1,6 +1,6 @@
 /** Themed web marquee overlay for drag selection. */
 import { createPortal } from "react-dom";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "../primitives/reactNative";
 
 import { DRAG_SELECTABLE_LAYERS } from "./dragSelectableLayers";
 import type { DragSelectableBox } from "./dragSelectableModel";

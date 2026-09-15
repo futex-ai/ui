@@ -32,8 +32,8 @@ import {
   StyleSheet,
   View,
   ViewStyle,
-} from "react-native";
-import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
+} from "../primitives/reactNative";
+import Svg, { Defs, LinearGradient, Rect, Stop } from "../primitives/svg";
 
 import { useSharedUiTheme } from "../theme";
 import { useReducedMotion } from "../useReducedMotion";

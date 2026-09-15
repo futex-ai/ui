@@ -5,11 +5,11 @@ import {
   Info,
   TriangleAlert,
   X,
-} from "lucide-react-native";
-import type { LucideIcon } from "lucide-react-native";
+} from "../primitives/icons";
+import type { IconComponent } from "../primitives/icons";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Platform, Pressable, Text, View } from "react-native";
-import type { ViewProps } from "react-native";
+import { Platform, Pressable, Text, View } from "../primitives/reactNative";
+import type { ViewProps } from "../primitives/reactNative";
 
 import { Button } from "../button";
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";
@@ -316,7 +316,7 @@ function moveFocusToNeighbourToast(container: View | null): void {
 }
 
 /** Leading icon per tone. */
-const TONE_ICONS: Record<ToastTone, LucideIcon> = {
+const TONE_ICONS: Record<ToastTone, IconComponent> = {
   error: CircleAlert,
   info: Info,
   success: CircleCheck,

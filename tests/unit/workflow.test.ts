@@ -26,7 +26,7 @@ test("workflow types ship default icon and category color maps", () => {
 
   assert.match(
     types,
-    /defaultWorkflowNodeIcons: Record<WorkflowNodeType, LucideIcon>/,
+    /defaultWorkflowNodeIcons: Record<WorkflowNodeType, IconComponent>/,
   );
   assert.match(types, /trigger: Zap/);
   assert.match(types, /branch: GitBranch/);

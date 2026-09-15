@@ -1,5 +1,5 @@
 /** Shared chrome for the date-field triggers (single and range). */
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { fieldChromeTokens, inputSizeTokens } from "../input";

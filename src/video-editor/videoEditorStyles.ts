@@ -6,7 +6,7 @@
  * The density numbers live next door in `videoEditorSizing`, which stays free
  * of a runtime `react-native` import so they can be unit tested.
  */
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "../primitives/reactNative";
 
 import { focusRingStyleFor } from "../focusRing";
 import type { SharedUiTheme } from "../theme";

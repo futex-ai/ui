@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "../primitives/reactNative";
 
 import { Spinner, darkSharedUiTheme } from "../index";
 import { StorySurface } from "./sharedExamples";

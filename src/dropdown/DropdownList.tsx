@@ -1,7 +1,13 @@
 /** Branded dropdown list rows with shared hover and keyboard state. */
-import { Check, LucideIcon } from "lucide-react-native";
+import { Check, IconComponent } from "../primitives/icons";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { Platform, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
@@ -443,7 +449,7 @@ export function DropdownIconBox({
   testID,
   tone = "sage",
 }: {
-  Icon: LucideIcon;
+  Icon: IconComponent;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
   tone?: "danger" | "sage";

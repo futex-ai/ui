@@ -16,8 +16,8 @@
  */
 import { useCallback, useMemo } from "react";
 import type { ReactNode } from "react";
-import { Platform, ScrollView, View } from "react-native";
-import type { StyleProp, ViewStyle } from "react-native";
+import { Platform, ScrollView, View } from "../primitives/reactNative";
+import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { DragGhostPortal } from "../dragGhostPortal";

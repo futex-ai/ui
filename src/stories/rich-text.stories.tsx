@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Plus } from "lucide-react-native";
+import { Plus } from "../primitives/icons";
 import { useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "../primitives/reactNative";
 
 import { RichTextEditor, darkSharedUiTheme } from "../index";
 import type { SlashMenuItem } from "../index";

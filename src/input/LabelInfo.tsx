@@ -1,7 +1,7 @@
 /** An info (ⓘ) button after a field label that reveals help text in a tooltip. */
-import { Info, LucideIcon } from "lucide-react-native";
+import { Info, IconComponent } from "../primitives/icons";
 import { useId, useMemo } from "react";
-import { Platform, Pressable, Text } from "react-native";
+import { Platform, Pressable, Text } from "../primitives/reactNative";
 
 import { useFocusRing } from "../focusRing";
 import { Popover } from "../popover";
@@ -20,7 +20,7 @@ export type LabelInfoProps = {
   /** Explanatory text revealed in the tooltip when the button is pressed. */
   info: string;
   /** Icon component for the button. Defaults to the lucide `Info` glyph. */
-  icon?: LucideIcon;
+  icon?: IconComponent;
   /** Accessible name for the button, e.g. `More information about Email`. */
   accessibilityLabel: string;
   /**

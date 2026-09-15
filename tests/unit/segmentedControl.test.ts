@@ -140,7 +140,7 @@ test("segmented options accept a leading lucide icon or a caller node", () => {
 
   // The option carries an optional lucide `icon` (tinted) and an `iconNode`
   // escape hatch (rendered as-is, winning over `icon`).
-  assert.match(source, /icon\?: LucideIcon;/);
+  assert.match(source, /icon\?: IconComponent;/);
   assert.match(source, /iconNode\?: ReactNode;/);
   assert.match(
     source,
