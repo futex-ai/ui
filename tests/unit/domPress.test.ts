@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { isPrimaryPointerDown } from "../../src/primitives/dom/pressMachine";
+import {
+  isPrimaryPointerDown,
+  start,
+  type Machine,
+  type PressConfig,
+  type PressEvent,
+} from "../../src/primitives/dom/pressMachine";
 import { isTextInputNode } from "../../src/primitives/dom/platform";
 
 /**
@@ -48,4 +54,69 @@ test("the keyboard is only dismissed from a text field", () => {
   assert.equal(isTextInputNode({ tagName: "BUTTON" }), false);
   assert.equal(isTextInputNode({ tagName: "DIV" }), false);
   assert.equal(isTextInputNode(null), false);
+});
+
+/** A machine with nothing running and a recording config. */
+function machineWith(config: Partial<PressConfig>): {
+  machine: Machine;
+  events: string[];
+} {
+  const events: string[] = [];
+  return {
+    events,
+    machine: {
+      activatePosition: null,
+      config: {
+        onPressChange: (pressed) => events.push(`change:${pressed}`),
+        onPressStart: () => events.push("start"),
+        ...config,
+      } as PressConfig,
+      detachPointer: null,
+      isPointerTouch: false,
+      keyupListener: null,
+      longPressDispatched: false,
+      longPressTimeout: null,
+      pressDelayTimeout: null,
+      pressOutTimeout: null,
+      responderElement: null,
+      state: "NOT_RESPONDER",
+    },
+  };
+}
+
+const downEvent = {
+  currentTarget: null,
+  nativeEvent: {},
+  preventDefault: () => {},
+  stopPropagation: () => {},
+  target: null,
+} as PressEvent;
+
+test("a zero press delay activates on the down event", () => {
+  // React Native spells this `unstable_pressDelay` and maps it onto
+  // `delayPressIn`, which is what `Pressable` passes here.
+  const { events, machine } = machineWith({ delayPressIn: 0 });
+  start(machine, downEvent, true);
+  assert.deepEqual(events, ["start", "change:true"]);
+  assert.equal(machine.state, "ACTIVE_PRESS_START");
+  clearTimeout(machine.longPressTimeout ?? undefined);
+});
+
+test("a custom press delay defers activation", async () => {
+  const { events, machine } = machineWith({ delayPressIn: 20 });
+  start(machine, downEvent, true);
+  assert.deepEqual(events, [], "nothing fires while the delay is pending");
+  assert.equal(machine.state, "INACTIVE_PRESS_START");
+
+  await new Promise((resolve) => setTimeout(resolve, 40));
+  assert.deepEqual(events, ["start", "change:true"]);
+  assert.equal(machine.state, "ACTIVE_PRESS_START");
+  clearTimeout(machine.longPressTimeout ?? undefined);
+});
+
+test("the keyboard path skips the delay entirely", () => {
+  const { events, machine } = machineWith({ delayPressIn: 500 });
+  start(machine, downEvent, false);
+  assert.deepEqual(events, ["start", "change:true"]);
+  clearTimeout(machine.longPressTimeout ?? undefined);
 });

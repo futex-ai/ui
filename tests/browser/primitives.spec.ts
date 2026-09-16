@@ -236,3 +236,15 @@ test("the header role picks the heading element for its level", async ({
       .evaluate((node) => node.tagName),
   ).toBe("H3");
 });
+
+test("an onLayout attached after mount still measures", async ({ page }) => {
+  await page.goto("/iframe.html?id=primitives-layout--late-layout");
+  const size = page.getByTestId("late-layout-size");
+  await expect(size).toHaveText("unmeasured");
+
+  // The shared observer watches a node from the moment it has a handler, not
+  // only from the render that mounted it — `react-native-web`'s own
+  // `useElementLayout` depended on `[ref, observer]` alone and missed this.
+  await page.getByTestId("late-layout-watch").click();
+  await expect(size).toHaveText("240x64");
+});

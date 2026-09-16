@@ -101,6 +101,14 @@ const ICON_NAMES = [
   "Zap",
 ];
 
+/**
+ * Peers the NODE consumer needs on disk to import every packed entry point.
+ *
+ * Only `react`, `react-dom` and `lucide-react`: M3 of the
+ * pure-React-DOM-backend plan ported the last six primitives, so nothing in
+ * `dist/node` imports `react-native-web` any more and its stub is gone. If the
+ * import smoke ever fails on a missing `react-native-web`, the seam regressed.
+ */
 export async function writeNodePeerStubs(consumerRoot) {
   await writeStubPackage(consumerRoot, "react", {
     "index.js": `export const Fragment = Symbol.for("react.fragment");
@@ -138,6 +146,9 @@ export function useMemo(factory) {
   return factory();
 }
 export function useInsertionEffect() {}
+export function useReducer(reducer, initial) {
+  return [initial, () => {}];
+}
 export function useRef(value = null) {
   return { current: value };
 }
@@ -147,7 +158,13 @@ export function useSyncExternalStore(subscribe, getSnapshot) {
 export function useState(value) {
   return [typeof value === "function" ? value() : value, () => {}];
 }
+export const Children = {
+  map(children, mapper) {
+    return (Array.isArray(children) ? children : [children]).map(mapper);
+  },
+};
 export default {
+  Children,
   Fragment,
   cloneElement,
   createContext,
@@ -163,6 +180,7 @@ export default {
   useInsertionEffect,
   useLayoutEffect,
   useMemo,
+  useReducer,
   useRef,
   useState,
   useSyncExternalStore,
@@ -189,45 +207,6 @@ export const jsxs = jsx;
 }
 `,
     "package.json": JSON.stringify({ name: "react-dom", type: "module" }),
-  });
-  // Only the six primitives the web seam still delegates, plus the responder
-  // system `dom/View.tsx` borrows until M3 of the pure-React-DOM-backend plan.
-  // Everything else now comes from the library's own DOM backend, so a name
-  // reappearing here means the seam regressed.
-  await writeStubPackage(consumerRoot, "react-native-web", {
-    "index.js": `export const FlatList = "FlatList";
-export const PanResponder = {
-  create(config) {
-    return { panHandlers: {}, config };
-  },
-};
-export const ScrollView = "ScrollView";
-export const TextInput = "TextInput";
-class AnimatedValue {
-  interpolate() {
-    return "0deg";
-  }
-}
-export const Animated = {
-  Value: AnimatedValue,
-  View: "Animated.View",
-  loop() {
-    return { start() {}, stop() {} };
-  },
-  timing() {
-    return { start() {}, stop() {} };
-  },
-};
-export const Easing = {
-  linear: (t) => t,
-};
-`,
-    "dist/modules/useResponderEvents/index.js": `export default function useResponderEvents() {}
-`,
-    "package.json": JSON.stringify({
-      name: "react-native-web",
-      type: "module",
-    }),
   });
   await writeStubPackage(consumerRoot, "lucide-react", {
     "index.js": `const Icon = () => null;

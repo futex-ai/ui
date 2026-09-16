@@ -82,32 +82,30 @@ test("every .web module wins its own module-resolution race", () => {
 });
 
 /**
- * The names the web seam still takes from `react-native-web`.
+ * Every name the web seam imports from its own DOM backend.
  *
- * M2 of `plans/pure-react-dom-backend.md` moved everything else to the DOM
- * backend in `primitives/dom`; M3 ports these six and the list goes to zero.
+ * M3 of `plans/pure-react-dom-backend.md` ported the last six
+ * (`Animated`, `Easing`, `FlatList`, `PanResponder`, `ScrollView`,
+ * `TextInput`), so nothing is delegated any more and
+ * `primitives/react-native-web.d.ts` is gone.
  */
-const DELEGATED_TO_REACT_NATIVE_WEB = [
+const SERVED_BY_THE_DOM_BACKEND = [
+  "AccessibilityInfo",
   "Animated",
   "Easing",
   "FlatList",
-  "PanResponder",
-  "ScrollView",
-  "TextInput",
-];
-
-/** The names the web seam takes from its own DOM backend. */
-const SERVED_BY_THE_DOM_BACKEND = [
-  "AccessibilityInfo",
   "Image",
   "InputAccessoryView",
   "Keyboard",
   "KeyboardAvoidingView",
   "Modal",
+  "PanResponder",
   "Platform",
   "Pressable",
+  "ScrollView",
   "StyleSheet",
   "Text",
+  "TextInput",
   "View",
   "useWindowDimensions",
 ];
@@ -128,6 +126,15 @@ function importedNames(source: string, from: string): string[] {
     .sort();
 }
 
+/** Every module specifier a file imports from. */
+function importedModules(source: string): string[] {
+  return [
+    ...new Set(
+      [...source.matchAll(/ from "([^"]+)"/g)].map((match) => match[1]),
+    ),
+  ].sort();
+}
+
 test("web primitives delegate to web packages and native ones to native packages", () => {
   const web = readFileSync(
     new URL("reactNative.web.ts", primitivesRoot),
@@ -139,47 +146,27 @@ test("web primitives delegate to web packages and native ones to native packages
   assert.doesNotMatch(web, /from "react-native"/);
   assert.doesNotMatch(web, /import\("react-native"\)/);
 
-  assert.deepEqual(
-    importedNames(web, "react-native-web"),
-    DELEGATED_TO_REACT_NATIVE_WEB,
-    "only the not-yet-ported primitives come from react-native-web",
-  );
+  // The seam is pure React now: its only imports are the DOM backend and the
+  // vendored types.
+  assert.deepEqual(importedModules(web), ["./dom", "./types"]);
   assert.deepEqual(
     importedNames(web, "\\./dom"),
     SERVED_BY_THE_DOM_BACKEND,
-    "every ported primitive comes from the library's own DOM backend",
+    "every primitive comes from the library's own DOM backend",
   );
 
-  const shim = readFileSync(
-    new URL("react-native-web.d.ts", primitivesRoot),
-    "utf8",
-  );
-  assert.doesNotMatch(shim, /"react-native"/);
-  for (const name of DELEGATED_TO_REACT_NATIVE_WEB) {
-    assert.match(
-      shim,
-      new RegExp(`export const ${name}:`),
-      `react-native-web.d.ts declares ${name}`,
-    );
-  }
-  for (const name of SERVED_BY_THE_DOM_BACKEND) {
-    assert.doesNotMatch(
-      shim,
-      new RegExp(`export const ${name}:`),
-      `react-native-web.d.ts no longer declares ${name}`,
-    );
-  }
-
-  // The DOM backend is the only thing under `dom/` that may reach for
-  // `react-native-web`, and only for the responder system PanResponder needs.
-  const domImporters = readdirSync(new URL("dom/", primitivesRoot))
-    .filter((file) =>
-      /from "react-native-web/.test(
-        readFileSync(new URL(`dom/${file}`, primitivesRoot), "utf8"),
-      ),
-    )
+  // Nothing under `src/primitives` may reach for `react-native-web` at all;
+  // `react-native-web.d.ts` went with the last import.
+  const offenders = walk(primitivesRoot.pathname)
+    .filter((file) => /from "react-native-web/.test(readFileSync(file, "utf8")))
+    .map((file) => file.slice(primitivesRoot.pathname.length))
     .sort();
-  assert.deepEqual(domImporters, ["responderEvents.ts"]);
+  assert.deepEqual(offenders, []);
+  assert.equal(
+    existsSync(new URL("react-native-web.d.ts", primitivesRoot).pathname),
+    false,
+    "the react-native-web declaration shim is deleted",
+  );
 
   for (const file of readdirSync(new URL("types/", primitivesRoot))) {
     const source = readFileSync(

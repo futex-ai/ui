@@ -1,0 +1,4 @@
+- heading "Animated value" [level=1]
+- text: /progress \d+\.\d+/
+- button "Set 0.5"
+- button "Animate"

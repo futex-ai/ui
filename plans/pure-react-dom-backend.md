@@ -4,7 +4,7 @@ Make `@firna/ui` consumable as a plain React library on the web, with no
 `react-native-web` at runtime and no `react-native` for types, while every
 component file stays shared with the React Native build.
 
-**Status:** M0–M2 delivered. M3–M4 not started.
+**Status:** M0–M3 delivered. M4 not started.
 
 ---
 
@@ -414,7 +414,7 @@ primitives.
 - [x] `dom/usePress.ts` and `dom/Pressable.tsx` on pointer events: `pressed` /
       `hovered` / `focused` state to function-valued `style` and `children`,
       `onPressIn` / `onPressOut` / `onPress` / `onLongPress` with
-      `delayLongPress`, cancel on pointer-cancel or drag-out, keyboard
+      `delayLongPress`, cancel on pointer-cancel, keyboard
       activation (Enter always; Space on `button` hosts or `role="button"`,
       preventing page scroll), `disabled`, cursor and `touch-action` styles;
       `hitSlop` accepted and ignored (Decision 6).
@@ -522,6 +522,10 @@ them invisible to the snapshot and ARIA baselines except the first.
   than the atomic CSS that backend compiled per style. Same priority (below
   every inline style, above the UA sheet), same insertion point, far fewer
   declarations on the 135 files' worth of views.
+- **`onLayout` is observed from the render that has a handler**, not only from
+  the one that mounted the node (review follow-up 2 above). That backend's
+  `useElementLayout` observed on mount alone, so a handler attached later never
+  fired; nothing in the library depended on the omission.
 - **No RTL.** Only the left-to-right half of `PROPERTIES_I18N` is implemented
   (a plan non-goal), along with `href` / `hrefAttrs`, `inert`, `Image`'s
   `defaultSource` / `blurRadius` / `tintColor` / loader statics, and
@@ -536,14 +540,40 @@ system for the same reason — `PanResponder` computes its gesture state from th
 (`react-native-web/dist/modules/useResponderEvents/index.js`) resolves under a
 bundler but not under plain Node ESM, because that `dist` uses extensionless
 relative specifiers internally; a bundler-less Node SSR consumer is therefore
-unsupported until M3 removes the import.
+unsupported until M3 removes the import. Both are resolved in M3.
+
+**Review follow-ups (fixed in M3).** Three findings from the AI review of the
+M2 commit, all addressed alongside the M3 work:
+
+1. `Pressable` ignored `unstable_pressDelay` (`types/components.ts`). React
+   Native maps that prop onto `delayPressIn`; `react-native-web` reads
+   `delayPressIn` directly and never sees the `unstable_` spelling, so a caller
+   using the documented React Native name got the default 50 ms delay.
+   `dom/Pressable.tsx` now maps `unstable_pressDelay` onto the machine's
+   `delayPressIn` and passes `delayPressIn` / `delayPressOut` through when a
+   caller spells them that backend's way, the explicit one winning.
+   `tests/unit/domPress.test.ts` pins all three paths: a zero delay activates
+   on the down event, a custom delay defers activation, and the keyboard path
+   skips the delay entirely.
+2. `dom/useLayout.ts`'s observe effect depended on `[observer, ref]` only, so a
+   `View` that mounted with no `onLayout` and was given one later was never
+   observed — a faithful transcription of the same defect in
+   `useElementLayout`. The effect now also depends on whether a handler exists
+   (a boolean, not its identity), so a late handler starts observation and a
+   removed one stops it; `observe` is idempotent, so nothing else changes. The
+   new `Primitives/Layout` story and `tests/browser/primitives.spec.ts`'s
+   "an onLayout attached after mount still measures" cover it, and it is listed
+   in the M2 deviations below.
+3. The M2 checklist line said press cancels "on pointer-cancel or drag-out",
+   contradicting the paragraph below it. The wording is corrected; the
+   implementation and its browser test were already right.
 
 ### M3 — DOM backend: ScrollView, TextInput, Animated, responders, FlatList
 
 At the end: nothing in `src/primitives` imports `react-native-web`;
 `react-native-web.d.ts` is deleted; the full suite is green on the DOM backend.
 
-- [ ] `dom/ScrollView.tsx`: overflow container plus content wrapper
+- [x] `dom/ScrollView.tsx`: overflow container plus content wrapper
       (`contentContainerStyle`), `horizontal`, `scrollEnabled`, hidden
       indicators, `onScroll` with `contentOffset` / `contentSize` /
       `layoutMeasurement`, `onContentSizeChange` via the shared observer,
@@ -551,7 +581,38 @@ At the end: nothing in `src/primitives` imports `react-native-web`;
       methods `scrollTo`, `scrollToEnd`, `getScrollableNode`; unsupported
       native props (`keyboardShouldPersistTaps`, `nestedScrollEnabled`,
       `decelerationRate`, `snapToInterval`) accepted and ignored as today.
-- [ ] `dom/TextInput.tsx`: `input` / `textarea` by `multiline`, `onChangeText`
+      Transcribed from `exports/ScrollView/index.js` plus its `ScrollViewBase`,
+      so the rhythm is theirs: the first scroll of a gesture always reports,
+      later ones only once `scrollEventThrottle` has elapsed, and a 100 ms
+      trailing timer reports the resting position. There is **no**
+      `onMomentumScrollEnd`: that backend passed the prop to a plain `View`, so
+      it never fired on web, and `DateWheel` already debounces `onScroll`
+      instead — firing it now would double-commit its value. `pagingEnabled`
+      and `stickyHeaderIndices` are implemented (both are one style each:
+      `scroll-snap-type` on the scroller with `scroll-snap-align` on the
+      children, `position: sticky` on the named ones);
+      `keyboardShouldPersistTaps`, `nestedScrollEnabled`, `decelerationRate`,
+      `snapToInterval` and `snapToOffsets` are accepted and dropped by the
+      `View`'s prop allowlist, exactly as before. An `on-drag`
+      `keyboardDismissMode` calls `Keyboard.dismiss` from the scroll handler,
+      which is where `_handleScroll` called `dismissKeyboard`. The whole
+      `ScrollResponder` handler set is installed (`scrollViewResponder.ts`), not
+      just the three that decide the claim: a scroller that has observed a
+      scroll refuses `onResponderTerminationRequest`, so a child cannot steal
+      the gesture mid-scroll, and `onResponderRelease` blurs the focused field
+      on a tap that did not scroll — the rule is
+      `shouldDismissKeyboardOnRelease` in `scrollViewHost.ts`, pinned by
+      `tests/unit/domScrollView.test.ts`. Only touch gestures reach any of it,
+      because the lock is claimed from `onScrollShouldSetResponder`, which
+      answers `isTouching`. The one thing left out is the commented-out
+      keyboard-eating branch of `onStartShouldSetResponderCapture`, which that
+      backend had already disabled. The scroll event's measurements are lazy
+      getters (`dom/scrollEvents.ts`), so `Timeline` reading
+      `layoutMeasurement.width` after the fact still sees the live viewport.
+      The imperative methods are assigned onto the DOM element, as that backend
+      assigned them, so `dropdownScroll.ts` can call `getScrollableNode()` and
+      then `getBoundingClientRect` / `scrollBy` on the result.
+- [x] `dom/TextInput.tsx`: `input` / `textarea` by `multiline`, `onChangeText`
       and `onChange` with `nativeEvent.text`, controlled `selection` and
       `onSelectionChange`, `onContentSizeChange`, `onKeyPress`
       (`nativeEvent.key`), `onSubmitEditing` with `submitBehavior`,
@@ -560,7 +621,22 @@ At the end: nothing in `src/primitives` imports `react-native-web`;
       `blur`, `clear`, `isFocused`, `setNativeProps({ selection })`. A
       forwarded `onKeyDown` is delivered (an improvement over
       `react-native-web`; `useDocumentKeyCapture` keeps working unchanged).
-- [ ] `dom/animated/`: `Value` (`setValue`, listeners, `interpolate` for
+      The pure half — the `type` / `inputMode` table, the forwarded-prop
+      allowlist and the defaults — is `dom/textInputProps.ts`, pinned by
+      `tests/unit/domTextInput.test.ts`. The base style is a class in `css.ts`
+      like the `View` and `Text` resets, so an inline style still wins, and the
+      `::placeholder` rule is attached to **every** field rather than only the
+      ones naming a colour: that backend applied its placeholder class
+      unconditionally, so a field with no `placeholderTextColor` resolves an
+      empty `var()` and its placeholder inherits the input's own colour instead
+      of the browser's grey. The ref is the element itself, which is what lets
+      `useAutoGrowTextarea.web.ts` read `scrollHeight` and write `style.height`
+      on the object the seam types as a `TextInput`; `setNativeProps` is
+      overridden there so `{ selection }` moves the caret (the rich-text
+      editor's only imperative path) instead of being written as an attribute,
+      and `setSelection(start, end)` — which the vendored `TextInputInstance`
+      declares and that backend never implemented — now exists.
+- [x] `dom/animated/`: `Value` (`setValue`, listeners, `interpolate` for
       numeric, `deg`, and `%` outputs with `extend` and `clamp`), `timing`
       (rAF driver, `duration`, `easing`, `useNativeDriver` ignored), `loop`
       (`iterations`, `resetBeforeIteration`), `Easing` (`linear`, `ease`,
@@ -568,23 +644,193 @@ At the end: nothing in `src/primitives` imports `react-native-web`;
       `createAnimatedComponent` applying animated `style` and animated
       attribute props by direct host mutation, `Animated.View` / `Text`. Pure
       math unit-tested.
-- [ ] `dom/useResponder.ts` and `PanResponder.create`: the grant / move /
+      Ten files, each the vendored React Native module with the native-driver
+      half removed rather than stubbed: `nodes.ts` (`AnimatedNode`,
+      `AnimatedWithChildren`), `AnimatedValue.ts`, `AnimatedInterpolation.ts`
+      over a pure `interpolation.ts`, `AnimatedStyle.ts` (with
+      `AnimatedTransform`), `AnimatedProps.ts`, `TimingAnimation.ts`,
+      `compositions.ts` (`timing`, `loop`, `sequence`, `parallel`, `delay`),
+      `Easing.ts` over `bezier.ts`, and `createAnimatedComponent.tsx`.
+      The one correction to the checklist as written: values are **not** pushed
+      into the host node. That backend's JS driver re-renders the wrapped
+      component on every frame through a `useReducer`, which is what lets an
+      animated value drive an ordinary SVG attribute (`AnimatedBorder`'s
+      `strokeDashoffset`) as easily as a style, and it is the model all
+      thirteen consumers were written against. `collapsable: false` is still
+      forwarded and `style` is still handed on as an array, so
+      `AnimatedBorder`'s `DomSafeRect` and `svg.web.tsx`'s array-flattening
+      both stay exactly as they are — no consumer file changed.
+      `tests/unit/domInterpolation.test.ts` and `tests/unit/domEasing.test.ts`
+      pin the maths, including the loader wave's 25-point ranges and its
+      0.001-wide sawtooth wrap.
+- [x] `dom/responder/` and `PanResponder.create`: the grant / move /
       release / terminate subset over pointer events with pointer capture,
       `GestureResponderEvent` payloads (`locationX/Y`, `pageX/Y`, `timestamp`,
       `touches`), and `gestureState` (`dx`, `dy`, `moveX`, `moveY`, `x0`, `y0`,
       `vx`, `vy`, `numberActiveTouches`); wired into `View` only when a
       responder prop is present. Gesture math unit-tested.
-- [ ] `dom/FlatList.tsx` on the backend `ScrollView`: fixed-height windowing
+      Ported whole rather than reduced, because `PanResponder` reads the touch
+      history the system maintains: `ResponderSystem.ts`, `utils.ts`,
+      `touchHistory.ts`, `createResponderEvent.ts`, `eventTypes.ts`,
+      `useResponderEvents.ts`, `touchHistoryMath.ts` and `PanResponder.ts`.
+      That means the document-level listener model (bubble-phase mouse, touch,
+      `contextmenu`, `select` and `selectionchange`; capture-phase `blur` and
+      `scroll`; window `blur`), the `__reactResponderId` node tagging,
+      `composedPath` event paths, capture-then-bubble negotiation, the
+      transfer / termination-request protocol, every termination rule, the
+      touch/mouse emulation guard and `trackedTouchCount` — not pointer capture,
+      which that backend never used. `dom/responderEvents.ts` and its deep
+      import are deleted. `useResponderEvents` is wired into `View`, `Text`,
+      `TextInput` and `ScrollView` exactly where that backend wired it, and
+      `ScrollView` registers its own `onStartShouldSetResponder`,
+      `onStartShouldSetResponderCapture` and `onScrollShouldSetResponder` as
+      `ScrollViewBase` did. `usePress` deliberately stays on its own pointer
+      machine: see the deviations.
+- [x] `dom/FlatList.tsx` on the backend `ScrollView`: fixed-height windowing
       when `getItemLayout` is given (overscan, `onEndReached` with threshold,
       `scrollToIndex` with `onScrollToIndexFailed`), plain mapping otherwise;
       `ListFooterComponent`, `contentContainerStyle`, `keyExtractor`, `role` /
       `style` pass-through. Window math unit-tested; DataGrid's browser tests
       are the integration check.
-- [ ] Remove every `react-native-web` import from `reactNative.web.ts`; delete
+      Split three ways: `flatListWindow.ts` (pure —
+      `computeWindowedRenderLimits`, `elementsThatOverlapOffsets`,
+      `constrainToItemCount`, the defaults and the key extractor),
+      `useFlatListWindow.ts` (scroll metrics, measured frames, the 50 ms
+      batcher and the hi-pri path) and `FlatList.tsx` (the render and the
+      imperative methods). The batching chain is the load-bearing part:
+      `componentDidUpdate` scheduled another batch after every render, which is
+      what grows the window past the first ten rows when nothing else is
+      happening, and an effect with no dependency array reproduces it. That is
+      what lands the 1000-row DataGrid story on exactly the 105 body rows its
+      ARIA baseline records (`windowSize` 21 × a 380 px viewport = 4180 px of
+      content, which is rows 0–104 at 40 px each) and the infinite-scroll story
+      on its 30; `tests/unit/domFlatListWindow.test.ts` pins both numbers
+      before the browser ever runs. `constrainToItemCount` is
+      `_constrainToItemCount`'s expression verbatim, `clamp` included: the value
+      being clipped is the last index a full batch can start at, and the
+      window's own `first` is the upper bound, so shrinking the data pulls the
+      window back by a whole batch rather than by a row.
+- [x] Remove every `react-native-web` import from `reactNative.web.ts`; delete
       `src/primitives/react-native-web.d.ts`; `tests/unit/primitives.test.ts`
       asserts the web seam imports only `react`, `react-dom`, and `./dom`.
-- [ ] `npm run verify` and `cargo xtask check` green; snapshot diffs reviewed;
+      The seam's only imports are now `./dom` and `./types`, which the test
+      asserts as an exact list, and it also walks all of `src/primitives` for a
+      `react-native-web` import and checks the declaration shim is gone.
+      `scripts/package-smoke-stubs.mjs` no longer stubs the package at all
+      (nothing under `dist/node` imports it); the React stub grew `useReducer`
+      and `Children`, which the animated and scroll primitives use.
+- [x] Storybook stories for the new primitives, with browser coverage:
+      `Primitives/Scrolling` (a fixed scroller with an offset and content-size
+      readout plus `scrollTo` / `scrollToEnd` buttons, and a 200-row windowed
+      list with a rendered-count readout), `Primitives/Interaction` (a
+      single-line and a multiline field with readouts for `onChangeText`,
+      `onKeyPress`, `onSelectionChange`, `onSubmitEditing` and
+      `onContentSizeChange`; an animated value driven by `setValue` with its
+      interpolations on screen; a `PanResponder` box reporting `dx` / `dy` and
+      a raw-responder box reporting `locationX` / `locationY`) and
+      `Primitives/Layout` (the late-`onLayout` case from review follow-up 2).
+      Every one is at rest when it mounts, so all six new baselines are
+      deterministic. `tests/browser/primitivesScrolling.spec.ts` (6) and
+      `primitivesInteraction.spec.ts` (8) drive them.
+- [x] `npm run verify` and `cargo xtask check` green; snapshot diffs reviewed;
       commit, push, review.
+      Lead-run gates: format, 1227 unit tests, both typechecks, build,
+      `test:dist`, package smoke, static Storybook, and the full browser suite
+      (372 tests, run twice) all green on the pure DOM backend; zero existing
+      baselines changed, twelve new ones for the six new primitive stories. One
+      earlier browser run saw two axe shards abort with "execution context was
+      destroyed" on `chart-barchart--percent` and `chart-parttowhole--donut`
+      while a Storybook build ran concurrently on the same machine; a clean
+      re-run passed, so it is recorded as a load-induced crash of the sweep's
+      page, not a violation.
+
+**Snapshot review (M3).** All 326 screenshots and 323 ARIA snapshots recorded
+before the port match byte for byte on the fully ported backend; a hash of the
+baseline directory before and after the sweep differs only by the twelve files
+the six new stories added. The axe sweep stays empty.
+
+One story had to be earned. `modal-examples--bottom-sheet-web-modal` rendered
+3768 pixels (1% of the frame) differently at first: everything below the sheet's
+text field sat one device row higher. It was not a style difference — a full
+`getComputedStyle` dump of every element under the dialog, the field's
+`getClientRects`, its `::placeholder` pseudo-element, and the exact font string
+it resolves to are byte-identical between the two backends, and the whole body's
+HTML differs only in class names. It was the compositing hint: see the first
+deviation below.
+
+**Deviations from `react-native-web` (M3).**
+
+- **`ScrollView` does not set `transform: translateZ(0)`.** The rest of that
+  backend's base style is transcribed as written. The hint is a zero
+  translation with no visual meaning, paired with the
+  `-webkit-overflow-scrolling: touch` that modern Chromium no longer parses,
+  and it promotes the scroller to its own compositing layer. Inside that layer
+  Chromium snaps fractionally-positioned content one device row differently
+  from the recorded baseline — deterministically, on every run, and
+  deterministically not at all once the hint is removed. That is the whole of
+  the bottom-sheet diff above; dropping the hint leaves every other baseline
+  untouched. Why the same declaration behaves differently when that backend
+  compiles it into an atomic class was not established: moving ours into a
+  stylesheet class reproduced the shift exactly, so class-versus-inline is not
+  the variable.
+- **`onMomentumScrollEnd` is never called**, as on that backend: it is passed
+  through as a plain `View` prop. `DateWheel` is written around that and would
+  double-commit if it started firing.
+- **`submitBehavior` is honoured.** That backend read only the deprecated
+  `blurOnSubmit` and ignored the modern spelling. Ours falls back to
+  `submitBehavior` when `blurOnSubmit` is absent, as React Native defines it.
+  Every combination the library actually passes behaves exactly as before; the
+  one case that differs (a multiline field with `submitBehavior="submit"`) is
+  `NativeRichTextBlock`, which has a `.web` sibling and never renders here.
+- **`TextInput` delivers a forwarded `onKeyDown`** (an improvement the plan
+  already called for) and adds `setSelection(start, end)`, which the vendored
+  `TextInputInstance` declares. The `stopPropagation` that backend called from
+  its own key handler is kept, so `useDocumentKeyCapture`'s capture-phase
+  listener still sees every key first and nothing is handled twice.
+- **`Animated` is the JS driver only.** `useNativeDriver` is accepted and
+  ignored, and `spring`, `decay`, `ValueXY`, `AnimatedColor`, `Animated.event`,
+  `stagger`, `diffClamp` and the arithmetic nodes are not ported — the plan
+  lists them as non-goals. `Animated.Text` exists because the seam's type
+  declares it; no component uses it.
+- **An animated `timing` target is a snapshot, not live tracking.** The seam's
+  `TimingAnimationConfig` lets `toValue` be a node; React Native routes that
+  through `AnimatedTracking` so the target keeps following it for the whole run.
+  `AnimatedTracking` is not ported — the node is read once, when the animation
+  starts, and the run then behaves exactly like a numeric target. No consumer
+  passes a node today.
+- **Colour interpolation covers the forms `dom/shadowColor.ts` parses.**
+  `colorToRgba` normalises `black`, `white`, three-, four-, six- and
+  eight-digit hex and `rgb()` / `rgba()`; any other named colour passes through,
+  so two output values have to be written in the same notation. No component
+  interpolates a colour.
+- **`usePress` keeps its own pointer machine** rather than registering with the
+  ported responder system. That backend's `PressResponder` does register, and
+  doing the same would remove `usePress`'s `CLAIMED` flag, but M2's machine is
+  what the 357-test browser suite and every recorded baseline already pin, and
+  nothing in the library nests a `Pressable` inside a `PanResponder` except the
+  dropdown placement playground — where both behaviours produce the same
+  result, because that frame claims on `onStartShouldSetResponder` and the
+  Pressables inside it are not responder nodes at all. The timeline's drag uses
+  raw DOM pointer events on web (`useTimelineDrag.web.ts`), not the responder
+  system, so the "a drag does not also fire the clip's press handler" contract
+  does not run through this code path on web either. The one behavioural consequence
+  worth naming: because `Pressable` is not a responder node, a `PanResponder`
+  ancestor that claims the gesture mid-press (a chart scrub started over a mark)
+  no longer resets the child's `pressed` state the way that backend's
+  `RESPONDER_TERMINATED` signal did — the press ends on the pointer release
+  instead. `onPress` is unchanged either way, because it fires from the DOM
+  `click` and `PanResponder`'s `onClickCapture` never reached the DOM on either
+  backend.
+- **`PanResponder` has no `InteractionManager` handle.** On that backend it is
+  a bookkeeping counter no consumer reads, and the seam's `PanResponderInstance`
+  type exposes only `panHandlers`. The 250 ms `onClickCapture` click-cancel
+  after a pan is kept, because that one is observable.
+- **`FlatList` renders one contiguous window.** That backend's `CellRenderMask`
+  also keeps the first `initialNumToRender` cells mounted while scrolled away
+  and renders up to three regions with spacers between them. At rest the two
+  agree cell for cell, which is what the DataGrid baselines pin; scrolled, ours
+  simply drops the retained head. `SectionList`, `inverted`, `refreshControl`,
+  `onViewableItemsChanged` and `debug` are not ported.
 
 ### M4 — Drop react-native-web; packaging, docs, cleanup
 

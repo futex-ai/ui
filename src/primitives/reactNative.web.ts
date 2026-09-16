@@ -1,13 +1,11 @@
 /**
  * React Native primitives, web resolution.
  *
- * `View`, `Text`, `Pressable`, `Image`, `Modal`, `StyleSheet`, `Platform`,
- * `useWindowDimensions`, `AccessibilityInfo`, `Keyboard`,
- * `KeyboardAvoidingView` and `InputAccessoryView` come from the library's own
- * DOM backend in `./dom`, which renders plain React elements and needs no
- * `react-native-web` at all. `ScrollView`, `TextInput`, `FlatList`, `Animated`,
- * `Easing` and `PanResponder` still delegate to `react-native-web` until M3 of
- * `plans/pure-react-dom-backend.md` ports them.
+ * Every primitive comes from the library's own DOM backend in `./dom`, which
+ * renders plain React elements and needs no `react-native-web` at all: M3 of
+ * `plans/pure-react-dom-backend.md` ported the last six (`ScrollView`,
+ * `TextInput`, `FlatList`, `Animated`, `Easing` and `PanResponder`), so this
+ * module imports only from `react` (indirectly), `./dom` and `./types`.
  *
  * The type surface is the library's own (`./types`), vendored from React
  * Native's declarations, so the emitted `dist/node` declarations — the ones
@@ -19,25 +17,22 @@
  * unit test diffs the two.
  */
 import {
-  Animated as WebAnimated,
-  Easing as WebEasing,
-  FlatList as WebFlatList,
-  PanResponder as WebPanResponder,
-  ScrollView as WebScrollView,
-  TextInput as WebTextInput,
-} from "react-native-web";
-
-import {
   AccessibilityInfo as DomAccessibilityInfo,
+  Animated as DomAnimated,
+  Easing as DomEasing,
+  FlatList as DomFlatList,
   Image as DomImage,
   InputAccessoryView as DomInputAccessoryView,
   Keyboard as DomKeyboard,
   KeyboardAvoidingView as DomKeyboardAvoidingView,
   Modal as DomModal,
+  PanResponder as DomPanResponder,
   Platform as DomPlatform,
   Pressable as DomPressable,
+  ScrollView as DomScrollView,
   StyleSheet as DomStyleSheet,
   Text as DomText,
+  TextInput as DomTextInput,
   View as DomView,
   useWindowDimensions as domUseWindowDimensions,
 } from "./dom";
@@ -71,12 +66,12 @@ import type {
 } from "./types";
 
 export const AccessibilityInfo: AccessibilityInfoStatic = DomAccessibilityInfo;
-export const Animated: AnimatedStatic = WebAnimated;
+export const Animated: AnimatedStatic = DomAnimated;
 export declare namespace Animated {
   type Value = AnimatedValue;
 }
-export const Easing: EasingStatic = WebEasing;
-export const FlatList: FlatListComponent = WebFlatList;
+export const Easing: EasingStatic = DomEasing;
+export const FlatList: FlatListComponent = DomFlatList;
 export type FlatList<ItemT = unknown> = FlatListInstance<ItemT>;
 export const Image: ImageComponent = DomImage;
 export type Image = ImageInstance;
@@ -87,15 +82,15 @@ export const KeyboardAvoidingView: KeyboardAvoidingViewComponent =
   DomKeyboardAvoidingView;
 export const Modal: ModalComponent = DomModal;
 export type Modal = ModalInstance;
-export const PanResponder: PanResponderStatic = WebPanResponder;
+export const PanResponder: PanResponderStatic = DomPanResponder;
 export const Platform: PlatformStatic = DomPlatform;
 export const Pressable: PressableComponent = DomPressable;
-export const ScrollView: ScrollViewComponent = WebScrollView;
+export const ScrollView: ScrollViewComponent = DomScrollView;
 export type ScrollView = ScrollViewInstance;
 export const StyleSheet: StyleSheetStatic = DomStyleSheet;
 export const Text: TextComponent = DomText;
 export type Text = TextInstance;
-export const TextInput: TextInputComponent = WebTextInput;
+export const TextInput: TextInputComponent = DomTextInput;
 export type TextInput = TextInputInstance;
 export const View: ViewComponent = DomView;
 export type View = ViewInstance;

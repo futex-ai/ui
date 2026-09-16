@@ -8,7 +8,9 @@
  * makes the recorded screenshot and ARIA baselines a working oracle. See
  * `plans/pure-react-dom-backend.md` and `../README.md`.
  */
+export { Animated, Easing } from "./animated";
 export { domBackendCss, useDomBackendCss } from "./css";
+export { FlatList } from "./FlatList";
 export { Image } from "./Image";
 export { InputAccessoryView, KeyboardAvoidingView } from "./KeyboardViews";
 export { Modal } from "./Modal";
@@ -18,8 +20,11 @@ export {
   Platform,
   useWindowDimensions,
 } from "./platform";
+export { PanResponder } from "./responder";
 export { Pressable } from "./Pressable";
+export { ScrollView } from "./ScrollView";
 export { StyleSheet } from "./StyleSheet";
 export { Text } from "./Text";
 export { TextAncestorContext } from "./TextAncestorContext";
+export { TextInput } from "./TextInput";
 export { View } from "./View";

@@ -137,13 +137,19 @@ export function useElementLayout(
   }, [onLayout, ref]);
 
   // Observing is a separate effect so a new `onLayout` identity does not
-  // re-observe the node (and re-fire the initial callback).
+  // re-observe the node (and re-fire the initial callback). It depends on
+  // *whether* there is a handler rather than on which one, which is the one
+  // place this improves on `react-native-web`'s `useElementLayout`: that hook
+  // depended on `[ref, observer]` alone, so a view mounted without `onLayout`
+  // and given one later was never observed. `observe` is idempotent, so a
+  // handler that merely changes identity still costs nothing.
+  const hasLayoutHandler = onLayout != null;
   useLayoutEffect(() => {
     const node = ref.current;
     if (node == null || observer == null) {
       return;
     }
-    if (layoutHandlers.has(node)) {
+    if (hasLayoutHandler) {
       observer.observe(node);
     } else {
       observer.unobserve(node);
@@ -152,7 +158,7 @@ export function useElementLayout(
       observer.unobserve(node);
       layoutHandlers.delete(node);
     };
-  }, [observer, ref]);
+  }, [hasLayoutHandler, observer, ref]);
 }
 
 type NativePropsBag = Record<string, unknown>;

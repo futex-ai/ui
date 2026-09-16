@@ -21,7 +21,7 @@ import {
 import { createDomProps, pointerEventsFor, type PropBag } from "./domProps";
 import { useHostRef } from "./hostRef";
 import { resolveStyle, type StyleInput } from "./resolveStyle";
-import { responderConfig, useResponderEvents } from "./responderEvents";
+import { responderConfig, useResponderEvents } from "./responder";
 import { TextAncestorContext } from "./TextAncestorContext";
 import { useElementLayout } from "./useLayout";
 

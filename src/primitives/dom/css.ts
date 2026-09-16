@@ -31,6 +31,9 @@ export const TEXT_CLASS = "firna-text";
 /** Class carrying the reset of a `Text` nested inside another `Text`. */
 export const TEXT_NESTED_CLASS = "firna-text-nested";
 
+/** Class carrying `TextInput`'s element reset. */
+export const TEXT_INPUT_CLASS = "firna-textinput";
+
 /** Attribute `View` marks a non-`auto` `pointerEvents` with. */
 export const POINTER_EVENTS_ATTRIBUTE = "data-pointer-events";
 
@@ -93,6 +96,21 @@ const TEXT_NESTED_RESET = [
   "white-space:inherit",
 ].join(";");
 
+// `react-native-web`'s `textinput$raw`, which strips the UA's own field chrome
+// so a caller's `style` starts from the same blank box `View` and `Text` do.
+const TEXT_INPUT_RESET = [
+  "-moz-appearance:textfield",
+  "-webkit-appearance:none",
+  "background-color:transparent",
+  "border:0 solid black",
+  "border-radius:0",
+  "box-sizing:border-box",
+  `font:14px ${SYSTEM_FONT_STACK}`,
+  "margin:0",
+  "padding:0",
+  "resize:none",
+].join(";");
+
 function pointerEventsRules(): string {
   const attribute = (value: string) =>
     `[${POINTER_EVENTS_ATTRIBUTE}="${value}"]`;
@@ -131,7 +149,12 @@ export const domBackendCss: string = [
   `.${VIEW_INLINE_CLASS}{display:inline-flex;}`,
   `.${TEXT_CLASS}{${TEXT_RESET};}`,
   `.${TEXT_NESTED_CLASS}{${TEXT_NESTED_RESET};}`,
+  `.${TEXT_INPUT_CLASS}{${TEXT_INPUT_RESET};}`,
   pointerEventsRules(),
+  // Written on every field, not just the ones naming a colour: that backend
+  // applied the rule unconditionally, so a field with no `placeholderTextColor`
+  // gets an unresolvable `var()` and its placeholder inherits the input's own
+  // colour instead of the UA grey. The recorded baselines pin that.
   `[${PLACEHOLDER_COLOR_ATTRIBUTE}]::placeholder{color:var(${PLACEHOLDER_COLOR_VARIABLE});opacity:1;}`,
   `[${HIDE_SCROLLBAR_ATTRIBUTE}]{scrollbar-width:none;}`,
   `[${HIDE_SCROLLBAR_ATTRIBUTE}]::-webkit-scrollbar{display:none;}`,

@@ -128,16 +128,15 @@ npm install @firna/ui
 All platform packages are optional peer dependencies; install the set for
 your target:
 
-- **Web only (Vite, Next.js, any DOM bundler):** `react`, `react-dom`,
-  `react-native-web`, and `lucide-react`. No `react-native` install and no
-  bundler alias is needed: the `import` condition resolves to `dist/node`,
-  whose files reach React Native only through the platform seam. That holds
-  for types too — the web build's declarations are self-contained, so even a
-  strict TypeScript consumer installs nothing extra. `react-native-web` is on
-  its way out: `View`, `Text`, `Pressable`, `Image`, `Modal`, `StyleSheet`,
-  `Platform` and the small modules already render through the library's own
-  DOM backend, and only scrolling, text input, lists, animation and the gesture
-  responder still reach for it (see `plans/pure-react-dom-backend.md`).
+- **Web only (Vite, Next.js, any DOM bundler):** `react`, `react-dom`, and
+  `lucide-react`. No `react-native` install and no bundler alias is needed: the
+  `import` condition resolves to `dist/node`, whose files reach React Native
+  only through the platform seam. That holds for types too — the web build's
+  declarations are self-contained, so even a strict TypeScript consumer
+  installs nothing extra. Every primitive now renders through the library's own
+  DOM backend, so nothing under `dist/node` imports `react-native-web`; it is
+  still listed as an optional peer until that entry is removed (see
+  `plans/pure-react-dom-backend.md`).
 - **Expo / React Native (iOS, Android, and Expo web):** `react`, `react-dom`,
   `react-native`, `react-native-web`, `react-native-svg`,
   `lucide-react-native`, and `lucide-react`. Metro's `react-native` condition
@@ -148,8 +147,8 @@ your target:
 
 Every component reaches the platform through `src/primitives`, a small set of
 modules with a native file and a `.web` sibling: React Native primitives
-(`react-native` on native; the library's own DOM backend on web, with
-`react-native-web` still behind six of them), SVG (`react-native-svg` on
+(`react-native` on native; the library's own DOM backend on web), SVG
+(`react-native-svg` on
 native, DOM `<svg>` on web), and icons (`lucide-react-native` on native,
 `lucide-react` on web). Icon props accept `IconComponent`, a type both Lucide
 packages' icons satisfy, so a consumer passes whichever matches their
@@ -340,10 +339,9 @@ The package export map intentionally separates runtime targets:
 - The standard `import` condition points at `dist/node/**`, where relative ESM
   specifiers include explicit `.js` files and web platform files are selected
   when they exist. Because the platform seam's `.web` files delegate to the
-  library's own DOM backend (plus `react-native-web` for scrolling, text input,
-  lists, animation and the responder), `lucide-react`, and DOM SVG, this tree
-  never imports `react-native`, `react-native-svg`, or `lucide-react-native` at
-  runtime.
+  library's own DOM backend, `lucide-react`, and DOM SVG, this tree never
+  imports `react-native`, `react-native-web`, `react-native-svg`, or
+  `lucide-react-native` at runtime.
 - Type declarations also point at `dist/node/**`, where relative declaration
   specifiers use NodeNext-compatible `.js` paths. They are emitted by a second,
   web-resolution `tsc` pass (`tsconfig.build.web.json`) and typed from the

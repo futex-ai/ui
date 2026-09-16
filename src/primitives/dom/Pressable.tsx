@@ -54,6 +54,8 @@ function PressableImpl(
   const {
     children,
     delayLongPress,
+    delayPressIn,
+    delayPressOut,
     disabled,
     onBlur,
     onContextMenu,
@@ -69,8 +71,14 @@ function PressableImpl(
     onPointerDown,
     style,
     tabIndex,
+    unstable_pressDelay,
     ...rest
   } = props as PressableProps & {
+    // `delayPressIn` / `delayPressOut` are `react-native-web`'s own spelling of
+    // the two delays; React Native publishes only `unstable_pressDelay`, which
+    // it maps onto `delayPressIn`. Both are accepted, the explicit one winning.
+    delayPressIn?: number;
+    delayPressOut?: number;
     onContextMenu?: Handler;
     onKeyDown?: Handler;
     onPointerDown?: Handler;
@@ -85,6 +93,8 @@ function PressableImpl(
     useMemo(
       () => ({
         delayLongPress,
+        delayPressIn: delayPressIn ?? unstable_pressDelay,
+        delayPressOut,
         disabled,
         onLongPress,
         onPress,
@@ -95,12 +105,15 @@ function PressableImpl(
       }),
       [
         delayLongPress,
+        delayPressIn,
+        delayPressOut,
         disabled,
         onLongPress,
         onPress,
         onPressIn,
         onPressMove,
         onPressOut,
+        unstable_pressDelay,
       ],
     ),
   );
