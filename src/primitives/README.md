@@ -5,12 +5,20 @@ never import `react-native`, `react-native-svg`, `lucide-react-native`,
 `react-native-web`, or `lucide-react` directly; they import from here, and a
 unit test (`tests/unit/primitives.test.ts`) fails the build if one does.
 
-| Module           | Native resolves to    | Web (`.web`) resolves to |
-| ---------------- | --------------------- | ------------------------ |
-| `reactNative.ts` | `react-native`        | `react-native-web`       |
-| `svg.tsx`        | `react-native-svg`    | DOM `<svg>` elements     |
-| `icons.ts`       | `lucide-react-native` | `lucide-react`           |
-| `types/` (web)   | —                     | the seam's own types     |
+| Module             | Native resolves to    | Web (`.web`) resolves to       |
+| ------------------ | --------------------- | ------------------------------ |
+| `reactNative.ts`   | `react-native`        | `dom/` + `react-native-web` ×6 |
+| `svg.tsx`          | `react-native-svg`    | DOM `<svg>` elements           |
+| `icons.ts`         | `lucide-react-native` | `lucide-react`                 |
+| `domBackendCss.ts` | `""`                  | `dom/css.ts`'s stylesheet      |
+| `types/` (web)     | —                     | the seam's own types           |
+
+Which primitive comes from where on web:
+
+| Primitive                                                                                                                                                                     | Web source         |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `View`, `Text`, `Pressable`, `Image`, `Modal`, `StyleSheet`, `Platform`, `useWindowDimensions`, `AccessibilityInfo`, `Keyboard`, `KeyboardAvoidingView`, `InputAccessoryView` | `dom/`             |
+| `ScrollView`, `TextInput`, `FlatList`, `Animated`, `Easing`, `PanResponder`                                                                                                   | `react-native-web` |
 
 Why this exists: the `dist/node` build (the `import` condition) selects the
 `.web` files, so a web consumer installs `react-native-web` and `lucide-react`
@@ -18,6 +26,62 @@ and nothing else. There is no `react-native` alias to configure, and the
 `react-native` package, `react-native-svg`, and `lucide-react-native` are never
 resolved at runtime on web. Metro keeps resolving the native files on iOS and
 Android, and the `.web` files on Expo web.
+
+## `dom/`
+
+The library's own DOM backend: plain React elements, no `react-native-web`.
+Its parity target is `react-native-web` 0.21.2's own output — the same element
+per role, the same `aria-*` attributes, the same translated CSS — because the
+screenshot and ARIA baselines in `tests/browser/snapshots.spec.ts-snapshots`
+were recorded on that backend and are what prove the swap changed nothing
+(`plans/pure-react-dom-backend.md`, Decision 3).
+
+- `resolveStyle.ts` + `styleTables.ts` translate a `StyleProp` into inline
+  styles: the `styleq` merge, `preprocess`, the left-to-right resolution of the
+  logical properties, and `createReactDOMStyle`'s shorthand expansion, all
+  transcribed. Pure, and pinned by `tests/unit/domResolveStyle.test.ts`.
+- `domProps.ts` + `domPropTables.ts` pick the element for a role and map the
+  accessibility props, `testID`, `tabIndex`, `disabled` and `pointerEvents`.
+  Pure, and pinned by `tests/unit/domProps.test.ts`.
+- `css.ts` holds the few rules an inline style cannot express, injected once
+  per document under a stable id by `useDomBackendCss` and published as
+  `domBackendCss` for server rendering. That is the `View` and `Text` element
+  resets (a class, so every inline style still outranks them), the
+  `pointerEvents` child-selector rules, a `::placeholder` colour and scrollbar
+  hiding for M3's `TextInput` and `ScrollView`, and `react-native-web`'s own
+  top-level reset.
+- `useLayout.ts` runs one shared `ResizeObserver` for `onLayout` and puts
+  `measure`, `measureInWindow`, `measureLayout` and `setNativeProps` on the DOM
+  element itself, so a `ref` is still the element the library reads
+  `clientWidth` and `getBoundingClientRect()` from.
+- `usePress.ts` / `useHover.ts` / `Pressable.tsx` reproduce that backend's
+  press machine: the 50 ms press delay, the 450 ms long press, `onPress` from
+  the DOM `click` rather than the release, Enter anywhere and Space on a
+  button, and hover that ends when a nested pressable takes over.
+- `responderEvents.ts` is the one file that still imports `react-native-web`,
+  and only until M3: `PanResponder` computes its gesture state from the
+  `touchHistory` that package's responder system maintains, so a `View` that
+  accepts responder props has to speak the same protocol.
+
+`domBackendCss` is injected at the **start** of `<head>`, where that backend
+put its own sheet, so a consumer's later stylesheet wins a tie rather than
+losing one. A server-rendered consumer should emit it before their own styles
+for the same reason.
+
+### Known interim state (M2)
+
+`Animated.View` is still `react-native-web`'s `createAnimatedComponent(View)`,
+so the thirteen files that use it render that backend's `View` — including its
+reset class — inside ours. They nest without trouble (both are DOM), and M3
+replaces `Animated` outright. The one behavioural seam is the text-ancestor
+context: a `Text` from one backend does not tell a `View` from the other that
+it is inline.
+
+`responderEvents.ts`'s deep import resolves under Vite and Metro but not under
+plain Node ESM — `react-native-web`'s `dist` uses extensionless relative
+specifiers internally — so a bundler-less Node SSR consumer is unsupported
+until M3 drops it. The list of places the backend deliberately differs from
+`react-native-web` lives in the plan's M2 section.
 
 ## `types/`
 
@@ -78,9 +142,10 @@ Rules:
 
 - Each pair exports the same names; the unit test diffs them. Add a name to
   both files in the same change, and only when a component needs it.
-- A new name also needs a type in `types/` and an entry in
-  `react-native-web.d.ts`, which declares the `react-native-web` values the web
-  seam imports (that package ships no declarations of its own).
+- A new name also needs a type in `types/`, plus either an implementation in
+  `dom/` or an entry in `react-native-web.d.ts`, which declares the six
+  `react-native-web` values the web seam still imports (that package ships no
+  declarations of its own).
 - Class-valued exports get a same-named type alias so `useRef<View>` keeps
   working; `Animated` merges a namespace for `Animated.Value`.
 - The DOM SVG shim only supports props that are valid SVG attributes, plus the

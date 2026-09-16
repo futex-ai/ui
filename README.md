@@ -131,9 +131,13 @@ your target:
 - **Web only (Vite, Next.js, any DOM bundler):** `react`, `react-dom`,
   `react-native-web`, and `lucide-react`. No `react-native` install and no
   bundler alias is needed: the `import` condition resolves to `dist/node`,
-  whose files reach React Native only through `react-native-web`. That holds
+  whose files reach React Native only through the platform seam. That holds
   for types too — the web build's declarations are self-contained, so even a
-  strict TypeScript consumer installs nothing extra.
+  strict TypeScript consumer installs nothing extra. `react-native-web` is on
+  its way out: `View`, `Text`, `Pressable`, `Image`, `Modal`, `StyleSheet`,
+  `Platform` and the small modules already render through the library's own
+  DOM backend, and only scrolling, text input, lists, animation and the gesture
+  responder still reach for it (see `plans/pure-react-dom-backend.md`).
 - **Expo / React Native (iOS, Android, and Expo web):** `react`, `react-dom`,
   `react-native`, `react-native-web`, `react-native-svg`,
   `lucide-react-native`, and `lucide-react`. Metro's `react-native` condition
@@ -144,8 +148,9 @@ your target:
 
 Every component reaches the platform through `src/primitives`, a small set of
 modules with a native file and a `.web` sibling: React Native primitives
-(`react-native` on native, `react-native-web` on web), SVG (`react-native-svg`
-on native, DOM `<svg>` on web), and icons (`lucide-react-native` on native,
+(`react-native` on native; the library's own DOM backend on web, with
+`react-native-web` still behind six of them), SVG (`react-native-svg` on
+native, DOM `<svg>` on web), and icons (`lucide-react-native` on native,
 `lucide-react` on web). Icon props accept `IconComponent`, a type both Lucide
 packages' icons satisfy, so a consumer passes whichever matches their
 platform.
@@ -246,6 +251,7 @@ npm test
 npm run typecheck
 npm run typecheck:web
 npm run build
+npm run test:dist
 npm run test:package
 npm run storybook
 npm run storybook:build
@@ -256,6 +262,12 @@ npm run test:browser
 `npm run typecheck:web` re-runs the same program against the `.web` siblings
 (`tsconfig.web.json` sets `moduleSuffixes`), which is the resolution every web
 consumer and the emitted declarations use. Both are part of `npm run verify`.
+
+`npm run test:dist` re-runs the declaration guard in
+`tests/unit/distDeclarations.test.ts` against build output. `npm test` includes
+it too, but it skips there on a clean checkout because `dist` does not exist
+yet, so `npm run verify` runs it again right after `npm run build` — that is
+the run that actually proves `dist/node` names no `react-native`.
 
 Run the full JavaScript verification suite with:
 
@@ -308,8 +320,8 @@ commit them alongside the story.
 So that every Linux machine rasterizes the same glyphs, Storybook bundles its
 own fonts through `.storybook/fonts.ts`: Inter for `theme.fonts.sans`, JetBrains
 Mono registered as `Menlo` for `theme.fonts.mono`, the same Inter files
-registered as `Segoe UI` for the stack react-native-web gives text a component
-leaves unstyled, and two Noto subsets as in-family fallbacks for the arrows,
+registered as `Segoe UI` for the system stack the primitives give text a
+component leaves unstyled, and two Noto subsets as in-family fallbacks for the arrows,
 maths relations and symbols (⌘ ★ ✓ ✕ braille) none of those faces carry. These
 are Storybook devDependencies only — the published package ships no fonts and
 consumers are unaffected.
@@ -327,9 +339,11 @@ The package export map intentionally separates runtime targets:
 
 - The standard `import` condition points at `dist/node/**`, where relative ESM
   specifiers include explicit `.js` files and web platform files are selected
-  when they exist. Because the platform seam's `.web` files delegate to
-  `react-native-web`, `lucide-react`, and DOM SVG, this tree never imports
-  `react-native`, `react-native-svg`, or `lucide-react-native` at runtime.
+  when they exist. Because the platform seam's `.web` files delegate to the
+  library's own DOM backend (plus `react-native-web` for scrolling, text input,
+  lists, animation and the responder), `lucide-react`, and DOM SVG, this tree
+  never imports `react-native`, `react-native-svg`, or `lucide-react-native` at
+  runtime.
 - Type declarations also point at `dist/node/**`, where relative declaration
   specifiers use NodeNext-compatible `.js` paths. They are emitted by a second,
   web-resolution `tsc` pass (`tsconfig.build.web.json`) and typed from the

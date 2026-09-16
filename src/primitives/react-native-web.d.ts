@@ -8,25 +8,30 @@
  * re-annotates every export from `./types` anyway, so a consumer's
  * declarations reference neither package.
  *
- * Only the names `reactNative.web.ts` imports are declared. Add one here in the
- * same change that adds it to the seam.
+ * Only the names the seam still imports are declared. M2 of
+ * `plans/pure-react-dom-backend.md` moved the rest to `./dom`; M3 takes these
+ * six and deletes this file.
  */
 declare module "react-native-web" {
-  export const AccessibilityInfo: import("./types").AccessibilityInfoStatic;
   export const Animated: import("./types").AnimatedStatic;
   export const Easing: import("./types").EasingStatic;
   export const FlatList: import("./types").FlatListComponent;
-  export const Image: import("./types").ImageComponent;
-  export const Keyboard: import("./types").KeyboardStatic;
-  export const KeyboardAvoidingView: import("./types").KeyboardAvoidingViewComponent;
-  export const Modal: import("./types").ModalComponent;
   export const PanResponder: import("./types").PanResponderStatic;
-  export const Platform: import("./types").PlatformStatic;
-  export const Pressable: import("./types").PressableComponent;
   export const ScrollView: import("./types").ScrollViewComponent;
-  export const StyleSheet: import("./types").StyleSheetStatic;
-  export const Text: import("./types").TextComponent;
   export const TextInput: import("./types").TextInputComponent;
-  export const View: import("./types").ViewComponent;
-  export const useWindowDimensions: import("./types").UseWindowDimensions;
+}
+
+/**
+ * The gesture responder system, which `dom/View.tsx` borrows until M3.
+ *
+ * `PanResponder`'s handlers are spread onto a `View`, and the gesture state it
+ * reports is computed from the `touchHistory` this module maintains, so the two
+ * have to stay together; `dom/responderEvents.ts` is the only importer.
+ */
+declare module "react-native-web/dist/modules/useResponderEvents/index.js" {
+  const useResponderEvents: (
+    hostRef: { current: HTMLElement | null },
+    config: Record<string, unknown>,
+  ) => void;
+  export default useResponderEvents;
 }

@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 /**
  * Every Lucide glyph the library imports through `src/primitives/icons.ts`.
@@ -137,8 +137,12 @@ export function useLayoutEffect() {}
 export function useMemo(factory) {
   return factory();
 }
+export function useInsertionEffect() {}
 export function useRef(value = null) {
   return { current: value };
+}
+export function useSyncExternalStore(subscribe, getSnapshot) {
+  return getSnapshot();
 }
 export function useState(value) {
   return [typeof value === "function" ? value() : value, () => {}];
@@ -156,10 +160,12 @@ export default {
   useEffect,
   useId,
   useImperativeHandle,
+  useInsertionEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 };
 `,
     "jsx-runtime.js": `export const Fragment = Symbol.for("react.fragment");
@@ -184,34 +190,19 @@ export const jsxs = jsx;
 `,
     "package.json": JSON.stringify({ name: "react-dom", type: "module" }),
   });
+  // Only the six primitives the web seam still delegates, plus the responder
+  // system `dom/View.tsx` borrows until M3 of the pure-React-DOM-backend plan.
+  // Everything else now comes from the library's own DOM backend, so a name
+  // reappearing here means the seam regressed.
   await writeStubPackage(consumerRoot, "react-native-web", {
     "index.js": `export const FlatList = "FlatList";
-export const Image = "Image";
-export const InputAccessoryView = "InputAccessoryView";
-export const Modal = "Modal";
 export const PanResponder = {
   create(config) {
     return { panHandlers: {}, config };
   },
 };
-export const Pressable = "Pressable";
 export const ScrollView = "ScrollView";
-export const Text = "Text";
 export const TextInput = "TextInput";
-export const View = "View";
-export const Keyboard = {
-  dismiss() {},
-};
-export const KeyboardAvoidingView = "KeyboardAvoidingView";
-export const AccessibilityInfo = {
-  announceForAccessibility() {},
-  isReduceMotionEnabled() {
-    return Promise.resolve(false);
-  },
-  addEventListener() {
-    return { remove() {} };
-  },
-};
 class AnimatedValue {
   interpolate() {
     return "0deg";
@@ -230,24 +221,8 @@ export const Animated = {
 export const Easing = {
   linear: (t) => t,
 };
-export const Platform = {
-  OS: "web",
-  select(values) {
-    return values.web ?? values.default;
-  },
-};
-export const StyleSheet = {
-  absoluteFillObject: {},
-  create(styles) {
-    return styles;
-  },
-  flatten(styles) {
-    return styles;
-  },
-};
-export function useWindowDimensions() {
-  return { fontScale: 1, height: 768, scale: 1, width: 1024 };
-}
+`,
+    "dist/modules/useResponderEvents/index.js": `export default function useResponderEvents() {}
 `,
     "package.json": JSON.stringify({
       name: "react-native-web",
@@ -355,8 +330,12 @@ async function writeStubPackage(consumerRoot, packageName, files) {
   const packageRoot = join(consumerRoot, "node_modules", packageName);
   await mkdir(packageRoot, { recursive: true });
   await Promise.all(
-    Object.entries(files).map(([fileName, body]) =>
-      writeFile(join(packageRoot, fileName), body),
-    ),
+    Object.entries(files).map(async ([fileName, body]) => {
+      const path = join(packageRoot, fileName);
+      // A stub may live in a subdirectory (a deep import into the real
+      // package's `dist`), so its parent is created alongside it.
+      await mkdir(dirname(path), { recursive: true });
+      await writeFile(path, body);
+    }),
   );
 }

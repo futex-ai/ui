@@ -1,0 +1,4 @@
+- heading "Pointer events" [level=1]
+- button "Underlay"
+- button "Overlay action"
+- text: This row ignores the pointer.

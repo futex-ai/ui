@@ -221,11 +221,12 @@
     "storybook:build": "storybook build",
     "storybook:native": "npm run build && cd storybook-native && npm start -- --clear",
     "test": "node --import tsx --test tests/unit/*.test.ts",
+    "test:dist": "node --import tsx --test tests/unit/distDeclarations.test.ts",
     "test:browser": "playwright test",
     "test:package": "node scripts/package-smoke.mjs",
     "typecheck": "tsc --noEmit --project tsconfig.json",
     "typecheck:web": "tsc --noEmit --project tsconfig.web.json",
-    "verify": "npm run format:check && npm run test && npm run typecheck && npm run typecheck:web && npm run build && npm run test:package && npm run storybook:build && npm run test:browser"
+    "verify": "npm run format:check && npm run test && npm run typecheck && npm run typecheck:web && npm run build && npm run test:dist && npm run test:package && npm run storybook:build && npm run test:browser"
   },
   "peerDependencies": {
     "@gorhom/bottom-sheet": ">=5 <6",

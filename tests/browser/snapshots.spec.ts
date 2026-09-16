@@ -45,6 +45,9 @@ const SNAPSHOT_VIEWPORT = { height: 600, width: 900 };
  */
 const STORY_SETTLE_MS = 150;
 
+/** How long a story may take to mount before the sweep shoots it anyway. */
+const STORY_MOUNT_MS = 30_000;
+
 /**
  * Retry window for an ARIA snapshot that is being recorded rather than checked.
  *
@@ -126,8 +129,14 @@ test.describe("Storybook visual and ARIA snapshot sweep", () => {
         const page = await context.newPage();
         try {
           await page.goto(`/iframe.html?id=${story.id}&viewMode=story`);
+          // Generous, because this wait swallows its own timeout: the first
+          // story a shard opens races Vite's on-demand transform of the whole
+          // module graph on a cold dev server, and at 10s that race was lost
+          // often enough to screenshot Storybook's "preparing story" spinner
+          // and report it as a pixel diff. A story that genuinely renders
+          // nothing still costs only this once.
           await page
-            .waitForSelector("#storybook-root *", { timeout: 10_000 })
+            .waitForSelector("#storybook-root *", { timeout: STORY_MOUNT_MS })
             .catch(() => undefined);
           const fontsReady = await page.evaluate(async () => {
             await document.fonts.ready;

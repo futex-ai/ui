@@ -4,7 +4,7 @@ Make `@firna/ui` consumable as a plain React library on the web, with no
 `react-native-web` at runtime and no `react-native` for types, while every
 component file stays shared with the React Native build.
 
-**Status:** M0–M1 delivered. M2–M4 not started.
+**Status:** M0–M2 delivered. M3–M4 not started.
 
 ---
 
@@ -338,7 +338,11 @@ drop their `react-native` dev dependency, and a `typecheck:web` gate runs in
       message when `dist` is absent, so `npm test` runs on a clean tree) and
       that the shadowed native modules are gone; the package smoke's types
       consumer drops its `react-native` type stub (its `react` stub grew the
-      five type names the vendored declarations use).
+      five type names the vendored declarations use). Because `npm test` runs
+      before `npm run build`, on a clean checkout that skip is the only run the
+      guard gets, so a `test:dist` script re-runs the same file in `verify`
+      immediately after the build — the run that actually checks something
+      (added during M2).
 - [x] Remove the "strict TypeScript consumers also need `react-native`" caveat
       from `README.md`; update `src/primitives/README.md`.
 - [x] `npm run verify` and `cargo xtask check` green; snapshots unchanged;
@@ -355,36 +359,78 @@ remaining names still delegate to `react-native-web`; the browser suite, axe
 sweep, and snapshot sweep are green against the DOM backend for these
 primitives.
 
-- [ ] `dom/resolveStyle.ts`: flatten `StyleProp` (arrays, falsy entries),
+- [x] `dom/resolveStyle.ts`: flatten `StyleProp` (arrays, falsy entries),
       translate keys and values per Decision 3, and unit-test the table
       (logical paddings, `flex`, transforms, `fontVariant`, unitless numbers,
       `%` strings, `hairlineWidth`, `elevation` dropped, `boxShadow` kept).
-- [ ] `dom/domProps.ts`: element-per-role, `role` / `accessibilityRole`
+      The pipeline is transcribed rather than designed: per style object
+      `preprocess` (shadow folding, React Native's spellings renamed, arrays
+      stringified), then the merge, then `inline()`'s left-to-right resolution
+      of the logical properties, then `createReactDOMStyle(_, true)`'s
+      shorthand expansion. Splitting the tables into `dom/styleTables.ts` keeps
+      both files inside the line target. `tests/unit/domResolveStyle.test.ts`
+      pins twelve groups, including the two places the merge order matters
+      (a longhand always beats its shorthand; a physical property always beats
+      its logical alias) and the pass-through of the web-only keys M1 typed.
+- [x] `dom/domProps.ts`: element-per-role, `role` / `accessibilityRole`
       mapping, `accessibilityLabel` / `Value` / `LiveRegion` / `Level` to
       `aria-*`, `testID` → `data-testid`, `nativeID` / `id`, `tabIndex` and
       `focusable` rules, `disabled` mapping, `pointerEvents` → data attribute,
       and the forwarded-handler allowlist (keyboard, mouse, pointer, focus,
       touch, click, context menu). Unit-test the pure mapping.
-- [ ] `dom/css.ts`: the `box-none` / `box-only` child rules, `::placeholder`
+      Tables in `dom/domPropTables.ts`. Two details worth naming because the
+      ARIA baselines depend on them: `aria-disabled={false}` and
+      `aria-hidden={false}` are dropped rather than written, and a native tab
+      stop (`button`, `a`, `input`, …) is left without a `tabIndex` instead of
+      being given `0`. `accessibilityValue` is dropped, which is what that
+      backend did — the library already emits the literal `aria-value*` mirror
+      beside it. `tests/unit/domProps.test.ts` pins nine groups.
+- [x] `dom/css.ts`: the `box-none` / `box-only` child rules, `::placeholder`
       colour via a CSS variable, scrollbar hiding, and host resets; inject once
       with `useInsertionEffect` behind a `typeof document` guard; export
       `domBackendCss` from the root for SSR.
-- [ ] `dom/useLayout.ts`: one shared `ResizeObserver` driving `onLayout` with
+      The `View` and `Text` element resets live here too, as classes: that is
+      the priority `react-native-web` gave its own classic reset class, so
+      every translated inline style still outranks them, and it keeps the
+      resets out of 135 files' worth of inline styles. `domBackendCss` is a
+      seam pair (`domBackendCss.ts` is `""` on native) so the root export stays
+      shared.
+- [x] `dom/useLayout.ts`: one shared `ResizeObserver` driving `onLayout` with
       `{ x, y, width, height }`, first callback after mount; `measure` and
       `measureInWindow` attached to host refs so `useRef<View>` callers keep
       working.
-- [ ] `dom/View.tsx` and `dom/Text.tsx` with `react-native-web`'s resets, the
+      The measurement maths is that backend's `UIManager`: `x` / `y` relative
+      to the parent node, `width` / `height` from the offset box, `left` /
+      `top` in page coordinates, and the same deferral, which is also what
+      keeps a callback that resizes its own subtree from looping the observer.
+      `measureLayout` and `setNativeProps` are attached as well, so the
+      vendored `HostInstance` is satisfied in full.
+- [x] `dom/View.tsx` and `dom/Text.tsx` with `react-native-web`'s resets, the
       text-ancestor context (`div` root, `span` nested, inherited font and
       colour), `numberOfLines` (single-line ellipsis; multi-line clamp),
       `selectable`, `dir="auto"` on root text.
-- [ ] `dom/usePress.ts` and `dom/Pressable.tsx` on pointer events: `pressed` /
+      `Text` layers its styles in that backend's order, which is why
+      `selectable` and `onPress` outrank the caller's `style`.
+- [x] `dom/usePress.ts` and `dom/Pressable.tsx` on pointer events: `pressed` /
       `hovered` / `focused` state to function-valued `style` and `children`,
       `onPressIn` / `onPressOut` / `onPress` / `onLongPress` with
       `delayLongPress`, cancel on pointer-cancel or drag-out, keyboard
       activation (Enter always; Space on `button` hosts or `role="button"`,
       preventing page scroll), `disabled`, cursor and `touch-action` styles;
       `hitSlop` accepted and ignored (Decision 6).
-- [ ] `dom/platform.ts`: `Platform` (`OS: "web"`, `select` reading `web` then
+      Two rules were measured rather than assumed, and both are reproduced:
+      the press activates after 50 ms (`PressResponder`'s
+      `DEFAULT_PRESS_DELAY_MS`, which `Pressable` never overrides), and a
+      release that outran that delay fires `onPressIn` and `onPressOut` back to
+      back. There is deliberately no drag-out deactivation — that backend has
+      none, and the browser suite pins its behaviour. The rest of a gesture is
+      watched on the document rather than through pointer capture, so nothing
+      else on the page is retargeted mid-press, and an inner press marks the
+      native event so an enclosing `Pressable` stands down (the responder
+      system's "deepest node wins", without the responder system).
+      `dom/useHover.ts` keeps the hover containment too: entering a nested
+      pressable ends its ancestors' hover and leaving restores it.
+- [x] `dom/platform.ts`: `Platform` (`OS: "web"`, `select` reading `web` then
       `default`), `useWindowDimensions` (resize-driven, SSR-safe),
       `AccessibilityInfo` (`isReduceMotionEnabled` and its change listener from
       `matchMedia`; other members inert), `Keyboard` (`dismiss` blurs the
@@ -392,18 +438,105 @@ primitives.
       `View`, `InputAccessoryView` as a fragment, `StyleSheet` (`create`,
       `flatten`, `compose`, `absoluteFill`, `absoluteFillObject`,
       `hairlineWidth`).
-- [ ] `dom/Image.tsx` (`<img>` from `source.uri`, `resizeMode` → `object-fit`,
+      `StyleSheet` and the two keyboard views are their own files
+      (`dom/StyleSheet.ts`, `dom/KeyboardViews.tsx`) to stay inside the line
+      target. `useWindowDimensions` reads the visual viewport first, as that
+      backend's `Dimensions` does, and publishes through
+      `useSyncExternalStore` so the snapshot identity is stable.
+- [x] `dom/Image.tsx` (`<img>` from `source.uri`, `resizeMode` → `object-fit`,
       `accessibilityLabel` → `alt`) and `dom/Modal.tsx` (portal to `body`,
       `visible` gate, Escape → `onRequestClose`, `transparent`).
-- [ ] Storybook story `Primitives/Examples` exercising the backend directly
+      This is the one place the backend is visibly better than what it
+      replaced: `react-native-web`'s `resolveAssetUri` re-encodes an
+      `image/svg+xml;utf8` data URI that is already percent-encoded, so every
+      sample thumbnail in the timeline and video-editor stories failed to load
+      and the M0 baselines recorded empty frames. A real `img` renders them.
+      Ten baselines move because of it; see the milestone's snapshot note.
+- [x] Storybook story `Primitives/Examples` exercising the backend directly
       (press states, clamped text, `box-none` pass-through, layout callbacks,
       nested text inheritance) with Playwright coverage in
       `tests/browser/primitives.spec.ts`.
-- [ ] Update `tests/unit/primitives.test.ts` for the new module shape (mirrored
+      Six stories (`Press`, `Layout`, `ClampedText`, `NestedText`,
+      `PointerEvents`, `ImageAndRoles`) and eight specs, covering hover, press,
+      long press, keyboard activation and focus, the one- and multi-line
+      clamps, text inheritance and the `div` / `span` split, the `box-none`
+      pass-through by hit test, `onLayout`'s reported box, the `img` element
+      and its accessible name, and `h1` / `h2` / `h3` by heading level.
+- [x] Update `tests/unit/primitives.test.ts` for the new module shape (mirrored
       export lists still enforced; the "delegates to `react-native-web`"
       assertion narrowed to the names not yet ported).
-- [ ] `npm run verify` and `cargo xtask check` green; snapshot diffs reviewed
+      It now diffs both import lists by name — six from `react-native-web`,
+      twelve from `./dom` — checks the trimmed `react-native-web.d.ts` against
+      the same two lists, and asserts `dom/responderEvents.ts` is the only file
+      in the backend that reaches for that package.
+- [x] `npm run verify` and `cargo xtask check` green; snapshot diffs reviewed
       and only intentional ones re-recorded; commit, push, review.
+      Lead-run gates: format, 1178 unit tests, both typechecks, build,
+      `test:dist`, package smoke, static Storybook, and the full browser suite
+      (357 tests) all green on the mixed backend.
+
+**Snapshot review (M2).** 316 of the 326 screenshots and all 323 ARIA
+snapshots match the M0 baselines byte for byte. Ten screenshots were re-recorded
+— the timeline and video-editor stories that render `Image`
+(`timeline-examples--dark` / `--densities` / `--editing` / `--sequence` /
+`--zooming`, `video-editor-examples--full-editor-compact` / `--full-editor-dark`
+/ `--full-editor-light` / `--media` / `--preview`) — and in every one the only
+changed pixels are inside an image frame that was previously blank because
+`react-native-web` double-encoded the sample SVG data URI (see the deviations
+below). No ARIA snapshot changed and the axe baseline stays empty.
+
+The sweep's own wait for a story to mount went from 10s to 30s at the same
+time. It swallows its own timeout, so on a cold Vite dev server the first story
+a shard opened could lose the race against the on-demand transform and be
+screenshotted as Storybook's "preparing story" spinner — a false diff that hit
+`animatedborder-examples--dark` in three of six parallel sweeps and never in a
+serial one. Nothing else in the harness changed.
+
+**Deviations from `react-native-web` (M2).** Everything else is a
+transcription; these are the places the backend deliberately differs, all of
+them invisible to the snapshot and ARIA baselines except the first.
+
+- **`Image` renders a real `<img>` and does not re-encode its source.** That
+  backend's `resolveAssetUri` runs `encodeURIComponent` over the remainder of a
+  `data:image/svg+xml;utf8,` URI, which is a bug for a URI that is already
+  percent-encoded (the sample frames in the timeline and video-editor stories)
+  and is why their M0 baselines recorded empty frames. It is _not_ a bug for a
+  consumer passing raw, unencoded SVG markup containing `#` colours or quotes —
+  that re-encode is what made such a URI usable, and those consumers now have to
+  encode it themselves.
+- **`aria-atomic` is forwarded.** `createDOMProps` reads
+  `ariaAtomic != null ? ariaActiveDescendant : accessibilityAtomic`, a
+  copy-paste bug that dropped the attribute; `ToastLiveRegion` sets it and never
+  got it. Playwright's ARIA snapshots do not render the attribute, so no
+  baseline moves.
+- **`shadowColor` keeps a named colour as written.** `shadowOpacity` is applied
+  to the `black` default, to `white`, to hex (3/4/6/8), `rgb()` / `rgba()` and
+  `hsl()` / `hsla()` by multiplying the existing alpha, exactly as
+  `normalizeColor` does; any other named colour passes through instead of being
+  resolved through React Native's 150-entry colour table. No component uses the
+  `shadow*` props.
+- **`Modal` is minimal**: a portal with `role="dialog"`, `aria-modal`,
+  `z-index: 9999` and Escape on `keydown`; no focus trap and no `animationType`.
+  Every caller has a `.web` sibling, so nothing renders it on web.
+- **The element resets are a class injected at the start of `<head>`**, rather
+  than the atomic CSS that backend compiled per style. Same priority (below
+  every inline style, above the UA sheet), same insertion point, far fewer
+  declarations on the 135 files' worth of views.
+- **No RTL.** Only the left-to-right half of `PROPERTIES_I18N` is implemented
+  (a plan non-goal), along with `href` / `hrefAttrs`, `inert`, `Image`'s
+  `defaultSource` / `blurRadius` / `tintColor` / loader statics, and
+  `Pressable`'s `testOnly_*` props, none of which the seam's types expose.
+
+**Interim state (M2).** `Animated` still comes from `react-native-web`, so
+`Animated.View` is still that backend's `View`; the thirteen files that use it
+render its reset class inside ours. They nest without trouble and M3 replaces
+`Animated` outright. `dom/responderEvents.ts` borrows that package's responder
+system for the same reason — `PanResponder` computes its gesture state from the
+`touchHistory` that system maintains — and its deep import
+(`react-native-web/dist/modules/useResponderEvents/index.js`) resolves under a
+bundler but not under plain Node ESM, because that `dist` uses extensionless
+relative specifiers internally; a bundler-less Node SSR consumer is therefore
+unsupported until M3 removes the import.
 
 ### M3 — DOM backend: ScrollView, TextInput, Animated, responders, FlatList
 

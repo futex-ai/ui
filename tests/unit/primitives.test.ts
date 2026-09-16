@@ -81,23 +81,105 @@ test("every .web module wins its own module-resolution race", () => {
   assert.deepEqual(offenders, []);
 });
 
+/**
+ * The names the web seam still takes from `react-native-web`.
+ *
+ * M2 of `plans/pure-react-dom-backend.md` moved everything else to the DOM
+ * backend in `primitives/dom`; M3 ports these six and the list goes to zero.
+ */
+const DELEGATED_TO_REACT_NATIVE_WEB = [
+  "Animated",
+  "Easing",
+  "FlatList",
+  "PanResponder",
+  "ScrollView",
+  "TextInput",
+];
+
+/** The names the web seam takes from its own DOM backend. */
+const SERVED_BY_THE_DOM_BACKEND = [
+  "AccessibilityInfo",
+  "Image",
+  "InputAccessoryView",
+  "Keyboard",
+  "KeyboardAvoidingView",
+  "Modal",
+  "Platform",
+  "Pressable",
+  "StyleSheet",
+  "Text",
+  "View",
+  "useWindowDimensions",
+];
+
+/** Names bound by one `import { ... } from "<module>"` statement. */
+function importedNames(source: string, from: string): string[] {
+  const block = new RegExp(`import \\{([^}]*)\\} from "${from}"`).exec(source);
+  if (!block) return [];
+  return block[1]
+    .split(",")
+    .map((entry) =>
+      entry
+        .trim()
+        .split(/\s+as\s+/)[0]
+        .trim(),
+    )
+    .filter(Boolean)
+    .sort();
+}
+
 test("web primitives delegate to web packages and native ones to native packages", () => {
   const web = readFileSync(
     new URL("reactNative.web.ts", primitivesRoot),
     "utf8",
   );
-  assert.match(web, /from "react-native-web"/);
   // The web seam owns its type surface (`./types`) rather than borrowing React
   // Native's, so `dist/node`'s declarations never name the package.
   assert.match(web, /from "\.\/types"/);
   assert.doesNotMatch(web, /from "react-native"/);
   assert.doesNotMatch(web, /import\("react-native"\)/);
 
+  assert.deepEqual(
+    importedNames(web, "react-native-web"),
+    DELEGATED_TO_REACT_NATIVE_WEB,
+    "only the not-yet-ported primitives come from react-native-web",
+  );
+  assert.deepEqual(
+    importedNames(web, "\\./dom"),
+    SERVED_BY_THE_DOM_BACKEND,
+    "every ported primitive comes from the library's own DOM backend",
+  );
+
   const shim = readFileSync(
     new URL("react-native-web.d.ts", primitivesRoot),
     "utf8",
   );
   assert.doesNotMatch(shim, /"react-native"/);
+  for (const name of DELEGATED_TO_REACT_NATIVE_WEB) {
+    assert.match(
+      shim,
+      new RegExp(`export const ${name}:`),
+      `react-native-web.d.ts declares ${name}`,
+    );
+  }
+  for (const name of SERVED_BY_THE_DOM_BACKEND) {
+    assert.doesNotMatch(
+      shim,
+      new RegExp(`export const ${name}:`),
+      `react-native-web.d.ts no longer declares ${name}`,
+    );
+  }
+
+  // The DOM backend is the only thing under `dom/` that may reach for
+  // `react-native-web`, and only for the responder system PanResponder needs.
+  const domImporters = readdirSync(new URL("dom/", primitivesRoot))
+    .filter((file) =>
+      /from "react-native-web/.test(
+        readFileSync(new URL(`dom/${file}`, primitivesRoot), "utf8"),
+      ),
+    )
+    .sort();
+  assert.deepEqual(domImporters, ["responderEvents.ts"]);
 
   for (const file of readdirSync(new URL("types/", primitivesRoot))) {
     const source = readFileSync(
