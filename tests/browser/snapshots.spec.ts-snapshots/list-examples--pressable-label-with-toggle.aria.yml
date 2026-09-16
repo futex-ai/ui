@@ -1,0 +1,11 @@
+- text: The label opens the setting; the switch toggles independently
+- list "Settings":
+  - listitem:
+    - button "Notifications": Notifications Push, email, and in-app
+    - switch "Enable Notifications" [checked]
+  - listitem:
+    - button "Visibility": Visibility Who can see your activity
+    - switch "Enable Visibility"
+  - listitem:
+    - button "Backups": Backups Sync across your devices
+    - switch "Enable Backups" [checked]

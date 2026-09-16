@@ -277,6 +277,43 @@ those shards across its workers so the complete sweep does not depend on one
 long-running test. `UPDATE_A11Y_BASELINE=1 npm run test:browser -- a11y.spec.ts`
 uses one serial sweep instead, ensuring `axe-baseline.json` has a single writer.
 
+The story snapshot sweep (`tests/browser/snapshots.spec.ts`) is the visual and
+ARIA regression gate. It discovers the same story list at runtime, renders every
+story alone in a fresh 900x600 context (`deviceScaleFactor: 1`, reduced motion,
+forced light scheme, `en-US`, UTC), and pins two baselines per story: a
+full-viewport PNG and an ARIA snapshot of the rendered document. It runs in four
+shards like the axe sweep. Re-record after an intentional visual change with
+either of:
+
+```bash
+npx playwright test snapshots --update-snapshots   # four shards, faster
+SNAPSHOT_UPDATE=1 npx playwright test snapshots    # one serial sweep
+```
+
+Baselines live in `tests/browser/snapshots.spec.ts-snapshots/` as
+`<story-id>-linux.png` and `<story-id>.aria.yml`. **The screenshots are
+Linux-only.** CI and the development VM both run Linux; macOS rasterizes text
+differently, so a macOS checkout will see whole-suite pixel diffs and must never
+re-record them. ARIA snapshots carry no platform suffix, because an
+accessibility tree does not depend on the rasterizer. A newly added story has no
+baseline, and CI runs Playwright in its default `missing` mode, which writes the
+file and then fails; record the two new files on Linux with the same command and
+commit them alongside the story.
+
+So that every Linux machine rasterizes the same glyphs, Storybook bundles its
+own fonts through `.storybook/fonts.ts`: Inter for `theme.fonts.sans`, JetBrains
+Mono registered as `Menlo` for `theme.fonts.mono`, the same Inter files
+registered as `Segoe UI` for the stack react-native-web gives text a component
+leaves unstyled, and two Noto subsets as in-family fallbacks for the arrows,
+maths relations and symbols (⌘ ★ ✓ ✕ braille) none of those faces carry. These
+are Storybook devDependencies only — the published package ships no fonts and
+consumers are unaffected.
+
+Stories that cannot be pinned — a `requestAnimationFrame` loop that ignores
+reduced motion, or an accessibility tree that is legitimately empty — are listed
+with a one-line reason in `tests/browser/snapshotOptOuts.ts`, which is the only
+place an opt-out may be declared.
+
 Playwright uses `STORYBOOK_PORT` when set, then Conductor's workspace-specific
 `CONDUCTOR_PORT`, and otherwise port `6006`. This lets browser checks run safely
 alongside previews from parallel workspaces.
@@ -396,6 +433,8 @@ The package export map intentionally separates runtime targets:
 - Video-editor panels: [src/video-editor/README.md](src/video-editor/README.md)
 - Workflow builder component: [src/workflow/README.md](src/workflow/README.md)
 - Browser tests: [tests/browser/storybook.spec.ts](tests/browser/storybook.spec.ts)
+- Story visual/ARIA snapshot sweep:
+  [tests/browser/snapshots.spec.ts](tests/browser/snapshots.spec.ts)
 - Repository automation: [xtask/README.md](xtask/README.md)
 - Shared component protocol:
   [docs/protocol/shared-ui-components.md](docs/protocol/shared-ui-components.md)

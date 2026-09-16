@@ -1,0 +1,12 @@
+- group "Net change by month":
+  - text: ""
+  - img
+  - img
+  - text: /-\d+ 0 \d+ \d+ \d+ \d+ Jan Feb Mar Apr May Jun/
+  - 'button /Jan\. Net change: \d+/'
+  - 'button /Feb\. Net change: -\d+/'
+  - 'button /Mar\. Net change: \d+/'
+  - 'button /Apr\. Net change: -\d+/'
+  - 'button /May\. Net change: \d+/'
+  - 'button /Jun\. Net change: -\d+/'
+  - button "Show data table"

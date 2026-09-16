@@ -1,0 +1,13 @@
+- list "Reorderable columns":
+  - listitem:
+    - button "Reorder Todo"
+    - text: Todo
+  - listitem:
+    - button "Reorder In progress"
+    - text: In progress
+  - listitem:
+    - button "Reorder In review"
+    - text: In review
+  - listitem:
+    - button "Reorder Complete"
+    - text: Complete

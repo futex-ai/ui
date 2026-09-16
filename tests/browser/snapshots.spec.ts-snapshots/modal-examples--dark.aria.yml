@@ -1,0 +1,9 @@
+- dialog "Invite teammate":
+  - heading "Invite teammate" [level=1]
+  - text: Shared modal chrome with focus and close handling.
+  - button "Close Invite teammate"
+  - textbox "Modal text field":
+    - /placeholder: Type here
+  - text: Nested selector
+  - button "Nested selector, Standard"
+  - button "Done"

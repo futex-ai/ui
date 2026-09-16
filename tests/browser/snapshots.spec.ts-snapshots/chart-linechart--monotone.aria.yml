@@ -1,0 +1,14 @@
+- group "Web sessions, smoothed":
+  - text: Smoothed
+  - img
+  - img
+  - text: /\d+,\d+ \d+,\d+ \d+,\d+ \d+,\d+ \d+,\d+ Jan Mar May Jul/
+  - 'button /Jan\. Web: \d+,\d+/'
+  - 'button /Feb\. Web: \d+,\d+/'
+  - 'button /Mar\. Web: \d+,\d+/'
+  - 'button /Apr\. Web: \d+,\d+/'
+  - 'button /May\. Web: \d+,\d+/'
+  - 'button /Jun\. Web: \d+,\d+/'
+  - 'button /Jul\. Web: \d+,\d+/'
+  - 'button /Aug\. Web: \d+,\d+/'
+  - button "Show data table"

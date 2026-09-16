@@ -1,0 +1,8 @@
+- text: Content (default) — segments hug their labels
+- radiogroup "Content sizing (default)":
+  - radio "Profit & loss" [checked]
+  - radio "Balance sheet"
+- text: Equal — segments share width evenly
+- radiogroup "Equal sizing":
+  - radio "Profit & loss" [checked]
+  - radio "Balance sheet"

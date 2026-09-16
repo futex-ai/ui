@@ -1,0 +1,4 @@
+- text: Year ends
+- 'button /Year ends: \d+ Mar \d+/'
+- button "Clear Year ends"
+- text: Wheel variant with a ✕ that clears the value.

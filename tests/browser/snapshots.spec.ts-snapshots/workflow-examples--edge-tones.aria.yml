@@ -1,0 +1,6 @@
+- text: success failure score ≥ 0.6 on match
+- list "Edge legend":
+  - listitem: success
+  - listitem: cond
+  - listitem: failure
+  - listitem: always

@@ -1,0 +1,29 @@
+- text: /string, string, string \d+\.\d+, \d+\.\d+, -\d+\.\d+ number, number, number 1, 3, 1/
+- grid "Ledger":
+  - row "Item Resize Item Amount Resize Amount Qty Resize Qty":
+    - columnheader "Item Resize Item":
+      - text: ""
+      - separator "Resize Item"
+    - columnheader "Amount Resize Amount":
+      - text: ""
+      - separator "Resize Amount"
+    - columnheader "Qty Resize Qty":
+      - text: ""
+      - separator "Resize Qty"
+  - rowgroup:
+    - row /1 Rounding probe \d+\.\d+ 1/:
+      - rowheader "1"
+      - gridcell "Rounding probe"
+      - gridcell /\d+\.\d+/
+      - gridcell "1"
+    - row /2 Invoice \d+ \d+\.\d+ 3/:
+      - rowheader "2"
+      - gridcell /Invoice \d+/
+      - gridcell /\d+\.\d+/
+      - gridcell "3"
+    - row /3 Refund -\d+\.\d+ 1/:
+      - rowheader "3"
+      - gridcell "Refund"
+      - gridcell /-\d+\.\d+/
+      - gridcell "1"
+- text: "/Amount keeps exact decimal strings: edit or paste a \\d+-digit value and every digit survives, where a JS number would round it\\. Qty is an ordinary number column for comparison\\./"

@@ -1,0 +1,9 @@
+- list "Reorderable statuses":
+  - listitem:
+    - button "Todo"
+  - listitem:
+    - button "In progress"
+  - listitem:
+    - button "In review"
+  - listitem:
+    - button "Complete"

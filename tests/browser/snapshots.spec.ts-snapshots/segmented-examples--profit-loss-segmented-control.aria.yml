@@ -1,0 +1,7 @@
+- radiogroup "Report":
+  - radio "Profit & loss" [checked]
+  - radio "Balance sheet"
+- radiogroup "Income source":
+  - radio "Combined" [checked]
+  - radio "Consulting"
+  - radio "Retail"

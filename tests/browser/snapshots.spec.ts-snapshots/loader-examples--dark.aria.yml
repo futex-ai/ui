@@ -1,0 +1,12 @@
+- progressbar "Loading ring"
+- text: ring
+- progressbar "Loading dot-grid"
+- text: dot-grid
+- progressbar "Loading dots"
+- text: dots
+- progressbar "Loading bars"
+- text: bars
+- progressbar "Loading blades"
+- text: blades
+- progressbar "Loading pulse"
+- text: pulse

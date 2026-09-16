@@ -1,0 +1,26 @@
+- group "Effects":
+  - text: ""
+  - button "Add an effect"
+  - list "Effects":
+    - listitem:
+      - button "Reorder Colour balance"
+      - button "Colour balance parameters"
+      - switch "Disable Colour balance" [checked]
+      - button "Remove Colour balance"
+      - text: Temp
+      - textbox "Temp": /\d+/
+      - text: Tint
+      - textbox "Tint": "-6"
+    - listitem:
+      - button "Reorder Gaussian blur"
+      - button "Gaussian blur parameters"
+      - switch "Enable Gaussian blur"
+      - button "Remove Gaussian blur"
+    - listitem:
+      - button "Reorder Vignette"
+      - button "Vignette parameters"
+      - switch "Disable Vignette" [checked]
+      - button "Remove Vignette"
+      - text: Amount
+      - textbox "Amount": /\d+/
+- group "Empty effects": Empty No effects

@@ -1,0 +1,10 @@
+- progressbar /Loading \d+/
+- progressbar /Loading \d+/
+- progressbar /Loading \d+/
+- progressbar /Loading \d+/
+- progressbar "Payroll Reserve"
+- progressbar "Accounts Receivable"
+- progressbar "Greenhouse Studio"
+- progressbar "Vivienne Archer"
+- img "Vivienne Archer"
+- text: Loading, then loaded

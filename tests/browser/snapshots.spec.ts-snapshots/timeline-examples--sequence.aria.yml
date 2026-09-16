@@ -1,0 +1,24 @@
+- text: "/\\d+:\\d+:\\d+:\\d+ Selected: Interview A/"
+- group "Sequence":
+  - text: Titles
+  - button "Hide Titles"
+  - button "Lock Titles"
+  - text: Picture
+  - button "Hide Picture"
+  - button "Lock Picture"
+  - text: Dialogue
+  - button "Mute Dialogue"
+  - button "Solo Dialogue"
+  - button "Lock Dialogue"
+  - text: Music
+  - button "Mute Music"
+  - button "Solo Music"
+  - button "Lock Music"
+  - slider "Playhead"
+  - button /Opening card, Titles, \d+:\d+:\d+:\d+ to \d+:\d+:\d+:\d+/: /Opening card 0:\d+/
+  - button /Harbour wide, Picture, \d+:\d+:\d+:\d+ to \d+:\d+:\d+:\d+/: /Harbour wide 0:\d+/
+  - button /Interview A, Picture, \d+:\d+:\d+:\d+ to \d+:\d+:\d+:\d+, selected/: /Interview A 0:\d+/
+  - button /Cutaway, Picture, \d+:\d+:\d+:\d+ to \d+:\d+:\d+:\d+/: /Cutaway 0:\d+/
+  - button /VO intro, Dialogue, \d+:\d+:\d+:\d+ to \d+:\d+:\d+:\d+/: /VO intro 0:\d+/
+  - button /Interview audio, Dialogue, \d+:\d+:\d+:\d+ to \d+:\d+:\d+:\d+/: /Interview audio 0:\d+/
+  - button /Music bed, Music, \d+:\d+:\d+:\d+ to \d+:\d+:\d+:\d+, locked/: /Music bed 0:\d+/

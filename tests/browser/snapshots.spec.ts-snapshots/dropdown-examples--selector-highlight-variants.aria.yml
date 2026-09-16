@@ -1,0 +1,8 @@
+- text: Solid fill (default)
+- button "Solid fill (default), Standard"
+- text: Outline ring
+- button "Outline ring, Standard"
+- text: Outline + light fill
+- button "Outline + light fill, Standard"
+- text: Leading dot
+- button "Leading dot, Standard"

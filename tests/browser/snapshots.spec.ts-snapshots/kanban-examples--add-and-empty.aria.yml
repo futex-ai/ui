@@ -1,0 +1,26 @@
+- text: Press a column's + to add a card.
+- group "Content board":
+  - group "Drafted, 2 cards":
+    - text: ""
+    - button "Add card to Drafted"
+    - text: /We shipped per-step tool scoping today — every agent step runs with only the tools it was granted\. twitter\/x score \d+\.\d+ 1 Cal Jun \d+ How scoped agents stay fully auditable linkedin score \d+\.\d+ Pat Jun \d+/
+  - group "Approved, 1 card":
+    - text: ""
+    - button "Add card to Approved"
+    - text: /Why we moved every workflow run into a fresh container twitter\/x score \d+\.\d+ Cal Jun \d+/
+  - group "Published, 1 card":
+    - text: ""
+    - button "Add card to Published"
+    - text: /5 things we learned shipping automations on top of tables blog score \d+\.\d+ 2 Cal Jun \d+/
+  - group "Off-brand, 0 cards":
+    - text: ""
+    - button "Add card to Off-brand"
+    - text: No records yet
+  - group "Duplicate, 0 cards":
+    - text: ""
+    - button "Add card to Duplicate"
+    - text: No records yet
+  - group "Send-failed, 0 cards":
+    - text: ""
+    - button "Add card to Send-failed"
+    - text: No records yet

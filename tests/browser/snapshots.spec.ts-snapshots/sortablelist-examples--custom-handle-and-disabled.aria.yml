@@ -1,0 +1,14 @@
+- list "Statuses with a custom handle":
+  - listitem:
+    - text: Todo
+    - button "Reorder Todo": ⣿
+  - listitem:
+    - text: In progress
+    - button "Reorder In progress": ⣿
+  - listitem:
+    - text: In review
+    - button "Reorder In review": ⣿
+  - listitem:
+    - text: Complete
+    - button "Reorder Complete": ⣿
+  - listitem: Cancelled

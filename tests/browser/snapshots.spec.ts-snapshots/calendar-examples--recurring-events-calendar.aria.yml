@@ -1,0 +1,38 @@
+- button "Previous"
+- button "Next"
+- button "Today"
+- text: /June \d+ Sun Mon Tue Wed Thu Fri Sat \d+ 1 2 3 4 5 6/
+- button /Daily standup, 9:\d+ AM/
+- button /Daily standup, 9:\d+ AM/
+- button /Weekly sync, 1:\d+ PM/
+- button /Daily standup, 9:\d+ AM/
+- button /Daily standup, 9:\d+ AM/
+- button /Weekly sync, 1:\d+ PM/
+- button /Daily standup, 9:\d+ AM/
+- button /Daily standup, 9:\d+ AM/
+- text: /7 8 9 \d+ \d+ \d+ \d+/
+- button /Daily standup, 9:\d+ AM/
+- button /Daily standup, 9:\d+ AM/
+- button /Daily standup, 9:\d+ AM/
+- button /Weekly sync, 1:\d+ PM/
+- button /Daily standup, 9:\d+ AM/
+- button /Daily standup, 9:\d+ AM/
+- button /Weekly sync, 1:\d+ PM/
+- button /Daily standup, 9:\d+ AM/
+- button /Daily standup, 9:\d+ AM/
+- text: /\d+ \d+ \d+ \d+ \d+ \d+ \d+/
+- button /Daily standup, 9:\d+ AM/
+- button /Daily standup, 9:\d+ AM/
+- button /Daily standup, 9:\d+ AM/
+- button /Weekly sync, 1:\d+ PM/
+- button /Daily standup, 9:\d+ AM/
+- button /Daily standup, 9:\d+ AM/
+- button /Weekly sync, 1:\d+ PM/
+- button /Daily standup, 9:\d+ AM/
+- button /Daily standup, 9:\d+ AM/
+- text: /\d+ \d+ \d+ \d+ \d+ \d+ \d+/
+- button /Weekly sync, 1:\d+ PM/
+- button /Weekly sync, 1:\d+ PM/
+- text: /\d+ \d+ \d+ 1 2 3 4/
+- button /Weekly sync, 1:\d+ PM/
+- button /Weekly sync, 1:\d+ PM/

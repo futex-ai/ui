@@ -1,0 +1,3 @@
+- group "Revenue by month":
+  - text: Revenue by month The frame owns measurement, the axis band, and the table twin. No data
+  - button "Show data table"

@@ -131,7 +131,7 @@ const cards: ContentCard[] = [
     ownerInitials: "CM",
     score: "0.42",
     status: "off-brand",
-    title: "per-step tool scoping is live 🚀🚀 the future is HERE",
+    title: "per-step tool scoping is live and the future is HERE",
   },
   {
     channel: "twitter/x",

@@ -1,0 +1,15 @@
+- text: sm
+- group "Content board (sm)":
+  - group "Drafted, 2 cards": /Drafted We shipped per-step tool scoping today — every agent step runs with only the tools it was granted\. twitter\/x score \d+\.\d+ Cal Jun \d+ How scoped agents stay fully auditable linkedin score \d+\.\d+ Pat Jun \d+/
+  - group "Approved, 1 card": /Approved Why we moved every workflow run into a fresh container twitter\/x score \d+\.\d+ Cal Jun \d+/
+  - group "Published, 1 card": /Published 5 things we learned shipping automations on top of tables blog score \d+\.\d+ Cal Jun \d+/
+- text: md
+- group "Content board (md)":
+  - group "Drafted, 2 cards": /Drafted We shipped per-step tool scoping today — every agent step runs with only the tools it was granted\. twitter\/x score \d+\.\d+ Cal Jun \d+ How scoped agents stay fully auditable linkedin score \d+\.\d+ Pat Jun \d+/
+  - group "Approved, 1 card": /Approved Why we moved every workflow run into a fresh container twitter\/x score \d+\.\d+ Cal Jun \d+/
+  - group "Published, 1 card": /Published 5 things we learned shipping automations on top of tables blog score \d+\.\d+ Cal Jun \d+/
+- text: lg
+- group "Content board (lg)":
+  - group "Drafted, 2 cards": /Drafted We shipped per-step tool scoping today — every agent step runs with only the tools it was granted\. twitter\/x score \d+\.\d+ Cal Jun \d+ How scoped agents stay fully auditable linkedin score \d+\.\d+ Pat Jun \d+/
+  - group "Approved, 1 card": /Approved Why we moved every workflow run into a fresh container twitter\/x score \d+\.\d+ Cal Jun \d+/
+  - group "Published, 1 card": /Published 5 things we learned shipping automations on top of tables blog score \d+\.\d+ Cal Jun \d+/

@@ -1,0 +1,3 @@
+- text: VAT scheme *
+- button "VAT scheme, Select a scheme"
+- text: Choose a VAT scheme to continue. This determines how VAT is calculated on invoices.

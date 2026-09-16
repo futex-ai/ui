@@ -1,0 +1,1 @@
+- text: "This long line is clipped to a single line with a trailing ellipsis, while the full text stays the accessible name for screen readers. This paragraph is clipped to two lines: anything past the second line is replaced with an ellipsis, so the surrounding layout stays compact even when the underlying copy runs long across several sentences."

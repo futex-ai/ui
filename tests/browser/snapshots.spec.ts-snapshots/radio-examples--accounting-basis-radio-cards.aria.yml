@@ -1,0 +1,4 @@
+- radiogroup "Accounting basis":
+  - radio "Cash basis" [checked]: Cash basis Record income and expenses when money moves.
+  - radio "Accrual basis": Accrual basis Record income and expenses when invoices are issued.
+  - radio "Flat rate VAT" [disabled]: Flat rate VAT Available after VAT is enabled for the book.

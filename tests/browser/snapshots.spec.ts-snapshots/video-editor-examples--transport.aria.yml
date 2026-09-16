@@ -1,0 +1,24 @@
+- group "Transport":
+  - button "Jump to start"
+  - button "Step back one frame"
+  - button "Play"
+  - button "Step forward one frame"
+  - button "Jump to end"
+  - text: /\d+:\d+:\d+:\d+/
+  - slider "Seek"
+  - text: /\d+:\d+:\d+:\d+/
+  - button "Mark in"
+  - button "Mark out"
+  - button "Loop"
+  - button "Playback speed, 1×"
+  - group "Audio levels":
+    - meter /Left, −\d+\.\d+ dB/
+    - meter /Right, −\d+\.\d+ dB/
+- text: Compact — play and seek only
+- group "Transport":
+  - button "Jump to start"
+  - button "Play"
+  - button "Jump to end"
+  - text: /\d+:\d+:\d+:\d+/
+  - slider "Seek"
+  - text: /\d+:\d+:\d+:\d+/

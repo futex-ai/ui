@@ -1,0 +1,5 @@
+- text: Layered date
+- textbox "Layered date":
+  - /placeholder: Select a date
+  - text: /\d+ Mar \d+/
+- text: Overlapping panel

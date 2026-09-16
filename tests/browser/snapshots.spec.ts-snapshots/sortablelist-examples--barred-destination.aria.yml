@@ -1,0 +1,16 @@
+- text: Roadmap review is shared, so Personal refuses it — no drop preview opens there and the arrow keys step past it. Workspace
+- list "Workspace":
+  - listitem:
+    - button "Reorder Roadmap review"
+    - text: Roadmap review
+  - listitem:
+    - button "Reorder Hiring loop"
+    - text: Hiring loop
+  - listitem:
+    - button /Reorder Incident \d+/
+    - text: /Incident \d+/
+- text: Personal
+- list "Personal":
+  - listitem:
+    - button "Reorder Scratch pad"
+    - text: Scratch pad

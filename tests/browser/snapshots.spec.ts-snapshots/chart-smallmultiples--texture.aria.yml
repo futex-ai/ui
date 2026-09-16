@@ -1,0 +1,17 @@
+- group "Sessions by region and month, textured":
+  - text: Identity by hatch as well as hue
+  - img
+  - img
+  - text: /0 \d+,\d+ \d+,\d+ \d+,\d+ \d+,\d+ Jan Feb Mar Apr/
+  - 'button /Jan\. EU: \d+,\d+\. US: \d+,\d+\. APAC: \d+,\d+/'
+  - 'button /Feb\. EU: \d+,\d+\. US: \d+,\d+\. APAC: \d+,\d+/'
+  - 'button /Mar\. EU: \d+,\d+\. US: \d+,\d+\. APAC: \d+,\d+/'
+  - 'button /Apr\. EU: \d+,\d+\. US: \d+,\d+\. APAC: \d+,\d+/'
+  - list:
+    - listitem:
+      - switch "EU" [checked]
+    - listitem:
+      - switch "US" [checked]
+    - listitem:
+      - switch "APAC" [checked]
+  - button "Show data table"

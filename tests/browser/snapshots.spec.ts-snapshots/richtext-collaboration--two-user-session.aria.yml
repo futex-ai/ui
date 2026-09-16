@@ -1,0 +1,35 @@
+- text: Robin Alvarez is editing
+- button "Move Robin"
+- text: Launch note
+- textbox "Launch note":
+  - heading "Launch note" [level=1]
+  - paragraph:
+    - text: We are shipping the collaborative editor to
+    - mark: every workspace
+    - deletion: this Thursday
+    - text: .
+  - heading "What reviewers see" [level=2]
+  - list:
+    - listitem:
+      - text: Live carets
+      - insertion: for everyone
+      - text: in the document
+    - listitem:
+      - mark: Tracked changes
+      - text: they can accept or reject
+    - listitem: Comment threads anchored to the words they discuss
+  - blockquote: Nothing here syncs on its own; the editor draws the session it is given.
+- text: "# Launch note We are shipping the collaborative editor to every workspace this Thursday. ## What reviewers see - Live carets for everyone in the document - Tracked changes they can accept or reject - Comment threads anchored to the words they discuss > Nothing here syncs on its own; the editor draws the session it is given. Comments & changes 4"
+- button "Comment by Robin Alvarez on “every workspace”, 1 more in thread. Show in document": /Robin Alvarez [\d,.]+[bkmBKM]+ ago every workspace Can we name the workspaces explicitly\? “every workspace” reads broader than the rollout\./
+- text: /You [\d,.]+[bkmBKM]+ ago Good catch — I will list them once the flags are flipped\./
+- button "Reply" [disabled]
+- button "Resolve"
+- button "Robin Alvarez suggested deleting text on “this Thursday”. Show in document": /Robin Alvarez [\d,.]+[bkmBKM]+ ago Robin Alvarez suggested deleting text this Thursday/
+- button "Accept"
+- button "Reject"
+- button "Robin Alvarez suggested adding text on “for everyone”. Show in document": /Robin Alvarez [\d,.]+[bkmBKM]+ ago Robin Alvarez suggested adding text for everyone/
+- button "Accept"
+- button "Reject"
+- button "Comment by You on “Tracked changes”. Show in document": /You [\d,.]+[bkmBKM]+ ago Tracked changes Worth spelling out that accept\/reject is the caller's edit to apply\./
+- button "Reply" [disabled]
+- button "Resolve"

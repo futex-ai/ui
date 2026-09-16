@@ -1,0 +1,33 @@
+- text: Drag a handle to reorder, or focus one and press Space.
+- list "Workflow statuses":
+  - listitem:
+    - button "Reorder Todo"
+    - text: Todo TO DO
+    - button "Move Todo up"
+    - button "Move Todo down"
+    - button "Archive Todo"
+  - listitem:
+    - button "Reorder In progress"
+    - text: In progress IN PROGRESS
+    - button "Move In progress up"
+    - button "Move In progress down"
+    - button "Archive In progress"
+  - listitem:
+    - button "Reorder In review"
+    - text: In review IN REVIEW
+    - button "Move In review up"
+    - button "Move In review down"
+    - button "Archive In review"
+  - listitem:
+    - button "Reorder Complete"
+    - text: Complete COMPLETE
+    - button "Move Complete up"
+    - button "Move Complete down"
+    - button "Archive Complete"
+  - listitem:
+    - button "Reorder Cancelled"
+    - text: Cancelled CANCELLED
+    - button "Move Cancelled up"
+    - button "Move Cancelled down"
+    - button "Archive Cancelled"
+- text: The handle is the only drag target, so each row's own up / down / archive buttons keep working. Space to grab, arrows to move, Space or Enter to drop, Escape to cancel.

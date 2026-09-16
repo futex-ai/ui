@@ -1,0 +1,45 @@
+- group "Sessions by region":
+  - text: EU
+  - group "Sessions in EU":
+    - img
+    - img
+    - text: /\d+,\d+ \d+,\d+ \d+,\d+ \d+,\d+ \d+,\d+ \d+,\d+ Jan Mar May/
+    - 'button /Jan\. EU: \d+,\d+/'
+    - 'button /Feb\. EU: \d+,\d+/'
+    - 'button /Mar\. EU: \d+,\d+/'
+    - 'button /Apr\. EU: \d+,\d+/'
+    - 'button /May\. EU: \d+,\d+/'
+    - 'button /Jun\. EU: \d+,\d+/'
+  - text: US
+  - group "Sessions in US":
+    - img
+    - img
+    - text: /\d+,\d+ \d+,\d+ \d+,\d+ \d+,\d+ \d+,\d+ \d+,\d+ \d+,\d+ Jan Mar May/
+    - 'button /Jan\. US: \d+,\d+/'
+    - 'button /Feb\. US: \d+,\d+/'
+    - 'button /Mar\. US: \d+,\d+/'
+    - 'button /Apr\. US: \d+,\d+/'
+    - 'button /May\. US: \d+,\d+/'
+    - 'button /Jun\. US: \d+,\d+/'
+  - text: APAC
+  - group "Sessions in APAC":
+    - img
+    - img
+    - text: /\d+,\d+ \d+,\d+ \d+,\d+ \d+,\d+ \d+,\d+ \d+,\d+ \d+,\d+ Jan Mar May/
+    - 'button /Jan\. APAC: \d+,\d+/'
+    - 'button /Feb\. APAC: \d+,\d+/'
+    - 'button /Mar\. APAC: \d+,\d+/'
+    - 'button /Apr\. APAC: \d+,\d+/'
+    - 'button /May\. APAC: \d+,\d+/'
+    - 'button /Jun\. APAC: \d+,\d+/'
+  - text: LATAM
+  - group "Sessions in LATAM":
+    - img
+    - img
+    - text: /\d+ \d+,\d+ \d+,\d+ \d+,\d+ \d+,\d+ Jan Mar May/
+    - 'button /Jan\. LATAM: \d+/'
+    - 'button /Feb\. LATAM: \d+,\d+/'
+    - 'button /Mar\. LATAM: \d+,\d+/'
+    - 'button /Apr\. LATAM: \d+,\d+/'
+    - 'button /May\. LATAM: \d+,\d+/'
+    - 'button /Jun\. LATAM: \d+,\d+/'

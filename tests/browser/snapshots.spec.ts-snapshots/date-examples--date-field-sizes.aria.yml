@@ -1,0 +1,12 @@
+- text: Small
+- textbox "Small":
+  - /placeholder: Select a date
+  - text: /\d+ Mar \d+/
+- text: Medium
+- textbox "Medium":
+  - /placeholder: Select a date
+  - text: /\d+ Mar \d+/
+- text: Large
+- textbox "Large":
+  - /placeholder: Select a date
+  - text: /\d+ Mar \d+/

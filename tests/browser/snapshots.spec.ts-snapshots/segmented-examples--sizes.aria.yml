@@ -1,0 +1,9 @@
+- radiogroup "Small report":
+  - radio "Profit & loss" [checked]
+  - radio "Balance sheet"
+- radiogroup "Medium report":
+  - radio "Profit & loss" [checked]
+  - radio "Balance sheet"
+- radiogroup "Large report":
+  - radio "Profit & loss" [checked]
+  - radio "Balance sheet"

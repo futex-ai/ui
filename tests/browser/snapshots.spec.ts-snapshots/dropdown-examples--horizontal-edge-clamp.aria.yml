@@ -1,0 +1,3 @@
+- text: Horizontal edge clamping Both menus are wider than the triggers that open them. Each one slides inward so it never spills past the left or right edge of the screen.
+- button "Open left edge menu": Left edge
+- button "Open right edge menu"

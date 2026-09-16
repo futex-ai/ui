@@ -1,0 +1,7 @@
+- dialog "Holiday rules":
+  - heading "Holiday rules" [level=1]
+  - button "Close Holiday rules"
+  - text: Holiday year starts
+  - button "Holiday year starts, April"
+  - text: Annual allowance
+  - textbox "Annual allowance": /\d+/

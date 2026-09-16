@@ -1,0 +1,15 @@
+- text: sm
+- list:
+  - listitem: /Calum Moore Salary · monthly · £\d+,\d+\.\d+/
+  - listitem: Peter Parker Salary · monthly · gross pay needed
+  - listitem: /Aisha Webb Salary · monthly · £\d+,\d+\.\d+/
+- text: md
+- list:
+  - listitem: /Calum Moore Salary · monthly · £\d+,\d+\.\d+/
+  - listitem: Peter Parker Salary · monthly · gross pay needed
+  - listitem: /Aisha Webb Salary · monthly · £\d+,\d+\.\d+/
+- text: lg
+- list:
+  - listitem: /Calum Moore Salary · monthly · £\d+,\d+\.\d+/
+  - listitem: Peter Parker Salary · monthly · gross pay needed
+  - listitem: /Aisha Webb Salary · monthly · £\d+,\d+\.\d+/

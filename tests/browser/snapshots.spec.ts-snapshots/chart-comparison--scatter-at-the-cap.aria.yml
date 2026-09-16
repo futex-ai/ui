@@ -1,0 +1,63 @@
+- group "Latency against throughput, four regions":
+  - text: Four regions (shape carries identity too)
+  - img
+  - img
+  - img
+  - text: /0 \d+ \d+ \d+ \d+ 0 \d+ \d+/
+  - 'button /EU: x \d+, y \d+\.\d+/'
+  - 'button /EU: x \d+, y \d+\.\d+/'
+  - 'button /EU: x \d+, y \d+\.\d+/'
+  - 'button /EU: x \d+, y \d+\.\d+/'
+  - 'button /EU: x \d+, y \d+/'
+  - 'button "EU: x 3, y 5.6"'
+  - 'button /EU: x \d+, y \d+\.\d+/'
+  - 'button /EU: x 9, y \d+\.\d+/'
+  - 'button /EU: x \d+, y \d+\.\d+/'
+  - 'button /EU: x \d+, y \d+/'
+  - 'button /EU: x \d+, y \d+\.\d+/'
+  - 'button /EU: x \d+, y \d+\.\d+/'
+  - 'button /US: x \d+, y \d+/'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button /US: x \d+, y \d+/'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button "US: x 5, y 8"'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button /APAC: x \d+, y \d+\.\d+/'
+  - 'button /APAC: x \d+, y \d+/'
+  - 'button /APAC: x \d+, y \d+\.\d+/'
+  - 'button /APAC: x \d+, y \d+\.\d+/'
+  - 'button /APAC: x \d+, y \d+\.\d+/'
+  - 'button /APAC: x \d+, y \d+\.\d+/'
+  - 'button /APAC: x \d+, y \d+/'
+  - 'button /APAC: x \d+, y \d+\.\d+/'
+  - 'button /APAC: x \d+, y \d+\.\d+/'
+  - 'button /APAC: x \d+, y \d+\.\d+/'
+  - 'button /APAC: x \d+, y \d+\.\d+/'
+  - 'button /APAC: x \d+, y \d+/'
+  - 'button /SA: x \d+, y \d+/'
+  - 'button /SA: x 2, y \d+/'
+  - 'button /SA: x \d+, y \d+/'
+  - 'button /SA: x 8, y \d+/'
+  - 'button /SA: x \d+, y \d+/'
+  - 'button /SA: x \d+, y \d+/'
+  - 'button /SA: x \d+, y \d+/'
+  - 'button /SA: x \d+, y \d+/'
+  - 'button /SA: x \d+, y \d+/'
+  - 'button /SA: x \d+, y \d+/'
+  - 'button /SA: x \d+, y \d+/'
+  - 'button /SA: x \d+, y \d+/'
+  - list:
+    - listitem:
+      - switch "EU" [checked]
+    - listitem:
+      - switch "US" [checked]
+    - listitem:
+      - switch "APAC" [checked]
+    - listitem:
+      - switch "SA" [checked]

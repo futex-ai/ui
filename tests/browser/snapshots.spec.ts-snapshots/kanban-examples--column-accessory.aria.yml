@@ -1,0 +1,50 @@
+- text: Toggle a column's agent — the board never sees the press.
+- group "Content board":
+  - group "Drafted, 2 cards":
+    - text: ""
+    - switch "Agent for Drafted" [checked]
+    - button "Add card to Drafted"
+    - button "Open c1": /We shipped per-step tool scoping today — every agent step runs with only the tools it was granted\. twitter\/x score \d+\.\d+ 1 Cal Jun \d+/
+    - button "Open c2": /How scoped agents stay fully auditable linkedin score \d+\.\d+ Pat Jun \d+/
+  - group "Approved, 1 card":
+    - text: ""
+    - switch "Agent for Approved"
+    - button "Add card to Approved"
+    - button "Open c3": /Why we moved every workflow run into a fresh container twitter\/x score \d+\.\d+ Cal Jun \d+/
+  - group "Published, 1 card":
+    - text: ""
+    - button "Add card to Published"
+    - button "Open c4": /5 things we learned shipping automations on top of tables blog score \d+\.\d+ 2 Cal Jun \d+/
+- text: The accessory sits at the trailing edge of the header, before the add button, and takes no part in the board's press or drag handling. It never shrinks — the title chip truncates first — and is clipped to the status chip's box, which is 20px at sm, md, and lg alike and is the floor of the header row, so an accessory can never change a header's height. The toggle brings its own switch role, checked state, Space key, and inset focus ring; the slot brings none of them. sm
+- group "Agent board (sm)":
+  - group "Drafted, 2 cards":
+    - text: ""
+    - switch "Agent for Drafted" [checked]
+    - text: /We shipped per-step tool scoping today — every agent step runs with only the tools it was granted\. twitter\/x score \d+\.\d+ Cal Jun \d+ How scoped agents stay fully auditable linkedin score \d+\.\d+ Pat Jun \d+/
+  - group "Approved, 1 card":
+    - text: ""
+    - switch "Agent for Approved"
+    - text: /Why we moved every workflow run into a fresh container twitter\/x score \d+\.\d+ Cal Jun \d+/
+  - group "Published, 0 cards"
+- text: md
+- group "Agent board (md)":
+  - group "Drafted, 2 cards":
+    - text: ""
+    - switch "Agent for Drafted" [checked]
+    - text: /We shipped per-step tool scoping today — every agent step runs with only the tools it was granted\. twitter\/x score \d+\.\d+ Cal Jun \d+ How scoped agents stay fully auditable linkedin score \d+\.\d+ Pat Jun \d+/
+  - group "Approved, 1 card":
+    - text: ""
+    - switch "Agent for Approved"
+    - text: /Why we moved every workflow run into a fresh container twitter\/x score \d+\.\d+ Cal Jun \d+/
+  - group "Published, 0 cards"
+- text: lg
+- group "Agent board (lg)":
+  - group "Drafted, 2 cards":
+    - text: ""
+    - switch "Agent for Drafted" [checked]
+    - text: /We shipped per-step tool scoping today — every agent step runs with only the tools it was granted\. twitter\/x score \d+\.\d+ Cal Jun \d+ How scoped agents stay fully auditable linkedin score \d+\.\d+ Pat Jun \d+/
+  - group "Approved, 1 card":
+    - text: ""
+    - switch "Agent for Approved"
+    - text: /Why we moved every workflow run into a fresh container twitter\/x score \d+\.\d+ Cal Jun \d+/
+  - group "Published, 0 cards"

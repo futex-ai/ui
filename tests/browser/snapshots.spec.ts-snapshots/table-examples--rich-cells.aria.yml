@@ -1,0 +1,16 @@
+- text: Each row has an Open action. Name Role Payroll ID NI Cat Status Monthly gross
+- img "Maya Okafor"
+- text: /Maya Okafor Tax code 1257L Director GS-\d+ A Active £\d+,\d+\.\d+/
+- button "Open Maya Okafor"
+- img "Priya Anand"
+- text: /Priya Anand Tax code 1257L Senior Engineer GS-\d+ A Active £\d+,\d+\.\d+/
+- button "Open Priya Anand"
+- img "Tom Whitfield"
+- text: /Tom Whitfield Tax code 1257L Product Designer GS-\d+ A Active £\d+,\d+\.\d+/
+- button "Open Tom Whitfield"
+- img "Jordan Lee"
+- text: /Jordan Lee Tax code 1257L Apprentice Developer GS-\d+ H New starter £\d+,\d+\.\d+/
+- button "Open Jordan Lee"
+- img "Sofia Marenco"
+- text: /Sofia Marenco Tax code 1257L Marketing Lead GS-\d+ A Leaving \d+ May £\d+,\d+\.\d+/
+- button "Open Sofia Marenco"

@@ -1,0 +1,5 @@
+- text: Click or focus + Enter a row to open it Invoice Issued Status Amount
+- button /Open invoice INV-\d+/: /INV-\d+ 1 Jun Paid £\d+,\d+\.\d+/
+- button /Open invoice INV-\d+/: /INV-\d+ 4 Jun Overdue £\d+\.\d+/
+- button /Open invoice INV-\d+/ [disabled]: /INV-\d+ 9 Jun Draft £\d+,\d+\.\d+/
+- text: The draft row is disabled and cannot be opened.

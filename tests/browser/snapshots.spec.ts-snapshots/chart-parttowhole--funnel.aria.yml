@@ -1,0 +1,8 @@
+- group "Signup funnel":
+  - text: ""
+  - img
+  - 'button /Visits: [\d,.]+[bkmBKM]+, \d+% of the first stage/'
+  - 'button /Signed up: \d+,\d+, \d+% of the first stage, \d+% of the previous/'
+  - 'button /Activated: \d+,\d+, \d+% of the first stage, \d+% of the previous/'
+  - 'button /Paid: \d+,\d+, 5% of the first stage, \d+% of the previous/'
+  - button "Show data table"

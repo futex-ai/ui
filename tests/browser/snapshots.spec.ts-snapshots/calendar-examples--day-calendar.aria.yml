@@ -1,0 +1,6 @@
+- text: /Wed \d+ All-day/
+- button "Team offsite, all day"
+- text: /1 AM 2 AM 3 AM 4 AM 5 AM 6 AM 7 AM 8 AM 9 AM \d+ AM \d+ AM \d+ PM 1 PM 2 PM 3 PM 4 PM 5 PM 6 PM 7 PM 8 PM 9 PM \d+ PM \d+ PM/
+- button /Standup, 9:\d+ – \d+:\d+ AM/: /Standup 9:\d+ – \d+:\d+ AM/
+- button /Design review, \d+:\d+ AM – \d+:\d+ PM/: /Design review \d+:\d+ AM – \d+:\d+ PM/
+- button /Interview, \d+:\d+ AM – \d+:\d+ PM/

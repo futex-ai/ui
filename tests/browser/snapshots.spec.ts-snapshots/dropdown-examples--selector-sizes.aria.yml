@@ -1,0 +1,6 @@
+- text: Small selector
+- button "Small selector, Standard"
+- text: Medium selector
+- button "Medium selector, Standard"
+- text: Large selector
+- button "Large selector, Standard"

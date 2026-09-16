@@ -1,0 +1,10 @@
+- group "Requests by endpoint":
+  - text: ""
+  - img
+  - img
+  - text: /0 [\d,.]+[bkmBKM]+ [\d,.]+[bkmBKM]+ \/api\/search \/api\/checkout \/api\/profile \/api\/settings/
+  - 'button /\/api\/search\. Requests: [\d,.]+[bkmBKM]+/'
+  - 'button /\/api\/checkout\. Requests: [\d,.]+[bkmBKM]+/'
+  - 'button /\/api\/profile\. Requests: [\d,.]+[bkmBKM]+/'
+  - 'button /\/api\/settings\. Requests: \d+,\d+/'
+  - button "Show data table"

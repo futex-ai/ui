@@ -10,3 +10,6 @@ target/
 storybook-native/.rnstorybook/storybook.requires.ts
 storybook-native/ios/
 storybook-native/android/
+# Playwright writes and rewrites these ARIA baselines verbatim; reformatting
+# them would only be undone by the next `--update-snapshots` run.
+tests/browser/snapshots.spec.ts-snapshots/

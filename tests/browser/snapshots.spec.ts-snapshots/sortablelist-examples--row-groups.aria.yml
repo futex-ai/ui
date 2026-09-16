@@ -1,0 +1,18 @@
+- text: todo
+- list "todo":
+  - listitem:
+    - button "Reorder Triage inbox"
+    - text: Triage inbox
+  - listitem:
+    - button "Reorder Audit exports"
+    - text: Audit exports
+- text: doing
+- list "doing":
+  - listitem:
+    - button "Reorder Spec review"
+    - text: Spec review
+- text: done
+- list "done":
+  - listitem:
+    - button "Reorder Deploy 1.2"
+    - text: Deploy 1.2

@@ -1,0 +1,3 @@
+- text: Delivery date
+- 'button /Delivery date: \d+ Mar \d+/'
+- text: /Only Mar \d+ is selectable; out-of-range spins snap back\./

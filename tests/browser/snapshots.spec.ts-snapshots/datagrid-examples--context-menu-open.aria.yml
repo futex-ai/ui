@@ -1,0 +1,8 @@
+- menu "Status field options":
+  - menuitem "Sort ascending"
+  - menuitem "Sort descending"
+  - menuitem "Clear sort"
+  - menuitem "Insert left"
+  - menuitem "Insert right"
+  - menuitem "Hide field"
+  - menuitem "Delete field"

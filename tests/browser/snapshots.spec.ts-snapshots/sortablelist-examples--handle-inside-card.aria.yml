@@ -1,0 +1,17 @@
+- text: The grip is rendered inside the white card, not in the gutter.
+- list "Workflow statuses":
+  - listitem:
+    - button "Reorder Todo"
+    - text: Todo TO DO
+  - listitem:
+    - button "Reorder In progress"
+    - text: In progress IN PROGRESS
+  - listitem:
+    - button "Reorder In review"
+    - text: In review IN REVIEW
+  - listitem:
+    - button "Reorder Complete"
+    - text: Complete COMPLETE
+  - listitem:
+    - button "Reorder Cancelled"
+    - text: Cancelled CANCELLED

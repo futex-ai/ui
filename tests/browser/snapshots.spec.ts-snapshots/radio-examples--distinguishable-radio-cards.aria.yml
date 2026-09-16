@@ -1,0 +1,3 @@
+- radiogroup "VAT scheme":
+  - radio "Cash basis (recommended)" [checked]: Cash basis Recommended for most small businesses.
+  - radio "Cash basis": Cash basis Record income when invoices are issued.

@@ -1,0 +1,12 @@
+- text: Default theme — Tab to see the soft focus glow.
+- button "Save"
+- switch "Notifications" [checked]
+- text: Project name
+- textbox "Project name":
+  - /placeholder: Untitled
+- radiogroup "Cadence":
+  - radio "Daily"
+  - radio "Weekly" [checked]
+  - radio "Monthly"
+- radio "Standard" [checked]
+- radio "Priority"

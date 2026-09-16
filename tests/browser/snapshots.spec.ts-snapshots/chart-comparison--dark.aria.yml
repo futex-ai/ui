@@ -1,0 +1,49 @@
+- group "Latency against throughput by region":
+  - text: Latency vs throughput
+  - img
+  - img
+  - img
+  - text: /0 \d+ \d+ \d+ 0 \d+ \d+/
+  - 'button /EU: x \d+, y \d+\.\d+/'
+  - 'button /EU: x \d+, y \d+\.\d+/'
+  - 'button /EU: x \d+, y \d+\.\d+/'
+  - 'button /EU: x \d+, y \d+\.\d+/'
+  - 'button /EU: x \d+, y \d+/'
+  - 'button "EU: x 3, y 5.6"'
+  - 'button /EU: x \d+, y \d+\.\d+/'
+  - 'button /EU: x 9, y \d+\.\d+/'
+  - 'button /EU: x \d+, y \d+\.\d+/'
+  - 'button /EU: x \d+, y \d+/'
+  - 'button /EU: x \d+, y \d+\.\d+/'
+  - 'button /EU: x \d+, y \d+\.\d+/'
+  - 'button /EU: x \d+, y \d+\.\d+/'
+  - 'button /EU: x \d+, y \d+\.\d+/'
+  - 'button /US: x \d+, y \d+/'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button /US: x \d+, y \d+/'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button "US: x 5, y 8"'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - 'button /US: x \d+, y \d+\.\d+/'
+  - list:
+    - listitem:
+      - switch "EU" [checked]
+    - listitem:
+      - switch "US" [checked]
+- group "Revenue bridge":
+  - text: ""
+  - img
+  - img
+  - text: /0 [\d,.]+[bkmBKM]+ [\d,.]+[bkmBKM]+ [\d,.]+[bkmBKM]+ Opening New Churn Closing/
+  - 'button /Opening: up \$[\d,.]+[bkmBKM]+, running total \$[\d,.]+[bkmBKM]+/'
+  - 'button /New: up \$[\d,.]+[bkmBKM]+, running total \$[\d,.]+[bkmBKM]+/'
+  - 'button /Churn: down \$\d+,\d+, running total \$[\d,.]+[bkmBKM]+/'
+  - 'button /Closing: total \$[\d,.]+[bkmBKM]+/'
+  - button "Show data table"

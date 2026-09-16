@@ -4,7 +4,7 @@ Make `@firna/ui` consumable as a plain React library on the web, with no
 `react-native-web` at runtime and no `react-native` for types, while every
 component file stays shared with the React Native build.
 
-**Status:** planned. No milestone started.
+**Status:** M0 delivered. M1–M4 not started.
 
 ---
 
@@ -228,19 +228,47 @@ At the end: a visual and ARIA snapshot suite exists, recorded against the
 `react-native-web` build, and `npm run verify` is green. No backend code has
 changed, so every later milestone is measured against this.
 
-- [ ] `tests/browser/snapshots.spec.ts`: discover stories from Storybook's
+- [x] `tests/browser/snapshots.spec.ts`: discover stories from Storybook's
       `/index.json` like the axe sweep does, and for each story assert
       `toHaveScreenshot` (fixed 900×600 viewport, `deviceScaleFactor: 1`,
       `animations: "disabled"`, reduced-motion emulation, a small
       `maxDiffPixelRatio`) and `toMatchAriaSnapshot` on the story root.
-- [ ] Per-story opt-outs for stories that cannot be made deterministic (the
+      Rooted at `body` rather than `#storybook-root`: ten stories present a
+      modal, menu or toast through a portal and mark the story root
+      `aria-hidden`, so the root snapshots as an empty tree; the two roots are
+      identical for the other 316.
+- [x] Per-story opt-outs for stories that cannot be made deterministic (the
       loader and skeleton loops, live clocks), listed in one place with a reason.
-- [ ] Commit the Linux baselines under `tests/browser/snapshots.spec.ts-snapshots/`;
+      `tests/browser/snapshotOptOuts.ts` holds three, all ARIA-only: reduced
+      motion plus `animations: "disabled"` already stills the animated border,
+      the skeleton sheen and the status-dot pulse, and `toHaveScreenshot`
+      re-shoots until the remaining `Animated` loops land on the recorded frame,
+      so no story opts out of its screenshot. No story reads a live clock: a
+      probe rendered every story twice with `page.clock.setFixedTime` set eight
+      months apart and found no rendered text that moved.
+- [x] Commit the Linux baselines under `tests/browser/snapshots.spec.ts-snapshots/`;
       document `npx playwright test snapshots --update-snapshots` and that
       baselines are Linux-only (CI and this VM), in `README.md`'s testing notes.
-- [ ] Shard the sweep like `a11ySharding.ts` so runtime stays inside the
-      existing Playwright budget.
-- [ ] `npm run verify` and `cargo xtask check` green; commit, push, review.
+      326 PNGs (5.7 MB) and 323 ARIA snapshots (0.3 MB), 7.6 MB on disk.
+- [x] Shard the sweep like `a11ySharding.ts` so runtime stays inside the
+      existing Playwright budget. Four shards, 4.4 minutes wall clock;
+      `SNAPSHOT_UPDATE=1` collapses it to one serial recording sweep.
+- [x] Bundle Storybook's fonts (`.storybook/fonts.ts`) so the baselines are
+      portable across Linux machines rather than tied to the recording host.
+      None of the three stacks that reach the screen — `theme.fonts.sans`,
+      `theme.fonts.mono`, and react-native-web's reset for text a component
+      leaves unstyled — names a family that exists on Linux, so every run was
+      being rasterized by whatever fontconfig offered. Inter covers the sans
+      stack, JetBrains Mono is registered as `Menlo`, the same Inter files are
+      registered as `Segoe UI` (the first resolvable name in the RNW reset), and
+      two Noto subsets cover the arrows, maths relations and symbols none of
+      those faces carry. A probe confirms all 14 (family, weight) pairs painted
+      across the 326 stories resolve to a bundled face. ✨ and 🚀 had no bundled
+      coverage and were replaced in the two stories that rendered them.
+- [x] `npm run verify` and `cargo xtask check` green; commit, push, review.
+      Unit 1149, browser 347 (two consecutive full runs), build, package smoke
+      and Storybook build all green on this tree; `cargo xtask check` runs the
+      same `verify` script.
 
 ### M1 — Own the types; web-resolution typecheck; RN-free declarations
 
@@ -430,8 +458,9 @@ even if the later milestones are paused.
 
 ## Open questions
 
-- Snapshot scope: the plan records every story (326 across 42 files, roughly
-  8 MB of PNGs at 1× on a 900×600 viewport). A curated subset would be lighter
-  in git but would leave gaps in exactly the components most likely to drift.
+- Snapshot scope: resolved in M0 by recording every story. The 326 stories cost
+  6.0 MB of PNGs at 1× on a 900×600 viewport plus 0.3 MB of ARIA snapshots, near
+  the 8 MB estimate, and a curated subset would have left gaps in exactly the
+  components most likely to drift.
 - Whether `domBackendCss` should also ship as a `.css` file export for
   bundlers that prefer static CSS. Not needed by the current consumers.

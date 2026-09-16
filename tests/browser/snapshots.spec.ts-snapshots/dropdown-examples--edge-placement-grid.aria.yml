@@ -1,0 +1,16 @@
+- text: Top left
+- button /Top left, Region \d+/
+- text: Top center
+- button /Top center, Region \d+/
+- text: Top right
+- button /Top right, Region \d+/
+- text: Mid left
+- button /Mid left, Region \d+/
+- text: Edge-aware placement Open any selector. Menus near the bottom flip upward, and menus near an edge slide inward so they always stay on screen. Mid right
+- button /Mid right, Region \d+/
+- text: Bottom left
+- button /Bottom left, Region \d+/
+- text: Bottom center
+- button /Bottom center, Region \d+/
+- text: Bottom right
+- button /Bottom right, Region \d+/

@@ -1,0 +1,28 @@
+- group "Accounts by usage and spend, sized by seats":
+  - text: Accounts (size = seats)
+  - img
+  - img
+  - img
+  - text: /0 \d+ \d+ \d+ 0 \d+ \d+/
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage 4, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'
+  - 'button /Accounts: usage \d+, spend \d+\.\d+, size \d+/'

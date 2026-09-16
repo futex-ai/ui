@@ -1,0 +1,6 @@
+- text: Project notes
+- textbox "Project notes":
+  - /placeholder: Add useful context
+  - text: Initial scope notes Follow up with implementation details
+- button "Clear Project notes"
+- text: Use multiple lines for notes, comments, or descriptions.
