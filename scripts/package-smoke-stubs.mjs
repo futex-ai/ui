@@ -262,10 +262,30 @@ ${ICON_NAMES.map((name) => `export const ${name} = Icon;`).join("\n")}
   });
 }
 
+/**
+ * Peers the TYPES consumer needs on disk to compile `dist/node/**` with
+ * `skipLibCheck: false`. Only `react` and `lucide-react`: the web build's
+ * declarations are self-contained, so a strict consumer needs neither
+ * `react-native` (the seam types itself from `src/primitives/types`) nor
+ * `react-native-web` (which ships no types and is never named in an emitted
+ * declaration). If a `react-native` stub ever becomes necessary again, the
+ * seam has started leaking React Native's types back into the package.
+ */
 export async function writeTypePeerStubs(consumerRoot) {
   await writeStubPackage(consumerRoot, "react", {
     "index.d.ts": `export type ComponentProps<T> = T extends ComponentType<infer P> ? P : T extends new (props: infer P) => unknown ? P : never;
+export type ComponentPropsWithRef<T> = T extends (props: infer P) => ReactNode ? P : never;
 export type ComponentType<P = unknown> = (props: P) => ReactNode;
+export type ElementType = ComponentType<never> | string;
+export type FC<P = unknown> = (props: P) => ReactNode;
+export interface ForwardRefExoticComponent<P> {
+  (props: P): ReactNode;
+  displayName?: string | undefined;
+}
+export interface RefAttributes<T> {
+  ref?: Ref<T> | undefined;
+  key?: unknown;
+}
 export type Dispatch<T> = (value: T) => void;
 export type PropsWithChildren<P = unknown> = P & { children?: ReactNode };
 export interface ReactElement<P = unknown> {
@@ -317,95 +337,6 @@ export declare const Fragment: unique symbol;
           types: "./jsx-runtime.d.ts",
         },
       },
-    }),
-  });
-  await writeStubPackage(consumerRoot, "react-native", {
-    "index.d.ts": `export type StyleProp<T> = T | readonly T[] | false | null | undefined;
-export type AccessibilityRole = string;
-export interface PanResponderInstance {
-  panHandlers: Record<string, unknown>;
-}
-export declare const PanResponder: {
-  create(config: Record<string, unknown>): PanResponderInstance;
-};
-export interface AccessibilityState {
-  [key: string]: unknown;
-}
-export type ColorValue = string | OpaqueColorValue;
-export type DimensionValue = number | string | null | undefined;
-export interface GestureResponderEvent {
-  [key: string]: unknown;
-}
-export interface Insets {
-  bottom?: number;
-  left?: number;
-  right?: number;
-  top?: number;
-}
-export declare const OpaqueColorValue: unique symbol;
-export type OpaqueColorValue = typeof OpaqueColorValue;
-export interface TextInputProps {
-  [key: string]: unknown;
-}
-export interface TextStyle {
-  [key: string]: unknown;
-}
-export interface ViewStyle {
-  [key: string]: unknown;
-}
-export interface FocusEvent {
-  [key: string]: unknown;
-}
-export interface LayoutChangeEvent {
-  [key: string]: unknown;
-}
-export interface NativeScrollEvent {
-  [key: string]: unknown;
-}
-export interface NativeSyntheticEvent<T> {
-  nativeEvent: T;
-}
-export interface TextInputContentSizeChangeEventData {
-  [key: string]: unknown;
-}
-export interface TextProps {
-  [key: string]: unknown;
-}
-export interface ViewProps {
-  [key: string]: unknown;
-}
-export declare class FlatList<ItemT = unknown> {
-  protected itemType?: ItemT;
-}
-export declare class Image {}
-export declare class InputAccessoryView {}
-export declare class KeyboardAvoidingView {}
-export declare class Modal {}
-export declare class ScrollView {}
-export declare class Text {}
-export declare class TextInput {}
-export declare class View {}
-export declare const AccessibilityInfo: Record<string, unknown>;
-export declare const Easing: Record<string, unknown>;
-export declare const Keyboard: Record<string, unknown>;
-export declare const Platform: { OS: string };
-export declare const Pressable: unknown;
-export declare const StyleSheet: Record<string, unknown>;
-export declare function useWindowDimensions(): {
-  height: number;
-  width: number;
-};
-export declare namespace Animated {
-  class Value {
-    constructor(value: number);
-  }
-  const View: unknown;
-}
-`,
-    "package.json": JSON.stringify({
-      name: "react-native",
-      type: "module",
-      types: "./index.d.ts",
     }),
   });
   await writeStubPackage(consumerRoot, "lucide-react", {

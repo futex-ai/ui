@@ -24,7 +24,7 @@ import { type RefObject, useLayoutEffect, useState } from "react";
 import type {
   AutoGrowTextarea,
   AutoGrowTextareaOptions,
-} from "./useAutoGrowTextarea";
+} from "./autoGrowTextareaTypes";
 
 /** The bits of the underlying DOM `<textarea>` the measure step touches. */
 type MeasurableTextArea = {

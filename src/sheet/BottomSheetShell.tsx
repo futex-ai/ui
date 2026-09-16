@@ -25,6 +25,18 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
 
+/**
+ * Re-types a seam style for `@gorhom/bottom-sheet`, whose props are declared
+ * with `react-native`'s own `ViewStyle`. The seam's is a superset — it also
+ * types the web-only CSS keys (`transition`, `position: "fixed"`, and friends)
+ * — so the two are not interchangeable in this direction. This shell only ever
+ * renders on native, where those keys never appear, so the value is passed
+ * through unchanged.
+ */
+function nativeStyle<T>(style: StyleProp<ViewStyle>): T {
+  return style as unknown as T;
+}
+
 /** Imperative handle for the underlying sheet, so a caller can animate it closed. */
 export type BottomSheetHandle = ComponentRef<typeof BottomSheet>;
 
@@ -116,7 +128,10 @@ export function BottomSheetShell({
             <BottomSheetScrollView
               accessibilityLabel={label}
               accessibilityViewIsModal
-              contentContainerStyle={[styles.content, contentContainerStyle]}
+              contentContainerStyle={nativeStyle([
+                styles.content,
+                contentContainerStyle,
+              ])}
             >
               {header}
               {children}
@@ -126,7 +141,7 @@ export function BottomSheetShell({
             <BottomSheetView
               accessibilityLabel={label}
               accessibilityViewIsModal
-              style={[styles.content, contentContainerStyle]}
+              style={nativeStyle([styles.content, contentContainerStyle])}
             >
               {header}
               {children}

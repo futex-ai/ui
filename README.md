@@ -131,10 +131,9 @@ your target:
 - **Web only (Vite, Next.js, any DOM bundler):** `react`, `react-dom`,
   `react-native-web`, and `lucide-react`. No `react-native` install and no
   bundler alias is needed: the `import` condition resolves to `dist/node`,
-  whose files reach React Native only through `react-native-web`. Strict
-  TypeScript consumers also need `react-native` as a dev dependency for its
-  type declarations, because `react-native-web` ships none and the emitted
-  `.d.ts` files reference `ViewStyle`-style types from it.
+  whose files reach React Native only through `react-native-web`. That holds
+  for types too — the web build's declarations are self-contained, so even a
+  strict TypeScript consumer installs nothing extra.
 - **Expo / React Native (iOS, Android, and Expo web):** `react`, `react-dom`,
   `react-native`, `react-native-web`, `react-native-svg`,
   `lucide-react-native`, and `lucide-react`. Metro's `react-native` condition
@@ -245,12 +244,18 @@ function App() {
 npm ci
 npm test
 npm run typecheck
+npm run typecheck:web
 npm run build
 npm run test:package
 npm run storybook
 npm run storybook:build
 npm run test:browser
 ```
+
+`npm run typecheck` resolves the native files of the platform seam;
+`npm run typecheck:web` re-runs the same program against the `.web` siblings
+(`tsconfig.web.json` sets `moduleSuffixes`), which is the resolution every web
+consumer and the emitted declarations use. Both are part of `npm run verify`.
 
 Run the full JavaScript verification suite with:
 
@@ -326,7 +331,11 @@ The package export map intentionally separates runtime targets:
   `react-native-web`, `lucide-react`, and DOM SVG, this tree never imports
   `react-native`, `react-native-svg`, or `lucide-react-native` at runtime.
 - Type declarations also point at `dist/node/**`, where relative declaration
-  specifiers use NodeNext-compatible `.js` paths.
+  specifiers use NodeNext-compatible `.js` paths. They are emitted by a second,
+  web-resolution `tsc` pass (`tsconfig.build.web.json`) and typed from the
+  seam's own vendored declarations in `src/primitives/types`, so nothing under
+  `dist/node` mentions `react-native`. The build drops every native module a
+  `.web` sibling shadows from that tree for the same reason.
 - The `react-native` condition points at `dist/**`, preserving extensionless
   specifiers so Metro and React Native platform resolution can choose native or
   web files.

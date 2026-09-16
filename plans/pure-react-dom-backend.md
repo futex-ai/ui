@@ -4,7 +4,7 @@ Make `@firna/ui` consumable as a plain React library on the web, with no
 `react-native-web` at runtime and no `react-native` for types, while every
 component file stays shared with the React Native build.
 
-**Status:** M0 delivered. M1–M4 not started.
+**Status:** M0–M1 delivered. M2–M4 not started.
 
 ---
 
@@ -277,30 +277,74 @@ At the end: the web seam no longer imports a single type from `react-native`,
 drop their `react-native` dev dependency, and a `typecheck:web` gate runs in
 `verify`. Runtime still delegates to `react-native-web`.
 
-- [ ] Add `src/primitives/types/{style,events,components,index}.ts`, copied
-      from `react-native`'s public declarations and trimmed to the seam's export
-      list; include the web-only style keys currently cast in via
-      `as unknown as ViewStyle` (`cursor`, `transition`, `outlineStyle`,
-      `userSelect`, `boxShadow`).
-- [ ] `reactNative.web.ts` re-exports the vendored types and annotates every
+- [x] Add `src/primitives/types/`, copied from `react-native`'s public
+      declarations and trimmed to the seam's export list; include the web-only
+      style keys currently cast in via `as unknown as ViewStyle` (`cursor`,
+      `transition`, `outlineStyle`, `userSelect`, `boxShadow`).
+      Split thirteen ways to stay inside the ~300-line file target:
+      `layout.ts` + `style.ts` (colours, dimensions, `ViewStyle` / `TextStyle` /
+      `ImageStyle`, `StyleProp`), `events.ts`, `accessibility.ts`,
+      `hostInstance.ts`, `components.ts` (`View` / `Text` / `Pressable`),
+      `lists.ts`, `textInput.ts`, `overlays.ts`, `animatedValue.ts` +
+      `animated.ts`, `gestures.ts`, `platform.ts`, `index.ts`. Each carries
+      Meta's MIT attribution, and every union is copied whole rather than
+      trimmed: Decision 7 is an assignability contract, so ours may be wider
+      than React Native's but never narrower, and
+      `tests/unit/primitiveTypesCompat.test.ts` compiles a probe against the
+      real `react-native` declarations to keep it that way (it catches both a
+      narrowed union and an event whose `currentTarget` is missing members,
+      which is why `hostElement.ts` mirrors `ReactNativeElement` in full).
+      Beyond the five keys above the web additions are
+      `backgroundImage` / `backgroundSize`, the `transition-*` longhands,
+      `position: fixed | sticky`, the CSS cursors, `outlineStyle: "none"` and
+      the intrinsic `DimensionValue` sizes — the full set the 16 casts in 12
+      files need, so M4 can drop them. The casts themselves stay for now.
+- [x] `reactNative.web.ts` re-exports the vendored types and annotates every
       value export with them; casts from `react-native-web` values live only in
       this file. `reactNative.ts` keeps re-exporting `react-native`'s types.
-- [ ] `tsconfig.web.json` (`moduleSuffixes: [".web", ""]`) and a
-      `typecheck:web` script added to `verify`; fix the 12 existing errors
+      No cast was needed in the end: `react-native-web.d.ts` now declares the
+      seventeen values the seam imports, typed from `./types`, instead of
+      `export * from "react-native"`.
+- [x] `tsconfig.web.json` (`moduleSuffixes: [".web", ""]`) and a
+      `typecheck:web` script added to `verify`; fix the existing errors
       (`Svg` `style` prop and container `children` typing in `svg.web.tsx`;
       move `useAutoGrowTextarea`'s shared types into `autoGrowTextareaTypes.ts`
       so the `.web` hook stops importing its own sibling).
-- [ ] Build emits `dist/node` declarations from the web-resolution pass
+      The 12 errors the trial reported were an artefact: TypeScript applies
+      `moduleSuffixes` inside each extension (`svg.web.ts`, `svg.ts`, then
+      `svg.web.tsx`), so `svg.web.tsx` was shadowed by `svg.ts` and the pass was
+      checking `react-native-svg`. Renaming the native file to `svg.tsx` fixes
+      the resolution and leaves five real errors: the `AutoGrowTextarea` import
+      cycle (moved to `autoGrowTextareaTypes.ts`) and three uses of
+      `react-native-svg` spellings the DOM shim did not type (`originX`,
+      `originY`, `rotation`, an array `strokeDasharray`), now declared on
+      `SvgChildProps` with no runtime change. A unit test pins the extension
+      ordering for every `.web` pair so the trap cannot come back.
+- [x] Build emits `dist/node` declarations from the web-resolution pass
       (`tsconfig.build.web.json`, `emitDeclarationOnly`) before
       `prepare-node-esm.mjs` rewrites specifiers; native JS and `dist/**` are
-      unchanged.
-- [ ] `tests/unit/packageExports.test.ts` (or a new build test) asserts that no
-      file under `dist/node` matching `*.d.ts` references `react-native`, and
-      the package smoke's types consumer drops its `react-native` type stub.
-- [ ] Remove the "strict TypeScript consumers also need `react-native`" caveat
+      unchanged. The pass emits to `.dist-web-types`, which the script overlays
+      onto the `dist` copy that becomes `dist/node`. It also drops every native
+      module a `.web` sibling shadows from that copy — dead weight the rewriter
+      never links to, and the last place (`primitives/reactNative.d.ts`) a
+      `react-native` reference survived.
+- [x] A new `tests/unit/primitiveTypesCompat.test.ts` gates Decision 7: a
+      probe mixing `react-native`'s types with the vendored ones has to
+      compile, in both the value direction (an RN style/prop/event assigns into
+      ours) and the callback direction (a handler typed with RN's event
+      satisfies one of our props). It skips when `react-native` is absent.
+- [x] A new `tests/unit/distDeclarations.test.ts` asserts that no file under
+      `dist/node` matching `*.d.ts` references `react-native` (skipped with a
+      message when `dist` is absent, so `npm test` runs on a clean tree) and
+      that the shadowed native modules are gone; the package smoke's types
+      consumer drops its `react-native` type stub (its `react` stub grew the
+      five type names the vendored declarations use).
+- [x] Remove the "strict TypeScript consumers also need `react-native`" caveat
       from `README.md`; update `src/primitives/README.md`.
-- [ ] `npm run verify` and `cargo xtask check` green; snapshots unchanged;
-      commit, push, review.
+- [x] `npm run verify` and `cargo xtask check` green; snapshots unchanged;
+      commit, push, review. Unit 1153, both typechecks, build, the
+      `react-native` grep on `dist/node`, package smoke, Storybook build and
+      the full browser suite (347) all green; no snapshot re-recorded.
 
 ### M2 — DOM backend: styles, View, Text, Pressable, and the small modules
 
