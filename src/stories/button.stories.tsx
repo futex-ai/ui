@@ -10,6 +10,7 @@ import {
   Plus,
   RotateCcw,
   Settings,
+  Sparkles,
   Trash2,
   X,
 } from "../primitives/icons";
@@ -231,10 +232,10 @@ export const CustomIconNode: Story = {
     row(
       <>
         {/* `iconNode` renders any node as-is (not wrapped in `<Text>`, not
-            tinted) — here a caller-coloured glyph and an emoji stand in for a
-            non-lucide `@expo/vector-icons` glyph. The explicit `tabIndex`
-            models a consumer-supplied SVG that would otherwise take click
-            focus; the decorative wrapper keeps focus on the button. */}
+            tinted) — here two caller-coloured glyphs stand in for a non-lucide
+            `@expo/vector-icons` glyph. The explicit `tabIndex` models a
+            consumer-supplied SVG that would otherwise take click focus; the
+            decorative wrapper keeps focus on the button. */}
         <Button
           accessibilityLabel="Add"
           iconNode={<Plus color="#2f5945" size={18} tabIndex={-1} />}
@@ -244,7 +245,7 @@ export const CustomIconNode: Story = {
           tone="plain"
         />
         <Button
-          iconNode={<Text style={styles.emoji}>✨</Text>}
+          iconNode={<Sparkles color="#f2c14e" size={16} tabIndex={-1} />}
           onPress={noop}
           tone="primary"
         >
@@ -597,10 +598,6 @@ const styles = StyleSheet.create({
     color: "#1c1f1d",
     fontSize: 14,
     fontWeight: "700",
-    lineHeight: 20,
-  },
-  emoji: {
-    fontSize: 16,
     lineHeight: 20,
   },
   flexLabel: {

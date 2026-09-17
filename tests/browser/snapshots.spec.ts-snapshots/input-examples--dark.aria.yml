@@ -1,0 +1,4 @@
+- text: Full name
+- textbox "Full name":
+  - /placeholder: Ada Lovelace
+- text: As it appears on official documents.

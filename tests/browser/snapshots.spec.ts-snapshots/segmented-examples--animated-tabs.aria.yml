@@ -1,0 +1,18 @@
+- text: Content — the raised tab glides and resizes to each label
+- radiogroup "Calendar view":
+  - radio "Day" [checked]
+  - radio "Week"
+  - radio "Month"
+  - radio "Quarter"
+- text: Equal — the tab glides across same-width segments
+- radiogroup "Calendar view, equal width":
+  - radio "Day" [checked]
+  - radio "Week"
+  - radio "Month"
+  - radio "Quarter"
+- text: "animated={false} — the tab snaps into place, no slide"
+- radiogroup "Static calendar view":
+  - radio "Day" [checked]
+  - radio "Week"
+  - radio "Month"
+  - radio "Quarter"

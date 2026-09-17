@@ -1,0 +1,8 @@
+- text: /\d+:9 with composition guides/
+- group "Program monitor":
+  - img "Program output"
+  - text: /\d+×\d+ · 30fps/
+- text: /9:\d+/
+- group "Vertical monitor":
+  - img "Program output"
+- text: Empty No preview

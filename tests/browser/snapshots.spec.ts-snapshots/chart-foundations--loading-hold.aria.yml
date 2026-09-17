@@ -1,0 +1,7 @@
+- text: Finish loading
+- group "Revenue by month":
+  - text: Revenue by month The frame owns measurement, the axis band, and the table twin.
+  - img
+  - img
+  - text: /0 \d+ \d+ \d+ \d+ Jan Feb Mar Apr May Jun/
+  - button "Show data table"

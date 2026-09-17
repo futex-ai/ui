@@ -56,9 +56,8 @@ test("the caller's role is what the button announces", () => {
 });
 
 test("role state reaches the DOM through the aria mirror on web", () => {
-  // react-native-web honours `accessibilityState` only on
-  // `TouchableWithoutFeedback`, so on a Pressable the literal `aria-*` props are
-  // the only channel that survives to the DOM.
+  // The web backend drops `accessibilityState` rather than translating it, so
+  // the literal `aria-*` props are the only channel that survives to the DOM.
   const checkbox = buttonSemantics(
     input({ checked: true, expanded: false, role: "checkbox" }),
   );
@@ -188,10 +187,10 @@ test("every mismatch in one pairing is reported, not just the first", () => {
   assert.ok(warnings.some((warning) => warning.includes("must report a")));
 });
 
-test("Spacebar is bound only where react-native-web leaves it unbound", () => {
+test("Spacebar is bound only where the web backend leaves it unbound", () => {
   const activate = () => undefined;
 
-  // react-native-web's press responder already binds Space on `button`.
+  // The web backend's press machine already binds Space on `button`.
   assert.equal(
     buttonSpaceKeyProps({ activate, enabled: true, role: "button", web: true }),
     null,
@@ -247,7 +246,7 @@ test("Space activates a re-roled button and never scrolls the page", () => {
   assert.equal(enter.prevented, 0);
 });
 
-test("Space reads the key off the native event when react-native-web nests it", () => {
+test("Space reads the key off the native event when the backend nests it", () => {
   let activated = 0;
   const keyProps = buttonSpaceKeyProps({
     activate: () => {

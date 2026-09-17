@@ -87,12 +87,13 @@ export function useComboboxNavigation({
     [activeId, entries, navItems, onClose, onOpen, open],
   );
 
-  // React Native Web's `TextInput` replaces a forwarded `onKeyDown` with its
-  // internal handler, so a key handler spread onto the input never fires
-  // (WCAG 2.1.1 Keyboard). Arrow/Enter/Escape navigation therefore runs through
-  // a document-level capture listener while the result list is open, the same
-  // approach `useDropdownSelectorNavigation` uses. The `onKeyDown` in `keyProps`
-  // is kept only so a non-`TextInput` consumer (or native) still works.
+  // Arrow/Enter/Escape navigation runs through a document-level capture
+  // listener while the result list is open rather than the field's own
+  // `onKeyDown`, the same approach `useDropdownSelectorNavigation` uses: a
+  // field's key events do not propagate, so a handler on an ancestor never sees
+  // them (WCAG 2.1.1 Keyboard). The listener runs first and stops propagation
+  // for the keys it claims, so the `onKeyDown` in `keyProps` — which the web
+  // backend does deliver, and which native needs — never handles one twice.
   useEffect(() => {
     if (!open || typeof document === "undefined") {
       return;

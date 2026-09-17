@@ -1,0 +1,12 @@
+- text: Quiet, working, and clipping
+- group "Audio levels":
+  - meter /Left, −\d+\.\d+ dB/
+  - meter /Right, −\d+\.\d+ dB/
+- group "Audio levels":
+  - meter /Left, −\d+\.\d+ dB/
+  - meter /Right, −\d+\.\d+ dB/
+- group "Audio levels":
+  - meter "Left, −2.0 dB"
+  - meter "Right, −3.0 dB"
+- text: Standalone seek bar
+- slider "Seek"

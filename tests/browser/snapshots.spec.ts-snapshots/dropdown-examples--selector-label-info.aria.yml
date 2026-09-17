@@ -1,0 +1,6 @@
+- text: VAT scheme
+- button "More information about VAT scheme": The standard scheme reclaims VAT on purchases; the flat-rate scheme pays a fixed percentage of turnover instead. Switching schemes needs HMRC approval.
+- button "VAT scheme, Standard"
+- text: This determines how VAT is calculated on invoices. Accounting scheme
+- button "What each scheme means": Cash accounting reports VAT when invoices are paid rather than issued — useful when customers pay late.
+- button "Accounting scheme, Cash accounting"

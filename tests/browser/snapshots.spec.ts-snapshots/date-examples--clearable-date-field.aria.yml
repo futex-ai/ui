@@ -1,0 +1,6 @@
+- text: Year ends
+- textbox "Year ends":
+  - /placeholder: Select a date
+  - text: /\d+ Mar \d+/
+- button "Clear Year ends"
+- text: With clearable, a ✕ appears once a value is set.

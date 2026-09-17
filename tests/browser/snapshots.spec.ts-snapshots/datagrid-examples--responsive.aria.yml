@@ -1,0 +1,102 @@
+- grid "Content":
+  - row "Tweet Resize Tweet Status Resize Status Score Resize Score Channel Resize Channel Owner Resize Owner Tags Resize Tags Created Resize Created":
+    - columnheader "Tweet Resize Tweet":
+      - text: ""
+      - separator "Resize Tweet"
+    - columnheader "Status Resize Status":
+      - text: ""
+      - separator "Resize Status"
+    - columnheader "Score Resize Score":
+      - text: ""
+      - separator "Resize Score"
+    - columnheader "Channel Resize Channel":
+      - text: ""
+      - separator "Resize Channel"
+    - columnheader "Owner Resize Owner":
+      - text: ""
+      - separator "Resize Owner"
+    - columnheader "Tags Resize Tags":
+      - text: ""
+      - separator "Resize Tags"
+    - columnheader "Created Resize Created":
+      - text: ""
+      - separator "Resize Created"
+  - rowgroup:
+    - row /1 Expand row 1 We shipped per-step tool scoping today — every agent step runs with only the tools it was granted\. Drafted \d+\.\d+ twitter\/x Cal launch infra \d+ Jun \d+/:
+      - rowheader "1 Expand row 1":
+        - text: ""
+        - button "Expand row 1"
+      - gridcell "We shipped per-step tool scoping today — every agent step runs with only the tools it was granted."
+      - gridcell "Drafted"
+      - gridcell /\d+\.\d+/
+      - gridcell "twitter/x"
+      - gridcell "Cal"
+      - gridcell "launch infra"
+      - gridcell /\d+ Jun \d+/
+    - row /2 Expand row 2 Why we moved every workflow run into a fresh container Approved \d+\.\d+ twitter\/x Cal infra \d+ Jun \d+/:
+      - rowheader "2 Expand row 2":
+        - text: ""
+        - button "Expand row 2"
+      - gridcell "Why we moved every workflow run into a fresh container"
+      - gridcell "Approved"
+      - gridcell /\d+\.\d+/
+      - gridcell "twitter/x"
+      - gridcell "Cal"
+      - gridcell "infra"
+      - gridcell /\d+ Jun \d+/
+    - row /3 Expand row 3 How scoped agents stay fully auditable Drafted \d+\.\d+ linkedin Pat infra ai \d+ Jun \d+/:
+      - rowheader "3 Expand row 3":
+        - text: ""
+        - button "Expand row 3"
+      - gridcell "How scoped agents stay fully auditable"
+      - gridcell "Drafted"
+      - gridcell /\d+\.\d+/
+      - gridcell "linkedin"
+      - gridcell "Pat"
+      - gridcell "infra ai"
+      - gridcell /\d+ Jun \d+/
+    - row /4 Expand row 4 Migrate your CRM in one dry-run Duplicate \d+\.\d+ twitter\/x Bea growth \d+ Jun \d+/:
+      - rowheader "4 Expand row 4":
+        - text: ""
+        - button "Expand row 4"
+      - gridcell "Migrate your CRM in one dry-run"
+      - gridcell "Duplicate"
+      - gridcell /\d+\.\d+/
+      - gridcell "twitter/x"
+      - gridcell "Bea"
+      - gridcell "growth"
+      - gridcell /\d+ Jun \d+/
+    - row /5 Expand row 5 Tonight's deploy notes Send-failed \d+\.\d+ twitter\/x Cal \d+ Jun \d+/:
+      - rowheader "5 Expand row 5":
+        - text: ""
+        - button "Expand row 5"
+      - gridcell "Tonight's deploy notes"
+      - gridcell "Send-failed"
+      - gridcell /\d+\.\d+/
+      - gridcell "twitter/x"
+      - gridcell "Cal"
+      - gridcell
+      - gridcell /\d+ Jun \d+/
+    - row /6 Expand row 6 per-step tool scoping is live the future is HERE Off-brand \d+\.\d+ twitter\/x Cal launch \d+ Jun \d+/:
+      - rowheader "6 Expand row 6":
+        - text: ""
+        - button "Expand row 6"
+      - gridcell "per-step tool scoping is live the future is HERE"
+      - gridcell "Off-brand"
+      - gridcell /\d+\.\d+/
+      - gridcell "twitter/x"
+      - gridcell "Cal"
+      - gridcell "launch"
+      - gridcell /\d+ Jun \d+/
+    - row /7 Expand row 7 5 things we learned shipping automations on top of tables Published \d+\.\d+ blog Cal growth ai \d+ Jun \d+/:
+      - rowheader "7 Expand row 7":
+        - text: ""
+        - button "Expand row 7"
+      - gridcell "5 things we learned shipping automations on top of tables"
+      - gridcell "Published"
+      - gridcell /\d+\.\d+/
+      - gridcell "blog"
+      - gridcell "Cal"
+      - gridcell "growth ai"
+      - gridcell /\d+ Jun \d+/
+- text: /7 of \d+ records Open a card to expand it\./

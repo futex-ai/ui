@@ -1,3 +1,17 @@
+/*
+ * The rich-text editor's inline `<code>` marks take their family from the user
+ * agent stylesheet, which is the generic `monospace` keyword. Chromium resolves
+ * that through fontconfig and no @font-face can shadow a generic family, so
+ * those runs would be the one thing on screen rasterized by a machine-specific
+ * font. Point them at the family `.storybook/fonts.ts` pins instead.
+ */
+code,
+kbd,
+pre,
+samp {
+  font-family: "Menlo", monospace;
+}
+
 html,
 body,
 #storybook-root {

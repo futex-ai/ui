@@ -1,0 +1,21 @@
+- group "Sessions by platform, stacked":
+  - text: Total sessions
+  - img
+  - img
+  - text: /0 \d+,\d+ [\d,.]+[bkmBKM]+ [\d,.]+[bkmBKM]+ Jan Mar May Jul/
+  - 'button /Jan\. Web: \d+,\d+\. Mobile: \d+,\d+\. API: \d+/'
+  - 'button /Feb\. Web: \d+,\d+\. Mobile: \d+,\d+\. API: \d+,\d+/'
+  - 'button /Mar\. Web: \d+,\d+\. Mobile: \d+,\d+\. API: \d+,\d+/'
+  - 'button /Apr\. Web: \d+,\d+\. Mobile: \d+,\d+\. API: \d+,\d+/'
+  - 'button /May\. Web: \d+,\d+\. Mobile: \d+,\d+\. API: \d+,\d+/'
+  - 'button /Jun\. Web: \d+,\d+\. Mobile: \d+,\d+\. API: \d+,\d+/'
+  - 'button /Jul\. Web: \d+,\d+\. Mobile: \d+,\d+\. API: \d+,\d+/'
+  - 'button /Aug\. Web: \d+,\d+\. Mobile: \d+,\d+\. API: \d+,\d+/'
+  - list:
+    - listitem:
+      - switch "Web" [checked]
+    - listitem:
+      - switch "Mobile" [checked]
+    - listitem:
+      - switch "API" [checked]
+  - button "Show data table"

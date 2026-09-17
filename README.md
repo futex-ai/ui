@@ -1,7 +1,6 @@
 # ui
 
-Shared UI component library for Firna React Native and React Native Web
-surfaces. The first consumers are the accounting app and the Juno app.
+Shared UI component library for Firna React Native and web surfaces. The first consumers are the accounting app and the Juno app.
 
 ## Key Features
 
@@ -37,7 +36,8 @@ surfaces. The first consumers are the accounting app and the Juno app.
 - Portaled, anchored web date/dropdown/popover overlays with viewport-aware,
   content-sized selector menus and z-index escape hatches, plus touch-friendly
   native date sheets.
-- Expo and React Native Web compatible platform files.
+- Platform files shared by Expo, React Native, and the library's own DOM
+  backend on web.
 - Focused unit tests, browser interaction tests, and package export checks.
 - Storybook previews for visual review on same-repository non-release PRs.
 - Release-please release PRs and npm trusted publishing for `@firna/ui`.
@@ -128,25 +128,28 @@ npm install @firna/ui
 All platform packages are optional peer dependencies; install the set for
 your target:
 
-- **Web only (Vite, Next.js, any DOM bundler):** `react`, `react-dom`,
-  `react-native-web`, and `lucide-react`. No `react-native` install and no
-  bundler alias is needed: the `import` condition resolves to `dist/node`,
-  whose files reach React Native only through `react-native-web`. Strict
-  TypeScript consumers also need `react-native` as a dev dependency for its
-  type declarations, because `react-native-web` ships none and the emitted
-  `.d.ts` files reference `ViewStyle`-style types from it.
+- **Web only (Vite, Next.js, any DOM bundler):** `react`, `react-dom`, and
+  `lucide-react` — that is the whole web peer set. No `react-native` and no
+  `react-native-web` install, and no bundler alias is needed: the `import`
+  condition resolves to `dist/node`, where every primitive renders through the
+  library's own DOM backend. That holds for types too — the web build's
+  declarations are self-contained, so even a strict TypeScript consumer
+  installs nothing extra.
 - **Expo / React Native (iOS, Android, and Expo web):** `react`, `react-dom`,
-  `react-native`, `react-native-web`, `react-native-svg`,
-  `lucide-react-native`, and `lucide-react`. Metro's `react-native` condition
-  resolves `dist/**`, where platform files pick native or web implementations
-  per file.
+  `react-native`, `react-native-svg`, `lucide-react-native`, and
+  `lucide-react`. Metro's `react-native` condition resolves `dist/**`, where
+  platform files pick native or web implementations per file. An Expo web app
+  keeps whatever `react-native-web` its own React Native code needs; the
+  library's `.web` files resolve to the DOM backend there too and never reach
+  for it.
 - **Optional on native:** `@gorhom/bottom-sheet`, `react-native-gesture-handler`,
   and `react-native-reanimated` power the native bottom sheet.
 
 Every component reaches the platform through `src/primitives`, a small set of
 modules with a native file and a `.web` sibling: React Native primitives
-(`react-native` on native, `react-native-web` on web), SVG (`react-native-svg`
-on native, DOM `<svg>` on web), and icons (`lucide-react-native` on native,
+(`react-native` on native; the library's own DOM backend on web), SVG
+(`react-native-svg` on
+native, DOM `<svg>` on web), and icons (`lucide-react-native` on native,
 `lucide-react` on web). Icon props accept `IconComponent`, a type both Lucide
 packages' icons satisfy, so a consumer passes whichever matches their
 platform.
@@ -245,12 +248,25 @@ function App() {
 npm ci
 npm test
 npm run typecheck
+npm run typecheck:web
 npm run build
+npm run test:dist
 npm run test:package
 npm run storybook
 npm run storybook:build
 npm run test:browser
 ```
+
+`npm run typecheck` resolves the native files of the platform seam;
+`npm run typecheck:web` re-runs the same program against the `.web` siblings
+(`tsconfig.web.json` sets `moduleSuffixes`), which is the resolution every web
+consumer and the emitted declarations use. Both are part of `npm run verify`.
+
+`npm run test:dist` re-runs the declaration guard in
+`tests/unit/distDeclarations.test.ts` against build output. `npm test` includes
+it too, but it skips there on a clean checkout because `dist` does not exist
+yet, so `npm run verify` runs it again right after `npm run build` — that is
+the run that actually proves `dist/node` names no `react-native`.
 
 Run the full JavaScript verification suite with:
 
@@ -277,6 +293,53 @@ those shards across its workers so the complete sweep does not depend on one
 long-running test. `UPDATE_A11Y_BASELINE=1 npm run test:browser -- a11y.spec.ts`
 uses one serial sweep instead, ensuring `axe-baseline.json` has a single writer.
 
+The story snapshot sweep (`tests/browser/snapshots.spec.ts`) is the visual and
+ARIA regression gate. It discovers the same story list at runtime, renders every
+story alone in a fresh 900x600 context (`deviceScaleFactor: 1`, reduced motion,
+forced light scheme, `en-US`, UTC), and pins two baselines per story: a
+full-viewport PNG and an ARIA snapshot of the rendered document. It runs in four
+shards like the axe sweep. Re-record after an intentional visual change with
+either of:
+
+```bash
+npx playwright test snapshots --update-snapshots   # four shards, faster
+SNAPSHOT_UPDATE=1 npx playwright test snapshots    # one serial sweep
+```
+
+Baselines live in `tests/browser/snapshots.spec.ts-snapshots/` as
+`<story-id>-linux.png` and `<story-id>.aria.yml`. **The screenshots are
+Linux-only.** CI and the development VM both run Linux; macOS rasterizes text
+differently, so a macOS checkout will see whole-suite pixel diffs and must never
+re-record them. ARIA snapshots carry no platform suffix, because an
+accessibility tree does not depend on the rasterizer. A newly added story has no
+baseline, and CI runs Playwright in its default `missing` mode, which writes the
+file and then fails; record the two new files on Linux with the same command and
+commit them alongside the story.
+
+So that every Linux machine rasterizes the same glyphs, Storybook bundles its
+own fonts through `.storybook/fonts.ts`: Inter for `theme.fonts.sans`, JetBrains
+Mono registered as `Menlo` for `theme.fonts.mono`, the same Inter files
+registered as `Segoe UI` for the system stack the primitives give text a
+component leaves unstyled, and two Noto subsets as in-family fallbacks for the arrows,
+maths relations and symbols (⌘ ★ ✓ ✕ braille) none of those faces carry. These
+are Storybook devDependencies only — the published package ships no fonts and
+consumers are unaffected.
+
+Storybook's prop docgen is switched off (`typescript: { reactDocgen: false }`).
+Its importer resolves module specifiers without the `.web` preference, so it
+follows every story's `src/primitives` import to the native file and into
+`react-native`'s Flow source, which it cannot parse; it only survives by
+rewriting that path to `react-native-web/dist/index.js` when that package is
+installed. Nothing here reads docgen output — no story declares `args` or
+`argTypes`, there is no autodocs tag or `.mdx` file, and both suites render
+`iframe.html` — so the option is off and `react-native-web` is not installed at
+all. `.storybook/main.ts` carries the note.
+
+Stories that cannot be pinned — a `requestAnimationFrame` loop that ignores
+reduced motion, or an accessibility tree that is legitimately empty — are listed
+with a one-line reason in `tests/browser/snapshotOptOuts.ts`, which is the only
+place an opt-out may be declared.
+
 Playwright uses `STORYBOOK_PORT` when set, then Conductor's workspace-specific
 `CONDUCTOR_PORT`, and otherwise port `6006`. This lets browser checks run safely
 alongside previews from parallel workspaces.
@@ -285,11 +348,18 @@ The package export map intentionally separates runtime targets:
 
 - The standard `import` condition points at `dist/node/**`, where relative ESM
   specifiers include explicit `.js` files and web platform files are selected
-  when they exist. Because the platform seam's `.web` files delegate to
-  `react-native-web`, `lucide-react`, and DOM SVG, this tree never imports
-  `react-native`, `react-native-svg`, or `lucide-react-native` at runtime.
+  when they exist. Because the platform seam's `.web` files delegate to the
+  library's own DOM backend, `lucide-react`, and DOM SVG, this tree never
+  imports `react-native`, `react-native-web`, `react-native-svg`, or
+  `lucide-react-native` at runtime — `react-native-web` is not a peer
+  dependency at all, and `npm run test:package` proves the packed build bundles
+  with only `react`, `react-dom` and `lucide-react` installed.
 - Type declarations also point at `dist/node/**`, where relative declaration
-  specifiers use NodeNext-compatible `.js` paths.
+  specifiers use NodeNext-compatible `.js` paths. They are emitted by a second,
+  web-resolution `tsc` pass (`tsconfig.build.web.json`) and typed from the
+  seam's own vendored declarations in `src/primitives/types`, so nothing under
+  `dist/node` mentions `react-native`. The build drops every native module a
+  `.web` sibling shadows from that tree for the same reason.
 - The `react-native` condition points at `dist/**`, preserving extensionless
   specifiers so Metro and React Native platform resolution can choose native or
   web files.
@@ -396,6 +466,8 @@ The package export map intentionally separates runtime targets:
 - Video-editor panels: [src/video-editor/README.md](src/video-editor/README.md)
 - Workflow builder component: [src/workflow/README.md](src/workflow/README.md)
 - Browser tests: [tests/browser/storybook.spec.ts](tests/browser/storybook.spec.ts)
+- Story visual/ARIA snapshot sweep:
+  [tests/browser/snapshots.spec.ts](tests/browser/snapshots.spec.ts)
 - Repository automation: [xtask/README.md](xtask/README.md)
 - Shared component protocol:
   [docs/protocol/shared-ui-components.md](docs/protocol/shared-ui-components.md)

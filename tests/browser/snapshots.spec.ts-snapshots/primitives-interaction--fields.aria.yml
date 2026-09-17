@@ -1,0 +1,7 @@
+- heading "Text input" [level=1]
+- textbox "Single line":
+  - /placeholder: Type here
+- text: value key none selection none submitted none
+- textbox "Multi line":
+  - /placeholder: Several lines
+- text: grew 0

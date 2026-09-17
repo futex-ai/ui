@@ -1,0 +1,18 @@
+- 'button /trigger: Schedule · daily \d+:\d+/': /trigger Schedule · daily \d+:\d+/
+- text: success
+- 'button "code: Collect signals"': code Collect signals
+- text: success
+- 'button "agent: Draft candidate tweets"': agent Draft candidate tweets
+- text: success
+- 'button "branch: Quality gate · score ≥ 0.6, Error"': branch Quality gate · score ≥ 0.6
+- text: score ≥ 0.6
+- 'button "app: Create review outcomes"': app Create review outcomes
+- text: failure
+- 'button "app: Post failure alert · #ops"': "app Post failure alert · #ops"
+- text: score < 0.6
+- 'button "code: Record skipped signal"': code Record skipped signal
+- list "Edge legend":
+  - listitem: success
+  - listitem: cond
+  - listitem: failure
+  - listitem: always

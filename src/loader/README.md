@@ -96,7 +96,7 @@ range, so screen readers announce "42%" rather than "0.42". An indeterminate
 `ProgressBar` publishes a busy state and no value, which is what ARIA specifies
 for unknown progress.
 
-**Gotcha:** react-native-web does **not** translate `accessibilityValue` into
+**Gotcha:** the web backend does **not** translate `accessibilityValue` into
 the ARIA range attributes. Setting it alone leaves a web screen reader with a
 `progressbar` carrying no value at all. Both meters therefore emit the RN
 payload _and_ the literal `aria-value*` DOM props, built together in

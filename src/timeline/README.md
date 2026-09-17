@@ -135,7 +135,7 @@ same as a two-minute one.
 ## Interaction and accessibility
 
 - **The ruler is a slider.** It carries `role="slider"` with literal
-  `aria-value*` props — react-native-web does not translate `accessibilityValue`
+  `aria-value*` props — the web backend does not translate `accessibilityValue`
   into ARIA, so both are emitted (WCAG 2.1 — 4.1.2 Name, Role, Value, A). Arrow
   keys step one frame, Shift+arrows one second, Page keys ten, and Home/End jump
   to the ends (2.1.1 Keyboard, A).
@@ -158,7 +158,7 @@ same as a two-minute one.
   Use of Color, A).
 - **Header toggles say what they do.** A mute button is named "Mute Dialogue"
   and becomes "Unmute Dialogue" once pressed, rather than relying on an ARIA
-  state react-native-web does not reliably emit.
+  state the web backend does not emit.
 - **Tone is never an edge bar.** Clips carry tone through a tinted fill, a
   uniform border, and the label colour. Selection thickens that same uniform
   border and adds an inset ring.

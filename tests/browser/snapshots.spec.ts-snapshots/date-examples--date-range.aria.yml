@@ -1,0 +1,9 @@
+- text: Current period
+- textbox "Current period start":
+  - /placeholder: Start
+  - text: /1 Apr \d+/
+- text: →
+- textbox "Current period end":
+  - /placeholder: End
+  - text: /\d+ Mar \d+/
+- text: Both endpoints are independent calendars.

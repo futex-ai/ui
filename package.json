@@ -1,7 +1,7 @@
 {
   "name": "@firna/ui",
   "version": "3.0.0",
-  "description": "Shared React Native and React Native Web UI primitives for Firna apps.",
+  "description": "Shared React Native and web UI primitives for Firna apps.",
   "private": false,
   "type": "module",
   "packageManager": "npm@11.7.0",
@@ -20,7 +20,6 @@
     "react",
     "react-dom",
     "react-native",
-    "react-native-web",
     "ui"
   ],
   "main": "./dist/node/index.js",
@@ -213,18 +212,20 @@
     }
   },
   "scripts": {
-    "build": "rm -rf dist && tsc --project tsconfig.build.json && node scripts/prepare-node-esm.mjs",
-    "clean": "rm -rf dist storybook-static playwright-report test-results",
+    "build": "rm -rf dist .dist-web-types && tsc --project tsconfig.build.json && tsc --project tsconfig.build.web.json && node scripts/prepare-node-esm.mjs",
+    "clean": "rm -rf dist .dist-web-types storybook-static playwright-report test-results",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md,yml,yaml}\"",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build",
     "storybook:native": "npm run build && cd storybook-native && npm start -- --clear",
     "test": "node --import tsx --test tests/unit/*.test.ts",
+    "test:dist": "node --import tsx --test tests/unit/distDeclarations.test.ts",
     "test:browser": "playwright test",
     "test:package": "node scripts/package-smoke.mjs",
     "typecheck": "tsc --noEmit --project tsconfig.json",
-    "verify": "npm run format:check && npm run test && npm run typecheck && npm run build && npm run test:package && npm run storybook:build && npm run test:browser"
+    "typecheck:web": "tsc --noEmit --project tsconfig.web.json",
+    "verify": "npm run format:check && npm run test && npm run typecheck && npm run typecheck:web && npm run build && npm run test:dist && npm run test:package && npm run storybook:build && npm run test:browser"
   },
   "peerDependencies": {
     "@gorhom/bottom-sheet": ">=5 <6",
@@ -235,8 +236,7 @@
     "react-native": ">=0.83 <0.86",
     "react-native-gesture-handler": ">=2.20 <3",
     "react-native-reanimated": ">=3.16 <5",
-    "react-native-svg": ">=15 <16",
-    "react-native-web": ">=0.21 <0.22"
+    "react-native-svg": ">=15 <16"
   },
   "peerDependenciesMeta": {
     "@gorhom/bottom-sheet": {
@@ -259,13 +259,14 @@
     },
     "react-native-svg": {
       "optional": true
-    },
-    "react-native-web": {
-      "optional": true
     }
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/noto-sans-math": "^5.3.0",
+    "@fontsource/noto-sans-symbols-2": "^5.3.0",
     "@gorhom/bottom-sheet": "^5.2.14",
     "@playwright/test": "^1.57.0",
     "@storybook/addon-a11y": "^10.4.6",
@@ -283,7 +284,6 @@
     "react-native-gesture-handler": "^2.31.2",
     "react-native-reanimated": "4.3.1",
     "react-native-svg": "^15.15.5",
-    "react-native-web": "^0.21.2",
     "react-native-worklets": "0.8.3",
     "storybook": "^10.1.6",
     "tsx": "^4.21.0",

@@ -1,0 +1,5 @@
+- text: Year ends *
+- textbox "Year ends":
+  - /placeholder: Select a date
+  - text: /1 Jan \d+/
+- text: /Choose a date on or before \d+ Dec \d+\. The year end must fall within the current period\./

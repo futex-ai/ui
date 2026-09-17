@@ -14,7 +14,22 @@ type SvgProps = React.SVGProps<SVGSVGElement> & {
   size?: number | string;
 };
 
-type SvgChildProps = React.SVGProps<SVGElement>;
+/**
+ * Props `react-native-svg` accepts that are not DOM SVG attributes, but that
+ * components still pass: the transform pair used to spin the progress ring, and
+ * a `strokeDasharray` given as a number array. React forwards them to the DOM
+ * node as-is (`originx`, `rotation`, and a comma-joined dash array), which is
+ * what the current backend already renders, so they are typed rather than cast.
+ */
+type NativeSvgProps = {
+  originX?: number | string;
+  originY?: number | string;
+  rotation?: number | string;
+  strokeDasharray?: string | number | readonly number[];
+};
+
+type SvgChildProps = Omit<React.SVGProps<SVGElement>, "strokeDasharray"> &
+  NativeSvgProps;
 
 // Collapse a React Native style value into a single plain object the DOM can
 // take. `Animated.createAnimatedComponent` ALWAYS hands its child a `style`

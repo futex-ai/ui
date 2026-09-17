@@ -1,0 +1,21 @@
+- text: Lanes
+- group "Keyframe lanes":
+  - text: Opacity
+  - button /Opacity, \d+:\d+:\d+:\d+, 0 %, bezier/
+  - button /Opacity, \d+:\d+:\d+:\d+, \d+ %, linear/
+  - button /Opacity, \d+:\d+:\d+:\d+, \d+ %, bezier/
+  - button /Opacity, \d+:\d+:\d+:\d+, 0 %, linear/
+  - text: Scale
+  - button /Scale, \d+:\d+:\d+:\d+, \d+ %, bezier/
+  - button /Scale, \d+:\d+:\d+:\d+, \d+ %, linear/
+- text: Curves
+- group "Keyframe curves":
+  - text: Opacity
+  - button /Opacity, \d+:\d+:\d+:\d+, 0 %, bezier/
+  - button /Opacity, \d+:\d+:\d+:\d+, \d+ %, linear/
+  - button /Opacity, \d+:\d+:\d+:\d+, \d+ %, bezier/
+  - button /Opacity, \d+:\d+:\d+:\d+, 0 %, linear/
+  - text: Scale
+  - button /Scale, \d+:\d+:\d+:\d+, \d+ %, bezier/
+  - button /Scale, \d+:\d+:\d+:\d+, \d+ %, linear/
+- text: Nothing animated No animated properties

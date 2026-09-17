@@ -1,0 +1,3 @@
+- text: Year ends
+- 'button /Year ends: \d+ Mar \d+/'
+- text: Tap to open the spinning day/month/year wheel.

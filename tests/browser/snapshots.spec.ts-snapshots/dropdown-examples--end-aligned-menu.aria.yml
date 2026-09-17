@@ -1,0 +1,2 @@
+- text: End-aligned menu With align="end" the menu’s right edge lines up with the trigger, so a wide menu extends leftward from a right-aligned control instead of overflowing.
+- button "Open end aligned menu": Account actions

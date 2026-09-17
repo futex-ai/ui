@@ -119,7 +119,7 @@ export function TimelineRuler({
   );
 
   // Seeking runs off the responder rather than `Pressable`'s `onPress`, for two
-  // reasons: react-native-web's press event carries no `locationX` (so a press
+  // reasons: the web backend's press event carries no `locationX` (so a press
   // handler cannot tell *where* the ruler was clicked), and the responder gives
   // continuous drag-scrubbing for free on both platforms.
   const handleSeekAt = useCallback(

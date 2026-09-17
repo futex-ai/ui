@@ -1,0 +1,2 @@
+- heading "Clamped text" [level=2]
+- text: A single line of text that is far too long for the box it sits in, so the backend has to clamp it. A single line of text that is far too long for the box it sits in, so the backend has to clamp it. A single line of text that is far too long for the box it sits in, so the backend has to clamp it.

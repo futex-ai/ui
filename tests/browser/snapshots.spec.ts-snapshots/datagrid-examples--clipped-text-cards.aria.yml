@@ -1,0 +1,27 @@
+- grid "Content":
+  - row "Campaign performance summary Resize Campaign performance summary Owner Resize Owner Notes Resize Notes Created Resize Created":
+    - columnheader "Campaign performance summary Resize Campaign performance summary":
+      - text: ""
+      - separator "Resize Campaign performance summary"
+    - columnheader "Owner Resize Owner":
+      - text: ""
+      - separator "Resize Owner"
+    - columnheader "Notes Resize Notes":
+      - text: ""
+      - separator "Resize Notes"
+    - columnheader "Created Resize Created":
+      - text: ""
+      - separator "Resize Created"
+  - rowgroup:
+    - row /1 Q3 lifecycle relaunch Cal Waiting on legal review before the second send goes out\. \d+ Jun \d+/:
+      - rowheader "1"
+      - gridcell "Q3 lifecycle relaunch"
+      - gridcell "Cal"
+      - gridcell "Waiting on legal review before the second send goes out."
+      - gridcell /\d+ Jun \d+/
+    - row /2 Docs refresh Priya Short note\. 2 Jul \d+/:
+      - rowheader "2"
+      - gridcell "Docs refresh"
+      - gridcell "Priya"
+      - gridcell "Short note."
+      - gridcell /2 Jul \d+/

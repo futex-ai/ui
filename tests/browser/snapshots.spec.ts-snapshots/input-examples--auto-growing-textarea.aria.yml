@@ -1,0 +1,5 @@
+- text: Release notes
+- textbox "Release notes":
+  - /placeholder: Type a few lines...
+  - text: Two lines to start. Delete to shrink.
+- text: Starts at two rows, grows with content up to six, then scrolls.

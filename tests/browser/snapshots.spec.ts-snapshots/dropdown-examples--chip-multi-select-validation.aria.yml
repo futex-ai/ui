@@ -1,0 +1,5 @@
+- text: Linked books
+- button "How linked books scope a report": Linked books scope the report to specific ledgers. Leave it empty to include every active book in the organisation.
+- combobox "Linked books"
+- alert: Select at least one book to continue.
+- text: Start typing to link the books this report should cover.

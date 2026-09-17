@@ -1,0 +1,8 @@
+- text: Click or focus + Enter a person to open them
+- list:
+  - listitem:
+    - button "Open Calum Moore": /Calum Moore Salary · monthly · £\d+,\d+\.\d+/
+  - listitem:
+    - button "Open Peter Parker": Peter Parker Salary · monthly · gross pay needed First full month
+  - listitem:
+    - button "Open Aisha Webb": /Aisha Webb Salary · monthly · £\d+,\d+\.\d+/

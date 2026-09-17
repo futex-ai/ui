@@ -1,0 +1,8 @@
+- text: VAT number
+- button "More information about VAT number": Your VAT registration number identifies your business to the tax authority. Leave it blank if you are not VAT registered.
+- textbox "VAT number":
+  - /placeholder: GB123456789
+- text: /9 or \d+ digits, no spaces\. API key/
+- button "How to find your API key": Create a key in Settings → Developers. Treat it like a password — it grants full access to your account.
+- textbox "API key":
+  - /placeholder: sk_live_…

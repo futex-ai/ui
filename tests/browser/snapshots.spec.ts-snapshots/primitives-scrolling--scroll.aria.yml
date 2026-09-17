@@ -1,0 +1,5 @@
+- heading "Scroll view" [level=1]
+- text: /Band 0 Band 1 Band 2 Band 3 Band 4 Band 5 Band 6 Band 7 Band 8 Band 9 Band \d+ Band \d+/
+- button /Scroll to \d+/
+- button "Scroll to end"
+- text: offset 0 384x584

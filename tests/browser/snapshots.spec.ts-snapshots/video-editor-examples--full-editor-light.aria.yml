@@ -1,0 +1,122 @@
+- group "Media bin":
+  - text: ""
+  - button "Show media as a grid"
+  - button "Show media as a list"
+  - textbox "Search media"
+  - text: Footage
+  - button /Harbour wide, video, 0:\d+/
+  - button /Interview A, video, 0:\d+, selected/
+  - button /Cutaway, video, 0:\d+/
+  - button /Drone pass, video, 0:\d+/
+  - text: Audio
+  - button /Music bed, audio, 2:\d+/
+  - button /VO intro, audio, 0:\d+/
+  - text: Graphics
+  - button "Logo card, image"
+- group "Program monitor":
+  - img "Program output"
+  - text: /\d+×\d+ · 30fps/
+- group "Transport":
+  - button "Jump to start"
+  - button "Step back one frame"
+  - button "Play"
+  - button "Step forward one frame"
+  - button "Jump to end"
+  - text: /\d+:\d+:\d+:\d+/
+  - slider "Seek"
+  - text: /\d+:\d+:\d+:\d+/
+  - button "Mark in"
+  - button "Mark out"
+  - button "Loop"
+  - button "Playback speed, 1×"
+  - group "Audio levels":
+    - meter /Left, −\d+\.\d+ dB/
+    - meter /Right, −\d+\.\d+ dB/
+  - button "Export"
+- group "Clip properties":
+  - text: Interview A
+  - button "Transform section" [expanded]
+  - text: Position X
+  - textbox "Position X": "0"
+  - button "Start keyframing Position X"
+  - text: Position Y
+  - textbox "Position Y": "0"
+  - button "Start keyframing Position Y"
+  - text: Scale
+  - textbox "Scale": /\d+/
+  - button "Start keyframing Scale"
+  - text: Opacity
+  - textbox "Opacity": /\d+/
+  - button "Stop keyframing Opacity"
+  - button "Look section" [expanded]
+  - text: Blend
+  - button "Blend, Normal"
+  - button "Start keyframing Blend"
+  - text: Tint
+  - 'button "Tint, #4f7864, selected"'
+  - 'button /Tint, #\d+/'
+  - 'button "Tint, #a84f45"'
+  - 'button "Tint, #315f96"'
+  - 'button "Tint, #1c1f1d"'
+  - button "Start keyframing Tint"
+  - text: Note
+  - textbox "Note":
+    - /placeholder: Add a note
+  - button "Start keyframing Note"
+- group "Effects":
+  - text: ""
+  - button "Add an effect"
+  - list "Effects":
+    - listitem:
+      - button "Reorder Colour balance"
+      - button "Colour balance parameters"
+      - switch "Disable Colour balance" [checked]
+      - button "Remove Colour balance"
+      - text: Temp
+      - textbox "Temp": /\d+/
+      - text: Tint
+      - textbox "Tint": "-6"
+    - listitem:
+      - button "Reorder Gaussian blur"
+      - button "Gaussian blur parameters"
+      - switch "Enable Gaussian blur"
+      - button "Remove Gaussian blur"
+    - listitem:
+      - button "Reorder Vignette"
+      - button "Vignette parameters"
+      - switch "Disable Vignette" [checked]
+      - button "Remove Vignette"
+      - text: Amount
+      - textbox "Amount": /\d+/
+- group "Keyframes":
+  - text: Opacity
+  - button /Opacity, \d+:\d+:\d+:\d+, 0 %, bezier/
+  - button /Opacity, \d+:\d+:\d+:\d+, \d+ %, linear/
+  - button /Opacity, \d+:\d+:\d+:\d+, \d+ %, bezier/
+  - button /Opacity, \d+:\d+:\d+:\d+, 0 %, linear/
+  - text: Scale
+  - button /Scale, \d+:\d+:\d+:\d+, \d+ %, bezier/
+  - button /Scale, \d+:\d+:\d+:\d+, \d+ %, linear/
+- group "Sequence":
+  - text: Titles
+  - button "Hide Titles"
+  - button "Lock Titles"
+  - text: Picture
+  - button "Hide Picture"
+  - button "Lock Picture"
+  - text: Dialogue
+  - button "Mute Dialogue"
+  - button "Solo Dialogue"
+  - button "Lock Dialogue"
+  - text: Music
+  - button "Mute Music"
+  - button "Solo Music"
+  - button "Lock Music"
+  - slider "Playhead"
+  - button /Opening card, Titles, \d+:\d+:\d+:\d+ to \d+:\d+:\d+:\d+/: /Opening card 0:\d+/
+  - button /Harbour wide, Picture, \d+:\d+:\d+:\d+ to \d+:\d+:\d+:\d+/: /Harbour wide 0:\d+/
+  - button /Interview A, Picture, \d+:\d+:\d+:\d+ to \d+:\d+:\d+:\d+, selected/: /Interview A 0:\d+/
+  - button /Cutaway, Picture, \d+:\d+:\d+:\d+ to \d+:\d+:\d+:\d+/: /Cutaway 0:\d+/
+  - button /VO intro, Dialogue, \d+:\d+:\d+:\d+ to \d+:\d+:\d+:\d+/: /VO intro 0:\d+/
+  - button /Interview audio, Dialogue, \d+:\d+:\d+:\d+ to \d+:\d+:\d+:\d+/: /Interview audio 0:\d+/
+  - button /Music bed, Music, \d+:\d+:\d+:\d+ to \d+:\d+:\d+:\d+, locked/: /Music bed 0:\d+/

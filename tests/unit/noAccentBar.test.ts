@@ -39,6 +39,16 @@ const LEFT_BORDER_PATTERN =
   /border(?:Left|Start|InlineStart)(?:Width|Color|Style)?\b|border-(?:left|start|inline-start)(?:-(?:width|color|style))?\b/;
 
 /**
+ * A *declaration* of a left-edge key rather than a use of one. The vendored
+ * React Native style types under `src/primitives/types/` have to declare
+ * `borderLeftWidth` and friends for the style objects they describe. An
+ * optional property declaration paints nothing, and a style object literal
+ * cannot be spelled with `?:`, so these lines can never be an accent bar.
+ */
+const OPTIONAL_PROPERTY_DECLARATION =
+  /border(?:Left|Start|InlineStart)(?:Width|Color|Style)?\?:/;
+
+/**
  * The sole sanctioned exception: the rich-text blockquote rule. A quote block's
  * left rule is markdown semantics — it is what a blockquote *is*, it matches the
  * approved mockup, and it is a neutral `border2` grey on an unfilled block
@@ -95,7 +105,10 @@ function leftBorderOccurrences(file: string, absolutePath: string) {
   readFileSync(absolutePath, "utf8")
     .split("\n")
     .forEach((text, index) => {
-      if (LEFT_BORDER_PATTERN.test(text)) {
+      if (
+        LEFT_BORDER_PATTERN.test(text) &&
+        !OPTIONAL_PROPERTY_DECLARATION.test(text)
+      ) {
         occurrences.push({ file, line: index + 1, text: text.trim() });
       }
     });

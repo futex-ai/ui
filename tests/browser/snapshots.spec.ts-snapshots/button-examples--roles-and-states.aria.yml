@@ -1,0 +1,14 @@
+- tablist "Settings sections":
+  - tab "General" [selected]
+  - tab "Apps"
+  - tab "Secrets"
+- checkbox "Email notifications"
+- switch "Compact rows" [checked]
+- radiogroup "Accent":
+  - radio "Sage" [checked]
+  - radio "Slate"
+  - radio "Clay"
+- button "Pin"
+- menu "Row actions":
+  - menuitem "Duplicate"
+  - menuitem "Archive"

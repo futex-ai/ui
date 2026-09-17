@@ -103,7 +103,7 @@ export function LevelMeter({
             key={index}
             style={[styles.meterChannel, { height: metrics.meterThickness }]}
             // `meter` is a web ARIA role missing from React Native's `Role`
-            // union; react-native-web forwards the literal, and native keeps the
+            // union; the web backend forwards the literal, and native keeps the
             // accessible label instead.
             {...(web
               ? ({

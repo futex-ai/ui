@@ -1,0 +1,10 @@
+- text: "app Posted to #social"
+- img "Completed"
+- text: /app Classifying \d+ tickets/
+- img "Running"
+- text: app Awaiting review
+- img "Waiting"
+- text: app Condition references unknown field
+- img "Error"
+- text: app Below score threshold
+- img "Skipped"

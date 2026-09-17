@@ -100,7 +100,7 @@ test("hit slop presses the button from outside its visible box", async ({
   await expect(readout).toHaveText("presses: 0");
 
   // 10px to the left of the visible edge is outside the box and inside the
-  // 14px slop. react-native-web's Pressable ignores `hitSlop` entirely, so
+  // 14px slop. The web backend's Pressable ignores `hitSlop` entirely, so
   // without the expander this click lands on the surface and nothing happens.
   await page.mouse.click(box.x - 10, box.y + box.height / 2);
   await expect(readout).toHaveText("presses: 1");

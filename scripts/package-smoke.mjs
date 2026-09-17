@@ -4,6 +4,7 @@ import {
   mkdtemp,
   mkdir,
   readFile,
+  readdir,
   rm,
   symlink,
   writeFile,
@@ -29,12 +30,13 @@ const subpaths = Object.keys(packageJson.exports).map((key) =>
 );
 
 assert.equal(packageJson.name, packageName);
-const WEB_PEER_DEPENDENCIES = [
-  "lucide-react",
-  "react",
-  "react-dom",
-  "react-native-web",
-];
+/**
+ * The complete web peer set. A web consumer installs these three and nothing
+ * else: the platform seam's `.web` files render through the library's own DOM
+ * backend, so `react-native`, `react-native-web`, `react-native-svg` and
+ * `lucide-react-native` are never resolved by `dist/node`.
+ */
+const WEB_PEER_DEPENDENCIES = ["lucide-react", "react", "react-dom"];
 for (const peerName of WEB_PEER_DEPENDENCIES) {
   assert.ok(
     peerName in packageJson.peerDependencies,
@@ -74,9 +76,11 @@ try {
 
   const viteConsumerRoot = join(smokeRoot, "vite-consumer");
   await prepareConsumer(viteConsumerRoot, tarballPath);
-  // Only the web peer set is linked: proving the web build bundles without
-  // `react-native`, `react-native-svg`, or `lucide-react-native` installed is
-  // the point of this consumer.
+  // Only the web peer set is linked, and only those three are externalised, so
+  // the library itself is bundled into the consumer's own chunk. Every module
+  // `dist/node` reaches has to resolve from those three alone: an import of
+  // `react-native`, `react-native-web`, `react-native-svg` or
+  // `lucide-react-native` anywhere in the tree fails the Rollup resolve.
   await linkPeerDependencies(viteConsumerRoot, WEB_PEER_DEPENDENCIES);
   await writeImportSmoke(viteConsumerRoot, subpaths);
   await writeViteConfig(viteConsumerRoot);
@@ -85,6 +89,7 @@ try {
     [resolve(workspaceRoot, "node_modules", "vite", "bin", "vite.js"), "build"],
     { cwd: viteConsumerRoot },
   );
+  await assertViteBundledLibrary(viteConsumerRoot);
 } finally {
   await rm(smokeRoot, { force: true, recursive: true });
 }
@@ -159,6 +164,38 @@ function assertPackedFiles(files) {
   }
 }
 
+/**
+ * Asserts the Vite consumer bundled the library rather than externalising it.
+ *
+ * `external` names only the three web peers, so `@firna/ui` is pulled into the
+ * consumer's own chunk and every module it reaches has to resolve. Without this
+ * check a stray `external` entry (or a future Vite default) could let the build
+ * pass while the library was never loaded at all.
+ */
+async function assertViteBundledLibrary(consumerRoot) {
+  const outDir = join(consumerRoot, "dist");
+  const chunks = await Promise.all(
+    (await readdir(outDir, { recursive: true, withFileTypes: true }))
+      .filter((entry) => entry.isFile() && entry.name.endsWith(".js"))
+      .map((entry) => readFile(join(entry.parentPath, entry.name), "utf8")),
+  );
+  assert.ok(chunks.length > 0, "the Vite consumer emitted a JavaScript chunk");
+  const bundle = chunks.join("\n");
+  // A string literal only the DOM backend defines (`dom/css.ts`), so its
+  // presence means the library's own modules were bundled and not left behind
+  // an import of `@firna/ui`.
+  assert.match(
+    bundle,
+    /firna-ui-dom-backend/,
+    "the bundle contains the library's DOM backend",
+  );
+  assert.doesNotMatch(
+    bundle,
+    /(from|import|require\()\s*["']@firna\/ui/,
+    "the library is bundled, not left as an external import",
+  );
+}
+
 async function writeImportSmoke(consumerRoot, importNames) {
   const lines = importNames.map(
     (name, index) => `import * as mod${index} from ${JSON.stringify(name)};
@@ -204,7 +241,6 @@ async function writeViteConfig(consumerRoot) {
         /^lucide-react(\\/.*)?$/,
         /^react(\\/.*)?$/,
         /^react-dom(\\/.*)?$/,
-        /^react-native-web(\\/.*)?$/,
       ],
       input: "import-smoke.mjs",
     },

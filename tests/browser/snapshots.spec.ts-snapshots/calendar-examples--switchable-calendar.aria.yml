@@ -1,0 +1,17 @@
+- button "Previous"
+- button "Next"
+- button "Today"
+- text: /June \d+/
+- radiogroup "Calendar view":
+  - radio "Month" [checked]
+  - radio "Week"
+  - radio "Day"
+  - radio "Agenda"
+- text: /Sun Mon Tue Wed Thu Fri Sat \d+ 1 2 3 4 5 6 7 8 9 \d+ \d+ \d+ \d+ \d+ \d+ \d+ \d+ \+1 more \d+ \d+ \d+/
+- button "Team offsite, all day"
+- button /1:1, 3:\d+ PM/
+- button /Standup, 9:\d+ AM/
+- button /Design review, \d+:\d+ AM/
+- button /Client call, 2:\d+ PM/
+- button /Release, 6:\d+ PM/
+- text: /\d+ \d+ \d+ \d+ \d+ \d+ \d+ \d+ \d+ \d+ 1 2 3 4/

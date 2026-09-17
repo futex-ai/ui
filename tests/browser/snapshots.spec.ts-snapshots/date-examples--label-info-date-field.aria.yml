@@ -1,0 +1,14 @@
+- text: Year ends
+- button "More information about Year ends": Your financial year end is the last day of your accounting period. It sets the date range every report defaults to.
+- textbox "Year ends":
+  - /placeholder: Select a date
+  - text: /\d+ Mar \d+/
+- text: /Pick a day or type it as \d+ Mar \d+\. Comparison period/
+- button "How the comparison period is used": Reports compare the current period against this earlier range. Pick the equivalent period last year for a like-for-like view.
+- textbox "Comparison period start":
+  - /placeholder: Start
+  - text: /1 Apr \d+/
+- text: →
+- textbox "Comparison period end":
+  - /placeholder: End
+  - text: /\d+ Mar \d+/

@@ -1,0 +1,16 @@
+- text: Drag a chat between the two sections, or grab one with Space. Workspace
+- list "Workspace":
+  - listitem:
+    - button "Reorder Roadmap review"
+    - text: Roadmap review
+  - listitem:
+    - button "Reorder Hiring loop"
+    - text: Hiring loop
+  - listitem:
+    - button /Reorder Incident \d+/
+    - text: /Incident \d+/
+- text: Personal
+- list "Personal":
+  - listitem:
+    - button "Reorder Scratch pad"
+    - text: Scratch pad

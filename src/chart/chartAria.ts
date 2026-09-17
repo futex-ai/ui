@@ -1,8 +1,8 @@
 /**
- * ARIA state that react-native-web does not emit on its own.
+ * ARIA state that the web backend does not emit on its own.
  *
- * RNW translates `accessibilityRole` into `role`, but it does **not** turn
- * `accessibilityState` into the matching `aria-*` attributes for every state.
+ * It translates `accessibilityRole` into `role`, but it does **not** turn
+ * `accessibilityState` into the matching `aria-*` attributes at all.
  * A `role="switch"` with no `aria-checked` and a `role="button"` with no
  * `aria-expanded` are both broken for a screen reader: the role promises a
  * state the element never publishes. Native reads `accessibilityState`

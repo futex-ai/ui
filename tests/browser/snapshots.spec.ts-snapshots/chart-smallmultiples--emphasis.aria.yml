@@ -1,0 +1,21 @@
+- group "Sessions by region, APAC emphasised":
+  - text: APAC is the story
+  - img
+  - img
+  - text: /0 \d+,\d+ \d+,\d+ \d+,\d+ \d+,\d+ Jan Mar May/
+  - 'button /Jan\. EU: \d+,\d+\. US: \d+,\d+\. APAC: \d+,\d+\. LATAM: \d+/'
+  - 'button /Feb\. EU: \d+,\d+\. US: \d+,\d+\. APAC: \d+,\d+\. LATAM: \d+,\d+/'
+  - 'button /Mar\. EU: \d+,\d+\. US: \d+,\d+\. APAC: \d+,\d+\. LATAM: \d+,\d+/'
+  - 'button /Apr\. EU: \d+,\d+\. US: \d+,\d+\. APAC: \d+,\d+\. LATAM: \d+,\d+/'
+  - 'button /May\. EU: \d+,\d+\. US: \d+,\d+\. APAC: \d+,\d+\. LATAM: \d+,\d+/'
+  - 'button /Jun\. EU: \d+,\d+\. US: \d+,\d+\. APAC: \d+,\d+\. LATAM: \d+,\d+/'
+  - list:
+    - listitem:
+      - switch "EU" [checked]
+    - listitem:
+      - switch "US" [checked]
+    - listitem:
+      - switch "APAC" [checked]
+    - listitem:
+      - switch "LATAM" [checked]
+  - button "Show data table"

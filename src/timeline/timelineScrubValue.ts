@@ -4,7 +4,7 @@
  *
  * A scrub surface is a `slider`, and a slider that publishes no value is
  * useless to a screen-reader user. React Native reads `accessibilityValue` on
- * iOS and Android, but react-native-web does **not** translate it into the ARIA
+ * iOS and Android, but the web backend does **not** translate it into the ARIA
  * range attributes, so the literal `aria-value*` props have to be emitted too.
  * Building both together here keeps them from drifting apart (the same route
  * `progressAccessibility` and `DataGridResizeHandle` take).
@@ -53,7 +53,7 @@ export function scrubAccessibility(
 
 /**
  * Spreadable `role="slider"` for web. `slider` is missing from React Native's
- * `Role` union, though react-native-web forwards the literal to the DOM, so it
+ * `Role` union, though the web backend forwards the literal to the DOM, so it
  * is cast through a spread and emitted only on web. On native the caller keeps
  * `accessibilityRole="adjustable"`, which is the platform's own equivalent.
  */

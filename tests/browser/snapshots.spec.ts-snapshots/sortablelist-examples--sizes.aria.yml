@@ -1,0 +1,33 @@
+- text: sm
+- list "Statuses (sm)":
+  - listitem:
+    - button "Reorder Todo"
+    - text: Todo
+  - listitem:
+    - button "Reorder In progress"
+    - text: In progress
+  - listitem:
+    - button "Reorder In review"
+    - text: In review
+- text: md
+- list "Statuses (md)":
+  - listitem:
+    - button "Reorder Todo"
+    - text: Todo
+  - listitem:
+    - button "Reorder In progress"
+    - text: In progress
+  - listitem:
+    - button "Reorder In review"
+    - text: In review
+- text: lg
+- list "Statuses (lg)":
+  - listitem:
+    - button "Reorder Todo"
+    - text: Todo
+  - listitem:
+    - button "Reorder In progress"
+    - text: In progress
+  - listitem:
+    - button "Reorder In review"
+    - text: In review

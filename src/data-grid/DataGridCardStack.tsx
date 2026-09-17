@@ -137,7 +137,7 @@ export function DataGridCardStack({
           : {};
         return onRowExpand || onContextMenu ? (
           // The list semantics go on a wrapper, not on the pressable itself:
-          // react-native-web resolves the DOM role as `role || accessibilityRole`,
+          // The web backend resolves the DOM role as `role ?? accessibilityRole`,
           // so a `role="listitem"` on the Pressable would win over the button
           // role — and its press responder only presses Spacebar on `button`
           // roles, leaving the card operable by Enter and click but not Space.

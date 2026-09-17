@@ -1,0 +1,7 @@
+- group "Transactions":
+  - text: "Selected 0 transactions Last change: none Drag enabled"
+  - checkbox /Stripe payout, \+GBP \d+,\d+\.\d+/: /Stripe payout txn_1 \+GBP \d+,\d+\.\d+/
+  - checkbox /Cursor Hosting Ltd, -GBP \d+\.\d+/: /Cursor Hosting Ltd txn_2 -GBP \d+\.\d+/
+  - checkbox /Notion Labs Inc, -GBP \d+\.\d+/: /Notion Labs Inc txn_3 -GBP \d+\.\d+/
+  - checkbox /AWS EU-WEST, -GBP \d+\.\d+/: /AWS EU-WEST txn_4 -GBP \d+\.\d+/
+  - checkbox /Trainline, -GBP \d+\.\d+/: /Trainline txn_5 -GBP \d+\.\d+/

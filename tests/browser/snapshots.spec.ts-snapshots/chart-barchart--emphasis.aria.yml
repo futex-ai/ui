@@ -1,0 +1,17 @@
+- group "Revenue by channel, online emphasised":
+  - text: Online is the story
+  - img
+  - img
+  - text: /0 \d+,\d+ [\d,.]+[bkmBKM]+ [\d,.]+[bkmBKM]+ [\d,.]+[bkmBKM]+ Q1 Q2 Q3 Q4/
+  - 'button /Q1\. Direct: \$[\d,.]+[bkmBKM]+\. Partner: \$\d+,\d+\. Online: \$\d+,\d+/'
+  - 'button /Q2\. Direct: \$[\d,.]+[bkmBKM]+\. Partner: \$\d+,\d+\. Online: \$\d+,\d+/'
+  - 'button /Q3\. Direct: \$[\d,.]+[bkmBKM]+\. Partner: \$[\d,.]+[bkmBKM]+\. Online: \$\d+,\d+/'
+  - 'button /Q4\. Direct: \$[\d,.]+[bkmBKM]+\. Partner: \$[\d,.]+[bkmBKM]+\. Online: \$\d+,\d+/'
+  - list:
+    - listitem:
+      - switch "Direct" [checked]
+    - listitem:
+      - switch "Partner" [checked]
+    - listitem:
+      - switch "Online" [checked]
+  - button "Show data table"

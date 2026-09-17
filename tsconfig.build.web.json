@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    "emitDeclarationOnly": true,
+    "moduleSuffixes": [".web", ""],
+    "outDir": ".dist-web-types",
+    "sourceMap": false
+  }
+}

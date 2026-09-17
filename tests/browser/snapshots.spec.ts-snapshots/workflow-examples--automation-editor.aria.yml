@@ -1,0 +1,6 @@
+- 'button "trigger: When Status = Approved"': trigger When Status = Approved
+- text: on match
+- 'button "app: slack.post_message · #social"'
+- text: success
+- 'button "app: Set Status = Published"': app Set Status = Published
+- button "Add step"

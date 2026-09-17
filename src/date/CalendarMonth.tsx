@@ -54,7 +54,7 @@ const isWeb = Platform.OS === "web";
 // rather than widening the View's typing.
 const gridcellRole = { role: "gridcell" } as unknown as { role?: undefined };
 
-/** A keydown event as react-native-web hands it to a Pressable on web. */
+/** A keydown event as the web backend hands it to a Pressable. */
 type CalendarKeyEvent = {
   key?: string;
   nativeEvent?: { key?: string };
@@ -617,8 +617,8 @@ function DayButton({
   // Roving tabindex: only the active cell is in the Tab order; arrow keys move
   // focus across the rest. Disabled cells are never tabbable.
   const tabIndex = disabled ? -1 : isActive ? 0 : -1;
-  // RNW eats a forwarded `onKeyDown` on a TextInput but honours it on a
-  // Pressable (the Switch/RadioCard pattern), so wire arrow keys there on web.
+  // The web backend honours a forwarded `onKeyDown` on a Pressable (the
+  // Switch/RadioCard pattern), so wire arrow keys there on web.
   const keyProps = isWeb ? { onKeyDown: onKey } : null;
   const button = (
     <Pressable

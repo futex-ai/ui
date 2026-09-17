@@ -5,8 +5,8 @@
  * `react-native` directly, so the platform backend is decided in exactly one
  * place. Metro resolves this file on iOS and Android; the `.web` sibling
  * resolves on web (Metro web, the `dist/node` build, and Storybook) and
- * delegates to `react-native-web` so web consumers never install or alias the
- * `react-native` package.
+ * delegates to the library's own DOM backend (`./dom`), so a web consumer
+ * installs neither `react-native` nor `react-native-web` and aliases nothing.
  *
  * The export list is an explicit allowlist mirrored by `reactNative.web.ts`; a
  * unit test keeps the two in sync. Add a name here only when a component needs

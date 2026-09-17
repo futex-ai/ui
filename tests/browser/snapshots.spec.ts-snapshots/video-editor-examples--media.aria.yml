@@ -1,0 +1,26 @@
+- group "Media bin":
+  - text: ""
+  - button "Show media as a grid"
+  - button "Show media as a list"
+  - textbox "Search media"
+  - text: Footage
+  - button /Harbour wide, video, 0:\d+/
+  - button /Interview A, video, 0:\d+, selected/
+  - button /Cutaway, video, 0:\d+/
+  - button /Drone pass, video, 0:\d+/
+  - text: Audio
+  - button /Music bed, audio, 2:\d+/
+  - button /VO intro, audio, 0:\d+/
+  - text: Graphics
+  - button "Logo card, image"
+- group "Media bin, list view":
+  - text: List view Footage
+  - button /Harbour wide, video, 0:\d+/: /Harbour wide 0:\d+/
+  - button /Interview A, video, 0:\d+/: /Interview A 0:\d+/
+  - button /Cutaway, video, 0:\d+/: /Cutaway 0:\d+/
+  - button /Drone pass, video, 0:\d+/: /Drone pass 0:\d+/
+  - text: Audio
+  - button /Music bed, audio, 2:\d+/: /Music bed 2:\d+/
+  - button /VO intro, audio, 0:\d+/: /VO intro 0:\d+/
+  - text: Graphics
+  - button "Logo card, image"

@@ -1,0 +1,8 @@
+- dialog "Reading list":
+  - heading "Reading list" [level=1]
+  - text: Add or remove rows — the sheet eases to the new height.
+  - button "Close Reading list"
+  - button "Add item"
+  - button "Remove item"
+  - text: Item 1 Item 2
+  - button "Done"

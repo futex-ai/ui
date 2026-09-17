@@ -81,7 +81,7 @@ export function rovingTabIndex(index: number, activeIndex: number): 0 | -1 {
   return index === activeIndex ? 0 : -1;
 }
 
-/** A focusable host node, as exposed by a react-native-web component ref. */
+/** A focusable host node, as the web backend exposes through a component ref. */
 export type FocusableRef = { focus?: () => void } | null | undefined;
 
 /** Calls `.focus()` on the ref at `index`, guarding against native/null nodes. */
@@ -96,11 +96,13 @@ export function focusItemAt(
 /**
  * Registers a capture-phase `keydown` listener on `document` while `active`.
  *
- * react-native-web's `TextInput` swallows a forwarded `onKeyDown`, so widgets
- * built around a text field (the combobox, the dropdown selector filter) cannot
- * receive arrow keys through normal props. Listening on `document` in the
- * capture phase — the pattern already proven in the dropdown selector — lets
- * those widgets handle navigation keys reliably on web.
+ * Key events do not escape a text field: the web backend's `TextInput`
+ * delivers a forwarded `onKeyDown` but calls `stopPropagation()` on the way, so
+ * a widget built around a field (the combobox, the dropdown selector filter,
+ * the rich-text editor) cannot receive arrow keys through an ancestor's props.
+ * Listening on `document` in the capture phase — the pattern already proven in
+ * the dropdown selector — lets those widgets handle navigation keys reliably on
+ * web, and it runs before the field's own handler so nothing is handled twice.
  */
 export function useDocumentKeyCapture(
   active: boolean,

@@ -1,0 +1,12 @@
+- group "Revenue bridge":
+  - text: ""
+  - img
+  - img
+  - text: /0 [\d,.]+[bkmBKM]+ [\d,.]+[bkmBKM]+ [\d,.]+[bkmBKM]+ Opening New Expansion Churn Contraction Closing/
+  - 'button /Opening: up \$[\d,.]+[bkmBKM]+, running total \$[\d,.]+[bkmBKM]+/'
+  - 'button /New: up \$[\d,.]+[bkmBKM]+, running total \$[\d,.]+[bkmBKM]+/'
+  - 'button /Expansion: up \$\d+,\d+, running total \$[\d,.]+[bkmBKM]+/'
+  - 'button /Churn: down \$\d+,\d+, running total \$[\d,.]+[bkmBKM]+/'
+  - 'button /Contraction: down \$\d+,\d+, running total \$[\d,.]+[bkmBKM]+/'
+  - 'button /Closing: total \$[\d,.]+[bkmBKM]+/'
+  - button "Show data table"

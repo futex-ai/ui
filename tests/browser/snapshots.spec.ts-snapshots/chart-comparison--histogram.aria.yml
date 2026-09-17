@@ -1,0 +1,14 @@
+- group "Distribution of response times":
+  - text: Response time distribution
+  - img
+  - img
+  - text: /0 5 \d+ \d+ \d+ \d+ \d+–\d+ \d+–\d+ \d+–\d+ \d+–\d+ \d+–\d+ \d+–\d+ \d+–\d+ \d+–\d+/
+  - 'button /\d+–\d+\. Count: 3/'
+  - 'button /\d+–\d+\. Count: \d+/'
+  - 'button /\d+–\d+\. Count: \d+/'
+  - 'button /\d+–\d+\. Count: \d+/'
+  - 'button /\d+–\d+\. Count: \d+/'
+  - 'button /\d+–\d+\. Count: \d+/'
+  - 'button /\d+–\d+\. Count: \d+/'
+  - 'button /\d+–\d+\. Count: \d+/'
+  - button "Show data table"

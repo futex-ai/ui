@@ -1,0 +1,31 @@
+- group "Clip properties":
+  - text: Interview A
+  - button "Transform section" [expanded]
+  - text: Position X
+  - textbox "Position X": "0"
+  - button "Start keyframing Position X"
+  - text: Position Y
+  - textbox "Position Y": "0"
+  - button "Start keyframing Position Y"
+  - text: Scale
+  - textbox "Scale": /\d+/
+  - button "Start keyframing Scale"
+  - text: Opacity
+  - textbox "Opacity": /\d+/
+  - button "Stop keyframing Opacity"
+  - button "Look section" [expanded]
+  - text: Blend
+  - button "Blend, Normal"
+  - button "Start keyframing Blend"
+  - text: Tint
+  - 'button "Tint, #4f7864, selected"'
+  - 'button /Tint, #\d+/'
+  - 'button "Tint, #a84f45"'
+  - 'button "Tint, #315f96"'
+  - 'button "Tint, #1c1f1d"'
+  - button "Start keyframing Tint"
+  - text: Note
+  - textbox "Note":
+    - /placeholder: Add a note
+  - button "Start keyframing Note"
+- group "Empty properties": Nothing selected Nothing selected

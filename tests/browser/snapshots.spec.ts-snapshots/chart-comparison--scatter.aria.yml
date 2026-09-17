@@ -1,0 +1,67 @@
+- group "Latency against throughput by region":
+  - text: Latency vs throughput
+  - img
+  - img
+  - img
+  - text: /0 \d+ \d+ \d+ \d+ 0 \d+ \d+/
+  - 'button /EU: throughput \d+, latency \d+\.\d+/'
+  - 'button /EU: throughput \d+, latency \d+\.\d+/'
+  - 'button /EU: throughput \d+, latency \d+\.\d+/'
+  - 'button /EU: throughput \d+, latency \d+\.\d+/'
+  - 'button /EU: throughput \d+, latency \d+/'
+  - 'button "EU: throughput 3, latency 5.6"'
+  - 'button /EU: throughput \d+, latency \d+\.\d+/'
+  - 'button /EU: throughput 9, latency \d+\.\d+/'
+  - 'button /EU: throughput \d+, latency \d+\.\d+/'
+  - 'button /EU: throughput \d+, latency \d+/'
+  - 'button /EU: throughput \d+, latency \d+\.\d+/'
+  - 'button /EU: throughput \d+, latency \d+\.\d+/'
+  - 'button /EU: throughput \d+, latency \d+\.\d+/'
+  - 'button /EU: throughput \d+, latency \d+\.\d+/'
+  - 'button /EU: throughput \d+, latency \d+/'
+  - 'button /EU: throughput \d+, latency \d+\.\d+/'
+  - 'button /EU: throughput \d+, latency \d+\.\d+/'
+  - 'button /EU: throughput \d+, latency \d+\.\d+/'
+  - 'button /US: throughput \d+, latency \d+/'
+  - 'button /US: throughput \d+, latency \d+\.\d+/'
+  - 'button /US: throughput \d+, latency \d+\.\d+/'
+  - 'button /US: throughput \d+, latency \d+\.\d+/'
+  - 'button /US: throughput \d+, latency \d+\.\d+/'
+  - 'button /US: throughput \d+, latency \d+/'
+  - 'button /US: throughput \d+, latency \d+\.\d+/'
+  - 'button /US: throughput \d+, latency \d+\.\d+/'
+  - 'button /US: throughput \d+, latency \d+\.\d+/'
+  - 'button /US: throughput \d+, latency \d+\.\d+/'
+  - 'button "US: throughput 5, latency 8"'
+  - 'button /US: throughput \d+, latency \d+\.\d+/'
+  - 'button /US: throughput \d+, latency \d+\.\d+/'
+  - 'button /US: throughput \d+, latency \d+\.\d+/'
+  - 'button /US: throughput \d+, latency \d+\.\d+/'
+  - 'button /US: throughput \d+, latency \d+/'
+  - 'button /US: throughput \d+, latency \d+\.\d+/'
+  - 'button /US: throughput \d+, latency \d+\.\d+/'
+  - 'button /APAC: throughput \d+, latency \d+\.\d+/'
+  - 'button /APAC: throughput \d+, latency \d+/'
+  - 'button /APAC: throughput \d+, latency \d+\.\d+/'
+  - 'button /APAC: throughput \d+, latency \d+\.\d+/'
+  - 'button /APAC: throughput \d+, latency \d+\.\d+/'
+  - 'button /APAC: throughput \d+, latency \d+\.\d+/'
+  - 'button /APAC: throughput \d+, latency \d+/'
+  - 'button /APAC: throughput \d+, latency \d+\.\d+/'
+  - 'button /APAC: throughput \d+, latency \d+\.\d+/'
+  - 'button /APAC: throughput \d+, latency \d+\.\d+/'
+  - 'button /APAC: throughput \d+, latency \d+\.\d+/'
+  - 'button /APAC: throughput \d+, latency \d+/'
+  - 'button /APAC: throughput \d+, latency \d+\.\d+/'
+  - 'button /APAC: throughput 1, latency \d+\.\d+/'
+  - 'button /APAC: throughput \d+, latency \d+\.\d+/'
+  - 'button /APAC: throughput 7, latency \d+\.\d+/'
+  - 'button /APAC: throughput \d+, latency \d+/'
+  - 'button /APAC: throughput \d+, latency \d+\.\d+/'
+  - list:
+    - listitem:
+      - switch "EU" [checked]
+    - listitem:
+      - switch "US" [checked]
+    - listitem:
+      - switch "APAC" [checked]

@@ -1,0 +1,29 @@
+- text: Published notes
+- textbox "Published notes":
+  - heading "Release summary" [level=1]
+  - paragraph:
+    - text: Paragraph with
+    - strong: bold
+    - text: ","
+    - emphasis: italic
+    - text: ", strike, and"
+    - code: code
+    - text: .
+  - heading "Decisions" [level=2]
+  - list:
+    - listitem: Keep the editor block-first
+    - listitem: Preserve markdown round trips
+  - list:
+    - listitem: Draft
+    - listitem: Review
+  - list:
+    - listitem:
+      - checkbox "Wire slash menu later"
+      - text: Wire slash menu later
+    - listitem:
+      - checkbox "Ship M1 core" [checked]: x
+      - text: Ship M1 core
+  - blockquote: Quotes keep their own block treatment across soft lines.
+  - code: const status = "ready";
+  - separator
+  - heading "Tail section" [level=3]

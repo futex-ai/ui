@@ -1,0 +1,5 @@
+- text: Email
+- textbox "Email":
+  - /placeholder: you@example.com
+  - text: not-an-email
+- alert: Enter a valid email address

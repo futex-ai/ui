@@ -1,0 +1,8 @@
+- text: Moved to Trash
+- button "Restore"
+- text: Draft saved.
+- button "Undo"
+- button "Restore"
+- button "Small"
+- button "Medium"
+- button "Large"

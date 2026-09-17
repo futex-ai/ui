@@ -1,0 +1,5 @@
+- text: Year ends
+- textbox "Year ends":
+  - /placeholder: Select a date
+  - text: /\d+ Mar \d+/
+- text: /Pick a day or type it as \d+ Mar \d+\./

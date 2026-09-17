@@ -1,0 +1,3 @@
+- textbox "List title": Untitled list
+- button "Clear List title"
+- text: /\d+ tasks/

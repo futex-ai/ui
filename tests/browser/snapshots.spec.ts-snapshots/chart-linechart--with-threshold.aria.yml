@@ -1,0 +1,14 @@
+- group "Response time against the target":
+  - text: p95 latency vs target
+  - img
+  - img
+  - text: /\d+ \d+ \d+ \d+ Jan Mar May Jul/
+  - 'button /Jan\. p95 latency: \d+[hmsp]+/'
+  - 'button /Feb\. p95 latency: \d+[hmsp]+/'
+  - 'button /Mar\. p95 latency: \d+[hmsp]+/'
+  - 'button /Apr\. p95 latency: \d+[hmsp]+/'
+  - 'button /May\. p95 latency: \d+[hmsp]+/'
+  - 'button /Jun\. p95 latency: \d+[hmsp]+/'
+  - 'button /Jul\. p95 latency: \d+[hmsp]+/'
+  - 'button /Aug\. p95 latency: \d+[hmsp]+/'
+  - button "Show data table"

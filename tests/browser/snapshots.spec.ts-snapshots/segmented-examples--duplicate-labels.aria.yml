@@ -1,0 +1,4 @@
+- radiogroup "Date mode":
+  - radio "Auto" [checked]
+  - radio "Custom start date"
+  - radio "Custom end date"

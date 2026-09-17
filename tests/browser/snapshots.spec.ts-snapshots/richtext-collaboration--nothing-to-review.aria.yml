@@ -1,0 +1,11 @@
+- text: Only you are editing Launch note
+- textbox "Launch note":
+  - heading "Launch note" [level=1]
+  - paragraph: We are shipping the collaborative editor to every workspace this Thursday.
+  - heading "What reviewers see" [level=2]
+  - list:
+    - listitem: Live carets for everyone in the document
+    - listitem: Tracked changes they can accept or reject
+    - listitem: Comment threads anchored to the words they discuss
+  - blockquote: Nothing here syncs on its own; the editor draws the session it is given.
+- text: Comments & changes No open comments or changes

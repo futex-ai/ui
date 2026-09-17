@@ -63,7 +63,7 @@ export type DateWheelProps = DateBounds & {
 
 type WheelItem = { key: string; label: string; disabled: boolean };
 
-/** A keydown event as react-native-web hands it to a Pressable on web. */
+/** A keydown event as the web backend hands it to a Pressable. */
 type WheelKeyEvent = {
   key?: string;
   nativeEvent?: { key?: string };
@@ -384,7 +384,7 @@ function WheelRow({
   // Inset the ring: each row sits inside a snap-scrolling column whose overflow
   // would clip an outset outline (WCAG 2.1 2.4.7 Focus Visible).
   const ring = useFocusRing({ offset: -2, disabled: disableFocusRing });
-  // RNW eats `onKeyDown` on a TextInput but honours it on a Pressable.
+  // The web backend honours a forwarded `onKeyDown` on a Pressable.
   const keyProps = isWeb ? { onKeyDown: onKey } : null;
   return (
     <Pressable

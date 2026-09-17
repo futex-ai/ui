@@ -1,0 +1,4 @@
+- text: Editor Write notes...
+- textbox "Editor":
+  - paragraph
+- text: Markdown

@@ -1,0 +1,10 @@
+- text: Reporting period *
+- radiogroup "Reporting period":
+  - radio "Monthly" [checked]
+  - radio "Quarterly"
+  - radio "Yearly" [disabled]
+- text: Yearly reporting opens after close. Statement
+- radiogroup "Statement":
+  - radio "Profit & loss" [checked]
+  - radio "Balance sheet"
+- text: Choose a statement to continue.

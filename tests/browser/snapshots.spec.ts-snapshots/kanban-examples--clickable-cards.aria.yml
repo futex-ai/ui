@@ -1,0 +1,22 @@
+- text: Click or focus + Enter a card.
+- group "Content board":
+  - group "Drafted, 2 cards":
+    - text: ""
+    - button "Open \"We shipped per-step tool scoping today — every agent step runs with only the tools it was granted.\"": /We shipped per-step tool scoping today — every agent step runs with only the tools it was granted\. twitter\/x score \d+\.\d+ 1 Cal Jun \d+/
+    - button "Open \"How scoped agents stay fully auditable\"": /How scoped agents stay fully auditable linkedin score \d+\.\d+ Pat Jun \d+/
+  - group "Approved, 1 card":
+    - text: ""
+    - button "Open \"Why we moved every workflow run into a fresh container\"": /Why we moved every workflow run into a fresh container twitter\/x score \d+\.\d+ Cal Jun \d+/
+  - group "Published, 1 card":
+    - text: ""
+    - button "Open \"5 things we learned shipping automations on top of tables\"": /5 things we learned shipping automations on top of tables blog score \d+\.\d+ 2 Cal Jun \d+/
+  - group "Off-brand, 1 card":
+    - text: ""
+    - button "Open \"per-step tool scoping is live and the future is HERE\"": /per-step tool scoping is live and the future is HERE twitter\/x score \d+\.\d+ Cal Jun \d+/
+  - group "Duplicate, 1 card":
+    - text: ""
+    - button "Open \"Migrate your CRM in one dry-run\"": /Migrate your CRM in one dry-run twitter\/x score \d+\.\d+ Bea Jun \d+/
+  - group "Send-failed, 1 card":
+    - text: ""
+    - button "Open \"Tonight's deploy notes\"" [disabled]: /Tonight's deploy notes twitter\/x score \d+\.\d+ 1 Cal Jun \d+/
+- text: The Send-failed card is disabled and cannot be opened.

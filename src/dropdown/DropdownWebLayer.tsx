@@ -10,9 +10,9 @@ import { dropdownPortalZIndex } from "./dropdownLayers";
  *
  * The layer itself is `box-none`, so only the rendered surface is hit-testable
  * and the rest of the page keeps real hover and press targets while a menu is
- * open. React Native Web's `Modal` cannot provide this: its animation wrapper
- * and content container are full-viewport elements that always hit-test, which
- * steals hover from the trigger and flickers hover-opened menus shut.
+ * open. The web backend's `Modal` cannot provide this: its dialog container is
+ * a fixed, inset-zero element that always hit-tests, which would steal hover
+ * from the trigger and flicker hover-opened menus shut.
  */
 export function DropdownWebLayer({
   children,

@@ -1,0 +1,12 @@
+- text: Icon + label — Board / Table toggle
+- radiogroup "Tasks layout":
+  - radio "Board" [checked]
+  - radio "Table"
+- text: Icon + label — Personal / Workspace scope
+- radiogroup "Scope":
+  - radio "Personal" [checked]
+  - radio "Workspace"
+- text: iconOnly — labels are the accessible name only
+- radiogroup "Scope (compact)":
+  - radio "Personal" [checked]
+  - radio "Workspace"

@@ -138,9 +138,9 @@ keyframed range the value holds flat rather than extrapolating.
 ## Interaction and accessibility
 
 - **Sliders publish their value twice.** The scrub bar carries both
-  `accessibilityValue` and the literal `aria-value*` props, because
-  react-native-web does not translate the former (WCAG 2.1 — 4.1.2, A).
-- **Nothing seeks off a press handler.** react-native-web's press event carries
+  `accessibilityValue` and the literal `aria-value*` props, because the web
+  backend does not translate the former (WCAG 2.1 — 4.1.2, A).
+- **Nothing seeks off a press handler.** The web backend's press event carries
   no `locationX`, so scrub surfaces run off the responder — which also gives
   continuous drag-scrubbing on both platforms.
 - **Buttons name their action, not their glyph.** A transport button is
@@ -151,8 +151,8 @@ keyframed range the value holds flat rather than extrapolating.
   (WCAG 2.1 — 1.4.1 Use of Colour, A).
 - **Export failures announce themselves** through `role="alert"` rather than
   waiting to be re-read (WCAG 2.1 — 4.1.3 Status Messages, AA).
-- **Section disclosures publish `aria-expanded`** as a literal prop, since
-  react-native-web does not emit it from `accessibilityState`.
+- **Section disclosures publish `aria-expanded`** as a literal prop, since the
+  web backend does not emit it from `accessibilityState`.
 
 ## Pure helpers
 

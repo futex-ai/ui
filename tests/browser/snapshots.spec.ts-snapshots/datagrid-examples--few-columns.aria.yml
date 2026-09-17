@@ -1,0 +1,22 @@
+- grid "Tasks":
+  - row "Title Resize Title Status Resize Status":
+    - columnheader "Title Resize Title":
+      - text: ""
+      - separator "Resize Title"
+    - columnheader "Status Resize Status":
+      - text: ""
+      - separator "Resize Status"
+  - rowgroup:
+    - row "1 Hello World Todo":
+      - rowheader "1"
+      - gridcell "Hello World"
+      - gridcell "Todo"
+    - row "2 Coordinate this workspace Todo":
+      - rowheader "2"
+      - gridcell "Coordinate this workspace"
+      - gridcell "Todo"
+    - row "3 Ship the sparse-grid width fix Done":
+      - rowheader "3"
+      - gridcell "Ship the sparse-grid width fix"
+      - gridcell "Done"
+- text: With only a couple of columns, the flexible Title column is capped at a default max width instead of ballooning across the whole grid; the leftover space reads as a clean empty area. Drag the Title header's right edge to widen it past the cap.

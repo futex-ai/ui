@@ -1,0 +1,7 @@
+- text: /Determinate — \d+%/
+- progressbar "Uploading"
+- text: Indeterminate
+- progressbar "Syncing"
+- progressbar "Storage used"
+- progressbar "Quota used"
+- progressbar "Import complete"

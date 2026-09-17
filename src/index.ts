@@ -37,4 +37,5 @@ export * from "./typography";
 export * from "./video-editor";
 export * from "./useReducedMotion";
 export * from "./workflow";
+export { domBackendCss } from "./primitives";
 export type { IconComponent, IconComponentProps } from "./primitives";

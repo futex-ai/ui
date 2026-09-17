@@ -37,7 +37,7 @@ export type ContextMenuProps = {
 /**
  * Reads the viewport point from a synthetic or native pointer event.
  *
- * react-native-web sometimes carries the DOM fields at the top level and
+ * The web backend sometimes carries the DOM fields at the top level and
  * sometimes only under `nativeEvent`, so both are read — the same defensive
  * shape as `pointFromEvent` in `useDataGridDrag`. A native long-press reports
  * `pageX` / `pageY` instead, which is the closest native equivalent.

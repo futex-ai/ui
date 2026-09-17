@@ -4,7 +4,7 @@ import test from "node:test";
 
 /**
  * Public components forward a caller-supplied `testID` to a host element
- * (react-native-web maps `testID` -> `data-testid`; native keeps the RN
+ * (the web backend maps `testID` -> `data-testid`; native keeps the RN
  * `testID`). This is normally the outermost root; an interactive component can
  * instead target the host that owns its handler so test presses reach it. This
  * guards the forwarding contract across the whole library so a regression that

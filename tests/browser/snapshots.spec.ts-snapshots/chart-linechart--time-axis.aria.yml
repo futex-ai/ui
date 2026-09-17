@@ -1,0 +1,11 @@
+- group "Irregular readings over time":
+  - text: Signups (irregular sampling)
+  - img
+  - img
+  - text: /0 \d+ \d+ \d+ \d+ Jan 1 Apr 1 Jul 1/
+  - 'button /Jan 1\. Signups: \d+/'
+  - 'button /Jan 8\. Signups: \d+/'
+  - 'button /Feb 1\. Signups: \d+/'
+  - 'button /Mar 1\. Signups: \d+/'
+  - 'button /Aug 1\. Signups: \d+/'
+  - button "Show data table"

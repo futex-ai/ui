@@ -1,0 +1,5 @@
+- text: Current period
+- 'button /Current period start: 1 Apr \d+/'
+- text: →
+- 'button /Current period end: \d+ Mar \d+/'
+- text: Each endpoint opens its own spinning wheel.

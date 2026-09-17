@@ -1,0 +1,12 @@
+- text: /Wed \d+ Jun/
+- button "Team offsite, All day": All day Team offsite
+- button /Standup, 9:\d+ – \d+:\d+ AM/: /9:\d+ – \d+:\d+ AM Standup/
+- button /Design review, \d+:\d+ AM – \d+:\d+ PM/: /\d+:\d+ AM – \d+:\d+ PM Design review/
+- button /Interview, \d+:\d+ AM – \d+:\d+ PM/: /\d+:\d+ AM – \d+:\d+ PM Interview/
+- text: /Thu \d+ Jun/
+- button "Team offsite, All day": All day Team offsite
+- button /Client call, 2:\d+ – 3:\d+ PM/: /2:\d+ – 3:\d+ PM Client call/
+- text: /Fri \d+ Jun/
+- button "Team offsite, All day": All day Team offsite
+- text: /Sat \d+ Jun/
+- button /Release, 6:\d+ – 6:\d+ PM/: /6:\d+ – 6:\d+ PM Release/

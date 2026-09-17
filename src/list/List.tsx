@@ -220,7 +220,7 @@ export function List<Item>({
  * rows. Mirrors the shared button / table row: a hover wash, the sage focus ring
  * (an inset box-shadow so it shows even inside a clipped card), a pressed and
  * disabled state, and the hidden web outline. Keyboard activation (Enter /
- * Space) comes from react-native-web's Pressable for the `button` role.
+ * Space) comes from the web backend's Pressable for the `button` role.
  */
 function PressableListItem({
   children,

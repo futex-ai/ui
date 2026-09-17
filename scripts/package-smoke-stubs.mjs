@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 /**
  * Every Lucide glyph the library imports through `src/primitives/icons.ts`.
@@ -101,6 +101,15 @@ const ICON_NAMES = [
   "Zap",
 ];
 
+/**
+ * Peers the NODE consumer needs on disk to import every packed entry point.
+ *
+ * Only `react`, `react-dom` and `lucide-react` — the library's entire web peer
+ * set. Every primitive renders through the seam's own DOM backend, so nothing
+ * in `dist/node` imports `react-native-web`, the package no longer declares it
+ * as a peer, and its stub is gone. If the import smoke ever fails on a missing
+ * `react-native-web`, the seam regressed.
+ */
 export async function writeNodePeerStubs(consumerRoot) {
   await writeStubPackage(consumerRoot, "react", {
     "index.js": `export const Fragment = Symbol.for("react.fragment");
@@ -137,13 +146,26 @@ export function useLayoutEffect() {}
 export function useMemo(factory) {
   return factory();
 }
+export function useInsertionEffect() {}
+export function useReducer(reducer, initial) {
+  return [initial, () => {}];
+}
 export function useRef(value = null) {
   return { current: value };
+}
+export function useSyncExternalStore(subscribe, getSnapshot) {
+  return getSnapshot();
 }
 export function useState(value) {
   return [typeof value === "function" ? value() : value, () => {}];
 }
+export const Children = {
+  map(children, mapper) {
+    return (Array.isArray(children) ? children : [children]).map(mapper);
+  },
+};
 export default {
+  Children,
   Fragment,
   cloneElement,
   createContext,
@@ -156,10 +178,13 @@ export default {
   useEffect,
   useId,
   useImperativeHandle,
+  useInsertionEffect,
   useLayoutEffect,
   useMemo,
+  useReducer,
   useRef,
   useState,
+  useSyncExternalStore,
 };
 `,
     "jsx-runtime.js": `export const Fragment = Symbol.for("react.fragment");
@@ -184,76 +209,6 @@ export const jsxs = jsx;
 `,
     "package.json": JSON.stringify({ name: "react-dom", type: "module" }),
   });
-  await writeStubPackage(consumerRoot, "react-native-web", {
-    "index.js": `export const FlatList = "FlatList";
-export const Image = "Image";
-export const InputAccessoryView = "InputAccessoryView";
-export const Modal = "Modal";
-export const PanResponder = {
-  create(config) {
-    return { panHandlers: {}, config };
-  },
-};
-export const Pressable = "Pressable";
-export const ScrollView = "ScrollView";
-export const Text = "Text";
-export const TextInput = "TextInput";
-export const View = "View";
-export const Keyboard = {
-  dismiss() {},
-};
-export const KeyboardAvoidingView = "KeyboardAvoidingView";
-export const AccessibilityInfo = {
-  announceForAccessibility() {},
-  isReduceMotionEnabled() {
-    return Promise.resolve(false);
-  },
-  addEventListener() {
-    return { remove() {} };
-  },
-};
-class AnimatedValue {
-  interpolate() {
-    return "0deg";
-  }
-}
-export const Animated = {
-  Value: AnimatedValue,
-  View: "Animated.View",
-  loop() {
-    return { start() {}, stop() {} };
-  },
-  timing() {
-    return { start() {}, stop() {} };
-  },
-};
-export const Easing = {
-  linear: (t) => t,
-};
-export const Platform = {
-  OS: "web",
-  select(values) {
-    return values.web ?? values.default;
-  },
-};
-export const StyleSheet = {
-  absoluteFillObject: {},
-  create(styles) {
-    return styles;
-  },
-  flatten(styles) {
-    return styles;
-  },
-};
-export function useWindowDimensions() {
-  return { fontScale: 1, height: 768, scale: 1, width: 1024 };
-}
-`,
-    "package.json": JSON.stringify({
-      name: "react-native-web",
-      type: "module",
-    }),
-  });
   await writeStubPackage(consumerRoot, "lucide-react", {
     "index.js": `const Icon = () => null;
 ${ICON_NAMES.map((name) => `export const ${name} = Icon;`).join("\n")}
@@ -262,10 +217,30 @@ ${ICON_NAMES.map((name) => `export const ${name} = Icon;`).join("\n")}
   });
 }
 
+/**
+ * Peers the TYPES consumer needs on disk to compile `dist/node/**` with
+ * `skipLibCheck: false`. Only `react` and `lucide-react`: the web build's
+ * declarations are self-contained, so a strict consumer needs neither
+ * `react-native` (the seam types itself from `src/primitives/types`) nor
+ * `react-native-web` (which ships no types and is never named in an emitted
+ * declaration). If a `react-native` stub ever becomes necessary again, the
+ * seam has started leaking React Native's types back into the package.
+ */
 export async function writeTypePeerStubs(consumerRoot) {
   await writeStubPackage(consumerRoot, "react", {
     "index.d.ts": `export type ComponentProps<T> = T extends ComponentType<infer P> ? P : T extends new (props: infer P) => unknown ? P : never;
+export type ComponentPropsWithRef<T> = T extends (props: infer P) => ReactNode ? P : never;
 export type ComponentType<P = unknown> = (props: P) => ReactNode;
+export type ElementType = ComponentType<never> | string;
+export type FC<P = unknown> = (props: P) => ReactNode;
+export interface ForwardRefExoticComponent<P> {
+  (props: P): ReactNode;
+  displayName?: string | undefined;
+}
+export interface RefAttributes<T> {
+  ref?: Ref<T> | undefined;
+  key?: unknown;
+}
 export type Dispatch<T> = (value: T) => void;
 export type PropsWithChildren<P = unknown> = P & { children?: ReactNode };
 export interface ReactElement<P = unknown> {
@@ -319,95 +294,6 @@ export declare const Fragment: unique symbol;
       },
     }),
   });
-  await writeStubPackage(consumerRoot, "react-native", {
-    "index.d.ts": `export type StyleProp<T> = T | readonly T[] | false | null | undefined;
-export type AccessibilityRole = string;
-export interface PanResponderInstance {
-  panHandlers: Record<string, unknown>;
-}
-export declare const PanResponder: {
-  create(config: Record<string, unknown>): PanResponderInstance;
-};
-export interface AccessibilityState {
-  [key: string]: unknown;
-}
-export type ColorValue = string | OpaqueColorValue;
-export type DimensionValue = number | string | null | undefined;
-export interface GestureResponderEvent {
-  [key: string]: unknown;
-}
-export interface Insets {
-  bottom?: number;
-  left?: number;
-  right?: number;
-  top?: number;
-}
-export declare const OpaqueColorValue: unique symbol;
-export type OpaqueColorValue = typeof OpaqueColorValue;
-export interface TextInputProps {
-  [key: string]: unknown;
-}
-export interface TextStyle {
-  [key: string]: unknown;
-}
-export interface ViewStyle {
-  [key: string]: unknown;
-}
-export interface FocusEvent {
-  [key: string]: unknown;
-}
-export interface LayoutChangeEvent {
-  [key: string]: unknown;
-}
-export interface NativeScrollEvent {
-  [key: string]: unknown;
-}
-export interface NativeSyntheticEvent<T> {
-  nativeEvent: T;
-}
-export interface TextInputContentSizeChangeEventData {
-  [key: string]: unknown;
-}
-export interface TextProps {
-  [key: string]: unknown;
-}
-export interface ViewProps {
-  [key: string]: unknown;
-}
-export declare class FlatList<ItemT = unknown> {
-  protected itemType?: ItemT;
-}
-export declare class Image {}
-export declare class InputAccessoryView {}
-export declare class KeyboardAvoidingView {}
-export declare class Modal {}
-export declare class ScrollView {}
-export declare class Text {}
-export declare class TextInput {}
-export declare class View {}
-export declare const AccessibilityInfo: Record<string, unknown>;
-export declare const Easing: Record<string, unknown>;
-export declare const Keyboard: Record<string, unknown>;
-export declare const Platform: { OS: string };
-export declare const Pressable: unknown;
-export declare const StyleSheet: Record<string, unknown>;
-export declare function useWindowDimensions(): {
-  height: number;
-  width: number;
-};
-export declare namespace Animated {
-  class Value {
-    constructor(value: number);
-  }
-  const View: unknown;
-}
-`,
-    "package.json": JSON.stringify({
-      name: "react-native",
-      type: "module",
-      types: "./index.d.ts",
-    }),
-  });
   await writeStubPackage(consumerRoot, "lucide-react", {
     "index.d.ts": `type Icon = (props: unknown) => unknown;
 ${ICON_NAMES.map((name) => `export declare const ${name}: Icon;`).join("\n")}
@@ -424,8 +310,12 @@ async function writeStubPackage(consumerRoot, packageName, files) {
   const packageRoot = join(consumerRoot, "node_modules", packageName);
   await mkdir(packageRoot, { recursive: true });
   await Promise.all(
-    Object.entries(files).map(([fileName, body]) =>
-      writeFile(join(packageRoot, fileName), body),
-    ),
+    Object.entries(files).map(async ([fileName, body]) => {
+      const path = join(packageRoot, fileName);
+      // A stub may live in a subdirectory (a deep import into the real
+      // package's `dist`), so its parent is created alongside it.
+      await mkdir(dirname(path), { recursive: true });
+      await writeFile(path, body);
+    }),
   );
 }

@@ -1,0 +1,12 @@
+- text: Placement playground Drag inside the frame (or use the presets) to move the trigger. The menu re-resolves against the content-area edges in real time. top edge bottom edge Trigger
+- listbox "Placement preview":
+  - option "Rename"
+  - option "Duplicate"
+  - option "Move to…"
+  - option "Archive"
+- button "Move trigger to top-left": Top-left
+- button "Move trigger to top-right": Top-right
+- button "Move trigger to center": Center
+- button "Move trigger to bottom-left"
+- button "Move trigger to bottom-right"
+- text: /Opens downward ↓ left \d+ · top \d+ · width \d+ · max-height \d+/

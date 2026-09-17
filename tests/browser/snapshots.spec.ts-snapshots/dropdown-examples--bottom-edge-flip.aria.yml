@@ -1,0 +1,4 @@
+- text: Anchored near the top edge — the long menu opens downward. Opens below
+- button /Opens below, Long option \d+/
+- text: Anchored near the bottom edge — the same menu flips to open upward. Flips above
+- button /Flips above, Long option \d+/

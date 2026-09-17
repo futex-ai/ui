@@ -1,0 +1,51 @@
+- group "Spend by category":
+  - text: ""
+  - img
+  - 'button /Hosting: \$\d+,\d+, \d+% of \$[\d,.]+[bkmBKM]+/'
+  - 'button /Salaries: \$[\d,.]+[bkmBKM]+, \d+% of \$[\d,.]+[bkmBKM]+/'
+  - 'button /Tooling: \$\d+,\d+, 7% of \$[\d,.]+[bkmBKM]+/'
+  - 'button /Marketing: \$\d+,\d+, \d+% of \$[\d,.]+[bkmBKM]+/'
+  - list:
+    - listitem:
+      - switch "Hosting" [checked]
+    - listitem:
+      - switch "Salaries" [checked]
+    - listitem:
+      - switch "Tooling" [checked]
+    - listitem:
+      - switch "Marketing" [checked]
+  - button "Show data table"
+- group "Activity by weekday and hour":
+  - text: /Activity \d+ \d+ \d+ \d+ \d+ \d+ Mon Tue Wed Thu Fri/
+  - 'button /Mon, \d+: \d+/'
+  - 'button /Mon, \d+: \d+/'
+  - 'button /Mon, \d+: \d+/'
+  - 'button /Mon, \d+: \d+/'
+  - 'button /Mon, \d+: \d+/'
+  - 'button /Mon, \d+: \d+/'
+  - 'button /Tue, \d+: \d+/'
+  - 'button /Tue, \d+: \d+/'
+  - 'button /Tue, \d+: \d+/'
+  - 'button /Tue, \d+: \d+/'
+  - 'button /Tue, \d+: \d+/'
+  - 'button /Tue, \d+: \d+/'
+  - 'button /Wed, \d+: \d+/'
+  - 'button /Wed, \d+: \d+/'
+  - 'button /Wed, \d+: \d+/'
+  - 'button /Wed, \d+: \d+/'
+  - 'button /Wed, \d+: \d+/'
+  - 'button /Wed, \d+: \d+/'
+  - 'button /Thu, \d+: \d+/'
+  - 'button /Thu, \d+: \d+/'
+  - 'button /Thu, \d+: \d+/'
+  - 'button /Thu, \d+: \d+/'
+  - 'button /Thu, \d+: \d+/'
+  - 'button /Thu, \d+: \d+/'
+  - 'button /Fri, \d+: \d+/'
+  - 'button /Fri, \d+: \d+/'
+  - 'button /Fri, \d+: \d+/'
+  - 'button /Fri, \d+: \d+/'
+  - 'button /Fri, \d+: no data/'
+  - 'button /Fri, \d+: no data/'
+  - group /Scale from \d+ to \d+/: /\d+ \d+/
+  - button "Show data table"

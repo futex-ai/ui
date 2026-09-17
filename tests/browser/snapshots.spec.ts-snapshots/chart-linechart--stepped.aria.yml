@@ -1,0 +1,14 @@
+- group "Plan price over time":
+  - text: ""
+  - img
+  - img
+  - text: /\d+ \d+ \d+ \d+ \d+ \d+ Jan Mar May Jul/
+  - 'button /Jan\. Price: \$\d+/'
+  - 'button /Feb\. Price: \$\d+/'
+  - 'button /Mar\. Price: \$\d+/'
+  - 'button /Apr\. Price: \$\d+/'
+  - 'button /May\. Price: \$\d+/'
+  - 'button /Jun\. Price: \$\d+/'
+  - 'button /Jul\. Price: \$\d+/'
+  - 'button /Aug\. Price: \$\d+/'
+  - button "Show data table"

@@ -1,0 +1,6 @@
+- text: Search
+- textbox "Search":
+  - /placeholder: Search documents
+  - text: Quarterly report
+- button "Clear Search"
+- text: The ✕ clears the field once there is text to remove.

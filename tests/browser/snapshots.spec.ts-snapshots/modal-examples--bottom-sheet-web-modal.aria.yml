@@ -1,0 +1,9 @@
+- dialog "Cookie preferences":
+  - heading "Cookie preferences" [level=1]
+  - text: Shared modal chrome with focus and close handling.
+  - button "Close Cookie preferences"
+  - textbox "Modal text field":
+    - /placeholder: Type here
+  - text: Nested selector
+  - button "Nested selector, Standard"
+  - button "Done"

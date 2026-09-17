@@ -11,8 +11,8 @@ test("button exposes button semantics and a disabled state", () => {
   // The disabled state is exposed alongside the `busy` state (which keeps the
   // button focusable while blocking activation and announces `aria-busy`).
   assert.match(source, /accessibilityState=\{semantics\.accessibilityState\}/);
-  // react-native-web ignores `accessibilityState` on a Pressable, so the literal
-  // `aria-*` mirror is what actually reaches the DOM on web.
+  // The web backend drops `accessibilityState` rather than translating it, so
+  // the literal `aria-*` mirror is what actually reaches the DOM on web.
   assert.match(source, /\{\.\.\.semantics\.ariaProps\}/);
   // A button without an onPress is a read-only disabled control.
   assert.match(source, /disabledState = disabled \|\| !onPress/);
@@ -38,7 +38,7 @@ test("button takes a caller role with the state that role must carry", () => {
     /for \(const warning of buttonSemanticsWarnings\(semanticsInput\)\)/,
   );
   assert.match(source, /devWarn\(warning\)/);
-  // Spacebar activation is wired for the roles react-native-web leaves unbound.
+  // Spacebar activation is wired for the roles the web backend leaves unbound.
   assert.match(source, /const keyProps = buttonSpaceKeyProps\(\{/);
   assert.match(source, /\{\.\.\.keyProps\}/);
 });
@@ -107,7 +107,7 @@ test("button shows a per-tone hover state, suppressed when disabled", () => {
   const source = readSource("../../src/button/Button.tsx");
   const stylesSource = readSource("../../src/button/buttonStyles.ts");
 
-  // The style prop is a Pressable callback reading react-native-web's hovered /
+  // The style prop is a Pressable callback reading the web backend's hovered /
   // pressed flags.
   assert.match(
     source,

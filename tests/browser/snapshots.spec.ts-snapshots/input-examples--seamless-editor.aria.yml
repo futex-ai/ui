@@ -1,0 +1,6 @@
+- textbox "Document title":
+  - /placeholder: Untitled document
+  - text: Untitled document
+- textbox "Document body":
+  - /placeholder: Start writing…
+  - text: This whole card reads as plain text, but every line is editable — click in and type. The body grows to fit as you add lines.

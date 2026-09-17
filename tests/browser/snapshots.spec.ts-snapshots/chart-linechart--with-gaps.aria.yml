@@ -1,0 +1,14 @@
+- group "Sensor readings with an outage":
+  - text: Readings, with an outage
+  - img
+  - img
+  - text: /\d+ \d+ \d+ \d+ \d+ Jan Mar May Jul/
+  - 'button /Jan\. Sensor: \d+/'
+  - 'button /Feb\. Sensor: \d+/'
+  - 'button "Mar. Sensor: no data"'
+  - 'button "Apr. Sensor: no data"'
+  - 'button /May\. Sensor: \d+/'
+  - 'button /Jun\. Sensor: \d+/'
+  - 'button /Jul\. Sensor: \d+/'
+  - 'button /Aug\. Sensor: \d+/'
+  - button "Show data table"

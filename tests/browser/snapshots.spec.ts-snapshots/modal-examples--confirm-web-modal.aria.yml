@@ -1,0 +1,6 @@
+- dialog "Publish changes":
+  - heading "Publish changes" [level=1]
+  - button "Close Publish changes"
+  - text: Everyone with access to this book will see the new figures.
+  - button "Publish"
+  - button "Cancel"

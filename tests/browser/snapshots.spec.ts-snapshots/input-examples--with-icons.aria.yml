@@ -1,0 +1,3 @@
+- text: Opening balance
+- textbox "Opening balance": /\d+\.\d+/
+- text: Looks good — amount is in the account currency.
