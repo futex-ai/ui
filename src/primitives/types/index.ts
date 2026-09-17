@@ -1,10 +1,10 @@
 /**
  * The library's own copy of React Native's public type surface.
  *
- * `reactNative.web.ts` types every value it re-exports from
- * `react-native-web` with these declarations instead of borrowing them from
- * `react-native`, which is what keeps `dist/node/**` — the declarations every
- * consumer resolves — free of any `react-native` reference. The files are
+ * `reactNative.web.ts` types every value it re-exports from `./dom` with these
+ * declarations instead of borrowing them from `react-native`, which is what
+ * keeps `dist/node/**` — the declarations every consumer resolves — free of any
+ * `react-native` reference. The files are
  * vendored from React Native's own `.d.ts` files (MIT, Meta) and trimmed to
  * what the seam exports plus what those types transitively need; each file
  * carries the attribution.

@@ -104,10 +104,11 @@ const ICON_NAMES = [
 /**
  * Peers the NODE consumer needs on disk to import every packed entry point.
  *
- * Only `react`, `react-dom` and `lucide-react`: M3 of the
- * pure-React-DOM-backend plan ported the last six primitives, so nothing in
- * `dist/node` imports `react-native-web` any more and its stub is gone. If the
- * import smoke ever fails on a missing `react-native-web`, the seam regressed.
+ * Only `react`, `react-dom` and `lucide-react` — the library's entire web peer
+ * set. Every primitive renders through the seam's own DOM backend, so nothing
+ * in `dist/node` imports `react-native-web`, the package no longer declares it
+ * as a peer, and its stub is gone. If the import smoke ever fails on a missing
+ * `react-native-web`, the seam regressed.
  */
 export async function writeNodePeerStubs(consumerRoot) {
   await writeStubPackage(consumerRoot, "react", {

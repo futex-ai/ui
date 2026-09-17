@@ -119,8 +119,11 @@ function applyFormSemantics(
   const required = ariaValue(props, "aria-required", "accessibilityRequired");
   if (required != null) {
     domProps["aria-required"] = required;
-    if (formElement) {
-      domProps.required = props.accessibilityRequired;
+    // The resolved value, not `accessibilityRequired`: that backend read the
+    // unresolved prop here, so a field asking with the literal `aria-required`
+    // got the ARIA attribute and no native `required` (see the M2 deviations).
+    if (formElement && required === true) {
+      domProps.required = true;
     }
   }
 }

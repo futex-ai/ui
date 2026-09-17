@@ -2613,7 +2613,7 @@ test("a re-roled button activates from the keyboard, once per press", async ({
 }) => {
   await page.goto("/iframe.html?id=button-examples--roles-and-states");
 
-  // react-native-web binds Spacebar to `button` roles only, so the library wires
+  // The web backend binds Spacebar to `button` roles only, so the library wires
   // it for every other role (WCAG 2.1 — 2.1.1 Keyboard, A). Exactly once: a
   // double activation would toggle the checkbox straight back off.
   const notify = page.getByRole("checkbox", { name: "Email notifications" });
@@ -2621,7 +2621,7 @@ test("a re-roled button activates from the keyboard, once per press", async ({
   await page.keyboard.press("Space");
   await expect(notify).toBeChecked();
 
-  // Enter stays with react-native-web's press responder, which presses on every
+  // Enter stays with the web backend's press machine, which presses on every
   // role — claiming it in the library too would activate twice.
   await page.keyboard.press("Enter");
   await expect(notify).not.toBeChecked();
@@ -3287,7 +3287,7 @@ test("table row opens on click and reports the opened row", async ({
 test("table row activates from the keyboard", async ({ page }) => {
   await page.goto("/iframe.html?id=table-examples--clickable-rows");
 
-  // The button-role row is keyboard operable via react-native-web's Pressable.
+  // The button-role row is keyboard operable via the web backend's Pressable.
   const overdue = page.getByRole("button", { name: "Open invoice INV-0008" });
   await overdue.focus();
   await page.keyboard.press("Enter");
@@ -3696,7 +3696,7 @@ test("kanban header accessory is a keyboard-operable tab stop with a visible rin
   expect(focusStyle.boxShadow).toContain("inset");
   expect(focusStyle.outlineStyle).toBe("none");
 
-  // The accessory brings its own keyboard handling: react-native-web presses
+  // The accessory brings its own keyboard handling: the web backend presses
   // Enter for any role but binds Space to `button` roles only, so a `switch`
   // has to wire Space itself. Both must toggle exactly once.
   await page.keyboard.press("Space");

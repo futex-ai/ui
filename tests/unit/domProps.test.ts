@@ -142,6 +142,44 @@ test("aria-hidden and aria-disabled only appear when they are true", () => {
   );
 });
 
+test("aria-required reaches the native attribute from either spelling", () => {
+  const field = { defaultElement: "input" };
+  // The literal spelling is the one `InputFrame` uses, and it has to reach the
+  // native attribute too: that backend read the unresolved
+  // `accessibilityRequired` here, so a field asking this way got the ARIA
+  // attribute and no `required` (an M2 deviation, corrected in M4).
+  assert.deepEqual(createDomProps({ "aria-required": true }, field).props, {
+    "aria-required": true,
+    required: true,
+  });
+  assert.deepEqual(
+    createDomProps({ accessibilityRequired: true }, field).props,
+    { "aria-required": true, required: true },
+  );
+  // `aria-required={false}` is meaningful to ARIA, so the attribute stays; the
+  // native one is only written for a real requirement.
+  assert.deepEqual(createDomProps({ "aria-required": false }, field).props, {
+    "aria-required": false,
+  });
+  // The literal wins over the React Native spelling in both places.
+  assert.deepEqual(
+    createDomProps(
+      { accessibilityRequired: true, "aria-required": false },
+      field,
+    ).props,
+    { "aria-required": false },
+  );
+  // Only a form element takes the native attribute.
+  assert.deepEqual(createDomProps({ "aria-required": true }, view).props, {
+    "aria-required": true,
+  });
+  assert.deepEqual(
+    createDomProps({ "aria-required": true }, { defaultElement: "textarea" })
+      .props,
+    { "aria-required": true, required: true },
+  );
+});
+
 test("tabIndex follows the element, the role and focusable", () => {
   const tabIndexOf = (props: Record<string, unknown>) =>
     createDomProps(props, view).props.tabIndex;

@@ -19,7 +19,7 @@ test("the point is read from top-level client coordinates", () => {
 });
 
 test("the point falls back to nativeEvent client coordinates", () => {
-  // react-native-web does not always lift the DOM fields to the top level.
+  // The web backend does not always lift the DOM fields to the top level.
   assert.deepEqual(
     contextMenuPoint({ nativeEvent: { clientX: 7, clientY: 9 } }),
     { x: 7, y: 9 },

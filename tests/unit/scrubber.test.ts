@@ -17,7 +17,7 @@ test("a scrub position publishes whole frames on both platforms", () => {
     now: 132,
     text: "00:00:04:12",
   });
-  // react-native-web drops `accessibilityValue`, so the literal ARIA props have
+  // The web backend drops `accessibilityValue`, so the literal ARIA props have
   // to carry the same numbers.
   assert.deepEqual(scrub.webProps, {
     "aria-valuemax": 660,
@@ -70,7 +70,7 @@ test("the density scale grows monotonically across sm, md, and lg", () => {
 });
 
 test("the scrubber seeks off the responder, not off a press", () => {
-  // react-native-web's press event carries no `locationX`, so a press handler
+  // The web backend's press event carries no `locationX`, so a press handler
   // cannot tell where the bar was clicked — a regression here would silently
   // publish NaN positions. Guarding the shape keeps that fix from being undone.
   const source = readFileSync(

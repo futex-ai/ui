@@ -5,8 +5,8 @@
  *
  * Each toggle is a plain button whose accessible name states the action it will
  * perform ("Mute Dialogue" / "Unmute Dialogue"), so its state reaches assistive
- * tech through the name rather than through an ARIA state react-native-web does
- * not reliably emit (WCAG 2.1 — 4.1.2 Name, Role, Value, A).
+ * tech through the name rather than through an ARIA state the web backend does
+ * not emit (WCAG 2.1 — 4.1.2 Name, Role, Value, A).
  */
 import {
   Eye,

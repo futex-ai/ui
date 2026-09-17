@@ -173,7 +173,7 @@ function SectionHeader({
           : null,
       ]}
       testID={testID}
-      // react-native-web does not emit `aria-expanded` from
+      // The web backend does not emit `aria-expanded` from
       // `accessibilityState`, so the literal prop is spread on web to keep the
       // disclosure's state legible to assistive tech.
       {...(Platform.OS === "web"

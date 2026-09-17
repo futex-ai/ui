@@ -276,7 +276,7 @@ export function TableCell({
  * shared button: `button` semantics, a hover wash, the sage focus ring (an inset
  * box-shadow so it shows on the bottom-bordered row), a pressed/disabled state,
  * and the hidden web outline. Keyboard activation (Enter / Space) comes from
- * react-native-web's Pressable for the `button` role, so no manual key handler
+ * the web backend's Pressable for the `button` role, so no manual key handler
  * is needed.
  */
 function PressableTableRow({

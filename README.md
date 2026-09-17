@@ -1,7 +1,6 @@
 # ui
 
-Shared UI component library for Firna React Native and React Native Web
-surfaces. The first consumers are the accounting app and the Juno app.
+Shared UI component library for Firna React Native and web surfaces. The first consumers are the accounting app and the Juno app.
 
 ## Key Features
 
@@ -37,7 +36,8 @@ surfaces. The first consumers are the accounting app and the Juno app.
 - Portaled, anchored web date/dropdown/popover overlays with viewport-aware,
   content-sized selector menus and z-index escape hatches, plus touch-friendly
   native date sheets.
-- Expo and React Native Web compatible platform files.
+- Platform files shared by Expo, React Native, and the library's own DOM
+  backend on web.
 - Focused unit tests, browser interaction tests, and package export checks.
 - Storybook previews for visual review on same-repository non-release PRs.
 - Release-please release PRs and npm trusted publishing for `@firna/ui`.
@@ -129,19 +129,19 @@ All platform packages are optional peer dependencies; install the set for
 your target:
 
 - **Web only (Vite, Next.js, any DOM bundler):** `react`, `react-dom`, and
-  `lucide-react`. No `react-native` install and no bundler alias is needed: the
-  `import` condition resolves to `dist/node`, whose files reach React Native
-  only through the platform seam. That holds for types too — the web build's
+  `lucide-react` — that is the whole web peer set. No `react-native` and no
+  `react-native-web` install, and no bundler alias is needed: the `import`
+  condition resolves to `dist/node`, where every primitive renders through the
+  library's own DOM backend. That holds for types too — the web build's
   declarations are self-contained, so even a strict TypeScript consumer
-  installs nothing extra. Every primitive now renders through the library's own
-  DOM backend, so nothing under `dist/node` imports `react-native-web`; it is
-  still listed as an optional peer until that entry is removed (see
-  `plans/pure-react-dom-backend.md`).
+  installs nothing extra.
 - **Expo / React Native (iOS, Android, and Expo web):** `react`, `react-dom`,
-  `react-native`, `react-native-web`, `react-native-svg`,
-  `lucide-react-native`, and `lucide-react`. Metro's `react-native` condition
-  resolves `dist/**`, where platform files pick native or web implementations
-  per file.
+  `react-native`, `react-native-svg`, `lucide-react-native`, and
+  `lucide-react`. Metro's `react-native` condition resolves `dist/**`, where
+  platform files pick native or web implementations per file. An Expo web app
+  keeps whatever `react-native-web` its own React Native code needs; the
+  library's `.web` files resolve to the DOM backend there too and never reach
+  for it.
 - **Optional on native:** `@gorhom/bottom-sheet`, `react-native-gesture-handler`,
   and `react-native-reanimated` power the native bottom sheet.
 
@@ -325,6 +325,16 @@ maths relations and symbols (⌘ ★ ✓ ✕ braille) none of those faces carry.
 are Storybook devDependencies only — the published package ships no fonts and
 consumers are unaffected.
 
+Storybook's prop docgen is switched off (`typescript: { reactDocgen: false }`).
+Its importer resolves module specifiers without the `.web` preference, so it
+follows every story's `src/primitives` import to the native file and into
+`react-native`'s Flow source, which it cannot parse; it only survives by
+rewriting that path to `react-native-web/dist/index.js` when that package is
+installed. Nothing here reads docgen output — no story declares `args` or
+`argTypes`, there is no autodocs tag or `.mdx` file, and both suites render
+`iframe.html` — so the option is off and `react-native-web` is not installed at
+all. `.storybook/main.ts` carries the note.
+
 Stories that cannot be pinned — a `requestAnimationFrame` loop that ignores
 reduced motion, or an accessibility tree that is legitimately empty — are listed
 with a one-line reason in `tests/browser/snapshotOptOuts.ts`, which is the only
@@ -341,7 +351,9 @@ The package export map intentionally separates runtime targets:
   when they exist. Because the platform seam's `.web` files delegate to the
   library's own DOM backend, `lucide-react`, and DOM SVG, this tree never
   imports `react-native`, `react-native-web`, `react-native-svg`, or
-  `lucide-react-native` at runtime.
+  `lucide-react-native` at runtime — `react-native-web` is not a peer
+  dependency at all, and `npm run test:package` proves the packed build bundles
+  with only `react`, `react-dom` and `lucide-react` installed.
 - Type declarations also point at `dist/node/**`, where relative declaration
   specifiers use NodeNext-compatible `.js` paths. They are emitted by a second,
   web-resolution `tsc` pass (`tsconfig.build.web.json`) and typed from the

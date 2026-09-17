@@ -48,9 +48,9 @@ function SampleFrame({ uri }: { uri: string }) {
   return (
     <Image
       accessibilityLabel="Program output"
-      // Without the role react-native-web renders a labelled generic element,
-      // which is prohibited ARIA; `image` maps to `role="img"`, where the label
-      // belongs.
+      // The accessible element is the wrapper, so without the role the web
+      // backend renders a labelled generic element, which is prohibited ARIA;
+      // `image` maps to `role="img"`, where the label belongs.
       accessibilityRole="image"
       source={{ uri }}
       style={styles.frameImage}

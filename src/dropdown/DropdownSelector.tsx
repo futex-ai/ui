@@ -218,10 +218,10 @@ function DropdownSelectorView({
       : optionEntries;
 
   // Keyboard navigation runs through a document-level key listener (set up by
-  // the hook) rather than the input's own `onKeyDown`, because React Native Web
-  // `TextInput` replaces a forwarded `onKeyDown` with its internal handler. The
-  // `typeahead` flag keeps the space bar typing into the search query instead
-  // of activating the highlighted row.
+  // the hook) rather than the input's own `onKeyDown`, because a key event does
+  // not escape the field: the web backend's `TextInput` stops its propagation.
+  // The `typeahead` flag keeps the space bar typing into the search query
+  // instead of activating the highlighted row.
   const navigation = useDropdownSelectorNavigation({
     entries,
     interactive,

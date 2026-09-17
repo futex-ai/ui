@@ -109,7 +109,7 @@ function symbolFaces(family: string, weights: number[]): PinnedFace[] {
 }
 
 const PINNED_FACES: PinnedFace[] = [
-  // The mono stack, and the family react-native-web's unstyled Text reaches.
+  // The mono stack, and the family the web backend's unstyled Text reaches.
   ...latinFaces("Menlo", MONO_BY_WEIGHT),
   ...latinFaces("Segoe UI", INTER_BY_WEIGHT),
   // Symbol fallbacks, at every weight each family offers.

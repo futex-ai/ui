@@ -6,7 +6,7 @@
  * requires a pointer (WCAG 2.1 — 2.1.1 Keyboard, A; 4.1.2 Name, Role, Value, A).
  *
  * Seeking runs off the responder rather than a press handler, because
- * react-native-web's press event carries no `locationX` — the same reason the
+ * the web backend's press event carries no `locationX` — the same reason the
  * timeline's ruler does. That also gives continuous drag-scrubbing for free.
  */
 import { useCallback, useMemo, useState } from "react";

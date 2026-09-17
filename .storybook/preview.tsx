@@ -12,7 +12,7 @@ import type { Preview } from "@storybook/react-vite";
 // `unicode-range` per subset. The `latin-*.css` variants declare none, which
 // would let them claim every codepoint and hide the symbol fallbacks registered
 // under the same family. Only subsets a story uses are fetched. `./fonts` pins
-// the mono stack, react-native-web's unstyled-Text stack, and the symbols none
+// the mono stack, the web backend's unstyled-Text stack, and the symbols none
 // of these files carry.
 import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";

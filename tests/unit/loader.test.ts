@@ -347,7 +347,7 @@ test("progress meters publish ARIA range attributes explicitly for web", () => {
   const bar = readSource("../../src/loader/ProgressBar.tsx");
   const ring = readSource("../../src/loader/ProgressRing.tsx");
 
-  // react-native-web does NOT translate `accessibilityValue` into the ARIA range
+  // The web backend does NOT translate `accessibilityValue` into the ARIA range
   // attributes, so a web screen reader would reach a progressbar carrying no
   // value unless both are emitted. Regression guard: dropping the web props
   // silently removes the percentage on the platform most consumers ship first.

@@ -25,7 +25,7 @@ const OPEN_DELAY_MS = 400;
  */
 const CLOSE_GRACE_MS = 120;
 
-/** The DOM width fields react-native-web leaves on a host text node. */
+/** The DOM width fields the web backend leaves on a host text node. */
 type MeasurableNode = { clientWidth?: number; scrollWidth?: number };
 
 /** Read a host node's box, or null when it is absent or not yet laid out. */

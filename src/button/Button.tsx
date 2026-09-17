@@ -143,7 +143,7 @@ type ButtonBaseProps = ButtonRoleState & {
    * AAA / 2.5.8 AA). `minTouchTarget` grows the *visible* box instead.
    *
    * Honoured on both platforms: React Native reads it off the pressable, and on
-   * web — where react-native-web's `Pressable` ignores it — the equivalent area
+   * web — where the web backend's `Pressable` ignores it — the equivalent area
    * is drawn by {@link HitSlopExpander}. The expanded area overlaps whatever
    * sits beside the control, so reach for it on a control with room around it.
    */
@@ -434,7 +434,7 @@ export function Button({
     devWarn(warning);
   }
 
-  // On web, the non-`button` roles need Spacebar bound by hand; react-native-web
+  // On web, the non-`button` roles need Spacebar bound by hand; the web backend
   // binds it on `button` alone (see `buttonSpaceKeyProps`).
   const keyProps = buttonSpaceKeyProps({
     activate: () => onPress?.(),
@@ -450,8 +450,8 @@ export function Button({
       accessibilityRole={semantics.accessibilityRole}
       // Native's state channel: `busy` keeps the button focusable and announced
       // while blocking activation, and any role state (checked / selected /
-      // expanded) rides along. It is inert on web — react-native-web reads
-      // `accessibilityState` only on `TouchableWithoutFeedback` — so the literal
+      // expanded) rides along. It is inert on web — the web backend drops
+      // `accessibilityState` rather than translating it — so the literal
       // `aria-*` mirror spread in below is what reaches the DOM there.
       accessibilityState={semantics.accessibilityState}
       delayLongPress={delayLongPress}

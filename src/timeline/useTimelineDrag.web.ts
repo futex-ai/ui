@@ -2,7 +2,7 @@
  * Pointer editing for the web timeline.
  *
  * The gesture starts from a **capture-phase** `pointerdown` on the document,
- * because react-native-web's `Pressable` calls `stopPropagation()` in its press
+ * because the web backend's `Pressable` calls `stopPropagation()` in its press
  * responder and a handler on the clip itself would never see the grab. A small
  * travel threshold separates a drag from a click, and a committed drag sets a
  * suppression flag so the clip's own `onPress` fires once and is swallowed.

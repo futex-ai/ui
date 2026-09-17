@@ -44,7 +44,7 @@ export function useEditorAutofocus<T>(inputRef: RefObject<T | null>) {
   return () => Date.now() - mountAtRef.current >= 250;
 }
 
-/** Cancel the editor on Escape via a document listener (RNW swallows onKeyDown). */
+/** Cancel the editor on Escape via a document listener (field keys do not bubble). */
 export function useEscapeKey(onCancel: () => void) {
   useEffect(() => {
     if (typeof document === "undefined") {

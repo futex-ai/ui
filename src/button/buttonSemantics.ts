@@ -166,7 +166,7 @@ export function buttonSemantics({
   };
 }
 
-/** A keydown event as react-native-web hands it to a `Pressable` on web. */
+/** A keydown event as the web backend hands it to a `Pressable`. */
 export type ButtonKeyEvent = {
   key?: string;
   nativeEvent?: { key?: string };

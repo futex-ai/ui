@@ -1185,8 +1185,8 @@ test("collapses to a card stack below the breakpoint", async ({ page }) => {
   await expect(page.getByRole("grid")).toHaveCount(0);
 
   // An expandable card is a real `button` inside its listitem, not a listitem
-  // that happens to be pressable — react-native-web resolves the DOM role as
-  // `role || accessibilityRole`, and its press responder only presses Spacebar
+  // that happens to be pressable — the web backend resolves the DOM role as
+  // `role ?? accessibilityRole`, and its press machine only presses Spacebar
   // on `button` roles, so a listitem-roled pressable would be Enter-only.
   const card = page.getByRole("button", { name: "Open record r1" });
   await expect(card).toBeVisible();
@@ -1203,7 +1203,7 @@ test("collapses to a card stack below the breakpoint", async ({ page }) => {
   await expect(page.getByText("Expanded r1")).toBeVisible();
   expect(await page.evaluate(() => window.scrollY)).toBe(scrollBefore);
 
-  // Enter expands too, through react-native-web's own press handling.
+  // Enter expands too, through the web backend's own press handling.
   await page.getByRole("button", { name: "Open record r2" }).focus();
   await page.keyboard.press("Enter");
   await expect(page.getByText("Expanded r2")).toBeVisible();

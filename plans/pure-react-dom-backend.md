@@ -4,7 +4,8 @@ Make `@firna/ui` consumable as a plain React library on the web, with no
 `react-native-web` at runtime and no `react-native` for types, while every
 component file stays shared with the React Native build.
 
-**Status:** M0–M3 delivered. M4 not started.
+**Status:** M0–M4 delivered. Plan complete; the storybook-native device check
+is deferred (no simulator in the delivery environment).
 
 ---
 
@@ -63,6 +64,19 @@ A web consumer installs `react`, `react-dom`, and `lucide-react`, imports
 plus a new visual and ARIA snapshot baseline. Native (`react-native` condition,
 Expo, storybook-native) is untouched. Component files are untouched except where
 a typecheck under web resolution demands it.
+
+**What a web consumer installs (measured in M4).** `react`, `react-dom`, and
+`lucide-react` — three packages, and nothing else. `react-native-web` is gone
+from `peerDependencies`, `peerDependenciesMeta`, `keywords` **and**
+`devDependencies`; `package-lock.json` no longer names it and
+`node_modules/react-native-web` no longer exists in this repo. The one thing that
+still wanted it on disk was Storybook's prop docgen, which is now switched off
+(see the M4 checklist). The package smoke proves the rest rather than asserting
+it: its Vite consumer links exactly those three,
+externalises exactly those three, and bundles the packed `dist/node` into its own
+chunk, so any surviving import of `react-native`, `react-native-web`,
+`react-native-svg` or `lucide-react-native` anywhere in the tree fails the
+Rollup resolve. A strict TypeScript consumer still installs nothing extra (M1).
 
 Non-goals: a third build variant, a public "primitives" API for consumers,
 RTL runtime switching, or any `react-native-web` feature the library does not
@@ -509,6 +523,19 @@ them invisible to the snapshot and ARIA baselines except the first.
   copy-paste bug that dropped the attribute; `ToastLiveRegion` sets it and never
   got it. Playwright's ARIA snapshots do not render the attribute, so no
   baseline moves.
+- **`required` is set from the resolved value.** The same class of copy-paste
+  bug one branch further down: `createDOMProps` wrote
+  `domProps.required = accessibilityRequired`, so a field asking with the
+  literal `aria-required` — which is what `InputFrame` does — got
+  `aria-required` and no native `required` attribute. `applyFormSemantics` now
+  reads the resolved value (the literal spelling winning over the React Native
+  one, as the `readOnly` branch above it does) and writes `required` only when
+  it is `true`, on `input` / `select` / `textarea`. Chromium does not style
+  `:required` by default and the library renders no `<form>`, so no screenshot
+  moves; the accessibility tree already reported the field as required from
+  `aria-required`, so no ARIA snapshot moves either. Fixed in M4;
+  `tests/unit/domProps.test.ts` pins both spellings, the `false` case and the
+  non-form element.
 - **`shadowColor` keeps a named colour as written.** `shadowOpacity` is applied
   to the `black` default, to `white`, to hex (3/4/6/8), `rgb()` / `rgba()` and
   `hsl()` / `hsla()` by multiplying the existing alpha, exactly as
@@ -832,36 +859,159 @@ deviation below.
   simply drops the retained head. `SectionList`, `inverted`, `refreshControl`,
   `onViewableItemsChanged` and `debug` are not ported.
 
+**Review follow-ups (fixed in M4).** One finding from the AI review of the M3
+commit:
+
+1. `dom/domProps.ts`'s `applyFormSemantics` assigned the native `required`
+   attribute from `props.accessibilityRequired` rather than from the resolved
+   value, so `InputFrame`'s literal `aria-required` (`src/input/InputFrame.tsx`)
+   produced `aria-required` with no `required` on the `<input>`. It was a
+   verbatim transcription of `react-native-web` 0.21.2's own bug
+   (`createDOMProps/index.js`, `domProps.required = accessibilityRequired`),
+   one branch below the `aria-atomic` copy-paste bug M2 already corrected. The
+   branch now mirrors the `readOnly` branch above it — resolved value, literal
+   spelling winning — and writes `required` only for a real `true` on a form
+   element. `tests/unit/domProps.test.ts` grew a case group for the literal
+   spelling, the `accessibility*` spelling, `aria-required={false}` (ARIA
+   attribute, no native one), the two spellings disagreeing, and a non-form
+   element. Listed in the M2 deviations above beside `aria-atomic`; no baseline
+   moved.
+
 ### M4 — Drop react-native-web; packaging, docs, cleanup
 
 At the end: `react-native-web` is gone from `package.json` peers, the package
 smoke proves a web consumer needs only `react`, `react-dom`, and
 `lucide-react`, and the docs describe the pure React build.
 
-- [ ] `package.json`: remove `react-native-web` from `peerDependencies`,
+- [x] `package.json`: remove `react-native-web` from `peerDependencies`,
       `peerDependenciesMeta`, keywords, and `devDependencies` if no Storybook
       or test path still needs it; `npm install` to refresh the lockfile.
-- [ ] `scripts/package-smoke.mjs` and `package-smoke-stubs.mjs`:
+      Removed from all four, and the devDependency took Storybook's prop
+      docgen with it. No source file imports the package: the repo-wide grep
+      finds 146 mentions in 103 files and every one is prose — 67 transcription
+      attributions inside `src/primitives/dom`, the rest behaviour notes in
+      component files, tests and scripts, with `tests/unit/primitives.test.ts`
+      _grepping_ for the string rather than importing it. Storybook's Vite config
+      declares no alias for it and no `.storybook` module imports it. Removing
+      the devDependency nevertheless broke `npm run storybook:build`,
+      deterministically, with a Babel parse error inside
+      `node_modules/react-native/index.js` — and the culprit was worth chasing:
+      `@storybook/react-vite`'s react-docgen importer
+      (`dist/_node-chunks/react-docgen-*.js`, `getReactDocgenImporter`) resolves
+      specifiers with react-docgen's own extension list, which has **no `.web`
+      preference**, so every story importing `../primitives/reactNative` is
+      followed to the native file and on to `react-native`, whose Flow-typed
+      `index.js` react-docgen cannot parse. It only survives by rewriting that
+      path to `react-native-web/dist/index.js` when the package is on disk,
+      guarded by `existsSync`. Rather than keep a package installed to feed a
+      mis-resolution, docgen is switched off: `typescript: { reactDocgen: false }`
+      in `.storybook/main.ts`, with the reason written beside it. Nothing here
+      reads docgen output — no story declares `args` or `argTypes`, there is no
+      autodocs tag, no `.mdx` file and no `addon-docs`, and both suites render
+      `iframe.html`, where a props table is never built. With the option off the
+      static build is green and the package is gone: `npm install` dropped 19
+      packages, `node_modules/react-native-web` no longer exists, and
+      `package-lock.json` does not contain the string anywhere.
+      `storybook-native` is untouched, including its `package-lock.json` — which
+      still records the old peer list for its `file:..` parent and will refresh
+      on its next install.
+- [x] `scripts/package-smoke.mjs` and `package-smoke-stubs.mjs`:
       `WEB_PEER_DEPENDENCIES` becomes `lucide-react`, `react`, `react-dom`;
       remove the `react-native-web` stub; the Vite consumer proves the bundle
       builds with those three alone.
-- [ ] `.storybook/main.ts`: drop the comment about `react-native-web`; keep the
+      The stub was already gone (M3); the `react-native-web` regex left its
+      `rollupOptions.external`, so an import of the package would now fail the
+      Rollup resolve instead of being silently externalised. The consumer was
+      already bundling the library rather than externalising it — only the three
+      peers are listed — and a new `assertViteBundledLibrary` step pins that:
+      it reads the emitted chunks, requires the DOM backend's own
+      `firna-ui-dom-backend` style id to be inside them, and refuses a bundle
+      that still imports `@firna/ui`. The stubs file's comment now says the peer
+      entry is gone rather than just the stub.
+- [x] `.storybook/main.ts`: drop the comment about `react-native-web`; keep the
       `.web` extension preference.
-- [ ] Optional cleanup enabled by M1's types: remove the
+      The comment now says the `.web` files render through the library's own DOM
+      backend; the extension list is unchanged. The file also gained
+      `typescript: { reactDocgen: false }` — see the `package.json` item above for
+      why, and the comment beside it for the short version.
+- [x] Optional cleanup enabled by M1's types: remove the
       `as unknown as ViewStyle` / `TextStyle` casts (16 sites in 12 files) now
       that the web-only keys are typed; the native typecheck must stay green
       (vendored keys are absent from `react-native`'s types, so keep the casts
       where a shared file feeds a style straight into a native prop).
-- [ ] Docs: `README.md` installation and export-map sections, the Package
+      **Measured: none can go.** All 19 sites were removed at once (each
+      rewritten as a real `ViewStyle` / `TextStyle` annotation, never as a
+      widening or a dropped annotation). `typecheck:web` passed with every cast
+      gone — M1's vendored keys do cover the whole set. `typecheck` then
+      reported an error for all 19, because `tsconfig.json` includes
+      `src/**/*.ts(x)`, so a `.web` file is type-checked under native resolution
+      too and sees `react-native`'s narrower style types there. The four `.web`
+      files are therefore no better off than the shared ones. Per key:
+      `position: "fixed" | "sticky"` (7 sites — `dataGridLayout.ts:22`,
+      `DragSelectableOverlay.web.tsx:118`, `DropdownWebLayer.tsx:42`,
+      `Kanban.tsx:39`, `webModalFrameStyles.ts:7`, `SortableList.tsx:59`,
+      `ToastViewport.web.tsx:26`), `transition` (4 —
+      `SegmentedControl.tsx:267` / `:273`, `WebModalFrame.web.tsx:48`,
+      `Switch.tsx:102`), `outlineStyle: "none"` (3 — `focusRing.ts:6` / `:10` /
+      `:133`; RN's union is `solid | dotted | dashed`), `cursor` (3 —
+      `sortableListStyles.ts:36` / `:37`, `DataGridResizeHandle.tsx:21`; RN's
+      `CursorValue` is `auto | pointer`), `backgroundImage` /
+      `backgroundSize` (1 — `workflowColors.ts:93`) and
+      `width: "max-content"` (1 — `dropdownContentWidthStyle.web.ts:6`). Two
+      keys the plan expected to block are _not_ a problem on RN 0.85:
+      `boxShadow` takes a string, and `userSelect` exists — `focusRing.ts:133`
+      fails on `outlineStyle` alone. Every cast was restored byte for byte and
+      both typechecks are green again.
+- [x] Docs: `README.md` installation and export-map sections, the Package
       Boundary bullet in `docs/protocol/shared-ui-components.md`,
       `src/primitives/README.md` (module table: web → DOM), and the component
       READMEs that mention `react-native-web` (button, loader, timeline,
       video-editor).
-- [ ] `storybook-native`: no dependency change (Expo web keeps its own
+      `README.md`'s web bullet now names the three peers as the whole set and
+      drops the "still listed as an optional peer" caveat; the Expo bullet drops
+      `react-native-web` from the install list and says an Expo web app keeps
+      whatever copy its own code needs. The export-map bullet adds that the
+      package declares no `react-native-web` peer and that `test:package` proves
+      the three-peer build. `docs/protocol/shared-ui-components.md` drops it
+      from the Package Boundary dependency list and says the web build depends
+      on neither `react-native` nor `react-native-web`; the progress contract's
+      rule is kept and reattributed to "the web backend", because dropping
+      `accessibilityValue` is Decision 5 and still true. The remaining sweep was
+      comment-only across 26 source files, 8 unit tests, 3 browser specs and 2
+      Storybook config files: behaviour that is unchanged was reattributed to
+      "the web backend", and the one behaviour that changed —
+      `TextInput` now delivers a forwarded `onKeyDown` — was rewritten to the
+      real reason the document-capture hooks still exist (a field's key events
+      do not propagate) in `keyboardNavigation.ts`, `DropdownSelector.tsx`,
+      `useComboboxNavigation.ts`, `dataGridEditorHooks.ts`, `DateWheel.tsx` and
+      `CalendarMonth.tsx`. Two stale statements inside the seam itself were
+      corrected: `reactNative.ts` said the `.web` sibling delegates to
+      `react-native-web`, and `types/index.ts` said `reactNative.web.ts` types
+      values re-exported from it. Transcription attributions ("transcribed from
+      `react-native-web` 0.21.2") were left alone everywhere, as were the
+      completed plans under `plans/`.
+- [x] `storybook-native`: no dependency change (Expo web keeps its own
       `react-native-web`; the library's `.web` files now resolve to the DOM
       backend there too). Run a native story and an Expo web story on a device
       or simulator; record the result here. Deferred if no device is available.
-- [ ] `npm run verify` and `cargo xtask check` green; commit, push, review.
+      No dependency changed. **Device check deferred: this environment has no
+      device or simulator** — `xcrun`, `adb` and `emulator` are all absent on
+      this Linux x86_64 VM, so neither an iOS simulator nor an Android emulator
+      can be started, and Expo web would only re-exercise the DOM backend the
+      browser suite already covers. The native path is unchanged by this
+      milestone: `svg.tsx` and `icons.ts` are byte-identical, `reactNative.ts`
+      changed only in its doc comment, and the only behavioural code change in
+      M4 is inside `dom/`, which Metro never resolves on iOS or Android.
+- [x] `npm run verify` and `cargo xtask check` green; commit, push, review.
+      Lead-run gates on the final tree: format, 1228 unit tests, both
+      typechecks, build, `test:dist`, package smoke (three peers, library
+      bundled), static Storybook with docgen off, and the full browser suite
+      (372 tests) all green; `dist/node` has no `react-native-web` import; the
+      baseline directory digest is unchanged from M3 (673 files). The lead also
+      retired the last "React Native Web" wording in the package description,
+      the README intro, the protocol doc's Purpose/Kanban/Button lines, and
+      `DropdownWebLayer.tsx`'s modal note (now describes the DOM backend's
+      fixed, inset-zero dialog container).
 
 ## Estimate
 

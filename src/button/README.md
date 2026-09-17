@@ -44,7 +44,7 @@ theme tokens.
   other pressables).
 - Re-point that role with `role` — `checkbox`, `menuitem`, `radio`, `switch`, or
   `tab` — paired with the state that role must carry (`checked` / `selected` /
-  `pressed` / `expanded`), and bind Spacebar for the roles react-native-web
+  `pressed` / `expanded`), and bind Spacebar for the roles the web backend
   leaves unbound.
 - Support an in-progress `busy` state that stays focusable and announces
   `aria-busy`, blocks the whole press lifecycle, and swaps the leading icon for
@@ -320,7 +320,7 @@ what it cannot:
 - `hitSlop` extends the pressable area beyond the visible box, so a compact
   control still meets a comfortable target (WCAG 2.1 — 2.5.5 AAA / 2.5.8 AA)
   without growing. React Native reads it off the pressable; on web —
-  where react-native-web's `Pressable` ignores the prop entirely — the same
+  where the web backend's `Pressable` ignores the prop by design — the same
   area is drawn as an inset, transparent child whose events bubble to the
   button. Either way the expanded area overlaps whatever sits beside the
   control, so reach for it on a control with room around it.

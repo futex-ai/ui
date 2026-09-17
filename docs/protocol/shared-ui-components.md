@@ -10,8 +10,8 @@ including the shared control-size scale for buttons, inputs, and textareas.
 
 ## Purpose
 
-This repository provides shared React Native and React Native Web UI primitives
-for Firna apps. The first consumers are the accounting app and the Juno app.
+This repository provides shared React Native and web UI primitives for Firna
+apps. The first consumers are the accounting app and the Juno app.
 The first shared component families are the dropdown components, drag-select
 provider, segmented control patterns, radio-option cards, switch primitive, data
 table, workflow-builder step graph, web modal components, transient notification
@@ -25,14 +25,16 @@ app, plus labelled text inputs and textareas for shared forms.
 - Consumer apps provide data, callbacks, labels, and theme overrides.
 - The library owns component presentation, keyboard behavior, focus treatment,
   portal behavior, layering, and pure interaction helpers.
-- `react`, `react-native`, `react-native-web`, `react-dom`, `react-native-svg`,
+- `react`, `react-native`, `react-dom`, `react-native-svg`,
   `lucide-react-native`, and `lucide-react` are external peer/runtime
-  dependencies, not copied app code.
+  dependencies, not copied app code. A web-only consumer needs just `react`,
+  `react-dom`, and `lucide-react`.
 - Components never import `react-native`, `react-native-svg`, or a Lucide
   package directly. They import from `src/primitives`, whose native and `.web`
-  files pick the backend, so the web build has no dependency on `react-native`
-  at runtime. A unit test enforces the rule and keeps the two export lists in
-  sync.
+  files pick the backend: native delegates to `react-native`, and web renders
+  through the library's own DOM backend, so the web build depends on neither
+  `react-native` nor `react-native-web` at runtime. A unit test enforces the
+  rule and keeps the two export lists in sync.
 
 ## Rich Text Editor Contract
 
@@ -180,10 +182,11 @@ Required behavior:
   range, so screen readers announce a percentage rather than a fraction. An
   indeterminate bar publishes a busy state and no value, per ARIA.
 - Emit both React Native's `accessibilityValue` and the literal `aria-value*`
-  DOM props. react-native-web does not translate the former into the latter, so
-  setting only `accessibilityValue` leaves a web screen reader with a
-  `progressbar` that carries no value. This applies to any determinate control,
-  not only these two.
+  DOM props. The web backend does not translate the former into the latter — it
+  drops the React Native-only accessibility props by design — so setting only
+  `accessibilityValue` leaves a web screen reader with a `progressbar` that
+  carries no value. This applies to any determinate control, not only these
+  two.
 
 ## Animated Border Contract
 
@@ -265,7 +268,7 @@ Required behavior:
   switch, `selected` for a tab, `pressed` for a toggle button, and `expanded`
   for a control that reveals a menu, panel, or section — and emit it on both the
   React Native state channel and the literal ARIA attributes web needs, since
-  React Native Web ignores `accessibilityState` on a pressable.
+  the web backend drops `accessibilityState` rather than translating it.
 - Warn in development when a state is paired with a role ARIA does not allow it
   on, or when a role that requires a state is left without one.
 - Bind Spacebar for every role other than `button`, which is the only role React
@@ -588,7 +591,7 @@ toColumnId, toIndex }`, `toIndex` in dragged-removed semantics) for the consumer
 - Render the web pointer-drag clone through a `document.body` portal. Its fixed
   position consumes viewport `clientX` / `clientY` coordinates and must remain in
   that coordinate system even when the board is inside a transformed or scrolling
-  ancestor such as a React Native Web `ScrollView`.
+  ancestor such as the web backend's `ScrollView`.
 - Scroll the columns horizontally on both web and phone, and size with the
   shared control-size scale.
 

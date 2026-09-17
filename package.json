@@ -1,7 +1,7 @@
 {
   "name": "@firna/ui",
   "version": "3.0.0",
-  "description": "Shared React Native and React Native Web UI primitives for Firna apps.",
+  "description": "Shared React Native and web UI primitives for Firna apps.",
   "private": false,
   "type": "module",
   "packageManager": "npm@11.7.0",
@@ -20,7 +20,6 @@
     "react",
     "react-dom",
     "react-native",
-    "react-native-web",
     "ui"
   ],
   "main": "./dist/node/index.js",
@@ -237,8 +236,7 @@
     "react-native": ">=0.83 <0.86",
     "react-native-gesture-handler": ">=2.20 <3",
     "react-native-reanimated": ">=3.16 <5",
-    "react-native-svg": ">=15 <16",
-    "react-native-web": ">=0.21 <0.22"
+    "react-native-svg": ">=15 <16"
   },
   "peerDependenciesMeta": {
     "@gorhom/bottom-sheet": {
@@ -260,9 +258,6 @@
       "optional": true
     },
     "react-native-svg": {
-      "optional": true
-    },
-    "react-native-web": {
       "optional": true
     }
   },
@@ -289,7 +284,6 @@
     "react-native-gesture-handler": "^2.31.2",
     "react-native-reanimated": "4.3.1",
     "react-native-svg": "^15.15.5",
-    "react-native-web": "^0.21.2",
     "react-native-worklets": "0.8.3",
     "storybook": "^10.1.6",
     "tsx": "^4.21.0",

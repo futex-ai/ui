@@ -5,7 +5,7 @@
  * range, so assistive technology announces "42%" rather than "0.42".
  *
  * The two platforms need different props for that. React Native reads
- * `accessibilityValue` on iOS and Android, but react-native-web does **not**
+ * `accessibilityValue` on iOS and Android, but the web backend does **not**
  * translate it into the ARIA range attributes — a web screen reader would reach
  * a `progressbar` carrying no value at all. Both have to be emitted, so they are
  * built together here and the two components cannot drift apart.

@@ -117,11 +117,11 @@ test("the tap area and the visible box are set independently", () => {
   // navigator footer gear traded a 50px target for its visible 34px without it.
   assert.match(source, /hitSlop\?: number \| Insets;/);
   assert.match(source, /hitSlop=\{hitSlop\}/);
-  // React Native reads `hitSlop` off the pressable, but react-native-web's
-  // Pressable never reads the prop at all — only its legacy `Touchable` export
-  // does — so on web the slop has to be drawn as an inset, transparent child
-  // whose events bubble to the button. Without it the prop is silently inert
-  // on the platform that asked for it.
+  // React Native reads `hitSlop` off the pressable, but the web backend's
+  // `Pressable` accepts the prop and ignores it (plan Decision 6, matching the
+  // backend it replaced), so on web the slop has to be drawn as an inset,
+  // transparent child whose events bubble to the button. Without it the prop is
+  // silently inert on the platform that asked for it.
   const expanderSource = readSource("../../src/button/HitSlopExpander.tsx");
   assert.match(source, /<HitSlopExpander hitSlop=\{hitSlop\} \/>/);
   assert.match(expanderSource, /Platform\.OS !== "web"/);

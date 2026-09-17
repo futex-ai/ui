@@ -21,9 +21,10 @@ Every primitive comes from `dom/` on web — `View`, `Text`, `Pressable`,
 
 Why this exists: the `dist/node` build (the `import` condition) selects the
 `.web` files, so a web consumer installs `react`, `react-dom` and
-`lucide-react` and nothing else. There is no `react-native` alias to configure,
-and the `react-native` package, `react-native-web`, `react-native-svg`, and
-`lucide-react-native` are never resolved at runtime on web. Metro keeps
+`lucide-react` and nothing else — those three are the package's entire web peer
+set. There is no `react-native` alias to configure, the `react-native` package,
+`react-native-svg`, and `lucide-react-native` are never resolved at runtime on
+web, and `react-native-web` is not a peer dependency at all. Metro keeps
 resolving the native files on iOS and Android, and the `.web` files on Expo
 web.
 
