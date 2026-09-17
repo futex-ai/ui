@@ -1013,6 +1013,32 @@ smoke proves a web consumer needs only `react`, `react-dom`, and
       `DropdownWebLayer.tsx`'s modal note (now describes the DOM backend's
       fixed, inset-zero dialog container).
 
+**Review follow-ups (open, from the AI review of the M4 commit).** Two findings,
+both verbatim transcriptions of `react-native-web` 0.21.2 behaviour rather than
+regressions, reported here with recommendations and deliberately not applied
+(AGENTS.md: review findings are reported, not auto-fixed):
+
+1. `PanResponder.panHandlers.onClickCapture` — the click suppressor that keeps a
+   finished mouse pan from also activating whatever is under the cursor — is
+   never attached, because `dom/domPropTables.ts`'s `FORWARDED_HANDLERS` (like
+   `react-native-web`'s `forwardedProps.clickProps`) has no `onClickCapture`,
+   and `createDomProps` drops unlisted handlers. Upstream has the same gap: its
+   vendored `PanResponder` builds the handler and its `View` discards it. In
+   this library only `useChartScrub` (a public hook with no internal web
+   consumer) and the `Primitives/Interaction` Gestures story spread
+   `panHandlers` on web; `useTimelineDrag` has a `.web` sibling that does not
+   use `PanResponder`. Recommendation: add `onClickCapture` to the forwarded
+   handler table, list it in the M3 deviations as a deliberate improvement,
+   and pin it with a browser test that drags the Gestures story's pan box and
+   asserts no press fires on release.
+2. `createResponderEvent` hard-codes `nativeEvent.altKey` and
+   `nativeEvent.ctrlKey` to `false` while forwarding `metaKey` and `shiftKey`,
+   exactly as `react-native-web`'s `createResponderEvent.js` does, although the
+   vendored `NativeMouseEvent` type declares all four. No library gesture reads
+   either modifier. Recommendation: forward `domEvent.altKey === true` and
+   `domEvent.ctrlKey === true`, add a unit case to `tests/unit/domResponder.test.ts`,
+   and note the deviation.
+
 ## Estimate
 
 | Milestone | Scope                                          | Estimate    |
