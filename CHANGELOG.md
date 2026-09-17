@@ -7,10 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.1.0](https://github.com/futex-ai/ui/compare/v3.0.0...v3.1.0) (2026-09-17)
 
-
 ### Features
 
-* make the web build independent of react-native ([#166](https://github.com/futex-ai/ui/issues/166)) ([c626a81](https://github.com/futex-ai/ui/commit/c626a811d510f3006acfd7c6a073de9c2f0a1d2e))
+- make the web build independent of react-native ([#166](https://github.com/futex-ai/ui/issues/166)) ([c626a81](https://github.com/futex-ai/ui/commit/c626a811d510f3006acfd7c6a073de9c2f0a1d2e))
 
 ## [3.0.0](https://github.com/futex-ai/ui/compare/v2.1.0...v3.0.0) (2026-09-04)
 
