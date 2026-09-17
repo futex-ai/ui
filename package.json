@@ -1,6 +1,6 @@
 {
   "name": "@firna/ui",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Shared React Native and web UI primitives for Firna apps.",
   "private": false,
   "type": "module",
