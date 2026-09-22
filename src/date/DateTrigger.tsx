@@ -1,7 +1,14 @@
 /** The platform-specific date-field triggers (web text input vs native tap). */
-import { CalendarDays, CircleX } from "../primitives/icons";
 import { useEffect, useRef, useState } from "react";
-import { Pressable, Text, TextInput, View } from "../primitives/reactNative";
+
+import { CalendarDays, CircleX } from "../primitives/icons";
+import {
+  Platform,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+} from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { useFocusRing } from "../focusRing";
@@ -163,7 +170,7 @@ export function NativeTrigger({
   testID,
 }: TriggerProps) {
   const theme = useSharedUiTheme();
-  const focus = useFocusRing();
+  const focus = useFocusRing({ target: "descendant" });
   const triggerRef = useRef<View>(null);
   const iconSize = inputIconSize(size);
   useEffect(() => {
@@ -194,16 +201,19 @@ export function NativeTrigger({
   // swallow the clear action, leaving no way to unset the field on native.
   return (
     <Pressable
+      {...focus.focusRingProps}
       accessible={false}
       onPress={() => field.setOpen(true)}
       style={[
         styles.trigger,
         triggerBorder(styles, invalid, field.open || focus.focused),
-        focus.focusVisible ? focus.focusRingStyle : null,
+        focus.focusRingVariables,
       ]}
+      tabIndex={Platform.OS === "web" ? -1 : undefined}
       testID={testID}
     >
       <Pressable
+        {...focus.focusTargetProps}
         accessibilityHint={accessibilityHint}
         accessibilityLabel={`${label}: ${field.display || placeholder}`}
         accessibilityRole="button"
@@ -215,7 +225,7 @@ export function NativeTrigger({
         onFocus={focus.onFocus}
         onPress={() => field.setOpen(true)}
         ref={triggerRef}
-        style={[styles.triggerOpen, focus.focusRingVariables]}
+        style={styles.triggerOpen}
       >
         <Text
           style={

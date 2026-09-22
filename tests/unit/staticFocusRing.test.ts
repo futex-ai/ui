@@ -112,6 +112,30 @@ test(
 );
 
 test(
+  "static wheel date triggers expose their focus host and target",
+  { skip: !testBuilt },
+  async () => {
+    const { DateField, SharedUiThemeProvider } = await loadBuiltUi();
+    const markup = renderToStaticMarkup(
+      createElement(
+        SharedUiThemeProvider,
+        null,
+        createElement(DateField, {
+          label: "Year ends",
+          onChange: () => undefined,
+          value: "2026-03-31",
+          variant: "wheel",
+        }),
+      ),
+    );
+
+    assert.match(markup, /data-firna-focus-ring="descendant"/);
+    assert.match(markup, /data-firna-focus-target="true"/);
+    assert.doesNotMatch(markup, /outline(?:-style)?:/);
+  },
+);
+
+test(
   "web theme providers serialize focus variables for every preset",
   { skip: !testBuilt },
   async () => {

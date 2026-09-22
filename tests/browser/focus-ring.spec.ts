@@ -101,6 +101,27 @@ test("the CSS glow composes with a kanban card's elevation shadow", async ({
   expect(shadow).toContain("rgba(20, 28, 22, 0.05)");
 });
 
+test("wheel date trigger paints its frame around the focused button", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=date-examples--wheel-date-field&viewMode=story",
+  );
+  await page.waitForSelector("#storybook-root *", {
+    timeout: storyReadyTimeout,
+  });
+
+  const trigger = page.getByRole("button", { name: "Year ends: 31 Mar 2026" });
+  const host = page
+    .locator('[data-firna-focus-host="descendant"]')
+    .filter({ has: trigger });
+
+  await focusWithKeyboard(page, trigger);
+  await expectGlow(host);
+  await expect(trigger).toHaveCSS("outline-style", "none");
+  await expect(host).toHaveAttribute("tabindex", "-1");
+});
+
 for (const [label, storyId] of [
   ["theme focusRing false", "ring-disabled-globally"],
   ["disableFocusRing", "ring-disabled-per-control"],
