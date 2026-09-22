@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Web consumers whose tests inspect an inline `box-shadow` or depend on the
   hook's inline `outline: none` should instead assert the marker and computed
   `:focus-visible` styles; explicit `focusRingStyleFor` calls remain inline.
+  Existing custom controls using the hook's conditional `focusRingStyle` keep
+  their hydrated inline glow, while the new marker path adds static rendering.
   `SharedUiThemeProvider` now emits a `display: contents` web wrapper to keep
   SSR output self-contained, so DOM code relying on its former fragment-only
   child relationship should account for that boxless element.

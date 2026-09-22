@@ -166,6 +166,13 @@ export function useFocusRing(options: FocusRingOptions = {}) {
     if (!ringEnabled || Platform.OS !== "web") return EMPTY_RING_STYLE;
     return focusRingCssVariablesFor(color, width, alpha) as ViewStyle;
   }, [ringEnabled, color, width, alpha]);
+  const focusRingStyle = useMemo<ViewStyle>(
+    () =>
+      ringEnabled
+        ? focusRingStyleFor({ color, width, offset, alpha })
+        : EMPTY_RING_STYLE,
+    [ringEnabled, color, width, offset, alpha],
+  );
   const focusRingProps = useMemo<FocusRingHostProps>(() => {
     if (Platform.OS !== "web" || (!ringEnabled && target === "self")) {
       return EMPTY_RING_PROPS;
@@ -238,9 +245,9 @@ export function useFocusRing(options: FocusRingOptions = {}) {
     focusRingProps,
     focusTargetProps,
     focusRingVariables: ringEnabled ? focusRingVariables : null,
-    // Kept for source compatibility. The hook no longer paints on web; use
-    // `focusRingStyleFor` only for an explicit caller-owned inline ring.
-    focusRingStyle: EMPTY_RING_STYLE,
+    // Hydrated compatibility path for existing custom controls. Library
+    // controls use the marker above so their focus glow also survives SSR.
+    focusRingStyle,
     ringEnabled,
     // Kept for source compatibility. CSS now owns outline removal.
     webOutlineReset: null as ViewStyle | null,

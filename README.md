@@ -111,6 +111,9 @@ The package name is `@firna/ui`. Public exports are available from:
   canonical web paint path; `focused` and `focusVisible` remain available for
   non-painting interaction state. Custom controls spread `focusRingProps` on
   the painted host and include `focusRingVariables` in its style.
+  Existing hydrated controls that conditionally apply `focusRingStyle` keep
+  their inline glow for compatibility; adopting the marker is only required for
+  the glow to survive server/static rendering.
   `focusRingStyleFor` keeps the explicit inline glow escape hatch for
   caller-owned local style sheets. Pass `disableFocusRing` to one control, or
   set the theme's `focusRing: false`, to omit the CSS marker and restore the

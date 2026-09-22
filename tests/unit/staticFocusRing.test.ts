@@ -164,3 +164,40 @@ test(
     assert.match(markup, /--firna-focus-ring-width:7px/);
   },
 );
+
+test(
+  "legacy hook styles keep the hydrated inline focus fallback",
+  { skip: !testBuilt },
+  async () => {
+    const ui = await loadBuiltUi();
+    let legacy:
+      | {
+          focusRingStyle: Record<string, unknown>;
+          webOutlineReset: unknown;
+        }
+      | undefined;
+
+    function LegacyProbe() {
+      const focus = ui.useFocusRing({
+        alpha: 0.5,
+        color: "#abc",
+        offset: -2,
+        width: 7,
+      });
+      legacy = {
+        focusRingStyle: focus.focusRingStyle,
+        webOutlineReset: focus.webOutlineReset,
+      };
+      return null;
+    }
+
+    renderToStaticMarkup(
+      createElement(ui.SharedUiThemeProvider, null, createElement(LegacyProbe)),
+    );
+    assert.deepEqual(legacy?.focusRingStyle, {
+      boxShadow: "inset 0 0 0 7px rgba(170, 187, 204, 0.5)",
+      outlineStyle: "none",
+    });
+    assert.equal(legacy?.webOutlineReset, null);
+  },
+);

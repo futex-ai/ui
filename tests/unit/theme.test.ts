@@ -155,6 +155,9 @@ test("useFocusRing exposes the disable primitive and outline fallback", () => {
     source,
     /focusRingVariables:\s*ringEnabled \? focusRingVariables : null/,
   );
-  assert.match(source, /focusRingStyle:\s*EMPTY_RING_STYLE/);
+  assert.match(
+    source,
+    /ringEnabled\s*\?\s*focusRingStyleFor\(\{ color, width, offset, alpha \}\)\s*:\s*EMPTY_RING_STYLE/,
+  );
   assert.match(source, /webOutlineReset:\s*null as ViewStyle \| null/);
 });
