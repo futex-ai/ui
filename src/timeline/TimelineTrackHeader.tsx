@@ -169,6 +169,7 @@ function HeaderToggle({
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onPress}
@@ -176,10 +177,7 @@ function HeaderToggle({
         styles.headerToggle,
         { height: box, width: box },
         active ? styles.headerToggleOn : null,
-        focus.webOutlineReset,
-        focus.focusVisible && focus.ringEnabled
-          ? styles.headerToggleFocused
-          : null,
+        focus.focusRingVariables,
       ]}
       testID={testID}
     >

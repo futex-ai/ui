@@ -69,6 +69,7 @@ export function TransportButton({
       accessibilityLabel={label}
       accessibilityRole="button"
       disabled={disabled}
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onPress}
@@ -79,8 +80,7 @@ export function TransportButton({
         active && !primary ? styles.buttonActive : null,
         hovered && !primary && !active ? styles.buttonHovered : null,
         disabled ? styles.buttonDisabled : null,
-        focus.webOutlineReset,
-        focus.focusVisible && focus.ringEnabled ? styles.buttonFocused : null,
+        focus.focusRingVariables,
         style,
       ]}
       testID={testID}

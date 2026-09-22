@@ -28,11 +28,12 @@ Shared UI component library for Firna React Native and web surfaces. The first c
   with four shipped presets — the accounting default and Juno, each in a light
   and a dark variant. Every component reads its colors from the tokens, so dark
   mode is a preset swap rather than a per-component opt-in.
-- A shared, calm focus glow across every control. On web it follows
-  `:focus-visible`, so keyboard focus is clear without painting a keyboard-style
-  ring after a pointer click; native keeps its platform focus behavior. Disable
-  it globally via the theme's `focusRing: false` flag or per instance with a
-  `disableFocusRing` prop (both restore the browser's default focus outline).
+- A shared, calm focus glow across every control. On web the DOM backend paints
+  it from CSS `:focus-visible`, so server-rendered and static HTML keeps the same
+  keyboard affordance before hydration — or with no JavaScript at all. Native
+  keeps its platform focus behavior. Disable the glow globally with
+  `focusRing: false` or per instance with `disableFocusRing`; both are deliberate
+  opt-outs that restore the browser outline on the control's visible box.
 - Portaled, anchored web date/dropdown/popover overlays with viewport-aware,
   content-sized selector menus and z-index escape hatches, plus touch-friendly
   native date sheets.
@@ -105,13 +106,15 @@ The package name is `@firna/ui`. Public exports are available from:
   `createSharedUiTheme(overrides, base)`, and the global `focusRing` switch
   (`SharedUiThemeProvider theme={{ focusRing: false }}` disables every control's
   focus glow at once). See [Theming](#theming) for the dark-mode contract.
-- `@firna/ui/focusRing` for `useFocusRing` and `focusRingStyleFor` — the shared
-  focus-glow primitive every control uses. The hook exposes `focused` for actual
-  focus and `focusVisible` for deciding when to paint the ring; on web the latter
-  follows `:focus-visible` and is cleared by the target's native blur event even
-  when React misses a blur during a disabled-state transition. Pass
-  `disableFocusRing` to a single control to drop only that instance's glow; both
-  disable paths restore the browser's default focus outline (WCAG 2.4.7).
+- `@firna/ui/focusRing` for `useFocusRing`, `focusRingStyleFor`, and
+  `focusRingCssVariablesFor`. Library controls use the hook's CSS marker as the
+  canonical web paint path; `focused` and `focusVisible` remain available for
+  non-painting interaction state. Custom controls spread `focusRingProps` on
+  the painted host and include `focusRingVariables` in its style.
+  `focusRingStyleFor` keeps the explicit inline glow escape hatch for
+  caller-owned local style sheets. Pass `disableFocusRing` to one control, or
+  set the theme's `focusRing: false`, to omit the CSS marker and restore the
+  browser outline (WCAG 2.4.7).
 - `@firna/ui/toast` for the toast provider, the `useToast` hook, the
   `toastController` method API, and transient notification toasts including
   card and solid variants with optional custom leading icons.
@@ -183,6 +186,51 @@ Two token-level rules make dark mode work without per-component branching:
 
 `theme.scheme` (`"light" | "dark"`) is available for the rare physical-metaphor
 case, but components should read colors from tokens rather than branch on it.
+
+### Web focus CSS and server rendering
+
+On web, `SharedUiThemeProvider` adds a boxless (`display: contents`) DOM boundary
+that serializes the active theme's focus variables around its children:
+
+- `--firna-focus-ring-color` — `colors.primary` composed at the standard `0.35`
+  alpha, for example `rgba(79, 120, 100, 0.35)` in the default theme.
+- `--firna-focus-ring-width` — the standard `4px` halo width.
+
+Controls repeat those variables on their marked host when needed, so a
+per-control `color`, `width`, or `alpha` passed to `useFocusRing` wins locally.
+The DOM backend's attribute-based `:focus-visible` rules read the variables;
+inset hosts carry a second attribute, and forced-colors mode replaces the shadow
+with a `2px solid Highlight` outline. The rules do not animate.
+
+Server-rendered and static pages must emit `domBackendCss` in `<head>` before
+their own stylesheets. Emitting the variables there as a `:root` fallback makes
+the first paint complete even outside a provider boundary; the provider also
+serializes them inline, so `renderToStaticMarkup` output remains self-contained:
+
+```tsx
+import {
+  defaultSharedUiTheme,
+  domBackendCss,
+  focusRingCssVariablesFor,
+} from "@firna/ui";
+
+const focusVariables = focusRingCssVariablesFor(
+  defaultSharedUiTheme.colors.primary,
+);
+const focusVariableCss = `:root{${Object.entries(focusVariables)
+  .map(([name, value]) => `${name}:${value}`)
+  .join(";")}}`;
+
+<head>
+  <style>{`${domBackendCss}\n${focusVariableCss}`}</style>
+  {/* Consumer stylesheets come after this style. */}
+</head>;
+```
+
+Later consumer rules can override the focus treatment at equal specificity.
+`focusRing: false` is not required for static rendering; it is now purely an
+opt-out for consumers that want the browser default or supply their own focus
+treatment.
 
 ### Chart colors
 

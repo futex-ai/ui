@@ -58,11 +58,12 @@ test("kanban makes cards pressable buttons when given onCardPress", () => {
   assert.match(source, /accessibilityRole="button"/);
   assert.match(source, /accessibilityState=\{\{ disabled \}\}/);
   assert.match(source, /useFocusRing/);
+  assert.match(source, /\.\.\.focus\.focusRingProps/);
   assert.match(
     source,
-    /focus\.focusVisible && focus\.ringEnabled \? styles\.cardFocused : null/,
+    /useFocusRing\(\{ offset: -2, disabled: disableFocusRing \}\)/,
   );
-  assert.match(source, /focus\.webOutlineReset/);
+  assert.match(source, /focus\.focusRingVariables/);
   assert.match(source, /hovered && !disabled \? styles\.cardHover : null/);
   assert.match(source, /pressed && !disabled \? styles\.cardPressed : null/);
   assert.match(source, /disabled \? styles\.cardDisabled : null/);
@@ -250,7 +251,7 @@ test("kanban styles are driven by shared theme tokens", () => {
     source,
     /cardPressed: \{ backgroundColor: theme\.colors\.bg2 \}/,
   );
-  assert.match(source, /cardFocused: \{[\s\S]*?theme\.colors\.primary/);
+  assert.doesNotMatch(source, /cardFocused:/);
   // The count and footer use the mono face; column / card / chip use lg / md / sm radii.
   assert.match(source, /fontFamily: theme\.fonts\.mono/);
   assert.match(source, /borderRadius: theme\.radii\.lg/);

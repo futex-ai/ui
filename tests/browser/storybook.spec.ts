@@ -3820,7 +3820,9 @@ test("dark story surface paints its own theme background", async ({ page }) => {
   // StorySurface paints `colors.bg`; without it the dark panel would composite
   // over the light Storybook canvas and the axe sweep would fail it.
   await expect(page.getByText("darkSharedUiTheme")).toBeVisible();
-  const surface = page.locator("#storybook-root > div").first();
+  // The web theme provider contributes a boxless variable scope; the painted
+  // StorySurface remains its direct View child.
+  const surface = page.locator("#storybook-root > div > .firna-view").first();
   await expect(surface).toHaveCSS("background-color", "rgb(20, 22, 19)");
 });
 

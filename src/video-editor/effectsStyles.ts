@@ -1,7 +1,6 @@
 /** Styles for the {@link EffectsRack} and its effect cards. */
 import { StyleSheet } from "../primitives/reactNative";
 
-import { focusRingStyleFor } from "../focusRing";
 import type { SharedUiTheme } from "../theme";
 
 export function createEffectsStyles(theme: SharedUiTheme) {
@@ -63,7 +62,6 @@ export function createEffectsStyles(theme: SharedUiTheme) {
       justifyContent: "center",
       width: 22,
     },
-    iconButtonFocused: focusRingStyleFor({ color: theme.colors.primary }),
     empty: {
       ...baseText,
       color: theme.colors.placeholder,

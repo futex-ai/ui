@@ -101,17 +101,15 @@ export function WorkflowInsertButton({
     <Pressable
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onPress}
       style={({ hovered }: PressableHoverState) => [
         styles.insertButton,
         hovered ? styles.insertButtonHover : null,
-        focus.focusVisible && focus.ringEnabled
-          ? styles.insertButtonFocused
-          : null,
         style,
-        focus.webOutlineReset,
+        focus.focusRingVariables,
       ]}
       testID={testID}
     >

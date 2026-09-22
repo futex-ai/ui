@@ -213,6 +213,7 @@ export function useDragSelectableTarget(
   return useMemo(
     () => ({
       a11yProps: {
+        ...focus.focusRingProps,
         accessibilityLabel: label ?? id,
         accessibilityRole: "checkbox" as const,
         accessibilityState: { checked: selected, disabled: Boolean(disabled) },
@@ -232,6 +233,7 @@ export function useDragSelectableTarget(
     [
       disabled,
       focus.focusRingStyle,
+      focus.focusRingProps,
       focus.focusVisible,
       focus.onBlur,
       focus.onFocus,

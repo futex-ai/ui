@@ -135,7 +135,10 @@ export function RichTextEditor({
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createRichTextStyles(theme), [theme]);
   const domTheme = useMemo(() => createRichTextDomTheme(theme), [theme]);
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({
+    disabled: disableFocusRing,
+    target: "descendant",
+  });
   const rootRef = useRef<HTMLDivElement | null>(null);
   const docRef = useRef<RichTextDocument>(parseMarkdown(value));
   const composingRef = useRef(false);
@@ -906,15 +909,9 @@ export function RichTextEditor({
       styles.frame,
       minHeight === undefined ? null : { minHeight },
       maxHeight === undefined ? null : { maxHeight },
-      focus.focusVisible ? focus.focusRingStyle : null,
+      focus.focusRingVariables,
     ],
-    [
-      focus.focusRingStyle,
-      focus.focusVisible,
-      maxHeight,
-      minHeight,
-      styles.frame,
-    ],
+    [focus.focusRingVariables, maxHeight, minHeight, styles.frame],
   );
   const scrollFrameStyle = useMemo(
     () => [
@@ -929,18 +926,14 @@ export function RichTextEditor({
       ({
         ...(StyleSheet.flatten(styles.editor) as CSSProperties),
         minHeight,
-        // Suppress the UA outline on the contentEditable focus target while the
-        // frame glow is the affordance; with the ring disabled, let the UA
-        // outline return so keyboard focus stays visible (WCAG 2.1 — 2.4.7).
-        outlineStyle: focus.ringEnabled ? "none" : undefined,
       }) as CSSProperties,
-    [focus.ringEnabled, minHeight, styles.editor],
+    [minHeight, styles.editor],
   );
 
   return (
     <View style={styles.field}>
       {label === undefined ? null : <Label>{label}</Label>}
-      <View style={frameStyle}>
+      <View {...focus.focusRingProps} style={frameStyle}>
         <View style={scrollFrameStyle}>
           {placeholder && empty ? (
             <Text pointerEvents="none" style={styles.placeholder}>
@@ -953,6 +946,7 @@ export function RichTextEditor({
             aria-controls={slashMenu.open ? slashMenu.listId : undefined}
             aria-multiline="true"
             contentEditable={!readOnly}
+            data-firna-focus-target="true"
             data-testid={testID}
             onBlur={focus.onBlur}
             // A read-only document never moves the DOM selection, so the

@@ -229,16 +229,11 @@ function RemoveButton({
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onPress}
-      style={[
-        styles.iconButton,
-        focus.webOutlineReset,
-        focus.focusVisible && focus.ringEnabled
-          ? styles.iconButtonFocused
-          : null,
-      ]}
+      style={[styles.iconButton, focus.focusRingVariables]}
       testID={testID}
     >
       <Trash2 color={theme.colors.rose} size={14} />

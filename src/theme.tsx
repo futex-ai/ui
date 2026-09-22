@@ -2,6 +2,7 @@ import { createContext, ReactNode, useContext, useMemo } from "react";
 
 import { chartOverridesFrom, resolveChartColors } from "./chartTheme";
 import type { SharedUiChartColors } from "./chartTheme";
+import { SharedUiThemeRoot } from "./themeRoot";
 
 export type { SharedUiChartColors };
 
@@ -112,11 +113,10 @@ export type SharedUiTheme = {
   fonts: SharedUiFonts;
   radii: SharedUiRadii;
   /**
-   * Global focus-glow switch. Defaults to `true`. Set `false` to disable the
-   * shared focus ring on every control at once (see {@link useFocusRing}); each
-   * control can also opt out individually via its `disableFocusRing` prop. When
-   * off, controls fall back to the browser's default focus outline so keyboard
-   * focus stays visible (WCAG 2.1 — 2.4.7 Focus Visible, AA).
+   * Global focus-glow switch. Defaults to `true`. On web the glow is painted by
+   * the DOM backend stylesheet's `:focus-visible` rules. Set `false` to omit
+   * those controls' CSS marker and restore the browser focus outline; each
+   * control can opt out the same way via its `disableFocusRing` prop.
    */
   focusRing: boolean;
   /**
@@ -216,7 +216,9 @@ export function SharedUiThemeProvider({
   const value = useMemo(() => createSharedUiTheme(theme), [theme]);
   return (
     <SharedUiThemeContext.Provider value={value}>
-      {children}
+      <SharedUiThemeRoot primary={value.colors.primary}>
+        {children}
+      </SharedUiThemeRoot>
     </SharedUiThemeContext.Provider>
   );
 }

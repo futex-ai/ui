@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **focus-ring:** paint the web focus glow from `domBackendCss`, preserving it
+  in server-rendered and static HTML without changing the public focus APIs.
+  Web consumers whose tests inspect an inline `box-shadow` or depend on the
+  hook's inline `outline: none` should instead assert the marker and computed
+  `:focus-visible` styles; explicit `focusRingStyleFor` calls remain inline.
+  `SharedUiThemeProvider` now emits a `display: contents` web wrapper to keep
+  SSR output self-contained, so DOM code relying on its former fragment-only
+  child relationship should account for that boxless element.
+
 ## [3.1.0](https://github.com/futex-ai/ui/compare/v3.0.0...v3.1.0) (2026-09-17)
 
 ### Features
@@ -306,8 +319,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Features
 
 - **calendar:** add full event calendar view component ([#39](https://github.com/futex-ai/ui/issues/39)) ([879285e](https://github.com/futex-ai/ui/commit/879285eaa10d93e5088b6d90721c1f2f9959c4ce))
-
-## [Unreleased]
 
 ## [0.2.1](https://github.com/futex-ai/ui/compare/v0.2.0...v0.2.1) - 2026-06-18
 

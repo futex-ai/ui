@@ -127,11 +127,12 @@ test("useFocusRing exposes the disable primitive and outline fallback", () => {
     source,
     /const ringEnabled =\s*!disabled && theme\.focusRing !== false/,
   );
-  // A disabled ring collapses to an empty style so the usual gate paints nothing.
-  assert.match(source, /ringEnabled\s*\n?\s*\?\s*focusRingStyleFor/);
-  assert.match(source, /:\s*EMPTY_RING_STYLE/);
-  // The hook returns both the Family-B gate flag and the web outline reset.
+  // A disabled ring omits the CSS marker and painting variables.
+  assert.match(source, /firnaFocusRing:\s*ringEnabled \? target : undefined/);
+  assert.match(source, /!ringEnabled \|\| Platform\.OS !== "web"/);
+  // The hook still returns state plus the marker and geometry variables.
   assert.match(source, /ringEnabled,/);
+  assert.match(source, /focusRingProps,/);
   assert.match(source, /focusVisible:\s*focusState\.focusVisible/);
   assert.match(source, /target\?\.matches\(":focus-visible"\) \?\? true/);
   // A native DOM blur subscription covers React's missed synthetic onBlur when
@@ -152,6 +153,8 @@ test("useFocusRing exposes the disable primitive and outline fallback", () => {
   );
   assert.match(
     source,
-    /webOutlineReset:\s*ringEnabled \? hideWebOutlineView : null/,
+    /focusRingVariables:\s*ringEnabled \? focusRingVariables : null/,
   );
+  assert.match(source, /focusRingStyle:\s*EMPTY_RING_STYLE/);
+  assert.match(source, /webOutlineReset:\s*null as ViewStyle \| null/);
 });

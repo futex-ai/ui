@@ -131,7 +131,7 @@ export function ListItem({
  * target — the row's `leading` and `trailing` slots stay outside it, so a live
  * trailing control (a toggle / action) remains independently interactive
  * alongside a pressable label. Mirrors the shared pressable affordances: the
- * sage focus ring (with the hidden web outline), a pressed dim, and a disabled
+ * sage CSS focus ring, a pressed dim, and a disabled
  * state. Keyboard activation (Enter / Space) comes from RNW's `button` role.
  */
 function PressableTitle({
@@ -158,6 +158,7 @@ function PressableTitle({
       accessibilityRole="button"
       accessibilityState={{ disabled }}
       disabled={disabled}
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onPress}
@@ -166,9 +167,8 @@ function PressableTitle({
         styles.itemMain,
         styles.itemMainPressable,
         pressed && !disabled ? styles.itemMainPressed : null,
-        focus.focusVisible ? focus.focusRingStyle : null,
         disabled ? styles.itemDisabled : null,
-        focus.webOutlineReset,
+        focus.focusRingVariables,
       ]}
     >
       {children}

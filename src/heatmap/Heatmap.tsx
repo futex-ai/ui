@@ -648,6 +648,7 @@ function HeatmapPressableCell({
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={(event) => {
         focus.onFocus(event);
@@ -665,14 +666,8 @@ function HeatmapPressableCell({
           width: size,
         },
         styles.cell,
-        // Suppress the UA default outline while the glow is the focus affordance,
-        // then layer the custom ring so it wins. With the ring disabled the reset
-        // is skipped so the UA outline returns on this focusable gridcell (WCAG
-        // 2.1 — 2.4.7 Focus Visible, AA).
-        focus.webOutlineReset,
-        focus.focusVisible && focus.ringEnabled
-          ? styles.cellPressableFocused
-          : null,
+        // Feed the CSS focus rule from this marked, focusable grid cell.
+        focus.focusRingVariables,
       ]}
       tabIndex={tabIndex}
     />

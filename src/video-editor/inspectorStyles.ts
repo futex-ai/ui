@@ -4,7 +4,6 @@
  */
 import { StyleSheet } from "../primitives/reactNative";
 
-import { focusRingStyleFor } from "../focusRing";
 import type { SharedUiTheme } from "../theme";
 
 export function createInspectorStyles(theme: SharedUiTheme) {
@@ -33,10 +32,6 @@ export function createInspectorStyles(theme: SharedUiTheme) {
       paddingHorizontal: 10,
       paddingVertical: 6,
     },
-    sectionHeaderFocused: focusRingStyleFor({
-      color: theme.colors.primary,
-      offset: -2,
-    }),
     sectionTitle: {
       ...baseText,
       color: theme.colors.muted,
@@ -66,7 +61,6 @@ export function createInspectorStyles(theme: SharedUiTheme) {
       flexDirection: "row",
       paddingHorizontal: 6,
     },
-    fieldFocused: focusRingStyleFor({ color: theme.colors.primary }),
     fieldInput: { flex: 1, padding: 0 },
     fieldUnit: { ...baseText, color: theme.colors.muted, paddingLeft: 4 },
 
@@ -92,7 +86,6 @@ export function createInspectorStyles(theme: SharedUiTheme) {
       width: 20,
     },
     swatchSelected: { borderColor: theme.colors.ink, borderWidth: 2 },
-    swatchFocused: focusRingStyleFor({ color: theme.colors.primary }),
 
     iconButton: {
       alignItems: "center",
@@ -102,7 +95,6 @@ export function createInspectorStyles(theme: SharedUiTheme) {
       width: 22,
     },
     iconButtonOn: { backgroundColor: theme.colors.primarySoft },
-    iconButtonFocused: focusRingStyleFor({ color: theme.colors.primary }),
 
     empty: {
       ...baseText,

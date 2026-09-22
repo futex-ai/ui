@@ -1,7 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Platform, TextStyle, ViewStyle } from "./primitives/reactNative";
 
+import {
+  DEFAULT_FOCUS_RING_ALPHA,
+  DEFAULT_FOCUS_RING_COLOR,
+  DEFAULT_FOCUS_RING_WIDTH,
+  focusRingColorFor,
+  focusRingCssVariablesFor,
+} from "./focusRingCss";
 import { useSharedUiTheme } from "./theme";
+
+export {
+  FOCUS_RING_COLOR_VARIABLE,
+  FOCUS_RING_WIDTH_VARIABLE,
+  focusRingColorFor,
+  focusRingCssVariablesFor,
+  rgbChannels,
+} from "./focusRingCss";
 
 export const hideWebOutline = { outlineStyle: "none" } as unknown as TextStyle;
 
@@ -12,12 +27,7 @@ export const hideWebOutlineView = {
 /** Pressable style-callback state, widened with the web backend's `hovered`. */
 export type PressableHoverState = { pressed: boolean; hovered?: boolean };
 
-/**
- * Fallback ring color used when a caller invokes `focusRingStyleFor` without a
- * `color` and outside a theme. Mirrors the default theme's `primary`; live
- * callers resolve the active theme's value through `useFocusRing`.
- */
-const DEFAULT_RING_COLOR = "#4f7864";
+export type FocusRingTarget = "self" | "descendant" | "parent";
 
 export type FocusRingOptions = {
   /**
@@ -39,17 +49,36 @@ export type FocusRingOptions = {
   /** Glow opacity, 0–1. Lower is softer; raise it for more presence. Default 0.35. */
   alpha?: number;
   /**
-   * Suppress the glow entirely. When true, {@link useFocusRing} returns an empty
-   * `focusRingStyle` and `ringEnabled: false`, so a control renders no focus
-   * glow. Callers wire this to a public `disableFocusRing` prop; the active
-   * theme's `focusRing: false` flag disables every ring globally the same way.
-   * Only consulted by `useFocusRing` — `focusRingStyleFor` ignores it.
+   * Relationship from the painted box to the real focus target. The default
+   * `self` marks one element. `descendant` paints an input frame around a
+   * focused child; `parent` paints a child such as a switch track when its
+   * parent owns focus.
+   */
+  target?: FocusRingTarget;
+  /**
+   * Suppress the glow entirely. On web this omits the CSS focus-ring marker and
+   * leaves the browser outline enabled on the visible control box. Callers wire
+   * this to `disableFocusRing`; the theme's `focusRing: false` flag applies the
+   * same opt-out globally. `focusRingStyleFor` ignores this option.
    */
   disabled?: boolean;
 };
 
-/** Stable empty style returned for a disabled ring, so identity never churns. */
+/** Stable legacy style; hook-driven web painting now lives entirely in CSS. */
 const EMPTY_RING_STYLE = Object.freeze({}) as ViewStyle;
+
+/** Stable empty host props returned on native and for a disabled self target. */
+const EMPTY_RING_PROPS = Object.freeze({}) as FocusRingHostProps;
+
+/** Props to spread on the visible box that CSS should decorate. */
+export type FocusRingHostProps = {
+  dataSet?: {
+    firnaFocusHost?: FocusRingTarget;
+    firnaFocusRing?: FocusRingTarget;
+    firnaFocusRingInset?: "true";
+    firnaFocusTarget?: "true";
+  };
+};
 
 type FocusState = {
   focused: boolean;
@@ -78,22 +107,6 @@ const UNFOCUSED_STATE = Object.freeze({
 }) as FocusState;
 
 /**
- * Parses a `#rgb`/`#rrggbb` hex color into an `"r, g, b"` channel triplet for
- * composing an `rgba()` glow. Returns null for any non-hex input (rgba(),
- * named colors) so callers can fall back to the color verbatim.
- */
-function rgbChannels(hex: string): string | null {
-  const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex.trim());
-  if (!match) return null;
-  let body = match[1];
-  if (body.length === 3) {
-    body = body[0] + body[0] + body[1] + body[1] + body[2] + body[2];
-  }
-  const int = parseInt(body, 16);
-  return `${(int >> 16) & 255}, ${(int >> 8) & 255}, ${int & 255}`;
-}
-
-/**
  * Builds a soft-glow focus indicator: a translucent `box-shadow` halo in the
  * ring color, instead of a hard outline.
  *
@@ -109,21 +122,24 @@ function rgbChannels(hex: string): string | null {
  *
  * Clipping: controls nested in an `overflow: hidden` ancestor would clip an
  * outset halo, so they pass a negative `offset` to draw the glow `inset`.
+ *
+ * This is the explicit inline-style escape hatch for caller-owned local style
+ * sheets. Library controls use {@link useFocusRing}; its CSS marker is the
+ * canonical web path and therefore also works before hydration.
  */
 export function focusRingStyleFor(options: FocusRingOptions): ViewStyle {
   const {
-    color = DEFAULT_RING_COLOR,
-    width = 4,
+    color = DEFAULT_FOCUS_RING_COLOR,
+    width = DEFAULT_FOCUS_RING_WIDTH,
     offset = 2,
-    alpha = 0.35,
+    alpha = DEFAULT_FOCUS_RING_ALPHA,
   } = options;
 
   // Native keeps the OS focus affordance (as the old outline ring did — the
   // web-only shadow/outline props were inert there).
   if (Platform.OS !== "web") return {};
 
-  const channels = rgbChannels(color);
-  const glow = channels ? `rgba(${channels}, ${alpha})` : color;
+  const glow = focusRingColorFor(color, alpha);
   const inset = offset < 0 ? "inset " : "";
 
   return {
@@ -134,31 +150,41 @@ export function focusRingStyleFor(options: FocusRingOptions): ViewStyle {
 }
 
 /**
- * Tracks actual focus and visible-focus modality independently. Web controls
- * render the custom glow only when `:focus-visible` matches; native controls
- * treat every focus as visible. Direct web listeners keep state aligned when
- * input modality changes without another focus event, or when disabling a
- * focused element bypasses React's synthetic `onBlur`.
+ * Marks a visible control box for the DOM backend's CSS focus rule and tracks
+ * actual focus and visible-focus modality independently. The state remains for
+ * non-painting behavior such as active borders and keyboard tooltips. Native
+ * behavior is unchanged and keeps the operating-system focus affordance.
  */
 export function useFocusRing(options: FocusRingOptions = {}) {
   const [focusState, setFocusState] = useState<FocusState>(UNFOCUSED_STATE);
   const focusedTargetRef = useRef<WebFocusTarget | null>(null);
   const theme = useSharedUiTheme();
   const color = options.color ?? theme.colors.primary;
-  const { width, offset, alpha, disabled } = options;
-  // The ring is on unless this instance opts out (`disabled`) or the whole theme
-  // turns rings off (`focusRing: false`). When off, `focusRingStyle` collapses
-  // to `{}`, so the usual `focusVisible ? focusRingStyle : null` idiom paints no
-  // glow with no gate change. `ringEnabled` is for callers that draw their glow
-  // from a local StyleSheet and never read `focusRingStyle`; they AND it into
-  // their own gate. It also drives the web outline reset below.
+  const { width, offset, alpha, disabled, target = "self" } = options;
   const ringEnabled = !disabled && theme.focusRing !== false;
-  const focusRingStyle = useMemo<ViewStyle>(
+  const focusRingVariables = useMemo<ViewStyle>(() => {
+    if (!ringEnabled || Platform.OS !== "web") return EMPTY_RING_STYLE;
+    return focusRingCssVariablesFor(color, width, alpha) as ViewStyle;
+  }, [ringEnabled, color, width, alpha]);
+  const focusRingProps = useMemo<FocusRingHostProps>(() => {
+    if (Platform.OS !== "web" || (!ringEnabled && target === "self")) {
+      return EMPTY_RING_PROPS;
+    }
+    return {
+      dataSet: {
+        firnaFocusHost: target === "self" ? undefined : target,
+        firnaFocusRing: ringEnabled ? target : undefined,
+        firnaFocusRingInset:
+          ringEnabled && (offset ?? 2) < 0 ? "true" : undefined,
+      },
+    };
+  }, [ringEnabled, offset, target]);
+  const focusTargetProps = useMemo<FocusRingHostProps>(
     () =>
-      ringEnabled
-        ? focusRingStyleFor({ color, width, offset, alpha })
-        : EMPTY_RING_STYLE,
-    [ringEnabled, color, width, offset, alpha],
+      Platform.OS === "web" && target !== "self"
+        ? { dataSet: { firnaFocusTarget: "true" } }
+        : EMPTY_RING_PROPS,
+    [target],
   );
   const syncFocusVisible = useCallback(() => {
     const target = focusedTargetRef.current;
@@ -209,13 +235,15 @@ export function useFocusRing(options: FocusRingOptions = {}) {
   );
 
   return {
-    focusRingStyle,
+    focusRingProps,
+    focusTargetProps,
+    focusRingVariables: ringEnabled ? focusRingVariables : null,
+    // Kept for source compatibility. The hook no longer paints on web; use
+    // `focusRingStyleFor` only for an explicit caller-owned inline ring.
+    focusRingStyle: EMPTY_RING_STYLE,
     ringEnabled,
-    // Outline reset to spread onto the focus target: suppress the browser's
-    // default outline while the glow is the focus affordance, but let the UA
-    // outline return once the ring is disabled so keyboard focus stays visible
-    // (WCAG 2.1 — 2.4.7 Focus Visible, AA). Web-only, matching the glow.
-    webOutlineReset: ringEnabled ? hideWebOutlineView : null,
+    // Kept for source compatibility. CSS now owns outline removal.
+    webOutlineReset: null as ViewStyle | null,
     focused: focusState.focused,
     focusVisible: focusState.focusVisible,
     onBlur: clearFocus,

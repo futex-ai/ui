@@ -43,19 +43,14 @@ test("button takes a caller role with the state that role must carry", () => {
   assert.match(source, /\{\.\.\.keyProps\}/);
 });
 
-test("button shows the shared tone-independent focus glow and hides the web outline", () => {
+test("button exposes the shared CSS focus marker and variables", () => {
   const source = readSource("../../src/button/Button.tsx");
 
-  // The focus indicator is the library's shared soft glow (`useFocusRing` →
-  // `focusRingStyle`) — the same box-shadow ring input / switch / radio /
-  // segmented use — applied on top of every tone so it stays visible even on
-  // `primary` (whose border already matches the theme primary), with the
-  // browser's default outline suppressed.
+  // CSS, rather than render-time focus state, paints the shared glow.
   assert.match(source, /useFocusRing/);
-  assert.match(source, /focus\.focusVisible \? focus\.focusRingStyle : null/);
-  // The outline reset is web-only and skipped when the ring is disabled, so the
-  // UA outline returns as the focus affordance.
-  assert.match(source, /focus\.webOutlineReset/);
+  assert.match(source, /\.\.\.focus\.focusRingProps/);
+  assert.match(source, /focus\.focusRingVariables/);
+  assert.doesNotMatch(source, /focus\.focusVisible \? focus\.focusRingStyle/);
 });
 
 test("button renders an optional leading icon tinted and sized with the button", () => {

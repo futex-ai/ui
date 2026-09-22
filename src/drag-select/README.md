@@ -58,10 +58,7 @@ function LedgerRow({ row }) {
     <View
       {...target.a11yProps}
       ref={target.ref}
-      style={[
-        target.selected ? selectedStyle : rowStyle,
-        target.focused ? target.focusRingStyle : null,
-      ]}
+      style={target.selected ? selectedStyle : rowStyle}
     >
       <Text>{row.label}</Text>
     </View>
@@ -82,8 +79,9 @@ Keyboard, A; 4.1.2 Name, Role, Value, A):
 - **Space / Enter** toggles the focused target. **Arrow Up/Down** moves the
   roving focus (Home/End jump to the ends). **Shift + Arrow** extends the
   selection as a contiguous range.
-- Apply `target.focusRingStyle` when `target.focused` is true for a visible
-  keyboard-focus indicator (WCAG 2.1 — 2.4.7 Focus Visible, AA).
+- Spreading `target.a11yProps` also supplies the CSS focus marker, so keyboard
+  focus gets the shared visible indicator without a render-time focus style
+  (WCAG 2.1 — 2.4.7 Focus Visible, AA).
 - Set `accessibilityLabel` (and optionally `role="list"`) on the provider so the
   collection is announced as a named group (WCAG 2.1 — 1.3.1, A).
 - Each committed selection change is announced to assistive tech through a

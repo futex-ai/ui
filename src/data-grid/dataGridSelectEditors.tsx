@@ -79,6 +79,7 @@ export function SingleSelectEditor({
       <Pressable
         accessibilityLabel={`Edit ${column.label}`}
         accessibilityRole="button"
+        {...focus.focusRingProps}
         onBlur={focus.onBlur}
         onFocus={focus.onFocus}
         ref={triggerRef}
@@ -86,8 +87,7 @@ export function SingleSelectEditor({
           inputStyles.box,
           focus.focused ? inputStyles.boxActive : null,
           editorStyles.squareFrame,
-          focus.focusVisible ? focus.focusRingStyle : null,
-          focus.webOutlineReset,
+          focus.focusRingVariables,
         ]}
       >
         {current ? (

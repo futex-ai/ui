@@ -90,7 +90,7 @@ export function TimelineRuler({
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createTimelineStyles(theme), [theme]);
   const metrics = timelineSizing[size];
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ offset: -2, disabled: disableFocusRing });
 
   const step = useMemo(
     () => tickStep(pixelsPerSecond, fps),
@@ -177,6 +177,7 @@ export function TimelineRuler({
       accessibilityLabel={accessibilityLabel}
       accessibilityRole={web ? undefined : "adjustable"}
       accessibilityValue={scrub.accessibilityValue}
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onMoveShouldSetResponder={() => Boolean(onSeek)}
@@ -186,8 +187,7 @@ export function TimelineRuler({
       style={[
         styles.ruler,
         { height: metrics.rulerHeight, width },
-        focus.webOutlineReset,
-        focus.focusVisible && focus.ringEnabled ? styles.rulerFocused : null,
+        focus.focusRingVariables,
         style,
       ]}
       tabIndex={onSeek ? 0 : undefined}

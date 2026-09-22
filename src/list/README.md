@@ -80,8 +80,8 @@ and `itemTestID` identifies the row view instead.
 
 ### Focus behavior
 
-On web, a List focus ring renders only while the focused press target matches
-the browser's `:focus-visible` pseudo-class. A pointer click still gives the
+On web, `domBackendCss` renders a List focus ring only while the focused press
+target matches the browser's `:focus-visible` pseudo-class. A pointer click gives the
 row or title button real focus for activation and other behavior, but does not
 paint the keyboard-style ring. Changing to keyboard input while that same
 element remains focused makes the ring visible. Moving focus with the pointer

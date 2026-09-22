@@ -457,6 +457,7 @@ export function Button({
       delayLongPress={delayLongPress}
       disabled={disabledState}
       hitSlop={hitSlop}
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       // Block activation while busy without unfocusing/hiding the control. The
@@ -527,7 +528,6 @@ export function Button({
         pressed && !disabledState && !busy && tone === "onMedia"
           ? styles.onMediaPressed
           : null,
-        focus.focusVisible ? focus.focusRingStyle : null,
         disabledState ? styles.disabled : null,
         // The caller's style layers last so it wins over the tone — which is
         // also why a caller-supplied fill erases the tone's washes. The
@@ -541,9 +541,9 @@ export function Button({
               pressed,
             })
           : style,
-        // Suppress the UA outline while the glow is the focus affordance; with
-        // the ring disabled the reset is skipped so the UA outline returns.
-        focus.webOutlineReset,
+        // Carry the CSS glow variables on every marked host. The stylesheet
+        // suppresses the UA outline only while its `:focus-visible` rule paints.
+        focus.focusRingVariables,
       ]}
       testID={testID}
       {...semantics.ariaProps}

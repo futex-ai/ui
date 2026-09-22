@@ -320,17 +320,17 @@ function DropdownSelectorView({
         aria-expanded={interactive ? open : undefined}
         aria-invalid={invalid}
         disabled={!interactive}
+        {...focus.focusRingProps}
         onBlur={focus.onBlur}
         onFocus={focus.onFocus}
         onPress={() => setOpen((current) => !current)}
         ref={setTriggerRef}
         style={[
           triggerStyle(styles, variant),
-          focus.focusVisible ? focus.focusRingStyle : null,
           invalid ? styles.invalid : null,
           invalid && variant === "map" ? styles.mapInvalid : null,
           !interactive ? styles.readOnly : null,
-          focus.webOutlineReset,
+          focus.focusRingVariables,
         ]}
         // The trigger owns the popup option list (WCAG 4.1.2): it advertises the
         // listbox and links to its id while open. These literal aria props are

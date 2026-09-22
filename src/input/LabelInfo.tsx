@@ -79,14 +79,11 @@ export function LabelInfo({
           accessibilityRole="button"
           aria-describedby={isWeb ? descriptionId : undefined}
           hitSlop={8}
+          {...focus.focusRingProps}
           onBlur={focus.onBlur}
           onFocus={focus.onFocus}
           onPress={toggle}
-          style={[
-            styles.labelInfoButton,
-            focus.webOutlineReset,
-            focus.focusVisible ? focus.focusRingStyle : null,
-          ]}
+          style={[styles.labelInfoButton, focus.focusRingVariables]}
         >
           <Icon color={theme.colors.muted} size={LABEL_INFO_ICON_SIZE} />
           {/* Web `aria-describedby` target: a visually-hidden copy of the text,

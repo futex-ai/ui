@@ -469,13 +469,9 @@ function SegmentedControlButton<T extends string>({
   // actually has an icon to show — otherwise it falls back to the label so the
   // segment is never an empty box (a dev warning fired above).
   const showLabel = !iconOnly || leadingIcon == null;
-  // The focus glow hugs the raised thumb: the pill and the absolutely-positioned
-  // thumb share the same measured box, so an outset glow around the (transparent)
-  // pill reads as a halo around the selected tab. It sits in the track's
-  // padding/gap and isn't clipped (the track sets no `overflow: hidden`). An
-  // inset glow instead painted a band *inside* the pill, over the thumb, which
-  // looked like a misaligned ring rather than a focus halo (WCAG 2.4.7).
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  // Keep the CSS ring inside the segment so it remains visible in compact,
+  // clipped segmented-control hosts.
+  const focus = useFocusRing({ offset: -2, disabled: disableFocusRing });
 
   const handleKeyDown = (event: SegmentKeyEvent) => {
     const key = event.nativeEvent?.key ?? event.key;
@@ -525,6 +521,7 @@ function SegmentedControlButton<T extends string>({
       accessibilityState={{ checked: selected, disabled }}
       aria-checked={selected}
       disabled={disabled}
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onLayout={
@@ -549,9 +546,8 @@ function SegmentedControlButton<T extends string>({
         pill ? styles.pill : styles.cell,
         sizing === "equal" ? styles.equalSegment : styles.contentSegment,
         selectedStyle,
-        focus.focusVisible ? focus.focusRingStyle : null,
         disabled ? styles.disabled : null,
-        focus.webOutlineReset,
+        focus.focusRingVariables,
       ]}
     >
       {leadingIcon != null ? (

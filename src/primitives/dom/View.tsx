@@ -14,6 +14,7 @@ import type { ViewComponent, ViewInstance, ViewProps } from "../types";
 
 import { createHostElement } from "./createHostElement";
 import {
+  FOCUS_RING_BASE_SHADOW_VARIABLE,
   POINTER_EVENTS_ATTRIBUTE,
   VIEW_CLASS,
   VIEW_INLINE_CLASS,
@@ -40,6 +41,13 @@ export const View: ViewComponent = forwardRef<ViewInstance, ViewProps>(
       forwardScrollHandlers: true,
     });
     const style = resolveStyle(props.style);
+    if (props.dataSet?.firnaFocusRing != null && style.boxShadow != null) {
+      const focusHostStyle = style as Record<string, unknown>;
+      if (style.boxShadow !== "none") {
+        focusHostStyle[FOCUS_RING_BASE_SHADOW_VARIABLE] = style.boxShadow;
+      }
+      delete focusHostStyle.boxShadow;
+    }
     const pointerEvents = pointerEventsFor(
       props as PropBag,
       style.pointerEvents,

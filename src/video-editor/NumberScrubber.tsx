@@ -72,7 +72,10 @@ export function NumberScrubber({
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createInspectorStyles(theme), [theme]);
   const metrics = videoEditorSizing[size];
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({
+    disabled: disableFocusRing,
+    target: "descendant",
+  });
   // While the field has focus it shows exactly what was typed, so a partial
   // entry like "1." is not rewritten mid-keystroke.
   const [draft, setDraft] = useState<string | null>(null);
@@ -114,6 +117,7 @@ export function NumberScrubber({
 
   return (
     <View
+      {...focus.focusRingProps}
       onMoveShouldSetResponder={(event: GestureResponderEvent) => {
         if (disabled || !onValueChange) {
           return false;
@@ -140,13 +144,13 @@ export function NumberScrubber({
           height: metrics.rowHeight,
           opacity: disabled ? 0.5 : 1,
         },
-        focus.webOutlineReset,
-        focus.focusVisible && focus.ringEnabled ? styles.fieldFocused : null,
+        focus.focusRingVariables,
         style,
       ]}
       testID={testID}
     >
       <TextInput
+        {...focus.focusTargetProps}
         accessibilityLabel={label}
         editable={!disabled && Boolean(onValueChange)}
         inputMode="decimal"

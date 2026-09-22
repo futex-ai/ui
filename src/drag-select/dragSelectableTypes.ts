@@ -85,9 +85,8 @@ export type DragSelectableTargetOptions = {
   data?: unknown;
   disabled?: boolean;
   /**
-   * Disable the shared focus glow for this target: the returned `focusRingStyle`
-   * becomes empty, so a target that spreads `focused ? focusRingStyle : null`
-   * paints no glow and falls back to the browser's default focus outline (WCAG
+   * Disable the shared focus glow for this target: its returned accessibility
+   * props omit the CSS marker and the browser's default outline returns (WCAG
    * 2.1 — 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
    * `focusRing: false` flag instead.
    */
@@ -119,6 +118,7 @@ export type DragSelectableTargetAccessibilityProps = {
   accessibilityRole: AccessibilityRole;
   accessibilityState: AccessibilityState;
   "aria-checked"?: boolean;
+  dataSet?: Record<string, string | undefined>;
   onBlur: () => void;
   onFocus: () => void;
   onKeyDown?: (event: DragSelectableTargetKeyEvent) => void;
@@ -140,9 +140,12 @@ export type DragSelectableTargetResult = {
    */
   a11yProps: DragSelectableTargetAccessibilityProps;
   dragging: boolean;
-  /** True while this target shows keyboard focus; pair with `focusRingStyle`. */
+  /** True while this target has keyboard-visible focus. */
   focused: boolean;
-  /** Geometry-bearing focus ring style; apply when `focused` (WCAG 2.4.7, AA). */
+  /**
+   * Legacy CSS-variable style. The marker in `a11yProps` is the canonical web
+   * paint path; this field remains for source compatibility.
+   */
   focusRingStyle: ViewStyle;
   matching: boolean;
   ref: (node: View | null) => void;

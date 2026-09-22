@@ -69,11 +69,13 @@ Recommended path:
    browser's blue outline. The `tablist` / `radiogroup` / `menu` container and
    any arrow-key navigation stay in app code.
 6. Wire a focus glow onto any control that must stay hand-rolled with
-   `useFocusRing` from `@firna/ui/focusRing` — spread `webOutlineReset`, apply
-   `focusRingStyle` while `focusVisible`, and pass the hook's `onFocus` / `onBlur`
-   to the pressable. Keep `focused` for behavior that needs actual focus rather
-   than ring visibility. Do not drop `outlineStyle: "none"` on its own: that
-   removes the only keyboard-focus indicator and regresses WCAG 2.1 — 2.4.7.
+   `useFocusRing` from `@firna/ui/focusRing` — spread `focusRingProps` on the
+   painted host, include `focusRingVariables` in its style, and pass the hook's
+   `onFocus` / `onBlur` to the focus target. Use `target: "descendant"` or
+   `"parent"` when those are different boxes. Keep `focused` / `focusVisible`
+   only for non-painting behavior. Do not add `outlineStyle: "none"` yourself:
+   `domBackendCss` suppresses it only while the CSS glow is active and restores
+   the browser fallback when the ring is disabled (WCAG 2.1 — 2.4.7).
 7. Run Juno app tests, typecheck, browser smoke tests, `cargo xtask check`,
    commit, push, and run `cargo xtask review`.
 

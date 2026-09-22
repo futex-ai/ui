@@ -61,11 +61,12 @@ test("table makes rows pressable buttons when given onRowPress", () => {
   assert.match(source, /accessibilityState=\{\{ disabled \}\}/);
   assert.match(source, /disabled=\{disabled\}/);
   assert.match(source, /useFocusRing/);
+  assert.match(source, /\.\.\.focus\.focusRingProps/);
   assert.match(
     source,
-    /focus\.focusVisible && focus\.ringEnabled \? styles\.rowFocused : null/,
+    /useFocusRing\(\{ offset: -2, disabled: disableFocusRing \}\)/,
   );
-  assert.match(source, /focus\.webOutlineReset/);
+  assert.match(source, /focus\.focusRingVariables/);
   assert.match(
     source,
     /style=\{\(\{ hovered, pressed \}: PressableHoverState\) =>/,
@@ -106,12 +107,12 @@ test("table styles are driven by shared theme tokens", () => {
   assert.match(stylesSource, /color: theme\.colors\.ink/);
   assert.match(stylesSource, /color: theme\.colors\.muted/);
   assert.match(stylesSource, /theme\.fonts\.sans/);
-  // The hover wash and inset focus ring use shared tokens.
+  // The hover wash stays local; the inset focus ring comes from DOM CSS.
   assert.match(
     stylesSource,
     /rowHover: \{ backgroundColor: theme\.colors\.soft \}/,
   );
-  assert.match(stylesSource, /rowFocused: \{[\s\S]*?theme\.colors\.primary/);
+  assert.doesNotMatch(stylesSource, /rowFocused:/);
   // Numbers get tabular figures for aligned amount columns.
   assert.match(
     stylesSource,

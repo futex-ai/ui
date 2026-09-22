@@ -108,7 +108,7 @@ export function TimelineClip({
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createTimelineStyles(theme), [theme]);
   const metrics = timelineSizing[size];
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ offset: -2, disabled: disableFocusRing });
 
   const inner = Math.max(0, rect.width - metrics.clipPadding * 2 - 2);
   const headerHeight = metrics.fontSize + 6;
@@ -151,6 +151,7 @@ export function TimelineClip({
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={(event) => {
         focus.onFocus(event);
@@ -171,8 +172,7 @@ export function TimelineClip({
           width: rect.width,
         },
         selected ? styles.clipSelected : null,
-        focus.webOutlineReset,
-        focus.focusVisible && focus.ringEnabled ? styles.clipFocused : null,
+        focus.focusRingVariables,
         style,
       ]}
       tabIndex={tabIndex}

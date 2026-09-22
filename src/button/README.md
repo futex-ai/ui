@@ -442,13 +442,14 @@ web-only and stays `false` on native.
 - **Target size (2.5.5 AAA / 2.5.8 AA).** `hitSlop` grows the pressable area
   without growing the control, so shrinking a glyph with `boxSize` never
   shrinks its tap target with it.
-- **Focus visible (2.4.7, AA).** The library's shared soft focus glow (the same
-  `useFocusRing` box-shadow ring input / switch / radio / segmented use) is shown
-  for `:focus-visible` focus on web and all platform focus on native. It covers
-  every tone — including `primary`, where a border-colour ring would be invisible
-  — and suppresses the browser's default outline. The hook listens for native web
-  blur as well as React `onBlur`, so disabling and later re-enabling a focused
-  button cannot restore a stale glow.
+- **Focus visible (2.4.7, AA).** The library's shared soft focus glow is painted
+  by `domBackendCss` for `:focus-visible` focus on web, including static HTML
+  before hydration. It covers every tone — including `primary`, where a
+  border-colour ring would be invisible — and suppresses the browser outline
+  only while the glow is active. Native keeps its platform focus affordance.
+  The hook still listens for native web blur as well as React `onBlur`, so
+  disabling and later re-enabling a focused button cannot restore stale
+  interaction state.
 - **Resting border.** The secondary button's resting edge uses the
   `controlBorder` token — a soft, translucent-ink line (intentionally below the
   1.4.11 ≥3:1 non-text-contrast floor, for a calmer edge). The `ghost` tone

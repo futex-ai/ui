@@ -4,7 +4,6 @@
  */
 import { StyleSheet } from "../primitives/reactNative";
 
-import { focusRingStyleFor } from "../focusRing";
 import type { SharedUiTheme } from "../theme";
 
 export function createKeyframeStyles(theme: SharedUiTheme) {
@@ -43,7 +42,6 @@ export function createKeyframeStyles(theme: SharedUiTheme) {
       transform: [{ rotate: "45deg" }],
       width: 12,
     },
-    keyframeFocused: focusRingStyleFor({ color: theme.colors.primary }),
     empty: {
       ...baseText,
       color: theme.colors.placeholder,

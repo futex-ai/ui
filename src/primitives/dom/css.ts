@@ -1,12 +1,13 @@
 /**
  * The handful of rules inline styles cannot express.
  *
- * The DOM backend writes inline styles (plan Decision 2), but four things need
+ * The DOM backend writes inline styles (plan Decision 2), but a few things need
  * a real stylesheet: the element resets `View` and `Text` apply (a class keeps
  * them below every inline style, which is the priority `react-native-web`'s
  * classic reset class had), `pointerEvents: "box-none"` / `"box-only"` (child
  * selectors), a `TextInput`'s placeholder colour (`::placeholder`), and hidden
- * scroll indicators (`::-webkit-scrollbar`). The top-level resets are
+ * scroll indicators (`::-webkit-scrollbar`), and the shared `:focus-visible`
+ * glow. The top-level resets are
  * `react-native-web`'s own, copied so the page keeps looking the same once it
  * is gone.
  *
@@ -17,6 +18,14 @@
  */
 import { useInsertionEffect } from "react";
 
+import {
+  DEFAULT_FOCUS_RING_ALPHA,
+  DEFAULT_FOCUS_RING_COLOR,
+  DEFAULT_FOCUS_RING_WIDTH,
+  FOCUS_RING_COLOR_VARIABLE,
+  FOCUS_RING_WIDTH_VARIABLE,
+  focusRingColorFor,
+} from "../../focusRingCss";
 import { SYSTEM_FONT_STACK } from "./styleTables";
 
 /** Class carrying `View`'s element reset. */
@@ -45,6 +54,9 @@ export const PLACEHOLDER_COLOR_VARIABLE = "--placeholderTextColor";
 
 /** Attribute a scroll container hides its scroll indicators with. */
 export const HIDE_SCROLLBAR_ATTRIBUTE = "data-hide-scrollbar";
+
+/** Custom property carrying a focus host's pre-existing `box-shadow`. */
+export const FOCUS_RING_BASE_SHADOW_VARIABLE = "--firna-focus-ring-base-shadow";
 
 /** Id of the injected `<style>` element. */
 export const DOM_BACKEND_STYLE_ID = "firna-ui-dom-backend";
@@ -127,6 +139,38 @@ function pointerEventsRules(): string {
   ].join("");
 }
 
+const FOCUS_RING_SELECTORS = [
+  '[data-firna-focus-ring="self"]:focus-visible',
+  '[data-firna-focus-ring="descendant"]:has(:focus-visible)',
+  '[data-firna-focus-target]:focus-visible>[data-firna-focus-ring="parent"]',
+];
+
+const INSET_FOCUS_RING_SELECTORS = [
+  '[data-firna-focus-ring="self"][data-firna-focus-ring-inset]:focus-visible',
+  '[data-firna-focus-ring="descendant"][data-firna-focus-ring-inset]:has(:focus-visible)',
+  '[data-firna-focus-target]:focus-visible>[data-firna-focus-ring="parent"][data-firna-focus-ring-inset]',
+];
+
+function focusRingRules(): string[] {
+  const selectors = FOCUS_RING_SELECTORS.join(",");
+  const insetSelectors = INSET_FOCUS_RING_SELECTORS.join(",");
+  const width = `var(${FOCUS_RING_WIDTH_VARIABLE},${DEFAULT_FOCUS_RING_WIDTH}px)`;
+  const color = `var(${FOCUS_RING_COLOR_VARIABLE},${focusRingColorFor(DEFAULT_FOCUS_RING_COLOR, DEFAULT_FOCUS_RING_ALPHA)})`;
+  return [
+    // Split controls keep the UA fallback on the visible painted box when the
+    // ring marker is absent, while the actual nested/parent focus target stays
+    // outline-free. `outline:auto` deliberately preserves browser styling.
+    '[data-firna-focus-host="descendant"]:has(:focus-visible){outline:auto;}',
+    '[data-firna-focus-host="descendant"] :focus-visible{outline:none;}',
+    '[data-firna-focus-target]:focus-visible:has(>[data-firna-focus-host="parent"]){outline:none;}',
+    '[data-firna-focus-target]:focus-visible>[data-firna-focus-host="parent"]{outline:auto;}',
+    `[data-firna-focus-ring]{box-shadow:var(${FOCUS_RING_BASE_SHADOW_VARIABLE},none);}`,
+    `${selectors}{outline:none;box-shadow:0 0 0 ${width} ${color},var(${FOCUS_RING_BASE_SHADOW_VARIABLE},0 0 #0000);}`,
+    `${insetSelectors}{box-shadow:inset 0 0 0 ${width} ${color},var(${FOCUS_RING_BASE_SHADOW_VARIABLE},0 0 #0000);}`,
+    `@media (forced-colors:active){${selectors}{box-shadow:none;outline:2px solid Highlight;}}`,
+  ];
+}
+
 /**
  * The stylesheet the DOM backend needs, as a string.
  *
@@ -158,6 +202,7 @@ export const domBackendCss: string = [
   `[${PLACEHOLDER_COLOR_ATTRIBUTE}]::placeholder{color:var(${PLACEHOLDER_COLOR_VARIABLE});opacity:1;}`,
   `[${HIDE_SCROLLBAR_ATTRIBUTE}]{scrollbar-width:none;}`,
   `[${HIDE_SCROLLBAR_ATTRIBUTE}]::-webkit-scrollbar{display:none;}`,
+  ...focusRingRules(),
 ].join("\n");
 
 /** Inserts {@link domBackendCss} once per document. */

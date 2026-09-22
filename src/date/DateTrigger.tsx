@@ -215,7 +215,7 @@ export function NativeTrigger({
         onFocus={focus.onFocus}
         onPress={() => field.setOpen(true)}
         ref={triggerRef}
-        style={[styles.triggerOpen, focus.webOutlineReset]}
+        style={[styles.triggerOpen, focus.focusRingVariables]}
       >
         <Text
           style={

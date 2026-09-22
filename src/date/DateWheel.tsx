@@ -392,10 +392,11 @@ function WheelRow({
       accessibilityRole="button"
       accessibilityState={{ disabled: item.disabled, selected }}
       disabled={item.disabled}
+      {...ring.focusRingProps}
       onBlur={ring.onBlur}
       onFocus={ring.onFocus}
       onPress={onPress}
-      style={[styles.item, ring.focusVisible ? ring.focusRingStyle : null]}
+      style={[styles.item, ring.focusRingVariables]}
       {...keyProps}
     >
       <Text

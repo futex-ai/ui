@@ -7,19 +7,22 @@ test("input frame wires invalid + required a11y and the focus ring", () => {
 
   assert.match(source, /aria-invalid=\{invalid\}/);
   assert.match(source, /aria-required=\{required\}/);
-  // The whole box gets the sage focus ring; the inner input hides its outline.
+  // The whole box gets the CSS focus ring; the inner input is marked as its
+  // focus target so the fallback outline also lands on the visible frame.
   // The ring is outset by default and inset (offset -2) when `focusRingInset` is
   // set, so a chrome-less field inside an overflow:hidden ancestor stays visible.
-  // `disableFocusRing` (and the theme flag) collapse the glow and restore the UA
-  // outline on the input (the real focus target).
+  // `disableFocusRing` (and the theme flag) omit the glow marker and restore the
+  // UA outline on that frame.
   assert.match(
     source,
     /useFocusRing\(\{[\s\S]*?focusRingInset \? \{ offset: -2 \} : \{\}[\s\S]*?disabled: disableFocusRing[\s\S]*?\}\)/,
   );
-  assert.match(source, /focus\.ringEnabled \? hideWebOutline : null/);
+  assert.match(source, /target: "descendant"/);
+  assert.match(source, /\.\.\.focus\.focusRingProps/);
+  assert.match(source, /\.\.\.focus\.focusTargetProps/);
   assert.match(source, /borderActive = focus\.focused \|\| active/);
   assert.match(source, /styles\.input,/);
-  assert.match(source, /hideWebOutline/);
+  assert.doesNotMatch(source, /focus\.ringEnabled \? hideWebOutline/);
 });
 
 test("input frame border precedence is invalid, then active, else default", () => {
@@ -86,8 +89,8 @@ test("input frame plain variant drops border/fill/padding, keeps the ring", () =
     stylesSource,
     /boxPlain: \{\s*backgroundColor: "transparent",\s*borderWidth: 0,\s*paddingHorizontal: 0,\s*\}/,
   );
-  // The focus ring is still applied on focus (the plain box only strips chrome).
-  assert.match(source, /focus\.focusVisible \? focus\.focusRingStyle : null/);
+  // The plain box keeps the static CSS focus marker.
+  assert.match(source, /\.\.\.focus\.focusRingProps/);
 });
 
 test("input frame supports multiline textarea geometry", () => {
@@ -174,10 +177,10 @@ test("input frame seamless variant drops chrome, height, and padding, grows to f
     stylesSource,
     /textareaSeamless: \{[\s\S]*?minHeight: sizing\.textareaLineHeight/,
   );
-  // The focus ring still paints on focus (seamless only strips chrome), and a
+  // The CSS focus marker survives seamless chrome, and a
   // chrome-less field can opt into an inset ring so an overflow:hidden ancestor
   // does not clip its only focus indicator (WCAG 2.4.7).
-  assert.match(source, /focus\.focusVisible \? focus\.focusRingStyle : null/);
+  assert.match(source, /focus\.focusRingVariables/);
   assert.match(
     source,
     /useFocusRing\(\{[\s\S]*?focusRingInset \? \{ offset: -2 \} : \{\}[\s\S]*?disabled: disableFocusRing[\s\S]*?\}\)/,
@@ -355,7 +358,8 @@ test("label info exposes the detail on the button and reveals a visual-only bubb
   // The trigger is an accessible, keyboard-reachable button with its own ring.
   assert.match(source, /accessibilityRole="button"/);
   assert.match(source, /accessibilityLabel=\{accessibilityLabel\}/);
-  assert.match(source, /focus\.focusVisible \? focus\.focusRingStyle : null/);
+  assert.match(source, /\.\.\.focus\.focusRingProps/);
+  assert.match(source, /focus\.focusRingVariables/);
   // The default glyph is lucide `Info`, overridable via the `icon` prop.
   assert.match(source, /icon: Icon = Info/);
 });
