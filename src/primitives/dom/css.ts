@@ -139,15 +139,18 @@ function pointerEventsRules(): string {
   ].join("");
 }
 
+// A `descendant` host reacts only to its own marked target, never to any other
+// focusable descendant: a clear, suffix, or chip-remove button nested inside
+// the frame keeps its own indicator instead of lighting up the whole field.
 const FOCUS_RING_SELECTORS = [
   '[data-firna-focus-ring="self"]:focus-visible',
-  '[data-firna-focus-ring="descendant"]:has(:focus-visible)',
+  '[data-firna-focus-ring="descendant"]:has([data-firna-focus-target]:focus-visible)',
   '[data-firna-focus-target]:focus-visible>[data-firna-focus-ring="parent"]',
 ];
 
 const INSET_FOCUS_RING_SELECTORS = [
   '[data-firna-focus-ring="self"][data-firna-focus-ring-inset]:focus-visible',
-  '[data-firna-focus-ring="descendant"][data-firna-focus-ring-inset]:has(:focus-visible)',
+  '[data-firna-focus-ring="descendant"][data-firna-focus-ring-inset]:has([data-firna-focus-target]:focus-visible)',
   '[data-firna-focus-target]:focus-visible>[data-firna-focus-ring="parent"][data-firna-focus-ring-inset]',
 ];
 
@@ -160,8 +163,8 @@ function focusRingRules(): string[] {
     // Split controls keep the UA fallback on the visible painted box when the
     // ring marker is absent, while the actual nested/parent focus target stays
     // outline-free. `outline:auto` deliberately preserves browser styling.
-    '[data-firna-focus-host="descendant"]:has(:focus-visible){outline:auto;}',
-    '[data-firna-focus-host="descendant"] :focus-visible{outline:none;}',
+    '[data-firna-focus-host="descendant"]:has([data-firna-focus-target]:focus-visible){outline:auto;}',
+    '[data-firna-focus-host="descendant"] [data-firna-focus-target]:focus-visible{outline:none;}',
     '[data-firna-focus-target]:focus-visible:has(>[data-firna-focus-host="parent"]){outline:none;}',
     '[data-firna-focus-target]:focus-visible>[data-firna-focus-host="parent"]{outline:auto;}',
     `[data-firna-focus-ring]{box-shadow:var(${FOCUS_RING_BASE_SHADOW_VARIABLE},none);}`,

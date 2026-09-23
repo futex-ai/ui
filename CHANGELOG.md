@@ -19,6 +19,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `SharedUiThemeProvider` now emits a `display: contents` web wrapper to keep
   SSR output self-contained, so DOM code relying on its former fragment-only
   child relationship should account for that boxless element.
+- **focus-ring:** `useFocusRing` also returns `focusRingDomProps` and
+  `focusTargetDomProps`, the CSS markers spelled as literal `data-*`
+  attributes for raw DOM hosts (`<button>`, `<div>`) that React DOM would
+  otherwise leave unmarked; `focusRingProps` / `focusTargetProps` remain the
+  `dataSet` spelling for Firna primitives and React Native elements.
+  `focusRingVariables` is now typed for both a primitive `style` and a DOM
+  `style`.
+
+### Fixed
+
+- **focus-ring:** a `descendant` focus host (input frame, chip multi-select,
+  wheel date trigger) glows only while its marked focus target has visible
+  focus. Tabbing to a nested clear, suffix, or chip-remove button no longer
+  lights the whole field or hides that button's own outline; the focused
+  action keeps the browser outline so it stays distinguishable from the field.
 
 ## [3.1.0](https://github.com/futex-ai/ui/compare/v3.0.0...v3.1.0) (2026-09-17)
 

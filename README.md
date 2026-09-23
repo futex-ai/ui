@@ -106,14 +106,21 @@ The package name is `@firna/ui`. Public exports are available from:
   `createSharedUiTheme(overrides, base)`, and the global `focusRing` switch
   (`SharedUiThemeProvider theme={{ focusRing: false }}` disables every control's
   focus glow at once). See [Theming](#theming) for the dark-mode contract.
-- `@firna/ui/focusRing` for `useFocusRing`, `focusRingStyleFor`, and
-  `focusRingCssVariablesFor`. Library controls use the hook's CSS marker as the
-  canonical web paint path; `focused` and `focusVisible` remain available for
-  non-painting interaction state. Custom controls spread `focusRingProps` on
-  the painted host and include `focusRingVariables` in its style.
-  Existing hydrated controls that conditionally apply `focusRingStyle` keep
-  their inline glow for compatibility; adopting the marker is only required for
-  the glow to survive server/static rendering.
+- `@firna/ui/focusRing` for `useFocusRing`, `focusRingStyleFor`,
+  `focusRingCssVariablesFor`, and `focusRingDomPropsFor`. Library controls use
+  the hook's CSS marker as the canonical web paint path; `focused` and
+  `focusVisible` remain available for non-painting interaction state. Custom
+  controls include `focusRingVariables` in the painted host's style and spread
+  the marker in the spelling their host understands: `focusRingProps` on a
+  Firna primitive (`View`, `Pressable`, `TextInput`) or React Native element,
+  which write `dataSet` out as `data-*` attributes, or `focusRingDomProps` on
+  a raw DOM element (`<button>`, `<div>`), which React DOM would otherwise
+  leave unmarked. Split controls mark the real focus target the same two ways
+  (`focusTargetProps` / `focusTargetDomProps`); a `descendant` host glows only
+  for that target, so a nested clear or remove button keeps its own browser
+  outline. Existing hydrated controls that conditionally apply
+  `focusRingStyle` keep their inline glow for compatibility; adopting the
+  marker is only required for the glow to survive server/static rendering.
   `focusRingStyleFor` keeps the explicit inline glow escape hatch for
   caller-owned local style sheets. Pass `disableFocusRing` to one control, or
   set the theme's `focusRing: false`, to omit the CSS marker and restore the
@@ -203,7 +210,37 @@ Controls repeat those variables on their marked host when needed, so a
 per-control `color`, `width`, or `alpha` passed to `useFocusRing` wins locally.
 The DOM backend's attribute-based `:focus-visible` rules read the variables;
 inset hosts carry a second attribute, and forced-colors mode replaces the shadow
-with a `2px solid Highlight` outline. The rules do not animate.
+with a `2px solid Highlight` outline. The rules do not animate. A `descendant`
+host (an input frame, a chip multi-select, the wheel date trigger) paints only
+while its marked focus target has visible focus; any other focusable element
+inside it, such as a clear or chip-remove button, keeps the browser outline so
+the focused action stays distinguishable from the field.
+
+A hand-rolled control gets the same treatment from the hook. On a Firna
+primitive spread `focusRingProps`; on a raw DOM element spread
+`focusRingDomProps`, the same markers spelled as literal `data-*` attributes:
+
+```tsx
+import { useFocusRing } from "@firna/ui/focusRing";
+
+function Swatch({ color }: { color: string }) {
+  const focus = useFocusRing();
+  return (
+    <button
+      {...focus.focusRingDomProps}
+      onBlur={focus.onBlur}
+      onFocus={focus.onFocus}
+      style={{ backgroundColor: color, ...focus.focusRingVariables }}
+      type="button"
+    />
+  );
+}
+```
+
+For a frame that paints while an inner element owns focus, pass
+`target: "descendant"`, spread `focusRingDomProps` on the frame and
+`focusTargetDomProps` on the inner element. The "Raw DOM control" story under
+Focus ring/Examples renders both patterns.
 
 Server-rendered and static pages must emit `domBackendCss` in `<head>` before
 their own stylesheets. Emitting the variables there as a `:root` fallback makes
@@ -491,7 +528,9 @@ The package export map intentionally separates runtime targets:
 - Avatar component: [src/avatar/README.md](src/avatar/README.md)
 - Badge component: [src/badge/README.md](src/badge/README.md)
 - Shared control-size scale: [src/controlSize.ts](src/controlSize.ts)
-- Shared focus-glow primitive: [src/focusRing.ts](src/focusRing.ts)
+- Shared focus-glow primitive: [src/focusRing.ts](src/focusRing.ts), its
+  marker spellings in [src/focusRingHost.ts](src/focusRingHost.ts), and the
+  CSS rules in [src/primitives/dom/css.ts](src/primitives/dom/css.ts)
 - Button component: [src/button/README.md](src/button/README.md)
 - Calendar component: [src/calendar/README.md](src/calendar/README.md)
 - Input and textarea components: [src/input/README.md](src/input/README.md)

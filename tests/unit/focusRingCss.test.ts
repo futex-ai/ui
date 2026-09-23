@@ -23,7 +23,11 @@ test("DOM backend CSS paints focus-visible hosts and inset variants", () => {
   assert.match(domBackendCss, /\[data-firna-focus-ring="self"\]:focus-visible/);
   assert.match(
     domBackendCss,
-    /\[data-firna-focus-ring="descendant"\]:has\(:focus-visible\)/,
+    /\[data-firna-focus-ring="descendant"\]:has\(\[data-firna-focus-target\]:focus-visible\)/,
+  );
+  assert.match(
+    domBackendCss,
+    /\[data-firna-focus-ring="descendant"\]\[data-firna-focus-ring-inset\]:has\(\[data-firna-focus-target\]:focus-visible\)/,
   );
   assert.match(
     domBackendCss,
@@ -36,6 +40,25 @@ test("DOM backend CSS paints focus-visible hosts and inset variants", () => {
   assert.match(
     domBackendCss,
     /box-shadow:inset 0 0 0 var\(--firna-focus-ring-width,4px\) var\(--firna-focus-ring-color,rgba\(79, 120, 100, 0\.35\)\),var\(--firna-focus-ring-base-shadow/,
+  );
+});
+
+test("descendant hosts react only to their marked focus target", () => {
+  // A clear, suffix, or chip-remove button nested inside a field must keep its
+  // own browser outline rather than lighting the whole frame, so neither the
+  // paint rule nor the outline reset may match an unmarked focused descendant.
+  assert.doesNotMatch(domBackendCss, /:has\(:focus-visible\)/);
+  assert.doesNotMatch(
+    domBackendCss,
+    /\[data-firna-focus-host="descendant"\] :focus-visible/,
+  );
+  assert.match(
+    domBackendCss,
+    /\[data-firna-focus-host="descendant"\]:has\(\[data-firna-focus-target\]:focus-visible\)\{outline:auto;\}/,
+  );
+  assert.match(
+    domBackendCss,
+    /\[data-firna-focus-host="descendant"\] \[data-firna-focus-target\]:focus-visible\{outline:none;\}/,
   );
 });
 

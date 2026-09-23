@@ -21,6 +21,10 @@ changes.
       arrows / `Home` / `End` (2.1.1 A; 4.1.2 Name/Role/Value, A).
 - [ ] A **visible focus indicator** appears on every focused control, including
       borderless ones (switch track, segmented pill) (2.4.7 Focus Visible, AA).
+- [ ] Actions nested inside a field (an input's clear ✕, a chip's remove ✕, the
+      wheel date trigger's clear ✕) show their **own** browser outline when
+      focused, and the surrounding field does not glow — the indicator must
+      point at the action Enter will fire, not at the field (2.4.7, AA).
 - [ ] Overlays (modal, popover, dropdown, calendar) move focus into the surface
       on open, trap it sensibly, and restore it to the trigger on close; `Escape`
       dismisses the top-most layer only. If a modal replaces a loading skeleton

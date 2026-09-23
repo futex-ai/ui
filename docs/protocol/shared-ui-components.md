@@ -63,6 +63,17 @@ live carets, tracked changes, and comment threads — is specified in
   `--firna-focus-ring-color` and `--firna-focus-ring-width`; `domBackendCss`
   consumes those variables so static and server-rendered HTML needs no
   hydration to show keyboard focus.
+- `useFocusRing` must expose its CSS markers in both spellings: `dataSet` props
+  (`focusRingProps` / `focusTargetProps`) for Firna primitives and React
+  Native hosts, and literal `data-*` props (`focusRingDomProps` /
+  `focusTargetDomProps`) for raw DOM elements, so a web-only consumer with no
+  primitive to spread onto gets the same glow. Both spellings must serialize in
+  static markup, and a `self` host must never emit an `undefined` marker.
+- A `descendant` host's glow and outline reset must follow only its marked
+  focus target. Any other focusable element inside the host — an input's clear
+  button, a chip-remove button, the wheel date trigger's clear button — keeps
+  the browser's own focus outline and leaves the host unlit, so keyboard users
+  can tell which action Enter will activate (WCAG 2.1 — 2.4.7).
 - The web theme provider serializes those variables on a `display: contents`
   boundary so its HTML is self-contained. SSR/static consumers emit
   `domBackendCss` plus a `:root` variable fallback in `<head>` before their own

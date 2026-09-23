@@ -11,6 +11,7 @@ import {
   darkSharedUiTheme,
   useSharedUiTheme,
 } from "../index";
+import { RawDomControlExample } from "./focusRingRawDomExample";
 import { StorySurface } from "./sharedExamples";
 
 /**
@@ -76,6 +77,15 @@ export const DynamicDisabled: Story = {
   render: () => (
     <StorySurface>
       <DynamicDisabledExample />
+    </StorySurface>
+  ),
+};
+
+export const RawDomControl: Story = {
+  name: "Raw DOM control (focusRingDomProps)",
+  render: () => (
+    <StorySurface>
+      <RawDomControlExample />
     </StorySurface>
   ),
 };

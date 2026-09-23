@@ -69,13 +69,22 @@ Recommended path:
    browser's blue outline. The `tablist` / `radiogroup` / `menu` container and
    any arrow-key navigation stay in app code.
 6. Wire a focus glow onto any control that must stay hand-rolled with
-   `useFocusRing` from `@firna/ui/focusRing` — spread `focusRingProps` on the
-   painted host, include `focusRingVariables` in its style, and pass the hook's
-   `onFocus` / `onBlur` to the focus target. Use `target: "descendant"` or
-   `"parent"` when those are different boxes. Keep `focused` / `focusVisible`
-   only for non-painting behavior. Do not add `outlineStyle: "none"` yourself:
-   `domBackendCss` suppresses it only while the CSS glow is active and restores
-   the browser fallback when the ring is disabled (WCAG 2.1 — 2.4.7).
+   `useFocusRing` from `@firna/ui/focusRing` — include `focusRingVariables` in
+   the painted host's style, pass the hook's `onFocus` / `onBlur` to the focus
+   target, and spread the marker in the spelling the host understands. A
+   React Native or Firna primitive host (`Pressable`, `View`) takes
+   `focusRingProps`, whose `dataSet` becomes `data-*` attributes. A raw DOM
+   host (`<button>`, `<div>` in a web-only app) takes `focusRingDomProps`
+   instead; React DOM drops `dataSet` with a warning, so `focusRingProps` on a
+   raw element paints nothing. Use `target: "descendant"` or `"parent"` when
+   the painted box and the focus target are different elements, and mark the
+   target with `focusTargetProps` / `focusTargetDomProps` — without the target
+   marker a `descendant` frame never glows, and any other focusable element
+   inside it keeps its own browser outline by design. Keep `focused` /
+   `focusVisible` only for non-painting behavior. Do not add
+   `outlineStyle: "none"` yourself: `domBackendCss` suppresses it only while
+   the CSS glow is active and restores the browser fallback when the ring is
+   disabled (WCAG 2.1 — 2.4.7).
 7. Run Juno app tests, typecheck, browser smoke tests, `cargo xtask check`,
    commit, push, and run `cargo xtask review`.
 

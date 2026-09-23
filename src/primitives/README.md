@@ -95,7 +95,10 @@ boxless web root, while SSR consumers can also emit a `:root` fallback alongside
 `domBackendCss` (see the workspace README's theming section). When a marked host
 already has an inline shadow (for elevation, selection, or validation), `View`
 moves it into `--firna-focus-ring-base-shadow` and the stylesheet composes it
-behind the halo instead of letting either treatment erase the other.
+behind the halo instead of letting either treatment erase the other. A
+`descendant` host's rules key on `[data-firna-focus-target]:focus-visible`, not
+on any focused descendant: a clear or chip-remove button inside the frame keeps
+its own browser outline and leaves the frame unlit.
 
 The list of places the backend deliberately differs from `react-native-web`
 lives in the plan's M2 and M3 sections. The one worth knowing here:

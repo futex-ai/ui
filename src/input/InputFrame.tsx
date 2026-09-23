@@ -12,7 +12,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
-import { hideWebOutlineView, useFocusRing } from "../focusRing";
+import { useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import {
@@ -281,14 +281,17 @@ export function InputFrame({
       />
       {/* The clear button is a distinct action with no keyboard equivalent on the
           input, so it stays an accessible button (in the tab order and a11y
-          tree). Opt-in, and only shown once there is a value to remove. */}
+          tree). Opt-in, and only shown once there is a value to remove. It keeps
+          the browser's own focus outline: the frame's CSS glow follows only the
+          input, so the outline is what tells a keyboard user the next Enter
+          clears the field rather than submitting it (WCAG 2.1 — 2.4.7). */}
       {showClear ? (
         <Pressable
           accessibilityLabel={clearLabel}
           accessibilityRole="button"
           hitSlop={8}
           onPress={handleClear}
-          style={[styles.iconButton, hideWebOutlineView]}
+          style={styles.iconButton}
         >
           <CircleX color={theme.colors.muted} size={iconSize} />
         </Pressable>

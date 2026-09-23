@@ -160,7 +160,7 @@ test(
 );
 
 test(
-  "a custom hook host serializes color, width, and alpha overrides",
+  "a raw DOM hook host serializes its markers, color, width, and alpha",
   { skip: !testBuilt },
   async () => {
     const ui = await loadBuiltUi();
@@ -171,9 +171,17 @@ test(
         width: 7,
       });
       return createElement("button", {
-        "data-firna-focus-ring": focus.focusRingProps.dataSet?.firnaFocusRing,
+        ...focus.focusRingDomProps,
         style: focus.focusRingVariables,
       });
+    }
+    function CustomField() {
+      const focus = ui.useFocusRing({ offset: -2, target: "descendant" });
+      return createElement(
+        "div",
+        { ...focus.focusRingDomProps, style: focus.focusRingVariables },
+        createElement("input", focus.focusTargetDomProps),
+      );
     }
 
     const markup = renderToStaticMarkup(
@@ -181,11 +189,44 @@ test(
         ui.SharedUiThemeProvider,
         null,
         createElement(CustomControl),
+        createElement(CustomField),
       ),
     );
-    assert.match(markup, /data-firna-focus-ring="self"/);
+    assert.match(markup, /<button data-firna-focus-ring="self"/);
     assert.match(markup, /--firna-focus-ring-color:rgba\(170, 187, 204, 0.5\)/);
     assert.match(markup, /--firna-focus-ring-width:7px/);
+    assert.match(
+      markup,
+      /<div data-firna-focus-host="descendant" data-firna-focus-ring="descendant" data-firna-focus-ring-inset="true"/,
+    );
+    assert.match(markup, /<input data-firna-focus-target="true"/);
+    // A `self` host never serializes an `undefined` host marker.
+    assert.doesNotMatch(markup, /="undefined"/);
+  },
+);
+
+test(
+  "static input clear buttons keep the browser outline available",
+  { skip: !testBuilt },
+  async () => {
+    const { Input, SharedUiThemeProvider } = await loadBuiltUi();
+    const markup = renderToStaticMarkup(
+      createElement(
+        SharedUiThemeProvider,
+        null,
+        createElement(Input, {
+          accessibilityLabel: "Search",
+          clearable: true,
+          onChangeText: () => undefined,
+          value: "Quarterly report",
+        }),
+      ),
+    );
+
+    // The clear action is unmarked, so the frame's rule ignores it; it must not
+    // hide its own outline either, or its focus would be invisible.
+    assert.match(markup, /aria-label="Clear Search"/);
+    assert.doesNotMatch(markup, /outline(?:-style)?:/);
   },
 );
 

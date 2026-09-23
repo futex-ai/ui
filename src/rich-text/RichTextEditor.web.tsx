@@ -941,12 +941,12 @@ export function RichTextEditor({
             </Text>
           ) : null}
           <div
+            {...focus.focusTargetDomProps}
             aria-label={label ?? "Rich text editor"}
             aria-activedescendant={slashMenu.activeRowId}
             aria-controls={slashMenu.open ? slashMenu.listId : undefined}
             aria-multiline="true"
             contentEditable={!readOnly}
-            data-firna-focus-target="true"
             data-testid={testID}
             onBlur={focus.onBlur}
             // A read-only document never moves the DOM selection, so the

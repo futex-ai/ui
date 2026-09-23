@@ -23,6 +23,14 @@ test("input frame wires invalid + required a11y and the focus ring", () => {
   assert.match(source, /borderActive = focus\.focused \|\| active/);
   assert.match(source, /styles\.input,/);
   assert.doesNotMatch(source, /focus\.ringEnabled \? hideWebOutline/);
+  // The nested clear button keeps the browser's own outline: the frame's CSS
+  // glow follows only the marked input, so hiding the outline would leave the
+  // focused clear action with no indicator at all (WCAG 2.1 — 2.4.7).
+  assert.doesNotMatch(source, /hideWebOutlineView/);
+  assert.match(
+    source,
+    /accessibilityLabel=\{clearLabel\}[\s\S]*?style=\{styles\.iconButton\}/,
+  );
 });
 
 test("input frame border precedence is invalid, then active, else default", () => {

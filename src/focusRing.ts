@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { Platform, TextStyle, ViewStyle } from "./primitives/reactNative";
 
 import {
@@ -8,6 +15,12 @@ import {
   focusRingColorFor,
   focusRingCssVariablesFor,
 } from "./focusRingCss";
+import {
+  focusRingDomPropsFor,
+  type FocusRingDomProps,
+  type FocusRingHostProps,
+  type FocusRingTarget,
+} from "./focusRingHost";
 import { useSharedUiTheme } from "./theme";
 
 export {
@@ -17,6 +30,12 @@ export {
   focusRingCssVariablesFor,
   rgbChannels,
 } from "./focusRingCss";
+export {
+  focusRingDomPropsFor,
+  type FocusRingDomProps,
+  type FocusRingHostProps,
+  type FocusRingTarget,
+} from "./focusRingHost";
 
 export const hideWebOutline = { outlineStyle: "none" } as unknown as TextStyle;
 
@@ -27,7 +46,11 @@ export const hideWebOutlineView = {
 /** Pressable style-callback state, widened with the web backend's `hovered`. */
 export type PressableHoverState = { pressed: boolean; hovered?: boolean };
 
-export type FocusRingTarget = "self" | "descendant" | "parent";
+/**
+ * The host's focus-ring CSS variables. Typed for both style worlds so the same
+ * value slots into a primitive's `style` array and a raw DOM element's `style`.
+ */
+export type FocusRingVariables = ViewStyle & CSSProperties;
 
 export type FocusRingOptions = {
   /**
@@ -67,18 +90,11 @@ export type FocusRingOptions = {
 /** Stable legacy style; hook-driven web painting now lives entirely in CSS. */
 const EMPTY_RING_STYLE = Object.freeze({}) as ViewStyle;
 
+/** Stable empty variables returned on native and while the ring is disabled. */
+const EMPTY_RING_VARIABLES = Object.freeze({}) as FocusRingVariables;
+
 /** Stable empty host props returned on native and for a disabled self target. */
 const EMPTY_RING_PROPS = Object.freeze({}) as FocusRingHostProps;
-
-/** Props to spread on the visible box that CSS should decorate. */
-export type FocusRingHostProps = {
-  dataSet?: {
-    firnaFocusHost?: FocusRingTarget;
-    firnaFocusRing?: FocusRingTarget;
-    firnaFocusRingInset?: "true";
-    firnaFocusTarget?: "true";
-  };
-};
 
 type FocusState = {
   focused: boolean;
@@ -154,6 +170,18 @@ export function focusRingStyleFor(options: FocusRingOptions): ViewStyle {
  * actual focus and visible-focus modality independently. The state remains for
  * non-painting behavior such as active borders and keyboard tooltips. Native
  * behavior is unchanged and keeps the operating-system focus affordance.
+ *
+ * The markers come in two spellings. Spread `focusRingProps` /
+ * `focusTargetProps` on the library's primitives (`View`, `Pressable`,
+ * `TextInput`), which turn their `dataSet` into `data-*` attributes; spread
+ * `focusRingDomProps` / `focusTargetDomProps` on a raw DOM element such as a
+ * `<button>`, which React DOM would otherwise leave unmarked. Either way the
+ * host also needs `focusRingVariables` in its `style`.
+ *
+ * A `descendant` host paints only while its marked target has visible focus.
+ * Other focusable descendants — a clear, suffix, or chip-remove button inside
+ * the frame — keep the browser's own outline so the focused action stays
+ * distinguishable from the field.
  */
 export function useFocusRing(options: FocusRingOptions = {}) {
   const [focusState, setFocusState] = useState<FocusState>(UNFOCUSED_STATE);
@@ -162,9 +190,9 @@ export function useFocusRing(options: FocusRingOptions = {}) {
   const color = options.color ?? theme.colors.primary;
   const { width, offset, alpha, disabled, target = "self" } = options;
   const ringEnabled = !disabled && theme.focusRing !== false;
-  const focusRingVariables = useMemo<ViewStyle>(() => {
-    if (!ringEnabled || Platform.OS !== "web") return EMPTY_RING_STYLE;
-    return focusRingCssVariablesFor(color, width, alpha) as ViewStyle;
+  const focusRingVariables = useMemo<FocusRingVariables>(() => {
+    if (!ringEnabled || Platform.OS !== "web") return EMPTY_RING_VARIABLES;
+    return focusRingCssVariablesFor(color, width, alpha) as FocusRingVariables;
   }, [ringEnabled, color, width, alpha]);
   const focusRingStyle = useMemo<ViewStyle>(
     () =>
@@ -192,6 +220,14 @@ export function useFocusRing(options: FocusRingOptions = {}) {
         ? { dataSet: { firnaFocusTarget: "true" } }
         : EMPTY_RING_PROPS,
     [target],
+  );
+  const focusRingDomProps = useMemo<FocusRingDomProps>(
+    () => focusRingDomPropsFor(focusRingProps),
+    [focusRingProps],
+  );
+  const focusTargetDomProps = useMemo<FocusRingDomProps>(
+    () => focusRingDomPropsFor(focusTargetProps),
+    [focusTargetProps],
   );
   const syncFocusVisible = useCallback(() => {
     const target = focusedTargetRef.current;
@@ -244,6 +280,9 @@ export function useFocusRing(options: FocusRingOptions = {}) {
   return {
     focusRingProps,
     focusTargetProps,
+    // The same markers as literal `data-*` attributes for raw DOM hosts.
+    focusRingDomProps,
+    focusTargetDomProps,
     focusRingVariables: ringEnabled ? focusRingVariables : null,
     // Hydrated compatibility path for existing custom controls. Library
     // controls use the marker above so their focus glow also survives SSR.
