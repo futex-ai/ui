@@ -18,7 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   their hydrated inline glow, while the new marker path adds static rendering.
   `SharedUiThemeProvider` now emits a `display: contents` web wrapper to keep
   SSR output self-contained, so DOM code relying on its former fragment-only
-  child relationship should account for that boxless element.
+  child relationship should account for that boxless element. Because it is a
+  real `div`, mount the provider around block content, not directly inside a
+  table row, list, paragraph, or SVG.
 - **focus-ring:** `useFocusRing` also returns `focusRingDomProps` and
   `focusTargetDomProps`, the CSS markers spelled as literal `data-*`
   attributes for raw DOM hosts (`<button>`, `<div>`) that React DOM would
@@ -31,6 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **drag-select:** `useDragSelectableTarget` returns an empty `focusRingStyle`.
+  Its `a11yProps` already carry the CSS focus marker, so code that still applies
+  the previously documented `target.focused ? target.focusRingStyle : null`
+  no longer paints a second, heavier glow over the first.
 - **theme:** `SharedUiThemeProvider` injects `domBackendCss` on the web client,
   so a page built from the provider and raw DOM controls alone — with no
   `View`, `Text`, or `TextInput` to inject it — paints the focus glow. Static

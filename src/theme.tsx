@@ -206,6 +206,12 @@ export function createSharedUiTheme(
   };
 }
 
+/**
+ * Supplies the theme to every control below it. On web it also renders a
+ * boxless `display: contents` `<div>` carrying the focus-ring variables and
+ * injects the DOM backend stylesheet on the client, so mount it around block
+ * content rather than directly inside a table row, list, paragraph, or SVG.
+ */
 export function SharedUiThemeProvider({
   children,
   theme,

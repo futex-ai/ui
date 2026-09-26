@@ -143,8 +143,9 @@ export type DragSelectableTargetResult = {
   /** True while this target has keyboard-visible focus. */
   focused: boolean;
   /**
-   * Legacy CSS-variable style. The marker in `a11yProps` is the canonical web
-   * paint path; this field remains for source compatibility.
+   * Always empty. The marker in `a11yProps` paints the web focus glow, so the
+   * earlier pattern `target.focused ? target.focusRingStyle : null` is now a
+   * no-op and can be deleted; the field remains only so that code compiles.
    */
   focusRingStyle: ViewStyle;
   matching: boolean;

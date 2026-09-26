@@ -7,7 +7,7 @@ import {
   useMemo,
   useRef,
 } from "react";
-import { Platform } from "../primitives/reactNative";
+import { Platform, type ViewStyle } from "../primitives/reactNative";
 
 import { useFocusRing } from "../focusRing";
 import { nextNavIndex, rovingTabIndex } from "../keyboardNavigation";
@@ -72,6 +72,14 @@ const defaultContext: DragSelectableContextValue = {
 
 export const DragSelectableContext =
   createContext<DragSelectableContextValue>(defaultContext);
+
+/**
+ * Kept for source compatibility with the earlier documented pattern
+ * `target.focused ? target.focusRingStyle : null`. It is always empty: the CSS
+ * marker in `a11yProps` paints the web glow, and handing out the hook's inline
+ * glow as well made `View` compose a second halo on top of the first.
+ */
+const EMPTY_FOCUS_RING_STYLE = Object.freeze({}) as ViewStyle;
 
 export function useDragSelectableSelection(): DragSelectableState {
   return useContext(DragSelectableContext).state;
@@ -225,14 +233,13 @@ export function useDragSelectableTarget(
       },
       dragging: state.dragging,
       focused: focus.focusVisible,
-      focusRingStyle: focus.focusRingStyle,
+      focusRingStyle: EMPTY_FOCUS_RING_STYLE,
       matching: matchedIdSet.has(id),
       ref: targetRef,
       selected,
     }),
     [
       disabled,
-      focus.focusRingStyle,
       focus.focusRingProps,
       focus.focusVisible,
       focus.onBlur,

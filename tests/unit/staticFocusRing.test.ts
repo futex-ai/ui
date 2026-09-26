@@ -231,6 +231,54 @@ test(
 );
 
 test(
+  "drag-select targets never hand consumers a second inline glow",
+  { skip: !testBuilt },
+  async () => {
+    const ui = await loadBuiltUi();
+    // The marker in `a11yProps` paints the web glow. The older documented
+    // pattern also applied `target.focusRingStyle` while focused; if that
+    // field still carried the hook's inline shadow, `View` would move it into
+    // the base-shadow variable and the stylesheet would compose a second halo
+    // on top. The field stays for source compatibility but must be empty.
+    let seen:
+      | {
+          a11yProps: Record<string, unknown>;
+          focusRingStyle: Record<string, unknown>;
+        }
+      | undefined;
+    function TargetProbe() {
+      const target = ui.useDragSelectableTarget({
+        data: { id: "row_1" },
+        id: "row_1",
+        label: "Row 1",
+      });
+      seen = {
+        a11yProps: target.a11yProps,
+        focusRingStyle: target.focusRingStyle,
+      };
+      return null;
+    }
+
+    renderToStaticMarkup(
+      createElement(
+        ui.SharedUiThemeProvider,
+        null,
+        createElement(
+          ui.DragSelectableProvider,
+          null,
+          createElement(TargetProbe),
+        ),
+      ),
+    );
+    assert.deepEqual(seen?.focusRingStyle, {});
+    // The marker still rides along on `a11yProps` (unset keys stay `undefined`
+    // in the hook's `dataSet`; the primitives skip them when writing DOM).
+    const dataSet = seen?.a11yProps.dataSet as Record<string, unknown>;
+    assert.equal(dataSet.firnaFocusRing, "self");
+  },
+);
+
+test(
   "legacy hook styles keep the hydrated inline focus fallback",
   { skip: !testBuilt },
   async () => {

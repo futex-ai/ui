@@ -10,6 +10,11 @@ import { useDomBackendCss } from "./primitives/dom/css";
  * code is this provider plus raw DOM controls marked through `useFocusRing`
  * still paints the glow. The injection runs in an insertion effect, so static
  * and server-rendered markup must still emit `domBackendCss` in `<head>`.
+ *
+ * The boundary is a real `<div>` (boxless via `display: contents`), so the
+ * provider belongs around block content. Directly inside a table row, a list,
+ * a paragraph, or SVG a `div` is invalid HTML and server output would fail to
+ * hydrate; the README states the constraint.
  */
 export function SharedUiThemeRoot({
   children,

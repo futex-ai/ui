@@ -81,7 +81,9 @@ Keyboard, A; 4.1.2 Name, Role, Value, A):
   selection as a contiguous range.
 - Spreading `target.a11yProps` also supplies the CSS focus marker, so keyboard
   focus gets the shared visible indicator without a render-time focus style
-  (WCAG 2.1 — 2.4.7 Focus Visible, AA).
+  (WCAG 2.1 — 2.4.7 Focus Visible, AA). `target.focusRingStyle` is now always
+  empty and exists only so older code compiles; the earlier
+  `target.focused ? target.focusRingStyle : null` line can be deleted.
 - Set `accessibilityLabel` (and optionally `role="list"`) on the provider so the
   collection is announced as a named group (WCAG 2.1 — 1.3.1, A).
 - Each committed selection change is announced to assistive tech through a

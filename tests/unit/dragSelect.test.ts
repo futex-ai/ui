@@ -260,6 +260,20 @@ test("drag-select provider cancels stale pointer streams", () => {
   );
 });
 
+test("drag-select target hook returns an empty legacy focus style", () => {
+  // `a11yProps` carries the CSS focus marker, so the legacy `focusRingStyle`
+  // field must not also carry the hook's inline glow: a consumer applying both
+  // (the previously documented pattern) would paint a doubled halo on web.
+  const source = readFileSync(
+    new URL("../../src/drag-select/DragSelectableContext.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(source, /\.\.\.focus\.focusRingProps/);
+  assert.match(source, /focusRingStyle: EMPTY_FOCUS_RING_STYLE/);
+  assert.doesNotMatch(source, /focusRingStyle: focus\.focusRingStyle/);
+  assert.doesNotMatch(source, /focus\.focusRingStyle,/);
+});
+
 test("drag-select provider exposes provider, target, and listener hooks", () => {
   const contextSource = readSource(
     "../../src/drag-select/DragSelectableContext.tsx",

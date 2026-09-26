@@ -88,6 +88,11 @@ live carets, tracked changes, and comment threads — is specified in
   boundary so its HTML is self-contained. SSR/static consumers emit
   `domBackendCss` plus a `:root` variable fallback in `<head>` before their own
   stylesheets; later equal-specificity consumer rules remain authoritative.
+- That boundary is a real `<div>`. Consumers must mount the provider around
+  block content — an app shell, a page, a panel — never directly inside a
+  table row, a list, a paragraph, or SVG, where a `div` is invalid HTML and
+  server-rendered output would fail to hydrate. The library never nests the
+  provider inside its own components, and the docs must state the constraint.
 - Consumer theme overrides must be shallow and predictable; unspecified tokens
   fall back to the default shared theme.
 - Dark mode ships as presets, not as a mode flag: four presets are shipped (the
@@ -698,6 +703,10 @@ Required behavior:
 - Expose final selected ids, selected target metadata, selected count, live
   matching ids, live matching target metadata, and live matching count through
   hooks.
+- Give every target the shared CSS focus marker through its spread `a11yProps`.
+  The legacy `focusRingStyle` result field stays for source compatibility but
+  must always be empty, so a consumer that still applies it never paints a
+  second glow over the marker's.
 - Treat selected target metadata as a snapshot captured when selection finishes;
   consumers that need live target data should map selected ids through their own
   current data source.

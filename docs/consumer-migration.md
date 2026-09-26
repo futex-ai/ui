@@ -55,6 +55,10 @@ Recommended path:
    </SharedUiThemeProvider>;
    ```
 
+   On web the provider renders a `display: contents` `<div>` that carries the
+   focus variables, so mount it around block content (the shell, a page, a
+   panel), never directly inside a table row, a list, a paragraph, or SVG.
+
 3. Import dropdowns from `@firna/ui/dropdown`, radio cards from
    `@firna/ui/radio`, segmented controls from `@firna/ui/segmented`, switches
    from `@firna/ui/switch`, buttons from `@firna/ui/button`, avatars from

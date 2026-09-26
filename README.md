@@ -206,6 +206,12 @@ that serializes the active theme's focus variables around its children:
   alpha, for example `rgba(79, 120, 100, 0.35)` in the default theme.
 - `--firna-focus-ring-width` — the standard `4px` halo width.
 
+That boundary is a real `<div>`, so mount the provider around block content —
+an app shell, a page, a panel. Do not mount it directly inside a table row, a
+list, a paragraph, or SVG: a `div` is invalid HTML there, and server-rendered
+output would fail to hydrate. The library never nests the provider inside its
+own components.
+
 Controls repeat those variables on their marked host when needed, so a
 per-control `color`, `width`, or `alpha` passed to `useFocusRing` wins locally.
 The DOM backend's attribute-based `:focus-visible` rules read the variables;
