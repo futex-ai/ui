@@ -7,10 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.1.1](https://github.com/futex-ai/ui/compare/v3.1.0...v3.1.1) (2026-09-26)
 
-
 ### Bug Fixes
 
-* **focus-ring:** paint the web focus glow from CSS ([#169](https://github.com/futex-ai/ui/issues/169)) ([27db857](https://github.com/futex-ai/ui/commit/27db85716852b0851b2d7f362fc99ab0a68bf5d8))
+- **focus-ring:** paint the web focus glow from CSS ([#169](https://github.com/futex-ai/ui/issues/169)) ([27db857](https://github.com/futex-ai/ui/commit/27db85716852b0851b2d7f362fc99ab0a68bf5d8))
 
 ## [Unreleased]
 
