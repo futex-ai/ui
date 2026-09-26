@@ -389,8 +389,8 @@ function AgentToggle({
   onToggle: () => void;
 }) {
   // The slot clips, so the accessory brings an *inset* ring (a negative offset)
-  // and suppresses the UA outline that the clip would crop — the same treatment
-  // the board's own cards use inside the clipped board (WCAG 2.1 — 2.4.7 AA).
+  // so the CSS focus marker paints inside the clip — the same treatment the
+  // board's own cards use inside the clipped board (WCAG 2.1 — 2.4.7 AA).
   const focus = useFocusRing({ offset: -2 });
   // React Native Web's press responder maps Space onto `button` roles only, so a
   // `switch` has to bind it itself; Enter already presses through the responder.
@@ -413,14 +413,14 @@ function AgentToggle({
       accessibilityRole="switch"
       accessibilityState={{ checked: on }}
       aria-checked={on}
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onToggle}
       style={[
         styles.agentToggle,
         on ? styles.agentToggleOn : null,
-        focus.focusVisible ? focus.focusRingStyle : null,
-        focus.webOutlineReset,
+        focus.focusRingVariables,
       ]}
       {...keyProps}
     >

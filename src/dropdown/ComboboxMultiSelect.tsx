@@ -119,7 +119,10 @@ export function ComboboxMultiSelect({
   values,
 }: ComboboxMultiSelectProps) {
   const theme = useSharedUiTheme();
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({
+    disabled: disableFocusRing,
+    target: "descendant",
+  });
   const styles = useMemo(
     () =>
       createComboboxMultiSelectStyles(theme, borderRadius, size, singleLine),
@@ -253,6 +256,7 @@ export function ComboboxMultiSelect({
       ) : null}
       <View ref={anchorRef} style={styles.wrap}>
         <Pressable
+          {...focus.focusRingProps}
           onPress={() => {
             inputRef.current?.focus();
             setOpen(true);
@@ -264,7 +268,7 @@ export function ComboboxMultiSelect({
               : focus.focused
                 ? styles.controlActive
                 : null,
-            focus.focusVisible ? focus.focusRingStyle : null,
+            focus.focusRingVariables,
           ]}
           tabIndex={-1}
         >
@@ -303,6 +307,7 @@ export function ComboboxMultiSelect({
             </View>
           ) : null}
           <TextInput
+            {...focus.focusTargetProps}
             accessibilityHint={error ?? hint}
             // Name the input from the visible label via `aria-labelledby` (so the
             // accessible name IS the visible text — WCAG 2.5.3), unless the caller
@@ -331,7 +336,7 @@ export function ComboboxMultiSelect({
             placeholder={placeholder}
             placeholderTextColor={theme.colors.placeholder}
             ref={inputRef}
-            style={[styles.input, focus.webOutlineReset]}
+            style={styles.input}
             value={query}
             {...comboboxInputA11y({ activeDescendant, controls: listId, open })}
             {...describedByA11y}

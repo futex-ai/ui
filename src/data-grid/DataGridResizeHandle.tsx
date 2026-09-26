@@ -82,14 +82,10 @@ export function DataGridResizeHandle({
   return (
     <Pressable
       {...webProps}
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
-      style={[
-        styles.resizeHandle,
-        colResizeCursor,
-        focus.webOutlineReset,
-        focus.focusVisible ? focus.focusRingStyle : null,
-      ]}
+      style={[styles.resizeHandle, colResizeCursor, focus.focusRingVariables]}
     >
       {({ hovered }: PressableHoverState) => (
         <View

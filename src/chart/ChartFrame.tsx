@@ -161,12 +161,13 @@ export function ChartFrame({
             {...expandedAria(showTable)}
             accessibilityRole="button"
             accessibilityState={{ expanded: showTable }}
+            {...focus.focusRingProps}
             onBlur={focus.onBlur}
             onFocus={focus.onFocus}
             onPress={() => setShowTable((value) => !value)}
             style={[
               styles.toggle,
-              focus.webOutlineReset,
+              focus.focusRingVariables,
               focus.focusVisible && focus.ringEnabled
                 ? styles.toggleFocused
                 : null,

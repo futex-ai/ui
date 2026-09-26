@@ -82,10 +82,6 @@ export function createListStyles(
       lineHeight: sizing.descriptionLineHeight,
     },
     itemDisabled: { opacity: 0.55 },
-    // An inset ring keeps focus visible even when the row sits flush inside a
-    // clipped card, mirroring the table row's box-shadow ring. Pairs with
-    // `hideWebOutlineView` to drop the browser's default outline.
-    itemFocused: { boxShadow: `inset 0 0 0 2px ${theme.colors.primary}` },
     itemHover: { backgroundColor: theme.colors.soft },
     itemLeading: { flexShrink: 0 },
     itemMain: { flex: 1, gap: sizing.textGap, minWidth: 0 },

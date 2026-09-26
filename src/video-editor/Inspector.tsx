@@ -144,7 +144,7 @@ function SectionHeader({
 }) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createInspectorStyles(theme), [theme]);
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ offset: -2, disabled: disableFocusRing });
   const metrics = videoEditorSizing.md;
 
   if (!onToggle) {
@@ -162,16 +162,11 @@ function SectionHeader({
     <Pressable
       accessibilityLabel={`${section.title} section`}
       accessibilityRole="button"
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onToggle}
-      style={[
-        styles.sectionHeader,
-        focus.webOutlineReset,
-        focus.focusVisible && focus.ringEnabled
-          ? styles.sectionHeaderFocused
-          : null,
-      ]}
+      style={[styles.sectionHeader, focus.focusRingVariables]}
       testID={testID}
       // The web backend does not emit `aria-expanded` from
       // `accessibilityState`, so the literal prop is spread on web to keep the

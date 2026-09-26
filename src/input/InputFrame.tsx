@@ -12,7 +12,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
-import { hideWebOutline, hideWebOutlineView, useFocusRing } from "../focusRing";
+import { useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import {
@@ -160,6 +160,7 @@ export function InputFrame({
   const focus = useFocusRing({
     ...(focusRingInset ? { offset: -2 } : {}),
     disabled: disableFocusRing,
+    target: "descendant",
   });
   const plain = variant === "plain";
   const seamless = variant === "seamless";
@@ -217,6 +218,7 @@ export function InputFrame({
 
   return (
     <View
+      {...focus.focusRingProps}
       style={[
         styles.box,
         // `plain` strips the border / fill / horizontal padding for a
@@ -231,12 +233,7 @@ export function InputFrame({
         seamless ? styles.boxSeamless : null,
         invalid ? styles.boxInvalid : borderActive ? styles.boxActive : null,
         style,
-        // The focus ring (a geometry-bearing outline, not just a border
-        // recolor) goes last so it survives a caller `style` override and is
-        // visible even on an invalid (rose-bordered) field — WCAG 2.1 2.4.7
-        // Focus Visible (AA). Only paints when the input itself is focused
-        // (not for the `active`/popover-open border).
-        focus.focusVisible ? focus.focusRingStyle : null,
+        focus.focusRingVariables,
       ]}
     >
       {PrefixIcon ? (
@@ -245,6 +242,7 @@ export function InputFrame({
         </View>
       ) : null}
       <TextInput
+        {...focus.focusTargetProps}
         ref={setInputRef}
         aria-invalid={invalid}
         aria-required={required}
@@ -278,23 +276,22 @@ export function InputFrame({
           // The auto-grow bounds (min/max/height + line height) override the
           // fixed textarea min-height; a caller `inputStyle` still wins.
           autoGrow.style,
-          // Suppress the UA outline while the glow is the focus affordance; with
-          // the ring disabled, let the UA outline return on the input (the real
-          // focus target) so keyboard focus stays visible (WCAG 2.1 — 2.4.7).
-          focus.ringEnabled ? hideWebOutline : null,
           inputStyle,
         ]}
       />
       {/* The clear button is a distinct action with no keyboard equivalent on the
           input, so it stays an accessible button (in the tab order and a11y
-          tree). Opt-in, and only shown once there is a value to remove. */}
+          tree). Opt-in, and only shown once there is a value to remove. It keeps
+          the browser's own focus outline: the frame's CSS glow follows only the
+          input, so the outline is what tells a keyboard user the next Enter
+          clears the field rather than submitting it (WCAG 2.1 — 2.4.7). */}
       {showClear ? (
         <Pressable
           accessibilityLabel={clearLabel}
           accessibilityRole="button"
           hitSlop={8}
           onPress={handleClear}
-          style={[styles.iconButton, hideWebOutlineView]}
+          style={styles.iconButton}
         >
           <CircleX color={theme.colors.muted} size={iconSize} />
         </Pressable>

@@ -204,16 +204,14 @@ function ViewToggle({
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onPress}
       style={[
         styles.viewToggle,
         active ? styles.viewToggleOn : null,
-        focus.webOutlineReset,
-        focus.focusVisible && focus.ringEnabled
-          ? styles.viewToggleFocused
-          : null,
+        focus.focusRingVariables,
       ]}
       testID={testID}
     >

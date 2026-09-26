@@ -229,6 +229,7 @@ function ColorSwatch({
     <Pressable
       accessibilityLabel={selected ? `${label}, selected` : label}
       accessibilityRole="button"
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onPress}
@@ -236,8 +237,7 @@ function ColorSwatch({
         styles.swatch,
         { backgroundColor: color },
         selected ? styles.swatchSelected : null,
-        focus.webOutlineReset,
-        focus.focusVisible && focus.ringEnabled ? styles.swatchFocused : null,
+        focus.focusRingVariables,
       ]}
     />
   );
@@ -265,16 +265,14 @@ function RowAction({
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onPress}
       style={[
         styles.iconButton,
         active ? styles.iconButtonOn : null,
-        focus.webOutlineReset,
-        focus.focusVisible && focus.ringEnabled
-          ? styles.iconButtonFocused
-          : null,
+        focus.focusRingVariables,
       ]}
       testID={testID}
     >

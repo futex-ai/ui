@@ -9,7 +9,6 @@
 import { StyleSheet } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
-import { focusRingStyleFor } from "../focusRing";
 import type { SharedUiTheme } from "../theme";
 
 import type { TimelineClipTone, TimelineTrackKind } from "./timelineTypes";
@@ -183,7 +182,6 @@ export function createTimelineStyles(theme: SharedUiTheme) {
       justifyContent: "center",
     },
     headerToggleOn: { backgroundColor: theme.colors.primarySoft },
-    headerToggleFocused: focusRingStyleFor({ color: theme.colors.primary }),
     lanes: { position: "relative" },
     lane: {
       borderColor: theme.colors.border,
@@ -219,10 +217,6 @@ export function createTimelineStyles(theme: SharedUiTheme) {
       position: "absolute",
       top: 3,
     },
-    rulerFocused: focusRingStyleFor({
-      color: theme.colors.primary,
-      offset: -2,
-    }),
     marker: {
       borderRadius: 2,
       bottom: 0,
@@ -237,7 +231,6 @@ export function createTimelineStyles(theme: SharedUiTheme) {
       position: "absolute",
     },
     clipSelected: { borderWidth: 2 },
-    clipFocused: focusRingStyleFor({ color: theme.colors.primary, offset: -2 }),
     clipHeader: { alignItems: "center", flexDirection: "row", gap: 4 },
     clipLabel: { ...baseText, flexShrink: 1, fontWeight: "700" },
     // Deliberately no `opacity` here. Fading the duration to a "secondary"

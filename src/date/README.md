@@ -176,6 +176,9 @@ the default layer.
 - The editable web trigger carries the field label (`accessibilityLabel`) and
   opens the calendar on focus; the calendar icon is decorative (`aria-hidden`,
   `tabIndex={-1}`).
+- The wheel trigger keeps only its labelled inner button in the web tab order.
+  Its outer frame carries the descendant CSS focus marker, so keyboard focus
+  paints the same frame-level glow in static HTML and after hydration.
 - The clear button (when `clearable`) is a real labelled `button` (`Clear
 <label>`) in the tab order and a11y tree — unlike the calendar icon it is a
   distinct action with no keyboard equivalent, and it only renders while there is

@@ -58,7 +58,41 @@ live carets, tracked changes, and comment threads — is specified in
   `roseDeep`, mirroring `primaryDeep`) so a tinted status fill can carry
   AA-contrast accent text; the lighter `amber` / `rose` accents fall below the
   4.5:1 text minimum on their own soft tints.
-- Focus rings use the active theme primary color.
+- Focus rings use the active theme primary color. On web the provider
+  serializes it at alpha `0.35` plus the `4px` width through
+  `--firna-focus-ring-color` and `--firna-focus-ring-width`; `domBackendCss`
+  consumes those variables so static and server-rendered HTML needs no
+  hydration to show keyboard focus.
+- `useFocusRing` must expose its CSS markers in both spellings: `dataSet` props
+  (`focusRingProps` / `focusTargetProps`) for Firna primitives and React
+  Native hosts, and literal `data-*` props (`focusRingDomProps` /
+  `focusTargetDomProps`) for raw DOM elements, so a web-only consumer with no
+  primitive to spread onto gets the same glow. Both spellings must serialize in
+  static markup, and a `self` host must never emit an `undefined` marker.
+- The web theme provider must inject `domBackendCss` on the client, exactly as
+  `View`, `Text`, and `TextInput` do (once per document, first in `<head>`),
+  so a page that renders only the provider and raw DOM hosts still paints the
+  glow. Static and server-rendered HTML keeps emitting `domBackendCss` in
+  `<head>` itself; the injection is a client effect and never serializes.
+- Only `View` rewrites an inline `boxShadow` into
+  `--firna-focus-ring-base-shadow`. A raw DOM host must set that variable for
+  a resting shadow instead of `box-shadow`; the docs must say so, because an
+  inline `box-shadow` outranks the glow rule while the rule still removes the
+  browser outline, leaving no focus indicator at all.
+- A `descendant` host's glow and outline reset must follow only its marked
+  focus target. Any other focusable element inside the host — an input's clear
+  button, a chip-remove button, the wheel date trigger's clear button — keeps
+  the browser's own focus outline and leaves the host unlit, so keyboard users
+  can tell which action Enter will activate (WCAG 2.1 — 2.4.7).
+- The web theme provider serializes those variables on a `display: contents`
+  boundary so its HTML is self-contained. SSR/static consumers emit
+  `domBackendCss` plus a `:root` variable fallback in `<head>` before their own
+  stylesheets; later equal-specificity consumer rules remain authoritative.
+- That boundary is a real `<div>`. Consumers must mount the provider around
+  block content — an app shell, a page, a panel — never directly inside a
+  table row, a list, a paragraph, or SVG, where a `div` is invalid HTML and
+  server-rendered output would fail to hydrate. The library never nests the
+  provider inside its own components, and the docs must state the constraint.
 - Consumer theme overrides must be shallow and predictable; unspecified tokens
   fall back to the default shared theme.
 - Dark mode ships as presets, not as a mode flag: four presets are shipped (the
@@ -277,10 +311,11 @@ Required behavior:
 - Remain a single control: group semantics — the `tablist` / `radiogroup` /
   `menu` container, roving focus, and arrow-key navigation — stay with the
   caller or with the segmented control.
-- Own the shared focus ring and hide the browser's default outline under every
-  role. On web the custom ring must follow `:focus-visible`, not raw focus, and
-  disabling a focused button must clear the tracked state so re-enabling it
-  cannot restore a stale ring. Native keeps its platform focus behavior.
+- Own the shared CSS focus marker under every role. On web `domBackendCss` must
+  hide the browser outline only while its `:focus-visible` glow is active;
+  opt-outs restore the default outline. Disabling a focused button must still
+  clear tracked interaction state so re-enabling it cannot restore stale
+  non-painting focus state. Native keeps its platform focus behavior.
 - Use shared theme tokens for fills, borders, label colors, disabled opacity,
   fonts, and radii, and size with the shared control-size scale.
 
@@ -503,16 +538,16 @@ Required behavior:
 - `ListItem.onPress` makes only the title/description column a button. Use this
   model when a trailing control, such as a switch, must remain an independent
   sibling target; do not nest it inside a full-row `List.onItemPress` target.
-- On web, visual focus rings must follow `:focus-visible`, not raw focus. Pointer
-  focus remains real for behavior but does not paint a ring; keyboard input can
-  reveal the ring without requiring a new focus event. Native keeps its
-  platform focus behavior.
+- On web, visual focus rings are `domBackendCss` `:focus-visible` rules, not
+  render-time raw-focus styles. Pointer focus remains real for behavior while
+  the browser owns modality; keyboard input can reveal the ring without a React
+  render. Native keeps its platform focus behavior.
 - `disableFocusRing` is an explicit customization and must not be required to
   suppress rings after ordinary pointer interaction. Disabling the custom ring
   restores the browser's default keyboard-focus outline.
-- Modality tracking belongs to the shared `useFocusRing` hook. List and
-  ListItem must consume its visible-focus state rather than implement local
-  pointer/keyboard tracking.
+- `useFocusRing` still owns actual/visible-focus state for non-painting behavior.
+  List and ListItem must spread its CSS marker and variables rather than
+  implement local pointer/keyboard painting.
 
 ## Table Contract
 
@@ -668,6 +703,10 @@ Required behavior:
 - Expose final selected ids, selected target metadata, selected count, live
   matching ids, live matching target metadata, and live matching count through
   hooks.
+- Give every target the shared CSS focus marker through its spread `a11yProps`.
+  The legacy `focusRingStyle` result field stays for source compatibility but
+  must always be empty, so a consumer that still applies it never paints a
+  second glow over the marker's.
 - Treat selected target metadata as a snapshot captured when selection finishes;
   consumers that need live target data should map selected ids through their own
   current data source.
@@ -834,7 +873,10 @@ Required behavior:
   subpath, not the package root alone. This includes the shared focus-glow
   primitive (`./focusRing`, mirroring `./theme`): a consumer that imports every
   component by subpath would otherwise pull the whole barrel through Metro just
-  to wire a focus ring onto its own control.
+  to wire a focus ring onto its own control. Custom controls spread the hook's
+  `focusRingProps`, include `focusRingVariables` in the painted host style, and
+  use `target: "descendant"` / `"parent"` when focus and paint live on different
+  elements. `focusRingStyleFor` remains the explicit inline-style escape hatch.
 - release-please owns release PR creation, changelog updates, npm metadata
   version updates, `vX.Y.Z` Git tags, and GitHub releases.
 - release-please must use the `node` release type so release PRs update

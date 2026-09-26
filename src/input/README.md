@@ -16,8 +16,8 @@ web trigger) build on it.
   the box, plus an opt-in accessible `clearable` ✕ button.
 - Reveal optional supplementary help text (`labelInfo`) from an ⓘ button beside
   the label, in a portaled tooltip that stays out of the always-read messages.
-- Own the sage focus ring on the whole box and hide the browser's default
-  outline, using shared theme colors and radii.
+- Own the sage CSS focus ring on the whole visible box, including static web
+  rendering, using shared theme colors and radii.
 - Size the field with the shared `ControlSize` scale (`sm` / `md` / `lg`),
   scaling the box height, textarea minimum height, padding, text, and icons
   together.
@@ -231,7 +231,7 @@ import { Input, Textarea } from "@firna/ui/input";
 Like `plain`, a seamless field has no border to recolor, so surface any
 validation error through the surrounding layout rather than the box. Its only
 focus indicator is the shared ring (there is no border to recolor and the native
-outline is hidden), which by default is an **outset** glow. An `overflow: hidden`
+platform affordance remains), which by default is an **outset** glow. An `overflow: hidden`
 ancestor — the very containers this variant targets, such as a table cell or a
 truncating card — clips that glow, so pass `focusRingInset` to draw the ring
 inside the box instead and keep a visible focus indicator (WCAG 2.1 2.4.7). On a
@@ -269,9 +269,11 @@ you can, prefer reserving a little padding on the clipping ancestor.
   is `aria-hidden`, so the detail is never announced twice. Because the button
   is a sibling of the label `<Text>` (not nested inside it), it never leaks into
   the input's `aria-labelledby` name.
-- **Focus (2.4.7, AA).** The box shows a geometry-bearing focus ring (a real
-  outline, not just a border recolor) on keyboard/pointer focus, visible even on
-  an invalid (rose-bordered) field.
+- **Focus (2.4.7, AA).** On web, `domBackendCss` shows a geometry-bearing
+  `:focus-visible` box-shadow on the frame, not the inset inner-input outline;
+  it works in static HTML and stays visible on an invalid (rose-bordered)
+  field. Opting out restores the browser outline on that same frame. Native
+  keeps its platform affordance.
 
 ## Theming
 

@@ -155,8 +155,9 @@ layout change. Board-level rules:
   [`Switch`](../switch/README.md) does.)
 - **Its own focus treatment.** No focus ring is applied to the slot and
   `disableFocusRing` does not reach into it. Prefer an _inset_ indicator
-  (`useFocusRing({ offset: -2 })`): like the cards, the slot clips, so an outset
-  ring — including the browser's default outline — is cropped.
+  (`useFocusRing({ offset: -2 })`), spreading `focusRingProps` and applying
+  `focusRingVariables`: like the cards, the slot clips, so an outset ring —
+  including the browser's default outline — is cropped.
 - **Fixed header height.** The slot is clipped to the status chip's box — 20px
   at `sm`, `md`, and `lg` alike, since the chip's type scale does not track
   `size`. That is the floor of the header row in every configuration, which is

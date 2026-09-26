@@ -136,7 +136,7 @@ export function SortableRow({
 /**
  * The whole-row `button` drag target used in handle-less mode. Mirrors the List
  * item / kanban card pressable: `button` semantics, the sage focus ring with the
- * hidden web outline, and a grab / grabbing cursor. Keyboard grab / move comes
+ * CSS focus marker, and a grab / grabbing cursor. Keyboard grab / move comes
  * from the drag hook's `onKeyDown` (web-only, gated by `Platform.OS`).
  */
 function SortableRowButton({
@@ -165,6 +165,7 @@ function SortableRowButton({
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       ref={binding.registerRef}
@@ -175,8 +176,7 @@ function SortableRowButton({
         grabCursor,
         dragging ? grabbingCursor : null,
         dragging ? styles.dragging : null,
-        focus.focusVisible ? focus.focusRingStyle : null,
-        focus.webOutlineReset,
+        focus.focusRingVariables,
       ]}
     >
       {children}
@@ -236,6 +236,7 @@ export function SortableHandle({
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       ref={binding.registerRef}
@@ -246,8 +247,7 @@ export function SortableHandle({
         grabCursor,
         dragging ? grabbingCursor : null,
         hovered ? styles.handleHover : null,
-        focus.focusVisible ? focus.focusRingStyle : null,
-        focus.webOutlineReset,
+        focus.focusRingVariables,
       ]}
     >
       {glyph}

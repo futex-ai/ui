@@ -5,7 +5,6 @@ import { StyleSheet, Text, View } from "../primitives/reactNative";
 import type { DragSelectableState } from "../index";
 import {
   DragSelectableProvider,
-  hideWebOutlineView,
   useDragSelectableChanges,
   darkSharedUiTheme,
   useDragSelectableTarget,
@@ -209,10 +208,6 @@ function LedgerRow({ row }: { row: (typeof rows)[number] }) {
         styles.row,
         target.matching ? styles.rowMatching : null,
         target.selected ? styles.rowSelected : null,
-        // Geometry-bearing keyboard-focus ring, applied last so it is never
-        // clobbered by the selection background (WCAG 2.1 — 2.4.7, AA).
-        target.focused ? target.focusRingStyle : null,
-        hideWebOutlineView,
       ]}
       testID={`drag-target-${row.id}`}
     >

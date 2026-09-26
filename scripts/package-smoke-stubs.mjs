@@ -231,6 +231,11 @@ export async function writeTypePeerStubs(consumerRoot) {
     "index.d.ts": `export type ComponentProps<T> = T extends ComponentType<infer P> ? P : T extends new (props: infer P) => unknown ? P : never;
 export type ComponentPropsWithRef<T> = T extends (props: infer P) => ReactNode ? P : never;
 export type ComponentType<P = unknown> = (props: P) => ReactNode;
+// \`FocusRingVariables\` intersects a primitive style with a DOM style so the
+// hook's variables slot into either; only the name has to resolve here.
+export interface CSSProperties {
+  [property: string]: string | number | undefined;
+}
 export type ElementType = ComponentType<never> | string;
 export type FC<P = unknown> = (props: P) => ReactNode;
 export interface ForwardRefExoticComponent<P> {

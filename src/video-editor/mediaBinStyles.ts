@@ -5,7 +5,6 @@
  */
 import { StyleSheet } from "../primitives/reactNative";
 
-import { focusRingStyleFor } from "../focusRing";
 import type { SharedUiTheme } from "../theme";
 
 export function createMediaBinStyles(theme: SharedUiTheme) {
@@ -43,7 +42,6 @@ export function createMediaBinStyles(theme: SharedUiTheme) {
       width: 26,
     },
     viewToggleOn: { backgroundColor: theme.colors.primarySoft },
-    viewToggleFocused: focusRingStyleFor({ color: theme.colors.primary }),
     body: { gap: 10, paddingBottom: 10, paddingHorizontal: 10 },
     groupTitle: {
       ...baseText,
@@ -65,7 +63,6 @@ export function createMediaBinStyles(theme: SharedUiTheme) {
     },
     cardSelected: { borderWidth: 2 },
     cardHovered: { backgroundColor: theme.colors.soft },
-    cardFocused: focusRingStyleFor({ color: theme.colors.primary }),
 
     thumbGrid: { height: 58, position: "relative", width: "100%" },
     thumbList: {

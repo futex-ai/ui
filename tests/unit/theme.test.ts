@@ -111,6 +111,27 @@ test("theme defaults the focus-ring switch on and honors an override", () => {
   );
 });
 
+test("web theme root injects the DOM backend stylesheet on the client", () => {
+  // The provider is the one Firna component a raw-DOM-only page is guaranteed
+  // to render, so it must inject `domBackendCss` like View/Text/TextInput do;
+  // otherwise `focusRingDomProps` markers have no rules to read them. The
+  // native sibling has no stylesheet to inject.
+  const web = readFileSync(
+    new URL("../../src/themeRoot.web.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    web,
+    /import \{ useDomBackendCss \} from "\.\/primitives\/dom\/css"/,
+  );
+  assert.match(web, /useDomBackendCss\(\);/);
+  const native = readFileSync(
+    new URL("../../src/themeRoot.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.doesNotMatch(native, /useDomBackendCss/);
+});
+
 test("useFocusRing exposes the disable primitive and outline fallback", () => {
   // focusRing.ts imports react-native (Platform) and so cannot be imported in
   // the node test runner; assert its disable wiring at the source level instead,
@@ -127,11 +148,12 @@ test("useFocusRing exposes the disable primitive and outline fallback", () => {
     source,
     /const ringEnabled =\s*!disabled && theme\.focusRing !== false/,
   );
-  // A disabled ring collapses to an empty style so the usual gate paints nothing.
-  assert.match(source, /ringEnabled\s*\n?\s*\?\s*focusRingStyleFor/);
-  assert.match(source, /:\s*EMPTY_RING_STYLE/);
-  // The hook returns both the Family-B gate flag and the web outline reset.
+  // A disabled ring omits the CSS marker and painting variables.
+  assert.match(source, /firnaFocusRing:\s*ringEnabled \? target : undefined/);
+  assert.match(source, /!ringEnabled \|\| Platform\.OS !== "web"/);
+  // The hook still returns state plus the marker and geometry variables.
   assert.match(source, /ringEnabled,/);
+  assert.match(source, /focusRingProps,/);
   assert.match(source, /focusVisible:\s*focusState\.focusVisible/);
   assert.match(source, /target\?\.matches\(":focus-visible"\) \?\? true/);
   // A native DOM blur subscription covers React's missed synthetic onBlur when
@@ -152,6 +174,11 @@ test("useFocusRing exposes the disable primitive and outline fallback", () => {
   );
   assert.match(
     source,
-    /webOutlineReset:\s*ringEnabled \? hideWebOutlineView : null/,
+    /focusRingVariables:\s*ringEnabled \? focusRingVariables : null/,
   );
+  assert.match(
+    source,
+    /ringEnabled\s*\?\s*focusRingStyleFor\(\{ color, width, offset, alpha \}\)\s*:\s*EMPTY_RING_STYLE/,
+  );
+  assert.match(source, /webOutlineReset:\s*null as ViewStyle \| null/);
 });

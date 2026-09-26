@@ -275,7 +275,7 @@ export function TableCell({
  * A pressable row, rendered when the table has an `onRowPress`. Mirrors the
  * shared button: `button` semantics, a hover wash, the sage focus ring (an inset
  * box-shadow so it shows on the bottom-bordered row), a pressed/disabled state,
- * and the hidden web outline. Keyboard activation (Enter / Space) comes from
+ * and the shared CSS focus marker. Keyboard activation (Enter / Space) comes from
  * the web backend's Pressable for the `button` role, so no manual key handler
  * is needed.
  */
@@ -298,13 +298,14 @@ function PressableTableRow({
   onPress: () => void;
   styles: TableStyles;
 }) {
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ offset: -2, disabled: disableFocusRing });
   return (
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
       disabled={disabled}
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onPress}
@@ -315,9 +316,8 @@ function PressableTableRow({
         customStyle,
         hovered && !disabled ? styles.rowHover : null,
         pressed && !disabled ? styles.rowPressed : null,
-        focus.focusVisible && focus.ringEnabled ? styles.rowFocused : null,
         disabled ? styles.rowDisabled : null,
-        focus.webOutlineReset,
+        focus.focusRingVariables,
       ]}
     >
       {children}

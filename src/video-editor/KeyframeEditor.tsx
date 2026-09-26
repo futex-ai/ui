@@ -355,6 +355,7 @@ function KeyframeDiamond({
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onPress}
@@ -368,8 +369,7 @@ function KeyframeDiamond({
           left: left - 6,
           top: top - 6,
         },
-        focus.webOutlineReset,
-        focus.focusVisible && focus.ringEnabled ? styles.keyframeFocused : null,
+        focus.focusRingVariables,
       ]}
       testID={testID}
       {...(Platform.OS === "web" ? { onKeyDown } : {})}

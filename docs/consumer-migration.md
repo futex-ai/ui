@@ -55,6 +55,10 @@ Recommended path:
    </SharedUiThemeProvider>;
    ```
 
+   On web the provider renders a `display: contents` `<div>` that carries the
+   focus variables, so mount it around block content (the shell, a page, a
+   panel), never directly inside a table row, a list, a paragraph, or SVG.
+
 3. Import dropdowns from `@firna/ui/dropdown`, radio cards from
    `@firna/ui/radio`, segmented controls from `@firna/ui/segmented`, switches
    from `@firna/ui/switch`, buttons from `@firna/ui/button`, avatars from
@@ -69,11 +73,28 @@ Recommended path:
    browser's blue outline. The `tablist` / `radiogroup` / `menu` container and
    any arrow-key navigation stay in app code.
 6. Wire a focus glow onto any control that must stay hand-rolled with
-   `useFocusRing` from `@firna/ui/focusRing` — spread `webOutlineReset`, apply
-   `focusRingStyle` while `focusVisible`, and pass the hook's `onFocus` / `onBlur`
-   to the pressable. Keep `focused` for behavior that needs actual focus rather
-   than ring visibility. Do not drop `outlineStyle: "none"` on its own: that
-   removes the only keyboard-focus indicator and regresses WCAG 2.1 — 2.4.7.
+   `useFocusRing` from `@firna/ui/focusRing` — include `focusRingVariables` in
+   the painted host's style, pass the hook's `onFocus` / `onBlur` to the focus
+   target, and spread the marker in the spelling the host understands. A
+   React Native or Firna primitive host (`Pressable`, `View`) takes
+   `focusRingProps`, whose `dataSet` becomes `data-*` attributes. A raw DOM
+   host (`<button>`, `<div>` in a web-only app) takes `focusRingDomProps`
+   instead; React DOM drops `dataSet` with a warning, so `focusRingProps` on a
+   raw element paints nothing. Use `target: "descendant"` or `"parent"` when
+   the painted box and the focus target are different elements, and mark the
+   target with `focusTargetProps` / `focusTargetDomProps` — without the target
+   marker a `descendant` frame never glows, and any other focusable element
+   inside it keeps its own browser outline by design. Keep `focused` /
+   `focusVisible` only for non-painting behavior. Do not add
+   `outlineStyle: "none"` yourself: `domBackendCss` suppresses it only while
+   the CSS glow is active and restores the browser fallback when the ring is
+   disabled (WCAG 2.1 — 2.4.7). Two more rules for raw DOM hosts: the
+   stylesheet reaches the page through `SharedUiThemeProvider` (or any
+   primitive) on the client, and through your own `<head>` for static or
+   server-rendered HTML; and a raw host with a resting shadow must put it in
+   `--firna-focus-ring-base-shadow`, not `box-shadow`, because an inline
+   `box-shadow` outranks the glow and leaves the host with no focus indicator.
+   Only `View` performs that rewrite for you.
 7. Run Juno app tests, typecheck, browser smoke tests, `cargo xtask check`,
    commit, push, and run `cargo xtask review`.
 

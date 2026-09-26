@@ -56,8 +56,10 @@ also dims the visual track and reports the disabled accessibility state.
   (the responder binds Spacebar to `button` roles alone). Binding Enter as well
   would toggle it twice — once on keydown from the component, once on keyup from
   the responder — leaving the key looking dead.
-- **Focus visible.** A keyboard focus ring (an inset `outline`) is drawn on the
-  track (WCAG 2.4.7).
+- **Focus visible.** On web, the focusable switch marks its child track as the
+  painted box, so `domBackendCss` draws the keyboard glow there; an opt-out
+  moves the browser outline to the same track (WCAG 2.4.7). Native keeps its
+  platform affordance.
 - **Contrast.** The off-track and the knob resting on it carry a
   `controlBorder`-tinted edge so the resting boundary and the knob position cue
   stay perceivable (WCAG 1.4.11 Non-text Contrast, 1.4.1 Use of Color). The

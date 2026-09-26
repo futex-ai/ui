@@ -168,10 +168,6 @@ export function createKanbanStyles(
       borderStyle: "dashed",
       opacity: 0.4,
     },
-    // An inset ring keeps focus visible on a card inside the horizontally
-    // clipped, scrolling board (an outset outline would be cropped), mirroring
-    // the data table's bottom-bordered rows. Pairs with `hideWebOutlineView`.
-    cardFocused: { boxShadow: `inset 0 0 0 2px ${theme.colors.primary}` },
     cardHover: { borderColor: theme.colors.border2 },
     cardInner: { flexDirection: "column", gap: sizing.cardGap },
     cardPressable: { cursor: "pointer" },

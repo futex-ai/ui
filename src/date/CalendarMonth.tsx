@@ -237,10 +237,11 @@ function NavButton({
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
+      {...ring.focusRingProps}
       onBlur={ring.onBlur}
       onFocus={ring.onFocus}
       onPress={onPress}
-      style={[styles.nav, ring.focusVisible ? ring.focusRingStyle : null]}
+      style={[styles.nav, ring.focusRingVariables]}
     >
       {children}
     </Pressable>
@@ -266,6 +267,7 @@ const TitleButton = forwardRef<
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
+      {...ring.focusRingProps}
       onBlur={ring.onBlur}
       onFocus={ring.onFocus}
       onPress={onPress}
@@ -273,7 +275,7 @@ const TitleButton = forwardRef<
       style={({ hovered }: PressableHoverState) => [
         styles.titleButton,
         hovered ? styles.titleButtonHover : null,
-        ring.focusVisible ? ring.focusRingStyle : null,
+        ring.focusRingVariables,
       ]}
     >
       <Text style={styles.title}>{children}</Text>
@@ -562,6 +564,7 @@ function YearButton({
       accessibilityRole="button"
       accessibilityState={{ disabled, selected }}
       disabled={disabled}
+      {...ring.focusRingProps}
       onBlur={ring.onBlur}
       onFocus={ring.onFocus}
       onPress={() => onSelect(year)}
@@ -569,7 +572,7 @@ function YearButton({
         styles.yearCell,
         hovered && !disabled && !selected ? styles.yearCellHover : null,
         selected ? styles.yearCellSelected : null,
-        ring.focusVisible ? ring.focusRingStyle : null,
+        ring.focusRingVariables,
       ]}
     >
       <Text
@@ -626,6 +629,7 @@ function DayButton({
       accessibilityRole="button"
       accessibilityState={{ disabled, selected }}
       disabled={disabled}
+      {...ring.focusRingProps}
       onBlur={ring.onBlur}
       onFocus={ring.onFocus}
       onPress={() => onSelect(cell.iso)}
@@ -639,7 +643,7 @@ function DayButton({
         hovered && !disabled && !selected ? styles.cellHover : null,
         selected ? styles.cellSelected : null,
         isToday && !selected && !disabled ? styles.cellToday : null,
-        ring.focusVisible ? ring.focusRingStyle : null,
+        ring.focusRingVariables,
       ]}
     >
       {/* Mute every disabled cell (adjacent-month *and* out-of-bounds days) so a

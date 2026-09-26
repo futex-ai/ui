@@ -5,6 +5,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **focus-ring:** paint the web focus glow from `domBackendCss`, preserving it
+  in server-rendered and static HTML without changing the public focus APIs.
+  Web consumers whose tests inspect an inline `box-shadow` or depend on the
+  hook's inline `outline: none` should instead assert the marker and computed
+  `:focus-visible` styles; explicit `focusRingStyleFor` calls remain inline.
+  Existing custom controls using the hook's conditional `focusRingStyle` keep
+  their hydrated inline glow, while the new marker path adds static rendering.
+  `SharedUiThemeProvider` now emits a `display: contents` web wrapper to keep
+  SSR output self-contained, so DOM code relying on its former fragment-only
+  child relationship should account for that boxless element. Because it is a
+  real `div`, mount the provider around block content, not directly inside a
+  table row, list, paragraph, or SVG.
+- **focus-ring:** `useFocusRing` also returns `focusRingDomProps` and
+  `focusTargetDomProps`, the CSS markers spelled as literal `data-*`
+  attributes for raw DOM hosts (`<button>`, `<div>`) that React DOM would
+  otherwise leave unmarked; `focusRingProps` / `focusTargetProps` remain the
+  `dataSet` spelling for Firna primitives and React Native elements.
+  `focusRingVariables` is now typed for both a primitive `style` and a DOM
+  `style`. A raw host with a resting shadow must set
+  `--firna-focus-ring-base-shadow` rather than an inline `box-shadow`, which
+  would outrank the glow; only `View` performs that rewrite automatically.
+
+### Fixed
+
+- **drag-select:** `useDragSelectableTarget` returns an empty `focusRingStyle`.
+  Its `a11yProps` already carry the CSS focus marker, so code that still applies
+  the previously documented `target.focused ? target.focusRingStyle : null`
+  no longer paints a second, heavier glow over the first.
+- **theme:** `SharedUiThemeProvider` injects `domBackendCss` on the web client,
+  so a page built from the provider and raw DOM controls alone — with no
+  `View`, `Text`, or `TextInput` to inject it — paints the focus glow. Static
+  and server-rendered pages still emit `domBackendCss` in `<head>` themselves.
+- **focus-ring:** a `descendant` focus host (input frame, chip multi-select,
+  wheel date trigger) glows only while its marked focus target has visible
+  focus. Tabbing to a nested clear, suffix, or chip-remove button no longer
+  lights the whole field or hides that button's own outline; the focused
+  action keeps the browser outline so it stays distinguishable from the field.
+
 ## [3.1.0](https://github.com/futex-ai/ui/compare/v3.0.0...v3.1.0) (2026-09-17)
 
 ### Features
@@ -306,8 +348,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Features
 
 - **calendar:** add full event calendar view component ([#39](https://github.com/futex-ai/ui/issues/39)) ([879285e](https://github.com/futex-ai/ui/commit/879285eaa10d93e5088b6d90721c1f2f9959c4ce))
-
-## [Unreleased]
 
 ## [0.2.1](https://github.com/futex-ai/ui/compare/v0.2.0...v0.2.1) - 2026-06-18
 

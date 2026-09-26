@@ -71,7 +71,10 @@ export function Switch({
   // against the page surface, not the track fill. The Pressable padding leaves
   // clearance and sets no `overflow: hidden`, so the outset ring is not clipped
   // and stays ≥3:1 in both the off (light) and on (primary) states (2.4.7 AA).
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({
+    disabled: disableFocusRing,
+    target: "parent",
+  });
   const disabledState = disabled || !onValueChange;
   const toggle = () => onValueChange?.(!value);
   // Space only. React Native Web's press responder binds Spacebar to `button`
@@ -104,6 +107,7 @@ export function Switch({
 
   return (
     <Pressable
+      {...focus.focusTargetProps}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="switch"
       accessibilityState={{ checked: value, disabled: disabledState }}
@@ -118,17 +122,15 @@ export function Switch({
       {...keyProps}
     >
       <View
+        {...focus.focusRingProps}
         style={[
           styles.track,
           value ? styles.trackOn : null,
           disabledState ? styles.trackDisabled : null,
           trackStyle,
-          // `webOutlineReset` suppresses the default UA outline while the glow is
-          // the focus affordance; the focus ring is layered last so it survives
-          // and stays visible (WCAG 2.1 — 2.4.7 Focus Visible, AA). With the ring
-          // disabled the reset is skipped so the UA outline returns instead.
-          focus.webOutlineReset,
-          focus.focusVisible ? focus.focusRingStyle : null,
+          // The track is the painted child of the focusable Pressable. Its CSS
+          // marker moves both the glow and opted-out UA fallback to this box.
+          focus.focusRingVariables,
         ]}
       >
         <View

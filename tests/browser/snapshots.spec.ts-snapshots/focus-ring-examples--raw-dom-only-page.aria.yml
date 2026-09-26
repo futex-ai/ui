@@ -1,0 +1,4 @@
+- paragraph: Provider plus raw DOM only — no View, Text, or TextInput on this page.
+- button "Sage swatch"
+- group "Raw DOM field":
+  - textbox "Raw DOM field": Quarterly report

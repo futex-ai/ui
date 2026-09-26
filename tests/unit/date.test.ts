@@ -59,6 +59,15 @@ test("native date trigger scales its icons with the size", () => {
   );
 });
 
+test("wheel date trigger marks its split web focus ring", () => {
+  const source = readSource("../../src/date/DateTrigger.tsx");
+
+  assert.match(source, /useFocusRing\(\{ target: "descendant" \}\)/);
+  assert.match(source, /<Pressable[\s\S]*?\.\.\.focus\.focusRingProps/);
+  assert.match(source, /<Pressable[\s\S]*?\.\.\.focus\.focusTargetProps/);
+  assert.match(source, /tabIndex=\{Platform\.OS === "web" \? -1 : undefined\}/);
+});
+
 test("date fields reveal supplementary help from a labelInfo button", () => {
   const fieldSource = readSource("../../src/date/DateField.tsx");
   const rangeSource = readSource("../../src/date/DateRangeField.tsx");

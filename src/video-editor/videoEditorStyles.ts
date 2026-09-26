@@ -8,7 +8,6 @@
  */
 import { StyleSheet } from "../primitives/reactNative";
 
-import { focusRingStyleFor } from "../focusRing";
 import type { SharedUiTheme } from "../theme";
 
 export function createVideoEditorStyles(theme: SharedUiTheme) {
@@ -102,7 +101,6 @@ export function createVideoEditorStyles(theme: SharedUiTheme) {
     buttonHovered: { backgroundColor: theme.colors.soft },
     buttonActive: { backgroundColor: theme.colors.primarySoft },
     buttonPrimary: { backgroundColor: theme.colors.primaryDeep },
-    buttonFocused: focusRingStyleFor({ color: theme.colors.primary }),
     buttonDisabled: { opacity: 0.4 },
     rateTrigger: {
       alignItems: "center",
@@ -146,7 +144,6 @@ export function createVideoEditorStyles(theme: SharedUiTheme) {
       backgroundColor: theme.colors.primaryDeep,
       position: "absolute",
     },
-    scrubberFocused: focusRingStyleFor({ color: theme.colors.primary }),
 
     // --- level meter -----------------------------------------------------
     meterChannel: {

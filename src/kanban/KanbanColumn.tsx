@@ -229,7 +229,7 @@ export function KanbanColumn<Card>({
 /**
  * A pressable / draggable card. Mirrors the shared button / table row / list
  * item: `button` semantics, a stronger-border hover, the inset sage focus ring,
- * a pressed and disabled state, and the hidden web outline. When the board is
+ * a pressed and disabled state, and the shared CSS focus marker. When the board is
  * draggable the card also carries the drag `binding` — a `data-testid` for
  * pointer hit-testing, the keyboard grab/move handler, a node ref for focus
  * restore, and a focusable tab stop — and dims (`grabbed`) while it is the
@@ -254,7 +254,7 @@ function PressableCard({
   onPress?: () => void;
   styles: KanbanStyles;
 }) {
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ offset: -2, disabled: disableFocusRing });
   // `onKeyDown` and `tabIndex` are web-only; gate them like the segmented control.
   const dragProps =
     binding && Platform.OS === "web"
@@ -266,6 +266,7 @@ function PressableCard({
       accessibilityRole="button"
       accessibilityState={{ disabled }}
       disabled={disabled}
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onPress}
@@ -277,10 +278,9 @@ function PressableCard({
         styles.cardPressable,
         hovered && !disabled ? styles.cardHover : null,
         pressed && !disabled ? styles.cardPressed : null,
-        focus.focusVisible && focus.ringEnabled ? styles.cardFocused : null,
         disabled ? styles.cardDisabled : null,
         grabbed ? styles.cardGrabbed : null,
-        focus.webOutlineReset,
+        focus.focusRingVariables,
       ]}
     >
       {children}
@@ -337,6 +337,7 @@ function ColumnAddButton({
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onPress}
@@ -345,8 +346,7 @@ function ColumnAddButton({
         afterAccessory ? styles.addButtonAfterAccessory : null,
         styles.addButtonPressable,
         hovered ? styles.addButtonHover : null,
-        focus.focusVisible ? focus.focusRingStyle : null,
-        focus.webOutlineReset,
+        focus.focusRingVariables,
       ]}
     >
       <Text aria-hidden importantForAccessibility="no" style={styles.addGlyph}>

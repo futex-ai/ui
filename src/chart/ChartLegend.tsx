@@ -160,6 +160,7 @@ function LegendEntry({
         // `checked` reports visibility, so a screen reader announces the state
         // the toggle controls rather than only its label.
         accessibilityState={{ checked: !hidden }}
+        {...focus.focusRingProps}
         onBlur={focus.onBlur}
         onFocus={focus.onFocus}
         onPress={() => onToggle(entry.id)}
@@ -168,7 +169,7 @@ function LegendEntry({
           // Hidden series dim rather than disappear, so the toggle that brings
           // them back is still visible and still in the tab order.
           hidden ? { opacity: 0.4 } : null,
-          focus.webOutlineReset,
+          focus.focusRingVariables,
           focus.focusVisible && focus.ringEnabled
             ? {
                 backgroundColor: theme.colors.soft,

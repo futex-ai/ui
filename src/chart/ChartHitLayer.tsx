@@ -148,6 +148,7 @@ function HitTargetView({
     <Pressable
       accessibilityLabel={target.label}
       accessibilityRole="button"
+      {...focus.focusRingProps}
       onBlur={() => {
         focus.onBlur();
         onHoverOut();
@@ -170,7 +171,7 @@ function HitTargetView({
           top: target.y,
           width: target.width,
         },
-        focus.webOutlineReset,
+        focus.focusRingVariables,
         // The hovered/focused mark lifts so the reader sees it respond. A wash
         // rather than an outline: an outline around a mark reads as data ink.
         isActive ? { backgroundColor: "rgba(127,127,127,0.10)" } : null,

@@ -95,6 +95,7 @@ export function MediaBinItem({
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onLongPress={onActivate ? () => onActivate(asset) : undefined}
@@ -106,8 +107,7 @@ export function MediaBinItem({
         },
         selected ? styles.cardSelected : null,
         hovered && !selected ? styles.cardHovered : null,
-        focus.webOutlineReset,
-        focus.focusVisible && focus.ringEnabled ? styles.cardFocused : null,
+        focus.focusRingVariables,
       ]}
       testID={testID}
     >

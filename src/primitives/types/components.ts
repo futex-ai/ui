@@ -79,6 +79,10 @@ export interface ViewProps
     ViewPropsIOS,
     ViewPropsAndroid {
   children?: ReactNode | undefined;
+  /** Web `data-*` attributes, using camelCase keys. Ignored on native. */
+  dataSet?:
+    | Record<string, string | number | boolean | null | undefined>
+    | undefined;
   /** Distance a touch may start outside the view and still hit it. */
   hitSlop?: null | Insets | number | undefined;
   /** DOM `id` on web; a native view tag otherwise. */

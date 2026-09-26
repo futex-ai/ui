@@ -219,7 +219,7 @@ export function List<Item>({
  * semantics, so assistive tech still reads "list, N items" around clickable
  * rows. Mirrors the shared button / table row: a hover wash, the sage focus ring
  * (an inset box-shadow so it shows even inside a clipped card), a pressed and
- * disabled state, and the hidden web outline. Keyboard activation (Enter /
+ * disabled state, and the shared CSS focus marker. Keyboard activation (Enter /
  * Space) comes from the web backend's Pressable for the `button` role.
  */
 function PressableListItem({
@@ -239,7 +239,7 @@ function PressableListItem({
   styles: ListStyles;
   testID?: string;
 }) {
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ offset: -2, disabled: disableFocusRing });
   return (
     <View role="listitem">
       <Pressable
@@ -247,6 +247,7 @@ function PressableListItem({
         accessibilityRole="button"
         accessibilityState={{ disabled }}
         disabled={disabled}
+        {...focus.focusRingProps}
         onBlur={focus.onBlur}
         onFocus={focus.onFocus}
         onPress={onPress}
@@ -256,9 +257,8 @@ function PressableListItem({
           styles.itemPressable,
           hovered && !disabled ? styles.itemHover : null,
           pressed && !disabled ? styles.itemPressed : null,
-          focus.focusVisible && focus.ringEnabled ? styles.itemFocused : null,
           disabled ? styles.itemDisabled : null,
-          focus.webOutlineReset,
+          focus.focusRingVariables,
         ]}
       >
         {children}

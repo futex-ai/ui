@@ -63,11 +63,12 @@ test("list makes items pressable buttons when given onItemPress", () => {
   assert.match(source, /accessibilityState=\{\{ disabled \}\}/);
   assert.match(source, /disabled=\{disabled\}/);
   assert.match(source, /useFocusRing/);
+  assert.match(source, /\.\.\.focus\.focusRingProps/);
   assert.match(
     source,
-    /focus\.focusVisible && focus\.ringEnabled \? styles\.itemFocused : null/,
+    /useFocusRing\(\{ offset: -2, disabled: disableFocusRing \}\)/,
   );
-  assert.match(source, /focus\.webOutlineReset/);
+  assert.match(source, /focus\.focusRingVariables/);
   assert.match(
     source,
     /style=\{\(\{ hovered, pressed \}: PressableHoverState\) =>/,
@@ -128,10 +129,10 @@ test("list item makes only the title column pressable, leaving trailing free", (
   assert.match(source, /onPress \? \(\s*<PressableTitle/);
   assert.match(source, /accessibilityRole="button"/);
   assert.match(source, /accessibilityState=\{\{ disabled \}\}/);
-  // The button still owns the shared focus ring + hidden outline + pressed dim.
+  // The button still owns the shared CSS focus marker + pressed dim.
   assert.match(source, /useFocusRing/);
-  assert.match(source, /focus\.focusVisible \? focus\.focusRingStyle : null/);
-  assert.match(source, /focus\.webOutlineReset/);
+  assert.match(source, /\.\.\.focus\.focusRingProps/);
+  assert.match(source, /focus\.focusRingVariables/);
   assert.match(
     source,
     /pressed && !disabled \? styles\.itemMainPressed : null/,
@@ -186,12 +187,12 @@ test("list styles are driven by shared theme tokens", () => {
     stylesSource,
     /separator: \{ backgroundColor: theme\.colors\.border, height: 1 \}/,
   );
-  // The hover wash and inset focus ring use shared tokens.
+  // The hover wash stays local; the inset focus ring comes from DOM CSS.
   assert.match(
     stylesSource,
     /itemHover: \{ backgroundColor: theme\.colors\.soft \}/,
   );
-  assert.match(stylesSource, /itemFocused: \{[\s\S]*?theme\.colors\.primary/);
+  assert.doesNotMatch(stylesSource, /itemFocused:/);
 });
 
 test("list renders busy skeleton items while loading", () => {

@@ -124,7 +124,7 @@ export function WorkflowNode({
     () => createWorkflowStyles(theme, size),
     [theme, size],
   );
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ offset: -2, disabled: disableFocusRing });
   const Icon = node.icon ?? defaultWorkflowNodeIcons[node.type];
   const chipColor = color ?? defaultWorkflowNodeColors[node.type];
   const iconSize = workflowSizing(size).chipIcon;
@@ -177,6 +177,7 @@ export function WorkflowNode({
         accessibilityLabel={label}
         accessibilityRole="button"
         accessibilityState={{ selected }}
+        {...focus.focusRingProps}
         onBlur={focus.onBlur}
         onFocus={focus.onFocus}
         onPress={() => onPress(node)}
@@ -187,11 +188,8 @@ export function WorkflowNode({
           hovered ? styles.nodeHover : null,
           pressed ? styles.nodePressed : null,
           selected ? styles.nodeSelected : null,
-          focus.focusVisible && !selected && focus.ringEnabled
-            ? styles.nodeFocused
-            : null,
           style,
-          focus.webOutlineReset,
+          focus.focusRingVariables,
         ]}
         testID={testID}
       >

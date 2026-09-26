@@ -172,6 +172,7 @@ export function Scrubber({
       accessibilityLabel={accessibilityLabel}
       accessibilityRole={web ? undefined : "adjustable"}
       accessibilityValue={scrub.accessibilityValue}
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onLayout={(event: LayoutChangeEvent) =>
@@ -184,8 +185,7 @@ export function Scrubber({
       style={[
         styles.scrubber,
         { height: Math.max(metrics.knobSize, metrics.trackHeight) },
-        focus.webOutlineReset,
-        focus.focusVisible && focus.ringEnabled ? styles.scrubberFocused : null,
+        focus.focusRingVariables,
         style,
       ]}
       tabIndex={onSeek ? 0 : undefined}

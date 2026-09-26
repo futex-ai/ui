@@ -220,7 +220,7 @@
     "storybook:build": "storybook build",
     "storybook:native": "npm run build && cd storybook-native && npm start -- --clear",
     "test": "node --import tsx --test tests/unit/*.test.ts",
-    "test:dist": "node --import tsx --test tests/unit/distDeclarations.test.ts",
+    "test:dist": "FIRNA_TEST_DIST=1 node --import tsx --test tests/unit/distDeclarations.test.ts tests/unit/staticFocusRing.test.ts",
     "test:browser": "playwright test",
     "test:package": "node scripts/package-smoke.mjs",
     "typecheck": "tsc --noEmit --project tsconfig.json",

@@ -146,6 +146,7 @@ export function RadioCard({
       accessibilityState={{ checked, disabled: disabledState }}
       aria-checked={checked}
       disabled={disabledState}
+      {...focus.focusRingProps}
       onBlur={focus.onBlur}
       onFocus={handleFocus}
       onPress={onPress}
@@ -165,8 +166,7 @@ export function RadioCard({
         // geometry-bearing outline (not just a border recolor) so it stays
         // visible on a checked card whose border is already `primary`
         // (WCAG 2.1 — 2.4.7 Focus Visible, AA).
-        focus.focusVisible ? focus.focusRingStyle : null,
-        focus.webOutlineReset,
+        focus.focusRingVariables,
       ]}
     >
       <View style={styles.radioDotCol}>

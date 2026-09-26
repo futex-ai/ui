@@ -80,10 +80,6 @@ export function createTableStyles(
       paddingVertical: sizing.rowPaddingVertical,
     },
     rowDisabled: { opacity: 0.55 },
-    // An inset ring keeps focus visible on a row that only has a bottom border
-    // (a border-colour ring would not read), mirroring the button's box-shadow
-    // ring approach. Pairs with `hideWebOutlineView` to drop the browser outline.
-    rowFocused: { boxShadow: `inset 0 0 0 2px ${theme.colors.primary}` },
     rowHover: { backgroundColor: theme.colors.soft },
     rowPressable: { cursor: "pointer" },
     rowPressed: { backgroundColor: theme.colors.bg2 },

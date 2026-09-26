@@ -240,6 +240,7 @@ export function WebModalFrame({
           accessibilityRole="button"
           accessibilityState={{ disabled: closeDisabled }}
           disabled={closeDisabled}
+          {...closeRing.focusRingProps}
           onBlur={closeRing.onBlur}
           onFocus={closeRing.onFocus}
           onPress={() => requestClose("closeButton")}
@@ -247,7 +248,7 @@ export function WebModalFrame({
           style={[
             styles.closeButton,
             closeDisabled ? styles.disabled : null,
-            closeRing.focusVisible ? closeRing.focusRingStyle : null,
+            closeRing.focusRingVariables,
           ]}
         >
           <X aria-hidden color={theme.colors.ink2} size={18} />

@@ -185,9 +185,6 @@ export function createWorkflowStyles(
       backgroundColor: theme.colors.primarySoft,
       borderColor: theme.colors.primaryBorder,
     },
-    insertButtonFocused: {
-      boxShadow: `0 0 0 2px ${theme.colors.primary}`,
-    },
     // Node card.
     node: {
       alignItems: "center",
@@ -214,7 +211,6 @@ export function createWorkflowStyles(
       borderColor: theme.colors.primary,
       boxShadow: `0 0 0 3px ${theme.colors.primarySoft}`,
     },
-    nodeFocused: { boxShadow: `inset 0 0 0 2px ${theme.colors.primary}` },
     nodeDisabled: { opacity: 0.55 },
     chip: {
       alignItems: "center",
