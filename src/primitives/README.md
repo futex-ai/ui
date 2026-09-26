@@ -45,7 +45,8 @@ were recorded on that backend and are what prove the swap changed nothing
   accessibility props, `testID`, `tabIndex`, `disabled` and `pointerEvents`.
   Pure, and pinned by `tests/unit/domProps.test.ts`.
 - `css.ts` holds the few rules an inline style cannot express, injected once
-  per document under a stable id by `useDomBackendCss` and published as
+  per document under a stable id by `useDomBackendCss` (called from `View`,
+  `Text`, `TextInput`, and the web `SharedUiThemeRoot`) and published as
   `domBackendCss` for server rendering. That is the `View` and `Text` element
   resets (a class, so every inline style still outranks them), the
   `pointerEvents` child-selector rules, the `TextInput` reset, its
@@ -98,7 +99,10 @@ moves it into `--firna-focus-ring-base-shadow` and the stylesheet composes it
 behind the halo instead of letting either treatment erase the other. A
 `descendant` host's rules key on `[data-firna-focus-target]:focus-visible`, not
 on any focused descendant: a clear or chip-remove button inside the frame keeps
-its own browser outline and leaves the frame unlit.
+its own browser outline and leaves the frame unlit. The `boxShadow` rewrite is
+`View`'s alone: a raw DOM host marked through `focusRingDomProps` must put a
+resting shadow in `--firna-focus-ring-base-shadow` itself, since an inline
+`box-shadow` would outrank the glow.
 
 The list of places the backend deliberately differs from `react-native-web`
 lives in the plan's M2 and M3 sections. The one worth knowing here:

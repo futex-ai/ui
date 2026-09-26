@@ -69,6 +69,16 @@ live carets, tracked changes, and comment threads — is specified in
   `focusTargetDomProps`) for raw DOM elements, so a web-only consumer with no
   primitive to spread onto gets the same glow. Both spellings must serialize in
   static markup, and a `self` host must never emit an `undefined` marker.
+- The web theme provider must inject `domBackendCss` on the client, exactly as
+  `View`, `Text`, and `TextInput` do (once per document, first in `<head>`),
+  so a page that renders only the provider and raw DOM hosts still paints the
+  glow. Static and server-rendered HTML keeps emitting `domBackendCss` in
+  `<head>` itself; the injection is a client effect and never serializes.
+- Only `View` rewrites an inline `boxShadow` into
+  `--firna-focus-ring-base-shadow`. A raw DOM host must set that variable for
+  a resting shadow instead of `box-shadow`; the docs must say so, because an
+  inline `box-shadow` outranks the glow rule while the rule still removes the
+  browser outline, leaving no focus indicator at all.
 - A `descendant` host's glow and outline reset must follow only its marked
   focus target. Any other focusable element inside the host — an input's clear
   button, a chip-remove button, the wheel date trigger's clear button — keeps

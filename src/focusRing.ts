@@ -176,7 +176,11 @@ export function focusRingStyleFor(options: FocusRingOptions): ViewStyle {
  * `TextInput`), which turn their `dataSet` into `data-*` attributes; spread
  * `focusRingDomProps` / `focusTargetDomProps` on a raw DOM element such as a
  * `<button>`, which React DOM would otherwise leave unmarked. Either way the
- * host also needs `focusRingVariables` in its `style`.
+ * host also needs `focusRingVariables` in its `style`. A raw host with a
+ * resting shadow must set `--firna-focus-ring-base-shadow` instead of an
+ * inline `box-shadow`, which would outrank the glow; only `View` rewrites
+ * that for you. The stylesheet itself reaches the page through any primitive
+ * or the theme provider on the client, and through `<head>` for static HTML.
  *
  * A `descendant` host paints only while its marked target has visible focus.
  * Other focusable descendants — a clear, suffix, or chip-remove button inside

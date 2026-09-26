@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { StyleSheet, Text, View } from "../primitives/reactNative";
 
-import { useFocusRing, useSharedUiTheme } from "../index";
+import {
+  SharedUiThemeProvider,
+  useFocusRing,
+  useSharedUiTheme,
+} from "../index";
 
 /**
  * A hand-rolled control on a web-only consumer has no Firna primitive to spread
@@ -23,6 +27,34 @@ export function RawDomControlExample() {
         <RawField label="Raw DOM field" onChange={setValue} value={value} />
       </View>
     </View>
+  );
+}
+
+/**
+ * The same two controls on a page with no Firna primitive at all: only the
+ * theme provider and raw DOM. The provider injects `domBackendCss` on the
+ * client, so the glow still paints; nothing else on this page would.
+ */
+export function RawDomOnlyPageExample() {
+  const [value, setValue] = useState("Quarterly report");
+  return (
+    <SharedUiThemeProvider>
+      <div style={{ display: "grid", gap: 16, maxWidth: 420 }}>
+        <p
+          style={{
+            color: "#5c6660",
+            font: "13px Inter, sans-serif",
+            margin: 0,
+          }}
+        >
+          Provider plus raw DOM only — no View, Text, or TextInput on this page.
+        </p>
+        <div style={{ alignItems: "center", display: "flex", gap: 16 }}>
+          <RawSwatch color="#4f7864" label="Sage swatch" />
+          <RawField label="Raw DOM field" onChange={setValue} value={value} />
+        </div>
+      </div>
+    </SharedUiThemeProvider>
   );
 }
 

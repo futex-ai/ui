@@ -7,6 +7,10 @@
  * literal attribute spelling is what a raw `<button>` or `<div>` needs, since
  * React DOM forwards `data-*` props verbatim and drops `dataSet` with a
  * warning. Both feed the same `domBackendCss` rules.
+ *
+ * The DOM spelling carries the markers only. `View` additionally moves an
+ * inline `boxShadow` into `--firna-focus-ring-base-shadow` so the glow can
+ * compose over it; a raw host has to set that variable itself.
  */
 
 /** Relationship from the painted box to the real focus target. */

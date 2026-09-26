@@ -1,6 +1,12 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
-import { domBackendCss } from "../../src/primitives/dom/css";
+import {
+  DOM_BACKEND_STYLE_ID,
+  domBackendCss,
+  TEXT_CLASS,
+  TEXT_INPUT_CLASS,
+  VIEW_CLASS,
+} from "../../src/primitives/dom/css";
 
 const DEFAULT_GLOW = "rgba(79, 120, 100, 0.35)";
 const storyReadyTimeout = 30_000;
@@ -186,6 +192,30 @@ test("a raw DOM control painted through focusRingDomProps gets the glow", async 
   await expect(field).toHaveCSS("outline-style", "none");
   await expect(frame).toHaveAttribute("data-firna-focus-host", "descendant");
   await expect(field).toHaveAttribute("data-firna-focus-target", "true");
+});
+
+test("the theme provider injects the stylesheet on a page with no primitive", async ({
+  page,
+}) => {
+  // Only View, Text, and TextInput used to inject `domBackendCss`, so a page
+  // built from the provider and raw DOM controls alone carried the markers but
+  // no rules to read them. The provider now injects on the client too.
+  await gotoFocusRingStory(page, "raw-dom-only-page");
+  const primitives = page.locator(
+    `.${VIEW_CLASS}, .${TEXT_CLASS}, .${TEXT_INPUT_CLASS}`,
+  );
+  await expect(primitives).toHaveCount(0);
+  const sheet = page.locator(`head > style#${DOM_BACKEND_STYLE_ID}`);
+  await expect(sheet).toHaveCount(1);
+
+  const swatch = page.getByRole("button", { name: "Sage swatch" });
+  const frame = page.getByRole("group", { name: "Raw DOM field" });
+  const field = page.getByRole("textbox", { name: "Raw DOM field" });
+  await focusWithKeyboard(page, swatch);
+  await expectGlow(swatch);
+  await focusWithKeyboard(page, field);
+  await expectGlow(frame);
+  await expect(field).toHaveCSS("outline-style", "none");
 });
 
 for (const [label, storyId] of [

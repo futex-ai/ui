@@ -242,6 +242,34 @@ For a frame that paints while an inner element owns focus, pass
 `focusTargetDomProps` on the inner element. The "Raw DOM control" story under
 Focus ring/Examples renders both patterns.
 
+Two rules apply to raw DOM hosts that the primitives handle for you:
+
+- **The stylesheet.** `View`, `Text`, `TextInput`, and `SharedUiThemeProvider`
+  each inject `domBackendCss` once per document on the client, so a page whose
+  only Firna code is the provider plus raw DOM controls still paints the glow.
+  The "Raw DOM only page" story renders exactly that. The injection is a client
+  effect: static and server-rendered markup must still emit `domBackendCss` in
+  `<head>` (next section).
+- **A resting shadow.** The glow is a `box-shadow`, and an inline `box-shadow`
+  on the host outranks the stylesheet, so the glow never paints and the host
+  loses its focus indicator. `View` rewrites an inline `boxShadow` into
+  `--firna-focus-ring-base-shadow` automatically; a raw host must set that
+  variable itself instead of `box-shadow`. The stylesheet paints the base
+  shadow at rest and composes it behind the glow on focus:
+
+```tsx
+<button
+  {...focus.focusRingDomProps}
+  style={
+    {
+      ...focus.focusRingVariables,
+      "--firna-focus-ring-base-shadow": "0 1px 2px rgba(0, 0, 0, 0.2)",
+    } as CSSProperties
+  }
+  type="button"
+/>
+```
+
 Server-rendered and static pages must emit `domBackendCss` in `<head>` before
 their own stylesheets. Emitting the variables there as a `:root` fallback makes
 the first paint complete even outside a provider boundary; the provider also

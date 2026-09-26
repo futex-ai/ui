@@ -11,7 +11,10 @@ import {
   darkSharedUiTheme,
   useSharedUiTheme,
 } from "../index";
-import { RawDomControlExample } from "./focusRingRawDomExample";
+import {
+  RawDomControlExample,
+  RawDomOnlyPageExample,
+} from "./focusRingRawDomExample";
 import { StorySurface } from "./sharedExamples";
 
 /**
@@ -88,6 +91,13 @@ export const RawDomControl: Story = {
       <RawDomControlExample />
     </StorySurface>
   ),
+};
+
+export const RawDomOnlyPage: Story = {
+  name: "Raw DOM only page (provider injects the CSS)",
+  // Deliberately not wrapped in StorySurface: that renders a View, which would
+  // inject the stylesheet and hide what this story demonstrates.
+  render: () => <RawDomOnlyPageExample />,
 };
 
 function DynamicDisabledExample() {

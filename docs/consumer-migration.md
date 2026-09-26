@@ -84,7 +84,13 @@ Recommended path:
    `focusVisible` only for non-painting behavior. Do not add
    `outlineStyle: "none"` yourself: `domBackendCss` suppresses it only while
    the CSS glow is active and restores the browser fallback when the ring is
-   disabled (WCAG 2.1 — 2.4.7).
+   disabled (WCAG 2.1 — 2.4.7). Two more rules for raw DOM hosts: the
+   stylesheet reaches the page through `SharedUiThemeProvider` (or any
+   primitive) on the client, and through your own `<head>` for static or
+   server-rendered HTML; and a raw host with a resting shadow must put it in
+   `--firna-focus-ring-base-shadow`, not `box-shadow`, because an inline
+   `box-shadow` outranks the glow and leaves the host with no focus indicator.
+   Only `View` performs that rewrite for you.
 7. Run Juno app tests, typecheck, browser smoke tests, `cargo xtask check`,
    commit, push, and run `cargo xtask review`.
 

@@ -111,6 +111,27 @@ test("theme defaults the focus-ring switch on and honors an override", () => {
   );
 });
 
+test("web theme root injects the DOM backend stylesheet on the client", () => {
+  // The provider is the one Firna component a raw-DOM-only page is guaranteed
+  // to render, so it must inject `domBackendCss` like View/Text/TextInput do;
+  // otherwise `focusRingDomProps` markers have no rules to read them. The
+  // native sibling has no stylesheet to inject.
+  const web = readFileSync(
+    new URL("../../src/themeRoot.web.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    web,
+    /import \{ useDomBackendCss \} from "\.\/primitives\/dom\/css"/,
+  );
+  assert.match(web, /useDomBackendCss\(\);/);
+  const native = readFileSync(
+    new URL("../../src/themeRoot.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.doesNotMatch(native, /useDomBackendCss/);
+});
+
 test("useFocusRing exposes the disable primitive and outline fallback", () => {
   // focusRing.ts imports react-native (Platform) and so cannot be imported in
   // the node test runner; assert its disable wiring at the source level instead,

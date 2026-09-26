@@ -25,10 +25,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   otherwise leave unmarked; `focusRingProps` / `focusTargetProps` remain the
   `dataSet` spelling for Firna primitives and React Native elements.
   `focusRingVariables` is now typed for both a primitive `style` and a DOM
-  `style`.
+  `style`. A raw host with a resting shadow must set
+  `--firna-focus-ring-base-shadow` rather than an inline `box-shadow`, which
+  would outrank the glow; only `View` performs that rewrite automatically.
 
 ### Fixed
 
+- **theme:** `SharedUiThemeProvider` injects `domBackendCss` on the web client,
+  so a page built from the provider and raw DOM controls alone — with no
+  `View`, `Text`, or `TextInput` to inject it — paints the focus glow. Static
+  and server-rendered pages still emit `domBackendCss` in `<head>` themselves.
 - **focus-ring:** a `descendant` focus host (input frame, chip multi-select,
   wheel date trigger) glows only while its marked focus target has visible
   focus. Tabbing to a nested clear, suffix, or chip-remove button no longer
