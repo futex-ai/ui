@@ -7,8 +7,10 @@ and a `variant` prop chooses which picker that is.
 ## Variants
 
 - **`variant="calendar"` (default)** — the branded month grid.
-  - **Web** renders a sage calendar popover anchored below the field, and the
-    trigger is an editable text input (type **or** pick).
+  - **Web** renders a sage calendar popover anchored below the field — or above
+    it when a whole month does not fit below (see
+    [Web placement](#web-placement)) — and the trigger is an editable text
+    input (type **or** pick).
   - **Native** presents the same calendar in a bottom-sheet modal with Cancel /
     Done (tap to pick).
 - **`variant="wheel"`** — an iOS-style spinning **day / month / year** wheel in a
@@ -124,6 +126,9 @@ with `labelInfoIcon` and the button's accessible name with `labelInfoLabel`
 - `types.ts` — shared overlay prop contract (`DatePickerOverlayProps`).
 - `dateFieldLayers.ts` — the default web calendar portal layer and optional
   z-index override.
+- `calendarPopoverPlacement.ts` — the web calendar's `DropdownPortal` placement
+  options: its compact width and the six-week height it reserves when choosing
+  a side (see [Web placement](#web-placement)). Pure and unit-tested.
 - `DateField.tsx` — `DateField`, `DateInput`, and the shared `FieldLabel`.
 - `DateTrigger.tsx` — the platform triggers (`WebTrigger`, `NativeTrigger` tap
   target) and the `triggerBorder` helper. `WebTrigger` renders the shared
@@ -140,7 +145,7 @@ with `labelInfoIcon` and the button's accessible name with `labelInfoLabel`
 - `DateWheelSheet.tsx` — shared staged wheel + `WebModalFrame` bottom-sheet
   chrome (title/close header and Cancel/Done footer) for web and native.
 - `DatePickerOverlay.web.tsx` — web overlay: portaled, anchored calendar popover
-  or the shared wheel sheet.
+  (whose month scrolls when the popover is clamped) or the shared wheel sheet.
 - `DatePickerOverlay.tsx` — native overlay: compact calendar sheet or the shared
   wheel sheet, selected by `variant`.
 - `dateFieldStyles.ts` / `webCalendarStyles.ts` / `wheelPickerStyles.ts` —
@@ -158,12 +163,33 @@ Styles read colors, fonts, and radii from `SharedUiThemeProvider` via
 same pattern as the other components in this library. The brand accent is the
 theme's `primary` / `primaryDeep` tokens.
 
+## Web placement
+
+The calendar is a fixed layout, not a scrolling list, so it never settles for
+the scrolling-list room (`140px`) that shared dropdown placement accepts below a
+trigger. It reserves the height of its tallest layout — a six-week month,
+`284px` including the popover chrome — and opens below the field only when that
+much room is free there. Otherwise it flips above whenever that side is
+roomier, so a field near the bottom of the viewport or a modal gets a whole
+month instead of a calendar squeezed into the space below.
+
+- Reserving the tallest month, not the visible one, keeps the popover on one
+  side while the user pages between four-, five-, and six-week months. Above
+  the field it is anchored by its bottom edge, so a shorter month shrinks
+  toward the field rather than detaching from it.
+- When neither side has room for a whole month (a short viewport with the
+  field mid-screen), the popover opens clamped on the roomier side and the
+  month scrolls inside it, so every week row stays reachable.
+
+The `Date/Examples` → `Placement · flips above the bottom edge` story pins a
+field near each viewport edge to show both sides.
+
 ## Web stacking (z-index)
 
 The calendar renders through `DropdownPortal`, whose fixed body layer escapes
 the field, grid, and scroll-container stacking contexts. It tracks the trigger
-while the viewport or an ancestor scrolls, flips above when space below is
-tight, and owns outside-press/Escape dismissal.
+while the viewport or an ancestor scrolls, picks its side as described in
+[Web placement](#web-placement), and owns outside-press/Escape dismissal.
 
 `DateField`, `DateInput`, and `DateRangeField` accept a `zIndex` prop when a
 consumer owns an even higher custom layer. The override is applied to the web
@@ -229,12 +255,17 @@ locales.
 
 ## Testing
 
-`dateMath.ts` (including the wheel's `clampDay` / `wheelYearRange` helpers) and
-`dateFieldLayers.ts` are unit-tested with the repo's Node test runner. Both the
-calendar and wheel variants are exercised by the Storybook Playwright spec
-(`tests/browser/storybook.spec.ts`) against the `Date/Examples` stories —
-covering the calendar's compact width below a wider trigger, month navigation,
-and day picking, plus draft staging/commit, day-and-bounds clamping, Cancel,
-clearing, and the range field for the wheel. The editable data-grid story
-additionally verifies that web date cells open the inline calendar and commit
-without sheet actions.
+`dateMath.ts` (including the wheel's `clampDay` / `wheelYearRange` helpers),
+`dateFieldLayers.ts`, and the side choices `calendarPopoverPlacement.ts` yields
+from the shared dropdown placement are unit-tested with the repo's Node test
+runner. Both the calendar and wheel variants are exercised by the Storybook
+Playwright spec (`tests/browser/storybook.spec.ts`) against the `Date/Examples`
+stories — covering the calendar's compact width below a wider trigger, month
+navigation, and day picking, plus draft staging/commit, day-and-bounds
+clamping, Cancel, clearing, and the range field for the wheel. The editable
+data-grid story additionally verifies that web date cells open the inline
+calendar and commit without sheet actions. `tests/browser/date.spec.ts` drives
+the placement story: the calendar flips above a field near the bottom edge and
+stays there while paging months, opens below a field with room, reserves no
+less than a rendered six-week month, and scrolls inside the popover when a
+short viewport leaves neither side room for a whole month.

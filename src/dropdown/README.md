@@ -322,6 +322,13 @@ web date calendar uses this policy to remain `280px` wide below a full-width
 field. `DropdownMenu`, `Popover`, and `ComboboxPopover` forward the option with
 their other shared placement props.
 
+Vertically, the portal opens below its anchor while at least `minHeight` fits
+there (default `140px`, sized for a list that scrolls within the clamped
+surface) and otherwise flips above whenever that side is roomier. A
+fixed-layout surface that cannot scroll should pass its full height as
+`minHeight`, so it flips instead of being clipped to the room below; the web
+date calendar reserves its six-week height this way.
+
 `trigger="hover"` covers the common hover menu. For custom hover timing, keep
 `trigger="press"` and wire `useDropdownHover` on the trigger yourself, passing
 `surfaceHoverProps` into `DropdownMenu` or `DropdownPortal`. The hook keeps the

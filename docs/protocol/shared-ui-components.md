@@ -452,6 +452,11 @@ Required behavior:
 - Keep the web calendar popover at its compact `280px` width below wider form
   fields, shrinking it only when required by the viewport; the field width must
   not spread the seven day columns across the form.
+- Never clip the web calendar to the room below its field. Open it below only
+  when its tallest layout, a six-week month, fits there; otherwise flip it
+  above whenever that side is roomier. Keep the chosen side while the user
+  pages months, and when neither side fits a whole month, scroll the month
+  inside the clamped popover so every week row stays reachable.
 - Give editable and tap-to-pick triggers the shared input border and focus glow,
   and let the bare `DateInput` autofocus when mounted as an embedded editor.
 - Clamp selections and typed values to the inclusive `min`/`max` bounds.
@@ -646,7 +651,9 @@ Required behavior:
   allowing fixed-width custom surfaces to opt out when their content contract
   is intentionally narrower than a wide anchor.
 - Place below the trigger when space permits, flip above near the viewport
-  bottom, and clamp max height.
+  bottom, and clamp max height. The room required below before flipping
+  defaults to a scrolling list's `140px`; a fixed-layout surface that cannot
+  scroll raises it to its full height so it flips instead of clipping.
 - Treat a selector trigger as the popup's minimum width, grow the popup to its
   wider option content, and cap that growth at `360px` by default and at the
   viewport edge in all cases. Per-selector minimum and maximum overrides may
@@ -848,8 +855,8 @@ Required behavior:
   dismissal, segmented selection, switch toggling, table row press (click and
   keyboard), focus retention/restoration, pointer-versus-keyboard focus-ring
   modality, focused-control disable/re-enable, async modal-form handoff to its
-  first hydrated field, and portal layering for dropdowns, comboboxes, and web
-  modals.
+  first hydrated field, portal layering for dropdowns, comboboxes, and web
+  modals, and the date calendar's flip above a field near the viewport bottom.
 - The package must typecheck and build before it is used by accounting or Juno.
 - `npm run test:package` must pack the built library, install the tarball into a
   temporary consumer, import every public package subpath with Node's native ESM

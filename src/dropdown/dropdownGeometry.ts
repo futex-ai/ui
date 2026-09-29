@@ -20,8 +20,15 @@ export type DropdownPlacementOptions = {
   anchorWidthAsMinimum?: boolean;
   gutter?: number;
   margin?: number;
+  /** Tallest the popup grows before it clamps. Defaults to `320`. */
   maxHeight?: number;
   maxWidth?: number;
+  /**
+   * Room the popup needs below its anchor to open there. With less, it flips
+   * above whenever that side is roomier. Defaults to `140`, which suits a
+   * scrolling list; a fixed-layout surface that cannot scroll passes its full
+   * height so it flips instead of clipping.
+   */
   minHeight?: number;
   minWidth?: number;
 };
