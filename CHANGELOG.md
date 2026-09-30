@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0](https://github.com/futex-ai/ui/compare/v3.1.1...v4.0.0) (2026-09-30)
+
+### ⚠ BREAKING CHANGES
+
+- **focus-ring:** `disableFocusRing` is replaced by `focusIndicator` on every control (`disableFocusRing` -> `focusIndicator="outline"`), the theme's `focusRing: boolean` by `focusIndicator` (`focusRing: false` -> `focusIndicator: "outline"`), and `useFocusRing({ disabled })` by `useFocusRing({ indicator })`.
+
+### Features
+
+- **focus-ring:** add focusIndicator with a none mode ([#173](https://github.com/futex-ai/ui/issues/173)) ([e41bfbd](https://github.com/futex-ai/ui/commit/e41bfbd7fe14ebefd19ed62c64847a7d81e3c129))
+
+### Bug Fixes
+
+- **dropdown:** place web popups by measured size so they flip, not clip ([#171](https://github.com/futex-ai/ui/issues/171)) ([a139e0e](https://github.com/futex-ai/ui/commit/a139e0e9702de8c64889e278b42ca42246f127fe))
+
 ## [3.1.1](https://github.com/futex-ai/ui/compare/v3.1.0...v3.1.1) (2026-09-26)
 
 ### Bug Fixes
