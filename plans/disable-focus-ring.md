@@ -238,7 +238,15 @@ release is a major.
       `test:dist`), 13 dist tests, package smoke, Storybook build, and 385
       browser tests including the axe and snapshot sweeps.
 - [x] Commit and push.
-- [ ] Run `cargo xtask review` and report its findings.
+- [x] Run `cargo xtask review` and report its findings. (Codex needs `bwrap`;
+      in a sandbox whose processes carry ambient capabilities, wrap it in
+      `setpriv --inh-caps=-all --ambient-caps=-all --bounding-set=-all`.)
+- [ ] Review finding (P2, predates M6): the charts never forward their prop to
+      `ChartFrame`, so the "Show data table" toggle ignores `focusIndicator`.
+      Awaiting a decision on passing it through.
+- [ ] Review finding (P3): `plans/charts-design.md` still lists
+      `disableFocusRing?: boolean` in `ChartCommonProps`. Awaiting a decision
+      on updating it.
 
 ---
 
