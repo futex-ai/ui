@@ -28,8 +28,6 @@ import {
 import { useSharedUiTheme } from "../theme";
 
 import {
-  buildMonthGrid,
-  DayCell,
   formatDisplay,
   monthLabel,
   parseIso,
@@ -41,6 +39,7 @@ import {
   yearRangeLabel,
   YEARS_PER_PAGE,
 } from "./dateMath";
+import { buildMonthGrid, DayCell } from "./monthGrid";
 import { DateBounds, PressableHoverState } from "./types";
 import {
   createWebCalendarStyles,
@@ -114,7 +113,10 @@ export function CalendarMonth({
       setPickingYear(false);
     }
   }, [value]);
-  const weeks = buildMonthGrid(view.year, view.month);
+  // Every month renders six weeks, so the calendar keeps one size while the
+  // user pages: the web popover is placed by its measured height when it opens,
+  // and a taller month would otherwise outgrow the room it was given.
+  const weeks = buildMonthGrid(view.year, view.month, { fixedWeeks: true });
 
   // Announce the new month to screen readers when the user pages with the
   // chevrons (off the focus path, so it doesn't steal focus) — WCAG 2.1 4.1.3.

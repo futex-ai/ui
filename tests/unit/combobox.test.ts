@@ -75,7 +75,7 @@ test("combobox popover forwards the anchor-width sizing policy", () => {
 
   assert.match(
     source,
-    /dropdownPlacement\([\s\S]*?\{[\s\S]*?anchorWidthAsMinimum,/,
+    /useDropdownSurfacePlacement\([\s\S]*?\{[\s\S]*?anchorWidthAsMinimum,/,
   );
 });
 

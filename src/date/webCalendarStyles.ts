@@ -69,7 +69,8 @@ export function createWebCalendarStyles(theme: SharedUiTheme) {
       width: 26,
     },
     // DropdownPortal supplies the first 6px of inset plus the surface chrome.
-    portalBody: { padding: 6 },
+    // The body shrinks with a clamped surface so its month scroller takes over.
+    portalBody: { flexShrink: 1, padding: 6 },
     title: {
       ...baseText,
       color: theme.colors.ink,

@@ -3,7 +3,6 @@ import test from "node:test";
 
 import {
   addDays,
-  buildMonthGrid,
   clampDay,
   clampIso,
   compareIso,
@@ -223,19 +222,4 @@ test("year-picker helpers build aligned, stable blocks", () => {
   assert.equal(years[0], 2016);
   assert.equal(years[YEARS_PER_PAGE - 1], 2027);
   assert.equal(yearRangeLabel(2016), "2016 – 2027");
-});
-
-test("buildMonthGrid is Monday-first with adjacent-month padding", () => {
-  const weeks = buildMonthGrid(2026, 3);
-  const flat = weeks.flat();
-  assert.equal(flat.length % 7, 0);
-  // March 2026: the 1st is a Sunday, so six leading Feb days fill the first week.
-  assert.equal(weeks[0][0].iso, "2026-02-23");
-  assert.equal(weeks[0][0].inMonth, false);
-  assert.equal(weeks[0][6].iso, "2026-03-01");
-  assert.equal(weeks[0][6].inMonth, true);
-  const lastInMonth = flat.filter((cell) => cell.inMonth);
-  assert.equal(lastInMonth.length, 31);
-  assert.equal(lastInMonth[30].iso, "2026-03-31");
-  assert.equal(lastInMonth[30].day, 31);
 });

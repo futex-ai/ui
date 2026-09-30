@@ -6,7 +6,6 @@ import { View } from "../primitives/reactNative";
 import {
   DropdownPlacement,
   DropdownPlacementOptions,
-  dropdownPlacement,
 } from "./dropdownGeometry";
 import {
   dropdownSurfaceRect,
@@ -15,6 +14,7 @@ import {
 import { DropdownWebLayer } from "./DropdownWebLayer";
 import { useDropdownAnchor } from "./useDropdownAnchor";
 import { useDropdownDismiss } from "./useDropdownDismiss";
+import { useDropdownSurfacePlacement } from "./useDropdownSurfacePlacement";
 
 type ComboboxPopoverProps = DropdownPlacementOptions & {
   anchorRef: RefObject<View | null>;
@@ -51,21 +51,26 @@ export function ComboboxPopover({
   const { anchor, viewport } = useDropdownAnchor(anchorRef, open);
   const surfaceStyles = useDropdownSurfaceStyles();
   useDropdownDismiss({ anchorRef, onClose, open, surfaceRef });
+  const { placement } = useDropdownSurfacePlacement(
+    surfaceRef,
+    open ? anchor : null,
+    viewport,
+    {
+      align,
+      anchorWidthAsMinimum,
+      gutter,
+      margin,
+      maxHeight,
+      maxWidth,
+      minHeight,
+      minWidth,
+    },
+  );
 
-  if (!open || !anchor) {
+  if (!open || !placement) {
     return null;
   }
 
-  const placement = dropdownPlacement(anchor, viewport, {
-    align,
-    anchorWidthAsMinimum,
-    gutter,
-    margin,
-    maxHeight,
-    maxWidth,
-    minHeight,
-    minWidth,
-  });
   return (
     <DropdownWebLayer>
       <View

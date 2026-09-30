@@ -10,8 +10,8 @@ input-backed comboboxes in Firna apps.
   for the interaction model.
 - Keep dropdowns above tables, forms, sidebars, modals, and other React Native
   Web stacking contexts.
-- Keep placement viewport-aware by flipping above the trigger when there is not
-  enough room below and clamping menu height.
+- Keep placement viewport-aware: on web, measure each surface and flip it above
+  the trigger when it does not fit below, and clamp menu height.
 - Share keyboard navigation, hover/active row styling, right-side row content,
   section headers, disabled rows, and footer/action rows.
 - Pin optional `header` and `footer` content above and below the option list so
@@ -321,6 +321,20 @@ fixed-width surface that may be narrower than a wide anchor can pass
 web date calendar uses this policy to remain `280px` wide below a full-width
 field. `DropdownMenu`, `Popover`, and `ComboboxPopover` forward the option with
 their other shared placement props.
+
+Vertically, the web portal places a surface by its own size: it lays the
+surface out once at its natural height (up to `maxHeight`), measures it, and
+places it before the browser paints — below the anchor when the whole surface
+fits there, otherwise on whichever side is roomier, clamped to that side's
+room. Nothing needs to declare its height, so a fixed-layout surface such as
+the date calendar flips instead of being clipped, and a short menu stays below
+a trigger near the viewport edge. The height is measured once per open, so a
+list that filters or grows while open keeps its side and scrolls within the
+clamp. `minHeight` raises the room a surface needs below on top of its measured
+height, for content expected to grow after opening. The combobox and rich-text
+slash-menu portals share this through `useDropdownSurfacePlacement`. Native
+does not measure: the Modal-backed portal opens below while `minHeight`
+(default `140px`) fits there.
 
 `trigger="hover"` covers the common hover menu. For custom hover timing, keep
 `trigger="press"` and wire `useDropdownHover` on the trigger yourself, passing

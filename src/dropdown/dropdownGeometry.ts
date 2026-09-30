@@ -20,8 +20,17 @@ export type DropdownPlacementOptions = {
   anchorWidthAsMinimum?: boolean;
   gutter?: number;
   margin?: number;
+  /** Tallest the popup grows before it clamps. Defaults to `320`. */
   maxHeight?: number;
   maxWidth?: number;
+  /**
+   * Least room the popup needs below its anchor to open there; with less, it
+   * flips above whenever that side is roomier. A measured popup (every web
+   * portal surface) needs its own height as well, whichever is larger, so
+   * this only raises the bar — for example to keep room for a list that
+   * grows while open. Where the popup is not measured (native), this alone
+   * decides, and defaults to `140`, which suits a scrolling list.
+   */
   minHeight?: number;
   minWidth?: number;
 };
@@ -100,16 +109,23 @@ export function dropdownWidthBounds(
   return { maxWidth, minWidth };
 }
 
+/**
+ * Places a popup beside its anchor: below when the room it needs fits there,
+ * otherwise on whichever side is roomier, clamped to that side's room.
+ *
+ * Pass the popup's rendered `surfaceHeight` (border box) once it is known, so
+ * the room it needs is its real size rather than the `minHeight` guess.
+ */
 export function dropdownPlacement(
   anchor: DropdownAnchorRect,
   viewport: DropdownViewport,
   options: DropdownPlacementOptions = {},
   preferredWidth = anchor.width,
+  surfaceHeight?: number,
 ): DropdownPlacement {
   const margin = options.margin ?? DEFAULT_MARGIN;
   const gutter = options.gutter ?? DEFAULT_GUTTER;
   const maxHeight = options.maxHeight ?? DEFAULT_MAX_HEIGHT;
-  const minHeight = options.minHeight ?? DEFAULT_MIN_HEIGHT;
   const widthBounds = dropdownWidthBounds(anchor, viewport, options);
   const width = clamp(
     preferredWidth,
@@ -127,7 +143,8 @@ export function dropdownPlacement(
     viewport.height - (anchor.y + anchor.height + gutter) - margin;
   const spaceAbove = anchor.y - gutter - margin;
   const side =
-    spaceBelow >= Math.min(minHeight, maxHeight) || spaceBelow >= spaceAbove
+    spaceBelow >= requiredRoom(options, maxHeight, surfaceHeight) ||
+    spaceBelow >= spaceAbove
       ? "bottom"
       : "top";
   const available = Math.max(64, side === "bottom" ? spaceBelow : spaceAbove);
@@ -149,6 +166,41 @@ export function dropdownPlacement(
     top: anchor.y + anchor.height + gutter,
     width,
   };
+}
+
+/**
+ * The placement a surface is first laid out at so its height can be measured:
+ * where {@link dropdownPlacement} would put it unmeasured, but clamped only by
+ * `maxHeight`, never by the room on that side, so what renders is the height
+ * the surface wants.
+ */
+export function dropdownMeasuringPlacement(
+  anchor: DropdownAnchorRect,
+  viewport: DropdownViewport,
+  options: DropdownPlacementOptions = {},
+  preferredWidth = anchor.width,
+): DropdownPlacement {
+  return {
+    ...dropdownPlacement(anchor, viewport, options, preferredWidth),
+    maxHeight: options.maxHeight ?? DEFAULT_MAX_HEIGHT,
+  };
+}
+
+/**
+ * Room the popup needs below its anchor to open there, never more than it can
+ * grow to: its measured height (raised to any `minHeight`), or `minHeight`
+ * alone while unmeasured.
+ */
+function requiredRoom(
+  options: DropdownPlacementOptions,
+  maxHeight: number,
+  surfaceHeight: number | undefined,
+): number {
+  const needed =
+    surfaceHeight === undefined
+      ? (options.minHeight ?? DEFAULT_MIN_HEIGHT)
+      : Math.max(surfaceHeight, options.minHeight ?? 0);
+  return Math.min(needed, maxHeight);
 }
 
 function clamp(value: number, min: number, max: number): number {

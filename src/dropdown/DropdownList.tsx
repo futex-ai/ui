@@ -191,12 +191,15 @@ export function DropdownList({
     }
   }, [controlledActiveId, navKey, selectedId]);
 
+  // Also re-run when the list's height changes: a web portal lays the list out
+  // once at its natural height to measure it, then clamps it to the room
+  // beside the anchor, which can hide an active row that was in view.
   useEffect(() => {
     scrollDropdownActiveRowIntoView(
       scrollRef.current,
       activeId ? rowRefs.current.get(activeId) : null,
     );
-  }, [activeId, navKey]);
+  }, [activeId, maxHeight, navKey]);
 
   const setRowRef = (id: string) => (node: View | null) => {
     if (node) {

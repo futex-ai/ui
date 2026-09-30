@@ -452,6 +452,13 @@ Required behavior:
 - Keep the web calendar popover at its compact `280px` width below wider form
   fields, shrinking it only when required by the viewport; the field width must
   not spread the seven day columns across the form.
+- Render every calendar month as six weeks, padding with the adjacent months'
+  muted days, so the calendar keeps one size while the user pages months.
+- Never clip the web calendar to the room below its field: it opens through
+  the shared measured placement (Dropdown Contract), which flips it above when
+  the whole calendar does not fit below. When neither side fits a whole month,
+  scroll the month inside the clamped popover so every week row stays
+  reachable.
 - Give editable and tap-to-pick triggers the shared input border and focus glow,
   and let the bare `DateInput` autofocus when mounted as an embedded editor.
 - Clamp selections and typed values to the inclusive `min`/`max` bounds.
@@ -646,7 +653,12 @@ Required behavior:
   allowing fixed-width custom surfaces to opt out when their content contract
   is intentionally narrower than a wide anchor.
 - Place below the trigger when space permits, flip above near the viewport
-  bottom, and clamp max height.
+  bottom, and clamp max height. On web, measure each portal surface at its
+  natural height (up to `maxHeight`) before its first paint and require that
+  whole height below, or the roomier side when it fits neither; `minHeight`
+  can only raise that requirement. Measure once per open, so content that
+  changes size while open keeps its side. Native, which does not measure,
+  requires `minHeight` (default `140px`) below.
 - Treat a selector trigger as the popup's minimum width, grow the popup to its
   wider option content, and cap that growth at `360px` by default and at the
   viewport edge in all cases. Per-selector minimum and maximum overrides may
@@ -848,8 +860,9 @@ Required behavior:
   dismissal, segmented selection, switch toggling, table row press (click and
   keyboard), focus retention/restoration, pointer-versus-keyboard focus-ring
   modality, focused-control disable/re-enable, async modal-form handoff to its
-  first hydrated field, and portal layering for dropdowns, comboboxes, and web
-  modals.
+  first hydrated field, portal layering for dropdowns, comboboxes, and web
+  modals, the date calendar's flip above a field near the viewport bottom, and
+  a measured list's selected option staying in view once it is clamped.
 - The package must typecheck and build before it is used by accounting or Juno.
 - `npm run test:package` must pack the built library, install the tarball into a
   temporary consumer, import every public package subpath with Node's native ESM
