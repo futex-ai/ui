@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import Svg, { Line, Path } from "../primitives/svg";
 
+import type { FocusIndicator } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { barPath, type BarRect } from "./barGeometry";
@@ -33,7 +34,7 @@ export type WaterfallChartProps = {
   valueFormat?: (value: number) => string;
   showTableView?: boolean;
   accessibilityLabel?: string;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 };
@@ -56,7 +57,7 @@ export function WaterfallChart({
   valueFormat,
   showTableView = true,
   accessibilityLabel,
-  disableFocusRing,
+  focusIndicator,
   style,
   testID,
 }: WaterfallChartProps) {
@@ -221,7 +222,7 @@ export function WaterfallChart({
             />
             <ChartHitLayer
               activeIndex={active}
-              disableFocusRing={disableFocusRing}
+              focusIndicator={focusIndicator}
               onActivate={setActive}
               onHover={setActive}
               plot={plot}

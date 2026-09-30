@@ -20,6 +20,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import type { FocusIndicator } from "../focusRing";
 import { ContextMenu } from "../popover";
 import { useSharedUiTheme } from "../theme";
 
@@ -144,12 +145,12 @@ export type DataGridProps = {
   /** Accessible name for the whole grid (WCAG 4.1.2). */
   accessibilityLabel?: string;
   /**
-   * Disable the shared focus glow on the column resize handles. They then fall
-   * back to the browser's default focus outline so keyboard focus stays visible
-   * (WCAG 2.1 — 2.4.7 Focus Visible, AA). Disable every ring at once via the
-   * theme's `focusRing: false` flag instead.
+   * How the column resize handles show keyboard focus: the shared `ring` glow,
+   * the browser's `outline`, or `none` for no focus styling at all, which
+   * leaves the caller to show focus some other way (WCAG 2.1 — 2.4.7 Focus
+   * Visible, AA). Defaults to the theme's `focusIndicator`.
    */
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /**
    * Reveal the full text in a popover when a column is too narrow to show it:
    * `"all"` (headings + text cells, the default), `"headers"`, or `"none"`.
@@ -187,7 +188,7 @@ export function DataGrid({
   onRowMenuAction,
   onContextMenuEntries,
   accessibilityLabel,
-  disableFocusRing = false,
+  focusIndicator,
   overflowTooltip,
   testID,
 }: DataGridProps) {
@@ -436,7 +437,7 @@ export function DataGrid({
               registerHeaderNode={controller.registerHeaderNode}
               resizingColumnId={resize.resizingColumnId}
               showGutter={showGutter}
-              disableFocusRing={disableFocusRing}
+              focusIndicator={focusIndicator}
               styles={styles}
               theme={theme}
             />

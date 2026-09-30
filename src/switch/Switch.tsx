@@ -10,7 +10,7 @@ import {
 
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 import { useReducedMotion } from "../useReducedMotion";
 
@@ -38,12 +38,12 @@ export type SwitchProps = {
   "aria-labelledby"?: string;
   disabled?: boolean;
   /**
-   * Disable the shared focus glow on this control. It then falls back to the
-   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
-   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
-   * `focusRing: false` flag instead.
+   * How this control shows keyboard focus: the shared `ring` glow, the
+   * browser's `outline`, or `none` for no focus styling at all, which leaves
+   * the caller to show focus some other way (WCAG 2.1 — 2.4.7 Focus Visible,
+   * AA). Defaults to the theme's `focusIndicator`.
    */
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   onValueChange?: (value: boolean) => void;
   /** Control density: `sm`, `md` (default), or `lg`. */
   size?: ControlSize;
@@ -57,7 +57,7 @@ export function Switch({
   accessibilityLabel,
   "aria-labelledby": ariaLabelledBy,
   disabled = false,
-  disableFocusRing = false,
+  focusIndicator,
   onValueChange,
   size = "md",
   testID,
@@ -72,7 +72,7 @@ export function Switch({
   // clearance and sets no `overflow: hidden`, so the outset ring is not clipped
   // and stays ≥3:1 in both the off (light) and on (primary) states (2.4.7 AA).
   const focus = useFocusRing({
-    disabled: disableFocusRing,
+    indicator: focusIndicator,
     target: "parent",
   });
   const disabledState = disabled || !onValueChange;
@@ -129,7 +129,8 @@ export function Switch({
           disabledState ? styles.trackDisabled : null,
           trackStyle,
           // The track is the painted child of the focusable Pressable. Its CSS
-          // marker moves both the glow and opted-out UA fallback to this box.
+          // marker moves the glow, or the `outline` mode's UA outline, to this
+          // box; under `none` it only strips the Pressable's own outline.
           focus.focusRingVariables,
         ]}
       >

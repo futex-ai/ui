@@ -64,7 +64,7 @@ test("table makes rows pressable buttons when given onRowPress", () => {
   assert.match(source, /\.\.\.focus\.focusRingProps/);
   assert.match(
     source,
-    /useFocusRing\(\{ offset: -2, disabled: disableFocusRing \}\)/,
+    /useFocusRing\(\{ offset: -2, indicator: focusIndicator \}\)/,
   );
   assert.match(source, /focus\.focusRingVariables/);
   assert.match(

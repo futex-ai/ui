@@ -19,6 +19,7 @@ import {
 
 import { Button } from "../button";
 import type { ControlSize } from "../controlSize";
+import type { FocusIndicator } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import {
@@ -47,15 +48,15 @@ export type WorkflowBuilderProps = {
   accessibilityLabel?: string;
   /** Label for the trailing add-step button. Defaults to "Add step". */
   addStepLabel?: string;
-  /**
-   * Disable the shared focus glow on the nodes and insert buttons. They then fall
-   * back to the browser's default focus outline so keyboard focus stays visible
-   * (WCAG 2.1 — 2.4.7 Focus Visible, AA). Disable every ring at once via the
-   * theme's `focusRing: false` flag instead.
-   */
-  disableFocusRing?: boolean;
   /** Render the dotted graph-paper canvas background (web). Defaults to `true`. */
   dotted?: boolean;
+  /**
+   * How the nodes and insert buttons show keyboard focus: the shared `ring`
+   * glow, the browser's `outline`, or `none` for no focus styling at all, which
+   * leaves the caller to show focus some other way (WCAG 2.1 — 2.4.7 Focus
+   * Visible, AA). Defaults to the theme's `focusIndicator`.
+   */
+  focusIndicator?: FocusIndicator;
   /** The typed graph to render. */
   graph: WorkflowGraph;
   /**
@@ -88,8 +89,8 @@ export type WorkflowBuilderProps = {
 export function WorkflowBuilder({
   accessibilityLabel = "Workflow builder",
   addStepLabel = "Add step",
-  disableFocusRing = false,
   dotted = true,
+  focusIndicator,
   graph,
   legend = false,
   nodeColors,
@@ -111,7 +112,7 @@ export function WorkflowBuilder({
   const renderNode = (node: WorkflowNodeData): ReactNode => (
     <WorkflowNode
       color={nodeColors?.[node.type]}
-      disableFocusRing={disableFocusRing}
+      focusIndicator={focusIndicator}
       node={node}
       onPress={onNodePress}
       selected={selectedNodeId === node.id}
@@ -131,7 +132,7 @@ export function WorkflowBuilder({
         <>
           <WorkflowConnector size={size} />
           <WorkflowInsertButton
-            disableFocusRing={disableFocusRing}
+            focusIndicator={focusIndicator}
             onPress={() => onInsertStep(position)}
             size={size}
           />
@@ -238,7 +239,7 @@ export function WorkflowBuilder({
             <WorkflowConnector size={size} />
             <View style={styles.addStep}>
               <Button
-                disableFocusRing={disableFocusRing}
+                focusIndicator={focusIndicator}
                 icon={Plus}
                 onPress={onAddStep}
                 size="sm"
@@ -253,7 +254,7 @@ export function WorkflowBuilder({
             <WorkflowConnector size={size} />
             <View style={styles.addStep}>
               <WorkflowInsertButton
-                disableFocusRing={disableFocusRing}
+                focusIndicator={focusIndicator}
                 onPress={() => onInsertStep({ index: graph.steps.length })}
                 size={size}
               />

@@ -7,6 +7,7 @@ import {
 } from "../primitives/reactNative";
 import Svg, { Circle, Polygon, Rect } from "../primitives/svg";
 
+import type { FocusIndicator } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { ChartAxisLabels, ChartGridLines, type AxisTick } from "./ChartAxis";
@@ -55,7 +56,7 @@ export type ScatterChartProps = {
   hiddenSeriesIds?: readonly string[];
   onHiddenSeriesIdsChange?: (ids: string[]) => void;
   accessibilityLabel?: string;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 };
@@ -75,7 +76,7 @@ export function ScatterChart({
   hiddenSeriesIds,
   onHiddenSeriesIdsChange,
   accessibilityLabel,
-  disableFocusRing,
+  focusIndicator,
   style,
   testID,
 }: ScatterChartProps) {
@@ -115,7 +116,7 @@ export function ScatterChart({
       legend={
         legendVisible ? (
           <ChartLegend
-            disableFocusRing={disableFocusRing}
+            focusIndicator={focusIndicator}
             entries={series.map((s) => ({
               id: s.id,
               label: s.label ?? s.id,
@@ -260,7 +261,7 @@ export function ScatterChart({
             />
             <ChartHitLayer
               activeIndex={active}
-              disableFocusRing={disableFocusRing}
+              focusIndicator={focusIndicator}
               onActivate={setActive}
               onHover={setActive}
               plot={plot}

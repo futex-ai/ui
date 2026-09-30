@@ -98,6 +98,24 @@ Recommended path:
 7. Run Juno app tests, typecheck, browser smoke tests, `cargo xtask check`,
    commit, push, and run `cargo xtask review`.
 
+## Focus Indicator API (4.0)
+
+`focusIndicator` replaces the boolean focus-ring opt-out everywhere, so a
+control can also turn focus styling off completely:
+
+| Before                                      | After                                                    |
+| ------------------------------------------- | -------------------------------------------------------- |
+| `<Input disableFocusRing />` (any control)  | `<Input focusIndicator="outline" />`                     |
+| `createSharedUiTheme({ focusRing: false })` | `createSharedUiTheme({ focusIndicator: "outline" })`     |
+| `theme.focusRing` (`boolean`)               | `theme.focusIndicator` (`"ring" \| "outline" \| "none"`) |
+| `useFocusRing({ disabled })`                | `useFocusRing({ indicator })`                            |
+
+`outline` is exactly what the old opt-out did: no glow, and the browser outline
+on the control's visible box. The new `none` removes the glow, the outline, and
+focus-only borders such as an input's active border. Use it only where the
+surrounding surface shows focus itself, and let that surface paint the
+indicator; remove any `outlineStyle: "none"` workaround at the same time.
+
 ## Follow-Up Gaps
 
 - Use the published `@firna/ui` package for normal migrations, or the tarball

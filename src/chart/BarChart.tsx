@@ -73,7 +73,7 @@ export function BarChart({
   emphasisId,
   showTableView = true,
   accessibilityLabel,
-  disableFocusRing,
+  focusIndicator,
   style,
   testID,
 }: BarChartProps) {
@@ -136,8 +136,8 @@ export function BarChart({
       legend={
         legendVisible ? (
           <ChartLegend
-            disableFocusRing={disableFocusRing}
             entries={legendEntries}
+            focusIndicator={focusIndicator}
             hidden={visibility.hidden}
             keyShape="rect"
             onToggle={visibility.toggle}
@@ -306,7 +306,7 @@ export function BarChart({
             />
             <ChartHitLayer
               activeIndex={active}
-              disableFocusRing={disableFocusRing}
+              focusIndicator={focusIndicator}
               onActivate={(index) => {
                 setActive(index);
                 if (onDatumPress) {

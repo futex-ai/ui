@@ -52,7 +52,7 @@ export function WebModalFrame({
   children,
   closeDisabled = false,
   closeLabel,
-  disableFocusRing = false,
+  focusIndicator,
   dismissible = true,
   footer,
   bodyStyle,
@@ -76,7 +76,7 @@ export function WebModalFrame({
   const styles = useMemo(() => createWebModalFrameStyles(theme), [theme]);
   const reducedMotion = useReducedMotion();
   const titleId = useId();
-  const closeRing = useFocusRing({ disabled: disableFocusRing });
+  const closeRing = useFocusRing({ indicator: focusIndicator });
   // Measured natural height of the sheet's content, driven from the scroll
   // view's `onContentSizeChange`. Applying it as an explicit `height` (with the
   // transition above) is what makes the sheet animate as content changes; the

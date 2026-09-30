@@ -25,7 +25,7 @@ import {
 import Svg, { Path } from "../primitives/svg";
 
 import type { ControlSize } from "../controlSize";
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 import {
   DEFAULT_FPS,
@@ -76,7 +76,7 @@ export type KeyframeEditorProps = {
   /** Shown when no property is animated. */
   emptyLabel?: string;
   size?: ControlSize;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** Names the editor as a region for assistive tech. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
@@ -99,9 +99,9 @@ type KeyframeKeyEvent = {
 
 export function KeyframeEditor({
   accessibilityLabel,
-  disableFocusRing = false,
   emptyLabel = "No animated properties",
   endTime,
+  focusIndicator,
   fps = DEFAULT_FPS,
   gutterWidth = 92,
   laneHeight,
@@ -245,7 +245,7 @@ export function KeyframeEditor({
               ) : null}
               {track.keyframes.map((keyframe) => (
                 <KeyframeDiamond
-                  disableFocusRing={disableFocusRing}
+                  focusIndicator={focusIndicator}
                   fps={fps}
                   key={keyframe.id}
                   keyframe={keyframe}
@@ -316,7 +316,7 @@ function CurvePath({
 }
 
 function KeyframeDiamond({
-  disableFocusRing,
+  focusIndicator,
   fps,
   keyframe,
   left,
@@ -327,7 +327,7 @@ function KeyframeDiamond({
   top,
   track,
 }: {
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   fps: number;
   keyframe: Keyframe;
   left: number;
@@ -340,7 +340,7 @@ function KeyframeDiamond({
 }) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createKeyframeStyles(theme), [theme]);
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ indicator: focusIndicator });
   const label = [
     track.label,
     formatTimecode(keyframe.time, fps),

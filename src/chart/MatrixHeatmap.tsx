@@ -14,6 +14,7 @@ import {
   type ViewStyle,
 } from "../primitives/reactNative";
 
+import type { FocusIndicator } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { ChartFrame } from "./ChartFrame";
@@ -42,7 +43,7 @@ export type MatrixHeatmapProps = {
   showScaleLegend?: boolean;
   showTableView?: boolean;
   accessibilityLabel?: string;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   onCellPress?: (cell: {
     row: number;
     column: number;
@@ -69,7 +70,7 @@ export function MatrixHeatmap({
   showScaleLegend = true,
   showTableView = true,
   accessibilityLabel,
-  disableFocusRing,
+  focusIndicator,
   onCellPress,
   style,
   testID,
@@ -236,7 +237,7 @@ export function MatrixHeatmap({
             ))}
             <ChartHitLayer
               activeIndex={active}
-              disableFocusRing={disableFocusRing}
+              focusIndicator={focusIndicator}
               onActivate={(index) => {
                 setActive(index);
                 const row = Math.floor(index / Math.max(1, columns.length));

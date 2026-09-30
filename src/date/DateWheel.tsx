@@ -23,7 +23,7 @@ import {
   View,
 } from "../primitives/reactNative";
 
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import {
@@ -51,12 +51,12 @@ export type DateWheelProps = DateBounds & {
   /** Called with the next ISO draft (already clamped to a valid bounded date). */
   onChange: (iso: string) => void;
   /**
-   * Disable the shared focus glow on the wheel rows. They then fall back to the
-   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
-   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
-   * `focusRing: false` flag instead.
+   * How the wheel rows show keyboard focus: the shared `ring` glow, the
+   * browser's `outline`, or `none` for no focus styling at all, which leaves
+   * the caller to show focus some other way (WCAG 2.1 — 2.4.7 Focus Visible,
+   * AA). Defaults to the theme's `focusIndicator`.
    */
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -82,7 +82,7 @@ export function DateWheel({
   min,
   max,
   onChange,
-  disableFocusRing = false,
+  focusIndicator,
   testID,
 }: DateWheelProps) {
   const theme = useSharedUiTheme();
@@ -157,7 +157,7 @@ export function DateWheel({
         {/* Behind the columns (rendered first): the centered selection pill. */}
         <View pointerEvents="none" style={styles.selectionBand} />
         <WheelColumn
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           items={dayItems}
           label="Day"
           onSelectIndex={(index) => commit(year, month, index + 1)}
@@ -165,7 +165,7 @@ export function DateWheel({
           styles={styles}
         />
         <WheelColumn
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           items={monthItems}
           label="Month"
           onSelectIndex={(index) => commit(year, index + 1, day)}
@@ -173,7 +173,7 @@ export function DateWheel({
           styles={styles}
         />
         <WheelColumn
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           items={yearItems}
           label="Year"
           onSelectIndex={(index) => commit(lo + index, month, day)}
@@ -190,14 +190,14 @@ function WheelColumn({
   label,
   onSelectIndex,
   selectedIndex,
-  disableFocusRing,
+  focusIndicator,
   styles,
 }: {
   items: WheelItem[];
   label: string;
   onSelectIndex: (index: number) => void;
   selectedIndex: number;
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   styles: WheelPickerStyles;
 }) {
   const scrollRef = useRef<ScrollView>(null);
@@ -336,7 +336,7 @@ function WheelColumn({
       {items.map((item, index) => (
         <WheelRow
           centered={index === centerIndex}
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           distance={Math.abs(index - centerIndex)}
           item={item}
           key={item.key}
@@ -362,8 +362,8 @@ function WheelColumn({
 
 function WheelRow({
   centered,
-  disableFocusRing,
   distance,
+  focusIndicator,
   item,
   label,
   onKey,
@@ -372,8 +372,8 @@ function WheelRow({
   styles,
 }: {
   centered: boolean;
-  disableFocusRing: boolean;
   distance: number;
+  focusIndicator: FocusIndicator | undefined;
   item: WheelItem;
   label: string;
   onKey: (event: WheelKeyEvent) => void;
@@ -383,7 +383,7 @@ function WheelRow({
 }) {
   // Inset the ring: each row sits inside a snap-scrolling column whose overflow
   // would clip an outset outline (WCAG 2.1 2.4.7 Focus Visible).
-  const ring = useFocusRing({ offset: -2, disabled: disableFocusRing });
+  const ring = useFocusRing({ offset: -2, indicator: focusIndicator });
   // The web backend honours a forwarded `onKeyDown` on a Pressable.
   const keyProps = isWeb ? { onKeyDown: onKey } : null;
   return (

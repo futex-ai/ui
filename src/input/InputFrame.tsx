@@ -12,7 +12,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import {
@@ -77,12 +77,16 @@ export type InputFrameProps = Omit<TextInputProps, "style"> & {
    */
   focusRingInset?: boolean;
   /**
-   * Disable the shared focus glow on this field. The underlying input then falls
-   * back to the browser's default focus outline so keyboard focus stays visible
-   * (WCAG 2.1 — 2.4.7 Focus Visible, AA). Disable every ring at once via the
-   * theme's `focusRing: false` flag instead.
+   * How this field shows keyboard focus. `ring` paints the shared glow around
+   * the box; `outline` paints the browser's default outline on the box instead.
+   * `none` turns focus styling off completely — no glow, no outline, and no
+   * active border while focused (an explicit `active` still applies) — for a
+   * field embedded in a surface that shows focus itself; the caller then owns
+   * a visible indicator (WCAG 2.1 — 2.4.7 Focus Visible, AA). The clear and
+   * suffix buttons keep the browser outline either way. Defaults to the
+   * theme's `focusIndicator`.
    */
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** Marks the input required (wires `aria-required`). */
   required?: boolean;
   /** Leading decorative icon shown inside the box. */
@@ -133,7 +137,7 @@ export function InputFrame({
   clearable = false,
   clearAccessibilityLabel,
   clearVisible,
-  disableFocusRing = false,
+  focusIndicator,
   focusRingInset = false,
   inputRef,
   inputStyle,
@@ -159,7 +163,7 @@ export function InputFrame({
   // already use for controls nested inside clipping containers.
   const focus = useFocusRing({
     ...(focusRingInset ? { offset: -2 } : {}),
-    disabled: disableFocusRing,
+    indicator: focusIndicator,
     target: "descendant",
   });
   const plain = variant === "plain";
@@ -167,7 +171,8 @@ export function InputFrame({
   const multiline = Boolean(props.multiline);
   const seamlessMultiline = seamless && multiline;
   const showClear = clearable && (clearVisible ?? Boolean(props.value));
-  const borderActive = focus.focused || active;
+  // `none` drops the focus border too; an explicit `active` still applies.
+  const borderActive = active || (focus.focused && focus.indicator !== "none");
   const clearLabel =
     clearAccessibilityLabel ??
     (props.accessibilityLabel ? `Clear ${props.accessibilityLabel}` : "Clear");

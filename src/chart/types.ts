@@ -2,6 +2,8 @@
 import type { ReactNode } from "react";
 import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
+import type { FocusIndicator } from "../focusRing";
+
 import type { ChartSeries } from "./series/stack";
 
 export type { ChartSeries };
@@ -59,7 +61,7 @@ export type ChartCommonProps = {
   /** Show the accessible data table below the chart. Defaults to `true`. */
   showTableView?: boolean;
   accessibilityLabel?: string;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 };

@@ -18,7 +18,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { scrubAccessibility, sliderRoleProps } from "./timelineScrubValue";
@@ -55,8 +55,8 @@ export type TimelineRulerProps = {
   size?: ControlSize;
   /** Called with a new time when the strip is clicked or arrowed. */
   onSeek?: (time: number) => void;
-  /** Suppress the shared focus glow on the scrub surface. */
-  disableFocusRing?: boolean;
+  /** How the scrub surface shows keyboard focus. */
+  focusIndicator?: FocusIndicator;
   /** Accessible name for the scrub slider. Defaults to `"Playhead"`. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
@@ -75,8 +75,8 @@ type RulerKeyEvent = {
 
 export function TimelineRuler({
   accessibilityLabel = "Playhead",
-  disableFocusRing = false,
   duration,
+  focusIndicator,
   fps = DEFAULT_FPS,
   markers = [],
   onSeek,
@@ -90,7 +90,7 @@ export function TimelineRuler({
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createTimelineStyles(theme), [theme]);
   const metrics = timelineSizing[size];
-  const focus = useFocusRing({ offset: -2, disabled: disableFocusRing });
+  const focus = useFocusRing({ offset: -2, indicator: focusIndicator });
 
   const step = useMemo(
     () => tickStep(pixelsPerSecond, fps),

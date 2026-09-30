@@ -19,7 +19,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import {
@@ -72,7 +72,7 @@ export type TimelineClipProps = {
   tabIndex?: 0 | -1;
   /** Registers the host node so the parent can move focus here. */
   registerRef?: (node: unknown) => void;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
@@ -90,7 +90,7 @@ export function TimelineClip({
   accessibilityLabel,
   clip,
   colors,
-  disableFocusRing = false,
+  focusIndicator,
   fps = DEFAULT_FPS,
   onFocus,
   onKeyDown,
@@ -108,7 +108,7 @@ export function TimelineClip({
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createTimelineStyles(theme), [theme]);
   const metrics = timelineSizing[size];
-  const focus = useFocusRing({ offset: -2, disabled: disableFocusRing });
+  const focus = useFocusRing({ offset: -2, indicator: focusIndicator });
 
   const inner = Math.max(0, rect.width - metrics.clipPadding * 2 - 2);
   const headerHeight = metrics.fontSize + 6;

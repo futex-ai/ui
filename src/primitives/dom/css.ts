@@ -7,7 +7,7 @@
  * classic reset class had), `pointerEvents: "box-none"` / `"box-only"` (child
  * selectors), a `TextInput`'s placeholder colour (`::placeholder`), and hidden
  * scroll indicators (`::-webkit-scrollbar`), and the shared `:focus-visible`
- * glow. The top-level resets are
+ * glow and its `outline` / `none` opt-outs. The top-level resets are
  * `react-native-web`'s own, copied so the page keeps looking the same once it
  * is gone.
  *
@@ -148,6 +148,16 @@ const FOCUS_RING_SELECTORS = [
   '[data-firna-focus-target]:focus-visible>[data-firna-focus-ring="parent"]',
 ];
 
+// A `focusIndicator="none"` box paints nothing and only removes the browser
+// outline from its focus target. A `descendant` box leaves any other focusable
+// element inside it — a clear or chip-remove button — its own outline, exactly
+// as the glow does.
+const NO_FOCUS_INDICATOR_SELECTORS = [
+  '[data-firna-focus-none="self"]:focus',
+  '[data-firna-focus-none="descendant"] [data-firna-focus-target]:focus',
+  '[data-firna-focus-target]:focus:has(>[data-firna-focus-none="parent"])',
+];
+
 const INSET_FOCUS_RING_SELECTORS = [
   '[data-firna-focus-ring="self"][data-firna-focus-ring-inset]:focus-visible',
   '[data-firna-focus-ring="descendant"][data-firna-focus-ring-inset]:has([data-firna-focus-target]:focus-visible)',
@@ -171,6 +181,10 @@ function focusRingRules(): string[] {
     `${selectors}{outline:none;box-shadow:0 0 0 ${width} ${color},var(${FOCUS_RING_BASE_SHADOW_VARIABLE},0 0 #0000);}`,
     `${insetSelectors}{box-shadow:inset 0 0 0 ${width} ${color},var(${FOCUS_RING_BASE_SHADOW_VARIABLE},0 0 #0000);}`,
     `@media (forced-colors:active){${selectors}{box-shadow:none;outline:2px solid Highlight;}}`,
+    // Zero specificity: the reset only has to beat the browser's own outline,
+    // so any focus style the caller supplies still wins. Forced-colors mode
+    // strips the caller's shadows and fills, so the system outline stays there.
+    `@media (forced-colors:none){:where(${NO_FOCUS_INDICATOR_SELECTORS.join(",")}){outline:none;}}`,
   ];
 }
 

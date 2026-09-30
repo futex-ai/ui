@@ -60,7 +60,7 @@ export function AreaChart({
   emphasisId,
   showTableView = true,
   accessibilityLabel,
-  disableFocusRing,
+  focusIndicator,
   style,
   testID,
 }: AreaChartProps) {
@@ -118,7 +118,7 @@ export function AreaChart({
       legend={
         legendVisible ? (
           <ChartLegend
-            disableFocusRing={disableFocusRing}
+            focusIndicator={focusIndicator}
             entries={normalized.map((entry) => ({
               id: entry.id,
               label: entry.label,
@@ -271,7 +271,7 @@ export function AreaChart({
             />
             <ChartHitLayer
               activeIndex={active}
-              disableFocusRing={disableFocusRing}
+              focusIndicator={focusIndicator}
               onActivate={(index) => {
                 setActive(index);
                 if (onDatumPress) {

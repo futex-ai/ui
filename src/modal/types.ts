@@ -11,6 +11,8 @@ import type {
   ViewStyle,
 } from "../primitives/reactNative";
 
+import type { FocusIndicator } from "../focusRing";
+
 import type { WebModalPlacement, WebModalSize } from "./webModalModel";
 
 /** Minimal focusable handle for `initialFocusRef` (web focus management only). */
@@ -22,12 +24,12 @@ export type WebModalFrameProps = {
   closeDisabled?: boolean;
   closeLabel?: string;
   /**
-   * Disable the shared focus glow on the close button. It then falls back to the
-   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
-   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
-   * `focusRing: false` flag instead.
+   * How the close button shows keyboard focus: the shared `ring` glow, the
+   * browser's `outline`, or `none` for no focus styling at all, which leaves
+   * the caller to show focus some other way (WCAG 2.1 — 2.4.7 Focus Visible,
+   * AA). Defaults to the theme's `focusIndicator`.
    */
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   dismissible?: boolean;
   footer?: ReactNode;
   bodyStyle?: StyleProp<ViewStyle>;

@@ -11,7 +11,7 @@ import {
 } from "../primitives/reactNative";
 
 import { compareIso, formatDisplay, parseIso } from "../date/dateMath";
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import {
   type FocusableRef,
   focusItemAt,
@@ -94,12 +94,12 @@ export type HeatmapProps = {
   /** Called when an in-range cell is pressed; supplying it makes cells pressable. */
   onCellPress?: (cell: HeatmapCell) => void;
   /**
-   * Disable the shared focus glow on pressable cells. They then fall back to the
-   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
-   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
-   * `focusRing: false` flag instead.
+   * How pressable cells show keyboard focus: the shared `ring` glow, the
+   * browser's `outline`, or `none` for no focus styling at all, which leaves
+   * the caller to show focus some other way (WCAG 2.1 — 2.4.7 Focus Visible,
+   * AA). Defaults to the theme's `focusIndicator`.
    */
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /**
    * Accessible label per in-range cell. Defaults to
    * `"<D Mon YYYY>: <value> (<tier>)"` (e.g. `"4 Mar 2024: 5 (high)"`), or
@@ -279,7 +279,7 @@ export function Heatmap({
   legendMoreLabel = "More",
   scrollable = false,
   onCellPress,
-  disableFocusRing = false,
+  focusIndicator,
   cellAccessibilityLabel,
   accessibilityLabel,
   style,
@@ -516,7 +516,7 @@ export function Heatmap({
                   cell={cell}
                   cellRef={cellRefs.current[focusIndex]}
                   color={color}
-                  disableFocusRing={disableFocusRing}
+                  focusIndicator={focusIndicator}
                   key={row}
                   label={label}
                   onFocusCell={() => setActiveIndex(focusIndex)}
@@ -611,7 +611,7 @@ function HeatmapPressableCell({
   cell,
   cellRef,
   color,
-  disableFocusRing,
+  focusIndicator,
   label,
   onFocusCell,
   onPress,
@@ -625,7 +625,7 @@ function HeatmapPressableCell({
   /** Slot in the grid's ref array, so arrow nav can move DOM focus here. */
   cellRef: { current: FocusableRef };
   color: string;
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   label: string;
   /** Sync the grid's active index when this cell takes focus (e.g. by click). */
   onFocusCell: () => void;
@@ -637,7 +637,7 @@ function HeatmapPressableCell({
   tabIndex: 0 | -1;
   webGrid: boolean;
 }) {
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ indicator: focusIndicator });
   // A `gridcell` wrapper holds the single interactive button so the structure is
   // valid ARIA (`grid` > `row` > `gridcell` > `button`) instead of overloading
   // one node with both roles. The button keeps the roving tab index and the DOM

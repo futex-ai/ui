@@ -96,18 +96,29 @@ test("the focus-ring primitive has public root and subpath exports", () => {
   });
 });
 
-test("theme defaults the focus-ring switch on and honors an override", () => {
-  // The global focus-ring kill switch defaults on so existing callers keep the
-  // glow, and can be flipped off per-theme without touching any component.
-  assert.equal(defaultSharedUiTheme.focusRing, true);
-  assert.equal(junoSharedUiTheme.focusRing, true);
-  assert.equal(createSharedUiTheme({}).focusRing, true);
-  assert.equal(createSharedUiTheme({ focusRing: false }).focusRing, false);
-  // An unrelated override must not drop the focus-ring default (guards the
-  // per-key spread in createSharedUiTheme).
+test("theme defaults the focus indicator to the ring and honors an override", () => {
+  // The theme-wide focus indicator defaults to the shared glow, and every mode
+  // can be chosen per theme without touching any component.
+  assert.equal(defaultSharedUiTheme.focusIndicator, "ring");
+  assert.equal(junoSharedUiTheme.focusIndicator, "ring");
+  assert.equal(createSharedUiTheme({}).focusIndicator, "ring");
+  for (const focusIndicator of ["ring", "outline", "none"] as const) {
+    assert.equal(
+      createSharedUiTheme({ focusIndicator }).focusIndicator,
+      focusIndicator,
+    );
+  }
+  // An unrelated override must not drop the default (guards the per-key
+  // spread in createSharedUiTheme), and a derived theme inherits its base's.
   assert.equal(
-    createSharedUiTheme({ colors: { primary: "#123456" } }).focusRing,
-    true,
+    createSharedUiTheme({ colors: { primary: "#123456" } }).focusIndicator,
+    "ring",
+  );
+  const base = createSharedUiTheme({ focusIndicator: "none" });
+  assert.equal(
+    createSharedUiTheme({ colors: { primary: "#123456" } }, base)
+      .focusIndicator,
+    "none",
   );
 });
 
@@ -132,27 +143,34 @@ test("web theme root injects the DOM backend stylesheet on the client", () => {
   assert.doesNotMatch(native, /useDomBackendCss/);
 });
 
-test("useFocusRing exposes the disable primitive and outline fallback", () => {
+test("useFocusRing resolves the focus indicator and its markers", () => {
   // focusRing.ts imports react-native (Platform) and so cannot be imported in
-  // the node test runner; assert its disable wiring at the source level instead,
-  // matching the focus-ring convention above.
+  // the node test runner; assert its wiring at the source level instead,
+  // matching the focus-ring convention above. The markers themselves come from
+  // the pure `focusRingHostPropsFor`, covered in focusRingHost.test.ts.
   const source = readFileSync(
     new URL("../../src/focusRing.ts", import.meta.url),
     "utf8",
   );
 
-  // The per-instance `disabled` option and the global `theme.focusRing` flag
-  // both gate the ring through a single `ringEnabled`.
-  assert.match(source, /disabled\?:\s*boolean/);
+  // The per-instance `indicator` option wins over the theme's
+  // `focusIndicator`, and only the `ring` mode paints the glow.
+  assert.match(source, /indicator\?:\s*FocusIndicator/);
   assert.match(
     source,
-    /const ringEnabled =\s*!disabled && theme\.focusRing !== false/,
+    /const indicator = options\.indicator \?\? theme\.focusIndicator/,
   );
-  // A disabled ring omits the CSS marker and painting variables.
-  assert.match(source, /firnaFocusRing:\s*ringEnabled \? target : undefined/);
+  assert.match(source, /const ringEnabled = indicator === "ring"/);
+  // Web markers come from the resolved indicator; native gets none.
+  assert.match(
+    source,
+    /Platform\.OS === "web"\s*\? focusRingHostPropsFor\(\{\s*indicator,\s*inset: \(offset \?\? 2\) < 0,\s*target,\s*\}\)\s*: EMPTY_RING_PROPS/,
+  );
+  // Only the ring paints, so every other mode omits the geometry variables.
   assert.match(source, /!ringEnabled \|\| Platform\.OS !== "web"/);
-  // The hook still returns state plus the marker and geometry variables.
-  assert.match(source, /ringEnabled,/);
+  // The hook still returns state plus the marker and geometry variables, and
+  // the resolved mode so callers can gate focus-only decoration on `none`.
+  assert.match(source, /indicator,\s*ringEnabled,/);
   assert.match(source, /focusRingProps,/);
   assert.match(source, /focusVisible:\s*focusState\.focusVisible/);
   assert.match(source, /target\?\.matches\(":focus-visible"\) \?\? true/);

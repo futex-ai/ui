@@ -20,7 +20,7 @@ import {
 
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { LabelInfo } from "../input";
 import {
   type FocusableRef,
@@ -85,14 +85,14 @@ export type SegmentedControlProps<T extends string> = {
    */
   animated?: boolean;
   disabled?: boolean;
-  /**
-   * Disable the shared focus glow on the option buttons. They then fall back to
-   * the browser's default focus outline so keyboard focus stays visible (WCAG
-   * 2.1 — 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
-   * `focusRing: false` flag instead.
-   */
-  disableFocusRing?: boolean;
   error?: string | null;
+  /**
+   * How the option buttons show keyboard focus: the shared `ring` glow, the
+   * browser's `outline`, or `none` for no focus styling at all, which leaves
+   * the caller to show focus some other way (WCAG 2.1 — 2.4.7 Focus Visible,
+   * AA). Defaults to the theme's `focusIndicator`.
+   */
+  focusIndicator?: FocusIndicator;
   hint?: string;
   /**
    * Hide every option's visible label, rendering the leading icon alone for a
@@ -149,8 +149,8 @@ export function SegmentedControl<T extends string>({
   accessibilityLabel,
   animated = true,
   disabled = false,
-  disableFocusRing = false,
   error,
+  focusIndicator,
   hint,
   iconOnly = false,
   label,
@@ -373,7 +373,7 @@ export function SegmentedControl<T extends string>({
         {options.map((option, index) => (
           <SegmentedControlButton
             disabled={disabled || option.disabled === true}
-            disableFocusRing={disableFocusRing}
+            focusIndicator={focusIndicator}
             iconOnly={iconOnly}
             iconSize={iconSize}
             index={index}
@@ -410,7 +410,7 @@ export function SegmentedControl<T extends string>({
 
 function SegmentedControlButton<T extends string>({
   disabled,
-  disableFocusRing,
+  focusIndicator,
   iconOnly,
   iconSize,
   index,
@@ -429,7 +429,7 @@ function SegmentedControlButton<T extends string>({
   variant,
 }: {
   disabled: boolean;
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   iconOnly: boolean;
   iconSize: number;
   index: number;
@@ -471,7 +471,7 @@ function SegmentedControlButton<T extends string>({
   const showLabel = !iconOnly || leadingIcon == null;
   // Keep the CSS ring inside the segment so it remains visible in compact,
   // clipped segmented-control hosts.
-  const focus = useFocusRing({ offset: -2, disabled: disableFocusRing });
+  const focus = useFocusRing({ offset: -2, indicator: focusIndicator });
 
   const handleKeyDown = (event: SegmentKeyEvent) => {
     const key = event.nativeEvent?.key ?? event.key;

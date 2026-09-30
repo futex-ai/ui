@@ -3,6 +3,7 @@ import { type ReactNode } from "react";
 import { Platform, Pressable, Text, View } from "../primitives/reactNative";
 
 import type { DropdownPoint } from "../dropdown";
+import type { FocusIndicator } from "../focusRing";
 import { contextMenuTriggerProps } from "../popover";
 import { Spinner } from "../spinner";
 import type { SharedUiTheme } from "../theme";
@@ -51,8 +52,8 @@ export type DataGridHeaderProps = {
   ) => void;
   /** The column currently being pointer-resized, for handle styling. */
   resizingColumnId: string | null;
-  /** Disable the shared focus glow on the resize handles (falls back to the UA outline). */
-  disableFocusRing: boolean;
+  /** How the resize handles show keyboard focus. */
+  focusIndicator: FocusIndicator | undefined;
   /** Opens the column context menu; omitted when `contextMenu` is off. */
   onContextMenu?: (
     target: DataGridContextMenuTarget,
@@ -84,7 +85,7 @@ export function DataGridHeader({
   onBeginColumnResize,
   onColumnResizeStep,
   resizingColumnId,
-  disableFocusRing,
+  focusIndicator,
   onContextMenu,
 }: DataGridHeaderProps) {
   const web = Platform.OS === "web";
@@ -204,7 +205,7 @@ export function DataGridHeader({
               <DataGridResizeHandle
                 active={resizingColumnId === column.id}
                 column={column as ResolvedColumn}
-                disableFocusRing={disableFocusRing}
+                focusIndicator={focusIndicator}
                 onBeginResize={onBeginColumnResize}
                 onResizeStep={onColumnResizeStep}
                 styles={styles}

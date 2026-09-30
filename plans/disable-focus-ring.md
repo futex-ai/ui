@@ -21,6 +21,12 @@ through the `DateField` / `DateRangeField` composites down to their trigger +
 calendar (the ring-bearing `CalendarMonth` / `DateWheel` / `InputFrame` already
 carry the prop, and the theme flag covers the global case) — see Open questions.
 
+**M6 (in progress):** the boolean opt-out is replaced by a tri-state
+`focusIndicator: "ring" | "outline" | "none"` on every ring-bearer, the theme,
+and `useFocusRing`, so a control can turn focus styling off completely. The
+`disableFocusRing` / `theme.focusRing` / hook `disabled` names below are the M1–M5
+record; `outline` is what they shipped.
+
 ---
 
 ## Background — how the ring works today
@@ -193,6 +199,54 @@ have no ring to disable, but they matter for the a11y milestone.
   `disableFocusRing` demo.
 - Note the flag + prop in the top-level README and each affected component README.
 - `npm run verify` green (typecheck, tests, package-smoke, axe).
+
+### M6 — Focus indicator modes, including `none`
+
+A consumer reported that in 3.1.1 `disableFocusRing` on an `InputFrame` means
+"use the browser's outline on the box", not "no focus indicator", and asked for
+a way to turn focus styling off completely — for a field embedded in a surface
+that shows focus itself. One tri-state setting replaces the boolean everywhere:
+`ring` (the glow), `outline` (what `disableFocusRing` did), and `none` (no glow,
+no browser outline, no focus-only border or highlight; the caller owns the
+indicator). Breaking: the prop, theme field, and hook option are renamed, so the
+release is a major.
+
+- [x] `FocusIndicator` type and a pure `focusRingHostPropsFor` marker builder in
+      `src/focusRingHost.ts`; `none` marks the box `data-firna-focus-none`.
+- [x] `useFocusRing({ indicator })`: the option wins over the theme, and the hook
+      returns the resolved `indicator` for callers' own focus-only decoration.
+- [x] Theme `focusIndicator` (default `ring`) replaces `focusRing: boolean`.
+- [x] `domBackendCss`: one zero-specificity `:where()` rule strips the browser
+      outline from a `none` focus target, only under `forced-colors: none`;
+      nested clear / chip-remove buttons keep their outline.
+- [x] Rename `disableFocusRing` → `focusIndicator` on every ring-bearer and
+      thread it to `useFocusRing` as `indicator`.
+- [x] Gate focus-only decoration on `none`: `InputFrame` active border,
+      `DateTrigger` border, `ComboboxMultiSelect` border, the grid select
+      editor border, the resize-handle highlight, and the native rich-text
+      frame border.
+- [x] Unit tests (marker builder, CSS rule, theme resolution, gates), static
+      markup tests, and browser tests (theme and per-control `none`, forced
+      colors, static HTML without JavaScript, a caller-owned indicator).
+- [x] Stories: outline and none, each theme-wide and per control, plus the
+      caller-owned indicator search bar.
+- [x] README, component READMEs, protocol, primitives README, and the consumer
+      migration table.
+- [x] Re-record the snapshot baselines for the changed and new Focus ring
+      stories (every other story still matches its committed baseline).
+- [x] `cargo xtask check` green: 1,250 unit tests (11 dist-only skips, run by
+      `test:dist`), 13 dist tests, package smoke, Storybook build, and 385
+      browser tests including the axe and snapshot sweeps.
+- [x] Commit and push.
+- [x] Run `cargo xtask review` and report its findings. (Codex needs `bwrap`;
+      in a sandbox whose processes carry ambient capabilities, wrap it in
+      `setpriv --inh-caps=-all --ambient-caps=-all --bounding-set=-all`.)
+- [ ] Review finding (P2, predates M6): the charts never forward their prop to
+      `ChartFrame`, so the "Show data table" toggle ignores `focusIndicator`.
+      Awaiting a decision on passing it through.
+- [ ] Review finding (P3): `plans/charts-design.md` still lists
+      `disableFocusRing?: boolean` in `ChartCommonProps`. Awaiting a decision
+      on updating it.
 
 ---
 

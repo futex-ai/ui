@@ -14,7 +14,11 @@ import {
 
 import { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
-import { PressableHoverState, useFocusRing } from "../focusRing";
+import {
+  type FocusIndicator,
+  PressableHoverState,
+  useFocusRing,
+} from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import {
@@ -123,12 +127,12 @@ type ButtonBaseProps = ButtonRoleState & {
   /** Disable the button; a button without `onPress` is also treated as disabled. */
   disabled?: boolean;
   /**
-   * Disable the shared focus glow on this button. It then falls back to the
-   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
-   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
-   * `focusRing: false` flag instead.
+   * How this button shows keyboard focus: the shared `ring` glow, the browser's
+   * `outline`, or `none` for no focus styling at all, which leaves the caller
+   * to show focus some other way (WCAG 2.1 — 2.4.7 Focus Visible, AA). Defaults
+   * to the theme's `focusIndicator`.
    */
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /**
    * Announce that this button opens an overlay (`aria-haspopup`), so a screen
    * reader can say what Enter will open before the user commits. Pair it with
@@ -310,8 +314,8 @@ export function Button({
   content,
   delayLongPress,
   disabled = false,
-  disableFocusRing = false,
   expanded,
+  focusIndicator,
   hasPopup,
   hitSlop,
   icon: Icon,
@@ -336,7 +340,7 @@ export function Button({
 }: ButtonProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createButtonStyles(theme, size), [theme, size]);
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ indicator: focusIndicator });
   const disabledState = disabled || !onPress;
   const isWeb = Platform.OS === "web";
   const semanticsInput = {

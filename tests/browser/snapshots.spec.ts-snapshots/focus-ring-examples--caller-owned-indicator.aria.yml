@@ -1,0 +1,3 @@
+- text: The bar shows focus, so the embedded field opts out with focusIndicator="none".
+- textbox "Search projects"
+- button "Go"

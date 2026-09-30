@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 import {
   DOM_BACKEND_STYLE_ID,
@@ -8,56 +8,15 @@ import {
   VIEW_CLASS,
 } from "../../src/primitives/dom/css";
 
-const DEFAULT_GLOW = "rgba(79, 120, 100, 0.35)";
-const storyReadyTimeout = 30_000;
-
-async function gotoFocusRingStory(page: Page, storyId: string) {
-  await page.goto(
-    `/iframe.html?id=focus-ring-examples--${storyId}&viewMode=story`,
-  );
-  await page.waitForSelector("#storybook-root *", {
-    timeout: storyReadyTimeout,
-  });
-}
-
-async function focusWithKeyboard(page: Page, target: Locator) {
-  await target.focus();
-  await page.keyboard.press("Shift");
-  await expect
-    .poll(() => target.evaluate((element) => element.matches(":focus-visible")))
-    .toBe(true);
-}
-
-async function expectGlow(target: Locator, inset = false) {
-  await expect(target).toHaveCSS("outline-style", "none");
-  const shadow = await target.evaluate(
-    (element) => getComputedStyle(element).boxShadow,
-  );
-  expect(shadow).toContain(DEFAULT_GLOW);
-  expect(shadow).toContain("0px 0px 0px 4px");
-  expect(shadow.includes("inset")).toBe(inset);
-}
-
-async function expectBrowserOutline(target: Locator) {
-  await expect(target).toHaveCSS("box-shadow", "none");
-  expect(
-    await target.evaluate(
-      (element) => getComputedStyle(element).outlineStyle !== "none",
-    ),
-  ).toBe(true);
-}
-
-function focusRingControls(page: Page) {
-  const button = page.getByRole("button", { name: "Save" });
-  const input = page.getByRole("textbox", { name: "Project name" });
-  const inputFrame = page
-    .locator('[data-firna-focus-host="descendant"]')
-    .filter({ has: input });
-  const segment = page.getByRole("radio", { name: "Daily" });
-  const toggle = page.getByRole("switch", { name: "Notifications" });
-  const switchTrack = toggle.locator('> [data-firna-focus-host="parent"]');
-  return { button, input, inputFrame, segment, switchTrack, toggle };
-}
+import {
+  DEFAULT_GLOW,
+  expectBrowserOutline,
+  expectGlow,
+  focusRingControls,
+  focusWithKeyboard,
+  gotoFocusRingStory,
+  storyReadyTimeout,
+} from "./focusRingHelpers";
 
 test("CSS focus glow follows keyboard and pointer modality", async ({
   page,
@@ -219,8 +178,8 @@ test("the theme provider injects the stylesheet on a page with no primitive", as
 });
 
 for (const [label, storyId] of [
-  ["theme focusRing false", "ring-disabled-globally"],
-  ["disableFocusRing", "ring-disabled-per-control"],
+  ["theme focusIndicator outline", "ring-disabled-globally"],
+  ["focusIndicator outline", "ring-disabled-per-control"],
 ] as const) {
   test(`${label} restores the browser outline on each visible box`, async ({
     page,

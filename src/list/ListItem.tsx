@@ -12,7 +12,11 @@ import { Pressable, Text, View } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
-import { PressableHoverState, useFocusRing } from "../focusRing";
+import {
+  type FocusIndicator,
+  PressableHoverState,
+  useFocusRing,
+} from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { createListStyles, type ListStyles } from "./listStyles";
@@ -28,12 +32,12 @@ export type ListItemProps = {
   /** Disable the pressable title (only relevant with `onPress`). */
   disabled?: boolean;
   /**
-   * Disable the shared focus glow on the pressable title. It then falls back to
-   * the browser's default focus outline so keyboard focus stays visible (WCAG
-   * 2.1 — 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
-   * `focusRing: false` flag instead.
+   * How the pressable title shows keyboard focus: the shared `ring` glow, the
+   * browser's `outline`, or `none` for no focus styling at all, which leaves
+   * the caller to show focus some other way (WCAG 2.1 — 2.4.7 Focus Visible,
+   * AA). Defaults to the theme's `focusIndicator`.
    */
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** Leading slot, e.g. an `Avatar`. */
   leading?: ReactNode;
   /**
@@ -68,7 +72,7 @@ export function ListItem({
   accessibilityLabel,
   description,
   disabled = false,
-  disableFocusRing = false,
+  focusIndicator,
   leading,
   onPress,
   size = "md",
@@ -107,7 +111,7 @@ export function ListItem({
       {onPress ? (
         <PressableTitle
           disabled={disabled}
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           label={resolvedName}
           onPress={onPress}
           styles={styles}
@@ -137,7 +141,7 @@ export function ListItem({
 function PressableTitle({
   children,
   disabled,
-  disableFocusRing,
+  focusIndicator,
   label,
   onPress,
   styles,
@@ -145,13 +149,13 @@ function PressableTitle({
 }: {
   children: ReactNode;
   disabled: boolean;
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   label?: string;
   onPress: () => void;
   styles: ListStyles;
   testID?: string;
 }) {
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ indicator: focusIndicator });
   return (
     <Pressable
       accessibilityLabel={label}

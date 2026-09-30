@@ -23,6 +23,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import type { FocusIndicator } from "../focusRing";
 import type { FocusableRef } from "../keyboardNavigation";
 import { useSharedUiTheme } from "../theme";
 
@@ -118,7 +119,7 @@ export type TimelineProps = {
 
   /** Placeholder when there are no tracks at all. */
   emptyLabel?: string;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** Names the whole timeline as a region for assistive tech. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
@@ -132,9 +133,9 @@ const TRAILING_RUNWAY = 2;
 export function Timeline({
   accessibilityLabel,
   clips,
-  disableFocusRing = false,
   duration,
   emptyLabel = "No tracks yet",
+  focusIndicator,
   fps = DEFAULT_FPS,
   markers = [],
   maxHeight,
@@ -355,7 +356,7 @@ export function Timeline({
               theme,
               clip.tone ?? defaultToneForKind(track.kind),
             )}
-            disableFocusRing={disableFocusRing}
+            focusIndicator={focusIndicator}
             fps={fps}
             key={clip.id}
             onFocus={() => setFocusedClipId(clip.id)}
@@ -406,8 +407,8 @@ export function Timeline({
     >
       <View style={{ width }}>
         <TimelineRuler
-          disableFocusRing={disableFocusRing}
           duration={duration}
+          focusIndicator={focusIndicator}
           fps={fps}
           markers={markers}
           onSeek={onSeek}
@@ -448,7 +449,7 @@ export function Timeline({
             const track = trackById.get(layout.trackId);
             return track ? (
               <TimelineTrackHeader
-                disableFocusRing={disableFocusRing}
+                focusIndicator={focusIndicator}
                 height={layout.height}
                 key={track.id}
                 onToggle={onTrackToggle}

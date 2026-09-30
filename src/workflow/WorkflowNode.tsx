@@ -15,7 +15,11 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
-import { PressableHoverState, useFocusRing } from "../focusRing";
+import {
+  type FocusIndicator,
+  PressableHoverState,
+  useFocusRing,
+} from "../focusRing";
 import { StatusDot } from "../status-dot";
 import { useSharedUiTheme } from "../theme";
 
@@ -58,12 +62,12 @@ export type WorkflowNodeProps = {
   /** Override the type chip's fill (defaults to the type's category color). */
   color?: string;
   /**
-   * Disable the shared focus glow on a pressable node. It then falls back to the
-   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
-   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
-   * `focusRing: false` flag instead.
+   * How a pressable node shows keyboard focus: the shared `ring` glow, the
+   * browser's `outline`, or `none` for no focus styling at all, which leaves
+   * the caller to show focus some other way (WCAG 2.1 — 2.4.7 Focus Visible,
+   * AA). Defaults to the theme's `focusIndicator`.
    */
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** The node data to render. */
   node: WorkflowNodeData;
   /** Press handler; providing it makes the card a pressable button. */
@@ -111,7 +115,7 @@ export function WorkflowStatusDot({
 export function WorkflowNode({
   accessibilityLabel,
   color,
-  disableFocusRing = false,
+  focusIndicator,
   node,
   onPress,
   selected = false,
@@ -124,7 +128,7 @@ export function WorkflowNode({
     () => createWorkflowStyles(theme, size),
     [theme, size],
   );
-  const focus = useFocusRing({ offset: -2, disabled: disableFocusRing });
+  const focus = useFocusRing({ offset: -2, indicator: focusIndicator });
   const Icon = node.icon ?? defaultWorkflowNodeIcons[node.type];
   const chipColor = color ?? defaultWorkflowNodeColors[node.type];
   const iconSize = workflowSizing(size).chipIcon;

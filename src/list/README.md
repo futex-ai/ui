@@ -88,10 +88,12 @@ element remains focused makes the ring visible. Moving focus with the pointer
 hides the old ring and does not paint one on the new pointer target. Native
 keeps its platform focus behavior.
 
-`disableFocusRing` is an explicit visual customization, not a workaround for
+`focusIndicator` is an explicit visual customization, not a workaround for
 ordinary pointer interaction. Pointer clicks already suppress the custom ring
-on web. Disabling the custom ring restores the browser's default outline so a
-keyboard user does not lose the focus indicator.
+on web. `focusIndicator="outline"` restores the browser's default outline so a
+keyboard user does not lose the focus indicator; `focusIndicator="none"`
+removes every focus style and is only for a list whose container shows focus
+itself.
 
 The Storybook **Repository picker regression** fixture preserves the consumer
 composition that originally exposed this bug: a modal containing a static

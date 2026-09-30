@@ -12,7 +12,7 @@ import {
 import { announce } from "../announcer";
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { inputSizeTokens, LabelInfo } from "../input";
 import { useSharedUiTheme } from "../theme";
 import type { SharedUiTheme } from "../theme";
@@ -50,10 +50,15 @@ export type ComboboxMultiSelectProps = {
    * square container).
    */
   borderRadius?: number;
-  /** Disable the shared focus glow and use the browser's default outline. */
-  disableFocusRing?: boolean;
   /** Validation message shown below the control; turns its border rose. */
   error?: string | null;
+  /**
+   * How the control shows keyboard focus: the shared `ring` glow, the browser's
+   * `outline`, or `none` — no glow, no outline, and no focus border, which
+   * leaves the caller to show focus some other way (WCAG 2.1 — 2.4.7 Focus
+   * Visible, AA). Defaults to the theme's `focusIndicator`.
+   */
+  focusIndicator?: FocusIndicator;
   footer?: string;
   /** How the keyboard-focused row is highlighted. Defaults to `"solid"`. */
   highlightVariant?: DropdownHighlightVariant;
@@ -99,8 +104,8 @@ export function ComboboxMultiSelect({
   accessibilityLabel,
   autoFocus = false,
   borderRadius,
-  disableFocusRing = false,
   error,
+  focusIndicator,
   footer,
   highlightVariant,
   hint,
@@ -120,7 +125,7 @@ export function ComboboxMultiSelect({
 }: ComboboxMultiSelectProps) {
   const theme = useSharedUiTheme();
   const focus = useFocusRing({
-    disabled: disableFocusRing,
+    indicator: focusIndicator,
     target: "descendant",
   });
   const styles = useMemo(
@@ -265,7 +270,7 @@ export function ComboboxMultiSelect({
             styles.control,
             invalid
               ? styles.controlInvalid
-              : focus.focused
+              : focus.focused && focus.indicator !== "none"
                 ? styles.controlActive
                 : null,
             focus.focusRingVariables,

@@ -15,7 +15,11 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
-import { useFocusRing, type PressableHoverState } from "../focusRing";
+import {
+  type FocusIndicator,
+  type PressableHoverState,
+  useFocusRing,
+} from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { videoEditorSizing } from "./videoEditorSizing";
@@ -35,7 +39,7 @@ export type TransportButtonProps = {
   disabled?: boolean;
   /** Density. Defaults to `md`. */
   size?: ControlSize;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   style?: StyleProp<ViewStyle>;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
@@ -44,8 +48,8 @@ export type TransportButtonProps = {
 export function TransportButton({
   Icon,
   active = false,
-  disableFocusRing = false,
   disabled = false,
+  focusIndicator,
   label,
   onPress,
   primary = false,
@@ -56,7 +60,7 @@ export function TransportButton({
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createVideoEditorStyles(theme), [theme]);
   const metrics = videoEditorSizing[size];
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ indicator: focusIndicator });
 
   const iconColor = primary
     ? theme.colors.onSolid

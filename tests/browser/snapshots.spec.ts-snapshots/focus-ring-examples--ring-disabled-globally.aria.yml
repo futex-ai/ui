@@ -1,4 +1,4 @@
-- text: "theme={{ focusRing: false }} — no glow; the UA outline returns."
+- text: "theme={{ focusIndicator: \"outline\" }} — no glow; the browser outline returns."
 - button "Save"
 - switch "Notifications" [checked]
 - text: Project name
