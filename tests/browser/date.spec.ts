@@ -1,13 +1,11 @@
 /**
  * Browser coverage for where the web calendar popover opens around its field.
- * Placement comes from the laid-out trigger and viewport, which the geometry
- * unit tests cannot see, so these checks drive the Date placement story: one
- * field near the top edge, and one 200px above the bottom edge — room for a
- * scrolling menu, but not for a whole month.
+ * The shared portal places it by its measured height, which only a real
+ * layout has, so these checks drive the Date placement story: one field near
+ * the top edge, and one 200px above the bottom edge — room for a scrolling
+ * menu, but not for a whole month.
  */
 import { expect, test, type Locator, type Page } from "@playwright/test";
-
-import { CALENDAR_POPOVER_HEIGHT } from "../../src/date/calendarPopoverPlacement";
 
 const storyReadyTimeout = 30_000;
 
@@ -80,11 +78,13 @@ test("calendar flips above a field too close to the bottom edge for a month", as
   expect(above.top).toBeGreaterThanOrEqual(0);
   expect(above.hidden).toBe(0);
 
-  // Paging to a shorter month keeps the popover on the same side, still
-  // hugging the field rather than jumping below it.
+  // Every month renders six weeks, so paging to February's five keeps the
+  // exact box the popover was measured and placed at: nothing moves under the
+  // pointer, and nothing is hidden.
   await dialog.getByRole("button", { name: "Previous month" }).click();
   await expect(dialog.getByText("February 2026")).toBeVisible();
   const paged = await surfaceBox(dialog);
+  expect(paged.top).toBeCloseTo(above.top, 0);
   expect(paged.bottom).toBeCloseTo(above.bottom, 0);
   expect(paged.hidden).toBe(0);
 
@@ -105,14 +105,8 @@ test("calendar opens below a field with room for a whole month", async ({
 
   const below = await surfaceBox(dialog);
   expect(below.top).toBeGreaterThanOrEqual(field.y + field.height);
+  expect(below.top - (field.y + field.height)).toBeLessThan(20);
   expect(below.hidden).toBe(0);
-
-  // March 2026 is a six-week month, the calendar's tallest layout, so the
-  // height placement reserves must cover it without overshooting by more
-  // than its few pixels of headroom for taller fallback faces.
-  const headroom = CALENDAR_POPOVER_HEIGHT - (below.bottom - below.top);
-  expect(headroom).toBeGreaterThanOrEqual(0);
-  expect(headroom).toBeLessThanOrEqual(8);
 });
 
 test("calendar scrolls inside the popover when neither side fits a month", async ({
@@ -137,7 +131,7 @@ test("calendar scrolls inside the popover when neither side fits a month", async
     (clamped.left + clamped.right) / 2,
     (clamped.top + clamped.bottom) / 2,
   );
-  await page.mouse.wheel(0, CALENDAR_POPOVER_HEIGHT);
+  await page.mouse.wheel(0, clamped.hidden + 40);
   await expect
     .poll(() => bottomOf(lastWeekDay))
     .toBeLessThanOrEqual(clamped.bottom);

@@ -14,11 +14,12 @@ import { DropdownPortal } from "../dropdown";
 import { useSharedUiTheme } from "../theme";
 
 import { CalendarMonth } from "./CalendarMonth";
-import { CALENDAR_POPOVER_PLACEMENT } from "./calendarPopoverPlacement";
 import { DateWheelSheet } from "./DateWheelSheet";
 import { dateFieldZIndex } from "./dateFieldLayers";
 import { DatePickerOverlayProps } from "./types";
 import { createWebCalendarStyles } from "./webCalendarStyles";
+
+const CALENDAR_POPOVER_WIDTH = 280;
 
 export function DatePickerOverlay({
   anchorRef,
@@ -91,8 +92,10 @@ function CalendarPopover({
   const s = useMemo(() => createWebCalendarStyles(theme), [theme]);
   return (
     <DropdownPortal
-      {...CALENDAR_POPOVER_PLACEMENT}
       anchorRef={anchorRef}
+      anchorWidthAsMinimum={false}
+      maxWidth={CALENDAR_POPOVER_WIDTH}
+      minWidth={CALENDAR_POPOVER_WIDTH}
       onClose={onClose}
       open
       zIndex={dateFieldZIndex(zIndex)}

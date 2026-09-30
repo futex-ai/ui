@@ -19,12 +19,12 @@ import type { IconComponent } from "../primitives/icons";
 import {
   DropdownIconBox,
   DropdownList,
-  dropdownPlacement,
   dropdownSurfaceRect,
   useDropdownSurfaceStyles,
 } from "../dropdown";
 import type { DropdownListEntry } from "../dropdown";
 import { DropdownWebLayer } from "../dropdown/DropdownWebLayer";
+import { useDropdownSurfacePlacement } from "../dropdown/useDropdownSurfacePlacement";
 
 import type {
   BuiltInSlashMenuIcon,
@@ -44,6 +44,17 @@ type SlashMenuProps = {
   sections: readonly SlashMenuSection[];
   surfaceRef: RefObject<View | null>;
 };
+
+/**
+ * Caret-menu placement. `minHeight` is a floor on the room the menu needs
+ * below the caret, on top of its own measured height.
+ */
+const SLASH_MENU_PLACEMENT = {
+  align: "start",
+  maxHeight: 280,
+  minHeight: 120,
+  minWidth: 260,
+} as const;
 
 const BUILTIN_ICONS: Record<BuiltInSlashMenuIcon, IconComponent> = {
   Code,
@@ -112,16 +123,16 @@ export function SlashMenu({
       document.removeEventListener("pointerdown", handlePointerDown, true);
   }, [itemById, onSelect, open]);
 
-  if (!open || !anchor) {
+  const { placement } = useDropdownSurfacePlacement(
+    surfaceRef,
+    open ? anchor : null,
+    viewport,
+    SLASH_MENU_PLACEMENT,
+  );
+
+  if (!open || !placement) {
     return null;
   }
-
-  const placement = dropdownPlacement(anchor, viewport, {
-    align: "start",
-    maxHeight: 280,
-    minHeight: 120,
-    minWidth: 260,
-  });
 
   return (
     <DropdownWebLayer>

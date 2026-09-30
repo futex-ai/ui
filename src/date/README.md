@@ -43,10 +43,13 @@ shared `CalendarMonth` itself and the wheel variant renders our own
 - **`DateRangeField`** — start–end range built from two independent
   `DateInput`s, with ordering validation.
 - **`CalendarMonth`** — the shared, theme-driven month grid (header nav,
-  Monday-first weekday row, labelled day buttons). Clicking the month/year title
-  swaps the grid for a year picker — a paged 3×4 grid of year buttons — so a
-  far-off year is one jump away instead of many month steps. Picking a year keeps
-  the month and returns to the day grid; it does not commit a date.
+  Monday-first weekday row, labelled day buttons). Every month renders six
+  weeks, padded with the adjacent months' muted days, so the calendar keeps one
+  size while paging — in the web popover and the native sheet alike. Clicking
+  the month/year title swaps the grid for a year picker — a paged 3×4 grid of
+  year buttons — so a far-off year is one jump away instead of many month
+  steps. Picking a year keeps the month and returns to the day grid; it does
+  not commit a date.
 
 ## Value model
 
@@ -118,17 +121,16 @@ with `labelInfoIcon` and the button's accessible name with `labelInfoLabel`
 ## File layout
 
 - `dateMath.ts` — pure, timezone-safe helpers (ISO parse/format, `D Mon YYYY`
-  formatting, month-grid build, clamp/compare, range parse/format). No React.
-  Unit-tested. Includes a domain `deriveCurrentPeriod` helper the components do
-  not use, kept for parity with the source.
+  formatting, clamp/compare, range parse/format). No React. Unit-tested.
+  Includes a domain `deriveCurrentPeriod` helper the components do not use,
+  kept for parity with the source.
+- `monthGrid.ts` — `buildMonthGrid`, the Monday-first grid of `DayCell` weeks;
+  `{ fixedWeeks: true }` pads every month to six weeks. Pure and unit-tested.
 - `useDateField.ts` — shared hook: value, format, min/max clamp, typed-text
   parse, open state. No platform code.
 - `types.ts` — shared overlay prop contract (`DatePickerOverlayProps`).
 - `dateFieldLayers.ts` — the default web calendar portal layer and optional
   z-index override.
-- `calendarPopoverPlacement.ts` — the web calendar's `DropdownPortal` placement
-  options: its compact width and the six-week height it reserves when choosing
-  a side (see [Web placement](#web-placement)). Pure and unit-tested.
 - `DateField.tsx` — `DateField`, `DateInput`, and the shared `FieldLabel`.
 - `DateTrigger.tsx` — the platform triggers (`WebTrigger`, `NativeTrigger` tap
   target) and the `triggerBorder` helper. `WebTrigger` renders the shared
@@ -165,18 +167,18 @@ theme's `primary` / `primaryDeep` tokens.
 
 ## Web placement
 
-The calendar is a fixed layout, not a scrolling list, so it never settles for
-the scrolling-list room (`140px`) that shared dropdown placement accepts below a
-trigger. It reserves the height of its tallest layout — a six-week month,
-`284px` including the popover chrome — and opens below the field only when that
-much room is free there. Otherwise it flips above whenever that side is
-roomier, so a field near the bottom of the viewport or a modal gets a whole
-month instead of a calendar squeezed into the space below.
+The calendar needs no placement settings of its own. The shared
+`DropdownPortal` measures the rendered popover before its first paint and opens
+it below the field only when the whole calendar fits there; otherwise it opens
+on the roomier side. A field near the bottom of the viewport or a modal
+therefore gets a whole month above it instead of a calendar squeezed into the
+space below.
 
-- Reserving the tallest month, not the visible one, keeps the popover on one
-  side while the user pages between four-, five-, and six-week months. Above
-  the field it is anchored by its bottom edge, so a shorter month shrinks
-  toward the field rather than detaching from it.
+- `CalendarMonth` renders every month as six weeks, so the calendar keeps the
+  size it was measured at while the user pages months. A month that spans
+  fewer weeks shows the next month's days, muted, in the remaining rows.
+  Nothing under the pointer moves when paging, and a taller month never
+  outgrows the room the popover was placed in.
 - When neither side has room for a whole month (a short viewport with the
   field mid-screen), the popover opens clamped on the roomier side and the
   month scrolls inside it, so every week row stays reachable.
@@ -256,9 +258,8 @@ locales.
 ## Testing
 
 `dateMath.ts` (including the wheel's `clampDay` / `wheelYearRange` helpers),
-`dateFieldLayers.ts`, and the side choices `calendarPopoverPlacement.ts` yields
-from the shared dropdown placement are unit-tested with the repo's Node test
-runner. Both the calendar and wheel variants are exercised by the Storybook
+`monthGrid.ts`, and `dateFieldLayers.ts` are unit-tested with the repo's Node
+test runner. Both the calendar and wheel variants are exercised by the Storybook
 Playwright spec (`tests/browser/storybook.spec.ts`) against the `Date/Examples`
 stories — covering the calendar's compact width below a wider trigger, month
 navigation, and day picking, plus draft staging/commit, day-and-bounds
@@ -266,6 +267,6 @@ clamping, Cancel, clearing, and the range field for the wheel. The editable
 data-grid story additionally verifies that web date cells open the inline
 calendar and commit without sheet actions. `tests/browser/date.spec.ts` drives
 the placement story: the calendar flips above a field near the bottom edge and
-stays there while paging months, opens below a field with room, reserves no
-less than a rendered six-week month, and scrolls inside the popover when a
-short viewport leaves neither side room for a whole month.
+keeps its exact box while paging months, opens below a field with room, and
+scrolls inside the popover when a short viewport leaves neither side room for a
+whole month.
