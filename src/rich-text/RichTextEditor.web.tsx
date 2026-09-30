@@ -117,7 +117,7 @@ export function RichTextEditor({
   autoFocus = false,
   collaborators = NO_COLLABORATORS,
   commentThreads = NO_COMMENT_THREADS,
-  disableFocusRing = false,
+  focusIndicator,
   label,
   localCollaboratorId,
   maxHeight,
@@ -136,7 +136,7 @@ export function RichTextEditor({
   const styles = useMemo(() => createRichTextStyles(theme), [theme]);
   const domTheme = useMemo(() => createRichTextDomTheme(theme), [theme]);
   const focus = useFocusRing({
-    disabled: disableFocusRing,
+    indicator: focusIndicator,
     target: "descendant",
   });
   const rootRef = useRef<HTMLDivElement | null>(null);

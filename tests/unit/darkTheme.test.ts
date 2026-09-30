@@ -85,7 +85,7 @@ test("dark presets are dark-schemed and self-consistent", () => {
   }
   // junoDark extends the juno base: radii carry over.
   assert.deepEqual(junoDarkSharedUiTheme.radii, junoSharedUiTheme.radii);
-  assert.equal(darkSharedUiTheme.focusRing, true);
+  assert.equal(darkSharedUiTheme.focusIndicator, "ring");
 });
 
 test("dark presets hold every documented WCAG pair", () => {

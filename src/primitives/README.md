@@ -52,7 +52,8 @@ were recorded on that backend and are what prove the swap changed nothing
   `pointerEvents` child-selector rules, the `TextInput` reset, its
   `::placeholder` colour, a `ScrollView`'s hidden scroll indicators, the
   attribute-based `:focus-visible` glow (including inset and forced-colors
-  variants), and `react-native-web`'s own top-level reset.
+  variants) and its `focusIndicator="none"` outline reset, and
+  `react-native-web`'s own top-level reset.
 - `useLayout.ts` runs one shared `ResizeObserver` for `onLayout` and puts
   `measure`, `measureInWindow`, `measureLayout` and `setNativeProps` on the DOM
   element itself, so a `ref` is still the element the library reads
@@ -102,7 +103,10 @@ on any focused descendant: a clear or chip-remove button inside the frame keeps
 its own browser outline and leaves the frame unlit. The `boxShadow` rewrite is
 `View`'s alone: a raw DOM host marked through `focusRingDomProps` must put a
 resting shadow in `--firna-focus-ring-base-shadow` itself, since an inline
-`box-shadow` would outrank the glow.
+`box-shadow` would outrank the glow. A `data-firna-focus-none` box paints
+nothing: one zero-specificity `:where()` rule strips the browser outline from
+its focus target, only outside forced-colors mode, so a caller's own focus
+style always wins and forced colors keep the system outline.
 
 The list of places the backend deliberately differs from `react-native-web`
 lives in the plan's M2 and M3 sections. The one worth knowing here:

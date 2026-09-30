@@ -1,4 +1,6 @@
 /** Shared public prop types for the web and native rich-text editors. */
+import type { FocusIndicator } from "../focusRing";
+
 import type { RichTextCollabProps } from "./richTextCollabTypes";
 import type {
   DocPosition,
@@ -40,12 +42,12 @@ export type RichTextEditorProps = RichTextCollabProps & {
   /** Focus the editor after it mounts. */
   autoFocus?: boolean;
   /**
-   * Disable the shared focus glow on the editor frame. It then falls back to the
-   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
-   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
-   * `focusRing: false` flag instead.
+   * How the editor frame shows keyboard focus: the shared `ring` glow, the
+   * browser's `outline`, or `none` for no focus styling at all, which leaves
+   * the caller to show focus some other way (WCAG 2.1 — 2.4.7 Focus Visible,
+   * AA). Defaults to the theme's `focusIndicator`.
    */
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** Visible field label. Also names the web textbox when present. */
   label?: string;
   /** Maximum editor body height in px; overflow scrolls inside the frame. */

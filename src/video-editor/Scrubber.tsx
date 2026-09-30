@@ -20,7 +20,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 import {
   DEFAULT_FPS,
@@ -60,7 +60,7 @@ export type ScrubberProps = {
   size?: ControlSize;
   /** Supplying this makes the bar interactive. */
   onSeek?: (time: number) => void;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** Accessible name. Defaults to `"Seek"`. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
@@ -81,8 +81,8 @@ export function Scrubber({
   accessibilityLabel = "Seek",
   buffered,
   currentTime,
-  disableFocusRing = false,
   duration,
+  focusIndicator,
   fps = DEFAULT_FPS,
   inPoint,
   markers = [],
@@ -95,7 +95,7 @@ export function Scrubber({
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createVideoEditorStyles(theme), [theme]);
   const metrics = videoEditorSizing[size];
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ indicator: focusIndicator });
   // The bar's own width, measured rather than assumed, so a pointer position
   // can be turned into a time without knowing the layout in advance.
   const [width, setWidth] = useState(0);

@@ -154,7 +154,7 @@ test("node becomes a pressable button with selected and focus rings", () => {
   assert.match(source, /\.\.\.focus\.focusRingProps/);
   assert.match(
     source,
-    /useFocusRing\(\{ offset: -2, disabled: disableFocusRing \}\)/,
+    /useFocusRing\(\{ offset: -2, indicator: focusIndicator \}\)/,
   );
   assert.match(source, /focus\.focusRingVariables/);
   assert.match(source, /hovered \? styles\.nodeHover : null/);

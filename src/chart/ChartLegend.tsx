@@ -2,7 +2,7 @@
 import { useMemo } from "react";
 import { Pressable, Text, View } from "../primitives/reactNative";
 
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { checkedAria } from "./chartAria";
@@ -24,7 +24,7 @@ export type ChartLegendProps = {
   /** Supplying this makes each entry a toggle. */
   onToggle?: (id: string) => void;
   keyShape?: LegendKeyShape;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   testID?: string;
 };
 
@@ -45,7 +45,7 @@ export function ChartLegend({
   hidden,
   onToggle,
   keyShape = "rect",
-  disableFocusRing = false,
+  focusIndicator,
   testID,
 }: ChartLegendProps) {
   const theme = useSharedUiTheme();
@@ -76,8 +76,8 @@ export function ChartLegend({
     <View role="list" style={styles.row} testID={testID}>
       {entries.map((entry) => (
         <LegendEntry
-          disableFocusRing={disableFocusRing}
           entry={entry}
+          focusIndicator={focusIndicator}
           hidden={hidden?.has(entry.id) ?? false}
           key={entry.id}
           keyShape={keyShape}
@@ -91,16 +91,16 @@ export function ChartLegend({
 }
 
 function LegendEntry({
-  disableFocusRing,
   entry,
+  focusIndicator,
   hidden,
   keyShape,
   labelStyle,
   onToggle,
   rowStyle,
 }: {
-  disableFocusRing: boolean;
   entry: ChartLegendEntry;
+  focusIndicator: FocusIndicator | undefined;
   hidden: boolean;
   keyShape: LegendKeyShape;
   labelStyle: object;
@@ -108,7 +108,7 @@ function LegendEntry({
   rowStyle: object;
 }) {
   const theme = useSharedUiTheme();
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ indicator: focusIndicator });
 
   const swatch =
     keyShape === "line" ? (

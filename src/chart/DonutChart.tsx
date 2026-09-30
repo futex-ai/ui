@@ -57,7 +57,7 @@ export function DonutChart({
   emphasisId,
   showTableView = true,
   accessibilityLabel,
-  disableFocusRing,
+  focusIndicator,
   style,
   testID,
 }: DonutChartProps) {
@@ -122,7 +122,7 @@ export function DonutChart({
       legend={
         legendVisible ? (
           <ChartLegend
-            disableFocusRing={disableFocusRing}
+            focusIndicator={focusIndicator}
             entries={entries.map((entry) => ({
               id: entry.id,
               label: entry.label,
@@ -240,7 +240,7 @@ export function DonutChart({
               activeIndex={
                 active == null ? null : slices.findIndex((s) => s.id === active)
               }
-              disableFocusRing={disableFocusRing}
+              focusIndicator={focusIndicator}
               onActivate={(index) => {
                 const slice = slices[index];
                 if (!slice) {

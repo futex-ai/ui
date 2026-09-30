@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from "../primitives/reactNative";
 
 import {
   Button,
+  type FocusIndicator,
   Input,
   RadioCard,
   SegmentedControl,
@@ -11,6 +12,7 @@ import {
   darkSharedUiTheme,
   useSharedUiTheme,
 } from "../index";
+import { CallerOwnedIndicatorExample } from "./focusRingCallerOwnedExample";
 import {
   RawDomControlExample,
   RawDomOnlyPageExample,
@@ -18,15 +20,18 @@ import {
 import { StorySurface } from "./sharedExamples";
 
 /**
- * The shared focus glow can be turned off two ways:
+ * How controls show keyboard focus is one setting, `focusIndicator`:
  *
- * - **Globally** — set `focusRing: false` on the theme (`StorySurface` forwards
- *   it to the provider). Every control drops the glow at once and falls back to
- *   the browser's default focus outline, so keyboard focus stays visible.
- * - **Per control** — pass `disableFocusRing` to a single component; only that
- *   instance loses the glow.
+ * - **`ring`** (default) — the shared soft glow.
+ * - **`outline`** — the browser's default focus outline, on the control's
+ *   visible box, so keyboard focus stays visible without the glow.
+ * - **`none`** — no focus styling at all: no glow, no outline, no focus
+ *   border. Meant for a control embedded in a surface that shows focus itself;
+ *   the caller then owns the indicator.
  *
- * Tab through each row to compare the affordances.
+ * Set it for every control on the theme (`StorySurface` forwards the override
+ * to the provider), or per instance with the `focusIndicator` prop. Tab
+ * through each row to compare the affordances.
  */
 const meta = {
   title: "Focus ring/Examples",
@@ -55,22 +60,52 @@ export const Dark: Story = {
 };
 
 export const RingDisabledGlobally: Story = {
-  name: "Ring disabled globally (theme flag)",
+  name: "Browser outline globally (theme)",
   render: () => (
-    <StorySurface theme={{ focusRing: false }}>
-      <ControlRow caption="theme={{ focusRing: false }} — no glow; the UA outline returns." />
+    <StorySurface theme={{ focusIndicator: "outline" }}>
+      <ControlRow caption='theme={{ focusIndicator: "outline" }} — no glow; the browser outline returns.' />
     </StorySurface>
   ),
 };
 
 export const RingDisabledPerControl: Story = {
-  name: "Ring disabled per control (prop)",
+  name: "Browser outline per control (prop)",
   render: () => (
     <StorySurface>
       <ControlRow
-        caption="disableFocusRing on each control — same as above, but opt-in per instance."
-        disableFocusRing
+        caption='focusIndicator="outline" on each control — same as above, per instance.'
+        focusIndicator="outline"
       />
+    </StorySurface>
+  ),
+};
+
+export const NoIndicatorGlobally: Story = {
+  name: "No focus indicator globally (theme)",
+  render: () => (
+    <StorySurface theme={{ focusIndicator: "none" }}>
+      <ControlRow caption='theme={{ focusIndicator: "none" }} — no glow, no outline, no focus border.' />
+    </StorySurface>
+  ),
+};
+
+export const NoIndicatorPerControl: Story = {
+  name: "No focus indicator per control (prop)",
+  render: () => (
+    <StorySurface>
+      <ControlRow
+        caption='focusIndicator="none" on each control — the caller must show focus itself.'
+        focusIndicator="none"
+      />
+    </StorySurface>
+  ),
+};
+
+export const CallerOwnedIndicator: Story = {
+  name: "Caller-owned indicator (none + container focus)",
+  render: () => (
+    <StorySurface>
+      <CallerOwnedIndicatorExample />
     </StorySurface>
   ),
 };
@@ -121,10 +156,10 @@ function DynamicDisabledExample() {
 
 function ControlRow({
   caption,
-  disableFocusRing = false,
+  focusIndicator,
 }: {
   caption: string;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
 }) {
   const [on, setOn] = useState(true);
   const [choice, setChoice] = useState("weekly");
@@ -138,18 +173,18 @@ function ControlRow({
         {caption}
       </Text>
       <View style={styles.row}>
-        <Button disableFocusRing={disableFocusRing} onPress={() => undefined}>
+        <Button focusIndicator={focusIndicator} onPress={() => undefined}>
           Save
         </Button>
         <Switch
           accessibilityLabel="Notifications"
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           onValueChange={setOn}
           value={on}
         />
       </View>
       <Input
-        disableFocusRing={disableFocusRing}
+        focusIndicator={focusIndicator}
         label="Project name"
         onChangeText={setText}
         placeholder="Untitled"
@@ -157,7 +192,7 @@ function ControlRow({
       />
       <SegmentedControl
         accessibilityLabel="Cadence"
-        disableFocusRing={disableFocusRing}
+        focusIndicator={focusIndicator}
         onChange={setChoice}
         options={[
           { label: "Daily", value: "daily" },
@@ -169,13 +204,13 @@ function ControlRow({
       <View style={styles.row}>
         <RadioCard
           checked={radio === "standard"}
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           onPress={() => setRadio("standard")}
           title="Standard"
         />
         <RadioCard
           checked={radio === "priority"}
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           onPress={() => setRadio("priority")}
           title="Priority"
         />

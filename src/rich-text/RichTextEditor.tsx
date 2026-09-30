@@ -64,7 +64,7 @@ export function RichTextEditor({
   autoFocus = false,
   collaborators = NO_COLLABORATORS,
   commentThreads = NO_COMMENT_THREADS,
-  disableFocusRing = false,
+  focusIndicator,
   label,
   localCollaboratorId,
   maxHeight,
@@ -100,7 +100,7 @@ export function RichTextEditor({
       suggestions,
     ],
   );
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ indicator: focusIndicator });
   const accessoryId = `rich-text-${useId().replace(/:/g, "")}`;
   const initialDocument = useMemo(() => parseMarkdown(value), []);
   const documentRef = useRef<RichTextDocument>(initialDocument);
@@ -278,6 +278,7 @@ export function RichTextEditor({
       collaboratorPalette={collaboratorPalette}
       document={document}
       editorFocused={editorFocused}
+      focusBorder={focus.indicator !== "none"}
       focusRingStyle={focus.focusRingStyle}
       focusVisible={focus.focusVisible}
       label={label}

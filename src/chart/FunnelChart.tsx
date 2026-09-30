@@ -8,6 +8,7 @@ import {
 } from "../primitives/reactNative";
 import Svg, { Polygon } from "../primitives/svg";
 
+import type { FocusIndicator } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { funnelStages, polygonPoints } from "./arcGeometry";
@@ -34,7 +35,7 @@ export type FunnelChartProps = {
   valueFormat?: (value: number) => string;
   showTableView?: boolean;
   accessibilityLabel?: string;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   onDatumPress?: (ref: {
     seriesId: string;
     index: number;
@@ -61,7 +62,7 @@ export function FunnelChart({
   valueFormat,
   showTableView = true,
   accessibilityLabel,
-  disableFocusRing,
+  focusIndicator,
   onDatumPress,
   style,
   testID,
@@ -171,7 +172,7 @@ export function FunnelChart({
             })}
             <ChartHitLayer
               activeIndex={active}
-              disableFocusRing={disableFocusRing}
+              focusIndicator={focusIndicator}
               onActivate={(index) => {
                 setActive(index);
                 const stage = stages[index];

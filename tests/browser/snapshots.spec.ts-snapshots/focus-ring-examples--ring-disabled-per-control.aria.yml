@@ -1,4 +1,4 @@
-- text: disableFocusRing on each control — same as above, but opt-in per instance.
+- text: focusIndicator="outline" on each control — same as above, per instance.
 - button "Save"
 - switch "Notifications" [checked]
 - text: Project name

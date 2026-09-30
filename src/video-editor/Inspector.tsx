@@ -23,7 +23,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { InspectorRow } from "./InspectorRow";
@@ -50,7 +50,7 @@ export type InspectorProps = {
   maxHeight?: number;
   /** Density. Defaults to `md`. */
   size?: ControlSize;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** Names the panel as a region for assistive tech. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
@@ -60,8 +60,8 @@ export type InspectorProps = {
 
 export function Inspector({
   accessibilityLabel,
-  disableFocusRing = false,
   emptyLabel = "Nothing selected",
+  focusIndicator,
   keyframedIds = [],
   maxHeight,
   onChange,
@@ -86,7 +86,7 @@ export function Inspector({
         sections.map((section) => (
           <View key={section.id}>
             <SectionHeader
-              disableFocusRing={disableFocusRing}
+              focusIndicator={focusIndicator}
               onToggle={
                 onToggleSection ? () => onToggleSection(section.id) : undefined
               }
@@ -97,7 +97,7 @@ export function Inspector({
               ? null
               : section.properties.map((property) => (
                   <InspectorRow
-                    disableFocusRing={disableFocusRing}
+                    focusIndicator={focusIndicator}
                     key={property.id}
                     keyframed={keyframed.has(property.id)}
                     onChange={onChange}
@@ -132,19 +132,19 @@ export function Inspector({
 }
 
 function SectionHeader({
-  disableFocusRing,
+  focusIndicator,
   onToggle,
   section,
   testID,
 }: {
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   onToggle?: () => void;
   section: InspectorSection;
   testID?: string;
 }) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createInspectorStyles(theme), [theme]);
-  const focus = useFocusRing({ offset: -2, disabled: disableFocusRing });
+  const focus = useFocusRing({ offset: -2, indicator: focusIndicator });
   const metrics = videoEditorSizing.md;
 
   if (!onToggle) {

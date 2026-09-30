@@ -31,9 +31,10 @@ Shared UI component library for Firna React Native and web surfaces. The first c
 - A shared, calm focus glow across every control. On web the DOM backend paints
   it from CSS `:focus-visible`, so server-rendered and static HTML keeps the same
   keyboard affordance before hydration — or with no JavaScript at all. Native
-  keeps its platform focus behavior. Disable the glow globally with
-  `focusRing: false` or per instance with `disableFocusRing`; both are deliberate
-  opt-outs that restore the browser outline on the control's visible box.
+  keeps its platform focus behavior. One `focusIndicator` setting — on the theme
+  for every control, or per instance — picks the glow (`ring`), the browser
+  outline on the control's visible box (`outline`), or no focus styling at all
+  (`none`) for a control embedded in a surface that shows focus itself.
 - Portaled, anchored web date/dropdown/popover overlays with viewport-aware,
   content-sized selector menus and z-index escape hatches, plus touch-friendly
   native date sheets.
@@ -103,9 +104,11 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/theme` for `SharedUiThemeProvider`, default accounting-style
   tokens, the Juno token preset, the `darkSharedUiTheme` and
   `junoDarkSharedUiTheme` dark presets, the `SharedUiScheme` type,
-  `createSharedUiTheme(overrides, base)`, and the global `focusRing` switch
-  (`SharedUiThemeProvider theme={{ focusRing: false }}` disables every control's
-  focus glow at once). See [Theming](#theming) for the dark-mode contract.
+  `createSharedUiTheme(overrides, base)`, and the theme-wide `focusIndicator`
+  (`SharedUiThemeProvider theme={{ focusIndicator: "outline" }}` swaps every
+  control's focus glow for the browser outline at once). See
+  [Theming](#theming) for the dark-mode contract and
+  [Focus indicators](#focus-indicators) for the focus modes.
 - `@firna/ui/focusRing` for `useFocusRing`, `focusRingStyleFor`,
   `focusRingCssVariablesFor`, and `focusRingDomPropsFor`. Library controls use
   the hook's CSS marker as the canonical web paint path; `focused` and
@@ -122,9 +125,9 @@ The package name is `@firna/ui`. Public exports are available from:
   `focusRingStyle` keep their inline glow for compatibility; adopting the
   marker is only required for the glow to survive server/static rendering.
   `focusRingStyleFor` keeps the explicit inline glow escape hatch for
-  caller-owned local style sheets. Pass `disableFocusRing` to one control, or
-  set the theme's `focusRing: false`, to omit the CSS marker and restore the
-  browser outline (WCAG 2.4.7).
+  caller-owned local style sheets. The hook's `indicator` option (a control's
+  `focusIndicator` prop, else the theme's) picks the marker: the glow, the
+  browser outline, or none; see [Focus indicators](#focus-indicators).
 - `@firna/ui/toast` for the toast provider, the `useToast` hook, the
   `toastController` method API, and transient notification toasts including
   card and solid variants with optional custom leading icons.
@@ -196,6 +199,67 @@ Two token-level rules make dark mode work without per-component branching:
 
 `theme.scheme` (`"light" | "dark"`) is available for the rare physical-metaphor
 case, but components should read colors from tokens rather than branch on it.
+
+### Focus indicators
+
+Every control that paints the shared focus glow takes a `focusIndicator` prop,
+and the theme's `focusIndicator` sets the default for all of them. The
+`DateField` / `DateRangeField` composites do not forward a prop yet and follow
+the theme:
+
+| Value            | On web                                                                                                                       |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `ring` (default) | The shared glow, painted from CSS `:focus-visible`.                                                                          |
+| `outline`        | No glow. The browser's default outline stays, drawn on the visible box when focus and paint live on different elements.      |
+| `none`           | No focus styling at all: no glow, no browser outline, and no focus-only border or highlight (an input's active border, say). |
+
+A control's own prop wins over the theme in both directions. Native keeps the
+platform's focus behavior for every value; `none` only drops the focus-only
+border there.
+
+`none` is for a control embedded in a surface that already shows focus — a
+search field inside a bar that highlights itself, a cell editor inside a grid
+cell with its own selection ring. It hands the focus indicator to you: the
+surface must show focus visibly, or keyboard users lose track of it (WCAG 2.1 —
+2.4.7 Focus Visible, AA). Two things stay on purpose. A separately focusable
+action inside the control, such as an input's clear button, keeps the browser
+outline: it is its own tab stop, and the control does not report its focus to
+you. And forced-colors mode keeps the system outline, because it strips the
+shadows and fills a custom indicator is usually drawn with.
+
+```tsx
+import { useState } from "react";
+import { View } from "react-native";
+import { InputFrame } from "@firna/ui/input";
+import { useSharedUiTheme } from "@firna/ui/theme";
+
+function SearchBar() {
+  const theme = useSharedUiTheme();
+  const [focused, setFocused] = useState(false);
+  return (
+    <View
+      style={{
+        borderColor: focused ? theme.colors.primary : theme.colors.border2,
+        borderWidth: focused ? 2 : 1,
+      }}
+    >
+      <InputFrame
+        accessibilityLabel="Search projects"
+        focusIndicator="none"
+        onBlur={() => setFocused(false)}
+        onFocus={() => setFocused(true)}
+        variant="plain"
+      />
+    </View>
+  );
+}
+```
+
+The `none` reset has zero specificity, so a focus rule of your own always wins
+over it. A custom control built on `useFocusRing` gets the same modes through
+the hook's `indicator` option; gate any focus-only decoration it draws itself
+on the returned `indicator` as well as `focused`. The "Caller-owned indicator"
+story under Focus ring/Examples renders the search-bar pattern.
 
 ### Web focus CSS and server rendering
 
@@ -302,9 +366,9 @@ const focusVariableCss = `:root{${Object.entries(focusVariables)
 ```
 
 Later consumer rules can override the focus treatment at equal specificity.
-`focusRing: false` is not required for static rendering; it is now purely an
-opt-out for consumers that want the browser default or supply their own focus
-treatment.
+No `focusIndicator` setting is required for static rendering; `outline` and
+`none` are purely opt-outs for consumers that want the browser default or supply
+their own focus treatment.
 
 ### Chart colors
 

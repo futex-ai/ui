@@ -21,7 +21,11 @@ import {
 import { announce } from "../announcer";
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
-import { hideWebOutline, useFocusRing } from "../focusRing";
+import {
+  type FocusIndicator,
+  hideWebOutline,
+  useFocusRing,
+} from "../focusRing";
 import { inputIconSize, LabelInfo } from "../input";
 import { useSharedUiTheme } from "../theme";
 
@@ -71,14 +75,14 @@ export type DropdownSelectorSection = {
 export type SelectorVariant = "field" | "map" | "mobilePeriod" | "pill";
 
 type DropdownSelectorProps = {
-  /**
-   * Disable the shared focus glow on the trigger. It then falls back to the
-   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
-   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
-   * `focusRing: false` flag instead.
-   */
-  disableFocusRing?: boolean;
   error?: string | null;
+  /**
+   * How the trigger shows keyboard focus: the shared `ring` glow, the browser's
+   * `outline`, or `none` for no focus styling at all, which leaves the caller
+   * to show focus some other way (WCAG 2.1 — 2.4.7 Focus Visible, AA). Defaults
+   * to the theme's `focusIndicator`.
+   */
+  focusIndicator?: FocusIndicator;
   footer?: ReactNode;
   header?: ReactNode;
   /** How focused/selected option rows are highlighted. Defaults to `"solid"`. */
@@ -139,7 +143,7 @@ export function DropdownSelector(props: DropdownSelectorProps) {
     () => createDropdownSelectorStyles(theme, props.size ?? "md"),
     [theme, props.size],
   );
-  const focus = useFocusRing({ disabled: props.disableFocusRing });
+  const focus = useFocusRing({ indicator: props.focusIndicator });
   return <DropdownSelectorView {...props} focus={focus} styles={styles} />;
 }
 

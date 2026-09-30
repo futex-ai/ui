@@ -27,6 +27,7 @@ import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
 import { DragGhostPortal } from "../dragGhostPortal";
+import type { FocusIndicator } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { useSortableGroupContext } from "./sortableGroupContext";
@@ -62,12 +63,12 @@ export type SortableListProps<Item> = {
   /** Accessible label for the whole list. */
   accessibilityLabel?: string;
   /**
-   * Disable the shared focus glow on the drag rows / handles. They then fall back
-   * to the browser's default focus outline so keyboard focus stays visible (WCAG
-   * 2.1 — 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
-   * `focusRing: false` flag instead.
+   * How the drag rows / handles show keyboard focus: the shared `ring` glow,
+   * the browser's `outline`, or `none` for no focus styling at all, which
+   * leaves the caller to show focus some other way (WCAG 2.1 — 2.4.7 Focus
+   * Visible, AA). Defaults to the theme's `focusIndicator`.
    */
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** Gap in px between rows. Defaults to the `size` scale — a visible gap gives the drop preview a slot to open into. */
   gap?: number;
   /**
@@ -134,7 +135,7 @@ export type SortableListProps<Item> = {
  */
 export function SortableList<Item>({
   accessibilityLabel,
-  disableFocusRing = false,
+  focusIndicator,
   gap,
   groupId,
   handle,
@@ -267,8 +268,8 @@ export function SortableList<Item>({
     handle === "custom" ? (
       <SortableHandle
         binding={binding}
-        disableFocusRing={disableFocusRing}
         dragging={grabbed}
+        focusIndicator={focusIndicator}
         iconColor={theme.colors.muted}
         iconSize={iconSize}
         label={gripLabel}
@@ -357,7 +358,7 @@ export function SortableList<Item>({
           index,
           customGrip(binding, grabbed, grabLabel),
         )}
-        disableFocusRing={disableFocusRing}
+        focusIndicator={focusIndicator}
         dragging={grabbed}
         handle={handle}
         handleGap={rowGap}

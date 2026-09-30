@@ -11,16 +11,20 @@ test("input frame wires invalid + required a11y and the focus ring", () => {
   // focus target so the fallback outline also lands on the visible frame.
   // The ring is outset by default and inset (offset -2) when `focusRingInset` is
   // set, so a chrome-less field inside an overflow:hidden ancestor stays visible.
-  // `disableFocusRing` (and the theme flag) omit the glow marker and restore the
-  // UA outline on that frame.
+  // `focusIndicator` (or the theme's default) picks the marker: the glow, the
+  // UA outline on that frame, or no focus styling at all.
   assert.match(
     source,
-    /useFocusRing\(\{[\s\S]*?focusRingInset \? \{ offset: -2 \} : \{\}[\s\S]*?disabled: disableFocusRing[\s\S]*?\}\)/,
+    /useFocusRing\(\{[\s\S]*?focusRingInset \? \{ offset: -2 \} : \{\}[\s\S]*?indicator: focusIndicator[\s\S]*?\}\)/,
   );
   assert.match(source, /target: "descendant"/);
   assert.match(source, /\.\.\.focus\.focusRingProps/);
   assert.match(source, /\.\.\.focus\.focusTargetProps/);
-  assert.match(source, /borderActive = focus\.focused \|\| active/);
+  // `none` drops the focus border with the ring; an explicit `active` stays.
+  assert.match(
+    source,
+    /borderActive =\s*active \|\| \(focus\.focused && focus\.indicator !== "none"\)/,
+  );
   assert.match(source, /styles\.input,/);
   assert.doesNotMatch(source, /focus\.ringEnabled \? hideWebOutline/);
   // The nested clear button keeps the browser's own outline: the frame's CSS
@@ -191,7 +195,7 @@ test("input frame seamless variant drops chrome, height, and padding, grows to f
   assert.match(source, /focus\.focusRingVariables/);
   assert.match(
     source,
-    /useFocusRing\(\{[\s\S]*?focusRingInset \? \{ offset: -2 \} : \{\}[\s\S]*?disabled: disableFocusRing[\s\S]*?\}\)/,
+    /useFocusRing\(\{[\s\S]*?focusRingInset \? \{ offset: -2 \} : \{\}[\s\S]*?indicator: focusIndicator[\s\S]*?\}\)/,
   );
 });
 

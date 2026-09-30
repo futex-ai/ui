@@ -19,7 +19,7 @@ import {
 import { Platform, Pressable, Text, View } from "../primitives/reactNative";
 
 import { announce } from "../announcer";
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import {
   type FocusableRef,
   focusItemAt,
@@ -71,13 +71,13 @@ export type CalendarMonthProps = DateBounds & {
   /** Called with the picked ISO date. */
   onSelect: (iso: string) => void;
   /**
-   * Disable the shared focus glow on the calendar's buttons (nav chevrons, the
-   * title toggle, and the day / year cells). They then fall back to the browser's
-   * default focus outline so keyboard focus stays visible (WCAG 2.1 — 2.4.7 Focus
-   * Visible, AA). Disable every ring at once via the theme's `focusRing: false`
-   * flag instead.
+   * How the calendar's buttons (nav chevrons, the title toggle, and the day /
+   * year cells) show keyboard focus: the shared `ring` glow, the browser's
+   * `outline`, or `none` for no focus styling at all, which leaves the caller
+   * to show focus some other way (WCAG 2.1 — 2.4.7 Focus Visible, AA). Defaults
+   * to the theme's `focusIndicator`.
    */
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -88,7 +88,7 @@ export function CalendarMonth({
   min,
   max,
   onSelect,
-  disableFocusRing = false,
+  focusIndicator,
   testID,
 }: CalendarMonthProps) {
   const theme = useSharedUiTheme();
@@ -157,7 +157,7 @@ export function CalendarMonth({
     <>
       <View style={s.head} testID={testID}>
         <NavButton
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           label={pickingYear ? "Previous years" : "Previous month"}
           onPress={() => (pickingYear ? pageYears(-1) : step(-1))}
           styles={s}
@@ -165,7 +165,7 @@ export function CalendarMonth({
           <ChevronLeft color={theme.colors.primaryDeep} size={16} />
         </NavButton>
         <TitleButton
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           label={
             pickingYear
               ? `${yearRangeLabel(yearStart)}, back to month`
@@ -182,7 +182,7 @@ export function CalendarMonth({
             : monthLabel(view.year, view.month)}
         </TitleButton>
         <NavButton
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           label={pickingYear ? "Next years" : "Next month"}
           onPress={() => (pickingYear ? pageYears(1) : step(1))}
           styles={s}
@@ -193,7 +193,7 @@ export function CalendarMonth({
 
       {pickingYear ? (
         <YearGrid
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           max={max}
           min={min}
           onSelect={chooseYear}
@@ -203,7 +203,7 @@ export function CalendarMonth({
         />
       ) : (
         <DayGrid
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           onSelect={onSelect}
           onStepMonth={step}
           outOfBounds={outOfBounds}
@@ -220,19 +220,19 @@ export function CalendarMonth({
 
 /** A header chevron button with a managed focus ring. */
 function NavButton({
-  disableFocusRing,
+  focusIndicator,
   label,
   onPress,
   styles,
   children,
 }: {
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   label: string;
   onPress: () => void;
   styles: WebCalendarStyles;
   children: ReactNode;
 }) {
-  const ring = useFocusRing({ disabled: disableFocusRing });
+  const ring = useFocusRing({ indicator: focusIndicator });
   return (
     <Pressable
       accessibilityLabel={label}
@@ -252,17 +252,17 @@ function NavButton({
 const TitleButton = forwardRef<
   View,
   {
-    disableFocusRing: boolean;
+    focusIndicator: FocusIndicator | undefined;
     label: string;
     onPress: () => void;
     styles: WebCalendarStyles;
     children: ReactNode;
   }
 >(function TitleButton(
-  { disableFocusRing, label, onPress, styles, children },
+  { focusIndicator, label, onPress, styles, children },
   ref,
 ) {
-  const ring = useFocusRing({ disabled: disableFocusRing });
+  const ring = useFocusRing({ indicator: focusIndicator });
   return (
     <Pressable
       accessibilityLabel={label}
@@ -297,7 +297,7 @@ function DayGrid({
   outOfBounds,
   onSelect,
   onStepMonth,
-  disableFocusRing,
+  focusIndicator,
   styles,
 }: {
   weeks: DayCell[][];
@@ -307,7 +307,7 @@ function DayGrid({
   outOfBounds: (iso: string) => boolean;
   onSelect: (iso: string) => void;
   onStepMonth: (delta: number) => void;
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   styles: WebCalendarStyles;
 }) {
   const cells = useMemo(() => weeks.flat(), [weeks]);
@@ -470,7 +470,7 @@ function DayGrid({
                 cell={cell}
                 cellRef={cellRefs.current[index]}
                 disabled={isDisabled(cell)}
-                disableFocusRing={disableFocusRing}
+                focusIndicator={focusIndicator}
                 isActive={index === activeIndex}
                 isToday={cell.iso === today}
                 key={cell.iso}
@@ -510,13 +510,13 @@ function YearGrid({
   min,
   max,
   onSelect,
-  disableFocusRing,
+  focusIndicator,
   styles,
 }: DateBounds & {
   start: number;
   selectedYear: number;
   onSelect: (year: number) => void;
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   styles: WebCalendarStyles;
 }) {
   const years = yearRange(start);
@@ -528,7 +528,7 @@ function YearGrid({
           {row.map((year) => (
             <YearButton
               disabled={yearOutOfBounds(year, min, max)}
-              disableFocusRing={disableFocusRing}
+              focusIndicator={focusIndicator}
               key={year}
               onSelect={onSelect}
               selected={year === selectedYear}
@@ -545,19 +545,19 @@ function YearGrid({
 function YearButton({
   year,
   disabled,
-  disableFocusRing,
+  focusIndicator,
   onSelect,
   selected,
   styles,
 }: {
   year: number;
   disabled: boolean;
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   onSelect: (year: number) => void;
   selected: boolean;
   styles: WebCalendarStyles;
 }) {
-  const ring = useFocusRing({ disabled: disableFocusRing });
+  const ring = useFocusRing({ indicator: focusIndicator });
   return (
     <Pressable
       accessibilityLabel={String(year)}
@@ -592,7 +592,7 @@ function DayButton({
   cell,
   cellRef,
   disabled,
-  disableFocusRing,
+  focusIndicator,
   isActive,
   isToday,
   onKey,
@@ -603,7 +603,7 @@ function DayButton({
   cell: DayCell;
   cellRef: RefObject<FocusableRef>;
   disabled: boolean;
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   isActive: boolean;
   isToday: boolean;
   onKey: (event: CalendarKeyEvent) => void;
@@ -611,7 +611,7 @@ function DayButton({
   selected: boolean;
   styles: WebCalendarStyles;
 }) {
-  const ring = useFocusRing({ disabled: disableFocusRing });
+  const ring = useFocusRing({ indicator: focusIndicator });
   // Each day stays a labelled `button`, but is wrapped in a `gridcell` on web so
   // the calendar reads as an APG date grid without changing the button's name.
   // `gridcell` is web-only ARIA (not in RN's `Role` union), so cast it as the

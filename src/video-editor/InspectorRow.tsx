@@ -15,7 +15,7 @@ import { Pressable, Text, TextInput, View } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { DropdownMenu, type DropdownListEntry } from "../dropdown";
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { Switch } from "../switch";
 import { useSharedUiTheme } from "../theme";
 
@@ -37,13 +37,13 @@ export type InspectorRowProps = {
   /** Whether this property is currently keyframed. */
   keyframed?: boolean;
   size?: ControlSize;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
 
 export function InspectorRow({
-  disableFocusRing = false,
+  focusIndicator,
   keyframed = false,
   onChange,
   onReset,
@@ -66,7 +66,7 @@ export function InspectorRow({
       </Text>
       <View style={styles.rowControl}>
         <PropertyControl
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           onChange={onChange}
           property={property}
           size={size}
@@ -76,7 +76,7 @@ export function InspectorRow({
         {onReset && isPropertyModified(property) ? (
           <RowAction
             Icon={RotateCcw}
-            disableFocusRing={disableFocusRing}
+            focusIndicator={focusIndicator}
             label={`Reset ${property.label}`}
             onPress={() => onReset(property.id)}
             testID={testID ? `${testID}-reset` : undefined}
@@ -86,7 +86,7 @@ export function InspectorRow({
           <RowAction
             Icon={Clock}
             active={keyframed}
-            disableFocusRing={disableFocusRing}
+            focusIndicator={focusIndicator}
             label={`${keyframed ? "Stop" : "Start"} keyframing ${property.label}`}
             onPress={() => onToggleKeyframe(property.id)}
             testID={testID ? `${testID}-keyframe` : undefined}
@@ -98,12 +98,12 @@ export function InspectorRow({
 }
 
 function PropertyControl({
-  disableFocusRing,
+  focusIndicator,
   onChange,
   property,
   size,
 }: {
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   onChange?: (propertyId: string, value: InspectorValue) => void;
   property: InspectorProperty;
   size: ControlSize;
@@ -116,7 +116,7 @@ function PropertyControl({
     case "number":
       return (
         <NumberScrubber
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           disabled={property.disabled}
           label={property.label}
           max={property.max}
@@ -136,7 +136,7 @@ function PropertyControl({
       return (
         <Switch
           accessibilityLabel={property.label}
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           disabled={property.disabled}
           onValueChange={
             onChange ? (value) => onChange(property.id, value) : undefined
@@ -180,7 +180,7 @@ function PropertyControl({
           {property.swatches.map((swatch) => (
             <ColorSwatch
               color={swatch}
-              disableFocusRing={disableFocusRing}
+              focusIndicator={focusIndicator}
               key={swatch}
               label={`${property.label}, ${swatch}`}
               onPress={() => onChange?.(property.id, swatch)}
@@ -211,20 +211,20 @@ function PropertyControl({
 
 function ColorSwatch({
   color,
-  disableFocusRing,
+  focusIndicator,
   label,
   onPress,
   selected,
 }: {
   color: string;
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   label: string;
   onPress: () => void;
   selected: boolean;
 }) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createInspectorStyles(theme), [theme]);
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ indicator: focusIndicator });
   return (
     <Pressable
       accessibilityLabel={selected ? `${label}, selected` : label}
@@ -246,21 +246,21 @@ function ColorSwatch({
 function RowAction({
   Icon,
   active = false,
-  disableFocusRing,
+  focusIndicator,
   label,
   onPress,
   testID,
 }: {
   Icon: ComponentType<{ color?: string; size?: number }>;
   active?: boolean;
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   label: string;
   onPress: () => void;
   testID?: string;
 }) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createInspectorStyles(theme), [theme]);
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ indicator: focusIndicator });
   return (
     <Pressable
       accessibilityLabel={label}

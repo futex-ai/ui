@@ -16,7 +16,7 @@ import { Platform, Pressable, Text, View } from "../primitives/reactNative";
 
 import type { BadgeTone } from "../badge/badgeStyles";
 import type { ControlSize } from "../controlSize";
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import type { PressableHoverState } from "../focusRing";
 import { SkeletonBar, SkeletonCircle } from "../skeleton";
 
@@ -61,7 +61,7 @@ type KanbanColumnProps<Card> = {
   columnWidth: number;
   consumePressSuppression: () => boolean;
   count: number;
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   dragState: KanbanDragState;
   entries: KanbanColumnEntry<Card>[];
   loading: boolean;
@@ -89,9 +89,9 @@ export function KanbanColumn<Card>({
   columnWidth,
   consumePressSuppression,
   count,
-  disableFocusRing,
   dragState,
   entries,
+  focusIndicator,
   loading,
   loadingCardCount,
   onCardPress,
@@ -139,7 +139,7 @@ export function KanbanColumn<Card>({
       <PressableCard
         binding={binding}
         disabled={disabled}
-        disableFocusRing={disableFocusRing}
+        focusIndicator={focusIndicator}
         grabbed={grabbed}
         key={key}
         label={cardLabel?.(entry.card, entry.index)}
@@ -198,7 +198,7 @@ export function KanbanColumn<Card>({
         {onColumnAdd ? (
           <ColumnAddButton
             afterAccessory={hasAccessory}
-            disableFocusRing={disableFocusRing}
+            focusIndicator={focusIndicator}
             label={columnAddLabel?.(column) ?? "Add card"}
             onPress={() => onColumnAdd(column)}
             styles={styles}
@@ -239,7 +239,7 @@ function PressableCard({
   binding,
   children,
   disabled,
-  disableFocusRing,
+  focusIndicator,
   grabbed,
   label,
   onPress,
@@ -248,13 +248,13 @@ function PressableCard({
   binding: KanbanCardDragBinding | null;
   children: ReactNode;
   disabled: boolean;
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   grabbed: boolean;
   label?: string;
   onPress?: () => void;
   styles: KanbanStyles;
 }) {
-  const focus = useFocusRing({ offset: -2, disabled: disableFocusRing });
+  const focus = useFocusRing({ offset: -2, indicator: focusIndicator });
   // `onKeyDown` and `tabIndex` are web-only; gate them like the segmented control.
   const dragProps =
     binding && Platform.OS === "web"
@@ -321,18 +321,18 @@ function CardPreview({
  */
 function ColumnAddButton({
   afterAccessory,
-  disableFocusRing,
+  focusIndicator,
   label,
   onPress,
   styles,
 }: {
   afterAccessory: boolean;
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   label: string;
   onPress: () => void;
   styles: KanbanStyles;
 }) {
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ indicator: focusIndicator });
   return (
     <Pressable
       accessibilityLabel={label}

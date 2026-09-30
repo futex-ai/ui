@@ -3,7 +3,7 @@ import { Info, IconComponent } from "../primitives/icons";
 import { useId, useMemo } from "react";
 import { Platform, Pressable, Text } from "../primitives/reactNative";
 
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { Popover } from "../popover";
 import { useSharedUiTheme } from "../theme";
 
@@ -24,12 +24,12 @@ export type LabelInfoProps = {
   /** Accessible name for the button, e.g. `More information about Email`. */
   accessibilityLabel: string;
   /**
-   * Disable the shared focus glow on the ⓘ button. It then falls back to the
-   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
-   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
-   * `focusRing: false` flag instead.
+   * How the ⓘ button shows keyboard focus: the shared `ring` glow, the
+   * browser's `outline`, or `none` for no focus styling at all, which leaves
+   * the caller to show focus some other way (WCAG 2.1 — 2.4.7 Focus Visible,
+   * AA). Defaults to the theme's `focusIndicator`.
    */
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -55,12 +55,12 @@ export function LabelInfo({
   info,
   icon: Icon = Info,
   accessibilityLabel,
-  disableFocusRing = false,
+  focusIndicator,
   testID,
 }: LabelInfoProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createInputStyles(theme), [theme]);
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ indicator: focusIndicator });
   const descriptionId = useId();
   const isWeb = Platform.OS === "web";
   return (

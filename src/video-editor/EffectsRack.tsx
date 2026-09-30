@@ -22,7 +22,7 @@ import {
 
 import type { ControlSize } from "../controlSize";
 import { DropdownMenu, type DropdownListEntry } from "../dropdown";
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { SortableList, type SortableMove } from "../sortable-list";
 import { Switch } from "../switch";
 import { useSharedUiTheme } from "../theme";
@@ -67,7 +67,7 @@ export type EffectsRackProps = {
   /** Shown when the chain is empty. */
   emptyLabel?: string;
   size?: ControlSize;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** Names the rack as a region for assistive tech. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
@@ -78,9 +78,9 @@ export type EffectsRackProps = {
 export function EffectsRack({
   accessibilityLabel,
   addOptions,
-  disableFocusRing = false,
   effects,
   emptyLabel = "No effects",
+  focusIndicator,
   onAdd,
   onPropertyChange,
   onRemove,
@@ -140,7 +140,7 @@ export function EffectsRack({
       ) : (
         <SortableList
           accessibilityLabel={title ?? "Effects"}
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           handle="custom"
           itemKey={(effect: EffectEntry) => effect.id}
           itemLabel={(effect: EffectEntry) => effect.name}
@@ -167,7 +167,7 @@ export function EffectsRack({
                 {onToggleEnabled ? (
                   <Switch
                     accessibilityLabel={`${effect.enabled ? "Disable" : "Enable"} ${effect.name}`}
-                    disableFocusRing={disableFocusRing}
+                    focusIndicator={focusIndicator}
                     onValueChange={() => onToggleEnabled(effect.id)}
                     size="sm"
                     testID={`effect-enabled-${effect.id}`}
@@ -176,7 +176,7 @@ export function EffectsRack({
                 ) : null}
                 {onRemove ? (
                   <RemoveButton
-                    disableFocusRing={disableFocusRing}
+                    focusIndicator={focusIndicator}
                     label={`Remove ${effect.name}`}
                     onPress={() => onRemove(effect.id)}
                     testID={`effect-remove-${effect.id}`}
@@ -212,19 +212,19 @@ export function EffectsRack({
 }
 
 function RemoveButton({
-  disableFocusRing,
+  focusIndicator,
   label,
   onPress,
   testID,
 }: {
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   label: string;
   onPress: () => void;
   testID: string;
 }) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createEffectsStyles(theme), [theme]);
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ indicator: focusIndicator });
   return (
     <Pressable
       accessibilityLabel={label}

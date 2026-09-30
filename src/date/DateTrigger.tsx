@@ -206,7 +206,11 @@ export function NativeTrigger({
       onPress={() => field.setOpen(true)}
       style={[
         styles.trigger,
-        triggerBorder(styles, invalid, field.open || focus.focused),
+        triggerBorder(
+          styles,
+          invalid,
+          field.open || (focus.focused && focus.indicator !== "none"),
+        ),
         focus.focusRingVariables,
       ]}
       tabIndex={Platform.OS === "web" ? -1 : undefined}

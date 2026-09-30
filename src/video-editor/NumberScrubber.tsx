@@ -19,7 +19,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { createInspectorStyles } from "./inspectorStyles";
@@ -47,15 +47,15 @@ export type NumberScrubberProps = {
   disabled?: boolean;
   /** Density. Defaults to `md`. */
   size?: ControlSize;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   style?: StyleProp<ViewStyle>;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
 
 export function NumberScrubber({
-  disableFocusRing = false,
   disabled = false,
+  focusIndicator,
   label,
   max,
   min,
@@ -73,7 +73,7 @@ export function NumberScrubber({
   const styles = useMemo(() => createInspectorStyles(theme), [theme]);
   const metrics = videoEditorSizing[size];
   const focus = useFocusRing({
-    disabled: disableFocusRing,
+    indicator: focusIndicator,
     target: "descendant",
   });
   // While the field has focus it shows exactly what was typed, so a partial

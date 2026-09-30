@@ -30,6 +30,7 @@ import {
 
 import type { ControlSize } from "../controlSize";
 import { DropdownMenu, type DropdownListEntry } from "../dropdown";
+import type { FocusIndicator } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 import { DEFAULT_FPS, formatTimecode } from "../timeline";
 
@@ -81,7 +82,7 @@ export type TransportBarProps = {
   /** Extra controls after everything else. */
   trailing?: ReactNode;
 
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** Names the transport as a group for assistive tech. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
@@ -97,8 +98,8 @@ export function TransportBar({
   accessibilityLabel = "Transport",
   buffered,
   currentTime,
-  disableFocusRing = false,
   duration,
+  focusIndicator,
   fps = DEFAULT_FPS,
   inPoint,
   leading,
@@ -148,7 +149,7 @@ export function TransportBar({
       <TransportButton
         Icon={Icon}
         active={options.active}
-        disableFocusRing={disableFocusRing}
+        focusIndicator={focusIndicator}
         key={label}
         label={label}
         onPress={onPress}
@@ -209,8 +210,8 @@ export function TransportBar({
           <Scrubber
             buffered={buffered}
             currentTime={currentTime}
-            disableFocusRing={disableFocusRing}
             duration={duration}
+            focusIndicator={focusIndicator}
             fps={fps}
             inPoint={inPoint}
             markers={markers}

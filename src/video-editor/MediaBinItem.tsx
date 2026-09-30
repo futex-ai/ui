@@ -13,7 +13,11 @@ import { useMemo } from "react";
 import { Image, Pressable, Text, View } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
-import { useFocusRing, type PressableHoverState } from "../focusRing";
+import {
+  type FocusIndicator,
+  type PressableHoverState,
+  useFocusRing,
+} from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import {
@@ -43,14 +47,14 @@ export type MediaBinItemProps = {
   onPress?: (asset: MediaAsset) => void;
   /** Fired on a second press or on Enter — "put this in the sequence". */
   onActivate?: (asset: MediaAsset) => void;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
 
 export function MediaBinItem({
   asset,
-  disableFocusRing = false,
+  focusIndicator,
   onActivate,
   onPress,
   selected = false,
@@ -61,7 +65,7 @@ export function MediaBinItem({
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createMediaBinStyles(theme), [theme]);
   const metrics = videoEditorSizing[size];
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ indicator: focusIndicator });
   const Icon = KIND_ICON[asset.kind];
   const duration = assetDurationLabel(asset);
   const label = selected

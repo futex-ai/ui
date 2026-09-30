@@ -32,7 +32,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { createTimelineStyles, timelineSizing } from "./timelineStyles";
@@ -51,8 +51,8 @@ export type TimelineTrackHeaderProps = {
   size?: ControlSize;
   /** Called when a toggle is pressed; the consumer applies the change. */
   onToggle?: (trackId: string, flag: TimelineTrackFlag) => void;
-  /** Suppress the shared focus glow on the toggles. */
-  disableFocusRing?: boolean;
+  /** How the toggles show keyboard focus. */
+  focusIndicator?: FocusIndicator;
   style?: StyleProp<ViewStyle>;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
@@ -68,7 +68,7 @@ const KIND_ICON: Record<TimelineTrackKind, ComponentType<IconProps>> = {
 type IconProps = { color?: string; size?: number };
 
 export function TimelineTrackHeader({
-  disableFocusRing = false,
+  focusIndicator,
   height,
   onToggle,
   size = "md",
@@ -100,7 +100,7 @@ export function TimelineTrackHeader({
             <HeaderToggle
               Icon={track.muted ? VolumeX : Volume2}
               active={Boolean(track.muted)}
-              disableFocusRing={disableFocusRing}
+              focusIndicator={focusIndicator}
               label={`${track.muted ? "Unmute" : "Mute"} ${track.name}`}
               onPress={() => onToggle?.(track.id, "muted")}
               size={size}
@@ -109,7 +109,7 @@ export function TimelineTrackHeader({
             <HeaderToggle
               Icon={Headphones}
               active={Boolean(track.soloed)}
-              disableFocusRing={disableFocusRing}
+              focusIndicator={focusIndicator}
               label={`${track.soloed ? "Unsolo" : "Solo"} ${track.name}`}
               onPress={() => onToggle?.(track.id, "soloed")}
               size={size}
@@ -120,7 +120,7 @@ export function TimelineTrackHeader({
           <HeaderToggle
             Icon={track.hidden ? EyeOff : Eye}
             active={Boolean(track.hidden)}
-            disableFocusRing={disableFocusRing}
+            focusIndicator={focusIndicator}
             label={`${track.hidden ? "Show" : "Hide"} ${track.name}`}
             onPress={() => onToggle?.(track.id, "hidden")}
             size={size}
@@ -130,7 +130,7 @@ export function TimelineTrackHeader({
         <HeaderToggle
           Icon={track.locked ? Lock : LockOpen}
           active={Boolean(track.locked)}
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           label={`${track.locked ? "Unlock" : "Lock"} ${track.name}`}
           onPress={() => onToggle?.(track.id, "locked")}
           size={size}
@@ -144,7 +144,7 @@ export function TimelineTrackHeader({
 function HeaderToggle({
   Icon,
   active,
-  disableFocusRing,
+  focusIndicator,
   label,
   onPress,
   size,
@@ -153,7 +153,7 @@ function HeaderToggle({
   Icon: ComponentType<IconProps>;
   /** Drives the tinted fill and the accent icon color. */
   active: boolean;
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   label: string;
   onPress: () => void;
   size: ControlSize;
@@ -162,7 +162,7 @@ function HeaderToggle({
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createTimelineStyles(theme), [theme]);
   const metrics = timelineSizing[size];
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ indicator: focusIndicator });
   const box = metrics.iconSize + 8;
 
   return (

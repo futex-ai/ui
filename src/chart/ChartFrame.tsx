@@ -12,7 +12,7 @@ import {
   type ViewStyle,
 } from "../primitives/reactNative";
 
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
 import { chartLayout, type ChartLayout } from "./chartLayout";
@@ -46,7 +46,7 @@ export type ChartFrameProps = {
   /** Receives the resolved layout and paints the marks and axes. */
   children: (layout: ChartLayout, styles: ChartStyles) => ReactNode;
   accessibilityLabel?: string;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 };
@@ -82,7 +82,7 @@ export function ChartFrame({
   yAxisWidth,
   children,
   accessibilityLabel,
-  disableFocusRing = false,
+  focusIndicator,
   style,
   testID,
 }: ChartFrameProps) {
@@ -90,7 +90,7 @@ export function ChartFrame({
   const styles = useMemo(() => createChartStyles(theme), [theme]);
   const [measuredWidth, setMeasuredWidth] = useState(defaultWidth);
   const [showTable, setShowTable] = useState(false);
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ indicator: focusIndicator });
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const next = event.nativeEvent.layout.width;

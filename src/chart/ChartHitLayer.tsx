@@ -10,7 +10,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Platform, Pressable, View } from "../primitives/reactNative";
 
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import {
   type FocusableRef,
   focusItemAt,
@@ -39,7 +39,7 @@ export type ChartHitLayerProps = {
   activeIndex: number | null;
   onActivate: (index: number) => void;
   onHover: (index: number | null) => void;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
 };
 
 type KeyEvent = {
@@ -55,7 +55,7 @@ export function ChartHitLayer({
   activeIndex,
   onActivate,
   onHover,
-  disableFocusRing = false,
+  focusIndicator,
 }: ChartHitLayerProps) {
   // The single tab stop of the plot: only this target is reachable by Tab;
   // arrow keys move it. Without this a 60-category chart would add 60 tab
@@ -106,7 +106,7 @@ export function ChartHitLayer({
     <View style={containerStyle} {...keyProps}>
       {targets.map((target, i) => (
         <HitTargetView
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           isActive={activeIndex === target.index}
           key={`${target.index}-${i}`}
           onActivate={() => onActivate(target.index)}
@@ -125,7 +125,7 @@ export function ChartHitLayer({
 }
 
 function HitTargetView({
-  disableFocusRing,
+  focusIndicator,
   isActive,
   onActivate,
   onFocusTarget,
@@ -134,7 +134,7 @@ function HitTargetView({
   targetRef,
   tabIndex,
 }: {
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   isActive: boolean;
   onActivate: () => void;
   onFocusTarget: () => void;
@@ -143,7 +143,7 @@ function HitTargetView({
   targetRef: { current: FocusableRef };
   tabIndex: 0 | -1;
 }) {
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ indicator: focusIndicator });
   return (
     <Pressable
       accessibilityLabel={target.label}

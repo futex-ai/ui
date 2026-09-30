@@ -63,6 +63,30 @@ live carets, tracked changes, and comment threads — is specified in
   `--firna-focus-ring-color` and `--firna-focus-ring-width`; `domBackendCss`
   consumes those variables so static and server-rendered HTML needs no
   hydration to show keyboard focus.
+- How a control shows keyboard focus is one `FocusIndicator` value: `ring`
+  (the shared glow, the default), `outline` (no glow; the browser's default
+  outline, moved onto the visible box when focus and paint live on different
+  elements), or `none` (no focus styling at all). The theme's `focusIndicator`
+  sets the default and every ring-bearing control's `focusIndicator` prop
+  overrides it in both directions; `useFocusRing` takes the same value as its
+  `indicator` option and returns the resolved `indicator`.
+- `none` must remove every focus-only style the library draws for that control:
+  the glow, the browser outline on the focus target and on its visible box, and
+  any focus-only decoration such as an input's active border or a resize
+  handle's highlight. Explicit state that is not focus — `active`, `invalid`,
+  an open popover — still applies. On web the painted box carries
+  `data-firna-focus-none="<target>"` (and a split control's target keeps
+  `data-firna-focus-target`), with no `data-firna-focus-ring` or
+  `data-firna-focus-host` marker. `domBackendCss` strips the outline from that
+  focus target with a zero-specificity `:where()` rule, so any focus style the
+  caller supplies wins, and only under `forced-colors: none`, so forced-colors
+  mode keeps the system outline. A separately focusable action inside the
+  control — a clear, suffix, or chip-remove button — keeps its browser outline.
+  Native keeps its platform focus behavior; `none` drops only the focus-only
+  decoration there.
+- `none` transfers the focus indicator to the caller, which must show focus
+  some other way (WCAG 2.1 — 2.4.7). Docs must present it for controls embedded
+  in a surface that already shows focus, never as a way to hide focus.
 - `useFocusRing` must expose its CSS markers in both spellings: `dataSet` props
   (`focusRingProps` / `focusTargetProps`) for Firna primitives and React
   Native hosts, and literal `data-*` props (`focusRingDomProps` /
@@ -313,7 +337,8 @@ Required behavior:
   caller or with the segmented control.
 - Own the shared CSS focus marker under every role. On web `domBackendCss` must
   hide the browser outline only while its `:focus-visible` glow is active;
-  opt-outs restore the default outline. Disabling a focused button must still
+  `focusIndicator="outline"` restores the default outline and
+  `focusIndicator="none"` removes it. Disabling a focused button must still
   clear tracked interaction state so re-enabling it cannot restore stale
   non-painting focus state. Native keeps its platform focus behavior.
 - Use shared theme tokens for fills, borders, label colors, disabled opacity,
@@ -355,6 +380,10 @@ Required behavior:
   icons, and `ControlSize` scaling for single-line and multiline fields.
 - Keep `InputFrame` available as the shared bare box so date fields and other
   custom controls can reuse the chrome without duplicating it.
+- With `focusIndicator="none"` the frame shows no glow, no outline, and no
+  active border while its input is focused; an explicit `active` or `invalid`
+  border still applies, and the clear and suffix buttons keep their browser
+  outline.
 
 ## Avatar Contract
 
@@ -542,9 +571,10 @@ Required behavior:
   render-time raw-focus styles. Pointer focus remains real for behavior while
   the browser owns modality; keyboard input can reveal the ring without a React
   render. Native keeps its platform focus behavior.
-- `disableFocusRing` is an explicit customization and must not be required to
-  suppress rings after ordinary pointer interaction. Disabling the custom ring
-  restores the browser's default keyboard-focus outline.
+- `focusIndicator` is an explicit customization and must not be required to
+  suppress rings after ordinary pointer interaction. `outline` restores the
+  browser's default keyboard-focus outline; `none` removes it for a list whose
+  container shows focus itself.
 - `useFocusRing` still owns actual/visible-focus state for non-painting behavior.
   List and ListItem must spread its CSS marker and variables rather than
   implement local pointer/keyboard painting.
@@ -876,7 +906,9 @@ Required behavior:
   to wire a focus ring onto its own control. Custom controls spread the hook's
   `focusRingProps`, include `focusRingVariables` in the painted host style, and
   use `target: "descendant"` / `"parent"` when focus and paint live on different
-  elements. `focusRingStyleFor` remains the explicit inline-style escape hatch.
+  elements. They pass their `focusIndicator` through the `indicator` option and
+  gate any focus-only decoration of their own on the returned `indicator`.
+  `focusRingStyleFor` remains the explicit inline-style escape hatch.
 - release-please owns release PR creation, changelog updates, npm metadata
   version updates, `vX.Y.Z` Git tags, and GitHub releases.
 - release-please must use the `node` release type so release PRs update

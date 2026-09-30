@@ -69,6 +69,41 @@ test("DOM backend CSS restores a visible indicator in forced colors", () => {
   assert.doesNotMatch(domBackendCss, /(?:animation|transition)[-:]/);
 });
 
+test("a no-indicator box only strips the browser outline, at zero specificity", () => {
+  const rule =
+    /@media \(forced-colors:none\)\{:where\(([^{}]*)\)\{outline:none;\}\}/.exec(
+      domBackendCss,
+    );
+  assert.ok(rule, "the no-indicator reset should be a single :where() rule");
+  assert.deepEqual(rule[1].split(","), [
+    '[data-firna-focus-none="self"]:focus',
+    '[data-firna-focus-none="descendant"] [data-firna-focus-target]:focus',
+    '[data-firna-focus-target]:focus:has(>[data-firna-focus-none="parent"])',
+  ]);
+  // Nothing paints for `none`, and no rule outside that reset reads its
+  // marker: the host marker that restores the outline on the box is absent.
+  assert.equal(domBackendCss.match(/data-firna-focus-none/g)?.length, 3);
+  // A clear or chip-remove button inside a no-indicator field keeps its own
+  // outline: the descendant reset follows only the marked focus target.
+  assert.doesNotMatch(
+    domBackendCss,
+    /\[data-firna-focus-none="descendant"\] :focus/,
+  );
+});
+
+test("a no-indicator box keeps its inline shadow instead of the ring variable", () => {
+  const markup = renderToStaticMarkup(
+    createElement(View, {
+      dataSet: { firnaFocusNone: "self" },
+      style: { boxShadow: "0 1px 2px rgb(1, 2, 3)" },
+    }),
+  );
+
+  assert.match(markup, /data-firna-focus-none="self"/);
+  assert.match(markup, /box-shadow:0 1px 2px rgb\(1, 2, 3\)/);
+  assert.doesNotMatch(markup, /--firna-focus-ring-base-shadow/);
+});
+
 test("focus hosts preserve an existing inline shadow behind the CSS ring", () => {
   const markup = renderToStaticMarkup(
     createElement(View, {

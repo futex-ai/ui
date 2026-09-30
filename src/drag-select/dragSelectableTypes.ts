@@ -8,6 +8,8 @@ import type {
   ViewStyle,
 } from "../primitives/reactNative";
 
+import type { FocusIndicator } from "../focusRing";
+
 import type { DragSelectableBox } from "./dragSelectableModel";
 
 export type DragSelectableTargetSnapshot = {
@@ -85,12 +87,13 @@ export type DragSelectableTargetOptions = {
   data?: unknown;
   disabled?: boolean;
   /**
-   * Disable the shared focus glow for this target: its returned accessibility
-   * props omit the CSS marker and the browser's default outline returns (WCAG
-   * 2.1 — 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
-   * `focusRing: false` flag instead.
+   * How this target shows keyboard focus. Its returned accessibility props
+   * carry the matching CSS marker: the shared `ring` glow, the browser's
+   * `outline`, or `none` for no focus styling at all, which leaves the caller
+   * to show focus some other way (WCAG 2.1 — 2.4.7 Focus Visible, AA). Defaults
+   * to the theme's `focusIndicator`.
    */
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   id: string;
   /**
    * Accessible name for the target. Defaults to the target `id`. Surfaced as

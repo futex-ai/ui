@@ -238,6 +238,13 @@ inside the box instead and keep a visible focus indicator (WCAG 2.1 2.4.7). On a
 zero-padding seamless field the inset ring paints over the text edges, so where
 you can, prefer reserving a little padding on the clipping ancestor.
 
+When the field sits inside a surface that already shows focus — a search bar
+that highlights itself, a grid cell with its own selection ring — pass
+`focusIndicator="none"` instead. The frame then paints no glow, no outline, and
+no active border, so the surface must show focus itself (WCAG 2.1 2.4.7); track
+it with the field's `onFocus` / `onBlur`. The "Caller-owned indicator" story
+under Focus ring/Examples shows the pattern.
+
 ## Accessibility
 
 - **Name (2.5.3 Label in Name / 1.3.1, A).** The visible `label` is tied to the
@@ -272,8 +279,12 @@ you can, prefer reserving a little padding on the clipping ancestor.
 - **Focus (2.4.7, AA).** On web, `domBackendCss` shows a geometry-bearing
   `:focus-visible` box-shadow on the frame, not the inset inner-input outline;
   it works in static HTML and stays visible on an invalid (rose-bordered)
-  field. Opting out restores the browser outline on that same frame. Native
-  keeps its platform affordance.
+  field. `focusIndicator="outline"` restores the browser outline on that same
+  frame. `focusIndicator="none"` removes the glow, the outline, and the active
+  border while focused — an explicit `active` still applies — for a field
+  embedded in a surface that shows focus itself, which then owns the
+  indicator. The clear and suffix buttons keep the browser outline in every
+  mode. Native keeps its platform affordance.
 
 ## Theming
 

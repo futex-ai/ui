@@ -43,6 +43,8 @@ export type NativeRichTextEditorSurfaceProps = {
   collaboratorPalette: RichTextCollabPalette;
   document: RichTextDocument;
   editorFocused: boolean;
+  /** Paint the primary frame border while focused; off for `focusIndicator="none"`. */
+  focusBorder: boolean;
   focusRingStyle: StyleProp<ViewStyle>;
   focusVisible: boolean;
   label?: string;
@@ -82,6 +84,7 @@ export function NativeRichTextEditorSurface({
   collaboratorPalette,
   document,
   editorFocused,
+  focusBorder,
   focusRingStyle,
   focusVisible,
   label,
@@ -112,7 +115,7 @@ export function NativeRichTextEditorSurface({
   const frameStyle = [
     styles.frame,
     { maxHeight, minHeight },
-    editorFocused ? styles.frameFocused : null,
+    editorFocused && focusBorder ? styles.frameFocused : null,
     focusVisible ? focusRingStyle : null,
   ];
   const activeType = document[activeBlock]?.type ?? "paragraph";

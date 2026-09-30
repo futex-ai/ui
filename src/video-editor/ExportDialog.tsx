@@ -16,6 +16,7 @@ import { Text, View } from "../primitives/reactNative";
 
 import { Button } from "../button";
 import type { ControlSize } from "../controlSize";
+import type { FocusIndicator } from "../focusRing";
 import { ProgressBar } from "../loader";
 import { WebModalFrame } from "../modal";
 import { useSharedUiTheme } from "../theme";
@@ -61,7 +62,7 @@ export type ExportDialogProps = {
   speedFactor?: number;
   title?: string;
   size?: ControlSize;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -81,9 +82,9 @@ const RESOLUTION_OPTIONS = [
 ];
 
 export function ExportDialog({
-  disableFocusRing = false,
   duration,
   errorMessage,
+  focusIndicator,
   inPoint,
   onCancel,
   onClose,
@@ -240,12 +241,12 @@ export function ExportDialog({
 
   return (
     <WebModalFrame
-      disableFocusRing={disableFocusRing}
+      focusIndicator={focusIndicator}
       footer={
         <>
           {exporting ? (
             <Button
-              disableFocusRing={disableFocusRing}
+              focusIndicator={focusIndicator}
               onPress={onCancel}
               size={size}
               tone="secondary"
@@ -254,7 +255,7 @@ export function ExportDialog({
             </Button>
           ) : (
             <Button
-              disableFocusRing={disableFocusRing}
+              focusIndicator={focusIndicator}
               onPress={onClose}
               size={size}
               tone="secondary"
@@ -264,7 +265,7 @@ export function ExportDialog({
           )}
           <Button
             busy={exporting}
-            disableFocusRing={disableFocusRing}
+            focusIndicator={focusIndicator}
             onPress={exporting ? undefined : onStart}
             size={size}
             testID={testID ? `${testID}-start` : undefined}
@@ -282,7 +283,7 @@ export function ExportDialog({
     >
       <View style={styles.body}>
         <Inspector
-          disableFocusRing={disableFocusRing}
+          focusIndicator={focusIndicator}
           onChange={handleChange}
           sections={sections}
           size={size}

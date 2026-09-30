@@ -2,6 +2,7 @@ import { createContext, ReactNode, useContext, useMemo } from "react";
 
 import { chartOverridesFrom, resolveChartColors } from "./chartTheme";
 import type { SharedUiChartColors } from "./chartTheme";
+import type { FocusIndicator } from "./focusRingHost";
 import { SharedUiThemeRoot } from "./themeRoot";
 
 export type { SharedUiChartColors };
@@ -113,12 +114,13 @@ export type SharedUiTheme = {
   fonts: SharedUiFonts;
   radii: SharedUiRadii;
   /**
-   * Global focus-glow switch. Defaults to `true`. On web the glow is painted by
-   * the DOM backend stylesheet's `:focus-visible` rules. Set `false` to omit
-   * those controls' CSS marker and restore the browser focus outline; each
-   * control can opt out the same way via its `disableFocusRing` prop.
+   * How every control shows keyboard focus unless its own `focusIndicator`
+   * prop says otherwise. Defaults to `ring`, the shared glow the DOM backend
+   * stylesheet paints from `:focus-visible`. `outline` keeps the browser's
+   * default outline instead; `none` removes focus styling altogether and leaves
+   * the app to show focus itself (WCAG 2.1 — 2.4.7 Focus Visible, AA).
    */
-  focusRing: boolean;
+  focusIndicator: FocusIndicator;
   /**
    * Which side of the light/dark divide this theme's palette sits on. Almost
    * no component should branch on it — colors flow through tokens — but the
@@ -134,7 +136,7 @@ export type SharedUiThemeOverrides = {
   charts?: Partial<SharedUiChartColors>;
   fonts?: Partial<SharedUiFonts>;
   radii?: Partial<SharedUiRadii>;
-  focusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   scheme?: SharedUiScheme;
 };
 
@@ -180,7 +182,7 @@ export const defaultSharedUiTheme: SharedUiTheme = {
     xl: 12,
     xxl: 14,
   },
-  focusRing: true,
+  focusIndicator: "ring",
   scheme: "light",
 };
 
@@ -201,7 +203,7 @@ export function createSharedUiTheme(
     ),
     fonts: { ...base.fonts, ...overrides.fonts },
     radii: { ...base.radii, ...overrides.radii },
-    focusRing: overrides.focusRing ?? base.focusRing,
+    focusIndicator: overrides.focusIndicator ?? base.focusIndicator,
     scheme,
   };
 }

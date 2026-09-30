@@ -85,7 +85,9 @@ export function SingleSelectEditor({
         ref={triggerRef}
         style={[
           inputStyles.box,
-          focus.focused ? inputStyles.boxActive : null,
+          focus.focused && focus.indicator !== "none"
+            ? inputStyles.boxActive
+            : null,
           editorStyles.squareFrame,
           focus.focusRingVariables,
         ]}

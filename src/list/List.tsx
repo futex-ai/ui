@@ -21,7 +21,11 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
-import { PressableHoverState, useFocusRing } from "../focusRing";
+import {
+  type FocusIndicator,
+  PressableHoverState,
+  useFocusRing,
+} from "../focusRing";
 import {
   SkeletonBar,
   SkeletonCircle,
@@ -41,12 +45,12 @@ export type ListProps<Item> = {
   /** Accessible label for the whole list. */
   accessibilityLabel?: string;
   /**
-   * Disable the shared focus glow on pressable items. They then fall back to the
-   * browser's default focus outline so keyboard focus stays visible (WCAG 2.1 —
-   * 2.4.7 Focus Visible, AA). Disable every ring at once via the theme's
-   * `focusRing: false` flag instead.
+   * How pressable items show keyboard focus: the shared `ring` glow, the
+   * browser's `outline`, or `none` for no focus styling at all, which leaves
+   * the caller to show focus some other way (WCAG 2.1 — 2.4.7 Focus Visible,
+   * AA). Defaults to the theme's `focusIndicator`.
    */
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** Mark a specific item as non-pressable (only relevant with `onItemPress`). */
   itemDisabled?: (item: Item, index: number) => boolean;
   /** Stable React key for an item. */
@@ -96,7 +100,7 @@ export type ListProps<Item> = {
  */
 export function List<Item>({
   accessibilityLabel,
-  disableFocusRing = false,
+  focusIndicator,
   itemDisabled,
   itemKey,
   itemLabel,
@@ -186,7 +190,7 @@ export function List<Item>({
             {onItemPress ? (
               <PressableListItem
                 disabled={itemDisabled?.(item, index) ?? false}
-                disableFocusRing={disableFocusRing}
+                focusIndicator={focusIndicator}
                 label={itemLabel?.(item, index)}
                 onPress={() => onItemPress(item, index)}
                 styles={styles}
@@ -225,7 +229,7 @@ export function List<Item>({
 function PressableListItem({
   children,
   disabled,
-  disableFocusRing,
+  focusIndicator,
   label,
   onPress,
   styles,
@@ -233,13 +237,13 @@ function PressableListItem({
 }: {
   children: ReactNode;
   disabled: boolean;
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   label?: string;
   onPress: () => void;
   styles: ListStyles;
   testID?: string;
 }) {
-  const focus = useFocusRing({ offset: -2, disabled: disableFocusRing });
+  const focus = useFocusRing({ offset: -2, indicator: focusIndicator });
   return (
     <View role="listitem">
       <Pressable

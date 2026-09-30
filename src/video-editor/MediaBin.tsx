@@ -23,7 +23,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
-import { useFocusRing } from "../focusRing";
+import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { Input } from "../input";
 import { useSharedUiTheme } from "../theme";
 
@@ -58,7 +58,7 @@ export type MediaBinProps = {
   maxHeight?: number;
   /** Density. Defaults to `md`. */
   size?: ControlSize;
-  disableFocusRing?: boolean;
+  focusIndicator?: FocusIndicator;
   /** Names the bin as a region for assistive tech. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
@@ -69,8 +69,8 @@ export type MediaBinProps = {
 export function MediaBin({
   accessibilityLabel,
   assets,
-  disableFocusRing = false,
   emptyLabel = "Nothing matches",
+  focusIndicator,
   grouped = true,
   maxHeight,
   onAssetActivate,
@@ -109,7 +109,7 @@ export function MediaBin({
               {group.assets.map((asset) => (
                 <MediaBinItem
                   asset={asset}
-                  disableFocusRing={disableFocusRing}
+                  focusIndicator={focusIndicator}
                   key={asset.id}
                   onActivate={onAssetActivate}
                   onPress={() => onSelectionChange?.([asset.id])}
@@ -142,7 +142,7 @@ export function MediaBin({
                 <ViewToggle
                   Icon={Grid2x2}
                   active={view === "grid"}
-                  disableFocusRing={disableFocusRing}
+                  focusIndicator={focusIndicator}
                   label="Show media as a grid"
                   onPress={() => onViewChange("grid")}
                   size={size}
@@ -151,7 +151,7 @@ export function MediaBin({
                 <ViewToggle
                   Icon={ListIcon}
                   active={view === "list"}
-                  disableFocusRing={disableFocusRing}
+                  focusIndicator={focusIndicator}
                   label="Show media as a list"
                   onPress={() => onViewChange("list")}
                   size={size}
@@ -181,7 +181,7 @@ export function MediaBin({
 function ViewToggle({
   Icon,
   active,
-  disableFocusRing,
+  focusIndicator,
   label,
   onPress,
   size,
@@ -189,7 +189,7 @@ function ViewToggle({
 }: {
   Icon: ComponentType<{ color?: string; size?: number }>;
   active: boolean;
-  disableFocusRing: boolean;
+  focusIndicator: FocusIndicator | undefined;
   label: string;
   onPress: () => void;
   size: ControlSize;
@@ -198,7 +198,7 @@ function ViewToggle({
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createMediaBinStyles(theme), [theme]);
   const metrics = videoEditorSizing[size];
-  const focus = useFocusRing({ disabled: disableFocusRing });
+  const focus = useFocusRing({ indicator: focusIndicator });
 
   return (
     <Pressable

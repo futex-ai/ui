@@ -154,7 +154,7 @@ layout change. Board-level rules:
   `switch` needs its own `onKeyDown`, as the library's own
   [`Switch`](../switch/README.md) does.)
 - **Its own focus treatment.** No focus ring is applied to the slot and
-  `disableFocusRing` does not reach into it. Prefer an _inset_ indicator
+  `focusIndicator` does not reach into it. Prefer an _inset_ indicator
   (`useFocusRing({ offset: -2 })`), spreading `focusRingProps` and applying
   `focusRingVariables`: like the cards, the slot clips, so an outset ring —
   including the browser's default outline — is cropped.
