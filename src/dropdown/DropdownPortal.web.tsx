@@ -7,7 +7,6 @@ import { devWarn } from "../devWarn";
 import {
   DropdownClientRect,
   DropdownPoint,
-  dropdownPlacement,
   dropdownPointWithinRects,
   dropdownWidthBounds,
 } from "./dropdownGeometry";
@@ -21,6 +20,7 @@ import { DropdownWebLayer } from "./DropdownWebLayer";
 import { useDropdownAnchor } from "./useDropdownAnchor";
 import { useDropdownContentWidth } from "./useDropdownContentWidth";
 import { useDropdownDismiss } from "./useDropdownDismiss";
+import { useDropdownSurfacePlacement } from "./useDropdownSurfacePlacement";
 
 type DropdownRectNode = { getBoundingClientRect: () => DropdownClientRect };
 
@@ -28,6 +28,10 @@ type DropdownRectNode = { getBoundingClientRect: () => DropdownClientRect };
  * Renders the menu through a pointer-transparent DOM portal so the trigger
  * keeps real hover state while the menu is open. Outside presses and Escape
  * close the menu at the document level instead of a full-screen scrim.
+ *
+ * The surface is measured before its first paint and opens below the anchor
+ * when its whole height fits there, otherwise on the roomier side (see
+ * `useDropdownSurfacePlacement`).
  *
  * The surface reports hover through raw `onPointerEnter` / `onPointerLeave`
  * boundary events on a plain `View`, never through `Pressable` hover: React
@@ -42,8 +46,9 @@ type DropdownRectNode = { getBoundingClientRect: () => DropdownClientRect };
  * (Chrome synthesizes only mouse boundary events; Safari neither), so the
  * trigger's hover-out close timer would win and dismiss the menu. The portal
  * therefore records the last pointer position while open and re-asserts
- * hover-in when the surface mounts around that point, and also wires the
- * synthetic mouse boundary events as an immediate rescue where they exist.
+ * hover-in once the measured surface is placed around that point, and also
+ * wires the synthetic mouse boundary events as an immediate rescue where they
+ * exist.
  */
 export function DropdownPortal({
   align = "start",
@@ -85,7 +90,23 @@ export function DropdownPortal({
   );
   const contentWidth = useDropdownContentWidth(fitContentWidth && open);
   const surfaceStyles = useDropdownSurfaceStyles();
-  const surfaceMounted = open && anchor !== null;
+  const placementOptions = {
+    align,
+    anchorWidthAsMinimum,
+    gutter,
+    margin,
+    maxHeight,
+    maxWidth,
+    minHeight,
+    minWidth,
+  };
+  const { measured, placement } = useDropdownSurfacePlacement(
+    surfaceRef,
+    open ? anchor : null,
+    viewport,
+    placementOptions,
+    contentWidth.width ?? anchor?.width,
+  );
   useDropdownDismiss({
     anchorRef: resolvedAnchorRef,
     onClose,
@@ -109,7 +130,7 @@ export function DropdownPortal({
 
   useEffect(() => {
     const point = lastPointRef.current;
-    if (!surfaceMounted || !hoverBacked || !point) {
+    if (!measured || !hoverBacked || !point) {
       return;
     }
     const anchorNode =
@@ -122,28 +143,12 @@ export function DropdownPortal({
     if (dropdownPointWithinRects(point, rects)) {
       hoverInRef.current?.();
     }
-  }, [hoverBacked, resolvedAnchorRef, surfaceMounted]);
+  }, [hoverBacked, measured, resolvedAnchorRef]);
 
-  if (!open || !anchor) {
+  if (!open || !anchor || !placement) {
     return null;
   }
 
-  const placementOptions = {
-    align,
-    anchorWidthAsMinimum,
-    gutter,
-    margin,
-    maxHeight,
-    maxWidth,
-    minHeight,
-    minWidth,
-  };
-  const placement = dropdownPlacement(
-    anchor,
-    viewport,
-    placementOptions,
-    contentWidth.width ?? anchor.width,
-  );
   const widthBounds = dropdownWidthBounds(anchor, viewport, placementOptions);
   const surfaceMouseProps = surfaceHoverProps
     ? ({

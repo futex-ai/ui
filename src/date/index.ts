@@ -6,6 +6,7 @@ export * from "./DateWheel";
 export * from "./dateFieldLayers";
 export * from "./dateFieldStyles";
 export * from "./dateMath";
+export * from "./monthGrid";
 export * from "./types";
 export * from "./useDateField";
 export * from "./useOutsideClose";

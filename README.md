@@ -35,9 +35,10 @@ Shared UI component library for Firna React Native and web surfaces. The first c
   for every control, or per instance — picks the glow (`ring`), the browser
   outline on the control's visible box (`outline`), or no focus styling at all
   (`none`) for a control embedded in a surface that shows focus itself.
-- Portaled, anchored web date/dropdown/popover overlays with viewport-aware,
-  content-sized selector menus and z-index escape hatches, plus touch-friendly
-  native date sheets.
+- Portaled, anchored web date/dropdown/popover overlays, each placed by its
+  own measured size so it flips above its trigger rather than being clipped,
+  with content-sized selector menus and z-index escape hatches, plus
+  touch-friendly native date sheets.
 - Platform files shared by Expo, React Native, and the library's own DOM
   backend on web.
 - Focused unit tests, browser interaction tests, and package export checks.

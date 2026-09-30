@@ -6,10 +6,10 @@ text, a small form, a colour picker — without selecting a value.
 
 `Popover` is the non-selecting sibling of `DropdownSelector`. It reuses the same
 overlay foundation rather than reimplementing it: `DropdownPortal` provides
-anchor measurement, viewport-aware placement (flipping above the trigger when
-there is no room below and clamping height), the non-modal `pointer-events:
-box-none` web portal layer, native modal-backing, and outside-click / Escape
-dismissal. `Popover` adds only the open-state controller and the trigger props.
+anchor measurement, viewport-aware placement (on web, measuring the surface and
+flipping it above the trigger when it does not fit below, and clamping height),
+the non-modal `pointer-events: box-none` web portal layer, native
+modal-backing, and outside-click / Escape dismissal. `Popover` adds only the open-state controller and the trigger props.
 
 ## Responsibilities
 

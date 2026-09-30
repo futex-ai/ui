@@ -1,0 +1,8 @@
+- text: Anchored near the top edge — the calendar opens downward. Opens below
+- textbox "Opens below":
+  - /placeholder: Select a date
+  - text: /\d+ Mar \d+/
+- text: Too close to the bottom edge for a whole month — the calendar flips to open upward. Flips above
+- textbox "Flips above":
+  - /placeholder: Select a date
+  - text: /\d+ Mar \d+/

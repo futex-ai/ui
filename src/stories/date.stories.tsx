@@ -9,6 +9,7 @@ import {
   darkSharedUiTheme,
   type DateRange,
 } from "../index";
+import { CalendarBottomEdgeFlipExample } from "./dateEdgePlacementExample";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -89,6 +90,12 @@ export const CalendarLayering: Story = {
       <CalendarLayeringExample />
     </StorySurface>
   ),
+};
+
+export const CalendarBottomEdgeFlip: Story = {
+  name: "Placement · flips above the bottom edge",
+  parameters: { layout: "fullscreen" },
+  render: () => <CalendarBottomEdgeFlipExample />,
 };
 
 export const DateRange_: Story = {

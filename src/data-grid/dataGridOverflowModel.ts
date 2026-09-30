@@ -80,10 +80,12 @@ export const REVEAL_PLACEMENT = {
   maxHeight: 220,
   maxWidth: 360,
   /**
-   * Roughly one line of revealed text plus the surface's padding. This is the
-   * height `dropdownPlacement` insists on fitting below the anchor before it
-   * flips above, so text in the last visible row opens upward instead of being
-   * pinned past the bottom of the window and clamped to an unreadable scrap.
+   * Roughly one line of revealed text plus the surface's padding: the least
+   * room `dropdownPlacement` needs below the anchor before it flips above, so
+   * text in the last visible row opens upward instead of being pinned past the
+   * bottom of the window and clamped to an unreadable scrap. The web portal
+   * also measures the reveal and needs its whole height, so a multi-line
+   * reveal flips as soon as it would not fit.
    */
   minHeight: 48,
 } as const;
