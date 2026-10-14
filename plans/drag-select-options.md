@@ -25,21 +25,26 @@ per provider; keyboard model changes beyond routing keys through the new
 selection path.
 
 Decisions (2026-10-14). The user asked for this plan after a discussion of
-nine decisions and did not answer them. Under the user's standing rule, the
-recommended option applies to each decision except decision 6. Its
-recommended option deletes current behavior, so it is skipped.
+nine decisions and did not answer them at first, so the recommended option
+applied to each. Decision 6 deletes current behavior, so it waited for the
+user, who approved it later the same day.
 
 1. Options are set on the provider and through a page hook (A).
 2. A control inside a row starts a drag after 10px (A).
 3. Control and Alt never start a drag. Shift adds. Command toggles (A).
 4. Text selection is blocked by default (A).
 5. Selection can be controlled or uncontrolled (A).
-6. Skipped because it is a deletion. The "Select" label stays the default.
-   The new `marqueeLabel` option changes or hides it (option C). Removing the
-   label (option A) needs the user's approval.
+6. The fixed "Select" label is removed (A). The default box shows only the
+   count badge. A new `marqueeLabel` option restores a label.
 7. The wrapper gets the `group` role only when it has an accessible name (A).
 8. Edge auto-scroll is in this plan and on by default (A).
 9. The on/off option stays `disabled` (A).
+
+Later decisions (2026-10-14), after two plan reviews: the user approved the
+six test rewrites listed under "Approved test rewrites"; chose set semantics
+for selection ids, so the order of ids carries no meaning; changed the review
+TODO to report findings without fixing them, as `AGENTS.md` requires; and
+declined native tests for the native selection behavior in Milestone 4.
 
 The Storybook stories and the accounting app's transactions mockup are the
 visual spec. This repo gets no new HTML mockup, as in the
@@ -118,6 +123,12 @@ type DragSelectableMarquee = {
   mode: DragSelectableDragMode;
 };
 
+// Existing type. The return type widens: null hides the badge.
+type DragSelectableSelectionLabel = (
+  count: number,
+  context: DragSelectableSelectionLabelContext,
+) => string | null;
+
 type DragSelectableOptions = {
   autoScroll?: boolean;
   disabled?: boolean;
@@ -138,7 +149,7 @@ type DragSelectableOptions = {
   renderMarquee?: (marquee: DragSelectableMarquee) => ReactNode;
   selectedIds?: readonly string[];
   selectionAnnouncement?: DragSelectableSelectionAnnouncement;
-  selectionLabel?: DragSelectableSelectionLabel; // may now return null
+  selectionLabel?: DragSelectableSelectionLabel;
   shouldStartDrag?: (start: DragSelectableStart) => boolean;
   startFromControls?: boolean;
 };
@@ -184,7 +195,7 @@ geometry helpers, and the layer token keep their current API.
 | `autoScroll`                 | `true`                          | Scrolls the press's scroll container while the pointer is near its edges. |
 | `selectedIds`                | none                            | Makes the selection controlled when it is defined.                        |
 | `onSelectedIdsChange`        | none                            | Receives each proposed selection.                                         |
-| `marqueeLabel`               | `"Select"`                      | Text in the top-left corner of the box. `null` hides it.                  |
+| `marqueeLabel`               | `null`                          | Text in the top-left corner of the box. `null` shows no label.            |
 | `selectionLabel`             | `"N item"` / `"N items"`        | Badge text. `null` hides the badge.                                       |
 | `renderMarquee`              | none                            | Replaces the box, the label, and the badge.                               |
 
@@ -286,9 +297,14 @@ scroll container by 16px per frame on each axis where the pointer is within
 
 ### Selection
 
-- `dragSelectableNextSelection`: `replace` returns the hits. `add` returns
-  the current ids, then the hits that are not current. `toggle` returns the
-  current ids without the hits, then the hits that were not current.
+- Selection ids are a set. The order of ids carries no meaning. The
+  provider compares a proposal with the current selection as sets, and a
+  controlled app may keep its ids in any order. `dragSelectableIdsEqual`
+  stays exported, but the provider no longer uses it for this comparison.
+- `dragSelectableNextSelection` defines only the order of its result:
+  `replace` returns the hits. `add` returns the current ids, then the hits
+  that are not current. `toggle` returns the current ids without the hits,
+  then the hits that were not current.
 - Keyboard: Space or Enter proposes `toggle` with the focused target. Shift
   with an arrow key proposes `replace` with the range, as today. The source is
   `keyboard`.
@@ -310,9 +326,9 @@ scroll container by 16px per frame on each axis where the pointer is within
 
 ### Box and wrapper
 
-- The default box keeps its look: the primary border, a 10% tint, the theme
-  radius, `marqueeLabel` at the top-left, and the `selectionLabel` badge at
-  the bottom-right.
+- The default box keeps the primary border, the 10% tint, the theme radius,
+  and the `selectionLabel` badge at the bottom-right. It shows no top-left
+  label unless `marqueeLabel` is set.
 - `renderMarquee` replaces the box, the label, and the badge. The provider
   still renders the fixed, non-interactive layer at the box and puts the
   returned node inside it.
@@ -350,6 +366,8 @@ The release is `@firna/ui` 5.0.0 through a `feat(drag-select)!:` commit.
 - Control and Alt never start a drag. Shift adds, and Command toggles. A
   `dragMode` that always returns `replace` restores the old behavior.
 - The click after a drag is swallowed.
+- The box no longer shows the "Select" label. `marqueeLabel="Select"`
+  restores it.
 - A link or an image inside a row cannot start a native drag, because the
   press arms the provider.
 - A press within 16px of the far edge of a scroll container with overlay
@@ -358,12 +376,13 @@ The release is `@firna/ui` 5.0.0 through a `feat(drag-select)!:` commit.
   the old behavior.
 - A press starts nothing when no enabled target is registered.
 
-## Approvals needed
+## Approved test rewrites
 
 These existing unit tests in `tests/unit/dragSelect.test.ts` assert the old
 behavior or the old source text of the provider. Milestones 2 to 4 break
-them. They are on `origin/main`, so they change only after the user approves.
-Each rewrite keeps the original intent as a behavior test.
+them. They are on `origin/main`, so they needed the user's approval. The user
+approved the rewrites on 2026-10-14. Each rewrite keeps the original intent
+as a behavior test.
 
 - "drag-select ignores nested interactive controls inside targets":
   decision 2 changes the result for buttons, checkboxes, radios, and
@@ -403,7 +422,8 @@ code changes.
 Fix the reproduced gesture bugs with the current options. Each fix starts
 with a failing test. The provider keeps its current props.
 
-- [ ] Get the user's approval for the rewrites under "Approvals needed".
+- [x] Get the user's approval for the rewrites under "Approved test
+      rewrites" (approved 2026-10-14).
 - [ ] Split `DragSelectableProvider.web.tsx` (470 lines) and
       `DragSelectableContext.tsx` (291 lines) into focused modules (gesture
       session, start rules, scroll anchoring, selection model, and target
@@ -511,15 +531,18 @@ Tags: ui
 
 Make the box and the wrapper element configurable.
 
-- [ ] Add `marqueeLabel` and let `selectionLabel` return `null`.
+- [ ] Remove the fixed "Select" label, add `marqueeLabel` (default `null`),
+      and let `selectionLabel` return `null`.
 - [ ] Add `renderMarquee`.
 - [ ] Clip the drawn box to the visible rectangle of the scroll container.
 - [ ] Apply the wrapper role rule and add `role="none"`.
-- [ ] Add a "Custom marquee" story that uses `renderMarquee`, and a "No
-      label" story with `marqueeLabel={null}` to match the transactions
-      mockup.
-- [ ] Browser tests: the label hides; the custom box renders; the page-shell
-      provider has no role; a provider with a name keeps `group`.
+- [ ] Add a "Custom marquee" story that uses `renderMarquee`. The existing
+      stories show the default box, which now has no label and matches the
+      transactions mockup.
+- [ ] Browser tests: the default box has no label; `marqueeLabel` shows one;
+      `selectionLabel` returning `null` hides the badge; the custom box
+      renders; the page-shell provider has no role; a provider with a name
+      keeps `group`.
 - [ ] Record the snapshot baselines for the new stories with
       `SNAPSHOT_UPDATE=1` on Linux, and check that the axe sweep passes.
 
@@ -539,18 +562,11 @@ Prove the change, release it as a breaking change, and review it.
       `feat(drag-select)!:` entry with a `BREAKING CHANGE:` footer), and push
       the branch.
 - [ ] Run `cargo xtask review` after the push. It reviews the complete local
-      diff against `origin/main` under the `implementation-review` skill.
-      Report the findings, then apply the review-fix rule: fix the
-      `Auto-fix: yes` findings, review once more, and report the rest.
-  - Open, plan review 1 (2026-10-14): this TODO says to fix `Auto-fix: yes`
-    findings, but `AGENTS.md` says to report review findings without fixing
-    them.
-  - Open, plan review 2: the Public API block must show
-    `DragSelectableSelectionLabel` returning `string | null`.
-  - Open, plan review 2: skipping a proposal by set equality conflicts with
-    the ordered `replace` result. Decide whether selection ids are ordered.
-  - Open, plan review 2: the native selection behavior in Milestone 4 has no
-    native unit test, story, or smoke check.
+      diff against `origin/main`. Do not fix its findings automatically, as
+      `AGENTS.md` requires. Report each finding in the final message with a
+      severity, the context, the impact of no change, lettered options, and
+      a recommendation, so that the user decides. Add each open finding as
+      one line below.
 
 ## Post-merge follow-up (non-blocking)
 
