@@ -1,7 +1,9 @@
 # Drag Select API Reference
 
 The public types, option defaults, and helpers of `@firna/ui/drag-select`
-5.0. The behavior behind them is in [drag-select.md](drag-select.md).
+5.0, the library gesture surfaces that carry the ignore marker, and the
+tests that cover them. The behavior behind them is in
+[drag-select.md](drag-select.md).
 
 ## Options And Provider Props
 
@@ -142,3 +144,26 @@ const dragSelectableIgnoreDomProps: { "data-drag-select-ignore": "true" };
   `dragSelectableIdsForBox`, `dragSelectableIntersectsBox`,
   `dragSelectablePointFromEvent`, `dragSelectableThresholdForValue`,
   `hasDragSelectableMoved`) keep their 4.x signatures.
+
+## Library Gesture Surfaces
+
+Library components that own a pointer gesture mark their gesture root with
+`[data-drag-select-ignore]`, so a page-wide provider never starts over them:
+the calendar time-grid day columns and the month grid, the data grid element
+(header, resize handles, and body), the kanban board, the sortable list, the
+timeline element that holds the ruler and the track lanes, and the
+video-editor `NumberScrubber`. The video-editor `Scrubber` and the timeline
+ruler are `slider`s on web, which the field rule already refuses. The chart
+scrub hook (`useChartScrub`) is a native-only `PanResponder` with no web
+gesture, so it needs no marker; an app that spreads its handlers on web adds
+the marker itself.
+
+## Tests
+
+- Unit tests cover the geometry, the option merge and layers, the start
+  rules and their reasons, the scrollbar rule, the anchor math, the session,
+  the selection reports, `autoScrollDelta`, and the marked gesture surfaces.
+- Browser tests in `tests/browser/drag-select*.spec.ts` cover the gesture on
+  the "Page shell", "Empty page", "Nested providers", "Controlled
+  selection", and "Custom marquee" stories. The earlier drag-select tests in
+  `tests/browser/storybook.spec.ts` keep passing.

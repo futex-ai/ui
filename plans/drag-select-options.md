@@ -1,8 +1,11 @@
 # Drag select options
 
-Status: Active. The plan is on branch
-`calummoore/dragselectableprovider-improvements`. No PR is open yet. The plan
-closes when its PR merges.
+Status: Active. Milestones 1 to 6 are delivered on branch
+`calummoore/dragselectableprovider-improvements`, and Milestone 7 has run the
+smoke test and the complete gate (`cargo xtask check`, which runs
+`npm run verify`). Open before merge: the user's manual check of macOS
+overlay scrollbars, and the review findings under the review TODO. No PR is
+open yet. The plan closes when its PR merges.
 
 [`DragSelectableProvider`](../src/drag-select/README.md) was built to wrap one
 list. The accounting app wants one provider around every page, so that a drag
@@ -624,15 +627,18 @@ Evidence: `.context/drag-select-options/m6-evidence.md`.
 
 Prove the change, release it as a breaking change, and review it.
 
-- [ ] Smoke test: start Storybook and repeat each finding on the "Page
-      shell" story.
+- [x] Smoke test: start Storybook and repeat each finding on the "Page
+      shell" story. All 13 findings are fixed
+      (`.context/drag-select-options/logs/smoke-2.log`).
 - [ ] Manual check before merge: in the PR's Storybook preview, the user
       drags the page-shell scrollbar in Chrome on macOS with overlay
       scrollbars, and the selection stays.
-- [ ] Run `npm run verify`.
-- [ ] Run `cargo xtask check`.
-- [ ] Update the plan status and `plans/README.md`.
-- [ ] Run `git add -A`, commit with Conventional Commits (a
+- [x] Run `npm run verify`. `cargo xtask check` runs it, so one run covers
+      both TODOs.
+- [x] Run `cargo xtask check`: passed
+      (`.context/drag-select-options/logs/gate-1.log`).
+- [x] Update the plan status and `plans/README.md`.
+- [x] Run `git add -A`, commit with Conventional Commits (a
       `feat(drag-select)!:` entry with a `BREAKING CHANGE:` footer), and push
       the branch.
 - [ ] Run `cargo xtask review` after the push. It reviews the complete local

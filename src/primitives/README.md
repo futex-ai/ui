@@ -62,6 +62,11 @@ were recorded on that backend and are what prove the swap changed nothing
   press machine: the 50 ms press delay, the 450 ms long press, `onPress` from
   the DOM `click` rather than the release, Enter anywhere and Space on a
   button, and hover that ends when a nested pressable takes over.
+  `usePress.ts` also exports the internal `endPointerPresses(pointerId)`: a
+  gesture that takes over a pointer (the drag-select provider, when a drag
+  starts on a button) ends that pointer's presses, so the control loses its
+  pressed look. The caller swallows the click that follows, because
+  `onPress` comes from that click.
 - `ScrollView.tsx` is that backend's `ScrollView` plus `ScrollViewBase`: an
   overflow container around a content wrapper, with its start / tick / end
   scroll rhythm (`scrollEvents.ts` holds the pure half) and its imperative

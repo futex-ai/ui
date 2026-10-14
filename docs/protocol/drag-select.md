@@ -2,10 +2,10 @@
 
 ## Status
 
-Implementation contract for `@firna/ui/drag-select` 5.0. The
-[drag select options plan](../../plans/drag-select-options.md) implements it.
-The [drag select API reference](drag-select-api.md) lists the public types,
-the option defaults, and the exported helpers.
+Implemented contract for `@firna/ui/drag-select` 5.0, delivered by the
+[drag select options plan](../../plans/drag-select-options.md). The
+[drag select API reference](drag-select-api.md) lists the public types, the
+option defaults, and the exported helpers.
 
 ## Purpose
 
@@ -243,25 +243,6 @@ selection state, and it follows the selection and page-change rules. It has
 no drag gesture and no keyboard handler, so it ignores the gesture and box
 options.
 
-## Library Gesture Surfaces
-
-Library components that own a pointer gesture mark their gesture root with
-`[data-drag-select-ignore]`, so a page-wide provider never starts over them:
-the calendar time-grid day columns and the month grid, the data grid element
-(header, resize handles, and body), the kanban board, the sortable list, the
-timeline element that holds the ruler and the track lanes, and the
-video-editor `NumberScrubber`. The video-editor `Scrubber` and the timeline
-ruler are `slider`s on web, which the field rule already refuses. The chart
-scrub hook (`useChartScrub`) is a native-only `PanResponder` with no web
-gesture, so it needs no marker; an app that spreads its handlers on web adds
-the marker itself.
-
-## Tests
-
-- Unit tests cover the geometry, the selection reducer, the option merge,
-  the start rules and their reasons, the scrollbar geometry, the anchor
-  math, and `autoScrollDelta`.
-- Browser tests in `tests/browser/drag-select.spec.ts` cover the gesture on
-  the Storybook "Page shell", "Empty page", "Controlled selection", and
-  "Custom marquee" stories. The earlier browser tests in
-  `tests/browser/storybook.spec.ts` keep passing.
+The library gesture surfaces that carry the ignore marker, and the tests
+that cover this contract, are listed in the
+[API reference](drag-select-api.md#library-gesture-surfaces).
