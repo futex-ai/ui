@@ -542,6 +542,15 @@ Prove the change, release it as a breaking change, and review it.
       diff against `origin/main` under the `implementation-review` skill.
       Report the findings, then apply the review-fix rule: fix the
       `Auto-fix: yes` findings, review once more, and report the rest.
+  - Open, plan review 1 (2026-10-14): this TODO says to fix `Auto-fix: yes`
+    findings, but `AGENTS.md` says to report review findings without fixing
+    them.
+  - Open, plan review 2: the Public API block must show
+    `DragSelectableSelectionLabel` returning `string | null`.
+  - Open, plan review 2: skipping a proposal by set equality conflicts with
+    the ordered `replace` result. Decide whether selection ids are ordered.
+  - Open, plan review 2: the native selection behavior in Milestone 4 has no
+    native unit test, story, or smoke check.
 
 ## Post-merge follow-up (non-blocking)
 
