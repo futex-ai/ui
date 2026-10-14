@@ -641,12 +641,31 @@ Prove the change, release it as a breaking change, and review it.
 - [x] Run `git add -A`, commit with Conventional Commits (a
       `feat(drag-select)!:` entry with a `BREAKING CHANGE:` footer), and push
       the branch.
-- [ ] Run `cargo xtask review` after the push. It reviews the complete local
+- [x] Run `cargo xtask review` after the push. It reviews the complete local
       diff against `origin/main`. Do not fix its findings automatically, as
       `AGENTS.md` requires. Report each finding in the final message with a
       severity, the context, the impact of no change, lettered options, and
       a recommendation, so that the user decides. Add each open finding as
-      one line below.
+      one line below. Ran on 2026-10-15 against `3a7a535` with the
+      configured `gpt-5.6-sol` model, because the provider rejects the
+      hard-coded `gpt-5.5`, and with Linux capabilities dropped for the
+      sandbox. Report: `.context/drag-select-options/review-impl-2.md`.
+  - Open R1 (high): a function-only change in a hook layer does not reach
+    the selection callbacks (`onSelectedIdsChange`, `onSelectionChange`,
+    `selectionAnnouncement`), which read the options of the last provider
+    render.
+  - Open R2 (medium): auto-scroll also scrolls an axis whose `overflow` is
+    `hidden`, because `scrollBy` moves hidden overflow.
+  - Open R3 (medium): `selectedTargets` can carry stale `data`, because a
+    data-only target update does not publish the registry snapshot.
+  - Open R4 (medium): duplicate ids in `selectedIds` or
+    `defaultSelectedIds` count twice.
+  - Open R5 (medium): `role="none"` with `accessibilityLabel` renders a
+    label on an element with no role (`aria-prohibited-attr`).
+  - Open R6 (medium, test): no test checks the five new runtime exports in
+    the built package.
+  - Open R7 (low, docs): `plans/README.md` says 5.0.0 is released; it is
+    published only after the merge.
 
 ## Post-merge follow-up (non-blocking)
 
