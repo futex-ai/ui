@@ -31,7 +31,6 @@ export function DragSelectableProvider({
   const context = useMemo(
     () => ({
       activeId: null,
-      clearSelection: () => undefined,
       focusTarget: (_id: string) => undefined,
       matchedIdSet: emptySet,
       registeredTargets: emptyMap,

@@ -1,8 +1,9 @@
 /**
  * The post-drag DOM housekeeping shared by every sortable drag: the registry of
- * each item's focusable node, restoring focus to that node once the item has
- * re-rendered in its new slot, and swallowing the click a committed pointer
- * drag produces.
+ * each item's focusable node, and restoring focus to that node once the item
+ * has re-rendered in its new slot. The click a committed pointer drag produces
+ * is swallowed by `suppressNextClick` in `src/dragGesture.ts`, which the
+ * drag-select provider shares.
  *
  * It lives apart from the drag engine because none of it reasons about drop
  * targets or geometry — it is bookkeeping the engine needs but does not own.
@@ -85,27 +86,4 @@ export function useSortableFocusNodes(
     () => ({ has, isActive, register, restore }),
     [has, isActive, register, restore],
   );
-}
-
-/**
- * Swallow the click a committed drag produces, so a drag-release does not
- * activate whatever sits under the pointer. The click fires synchronously after
- * pointerup, before the next frame, so a one-shot capture listener eats exactly
- * it and is removed on the next frame.
- */
-export function suppressNextClick(): void {
-  if (typeof document === "undefined") {
-    return;
-  }
-  const eat = (event: Event) => {
-    event.stopPropagation();
-    event.preventDefault();
-  };
-  document.addEventListener("click", eat, true);
-  const remove = () => document.removeEventListener("click", eat, true);
-  if (typeof requestAnimationFrame === "function") {
-    requestAnimationFrame(remove);
-  } else {
-    setTimeout(remove, 0);
-  }
 }

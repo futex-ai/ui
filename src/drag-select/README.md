@@ -66,13 +66,12 @@ function TransactionRow({ row }) {
     id: row.id,
     label: row.label,
   });
+  // The row holds a button, so the checkbox semantics go on a child.
   return (
-    <View
-      {...target.a11yProps}
-      ref={target.ref}
-      style={target.selected ? selectedStyle : rowStyle}
-    >
-      <Text>{row.label}</Text>
+    <View ref={target.ref} style={target.selected ? selectedStyle : rowStyle}>
+      <View {...target.a11yProps} style={styles.checkAndLabel}>
+        <Text>{row.label}</Text>
+      </View>
       <Button onPress={() => openRow(row.id)}>Open</Button>
     </View>
   );
@@ -180,6 +179,10 @@ import {
 - Spread `target.a11yProps` onto the target's outer `View`. It makes the
   target a focusable `checkbox` with the right state, an accessible name
   (`label`, else `id`), the shared focus marker, and a roving tab stop.
+- A row that also holds a button or a link keeps `target.ref` on the row and
+  spreads `target.a11yProps` on a child, such as the check box and the label,
+  because a `checkbox` must not contain another control. Keyboard focus
+  follows the element with the `a11yProps`.
 - **Space / Enter** toggles the focused target. **Arrow Up/Down** moves the
   focus, and Home/End jump to the ends. **Shift + Arrow** selects a range.
 - `target.focusRingStyle` is always empty and exists only so older code
@@ -205,12 +208,16 @@ coordinates. `selectedTargets` is a snapshot of the registrations; use
 
 - `DragSelectableProvider.web.tsx` and `DragSelectableProvider.tsx`: the web
   and native providers.
-- `DragSelectableContext.tsx`: the target, selection, and change hooks.
-- `useDragSelectableOptions.ts` and `dragSelectableOptions.ts`: the page hook
-  and the option merge.
-- `useDragSelectableGesture.web.ts` and the `dragSelectableStart*`,
-  `dragSelectableScroll*`, and `dragSelectableGesture*` modules: the web
-  gesture.
+- `DragSelectableContext.tsx`: the context and the target, selection, and
+  change hooks. `useDragSelectableTargetKeys.ts` holds the keyboard model.
+- `useDragSelectableGesture.ts`: the web gesture. `dragSelectablePress.ts`
+  holds the start rules, `dragSelectableSession.ts` one gesture from the
+  press to the release, and `dragSelectableSessionDom.ts` its DOM listeners.
+- `dragSelectableScrollContainer.ts`, `dragSelectableScrollbar.ts`, and
+  `dragSelectableScrollAnchor.ts`: the press's scroll container, the
+  scrollbar rule, and the anchored start point.
 - `useDragSelectableSelectionState.ts` and `dragSelectableSelectionModel.ts`:
-  controlled and uncontrolled selection.
+  the selection, its reports, and its announcements.
+- `useDragSelectableRegistry.ts` and `dragSelectableTargetOrder.ts`: the
+  registered targets and their document order.
 - `DragSelectableOverlay.web.tsx`: the box.

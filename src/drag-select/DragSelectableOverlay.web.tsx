@@ -3,18 +3,9 @@ import { createPortal } from "react-dom";
 import { StyleSheet, Text, View } from "../primitives/reactNative";
 
 import { DRAG_SELECTABLE_LAYERS } from "./dragSelectableLayers";
-import type { DragSelectableBox } from "./dragSelectableModel";
-import type {
-  DragSelectableSelectionLabel,
-  DragSelectableTargetSnapshot,
-} from "./dragSelectableTypes";
+import type { DragSelectableActiveDrag } from "./dragSelectableSession";
+import type { DragSelectableSelectionLabel } from "./dragSelectableTypes";
 import type { SharedUiTheme } from "../theme";
-
-export type DragSelectableActiveDrag = {
-  box: DragSelectableBox | null;
-  matchedTargets: DragSelectableTargetSnapshot[];
-  moved: boolean;
-};
 
 export function DragSelectableOverlay({
   activeDrag,
@@ -43,6 +34,7 @@ export function DragSelectableOverlay({
     }) ?? `${count} item${count === 1 ? "" : "s"}`;
   return createPortal(
     <View
+      {...MARQUEE_PROPS}
       pointerEvents="none"
       style={[
         styles.marquee,
@@ -91,6 +83,9 @@ export function DragSelectableOverlay({
     document.body,
   );
 }
+
+/** Marks the layer as `data-drag-select-marquee` for app styles and tests. */
+const MARQUEE_PROPS = { dataSet: { dragSelectMarquee: "true" } };
 
 const styles = StyleSheet.create({
   badge: {

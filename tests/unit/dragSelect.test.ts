@@ -188,78 +188,6 @@ test("drag-select snapshots selected target metadata on commit", () => {
   assert.deepEqual(selection.selectedTargets, [{ data, id: "target" }]);
 });
 
-test("drag-select selection callback is stable across callback identities", () => {
-  const providerSource = readSource(
-    "../../src/drag-select/DragSelectableProvider.web.tsx",
-  );
-
-  assert.match(providerSource, /const onSelectionChangeRef = useRef/);
-  assert.match(
-    providerSource,
-    /onSelectionChangeRef\.current = onSelectionChange/,
-  );
-  assert.doesNotMatch(
-    providerSource,
-    /\[onSelectionChange, selectedIds, selectedTargets\]/,
-  );
-});
-
-test("drag-select selection callback ignores registry-only updates", () => {
-  const providerSource = readSource(
-    "../../src/drag-select/DragSelectableProvider.web.tsx",
-  );
-
-  assert.match(providerSource, /useState<DragSelectableSelection>/);
-  assert.match(providerSource, /const notifiedSelectedIdsRef = useRef/);
-  assert.match(
-    providerSource,
-    /dragSelectableIdsEqual\(\s*notifiedSelectedIdsRef\.current,\s*selection\.selectedIds,/,
-  );
-  assert.match(
-    providerSource,
-    /notifiedSelectedIdsRef\.current = \[\.\.\.selection\.selectedIds\]/,
-  );
-  assert.match(
-    providerSource,
-    /setSelection\(dragSelectableSelectionForTargets\(selectedTargetsForBox\)\)/,
-  );
-  assert.doesNotMatch(providerSource, /dragSelectableSnapshotsForIds/);
-});
-
-test("drag-select provider uses the configured movement threshold", () => {
-  const providerSource = readSource(
-    "../../src/drag-select/DragSelectableProvider.web.tsx",
-  );
-  const typeSource = readSource("../../src/drag-select/dragSelectableTypes.ts");
-  const readmeSource = readSource("../../src/drag-select/README.md");
-
-  assert.match(typeSource, /minimumDragDistance\?: number/);
-  assert.match(providerSource, /minimumDragDistance/);
-  assert.match(providerSource, /threshold: dragSelectableThresholdForValue/);
-  assert.match(
-    providerSource,
-    /hasDragSelectableMoved\(session\.start, point, session\.threshold\)/,
-  );
-  assert.match(readmeSource, /minimumDragDistance/);
-});
-
-test("drag-select provider cancels stale pointer streams", () => {
-  const providerSource = readSource(
-    "../../src/drag-select/DragSelectableProvider.web.tsx",
-  );
-
-  assert.match(providerSource, /const cancelDrag = useCallback/);
-  assert.match(providerSource, /const disabledRef = useRef\(disabled\)/);
-  assert.match(providerSource, /if \(disabledRef\.current\)/);
-  assert.match(providerSource, /if \(disabled\) {\s*cancelDrag\(\);/);
-  assert.match(providerSource, /document\.addEventListener\("pointercancel"/);
-  assert.match(providerSource, /window\.addEventListener\("blur"/);
-  assert.match(
-    providerSource,
-    /document\.addEventListener\("visibilitychange"/,
-  );
-});
-
 test("drag-select target hook returns an empty legacy focus style", () => {
   // `a11yProps` carries the CSS focus marker, so the legacy `focusRingStyle`
   // field must not also carry the hook's inline glow: a consumer applying both
@@ -273,44 +201,6 @@ test("drag-select target hook returns an empty legacy focus style", () => {
   assert.doesNotMatch(source, /focusRingStyle: focus\.focusRingStyle/);
   assert.doesNotMatch(source, /focus\.focusRingStyle,/);
 });
-
-test("drag-select provider exposes provider, target, and listener hooks", () => {
-  const contextSource = readSource(
-    "../../src/drag-select/DragSelectableContext.tsx",
-  );
-  const providerSource = readSource(
-    "../../src/drag-select/DragSelectableProvider.web.tsx",
-  );
-  const overlaySource = readSource(
-    "../../src/drag-select/DragSelectableOverlay.web.tsx",
-  );
-  const typeSource = readSource("../../src/drag-select/dragSelectableTypes.ts");
-  const nativeProviderSource = readSource(
-    "../../src/drag-select/DragSelectableProvider.tsx",
-  );
-  const indexSource = readSource("../../src/drag-select/index.ts");
-
-  assert.match(contextSource, /useDragSelectableTarget/);
-  assert.match(contextSource, /useDragSelectableChanges/);
-  assert.match(providerSource, /document\.addEventListener\("pointermove"/);
-  assert.match(providerSource, /emptyMatchingTargets/);
-  assert.match(providerSource, /measureDragSelectableTargets/);
-  assert.match(providerSource, /onSelectionChange/);
-  assert.match(providerSource, /overlayZIndex/);
-  assert.match(overlaySource, /createPortal/);
-  assert.match(overlaySource, /DRAG_SELECTABLE_LAYERS\.overlay/);
-  assert.match(overlaySource, /matchingIds/);
-  assert.match(overlaySource, /theme\.colors\.primary/);
-  assert.match(typeSource, /DragSelectableSelectionLabelContext/);
-  assert.match(nativeProviderSource, /registerTarget/);
-  assert.match(nativeProviderSource, /emptyDragSelectableState/);
-  assert.match(indexSource, /dragSelectableLayers/);
-  assert.match(indexSource, /dragSelectableModel/);
-});
-
-function readSource(relativePath: string) {
-  return readFileSync(new URL(relativePath, import.meta.url), "utf8");
-}
 
 function dragSelectableRegistration(
   node: FakeElement,

@@ -23,6 +23,10 @@ renders the same provider and selection state, but has no drag gesture.
   roving tab stop, the shared CSS focus marker, and an accessible name
   (`label`, else `id`). The legacy `focusRingStyle` result field is always
   empty, so a consumer that still applies it never paints a second glow.
+- `a11yProps` go on the registered root, or on a descendant of it when the
+  row also holds other controls, because a `checkbox` must not contain a
+  control. On web they write `data-drag-select-target` with the target id,
+  and keyboard focus moves to the element that carries them.
 - Keyboard: Space or Enter toggles the focused target. Arrow Up and Arrow Down
   move the roving focus, and Home and End jump to the ends. Shift with an
   arrow key selects the range from the focused target to the next one.
@@ -106,8 +110,9 @@ including the provider element.
    `button`, `checkbox`, `image`, `radio`, `reset`, or `submit`, and the roles
    `button`, `link`, `checkbox`, `radio`, `switch`, `tab`, `menuitem`,
    `menuitemcheckbox`, `menuitemradio`, and `option`. A registered target's
-   root element counts as the target, not as a control, even with the
-   `checkbox` role from `a11yProps`. The control search stops at the
+   root element and the element that carries its `a11yProps` count as the
+   target, not as a control, even with the `checkbox` role from
+   `a11yProps`. The control search stops at the
    innermost registered target that contains the press, so a control that
    contains the target root is not searched.
 10. `shouldStartDrag(start)`, when set, gives the final answer. When it
@@ -146,7 +151,8 @@ decision) needs the larger of `minimumDragDistance` and
   order. It proposes `dragSelectableNextSelection(current, hits, mode)` with
   source `drag`, and swallows the next `click` wherever it lands.
 - Release before a start: no selection change and no swallowed click.
-- Only the pointer that pressed counts. Other pointers are ignored.
+- Only the pointer that pressed moves and releases the drag. Other pointers
+  are ignored, except that a `pointercancel` of any pointer cancels.
 - Hard cancel, without a commit: `pointercancel`; a `blur` whose target is
   the window itself; `visibilitychange` to hidden; the provider unmounts. The
   provider stops at once and restores the page.

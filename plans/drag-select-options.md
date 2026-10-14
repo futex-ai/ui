@@ -458,46 +458,54 @@ with a failing test. The provider keeps its current props.
 
 - [x] Get the user's approval for the rewrites under "Approved test
       rewrites" (approved 2026-10-14).
-- [ ] Split `DragSelectableProvider.web.tsx` (470 lines) and
+- [x] Split `DragSelectableProvider.web.tsx` (470 lines) and
       `DragSelectableContext.tsx` (291 lines) into focused modules (gesture
       session, start rules, scroll anchoring, selection model, and target
       registry), so that every file stays under 300 lines. Keep `testID` in
       `dragSelectableTypes.ts`, where `tests/unit/testIDForwarding.test.ts`
       looks for it.
-- [ ] Add new unit tests in new files under `tests/unit/` (the current
+- [x] Add new unit tests in new files under `tests/unit/` (the current
       `dragSelect.test.ts` has 400 lines). Add the browser tests in a new
       `tests/browser/drag-select.spec.ts`. The current browser tests stay in
       `storybook.spec.ts` and must keep passing.
-- [ ] Add a full-screen "Page shell" story: a sidebar outside the provider,
+- [x] Add a full-screen "Page shell" story: a sidebar outside the provider,
       the provider as the scrolling main column, a centered content area with
       a title and a paragraph, and 30 rows with a library `Button` each. The
       sidebar switches between two pages, Transactions and Invoices, with
       different row ids. Add an "Empty page" story with no rows.
-- [ ] Cancel only on a blur of the window itself. Tests: a click on a row
+- [x] Cancel only on a blur of the window itself. Tests: a click on a row
       button, then a drag from the gutter, selects rows. A click on a row,
       then a drag from another row, selects rows.
-- [ ] Block native `dragstart` from the accepted press to the release. Test:
+- [x] Block native `dragstart` from the accepted press to the release. Test:
       highlight a row's text, then drag from that text; the rows are
       selected.
-- [ ] Ignore scrollbar presses, classic and overlay. Unit-test the geometry.
+- [x] Ignore scrollbar presses, classic and overlay. Unit-test the geometry.
       Browser test: run Chrome without `--hide-scrollbars`, drag the main
       column's scrollbar, and check that the selection stays.
-- [ ] Arm nothing when no enabled target is registered. Test: no box on the
+- [x] Arm nothing when no enabled target is registered. Test: no box on the
       "Empty page" story.
-- [ ] Measure the targets at the start, not at the press.
-- [ ] Anchor the start point to the scroll container's content, and measure
+- [x] Measure the targets at the start, not at the press.
+- [x] Anchor the start point to the scroll container's content, and measure
       again on each scroll during a drag. Unit-test the anchor math. Browser
       test: start on row 1, wheel-scroll 400px, release, and check that rows
       1 to N are selected.
-- [ ] Swallow the click after a completed drag. Move `suppressNextClick` from
+- [x] Swallow the click after a completed drag. Move `suppressNextClick` from
       `src/sortable-list/sortableDragFocus.ts` to a new shared
       `src/dragGesture.ts` and update the sortable list import. Tests: a row
       `onPress` does not fire after a drag that ends on the row, and a plain
       click still fires it.
-- [ ] Cancel on `Escape` after a start.
-- [ ] Claim presses so that the innermost active provider owns a press.
+- [x] Cancel on `Escape` after a start.
+- [x] Claim presses so that the innermost active provider owns a press.
       Test with nested providers.
-- [ ] Rewrite the approved tests as behavior tests.
+- [x] Rewrite the approved tests as behavior tests.
+- [x] Discovered: add a "Nested providers" story for the claim test.
+- [x] Discovered: let `a11yProps` sit on a child of the registered row, with
+      keyboard focus on that child, so a row that holds a `Button` passes the
+      axe `nested-interactive` rule. Document it in the protocol and README.
+- [x] Discovered: a `pointercancel` of any pointer cancels, so the existing
+      browser test that dispatches a synthetic `pointercancel` keeps passing.
+
+Evidence: `.context/drag-select-options/m2-evidence.md`.
 
 ## Milestone 3: Options and start rules
 

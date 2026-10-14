@@ -10,16 +10,17 @@ import {
 import { Platform, type ViewStyle } from "../primitives/reactNative";
 
 import { useFocusRing } from "../focusRing";
-import { nextNavIndex, rovingTabIndex } from "../keyboardNavigation";
+import { rovingTabIndex } from "../keyboardNavigation";
 
+import { orderedTargetIds } from "./dragSelectableTargetOrder";
 import type {
   DragSelectableChangeListener,
   DragSelectableState,
-  DragSelectableTargetKeyEvent,
   DragSelectableTargetOptions,
   DragSelectableTargetRegistration,
   DragSelectableTargetResult,
 } from "./dragSelectableTypes";
+import { useDragSelectableTargetKeys } from "./useDragSelectableTargetKeys";
 
 export const emptyDragSelectableState: DragSelectableState = {
   dragBox: null,
@@ -35,7 +36,6 @@ export const emptyDragSelectableState: DragSelectableState = {
 export type DragSelectableContextValue = {
   /** Id of the target that currently owns the group's single tab stop. */
   activeId: string | null;
-  clearSelection: () => void;
   /** Move the roving focus + DOM focus to the target at `id`. */
   focusTarget: (id: string) => void;
   matchedIdSet: ReadonlySet<string>;
@@ -43,9 +43,9 @@ export type DragSelectableContextValue = {
   registeredTargets: ReadonlyMap<string, DragSelectableTargetRegistration>;
   registerTarget: (target: DragSelectableTargetRegistration) => () => void;
   selectedIdSet: ReadonlySet<string>;
-  /** Toggle a single target's membership in the committed selection. */
+  /** Toggle a single target's membership in the selection (Space / Enter). */
   toggleSelection: (id: string) => void;
-  /** Replace the committed selection with `ids` (Shift+Arrow range select). */
+  /** Select a keyboard range of target ids (Shift + Arrow). */
   setSelection: (ids: string[]) => void;
   state: DragSelectableState;
   subscribe: (listener: DragSelectableChangeListener) => () => void;
@@ -55,9 +55,8 @@ export type DragSelectableContextValue = {
 const emptySet = new Set<string>();
 const emptyMap = new Map<string, DragSelectableTargetRegistration>();
 
-const defaultContext: DragSelectableContextValue = {
+export const defaultDragSelectableContext: DragSelectableContextValue = {
   activeId: null,
-  clearSelection: () => undefined,
   focusTarget: () => undefined,
   matchedIdSet: emptySet,
   registeredTargets: emptyMap,
@@ -70,8 +69,9 @@ const defaultContext: DragSelectableContextValue = {
   updateTarget: () => undefined,
 };
 
-export const DragSelectableContext =
-  createContext<DragSelectableContextValue>(defaultContext);
+export const DragSelectableContext = createContext<DragSelectableContextValue>(
+  defaultDragSelectableContext,
+);
 
 /**
  * Kept for source compatibility with the earlier documented pattern
@@ -151,61 +151,14 @@ export function useDragSelectableTarget(
 
   const selected = selectedIdSet.has(id);
 
-  const handleKeyDown = useCallback(
-    (event: DragSelectableTargetKeyEvent) => {
-      if (disabled) {
-        return;
-      }
-      const key = event.nativeEvent?.key ?? event.key;
-      const shift = event.nativeEvent?.shiftKey ?? event.shiftKey ?? false;
-      if (!key) {
-        return;
-      }
-      // Build the ordered, non-disabled id list for arrow navigation.
-      const orderedIds = orderedTargetIds(registeredTargets);
-      const currentIndex = orderedIds.indexOf(id);
-
-      if (key === " " || key === "Spacebar" || key === "Enter") {
-        event.preventDefault?.();
-        event.stopPropagation?.();
-        toggleSelection(id);
-        return;
-      }
-
-      const nextIndex = nextNavIndex({
-        count: orderedIds.length,
-        index: currentIndex < 0 ? 0 : currentIndex,
-        key,
-        orientation: "vertical",
-      });
-      if (nextIndex === null) {
-        return;
-      }
-      event.preventDefault?.();
-      event.stopPropagation?.();
-      const nextId = orderedIds[nextIndex];
-      if (nextId === undefined) {
-        return;
-      }
-      // Shift+Arrow extends the selection from the anchor to the new target.
-      if (shift && currentIndex >= 0) {
-        const [from, to] =
-          nextIndex < currentIndex
-            ? [nextIndex, currentIndex]
-            : [currentIndex, nextIndex];
-        setSelection(orderedIds.slice(from, to + 1));
-      }
-      focusTarget(nextId);
-    },
-    [
-      disabled,
-      focusTarget,
-      id,
-      registeredTargets,
-      setSelection,
-      toggleSelection,
-    ],
-  );
+  const handleKeyDown = useDragSelectableTargetKeys({
+    disabled,
+    focusTarget,
+    id,
+    registeredTargets,
+    selectRange: setSelection,
+    toggleSelection,
+  });
 
   // The group is a single Tab stop: only the active target is tabbable (roving
   // tabindex, WCAG 2.1 — 2.1.1 Keyboard, A / 4.1.2 Name, Role, Value, A). When
@@ -222,6 +175,14 @@ export function useDragSelectableTarget(
     () => ({
       a11yProps: {
         ...focus.focusRingProps,
+        ...(Platform.OS === "web"
+          ? {
+              dataSet: {
+                ...focus.focusRingProps.dataSet,
+                dragSelectTarget: id,
+              },
+            }
+          : {}),
         accessibilityLabel: label ?? id,
         accessibilityRole: "checkbox" as const,
         accessibilityState: { checked: selected, disabled: Boolean(disabled) },
@@ -254,38 +215,4 @@ export function useDragSelectableTarget(
       targetRef,
     ],
   );
-}
-
-/**
- * Resolves registered, non-disabled target ids in keyboard-navigation order:
- * by explicit `order` when provided, otherwise by DOM document order so arrow
- * keys move through the visible layout.
- */
-export function orderedTargetIds(
-  targets: ReadonlyMap<string, DragSelectableTargetRegistration>,
-): string[] {
-  const entries = [...targets.values()].filter((target) => !target.disabled);
-  if (typeof document === "undefined" || typeof Node === "undefined") {
-    return sortByOrder(entries).map((target) => target.id);
-  }
-  // Sort by DOM document order; fall back to explicit `order` to break ties.
-  entries.sort((a, b) => {
-    const nodeA = a.node as unknown as Node;
-    const nodeB = b.node as unknown as Node;
-    const position = nodeA.compareDocumentPosition?.(nodeB);
-    if (position && position & Node.DOCUMENT_POSITION_FOLLOWING) {
-      return -1;
-    }
-    if (position && position & Node.DOCUMENT_POSITION_PRECEDING) {
-      return 1;
-    }
-    return (a.order ?? 0) - (b.order ?? 0);
-  });
-  return entries.map((target) => target.id);
-}
-
-function sortByOrder(
-  entries: DragSelectableTargetRegistration[],
-): DragSelectableTargetRegistration[] {
-  return [...entries].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }

@@ -1,7 +1,6 @@
 /** DOM helpers used by the web drag-select provider. */
 import type { DragSelectableBounds } from "./dragSelectableModel";
-import { dragSelectablePointFromEvent } from "./dragSelectableModel";
-import type { DragSelectablePoint } from "./dragSelectableModel";
+import { DRAG_SELECTABLE_TARGET_ATTRIBUTE } from "./dragSelectableTargetNode";
 import type {
   DragSelectableSelection,
   DragSelectableTargetRegistration,
@@ -85,46 +84,6 @@ export function dragSelectableSnapshotsForIds(
   });
 }
 
-export function dragSelectablePointFromUnknownEvent(
-  event: unknown,
-): DragSelectablePoint | null {
-  return dragSelectablePointFromEvent(
-    event as Parameters<typeof dragSelectablePointFromEvent>[0],
-    dragSelectableViewportScrollPoint(),
-  );
-}
-
-export function dragSelectableViewportScrollPoint(): DragSelectablePoint {
-  if (typeof window === "undefined") {
-    return { x: 0, y: 0 };
-  }
-  return {
-    x: window.scrollX ?? window.pageXOffset ?? 0,
-    y: window.scrollY ?? window.pageYOffset ?? 0,
-  };
-}
-
-export function dragSelectableEventTarget(event: unknown): Node | null {
-  if (typeof Node === "undefined") {
-    return null;
-  }
-  const source = event as {
-    nativeEvent?: { target?: unknown };
-    target?: unknown;
-  };
-  const target = source.nativeEvent?.target ?? source.target;
-  return target instanceof Node ? target : null;
-}
-
-export function dragSelectablePointerSource(event: unknown) {
-  const source = event as {
-    button?: number;
-    nativeEvent?: { button?: number; pointerType?: string };
-    pointerType?: string;
-  };
-  return source.nativeEvent ?? source;
-}
-
 export function dragSelectableShouldStartFromTarget(
   target: Node | null,
   targets: Iterable<DragSelectableTargetRegistration>,
@@ -139,10 +98,12 @@ export function dragSelectableShouldStartFromTarget(
   if (registeredTarget && !registeredTarget.disabled) {
     const interactive = dragSelectableClosestInteractive(target);
     const registeredElement = registeredTarget.node as unknown as Element;
-    if (interactive && interactive !== registeredElement) {
-      return false;
-    }
-    return true;
+    return (
+      !interactive ||
+      interactive === registeredElement ||
+      interactive.getAttribute?.(DRAG_SELECTABLE_TARGET_ATTRIBUTE) ===
+        registeredTarget.id
+    );
   }
   const interactive = dragSelectableClosestInteractive(target);
   return !interactive;
