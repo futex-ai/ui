@@ -27,6 +27,7 @@ export type FakeSessionEnv = ReturnType<typeof fakeSessionEnv>;
 export function fakeSessionEnv() {
   const calls = {
     commits: [] as string[][],
+    endedPresses: [] as Array<number | undefined>,
     ends: 0,
     escapes: [] as Array<() => void>,
     measures: 0,
@@ -35,6 +36,8 @@ export function fakeSessionEnv() {
     removedListeners: 0,
     renders: [] as Array<DragSelectableActiveDrag | null>,
     suppressedClicks: 0,
+    textBlocks: 0,
+    textRestores: 0,
   };
   let handlers: DragSelectableSessionHandlers | null = null;
   let anchor: DragSelectableAnchorFrame = {
@@ -45,11 +48,20 @@ export function fakeSessionEnv() {
   };
   let targets = stackedRows();
   const env: DragSelectableSessionEnv = {
+    blockTextSelection: () => {
+      calls.textBlocks += 1;
+      return () => {
+        calls.textRestores += 1;
+      };
+    },
     commit: (hitIds) => {
       calls.commits.push(hitIds);
     },
     end: () => {
       calls.ends += 1;
+    },
+    endPresses: (pointerId) => {
+      calls.endedPresses.push(pointerId);
     },
     listen: (next) => {
       handlers = next;

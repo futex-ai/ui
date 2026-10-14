@@ -73,6 +73,10 @@ const columns: KanbanColumnDef[] = [
 />;
 ```
 
+The board carries the drag-select ignore marker (`data-drag-select-ignore`),
+so a page-wide `DragSelectableProvider` never starts a selection box over a
+card drag.
+
 ### Columns
 
 Each `KanbanColumnDef` needs a stable `id` (matched against `cardColumnId(card)`

@@ -9,12 +9,14 @@ import type {
   DragSelectableState,
   DragSelectableTargetSnapshot,
 } from "./dragSelectableTypes";
+import type { DragSelectableOptionLayers } from "./useDragSelectableOptionLayers";
 import type { DragSelectableRegistry } from "./useDragSelectableRegistry";
 import type { DragSelectableSelectionState } from "./useDragSelectableSelectionState";
 
 /** The parts of a provider that the context value combines. */
 export type DragSelectableProviderParts = {
   activeDrag: DragSelectableActiveDrag | null;
+  optionLayers: DragSelectableOptionLayers;
   registry: DragSelectableRegistry;
   selection: DragSelectableSelectionState;
 };
@@ -28,6 +30,7 @@ const emptyMatchingTargets: DragSelectableTargetSnapshot[] = [];
  */
 export function useDragSelectableProviderValue({
   activeDrag,
+  optionLayers,
   registry,
   selection,
 }: DragSelectableProviderParts): DragSelectableContextValue {
@@ -38,6 +41,7 @@ export function useDragSelectableProviderValue({
     () => ({
       dragBox: activeDrag?.box ?? null,
       dragging: Boolean(activeDrag),
+      dragMode: activeDrag?.mode ?? null,
       matchingCount: matchingTargets.length,
       matchingIds: matchingTargets.map((target) => target.id),
       matchingTargets,
@@ -80,6 +84,7 @@ export function useDragSelectableProviderValue({
       activeId,
       focusTarget,
       matchedIdSet,
+      optionLayers,
       registeredTargets: registry.registeredTargets,
       registerTarget: registry.registerTarget,
       selectedIdSet: selection.selectedIdSet,
@@ -93,6 +98,7 @@ export function useDragSelectableProviderValue({
       activeId,
       focusTarget,
       matchedIdSet,
+      optionLayers,
       registry.registeredTargets,
       registry.registerTarget,
       registry.updateTarget,

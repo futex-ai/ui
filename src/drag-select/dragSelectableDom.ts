@@ -1,6 +1,5 @@
 /** DOM helpers used by the web drag-select provider. */
 import type { DragSelectableBounds } from "./dragSelectableModel";
-import { DRAG_SELECTABLE_TARGET_ATTRIBUTE } from "./dragSelectableTargetNode";
 import type {
   DragSelectableSelection,
   DragSelectableTargetRegistration,
@@ -9,30 +8,6 @@ import type {
 
 export type DragSelectableMeasuredTarget = DragSelectableBounds &
   DragSelectableTargetSnapshot;
-
-export const dragSelectableInteractiveSelector = [
-  "a",
-  "button",
-  "input",
-  "select",
-  "textarea",
-  "[contenteditable]:not([contenteditable='false'])",
-  "[contenteditable='true']",
-  "[role='button']",
-  "[role='checkbox']",
-  "[role='combobox']",
-  "[role='link']",
-  "[role='menuitem']",
-  "[role='menuitemcheckbox']",
-  "[role='menuitemradio']",
-  "[role='option']",
-  "[role='radio']",
-  "[role='slider']",
-  "[role='spinbutton']",
-  "[role='switch']",
-  "[role='tab']",
-  "[role='textbox']",
-].join(",");
 
 export function dragSelectableSelectionForTargets(
   targets: readonly DragSelectableTargetSnapshot[],
@@ -82,51 +57,4 @@ export function dragSelectableSnapshotsForIds(
     const target = targets.get(id);
     return { data: target?.data, id };
   });
-}
-
-export function dragSelectableShouldStartFromTarget(
-  target: Node | null,
-  targets: Iterable<DragSelectableTargetRegistration>,
-): boolean {
-  if (!target) {
-    return false;
-  }
-  const registeredTarget = dragSelectableRegisteredTargetForNode(
-    target,
-    targets,
-  );
-  if (registeredTarget && !registeredTarget.disabled) {
-    const interactive = dragSelectableClosestInteractive(target);
-    const registeredElement = registeredTarget.node as unknown as Element;
-    return (
-      !interactive ||
-      interactive === registeredElement ||
-      interactive.getAttribute?.(DRAG_SELECTABLE_TARGET_ATTRIBUTE) ===
-        registeredTarget.id
-    );
-  }
-  const interactive = dragSelectableClosestInteractive(target);
-  return !interactive;
-}
-
-function dragSelectableRegisteredTargetForNode(
-  target: Node,
-  targets: Iterable<DragSelectableTargetRegistration>,
-): DragSelectableTargetRegistration | null {
-  for (const candidate of targets) {
-    const element = candidate.node as unknown as Element;
-    if (element === target || element.contains(target)) {
-      return candidate;
-    }
-  }
-  return null;
-}
-
-function dragSelectableClosestInteractive(target: Node): Element | null {
-  if (!(target instanceof Element)) {
-    return (
-      target.parentElement?.closest(dragSelectableInteractiveSelector) ?? null
-    );
-  }
-  return target.closest(dragSelectableInteractiveSelector);
 }

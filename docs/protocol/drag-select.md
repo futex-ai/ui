@@ -243,10 +243,14 @@ options.
 
 Library components that own a pointer gesture mark their gesture root with
 `[data-drag-select-ignore]`, so a page-wide provider never starts over them:
-the calendar time grid and month grid, the data grid body, header, and
-resize handles, kanban cards, sortable list items, the timeline tracks and
-ruler, the video-editor `Scrubber` and `NumberScrubber`, and the chart scrub
-layer. A surface that the field rule already covers needs no marker.
+the calendar time-grid day columns and the month grid, the data grid element
+(header, resize handles, and body), the kanban board, the sortable list, the
+timeline element that holds the ruler and the track lanes, and the
+video-editor `NumberScrubber`. The video-editor `Scrubber` and the timeline
+ruler are `slider`s on web, which the field rule already refuses. The chart
+scrub hook (`useChartScrub`) is a native-only `PanResponder` with no web
+gesture, so it needs no marker; an app that spreads its handlers on web adds
+the marker itself.
 
 ## Tests
 

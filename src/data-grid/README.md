@@ -85,6 +85,11 @@ const [rows, setRows] = useState<DataGridRow[]>([
 />;
 ```
 
+The grid element (`role="grid"`, with the header, the resize handles, and
+the body) carries the drag-select ignore marker (`data-drag-select-ignore`),
+so a page-wide `DragSelectableProvider` never starts a selection box over the
+grid's own cell-range drag.
+
 ### Field types
 
 `fieldType` selects the renderer and editor: `text`, `number`, `date` (ISO

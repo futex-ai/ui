@@ -61,6 +61,11 @@ Every control on the transport is optional and appears only when its handler is
 supplied, so the same component is a bare play/pause pair in a compact panel and
 a full deck with in/out marks, loop, speed, and metering in an editor.
 
+`NumberScrubber` carries the drag-select ignore marker
+(`data-drag-select-ignore`), and `Scrubber` is a `slider`, which drag-select
+refuses already, so a page-wide `DragSelectableProvider` never starts a
+selection box over a scrub.
+
 ### The property model
 
 `Inspector` renders whatever `sections` describe. A property's `type` chooses

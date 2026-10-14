@@ -18,6 +18,7 @@ import {
 
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";
 import { compareIso, parseIso } from "../date/dateMath";
+import { dragSelectableIgnoreProps } from "../drag-select/dragSelectableIgnore";
 import { useSharedUiTheme } from "../theme";
 
 import { CalendarEventChip } from "./CalendarEventChip";
@@ -107,6 +108,7 @@ export function MonthView({
 
   return (
     <View
+      {...dragSelectableIgnoreProps}
       ref={drag.bindGrid.ref}
       style={[styles.monthGrid, style]}
       testID={testID}

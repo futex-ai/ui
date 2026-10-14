@@ -210,14 +210,22 @@ coordinates. `selectedTargets` is a snapshot of the registrations; use
   and native providers.
 - `DragSelectableContext.tsx`: the context and the target, selection, and
   change hooks. `useDragSelectableTargetKeys.ts` holds the keyboard model.
+- `useDragSelectableOptions.ts`, `useDragSelectableOptionLayers.ts`,
+  `dragSelectableLayerStore.ts`, and `dragSelectableOptions.ts`: the page
+  hook, the layers, the merge, and the defaults. `dragSelectableOptionTypes.ts`
+  holds the public option types.
 - `useDragSelectableGesture.ts`: the web gesture. `dragSelectablePress.ts`
-  holds the start rules, `dragSelectableSession.ts` one gesture from the
-  press to the release, and `dragSelectableSessionDom.ts` its DOM listeners.
+  holds the claim and the fixed rules, `dragSelectableStartRules.ts` the
+  default rules, `dragSelectableSession.ts` one gesture from the press to the
+  release, and `dragSelectableSessionDom.ts` its DOM listeners.
+  `dragSelectableTextSelection.ts` blocks text selection during a drag.
 - `dragSelectableScrollContainer.ts`, `dragSelectableScrollbar.ts`, and
   `dragSelectableScrollAnchor.ts`: the press's scroll container, the
   scrollbar rule, and the anchored start point.
 - `useDragSelectableSelectionState.ts` and `dragSelectableSelectionModel.ts`:
-  the selection, its reports, and its announcements.
-- `useDragSelectableRegistry.ts` and `dragSelectableTargetOrder.ts`: the
-  registered targets and their document order.
+  the selection, its modes, its reports, and its announcements.
+- `useDragSelectableRegistry.ts`, `dragSelectableTargetOrder.ts`, and
+  `dragSelectableTargetNode.ts`: the registered targets, their document
+  order, and the element that takes their focus.
+- `dragSelectableIgnore.ts`: the ignore marker.
 - `DragSelectableOverlay.web.tsx`: the box.

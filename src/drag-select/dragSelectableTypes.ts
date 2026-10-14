@@ -11,6 +11,10 @@ import type {
 import type { FocusIndicator } from "../focusRing";
 
 import type { DragSelectableBox } from "./dragSelectableModel";
+import type {
+  DragSelectableDragMode,
+  DragSelectableOptions,
+} from "./dragSelectableOptionTypes";
 
 export type DragSelectableTargetSnapshot = {
   data?: unknown;
@@ -37,6 +41,8 @@ export type DragSelectableSelectionLabel = (
 export type DragSelectableState = DragSelectableSelection & {
   dragBox: DragSelectableBox | null;
   dragging: boolean;
+  /** The mode of the active press, or `null` when no press is active. */
+  dragMode: DragSelectableDragMode | null;
   matchingCount: number;
   matchingIds: string[];
   matchingTargets: DragSelectableTargetSnapshot[];
@@ -54,7 +60,8 @@ export type DragSelectableSelectionAnnouncement = (
   selection: DragSelectableSelection,
 ) => string;
 
-export type DragSelectableProviderProps = {
+/** The props of `DragSelectableProvider`: the options plus its own props. */
+export type DragSelectableProviderProps = DragSelectableOptions & {
   /**
    * Accessible name for the selectable group container. Exposed via
    * `accessibilityRole` (`list`/`group`) + `accessibilityLabel` so assistive
@@ -62,22 +69,11 @@ export type DragSelectableProviderProps = {
    */
   accessibilityLabel?: string;
   children: ReactNode;
-  disabled?: boolean;
-  minimumDragDistance?: number;
-  onSelectionChange?: (selection: DragSelectableSelection) => void;
-  overlayZIndex?: number;
   /**
    * Container ARIA role. Defaults to `"group"`. Pass `"list"` (with targets
    * laid out like list items) for a single-axis collection.
    */
   role?: "group" | "list";
-  /**
-   * Customizes the polite live-region announcement made whenever the committed
-   * selection count changes (WCAG 2.1 — 4.1.3 Status Messages, AA). Return an
-   * empty string to suppress the announcement.
-   */
-  selectionAnnouncement?: DragSelectableSelectionAnnouncement;
-  selectionLabel?: DragSelectableSelectionLabel;
   style?: StyleProp<ViewStyle>;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;

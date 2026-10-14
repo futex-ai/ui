@@ -1,8 +1,9 @@
 /**
- * Pure selection rules: ids form a set, and a provider reports a change of
- * the rendered selection once, announcing it only when it is the proposal
- * that the provider made.
+ * Pure selection rules: ids form a set, a drag mode turns hits into a
+ * proposal, and a provider reports a change of the rendered selection once,
+ * announcing it only when it is the proposal that the provider made.
  */
+import type { DragSelectableDragMode } from "./dragSelectableOptionTypes";
 
 /** Whether two id lists hold the same ids, in any order. */
 export function dragSelectableIdSetsEqual(
@@ -20,6 +21,31 @@ export function dragSelectableIdSetsEqual(
     }
   }
   return true;
+}
+
+/**
+ * The selection that a drag or a key proposes. `replace` returns the hits.
+ * `add` returns the current ids, then the hits that are not current.
+ * `toggle` returns the current ids without the hits, then the hits that were
+ * not current. Duplicate ids appear once.
+ */
+export function dragSelectableNextSelection(
+  currentIds: readonly string[],
+  hitIds: readonly string[],
+  mode: DragSelectableDragMode,
+): string[] {
+  const hits = [...new Set(hitIds)];
+  if (mode === "replace") {
+    return hits;
+  }
+  const current = [...new Set(currentIds)];
+  const currentSet = new Set(current);
+  const fresh = hits.filter((id) => !currentSet.has(id));
+  if (mode === "add") {
+    return [...current, ...fresh];
+  }
+  const hitSet = new Set(hits);
+  return [...current.filter((id) => !hitSet.has(id)), ...fresh];
 }
 
 /** What a provider has reported so far. */

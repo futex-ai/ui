@@ -12,6 +12,7 @@ import type {
   DragSelectableTargetOptions,
   DragSelectableTargetRegistration,
 } from "./dragSelectableTypes";
+import { useDragSelectableOptionLayers } from "./useDragSelectableOptionLayers";
 
 const emptySet = new Set<string>();
 const emptyMap = new Map<string, DragSelectableTargetRegistration>();
@@ -22,7 +23,9 @@ export function DragSelectableProvider({
   role = "group",
   style,
   testID,
+  ...providerOptions
 }: DragSelectableProviderProps) {
+  const { layers } = useDragSelectableOptionLayers(providerOptions);
   const listenersRef = useRef(new Set<DragSelectableChangeListener>());
   const subscribe = useCallback((listener: DragSelectableChangeListener) => {
     listenersRef.current.add(listener);
@@ -33,6 +36,7 @@ export function DragSelectableProvider({
       activeId: null,
       focusTarget: (_id: string) => undefined,
       matchedIdSet: emptySet,
+      optionLayers: layers,
       registeredTargets: emptyMap,
       registerTarget: (_target: DragSelectableTargetRegistration) => () =>
         undefined,
@@ -43,7 +47,7 @@ export function DragSelectableProvider({
       toggleSelection: (_id: string) => undefined,
       updateTarget: (_target: DragSelectableTargetOptions) => undefined,
     }),
-    [subscribe],
+    [layers, subscribe],
   );
 
   return (

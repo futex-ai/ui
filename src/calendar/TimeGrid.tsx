@@ -16,6 +16,7 @@ import {
 } from "../primitives/reactNative";
 
 import { parseIso } from "../date/dateMath";
+import { dragSelectableIgnoreProps } from "../drag-select/dragSelectableIgnore";
 import { useSharedUiTheme } from "../theme";
 
 import { CalendarEventBlock } from "./CalendarEventBlock";
@@ -130,7 +131,7 @@ export function TimeGrid({
               </View>
             ))}
           </View>
-          <View style={styles.timeColumns}>
+          <View {...dragSelectableIgnoreProps} style={styles.timeColumns}>
             {dates.map((date, columnIndex) => (
               <DayColumn
                 bind={drag.bindColumn(columnIndex, date)}

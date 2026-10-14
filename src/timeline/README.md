@@ -62,6 +62,10 @@ function Sequence() {
 }
 ```
 
+The ruler and the track lanes sit in an element that carries the drag-select
+ignore marker (`data-drag-select-ignore`), so a page-wide
+`DragSelectableProvider` never starts a selection box over a clip edit.
+
 ### Editing
 
 Supplying `onEdit` turns editing on. Every gesture — pointer, touch, or key —

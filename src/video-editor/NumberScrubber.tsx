@@ -19,6 +19,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { withDragSelectableIgnore } from "../drag-select/dragSelectableIgnore";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
@@ -117,7 +118,7 @@ export function NumberScrubber({
 
   return (
     <View
-      {...focus.focusRingProps}
+      {...withDragSelectableIgnore(focus.focusRingProps)}
       onMoveShouldSetResponder={(event: GestureResponderEvent) => {
         if (disabled || !onValueChange) {
           return false;

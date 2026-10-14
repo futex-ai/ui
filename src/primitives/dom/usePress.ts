@@ -33,6 +33,45 @@ import {
 
 export type { PressConfig, PressHandlers } from "./pressMachine";
 
+/**
+ * Every machine with a pointer press in progress, with the id of the pointer
+ * that started it. A gesture that takes over the pointer, such as a
+ * drag-select drag, ends these presses through `endPointerPresses`.
+ */
+const pointerPresses = new Map<Machine, unknown>();
+
+/**
+ * Ends the pointer presses that `pointerId` started, or every pointer press
+ * when it is `undefined`. Each press stops watching the pointer and
+ * terminates: the pressed look clears and `onPressOut` fires, but `onPress`
+ * does not. The click that the release still produces must be swallowed by
+ * the caller, because `onPress` comes from that click.
+ */
+export function endPointerPresses(pointerId?: number): void {
+  for (const [machine, pressPointerId] of [...pointerPresses]) {
+    if (
+      pointerId !== undefined &&
+      typeof pressPointerId === "number" &&
+      pressPointerId !== pointerId
+    ) {
+      continue;
+    }
+    machine.detachPointer?.();
+    receiveSignal(machine, "TERMINATE", terminationEvent());
+  }
+}
+
+/** A stand-in event for a press that ends without a DOM event of its own. */
+function terminationEvent(): PressEvent {
+  return {
+    currentTarget: null,
+    nativeEvent: {},
+    preventDefault: () => undefined,
+    stopPropagation: () => undefined,
+    target: null,
+  };
+}
+
 /** Wires the machine to a host element and returns the handlers it needs. */
 export function usePress(config: PressConfig): PressHandlers {
   const machineRef = useRef<Machine | null>(null);
@@ -112,11 +151,13 @@ export function usePress(config: PressConfig): PressHandlers {
         document.removeEventListener("pointerup", onUp);
         document.removeEventListener("pointercancel", onCancel);
         machine.detachPointer = null;
+        pointerPresses.delete(machine);
       }
       document.addEventListener("pointermove", onMove);
       document.addEventListener("pointerup", onUp);
       document.addEventListener("pointercancel", onCancel);
       machine.detachPointer = detach;
+      pointerPresses.set(machine, pointerId);
     };
 
     const keyupListener = (event: KeyboardEvent) => {

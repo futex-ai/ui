@@ -5,6 +5,8 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import type { DragSelectableResolvedOptions } from "./dragSelectableOptions";
+import type { DragSelectableDragMode } from "./dragSelectableOptionTypes";
 import {
   dragSelectableAcceptPress,
   type DragSelectablePressEvent,
@@ -20,16 +22,24 @@ import type { DragSelectableRegistry } from "./useDragSelectableRegistry";
 /** What the gesture needs from its provider. */
 export type DragSelectableGestureConfig = {
   /** Receives the hit ids of a completed drag, in document order. */
-  commit: (hitIds: string[]) => void;
+  commit: (hitIds: string[], mode: DragSelectableDragMode) => void;
+  /** The `disabled` option of this render; `true` cancels a running drag. */
   disabled: boolean;
-  minimumDragDistance?: number;
+  /** The options at call time. */
+  readOptions: () => DragSelectableResolvedOptions;
   registry: DragSelectableRegistry;
+};
+
+/** The provider element's `pointerdown`, as React or the DOM delivers it. */
+export type DragSelectablePointerDown = {
+  currentTarget?: unknown;
+  nativeEvent?: unknown;
 };
 
 /** The gesture state and the handler for the provider element. */
 export type DragSelectableGesture = {
   activeDrag: DragSelectableActiveDrag | null;
-  onPointerDown: (event: { nativeEvent?: unknown }) => void;
+  onPointerDown: (event: DragSelectablePointerDown) => void;
 };
 
 /** Runs the drag gesture for one provider. */
@@ -43,16 +53,21 @@ export function useDragSelectableGesture(
     null,
   );
 
-  const onPointerDown = useCallback((event: { nativeEvent?: unknown }) => {
-    if (typeof document === "undefined") {
+  const onPointerDown = useCallback((event: DragSelectablePointerDown) => {
+    if (
+      typeof document === "undefined" ||
+      typeof Element === "undefined" ||
+      !(event.currentTarget instanceof Element)
+    ) {
       return;
     }
     const current = configRef.current;
     const native = (event.nativeEvent ?? event) as DragSelectablePressEvent;
+    const options = current.readOptions();
     const press = dragSelectableAcceptPress(native, {
-      disabled: current.disabled,
       hasEnabledTarget: current.registry.hasEnabledTarget,
-      minimumDragDistance: current.minimumDragDistance,
+      options,
+      provider: event.currentTarget,
       targets: () => current.registry.targetsRef.current.values(),
     });
     if (!press) {
@@ -62,12 +77,14 @@ export function useDragSelectableGesture(
     let session: DragSelectableSession | null = null;
     session = startDragSelectableSession(
       {
+        mode: press.mode,
         pointerId: press.pointerId,
         press: press.point,
+        preventTextSelection: options.preventTextSelection,
         threshold: press.threshold,
       },
       dragSelectableSessionDom({
-        commit: (hitIds) => configRef.current.commit(hitIds),
+        commit: (hitIds) => configRef.current.commit(hitIds, press.mode),
         container: press.container,
         end: () => {
           if (sessionRef.current === session) {

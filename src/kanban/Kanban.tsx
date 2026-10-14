@@ -21,6 +21,7 @@ import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { DragGhostPortal } from "../dragGhostPortal";
+import { dragSelectableIgnoreProps } from "../drag-select/dragSelectableIgnore";
 import type { FocusIndicator } from "../focusRing";
 import { SkeletonPulseProvider } from "../skeleton";
 import { useSharedUiTheme } from "../theme";
@@ -270,7 +271,8 @@ export function Kanban<Card>({
       accessibilityState={loading ? { busy: true } : undefined}
       aria-busy={loading || undefined}
       // The drag hit-tests cards within this container (web); on native the
-      // binder is inert.
+      // binder is inert. The marker keeps a page-wide drag-select off the board.
+      {...dragSelectableIgnoreProps}
       ref={drag.bindBoard.ref}
       role={accessibilityLabel ? "group" : undefined}
       style={[styles.board, style]}

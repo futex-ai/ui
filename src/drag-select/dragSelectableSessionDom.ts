@@ -1,6 +1,7 @@
 /** The DOM side of a drag-select session: listeners and measurements. */
 import { suppressNextClick } from "../dragGesture";
 import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
+import { endPointerPresses } from "../primitives/dom/usePress";
 
 import { measureDragSelectableTargets } from "./dragSelectableDom";
 import { dragSelectableAnchorFrame } from "./dragSelectableScrollAnchor";
@@ -11,6 +12,7 @@ import type {
   DragSelectableSessionHandlers,
 } from "./dragSelectableSession";
 import { dragSelectableDocumentOrder } from "./dragSelectableTargetOrder";
+import { blockDragSelectableTextSelection } from "./dragSelectableTextSelection";
 import type { DragSelectableTargetRegistration } from "./dragSelectableTypes";
 
 /** What the provider hands to the DOM side of one session. */
@@ -28,8 +30,10 @@ export function dragSelectableSessionDom(
   options: DragSelectableSessionDomOptions,
 ): DragSelectableSessionEnv {
   return {
+    blockTextSelection: blockDragSelectableTextSelection,
     commit: options.commit,
     end: options.end,
+    endPresses: endPointerPresses,
     listen: listenToDragSelectableSession,
     measureTargets: () => measureDragSelectableTargets(options.targets()),
     measureTargetsInOrder: () =>

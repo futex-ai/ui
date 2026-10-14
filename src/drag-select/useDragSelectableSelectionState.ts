@@ -4,9 +4,11 @@ import type { MutableRefObject } from "react";
 
 import { announce } from "../announcer";
 
+import type { DragSelectableDragMode } from "./dragSelectableOptionTypes";
 import {
   dragSelectableIdSetsEqual,
   dragSelectableInitialReport,
+  dragSelectableNextSelection,
   dragSelectableRecordProposal,
   dragSelectableReportRender,
 } from "./dragSelectableSelectionModel";
@@ -27,8 +29,8 @@ export type DragSelectableSelectionConfig = {
 
 /** The selection and the ways a provider changes it. */
 export type DragSelectableSelectionState = {
-  /** Proposes the hits of a completed drag. */
-  commitDrag: (hitIds: string[]) => void;
+  /** Proposes the result of a completed drag with its mode. */
+  commitDrag: (hitIds: string[], mode: DragSelectableDragMode) => void;
   selectedIdSet: ReadonlySet<string>;
   selection: DragSelectableSelection;
   /** Proposes a keyboard range. */
@@ -107,16 +109,22 @@ export function useDragSelectableSelectionState(
     setStoredIds(proposal);
   }, []);
 
+  const commitDrag = useCallback(
+    (hitIds: string[], mode: DragSelectableDragMode) => {
+      propose(
+        dragSelectableNextSelection(renderedIdsRef.current, hitIds, mode),
+      );
+    },
+    [propose],
+  );
+
   const toggle = useCallback(
     (id: string) => {
       if (configRef.current.targetsRef.current.get(id)?.disabled) {
         return;
       }
-      const current = renderedIdsRef.current;
       propose(
-        current.includes(id)
-          ? current.filter((selectedId) => selectedId !== id)
-          : [...current, id],
+        dragSelectableNextSelection(renderedIdsRef.current, [id], "toggle"),
       );
     },
     [propose],
@@ -126,12 +134,12 @@ export function useDragSelectableSelectionState(
 
   return useMemo(
     () => ({
-      commitDrag: propose,
+      commitDrag,
       selectRange: propose,
       selectedIdSet,
       selection,
       toggle,
     }),
-    [propose, selectedIdSet, selection, toggle],
+    [commitDrag, propose, selectedIdSet, selection, toggle],
   );
 }

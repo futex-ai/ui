@@ -6,10 +6,7 @@ import {
   DRAG_SELECTABLE_LAYERS,
   dragSelectableOverlayClearsSurface,
 } from "../../src/drag-select/dragSelectableLayers";
-import {
-  dragSelectableSelectionForTargets,
-  dragSelectableShouldStartFromTarget,
-} from "../../src/drag-select/dragSelectableDom";
+import { dragSelectableSelectionForTargets } from "../../src/drag-select/dragSelectableDom";
 import {
   dragSelectableIdsEqual,
   dragSelectableBoundsForBox,
@@ -19,9 +16,13 @@ import {
   dragSelectableThresholdForValue,
   hasDragSelectableMoved,
 } from "../../src/drag-select/dragSelectableModel";
+import { dragSelectableDefaultDragMode } from "../../src/drag-select/dragSelectableOptions";
+import { dragSelectableStartDecision } from "../../src/drag-select/dragSelectableStartRules";
 import type { DragSelectableTargetRegistration } from "../../src/drag-select/dragSelectableTypes";
 import { DROPDOWN_LAYERS } from "../../src/dropdown/dropdownLayers";
 import { WEB_MODAL_LAYERS } from "../../src/modal/modalLayers";
+
+import { asElement, FakeElement } from "./dragSelectFakeDom";
 
 test("drag-select normalizes a box dragged in any direction", () => {
   assert.deepEqual(dragSelectableBox({ x: 320, y: 180 }, { x: 120, y: 60 }), {
@@ -130,53 +131,45 @@ test("drag-select overlay clears shared portal surfaces", () => {
   );
 });
 
-test("drag-select ignores nested interactive controls inside targets", () => {
-  withFakeDragSelectableDom(() => {
-    const row = new FakeElement();
-    const nestedButton = row.append(new FakeElement("button"));
-    const nestedCheckbox = row.append(new FakeElement("[role='checkbox']"));
-    const nestedEditable = row.append(new FakeElement("[contenteditable]"));
-    const nestedRadio = row.append(new FakeElement("[role='radio']"));
-    const nestedSwitch = row.append(new FakeElement("[role='switch']"));
-    const rootButton = new FakeElement("button");
+test("drag-select starts from controls inside targets but never from editable content", () => {
+  const provider = new FakeElement();
+  const row = provider.append(new FakeElement());
+  const nested = [
+    row.append(new FakeElement(["button"])),
+    row.append(new FakeElement(["[role='checkbox']"])),
+    row.append(new FakeElement(["[role='radio']"])),
+    row.append(new FakeElement(["[role='switch']"])),
+  ];
+  const nestedEditable = row.append(
+    new FakeElement(["[contenteditable]:not([contenteditable='false' i])"]),
+  );
+  const rootButton = provider.append(new FakeElement(["button"]));
+  const targets = [
+    dragSelectableRegistration(row, "row"),
+    dragSelectableRegistration(rootButton, "root"),
+  ];
+  const decide = (element: FakeElement) =>
+    dragSelectableStartDecision({
+      element: asElement(element),
+      event: {} as PointerEvent,
+      keys: { altKey: false, ctrlKey: false, metaKey: false, shiftKey: false },
+      options: {
+        dragMode: dragSelectableDefaultDragMode,
+        ignore: [],
+        startFromControls: true,
+      },
+      provider: asElement(provider),
+      targets,
+    });
 
-    assert.equal(
-      dragSelectableShouldStartFromTarget(nestedButton as unknown as Node, [
-        dragSelectableRegistration(row),
-      ]),
-      false,
-    );
-    assert.equal(
-      dragSelectableShouldStartFromTarget(nestedCheckbox as unknown as Node, [
-        dragSelectableRegistration(row),
-      ]),
-      false,
-    );
-    assert.equal(
-      dragSelectableShouldStartFromTarget(nestedEditable as unknown as Node, [
-        dragSelectableRegistration(row),
-      ]),
-      false,
-    );
-    assert.equal(
-      dragSelectableShouldStartFromTarget(nestedRadio as unknown as Node, [
-        dragSelectableRegistration(row),
-      ]),
-      false,
-    );
-    assert.equal(
-      dragSelectableShouldStartFromTarget(nestedSwitch as unknown as Node, [
-        dragSelectableRegistration(row),
-      ]),
-      false,
-    );
-    assert.equal(
-      dragSelectableShouldStartFromTarget(rootButton as unknown as Node, [
-        dragSelectableRegistration(rootButton),
-      ]),
-      true,
-    );
-  });
+  for (const control of nested) {
+    assert.equal(decide(control).allowed, true);
+    assert.equal(decide(control).onControl, true);
+  }
+  assert.equal(decide(nestedEditable).allowed, false);
+  assert.equal(decide(nestedEditable).reason, "field");
+  assert.equal(decide(rootButton).allowed, true);
+  assert.equal(decide(rootButton).onControl, false);
 });
 
 test("drag-select snapshots selected target metadata on commit", () => {
@@ -204,87 +197,10 @@ test("drag-select target hook returns an empty legacy focus style", () => {
 
 function dragSelectableRegistration(
   node: FakeElement,
-  options: Omit<DragSelectableTargetRegistration, "id" | "node"> = {},
+  id: string,
 ): DragSelectableTargetRegistration {
   return {
-    ...options,
-    id: "target",
+    id,
     node: node as unknown as DragSelectableTargetRegistration["node"],
   };
-}
-
-function withFakeDragSelectableDom(run: () => void) {
-  const globals = globalThis as FakeDomGlobals;
-  const hadElement = "Element" in globals;
-  const hadNode = "Node" in globals;
-  const previousElement = globals.Element;
-  const previousNode = globals.Node;
-  globals.Element = FakeElement;
-  globals.Node = FakeNode;
-  try {
-    run();
-  } finally {
-    restoreFakeDomGlobal(globals, "Element", hadElement, previousElement);
-    restoreFakeDomGlobal(globals, "Node", hadNode, previousNode);
-  }
-}
-
-function restoreFakeDomGlobal(
-  globals: FakeDomGlobals,
-  key: "Element" | "Node",
-  hadValue: boolean,
-  previousValue: unknown,
-) {
-  if (hadValue) {
-    globals[key] = previousValue;
-    return;
-  }
-  delete globals[key];
-}
-
-type FakeDomGlobals = {
-  Element?: unknown;
-  Node?: unknown;
-};
-
-class FakeNode {
-  parentElement: FakeElement | null = null;
-}
-
-class FakeElement extends FakeNode {
-  private readonly selectorName: string | null;
-  private readonly children: FakeNode[] = [];
-
-  constructor(selectorName: string | null = null) {
-    super();
-    this.selectorName = selectorName;
-  }
-
-  append<T extends FakeNode>(child: T): T {
-    child.parentElement = this;
-    this.children.push(child);
-    return child;
-  }
-
-  contains(target: FakeNode): boolean {
-    if (target === this) {
-      return true;
-    }
-    return this.children.some(
-      (child) =>
-        child === target ||
-        (child instanceof FakeElement && child.contains(target)),
-    );
-  }
-
-  closest(selector: string): FakeElement | null {
-    let current: FakeElement | null = this;
-    while (current) {
-      if (current.selectorName && selector.includes(current.selectorName)) {
-        return current;
-      }
-      current = current.parentElement;
-    }
-    return null;
-  }
 }

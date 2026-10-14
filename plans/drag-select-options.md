@@ -511,35 +511,46 @@ Evidence: `.context/drag-select-options/m2-evidence.md`.
 
 Add the options type, the page hook, and the configurable start rules.
 
-- [ ] Add `DragSelectableOptions` and the provider-only props. Put the new
+- [x] Add `DragSelectableOptions` and the provider-only props. Put the new
       types in their own module if `dragSelectableTypes.ts` would pass 300
       lines.
-- [ ] Add the option merge and `useDragSelectableOptions`, shared by the web
+- [x] Add the option merge and `useDragSelectableOptions`, shared by the web
       and native providers. Unit tests: precedence, `undefined` keys, the
       newest layer wins, unmount restores the earlier value, and a function
       option is read at call time.
-- [ ] Export `dragSelectableIgnoreProps` and `dragSelectableIgnoreDomProps`.
+- [x] Export `dragSelectableIgnoreProps` and `dragSelectableIgnoreDomProps`.
       Add `ignore` with the invalid-selector warning.
-- [ ] Add the field and control rules, `startFromControls`, and
+- [x] Add the field and control rules, `startFromControls`, and
       `minimumControlDragDistance`. Unit-test each rule and its reason.
-- [ ] Add an internal function to `src/primitives/dom/usePress.ts` that ends
+- [x] Add an internal function to `src/primitives/dom/usePress.ts` that ends
       the active pointer presses. Call it at a start. Tests: after a drag
       from a row `Button`, the button has no pressed look and fires no
       `onPress`. A click without movement still fires `onPress`.
-- [ ] Add `dragMode`, `dragSelectableDefaultDragMode`,
+- [x] Add `dragMode`, `dragSelectableDefaultDragMode`,
       `dragSelectableNextSelection`, and `state.dragMode`. Unit-test the
       reducer. Browser tests: Control-drag and Alt-drag do not start,
       Shift-drag adds, and Meta-drag toggles.
-- [ ] Add `shouldStartDrag` with `DragSelectableStart`. Unit tests: each
+- [x] Add `shouldStartDrag` with `DragSelectableStart`. Unit tests: each
       reason, and an override in both directions.
-- [ ] Add `preventTextSelection`. Browser tests: no highlight during or
+- [x] Add `preventTextSelection`. Browser tests: no highlight during or
       after a drag, including a drag that starts on row text and ends outside
       the provider; a highlight that formed before the start is gone after
       the start; a double-click selects a word and a triple-click selects a
       paragraph; with `false`, the old behavior returns.
-- [ ] Mark the library gesture surfaces with the ignore marker. Browser
+- [x] Mark the library gesture surfaces with the ignore marker. Browser
       test: a drag inside a `DataGrid` and a `SortableList` in the page shell
       draws no box. Add source tests for the other surfaces.
+- [x] Discovered: the "Page shell" story becomes the shell pattern: the
+      provider is `disabled`, each page turns it on with
+      `useDragSelectableOptions`, a sidebar switch sets
+      `preventTextSelection`, and the Invoices page holds a `DataGrid` and a
+      `SortableList` for the gesture-surface test.
+- [x] Discovered: the chart scrub hook is native-only and has no web
+      gesture, and the video-editor `Scrubber` and the timeline ruler are web
+      `slider`s that the field rule refuses, so none of them gets a marker.
+      The protocol doc lists the marked roots.
+
+Evidence: `.context/drag-select-options/m3-evidence.md`.
 
 ## Milestone 4: Controlled selection
 

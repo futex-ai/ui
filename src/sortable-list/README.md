@@ -54,6 +54,10 @@ function StatusList() {
 }
 ```
 
+The list carries the drag-select ignore marker (`data-drag-select-ignore`),
+so a page-wide `DragSelectableProvider` never starts a selection box over a
+reorder.
+
 ### The reorder contract
 
 Providing `onReorder` enables dragging (mirroring how `List.onItemPress` enables

@@ -13,6 +13,7 @@ import { useFocusRing } from "../focusRing";
 import { rovingTabIndex } from "../keyboardNavigation";
 
 import { orderedTargetIds } from "./dragSelectableTargetOrder";
+import type { DragSelectableOptionLayers } from "./useDragSelectableOptionLayers";
 import type {
   DragSelectableChangeListener,
   DragSelectableState,
@@ -25,6 +26,7 @@ import { useDragSelectableTargetKeys } from "./useDragSelectableTargetKeys";
 export const emptyDragSelectableState: DragSelectableState = {
   dragBox: null,
   dragging: false,
+  dragMode: null,
   matchingCount: 0,
   matchingIds: [],
   matchingTargets: [],
@@ -39,6 +41,8 @@ export type DragSelectableContextValue = {
   /** Move the roving focus + DOM focus to the target at `id`. */
   focusTarget: (id: string) => void;
   matchedIdSet: ReadonlySet<string>;
+  /** How `useDragSelectableOptions` adds its layer to the provider. */
+  optionLayers: DragSelectableOptionLayers;
   /** Stable registration map; used to resolve nodes for keyboard focus moves. */
   registeredTargets: ReadonlyMap<string, DragSelectableTargetRegistration>;
   registerTarget: (target: DragSelectableTargetRegistration) => () => void;
@@ -59,6 +63,7 @@ export const defaultDragSelectableContext: DragSelectableContextValue = {
   activeId: null,
   focusTarget: () => undefined,
   matchedIdSet: emptySet,
+  optionLayers: { remove: () => undefined, set: () => undefined },
   registeredTargets: emptyMap,
   registerTarget: () => () => undefined,
   selectedIdSet: emptySet,

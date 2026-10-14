@@ -7,6 +7,7 @@ import { DragSelectableContext } from "./DragSelectableContext";
 import { DragSelectableOverlay } from "./DragSelectableOverlay";
 import type { DragSelectableProviderProps } from "./dragSelectableTypes";
 import { useDragSelectableGesture } from "./useDragSelectableGesture";
+import { useDragSelectableOptionLayers } from "./useDragSelectableOptionLayers";
 import { useDragSelectableProviderValue } from "./useDragSelectableProviderValue";
 import { useDragSelectableRegistry } from "./useDragSelectableRegistry";
 import { useDragSelectableSelectionState } from "./useDragSelectableSelectionState";
@@ -14,33 +15,31 @@ import { useDragSelectableSelectionState } from "./useDragSelectableSelectionSta
 export function DragSelectableProvider({
   accessibilityLabel,
   children,
-  disabled = false,
-  minimumDragDistance,
-  onSelectionChange,
-  overlayZIndex,
   role = "group",
-  selectionAnnouncement,
-  selectionLabel,
   style,
   testID,
+  ...providerOptions
 }: DragSelectableProviderProps) {
   const theme = useSharedUiTheme();
+  const { layers, options, readOptions } =
+    useDragSelectableOptionLayers(providerOptions);
   const registry = useDragSelectableRegistry();
   const selection = useDragSelectableSelectionState({
-    disabled,
-    onSelectionChange,
+    disabled: options.disabled,
+    onSelectionChange: options.onSelectionChange,
     registeredTargets: registry.registeredTargets,
-    selectionAnnouncement,
+    selectionAnnouncement: options.selectionAnnouncement,
     targetsRef: registry.targetsRef,
   });
   const gesture = useDragSelectableGesture({
     commit: selection.commitDrag,
-    disabled,
-    minimumDragDistance,
+    disabled: options.disabled,
+    readOptions,
     registry,
   });
   const context = useDragSelectableProviderValue({
     activeDrag: gesture.activeDrag,
+    optionLayers: layers,
     registry,
     selection,
   });
@@ -62,8 +61,8 @@ export function DragSelectableProvider({
       </View>
       <DragSelectableOverlay
         activeDrag={gesture.activeDrag}
-        overlayZIndex={overlayZIndex}
-        selectionLabel={selectionLabel}
+        overlayZIndex={options.overlayZIndex}
+        selectionLabel={options.selectionLabel}
         theme={theme}
       />
     </DragSelectableContext.Provider>

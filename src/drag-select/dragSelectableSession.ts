@@ -1,8 +1,8 @@
 /**
  * One drag-select gesture, from the accepted press to the release or a
  * cancel. The session owns the rules of the gesture: the threshold, the
- * anchored start point, the measurements, the commit, and the swallowed
- * click. It reaches the DOM only through `DragSelectableSessionEnv`, so unit
+ * anchored start point, the measurements, the text-selection block, the
+ * commit, and the swallowed click. It reaches the DOM only through `DragSelectableSessionEnv`, so unit
  * tests drive it with fakes.
  */
 import {
@@ -13,6 +13,7 @@ import {
   type DragSelectablePoint,
 } from "./dragSelectableModel";
 import type { DragSelectableMeasuredTarget } from "./dragSelectableDom";
+import type { DragSelectableDragMode } from "./dragSelectableOptionTypes";
 import {
   dragSelectableAnchoredPoint,
   type DragSelectableAnchorFrame,
@@ -25,6 +26,8 @@ export type DragSelectableActiveDrag = {
   box: DragSelectableBox | null;
   /** The targets that the box intersects. */
   matchedTargets: DragSelectableTargetSnapshot[];
+  /** How the drag will change the selection. */
+  mode: DragSelectableDragMode;
   /** Whether the pointer moved the threshold distance. */
   moved: boolean;
 };
@@ -45,10 +48,14 @@ export type DragSelectableSessionHandlers = {
 
 /** The side effects that a session needs. */
 export type DragSelectableSessionEnv = {
+  /** Blocks text selection; returns the function that restores it. */
+  blockTextSelection: () => () => void;
   /** Receives the hit ids of a completed drag, in document order. */
   commit: (hitIds: string[]) => void;
   /** Runs once when the session ends, whatever the cause. */
   end: () => void;
+  /** Ends the library `Pressable` presses that the pointer started. */
+  endPresses: (pointerId: number | undefined) => void;
   /** Attaches the listeners that drive the session; returns the remover. */
   listen: (handlers: DragSelectableSessionHandlers) => () => void;
   /** Measures the enabled targets in viewport coordinates. */
@@ -67,8 +74,11 @@ export type DragSelectableSessionEnv = {
 
 /** The accepted press that starts a session. */
 export type DragSelectableSessionInput = {
+  mode: DragSelectableDragMode;
   pointerId: number | undefined;
   press: DragSelectablePoint;
+  /** Block text selection from the start to the release. */
+  preventTextSelection: boolean;
   threshold: number;
 };
 
@@ -94,6 +104,7 @@ export function startDragSelectableSession(
   const armed: DragSelectableActiveDrag = {
     box: null,
     matchedTargets: [],
+    mode: input.mode,
     moved: false,
   };
   let phase: Phase = "armed";
@@ -101,6 +112,7 @@ export function startDragSelectableSession(
   let targets: DragSelectableMeasuredTarget[] = [];
   let removeEscape: (() => void) | null = null;
   let removeListeners: (() => void) | null = null;
+  let restoreTextSelection: (() => void) | null = null;
   let ended = false;
 
   const ownsPointer = (pointerId: number | undefined) =>
@@ -125,6 +137,7 @@ export function startDragSelectableSession(
       matchedTargets: dragSelectableBoundsForBox(targets, box).map(
         (target) => ({ data: target.data, id: target.id }),
       ),
+      mode: input.mode,
       moved: true,
     });
   };
@@ -140,6 +153,8 @@ export function startDragSelectableSession(
     }
     ended = true;
     releaseDragEffects();
+    restoreTextSelection?.();
+    restoreTextSelection = null;
     removeListeners?.();
     removeListeners = null;
     env.render(null);
@@ -162,6 +177,10 @@ export function startDragSelectableSession(
   const start = () => {
     phase = "started";
     targets = env.measureTargets();
+    if (input.preventTextSelection) {
+      restoreTextSelection = env.blockTextSelection();
+    }
+    env.endPresses(input.pointerId);
     removeEscape = env.pushEscape(cancel);
     draw();
   };

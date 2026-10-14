@@ -12,10 +12,10 @@ import {
 
 const press = { x: 300, y: 25 };
 
-function startSession(threshold = 4) {
+function startSession(threshold = 4, preventTextSelection = true) {
   const fake = fakeSessionEnv();
   const session = startDragSelectableSession(
-    { pointerId: 1, press, threshold },
+    { mode: "replace", pointerId: 1, press, preventTextSelection, threshold },
     fake.env,
   );
   return { fake, session };
@@ -26,6 +26,7 @@ test("drag-select provider uses the configured movement threshold", () => {
   assert.deepEqual(fake.lastRender(), {
     box: null,
     matchedTargets: [],
+    mode: "replace",
     moved: false,
   });
 
