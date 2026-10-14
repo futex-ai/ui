@@ -102,3 +102,19 @@ export function dragSelectableReportRender(
     state: { pending: null, reportedIds: [...renderedIds] },
   };
 }
+
+/**
+ * The stored selection after the registry emptied and the task ended: kept
+ * when one of its ids registered again (React's development double mount
+ * does that at once), cleared otherwise. A page change in an app shell ends
+ * with other ids registered, or none, so it starts the new page empty.
+ */
+export function dragSelectableStoredAfterEmpty(
+  storedIds: readonly string[],
+  isRegistered: (id: string) => boolean,
+): readonly string[] {
+  if (storedIds.length === 0 || storedIds.some(isRegistered)) {
+    return storedIds;
+  }
+  return [];
+}

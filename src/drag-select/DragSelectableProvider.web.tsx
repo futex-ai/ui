@@ -6,31 +6,22 @@ import { useSharedUiTheme } from "../theme";
 import { DragSelectableContext } from "./DragSelectableContext";
 import { DragSelectableOverlay } from "./DragSelectableOverlay";
 import type { DragSelectableProviderProps } from "./dragSelectableTypes";
+import { useDragSelectableCore } from "./useDragSelectableCore";
 import { useDragSelectableGesture } from "./useDragSelectableGesture";
-import { useDragSelectableOptionLayers } from "./useDragSelectableOptionLayers";
 import { useDragSelectableProviderValue } from "./useDragSelectableProviderValue";
-import { useDragSelectableRegistry } from "./useDragSelectableRegistry";
-import { useDragSelectableSelectionState } from "./useDragSelectableSelectionState";
 
 export function DragSelectableProvider({
   accessibilityLabel,
   children,
+  defaultSelectedIds,
   role = "group",
   style,
   testID,
   ...providerOptions
 }: DragSelectableProviderProps) {
   const theme = useSharedUiTheme();
-  const { layers, options, readOptions } =
-    useDragSelectableOptionLayers(providerOptions);
-  const registry = useDragSelectableRegistry();
-  const selection = useDragSelectableSelectionState({
-    disabled: options.disabled,
-    onSelectionChange: options.onSelectionChange,
-    registeredTargets: registry.registeredTargets,
-    selectionAnnouncement: options.selectionAnnouncement,
-    targetsRef: registry.targetsRef,
-  });
+  const { layers, options, readOptions, registry, selection } =
+    useDragSelectableCore(providerOptions, defaultSelectedIds);
   const gesture = useDragSelectableGesture({
     commit: selection.commitDrag,
     disabled: options.disabled,

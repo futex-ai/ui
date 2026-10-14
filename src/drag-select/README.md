@@ -93,9 +93,11 @@ function TransactionRow({ row }) {
   `defaultSelectedIds`, applies each proposal, and still calls
   `onSelectedIdsChange`.
 - Selection ids are a set. Their order carries no meaning.
-- Page change: when the last target unregisters, the provider clears its
-  stored selection. An uncontrolled page in a shell therefore starts empty.
-  A filter or a reload that leaves zero rows also clears it.
+- Page change: when the last target unregisters and none of the selected
+  rows registers again in the same task, the provider clears its stored
+  selection. An uncontrolled page in a shell therefore starts empty. A filter
+  or a reload that leaves zero rows also clears it. React's development
+  double mount keeps it, because the same rows register again at once.
 - `onSelectionChange(selection)` fires when the rendered selection changes.
   A proposal is announced (WCAG 2.1 4.1.3) only when the rendered selection
   becomes that proposal, so a rejected proposal stays silent.

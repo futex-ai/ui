@@ -70,6 +70,11 @@ export type DragSelectableProviderProps = DragSelectableOptions & {
   accessibilityLabel?: string;
   children: ReactNode;
   /**
+   * The starting selection of an uncontrolled provider. It is read once, when
+   * the provider mounts.
+   */
+  defaultSelectedIds?: readonly string[];
+  /**
    * Container ARIA role. Defaults to `"group"`. Pass `"list"` (with targets
    * laid out like list items) for a single-axis collection.
    */

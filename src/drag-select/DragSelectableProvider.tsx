@@ -1,54 +1,35 @@
-/** Native-safe drag-select provider fallback. */
-import { useCallback, useMemo, useRef } from "react";
+/**
+ * Native drag-select provider. It keeps the options, the registered targets,
+ * and the selection (controlled or uncontrolled) like the web provider, so
+ * `target.selected` and the selection hooks work, but it has no drag gesture
+ * and draws no box.
+ */
 import { View } from "../primitives/reactNative";
 
-import {
-  DragSelectableContext,
-  emptyDragSelectableState,
-} from "./DragSelectableContext";
-import type {
-  DragSelectableChangeListener,
-  DragSelectableProviderProps,
-  DragSelectableTargetOptions,
-  DragSelectableTargetRegistration,
-} from "./dragSelectableTypes";
-import { useDragSelectableOptionLayers } from "./useDragSelectableOptionLayers";
-
-const emptySet = new Set<string>();
-const emptyMap = new Map<string, DragSelectableTargetRegistration>();
+import { DragSelectableContext } from "./DragSelectableContext";
+import type { DragSelectableProviderProps } from "./dragSelectableTypes";
+import { useDragSelectableCore } from "./useDragSelectableCore";
+import { useDragSelectableProviderValue } from "./useDragSelectableProviderValue";
 
 export function DragSelectableProvider({
   accessibilityLabel,
   children,
+  defaultSelectedIds,
   role = "group",
   style,
   testID,
   ...providerOptions
 }: DragSelectableProviderProps) {
-  const { layers } = useDragSelectableOptionLayers(providerOptions);
-  const listenersRef = useRef(new Set<DragSelectableChangeListener>());
-  const subscribe = useCallback((listener: DragSelectableChangeListener) => {
-    listenersRef.current.add(listener);
-    return () => listenersRef.current.delete(listener);
-  }, []);
-  const context = useMemo(
-    () => ({
-      activeId: null,
-      focusTarget: (_id: string) => undefined,
-      matchedIdSet: emptySet,
-      optionLayers: layers,
-      registeredTargets: emptyMap,
-      registerTarget: (_target: DragSelectableTargetRegistration) => () =>
-        undefined,
-      selectedIdSet: emptySet,
-      setSelection: (_ids: string[]) => undefined,
-      state: emptyDragSelectableState,
-      subscribe,
-      toggleSelection: (_id: string) => undefined,
-      updateTarget: (_target: DragSelectableTargetOptions) => undefined,
-    }),
-    [layers, subscribe],
+  const { layers, registry, selection } = useDragSelectableCore(
+    providerOptions,
+    defaultSelectedIds,
   );
+  const context = useDragSelectableProviderValue({
+    activeDrag: null,
+    optionLayers: layers,
+    registry,
+    selection,
+  });
 
   return (
     <DragSelectableContext.Provider value={context}>

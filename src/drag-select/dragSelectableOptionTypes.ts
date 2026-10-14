@@ -43,6 +43,16 @@ export type DragSelectableStart = {
   targetId: string | null;
 };
 
+/** What a proposed selection came from. */
+export type DragSelectableSelectionChange = {
+  /** The hits of the drag or the keys, in document order. */
+  hitIds: string[];
+  mode: DragSelectableDragMode;
+  /** The rendered selection when the proposal was made. */
+  previousIds: string[];
+  source: "drag" | "keyboard";
+};
+
 /**
  * The options that both `DragSelectableProvider` and
  * `useDragSelectableOptions` take. A hook layer overrides the provider props
@@ -61,12 +71,25 @@ export type DragSelectableOptions = {
   minimumControlDragDistance?: number;
   /** Pixels of movement before a press starts a drag. */
   minimumDragDistance?: number;
+  /**
+   * Receives each proposed selection. In controlled mode the app applies it
+   * by passing it back as `selectedIds`.
+   */
+  onSelectedIdsChange?: (
+    ids: string[],
+    change: DragSelectableSelectionChange,
+  ) => void;
   /** Receives each change of the rendered selection. */
   onSelectionChange?: (selection: DragSelectableSelection) => void;
   /** The z-index of the box layer, for a custom stacking context. */
   overlayZIndex?: number;
   /** Blocks text selection from the start of a drag to the release. */
   preventTextSelection?: boolean;
+  /**
+   * Makes the selection controlled when it is defined: the provider renders
+   * these ids and stores none. The order carries no meaning.
+   */
+  selectedIds?: readonly string[];
   /**
    * Customizes the polite live-region announcement of an applied proposal
    * (WCAG 2.1 — 4.1.3 Status Messages, AA). Return an empty string to stay

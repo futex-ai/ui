@@ -12,6 +12,7 @@ import {
   PageContentAreaExample,
 } from "./dragSelectExamples";
 import { NestedProvidersExample } from "./dragSelectNestedExample";
+import { ControlledSelectionExample } from "./dragSelectControlledExample";
 import { EmptyPageExample } from "./dragSelectEmptyPageExample";
 import { PageShellExample } from "./dragSelectPageShellExample";
 import { StorySurface } from "./sharedExamples";
@@ -93,6 +94,15 @@ export const NestedProviders: Story = {
   render: () => (
     <StorySurface>
       <NestedProvidersExample />
+    </StorySurface>
+  ),
+};
+
+export const ControlledSelection: Story = {
+  name: "Controlled selection",
+  render: () => (
+    <StorySurface>
+      <ControlledSelectionExample />
     </StorySurface>
   ),
 };

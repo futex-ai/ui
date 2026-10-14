@@ -556,22 +556,31 @@ Evidence: `.context/drag-select-options/m3-evidence.md`.
 
 Let the app own the selection, from the provider or from the page hook.
 
-- [ ] Add `selectedIds`, `defaultSelectedIds`, `onSelectedIdsChange`, and
+- [x] Add `selectedIds`, `defaultSelectedIds`, `onSelectedIdsChange`, and
       `DragSelectableSelectionChange`.
-- [ ] Send keyboard toggles and ranges through the same proposal path.
-- [ ] Clear the uncontrolled selection when the last target unregisters.
+- [x] Send keyboard toggles and ranges through the same proposal path.
+- [x] Clear the uncontrolled selection when the last target unregisters.
       Browser test on the page shell: select rows on Transactions, open
       Invoices, check that `selectedCount` is 0 and that `onSelectionChange`
       fired once with an empty selection, then return to Transactions and
       check that no row is selected.
-- [ ] Apply the announcement rule. Test: a proposal that the app applies is
+- [x] Apply the announcement rule. Test: a proposal that the app applies is
       announced once; a rejected proposal and an app-made change are not.
-- [ ] Make the native provider show `selectedIds` and `defaultSelectedIds`
+- [x] Make the native provider show `selectedIds` and `defaultSelectedIds`
       and accept the page hook.
-- [ ] Add a "Controlled selection" story. The app owns the selection with
+- [x] Add a "Controlled selection" story. The app owns the selection with
       click, Command-click, Shift-click, a toolbar "Clear" button, and drag.
       Browser tests: a drag proposal that the app applies; a proposal that
       the app rejects; the toolbar clears both the app state and the rows.
+- [x] Discovered: the page-change check runs at the end of the task and
+      keeps the stored selection when one of its ids registers again, so
+      React's development double mount keeps `defaultSelectedIds`. Unit-test
+      the rule and update the protocol doc and the README.
+- [x] Discovered: move the options, the registry, and the selection into a
+      shared `useDragSelectableCore`, so the web and the native provider build
+      the same state.
+
+Evidence: `.context/drag-select-options/m4-evidence.md`.
 
 ## Milestone 5: Auto-scroll
 

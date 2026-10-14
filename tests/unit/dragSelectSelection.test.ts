@@ -6,6 +6,7 @@ import {
   dragSelectableInitialReport,
   dragSelectableRecordProposal,
   dragSelectableReportRender,
+  dragSelectableStoredAfterEmpty,
 } from "../../src/drag-select/dragSelectableSelectionModel";
 
 test("drag-select compares selections as sets", () => {
@@ -75,4 +76,31 @@ test("drag-select lets a new proposal replace a waiting one", () => {
   const second = dragSelectableRecordProposal(first, ["txn_2"]);
   assert.equal(dragSelectableReportRender(second, ["txn_1"]).announce, false);
   assert.equal(dragSelectableReportRender(second, ["txn_2"]).announce, true);
+});
+
+test("drag-select clears the stored selection after a page change", () => {
+  const stored = ["txn_1", "txn_2"];
+  const invoices = new Set(["inv_1", "inv_2"]);
+  assert.deepEqual(
+    dragSelectableStoredAfterEmpty(stored, (id) => invoices.has(id)),
+    [],
+  );
+  assert.deepEqual(
+    dragSelectableStoredAfterEmpty(stored, () => false),
+    [],
+  );
+});
+
+test("drag-select keeps the stored selection when its targets register again", () => {
+  const stored = ["txn_1", "txn_2"];
+  const remounted = new Set(["txn_1", "txn_2", "txn_3"]);
+  assert.equal(
+    dragSelectableStoredAfterEmpty(stored, (id) => remounted.has(id)),
+    stored,
+  );
+  const empty: string[] = [];
+  assert.equal(
+    dragSelectableStoredAfterEmpty(empty, () => false),
+    empty,
+  );
 });

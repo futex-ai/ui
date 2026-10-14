@@ -193,11 +193,14 @@ on release and on every cancel.
 - Uncontrolled: the provider starts from `defaultSelectedIds`, applies each
   proposal, and also calls `onSelectedIdsChange`.
 - Page change: when the last registered target unregisters, the provider
-  clears its stored selection. In uncontrolled mode this changes the rendered
-  selection, so `onSelectionChange` fires with an empty selection. The clear
-  is not a proposal, so it is not announced and `onSelectedIdsChange` does
-  not fire. A page in a shell starts with an empty selection. A filter or a
-  reload that leaves zero rows also clears the selection.
+  checks its stored selection at the end of the task (a microtask). It
+  clears the stored selection unless one of its ids registered again by
+  then, as React's development double mount does. In uncontrolled mode the
+  clear changes the rendered selection, so `onSelectionChange` fires with an
+  empty selection. The clear is not a proposal, so it is not announced and
+  `onSelectedIdsChange` does not fire. A page in a shell starts with an
+  empty selection. A filter or a reload that leaves zero rows also clears
+  the selection.
 - `onSelectionChange(selection)` fires when the rendered selection changes
   as a set, from any source. The initial selection does not fire it.
 - Announcement: a proposal waits for the next change of the rendered
