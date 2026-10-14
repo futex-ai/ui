@@ -33,6 +33,7 @@ export function dragSelectableDefaultDragMode(
 /** The options with their defaults applied and their values normalized. */
 export type DragSelectableResolvedOptions = Omit<
   DragSelectableOptions,
+  | "autoScroll"
   | "disabled"
   | "dragMode"
   | "ignore"
@@ -41,6 +42,7 @@ export type DragSelectableResolvedOptions = Omit<
   | "preventTextSelection"
   | "startFromControls"
 > & {
+  autoScroll: boolean;
   disabled: boolean;
   dragMode: NonNullable<DragSelectableOptions["dragMode"]>;
   ignore: readonly string[];
@@ -91,6 +93,7 @@ export function dragSelectableResolveOptions(
 ): DragSelectableResolvedOptions {
   return {
     ...options,
+    autoScroll: options.autoScroll ?? true,
     disabled: options.disabled ?? false,
     dragMode: options.dragMode ?? dragSelectableDefaultDragMode,
     ignore:

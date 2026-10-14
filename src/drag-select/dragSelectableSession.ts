@@ -2,7 +2,7 @@
  * One drag-select gesture, from the accepted press to the release or a
  * cancel. The session owns the rules of the gesture: the threshold, the
  * anchored start point, the measurements, the text-selection block, the
- * commit, and the swallowed click. It reaches the DOM only through `DragSelectableSessionEnv`, so unit
+ * auto-scroll, the commit, and the swallowed click. It reaches the DOM only through `DragSelectableSessionEnv`, so unit
  * tests drive it with fakes.
  */
 import {
@@ -68,12 +68,19 @@ export type DragSelectableSessionEnv = {
   readAnchor: () => DragSelectableAnchorFrame;
   /** Draws the gesture, or clears it with `null`. */
   render: (drag: DragSelectableActiveDrag | null) => void;
+  /**
+   * Starts edge auto-scroll; returns the function that stops it.
+   * `readPointer` gives the latest pointer position.
+   */
+  startAutoScroll: (readPointer: () => DragSelectablePoint) => () => void;
   /** Swallows the next click. */
   suppressClick: () => void;
 };
 
 /** The accepted press that starts a session. */
 export type DragSelectableSessionInput = {
+  /** Scroll the press's container while the pointer is near its edges. */
+  autoScroll: boolean;
   mode: DragSelectableDragMode;
   pointerId: number | undefined;
   press: DragSelectablePoint;
@@ -113,6 +120,7 @@ export function startDragSelectableSession(
   let removeEscape: (() => void) | null = null;
   let removeListeners: (() => void) | null = null;
   let restoreTextSelection: (() => void) | null = null;
+  let stopAutoScroll: (() => void) | null = null;
   let ended = false;
 
   const ownsPointer = (pointerId: number | undefined) =>
@@ -145,6 +153,8 @@ export function startDragSelectableSession(
   const releaseDragEffects = () => {
     removeEscape?.();
     removeEscape = null;
+    stopAutoScroll?.();
+    stopAutoScroll = null;
   };
 
   const end = () => {
@@ -182,6 +192,9 @@ export function startDragSelectableSession(
     }
     env.endPresses(input.pointerId);
     removeEscape = env.pushEscape(cancel);
+    if (input.autoScroll) {
+      stopAutoScroll = env.startAutoScroll(() => pointer);
+    }
     draw();
   };
 

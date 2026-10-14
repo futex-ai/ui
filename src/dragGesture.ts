@@ -1,9 +1,10 @@
 /**
- * DOM helpers shared by the library's pointer drags: the sortable list, the
- * drag-select provider, and the data grid.
+ * Helpers shared by the library's pointer drags: the click swallow after a
+ * drag (the sortable list and the drag-select provider) and the edge
+ * auto-scroll step (the data grid and the drag-select provider).
  *
- * Every function no-ops outside the browser, so a component may import this
- * module on any platform and call it only from its web paths.
+ * `suppressNextClick` no-ops outside the browser and `autoScrollDelta` is
+ * pure, so a component may import this module on any platform.
  */
 
 /**
@@ -27,4 +28,30 @@ export function suppressNextClick(): void {
   } else {
     setTimeout(remove, 0);
   }
+}
+
+/**
+ * The scroll step for one animation frame while the pointer sits within
+ * `edge` pixels of a scroll rect's visible edge, or beyond it: `speed`
+ * pixels toward that edge on each axis, else `0`.
+ */
+export function autoScrollDelta(
+  point: { x: number; y: number },
+  rect: { left: number; right: number; top: number; bottom: number },
+  edge = 36,
+  speed = 16,
+): { dx: number; dy: number } {
+  let dx = 0;
+  let dy = 0;
+  if (point.x < rect.left + edge) {
+    dx = -speed;
+  } else if (point.x > rect.right - edge) {
+    dx = speed;
+  }
+  if (point.y < rect.top + edge) {
+    dy = -speed;
+  } else if (point.y > rect.bottom - edge) {
+    dy = speed;
+  }
+  return { dx, dy };
 }

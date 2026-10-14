@@ -59,6 +59,11 @@ export type DragSelectableSelectionChange = {
  * key by key; `ignore` combines across layers.
  */
 export type DragSelectableOptions = {
+  /**
+   * Scrolls the press's scroll container while the pointer is near its
+   * edges during a drag.
+   */
+  autoScroll?: boolean;
   /** Turns the provider off: no press arms and a running drag cancels. */
   disabled?: boolean;
   /** Maps the modifier keys of a press to a mode, or to `null` for no drag. */

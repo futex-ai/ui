@@ -77,6 +77,7 @@ export function useDragSelectableGesture(
     let session: DragSelectableSession | null = null;
     session = startDragSelectableSession(
       {
+        autoScroll: options.autoScroll,
         mode: press.mode,
         pointerId: press.pointerId,
         press: press.point,

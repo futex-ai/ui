@@ -35,6 +35,8 @@ export function fakeSessionEnv() {
     removedEscapes: 0,
     removedListeners: 0,
     renders: [] as Array<DragSelectableActiveDrag | null>,
+    autoScrollStarts: 0,
+    autoScrollStops: 0,
     suppressedClicks: 0,
     textBlocks: 0,
     textRestores: 0,
@@ -47,6 +49,7 @@ export function fakeSessionEnv() {
     top: 0,
   };
   let targets = stackedRows();
+  let pointerReader: (() => { x: number; y: number }) | null = null;
   const env: DragSelectableSessionEnv = {
     blockTextSelection: () => {
       calls.textBlocks += 1;
@@ -88,6 +91,13 @@ export function fakeSessionEnv() {
     render: (drag) => {
       calls.renders.push(drag);
     },
+    startAutoScroll: (readPointer) => {
+      calls.autoScrollStarts += 1;
+      pointerReader = readPointer;
+      return () => {
+        calls.autoScrollStops += 1;
+      };
+    },
     suppressClick: () => {
       calls.suppressedClicks += 1;
     },
@@ -98,6 +108,8 @@ export function fakeSessionEnv() {
     /** The handlers the session attached, or `null` once it stopped. */
     handlers: () => handlers,
     lastRender: () => calls.renders[calls.renders.length - 1],
+    /** The pointer position that auto-scroll reads, if it started. */
+    pointer: () => pointerReader?.(),
     setAnchor: (next: DragSelectableAnchorFrame) => {
       anchor = next;
     },

@@ -10,10 +10,11 @@
  */
 import { useCallback, useEffect, useRef, type MutableRefObject } from "react";
 
+import { autoScrollDelta } from "../dragGesture";
+
 import { announceGrid } from "./dataGridAnnounce";
 import {
   attachDataGridDragListeners,
-  autoScrollDelta,
   findGridScrollers,
   hitTestDataGrid,
   selectionBoxRect,

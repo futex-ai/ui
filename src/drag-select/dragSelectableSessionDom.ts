@@ -3,6 +3,7 @@ import { suppressNextClick } from "../dragGesture";
 import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
 import { endPointerPresses } from "../primitives/dom/usePress";
 
+import { startDragSelectableAutoScroll } from "./dragSelectableAutoScroll";
 import { measureDragSelectableTargets } from "./dragSelectableDom";
 import { dragSelectableAnchorFrame } from "./dragSelectableScrollAnchor";
 import type { DragSelectableScrollContainer } from "./dragSelectableScrollContainer";
@@ -49,6 +50,8 @@ export function dragSelectableSessionDom(
     },
     readAnchor: () => dragSelectableAnchorFrame(options.container),
     render: options.render,
+    startAutoScroll: (readPointer) =>
+      startDragSelectableAutoScroll(options.container, readPointer),
     suppressClick: suppressNextClick,
   };
 }

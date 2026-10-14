@@ -99,6 +99,36 @@ test.describe("drag-select page shell", () => {
     expect(await checkedRowIds(page)).toEqual(rowRange("txn", 1, last));
   });
 
+  test("holding the pointer at the bottom edge scrolls and extends the drag", async ({
+    page,
+  }) => {
+    const main = page.getByTestId("page-shell-main");
+    const column = await boxOf(page, "page-shell-main");
+    const from = await pointIn(page, "shell-row-txn_1", 160);
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down();
+    await page.mouse.move(from.x + 10, column.y + column.height - 10, {
+      steps: 8,
+    });
+    await expect
+      .poll(() => main.evaluate((element) => element.scrollTop))
+      .toBeGreaterThan(400);
+    await expect
+      .poll(async () =>
+        Number(
+          /Matching (\d+)/.exec(
+            (await page.getByTestId("page-shell-status").textContent()) ?? "",
+          )?.[1] ?? 0,
+        ),
+      )
+      .toBeGreaterThan(15);
+    await page.mouse.up();
+
+    const checked = await checkedRowIds(page);
+    expect(checked.length).toBeGreaterThan(15);
+    expect(checked).toEqual(rowRange("txn", 1, checked.length));
+  });
+
   test("a drag that ends on its starting row sends the row no click", async ({
     page,
   }) => {

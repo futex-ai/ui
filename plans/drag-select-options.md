@@ -586,14 +586,16 @@ Evidence: `.context/drag-select-options/m4-evidence.md`.
 
 Scroll the press's scroll container while the pointer is near its edges.
 
-- [ ] Move `autoScrollDelta` from `src/data-grid/dataGridDragDom.ts` to
+- [x] Move `autoScrollDelta` from `src/data-grid/dataGridDragDom.ts` to
       `src/dragGesture.ts`. Update the data grid import and its tests.
-- [ ] Add the animation-frame loop and `autoScroll`. It stops on release and
+- [x] Add the animation-frame loop and `autoScroll`. It stops on release and
       on cancel.
-- [ ] Browser test: hold the pointer at the bottom edge of the page-shell
+- [x] Browser test: hold the pointer at the bottom edge of the page-shell
       column. Wait until the column scrolls and the selection reaches rows
       below the first screen. Use polling expectations, not elapsed-time
       assertions.
+
+Evidence: `.context/drag-select-options/m5-evidence.md`.
 
 ## Milestone 6: Box and wrapper
 

@@ -84,28 +84,6 @@ export function findGridScrollers(gridNode: Element): {
   return { horizontal, vertical };
 }
 
-/** Scroll delta while the pointer sits in the edge zone of a scroll rect. */
-export function autoScrollDelta(
-  point: { x: number; y: number },
-  rect: { left: number; right: number; top: number; bottom: number },
-  edge = 36,
-  speed = 16,
-): { dx: number; dy: number } {
-  let dx = 0;
-  let dy = 0;
-  if (point.x < rect.left + edge) {
-    dx = -speed;
-  } else if (point.x > rect.right - edge) {
-    dx = speed;
-  }
-  if (point.y < rect.top + edge) {
-    dy = -speed;
-  } else if (point.y > rect.bottom - edge) {
-    dy = speed;
-  }
-  return { dx, dy };
-}
-
 /** Grid-relative bounding box of the rendered selected cells (the marquee). */
 export function selectionBoxRect(
   gridNode: Element,

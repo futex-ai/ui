@@ -12,10 +12,20 @@ import {
 
 const press = { x: 300, y: 25 };
 
-function startSession(threshold = 4, preventTextSelection = true) {
+function startSession(
+  threshold = 4,
+  { autoScroll = true, preventTextSelection = true } = {},
+) {
   const fake = fakeSessionEnv();
   const session = startDragSelectableSession(
-    { mode: "replace", pointerId: 1, press, preventTextSelection, threshold },
+    {
+      autoScroll,
+      mode: "replace",
+      pointerId: 1,
+      press,
+      preventTextSelection,
+      threshold,
+    },
     fake.env,
   );
   return { fake, session };
@@ -182,4 +192,50 @@ test("drag-select gives a press to the innermost active provider", () => {
   const inactiveInner = {};
   assert.equal(dragSelectableClaimPress(inactiveInner, false), false);
   assert.equal(dragSelectableClaimPress(inactiveInner, true), true);
+});
+
+test("drag-select starts the drag effects at the start, not at the press", () => {
+  const { fake } = startSession();
+  assert.equal(fake.calls.textBlocks, 0);
+  assert.equal(fake.calls.autoScrollStarts, 0);
+  assert.deepEqual(fake.calls.endedPresses, []);
+
+  attached(fake).move({ x: 300, y: 120 }, 1);
+  assert.equal(fake.calls.textBlocks, 1);
+  assert.equal(fake.calls.autoScrollStarts, 1);
+  assert.deepEqual(fake.calls.endedPresses, [1]);
+
+  attached(fake).move({ x: 320, y: 560 }, 1);
+  assert.deepEqual(fake.pointer(), { x: 320, y: 560 });
+  attached(fake).release({ x: 320, y: 560 }, 1);
+  assert.equal(fake.calls.textRestores, 1);
+  assert.equal(fake.calls.autoScrollStops, 1);
+});
+
+test("drag-select skips the text block and auto-scroll when they are off", () => {
+  const { fake } = startSession(4, {
+    autoScroll: false,
+    preventTextSelection: false,
+  });
+  attached(fake).move({ x: 300, y: 120 }, 1);
+  attached(fake).release({ x: 300, y: 120 }, 1);
+  assert.equal(fake.calls.textBlocks, 0);
+  assert.equal(fake.calls.autoScrollStarts, 0);
+  assert.equal(fake.calls.commits.length, 1);
+});
+
+test("drag-select stops auto-scroll on a cancel but keeps the text block until the release", () => {
+  const escaped = startSession();
+  attached(escaped.fake).move({ x: 300, y: 120 }, 1);
+  escaped.fake.calls.escapes[0]();
+  assert.equal(escaped.fake.calls.autoScrollStops, 1);
+  assert.equal(escaped.fake.calls.textRestores, 0);
+  attached(escaped.fake).release({ x: 300, y: 120 }, 1);
+  assert.equal(escaped.fake.calls.textRestores, 1);
+
+  const interrupted = startSession();
+  attached(interrupted.fake).move({ x: 300, y: 120 }, 1);
+  attached(interrupted.fake).interrupt();
+  assert.equal(interrupted.fake.calls.autoScrollStops, 1);
+  assert.equal(interrupted.fake.calls.textRestores, 1);
 });
