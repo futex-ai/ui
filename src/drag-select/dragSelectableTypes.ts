@@ -33,10 +33,11 @@ export type DragSelectableSelectionLabelContext = {
   matchingTargets: DragSelectableTargetSnapshot[];
 };
 
+/** Builds the badge text of the default box. `null` hides the badge. */
 export type DragSelectableSelectionLabel = (
   count: number,
   context: DragSelectableSelectionLabelContext,
-) => string;
+) => string | null;
 
 export type DragSelectableState = DragSelectableSelection & {
   dragBox: DragSelectableBox | null;
@@ -75,10 +76,13 @@ export type DragSelectableProviderProps = DragSelectableOptions & {
    */
   defaultSelectedIds?: readonly string[];
   /**
-   * Container ARIA role. Defaults to `"group"`. Pass `"list"` (with targets
-   * laid out like list items) for a single-axis collection.
+   * Container ARIA role. Without it, the container is a `group` when
+   * `accessibilityLabel` names it and has no role otherwise, so a page-wide
+   * provider adds nothing to the accessibility tree. Pass `"list"` (with
+   * targets laid out like list items) for a single-axis collection, or
+   * `"none"` for no role even with a name.
    */
-  role?: "group" | "list";
+  role?: "group" | "list" | "none";
   style?: StyleProp<ViewStyle>;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;

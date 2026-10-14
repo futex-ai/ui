@@ -24,6 +24,11 @@ import type { DragSelectableTargetSnapshot } from "./dragSelectableTypes";
 export type DragSelectableActiveDrag = {
   /** The full hit box in viewport coordinates, or `null` before the start. */
   box: DragSelectableBox | null;
+  /**
+   * The box to draw: the hit box clipped to the visible area of the press's
+   * scroll container, or `null` when nothing of it is visible.
+   */
+  drawnBox: DragSelectableBox | null;
   /** The targets that the box intersects. */
   matchedTargets: DragSelectableTargetSnapshot[];
   /** How the drag will change the selection. */
@@ -50,6 +55,8 @@ export type DragSelectableSessionHandlers = {
 export type DragSelectableSessionEnv = {
   /** Blocks text selection; returns the function that restores it. */
   blockTextSelection: () => () => void;
+  /** Clips a hit box to the visible area of the press's scroll container. */
+  clipBox: (box: DragSelectableBox) => DragSelectableBox | null;
   /** Receives the hit ids of a completed drag, in document order. */
   commit: (hitIds: string[]) => void;
   /** Runs once when the session ends, whatever the cause. */
@@ -110,6 +117,7 @@ export function startDragSelectableSession(
   const origin = env.readAnchor();
   const armed: DragSelectableActiveDrag = {
     box: null,
+    drawnBox: null,
     matchedTargets: [],
     mode: input.mode,
     moved: false,
@@ -142,6 +150,7 @@ export function startDragSelectableSession(
     const box = hitBox();
     env.render({
       box,
+      drawnBox: env.clipBox(box),
       matchedTargets: dragSelectableBoundsForBox(targets, box).map(
         (target) => ({ data: target.data, id: target.id }),
       ),

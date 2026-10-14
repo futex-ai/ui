@@ -35,6 +35,7 @@ test("drag-select provider uses the configured movement threshold", () => {
   const { fake } = startSession(24);
   assert.deepEqual(fake.lastRender(), {
     box: null,
+    drawnBox: null,
     matchedTargets: [],
     mode: "replace",
     moved: false,
@@ -238,4 +239,32 @@ test("drag-select stops auto-scroll on a cancel but keeps the text block until t
   attached(interrupted.fake).interrupt();
   assert.equal(interrupted.fake.calls.autoScrollStops, 1);
   assert.equal(interrupted.fake.calls.textRestores, 1);
+});
+
+test("drag-select draws the hit box clipped to the visible area", () => {
+  const { fake } = startSession();
+  fake.setClip({ bottom: 200, left: 0, right: 1000, top: 60 });
+  attached(fake).move({ x: 320, y: 400 }, 1);
+  const drag = fake.lastRender();
+  assert.deepEqual(drag?.box, {
+    bottom: 400,
+    height: 375,
+    left: 300,
+    right: 320,
+    top: 25,
+    width: 20,
+  });
+  assert.deepEqual(drag?.drawnBox, {
+    bottom: 200,
+    height: 140,
+    left: 300,
+    right: 320,
+    top: 60,
+    width: 20,
+  });
+  assert.equal(drag?.matchedTargets.length, 9);
+
+  fake.setClip({ bottom: 200, left: 600, right: 1000, top: 60 });
+  attached(fake).move({ x: 330, y: 400 }, 1);
+  assert.equal(fake.lastRender()?.drawnBox, null);
 });

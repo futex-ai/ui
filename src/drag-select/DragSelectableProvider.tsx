@@ -7,6 +7,7 @@
 import { View } from "../primitives/reactNative";
 
 import { DragSelectableContext } from "./DragSelectableContext";
+import { dragSelectableProviderRole } from "./dragSelectableRole";
 import type { DragSelectableProviderProps } from "./dragSelectableTypes";
 import { useDragSelectableCore } from "./useDragSelectableCore";
 import { useDragSelectableProviderValue } from "./useDragSelectableProviderValue";
@@ -15,7 +16,7 @@ export function DragSelectableProvider({
   accessibilityLabel,
   children,
   defaultSelectedIds,
-  role = "group",
+  role,
   style,
   testID,
   ...providerOptions
@@ -35,7 +36,7 @@ export function DragSelectableProvider({
     <DragSelectableContext.Provider value={context}>
       <View
         accessibilityLabel={accessibilityLabel}
-        role={role}
+        role={dragSelectableProviderRole(role, accessibilityLabel)}
         style={style}
         testID={testID}
       >

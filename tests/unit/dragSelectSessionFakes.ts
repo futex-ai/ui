@@ -4,6 +4,10 @@
  */
 import type { DragSelectableMeasuredTarget } from "../../src/drag-select/dragSelectableDom";
 import type { DragSelectableAnchorFrame } from "../../src/drag-select/dragSelectableScrollAnchor";
+import {
+  dragSelectableClipBox,
+  type DragSelectableRect,
+} from "../../src/drag-select/dragSelectableScrollContainer";
 import type {
   DragSelectableActiveDrag,
   DragSelectableSessionEnv,
@@ -50,7 +54,9 @@ export function fakeSessionEnv() {
   };
   let targets = stackedRows();
   let pointerReader: (() => { x: number; y: number }) | null = null;
+  let clip: DragSelectableRect | null = null;
   const env: DragSelectableSessionEnv = {
+    clipBox: (box) => (clip ? dragSelectableClipBox(box, clip) : box),
     blockTextSelection: () => {
       calls.textBlocks += 1;
       return () => {
@@ -110,6 +116,10 @@ export function fakeSessionEnv() {
     lastRender: () => calls.renders[calls.renders.length - 1],
     /** The pointer position that auto-scroll reads, if it started. */
     pointer: () => pointerReader?.(),
+    /** Clips drawn boxes to `rect` from now on. */
+    setClip: (rect: DragSelectableRect) => {
+      clip = rect;
+    },
     setAnchor: (next: DragSelectableAnchorFrame) => {
       anchor = next;
     },

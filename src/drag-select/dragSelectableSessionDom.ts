@@ -6,7 +6,11 @@ import { endPointerPresses } from "../primitives/dom/usePress";
 import { startDragSelectableAutoScroll } from "./dragSelectableAutoScroll";
 import { measureDragSelectableTargets } from "./dragSelectableDom";
 import { dragSelectableAnchorFrame } from "./dragSelectableScrollAnchor";
-import type { DragSelectableScrollContainer } from "./dragSelectableScrollContainer";
+import {
+  dragSelectableClipBox,
+  dragSelectableVisibleRect,
+  type DragSelectableScrollContainer,
+} from "./dragSelectableScrollContainer";
 import type {
   DragSelectableActiveDrag,
   DragSelectableSessionEnv,
@@ -32,6 +36,8 @@ export function dragSelectableSessionDom(
 ): DragSelectableSessionEnv {
   return {
     blockTextSelection: blockDragSelectableTextSelection,
+    clipBox: (box) =>
+      dragSelectableClipBox(box, dragSelectableVisibleRect(options.container)),
     commit: options.commit,
     end: options.end,
     endPresses: endPointerPresses,

@@ -3,7 +3,10 @@
  * content under the press, or the document scrolling element. The scrollbar
  * rule, the anchor, auto-scroll, and the box clip all use it.
  */
-import type { DragSelectablePoint } from "./dragSelectableModel";
+import type {
+  DragSelectableBox,
+  DragSelectablePoint,
+} from "./dragSelectableModel";
 
 /** The element that scrolls the content under a press. */
 export type DragSelectableScrollContainer = {
@@ -101,6 +104,28 @@ export function dragSelectableVisibleRect(
     left: Math.max(client.left, 0),
     right: Math.min(client.right, viewport.clientWidth),
     top: Math.max(client.top, 0),
+  };
+}
+
+/** The part of a box inside a rectangle, or `null` when they do not overlap. */
+export function dragSelectableClipBox(
+  box: DragSelectableBox,
+  rect: DragSelectableRect,
+): DragSelectableBox | null {
+  const left = Math.max(box.left, rect.left);
+  const right = Math.min(box.right, rect.right);
+  const top = Math.max(box.top, rect.top);
+  const bottom = Math.min(box.bottom, rect.bottom);
+  if (right <= left || bottom <= top) {
+    return null;
+  }
+  return {
+    bottom,
+    height: bottom - top,
+    left,
+    right,
+    top,
+    width: right - left,
   };
 }
 

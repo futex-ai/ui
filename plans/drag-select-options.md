@@ -601,20 +601,24 @@ Evidence: `.context/drag-select-options/m5-evidence.md`.
 
 Make the box and the wrapper element configurable.
 
-- [ ] Remove the fixed "Select" label, add `marqueeLabel` (default `null`),
+- [x] Remove the fixed "Select" label, add `marqueeLabel` (default `null`),
       and let `selectionLabel` return `null`.
-- [ ] Add `renderMarquee`.
-- [ ] Clip the drawn box to the visible rectangle of the scroll container.
-- [ ] Apply the wrapper role rule and add `role="none"`.
-- [ ] Add a "Custom marquee" story that uses `renderMarquee`. The existing
+- [x] Add `renderMarquee`.
+- [x] Clip the drawn box to the visible rectangle of the scroll container.
+- [x] Apply the wrapper role rule and add `role="none"`.
+- [x] Add a "Custom marquee" story that uses `renderMarquee`. The existing
       stories show the default box, which now has no label and matches the
       transactions mockup.
-- [ ] Browser tests: the default box has no label; `marqueeLabel` shows one;
+- [x] Browser tests: the default box has no label; `marqueeLabel` shows one;
       `selectionLabel` returning `null` hides the badge; the custom box
       renders; the page-shell provider has no role; a provider with a name
       keeps `group`.
-- [ ] Record the snapshot baselines for the new stories with
+- [x] Record the snapshot baselines for the new stories with
       `SNAPSHOT_UPDATE=1` on Linux, and check that the axe sweep passes.
+- [x] Discovered: the box layer carries `data-drag-select-marquee`, so apps
+      and tests can find it. Documented in the protocol.
+
+Evidence: `.context/drag-select-options/m6-evidence.md`.
 
 ## Milestone 7: Verification, commit, and review
 

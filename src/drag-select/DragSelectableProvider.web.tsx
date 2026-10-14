@@ -5,6 +5,7 @@ import { useSharedUiTheme } from "../theme";
 
 import { DragSelectableContext } from "./DragSelectableContext";
 import { DragSelectableOverlay } from "./DragSelectableOverlay";
+import { dragSelectableProviderRole } from "./dragSelectableRole";
 import type { DragSelectableProviderProps } from "./dragSelectableTypes";
 import { useDragSelectableCore } from "./useDragSelectableCore";
 import { useDragSelectableGesture } from "./useDragSelectableGesture";
@@ -14,7 +15,7 @@ export function DragSelectableProvider({
   accessibilityLabel,
   children,
   defaultSelectedIds,
-  role = "group",
+  role,
   style,
   testID,
   ...providerOptions
@@ -39,12 +40,12 @@ export function DragSelectableProvider({
     <DragSelectableContext.Provider value={context}>
       <View
         accessibilityLabel={accessibilityLabel}
-        // RNW forwards the literal `role` prop to the DOM; the base RN
+        // The DOM backend forwards the literal `role` prop; the base RN
         // `accessibilityRole` type omits `"group"`, so use `role` (matching the
-        // heatmap legend) to expose the selectable collection (WCAG 2.1 — 1.3.1
+        // heatmap legend) to expose a named collection (WCAG 2.1 — 1.3.1
         // Info & Relationships, A).
         onPointerDown={gesture.onPointerDown}
-        role={role}
+        role={dragSelectableProviderRole(role, accessibilityLabel)}
         style={style}
         testID={testID}
       >
@@ -52,7 +53,9 @@ export function DragSelectableProvider({
       </View>
       <DragSelectableOverlay
         activeDrag={gesture.activeDrag}
+        marqueeLabel={options.marqueeLabel}
         overlayZIndex={options.overlayZIndex}
+        renderMarquee={options.renderMarquee}
         selectionLabel={options.selectionLabel}
         theme={theme}
       />

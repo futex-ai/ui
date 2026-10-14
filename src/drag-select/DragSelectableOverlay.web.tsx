@@ -3,84 +3,119 @@ import { createPortal } from "react-dom";
 import { StyleSheet, Text, View } from "../primitives/reactNative";
 
 import { DRAG_SELECTABLE_LAYERS } from "./dragSelectableLayers";
+import type { DragSelectableMarquee } from "./dragSelectableOptionTypes";
 import type { DragSelectableActiveDrag } from "./dragSelectableSession";
-import type { DragSelectableSelectionLabel } from "./dragSelectableTypes";
+import type { DragSelectableOverlayProps } from "./dragSelectableOverlayTypes";
 import type { SharedUiTheme } from "../theme";
 
+/**
+ * Draws the box of a started drag in a fixed, non-interactive layer in a
+ * body-level portal: the default themed box with its optional label and
+ * badge, or the node that `renderMarquee` returns.
+ */
 export function DragSelectableOverlay({
   activeDrag,
+  marqueeLabel = null,
   overlayZIndex,
+  renderMarquee,
   selectionLabel,
   theme,
-}: {
-  activeDrag: DragSelectableActiveDrag | null;
-  overlayZIndex?: number;
-  selectionLabel?: DragSelectableSelectionLabel;
-  theme: SharedUiTheme;
-}) {
+}: DragSelectableOverlayProps) {
   if (
     !activeDrag?.moved ||
-    !activeDrag.box ||
+    !activeDrag.drawnBox ||
     typeof document === "undefined"
   ) {
     return null;
   }
-  const count = activeDrag.matchedTargets.length;
-  const label =
-    selectionLabel?.(count, {
-      matchingCount: count,
-      matchingIds: activeDrag.matchedTargets.map((target) => target.id),
-      matchingTargets: activeDrag.matchedTargets,
-    }) ?? `${count} item${count === 1 ? "" : "s"}`;
+  const marquee: DragSelectableMarquee = {
+    box: activeDrag.drawnBox,
+    matchingCount: activeDrag.matchedTargets.length,
+    matchingIds: activeDrag.matchedTargets.map((target) => target.id),
+    matchingTargets: activeDrag.matchedTargets,
+    mode: activeDrag.mode,
+  };
+  const { box } = marquee;
   return createPortal(
     <View
       {...MARQUEE_PROPS}
       pointerEvents="none"
       style={[
-        styles.marquee,
+        styles.layer,
+        renderMarquee ? null : defaultBoxStyle(theme),
         {
-          backgroundColor: `${theme.colors.primary}1A`,
-          borderColor: theme.colors.primary,
-          borderRadius: theme.radii.sm,
-          height: activeDrag.box.height,
-          left: activeDrag.box.left,
-          top: activeDrag.box.top,
-          width: activeDrag.box.width,
+          height: box.height,
+          left: box.left,
+          top: box.top,
+          width: box.width,
           zIndex: overlayZIndex ?? DRAG_SELECTABLE_LAYERS.overlay,
         },
       ]}
     >
-      <Text
-        style={[
-          styles.cursor,
-          {
-            color: theme.colors.primaryDeep,
-            fontFamily: theme.fonts.sans,
-          },
-        ]}
-      >
-        Select
-      </Text>
-      <View
-        style={[
-          styles.badge,
-          {
-            backgroundColor: theme.colors.primary,
-            borderRadius: theme.radii.sm,
-          },
-        ]}
-      >
-        <Text
-          style={[
-            styles.badgeText,
-            { color: theme.colors.onSolid, fontFamily: theme.fonts.sans },
-          ]}
-        >
-          {label}
-        </Text>
-      </View>
+      {renderMarquee
+        ? renderMarquee(marquee)
+        : defaultBoxContent(
+            activeDrag,
+            marquee,
+            marqueeLabel,
+            selectionLabel,
+            theme,
+          )}
     </View>,
     document.body,
+  );
+}
+
+function defaultBoxStyle(theme: SharedUiTheme) {
+  return {
+    backgroundColor: `${theme.colors.primary}1A`,
+    borderColor: theme.colors.primary,
+    borderRadius: theme.radii.sm,
+    borderWidth: 1.5,
+  };
+}
+
+function defaultBoxContent(
+  activeDrag: DragSelectableActiveDrag,
+  marquee: DragSelectableMarquee,
+  marqueeLabel: string | null,
+  selectionLabel: DragSelectableOverlayProps["selectionLabel"],
+  theme: SharedUiTheme,
+) {
+  const count = marquee.matchingCount;
+  const badge = selectionLabel
+    ? selectionLabel(count, {
+        matchingCount: count,
+        matchingIds: marquee.matchingIds,
+        matchingTargets: activeDrag.matchedTargets,
+      })
+    : `${count} item${count === 1 ? "" : "s"}`;
+  const font = { fontFamily: theme.fonts.sans };
+  return (
+    <>
+      {marqueeLabel === null ? null : (
+        <Text style={[styles.label, font, { color: theme.colors.primaryDeep }]}>
+          {marqueeLabel}
+        </Text>
+      )}
+      {badge === null ? null : (
+        <View
+          style={[
+            styles.badge,
+            {
+              backgroundColor: theme.colors.primary,
+              borderRadius: theme.radii.sm,
+            },
+          ]}
+        >
+          <Text
+            style={[styles.badgeText, font, { color: theme.colors.onSolid }]}
+          >
+            {badge}
+          </Text>
+        </View>
+      )}
+    </>
   );
 }
 
@@ -101,15 +136,14 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     lineHeight: 14,
   },
-  cursor: {
+  label: {
     fontSize: 11,
     fontWeight: "800",
     left: 8,
     position: "absolute",
     top: 6,
   },
-  marquee: {
-    borderWidth: 1.5,
+  layer: {
     position: "fixed" as "absolute",
   },
 });

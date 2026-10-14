@@ -1,0 +1,97 @@
+- text: Ledger Books for Greenhouse Studio
+- button "Transactions"
+- button "Invoices"
+- text: Highlight text while dragging
+- switch "Highlight text while dragging"
+- heading "Transactions" [level=1]
+- text: "Bank transactions for this month. Drag across rows to select them, or open one to see its details. Selected 0 rows Selection changes: 0. Last: none Opened: none"
+- checkbox /Stripe payout, -GBP \d+\.\d+/: Stripe payout txn_1
+- text: /-GBP \d+\.\d+/
+- button "Open Stripe payout, txn_1"
+- checkbox /Cursor Hosting Ltd, -GBP \d+\.\d+/: Cursor Hosting Ltd txn_2
+- text: /-GBP \d+\.\d+/
+- button "Open Cursor Hosting Ltd, txn_2"
+- checkbox /Notion Labs Inc, -GBP \d+\.\d+/: Notion Labs Inc txn_3
+- text: /-GBP \d+\.\d+/
+- button "Open Notion Labs Inc, txn_3"
+- checkbox /AWS EU-WEST, -GBP \d+\.\d+/: AWS EU-WEST txn_4
+- text: /-GBP \d+\.\d+/
+- button "Open AWS EU-WEST, txn_4"
+- checkbox /Trainline, -GBP \d+\.\d+/: Trainline txn_5
+- text: /-GBP \d+\.\d+/
+- button "Open Trainline, txn_5"
+- checkbox /Figma Inc, -GBP \d+\.\d+/: Figma Inc txn_6
+- text: /-GBP \d+\.\d+/
+- button "Open Figma Inc, txn_6"
+- checkbox /HMRC VAT, -GBP \d+\.\d+/: HMRC VAT txn_7
+- text: /-GBP \d+\.\d+/
+- button "Open HMRC VAT, txn_7"
+- checkbox /Pret A Manger, -GBP \d+\.\d+/: Pret A Manger txn_8
+- text: /-GBP \d+\.\d+/
+- button "Open Pret A Manger, txn_8"
+- checkbox /Linear Orbit Inc, -GBP \d+\.\d+/: Linear Orbit Inc txn_9
+- text: /-GBP \d+\.\d+/
+- button "Open Linear Orbit Inc, txn_9"
+- checkbox /Octopus Energy, -GBP \d+\.\d+/: Octopus Energy txn_10
+- text: /-GBP \d+\.\d+/
+- button "Open Octopus Energy, txn_10"
+- checkbox /Stripe payout, -GBP \d+\.\d+/: Stripe payout txn_11
+- text: /-GBP \d+\.\d+/
+- button "Open Stripe payout, txn_11"
+- checkbox /Cursor Hosting Ltd, -GBP \d+\.\d+/: Cursor Hosting Ltd txn_12
+- text: /-GBP \d+\.\d+/
+- button "Open Cursor Hosting Ltd, txn_12"
+- checkbox /Notion Labs Inc, -GBP \d+\.\d+/: Notion Labs Inc txn_13
+- text: /-GBP \d+\.\d+/
+- button "Open Notion Labs Inc, txn_13"
+- checkbox /AWS EU-WEST, -GBP \d+\.\d+/: AWS EU-WEST txn_14
+- text: /-GBP \d+\.\d+/
+- button "Open AWS EU-WEST, txn_14"
+- checkbox /Trainline, -GBP \d+\.\d+/: Trainline txn_15
+- text: /-GBP \d+\.\d+/
+- button "Open Trainline, txn_15"
+- checkbox /Figma Inc, -GBP \d+\.\d+/: Figma Inc txn_16
+- text: /-GBP \d+\.\d+/
+- button "Open Figma Inc, txn_16"
+- checkbox /HMRC VAT, -GBP \d+\.\d+/: HMRC VAT txn_17
+- text: /-GBP \d+\.\d+/
+- button "Open HMRC VAT, txn_17"
+- checkbox /Pret A Manger, -GBP \d+\.\d+/: Pret A Manger txn_18
+- text: /-GBP \d+\.\d+/
+- button "Open Pret A Manger, txn_18"
+- checkbox /Linear Orbit Inc, -GBP \d+\.\d+/: Linear Orbit Inc txn_19
+- text: /-GBP \d+\.\d+/
+- button "Open Linear Orbit Inc, txn_19"
+- checkbox /Octopus Energy, -GBP \d+\.\d+/: Octopus Energy txn_20
+- text: /-GBP \d+\.\d+/
+- button "Open Octopus Energy, txn_20"
+- checkbox /Stripe payout, -GBP \d+\.\d+/: Stripe payout txn_21
+- text: /-GBP \d+\.\d+/
+- button "Open Stripe payout, txn_21"
+- checkbox /Cursor Hosting Ltd, -GBP \d+\.\d+/: Cursor Hosting Ltd txn_22
+- text: /-GBP \d+\.\d+/
+- button "Open Cursor Hosting Ltd, txn_22"
+- checkbox /Notion Labs Inc, -GBP \d+\.\d+/: Notion Labs Inc txn_23
+- text: /-GBP \d+\.\d+/
+- button "Open Notion Labs Inc, txn_23"
+- checkbox /AWS EU-WEST, -GBP \d+\.\d+/: AWS EU-WEST txn_24
+- text: /-GBP \d+\.\d+/
+- button "Open AWS EU-WEST, txn_24"
+- checkbox /Trainline, -GBP \d+\.\d+/: Trainline txn_25
+- text: /-GBP \d+\.\d+/
+- button "Open Trainline, txn_25"
+- checkbox /Figma Inc, -GBP \d+\.\d+/: Figma Inc txn_26
+- text: /-GBP \d+\.\d+/
+- button "Open Figma Inc, txn_26"
+- checkbox /HMRC VAT, -GBP \d+\.\d+/: HMRC VAT txn_27
+- text: /-GBP \d+\.\d+/
+- button "Open HMRC VAT, txn_27"
+- checkbox /Pret A Manger, -GBP \d+\.\d+/: Pret A Manger txn_28
+- text: /-GBP \d+\.\d+/
+- button "Open Pret A Manger, txn_28"
+- checkbox /Linear Orbit Inc, -GBP \d+\.\d+/: Linear Orbit Inc txn_29
+- text: /-GBP \d+\.\d+/
+- button "Open Linear Orbit Inc, txn_29"
+- checkbox /Octopus Energy, -GBP \d+\.\d+/: Octopus Energy txn_30
+- text: /-GBP \d+\.\d+/
+- button "Open Octopus Energy, txn_30"

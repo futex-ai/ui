@@ -1,8 +1,12 @@
 /** Public types of the drag-select options and the start rules. */
+import type { ReactNode } from "react";
+
+import type { DragSelectableBox } from "./dragSelectableModel";
 import type {
   DragSelectableSelection,
   DragSelectableSelectionAnnouncement,
   DragSelectableSelectionLabel,
+  DragSelectableTargetSnapshot,
 } from "./dragSelectableTypes";
 
 /**
@@ -43,6 +47,16 @@ export type DragSelectableStart = {
   targetId: string | null;
 };
 
+/** What `renderMarquee` draws. */
+export type DragSelectableMarquee = {
+  /** The drawn box in viewport coordinates, clipped to the visible area. */
+  box: DragSelectableBox;
+  matchingCount: number;
+  matchingIds: string[];
+  matchingTargets: DragSelectableTargetSnapshot[];
+  mode: DragSelectableDragMode;
+};
+
 /** What a proposed selection came from. */
 export type DragSelectableSelectionChange = {
   /** The hits of the drag or the keys, in document order. */
@@ -72,6 +86,8 @@ export type DragSelectableOptions = {
   ) => DragSelectableDragMode | null;
   /** CSS selectors of regions where a press never starts a drag. */
   ignore?: string | readonly string[];
+  /** Text in the top-left corner of the default box. `null` shows none. */
+  marqueeLabel?: string | null;
   /** Pixels of movement before a press on a control starts a drag. */
   minimumControlDragDistance?: number;
   /** Pixels of movement before a press starts a drag. */
@@ -91,6 +107,11 @@ export type DragSelectableOptions = {
   /** Blocks text selection from the start of a drag to the release. */
   preventTextSelection?: boolean;
   /**
+   * Replaces the box, the label, and the badge. The provider still renders
+   * the fixed, non-interactive layer at the box and puts the node inside it.
+   */
+  renderMarquee?: (marquee: DragSelectableMarquee) => ReactNode;
+  /**
    * Makes the selection controlled when it is defined: the provider renders
    * these ids and stores none. The order carries no meaning.
    */
@@ -101,7 +122,10 @@ export type DragSelectableOptions = {
    * silent.
    */
   selectionAnnouncement?: DragSelectableSelectionAnnouncement;
-  /** The badge text of the box, from the live matching count and targets. */
+  /**
+   * The badge text of the default box, from the live matching count and
+   * targets. `null` hides the badge.
+   */
   selectionLabel?: DragSelectableSelectionLabel;
   /** Gives the final answer for each press that passes the fixed rules. */
   shouldStartDrag?: (start: DragSelectableStart) => boolean;

@@ -1,0 +1,14 @@
+- text: 0 selected
+- button "Clear" [disabled]
+- text: Lock selection
+- switch "Lock selection"
+- text: "Proposals: 0. Last: none"
+- group "Transactions":
+  - checkbox /Stripe payout, -GBP \d+\.\d+/: /Stripe payout -GBP \d+\.\d+/
+  - checkbox /Cursor Hosting Ltd, -GBP \d+\.\d+/: /Cursor Hosting Ltd -GBP \d+\.\d+/
+  - checkbox /Notion Labs Inc, -GBP \d+\.\d+/: /Notion Labs Inc -GBP \d+\.\d+/
+  - checkbox /AWS EU-WEST, -GBP \d+\.\d+/: /AWS EU-WEST -GBP \d+\.\d+/
+  - checkbox /Trainline, -GBP \d+\.\d+/: /Trainline -GBP \d+\.\d+/
+  - checkbox /Figma Inc, -GBP \d+\.\d+/: /Figma Inc -GBP \d+\.\d+/
+  - checkbox /HMRC VAT, -GBP \d+\.\d+/: /HMRC VAT -GBP \d+\.\d+/
+  - checkbox /Pret A Manger, -GBP \d+\.\d+/: /Pret A Manger -GBP \d+\.\d+/

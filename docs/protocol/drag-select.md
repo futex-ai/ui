@@ -217,8 +217,9 @@ on release and on every cancel.
 ## Box And Wrapper
 
 - The box renders through a body-level portal as a fixed, non-interactive
-  layer. Its z-index is `overlayZIndex`, else `DRAG_SELECTABLE_LAYERS.overlay`,
-  which clears the modal and dropdown layers.
+  layer with the `data-drag-select-marquee` attribute. Its z-index is
+  `overlayZIndex`, else `DRAG_SELECTABLE_LAYERS.overlay`, which clears the
+  modal and dropdown layers.
 - The drawn box is the hit box clipped to the visible rectangle of the
   press's scroll container. No box renders when the clipped box is empty.
 - The default box has the theme primary border, a 10% primary tint, the

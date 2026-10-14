@@ -1,0 +1,10 @@
+- group "Accounts":
+  - text: "Accounts: idle, selected none"
+  - checkbox "Business current account"
+  - checkbox "Tax reserve"
+  - checkbox "Payroll"
+  - group "Recent payments":
+    - text: "Recent payments: idle, selected none"
+    - checkbox "Payment to Figma Inc"
+    - checkbox "Payment to HMRC VAT"
+    - checkbox "Payment to Octopus Energy"

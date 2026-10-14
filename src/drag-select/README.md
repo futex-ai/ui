@@ -149,8 +149,10 @@ container whose scrollbar takes no space). Then the default rules refuse:
 `start.reason`) and returns the final one.
 
 Mark any region where a press must never start a drag with the ignore
-marker. Library gesture surfaces (data grid, calendar grids, kanban cards,
-sortable lists, timeline, scrubbers, chart scrub layer) carry it already.
+marker. The library's own gesture surfaces carry it already: the data grid,
+the calendar time grid and month grid, the kanban board, the sortable list,
+the timeline ruler and lanes, and `NumberScrubber`. The video-editor
+`Scrubber` is a `slider`, which the field rule refuses.
 
 ```tsx
 import {
@@ -175,6 +177,27 @@ import {
   a row. A plain click is not swallowed.
 - Escape cancels a started drag without a change. `pointercancel`, a window
   blur, and a hidden page also cancel it.
+
+## Box
+
+The default box has the theme primary border and a light tint, with the
+`selectionLabel` badge at the bottom-right. `marqueeLabel` adds a label in
+the top-left corner, and a `selectionLabel` that returns `null` hides the
+badge. `renderMarquee` draws your own box: the provider still renders the
+fixed, non-interactive layer at the box (clipped to the visible part of the
+scroll container) and puts your node inside it.
+
+```tsx
+<DragSelectableProvider
+  renderMarquee={({ matchingCount, mode }) => (
+    <View style={styles.myBox}>
+      <Text>{`${matchingCount} rows · ${mode}`}</Text>
+    </View>
+  )}
+>
+  {rows}
+</DragSelectableProvider>
+```
 
 ## Accessibility
 
@@ -229,5 +252,9 @@ coordinates. `selectedTargets` is a snapshot of the registrations; use
 - `useDragSelectableRegistry.ts`, `dragSelectableTargetOrder.ts`, and
   `dragSelectableTargetNode.ts`: the registered targets, their document
   order, and the element that takes their focus.
+- `useDragSelectableCore.ts`: the options, registry, and selection that
+  both providers share.
+- `dragSelectableAutoScroll.ts`: the edge auto-scroll loop.
 - `dragSelectableIgnore.ts`: the ignore marker.
-- `DragSelectableOverlay.web.tsx`: the box.
+- `DragSelectableOverlay.web.tsx` and `dragSelectableOverlayTypes.ts`: the
+  box. `dragSelectableRole.ts`: the provider element's role.

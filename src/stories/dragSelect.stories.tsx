@@ -14,6 +14,7 @@ import {
 import { NestedProvidersExample } from "./dragSelectNestedExample";
 import { ControlledSelectionExample } from "./dragSelectControlledExample";
 import { EmptyPageExample } from "./dragSelectEmptyPageExample";
+import { MarqueeOptionsExample } from "./dragSelectMarqueeExample";
 import { PageShellExample } from "./dragSelectPageShellExample";
 import { StorySurface } from "./sharedExamples";
 
@@ -103,6 +104,15 @@ export const ControlledSelection: Story = {
   render: () => (
     <StorySurface>
       <ControlledSelectionExample />
+    </StorySurface>
+  ),
+};
+
+export const CustomMarquee: Story = {
+  name: "Custom marquee",
+  render: () => (
+    <StorySurface>
+      <MarqueeOptionsExample />
     </StorySurface>
   ),
 };
