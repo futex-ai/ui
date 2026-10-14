@@ -361,18 +361,22 @@ The release is `@firna/ui` 5.0.0 through a `feat(drag-select)!:` commit.
 ## Approvals needed
 
 These existing unit tests in `tests/unit/dragSelect.test.ts` assert the old
-behavior or the old source text of the provider. Milestones 2 and 3 break
+behavior or the old source text of the provider. Milestones 2 to 4 break
 them. They are on `origin/main`, so they change only after the user approves.
 Each rewrite keeps the original intent as a behavior test.
 
 - "drag-select ignores nested interactive controls inside targets":
   decision 2 changes the result for buttons, checkboxes, radios, and
   switches. Editable content stays refused.
+
+The other five match the source text of `DragSelectableProvider.web.tsx`,
+`DragSelectableContext.tsx`, or `DragSelectableOverlay.web.tsx`. The file
+split in Milestone 2 and the new selection path in Milestone 4 break them.
+
 - "drag-select selection callback is stable across callback identities".
 - "drag-select selection callback ignores registry-only updates".
 - "drag-select provider uses the configured movement threshold".
-- "drag-select provider cancels stale pointer streams": it requires the
-  capture-phase `window` `blur` listener that causes finding 5.
+- "drag-select provider cancels stale pointer streams".
 - "drag-select provider exposes provider, target, and listener hooks".
 
 ## Milestone 1: Documentation and protocol
