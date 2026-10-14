@@ -1,0 +1,546 @@
+# Drag select options
+
+Status: Active. The plan is on branch
+`calummoore/dragselectableprovider-improvements`. No PR is open yet. The plan
+closes when its PR merges.
+
+[`DragSelectableProvider`](../src/drag-select/README.md) was built to wrap one
+list. The accounting app wants one provider around every page, so that a drag
+can start anywhere in the main column. A Chrome test of that layout on 4.0.0
+found text highlighting, scrollbar drags that clear the selection, drags that
+fail after a button press, an empty "0 items" box on pages without rows, a
+page-wide "group" for screen readers, a fixed "Select" label, and no way for
+the app to own the selection. This plan gives the app full control of the
+gesture through one options type that both the provider and a new page hook
+accept. It also fixes every reproduced bug, adds app-owned (controlled)
+selection and edge auto-scroll, and makes the box and the wrapper
+configurable.
+
+Not covered: touch and native drag selection (native keeps its no-op
+gesture); a selection that changes live while the pointer moves (the
+selection still commits on release); rows that a virtualized list unmounts
+during a drag (an unmounted row cannot be hit); an imperative API for
+uncontrolled selection (use controlled selection); more than one selection
+per provider; keyboard model changes beyond routing keys through the new
+selection path.
+
+Decisions (2026-10-14). The user asked for this plan after a discussion of
+nine decisions and did not answer them. Under the user's standing rule, the
+recommended option applies to each decision except decision 6. Its
+recommended option deletes current behavior, so it is skipped.
+
+1. Options are set on the provider and through a page hook (A).
+2. A control inside a row starts a drag after 10px (A).
+3. Control and Alt never start a drag. Shift adds. Command toggles (A).
+4. Text selection is blocked by default (A).
+5. Selection can be controlled or uncontrolled (A).
+6. Skipped because it is a deletion. The "Select" label stays the default.
+   The new `marqueeLabel` option changes or hides it (option C). Removing the
+   label (option A) needs the user's approval.
+7. The wrapper gets the `group` role only when it has an accessible name (A).
+8. Edge auto-scroll is in this plan and on by default (A).
+9. The on/off option stays `disabled` (A).
+
+The Storybook stories and the accounting app's transactions mockup are the
+visual spec. This repo gets no new HTML mockup, as in the
+[sortable group coordinator](sortable-group-coordinator.md) plan.
+
+Contract owners:
+
+- [Drag select protocol](../docs/protocol/drag-select.md), new in
+  Milestone 1 and split from
+  [shared UI components](../docs/protocol/shared-ui-components.md).
+- The [drag-select README](../src/drag-select/README.md).
+- [Consumer migration](../docs/consumer-migration.md).
+
+Evidence: `.context/drag-select-options/reproduction.md` records the
+reproduction of each finding and the check of the text-selection technique.
+
+## Findings
+
+| #   | Finding                                          | Cause                                                                                                                                                                                                                        | Milestone |
+| --- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| 1   | Every drag highlights text                       | Nothing blocks `selectstart`. `preventDefault()` on `pointermove` (`DragSelectableProvider.web.tsx:320`) does not stop text selection.                                                                                       | 3         |
+| 2   | A scrollbar drag clears the selection            | A scrollbar press targets the scroll element, so a drag starts. The empty hit list then replaces the selection.                                                                                                              | 2         |
+| 3   | A Control-drag starts                            | `beginDrag` checks only the button and the pointer type (`:355`).                                                                                                                                                            | 3         |
+| 4   | A drag from a row button does not start          | `dragSelectableShouldStartFromTarget` (`dragSelectableDom.ts:128`) refuses every control inside a row.                                                                                                                       | 3         |
+| 5   | The next drag fails after a button or row press  | (a) The capture-phase `window` `blur` listener (`:341`) also receives element blurs, so a focus move cancels the new drag. (b) A press on highlighted text starts a native text drag, and the browser sends `pointercancel`. | 2         |
+| 6   | A page without rows shows an empty "0 items" box | A press starts a drag without checking for targets.                                                                                                                                                                          | 2         |
+| 7   | Screen readers announce a page-wide "group"      | `role` defaults to `"group"` (`:67`).                                                                                                                                                                                        | 6         |
+| 8   | The box always shows "Select"                    | Fixed text in `DragSelectableOverlay.web.tsx:70`.                                                                                                                                                                            | 6         |
+| 9   | The app cannot own the selection                 | The selection is internal state. No prop sets it, and no public hook clears it.                                                                                                                                              | 4         |
+| 10  | A scroll during a drag selects the wrong rows    | The box uses viewport coordinates and does not follow the content.                                                                                                                                                           | 2         |
+| 11  | A drag sends a click                             | The browser dispatches `click` after the release, on the row where the drag ended or on a common ancestor.                                                                                                                   | 2         |
+| 12  | No auto-scroll once text selection is blocked    | The only edge scroll today is the browser's text-selection scroll.                                                                                                                                                           | 5         |
+| 13  | Every press measures every row                   | `beginDrag` measures all targets on each press, plain clicks included (`:384`).                                                                                                                                              | 2         |
+
+## Contract
+
+Milestone 1 copies this section into the protocol doc. Later milestones
+implement it.
+
+### Public API
+
+```ts
+type DragSelectableDragMode = "replace" | "add" | "toggle";
+
+type DragSelectableModifierKeys = {
+  altKey: boolean;
+  ctrlKey: boolean;
+  metaKey: boolean;
+  shiftKey: boolean;
+};
+
+type DragSelectableStartReason = "modifier" | "ignored" | "field" | "control";
+
+type DragSelectableStart = {
+  allowed: boolean; // the answer of the default rules
+  reason: DragSelectableStartReason | null; // null when allowed
+  element: Element; // the pressed element
+  targetId: string | null; // the registered target that contains the press
+  keys: DragSelectableModifierKeys;
+  mode: DragSelectableDragMode | null; // from dragMode
+  event: PointerEvent;
+};
+
+type DragSelectableSelectionChange = {
+  source: "drag" | "keyboard";
+  mode: DragSelectableDragMode;
+  hitIds: string[]; // in document order
+  previousIds: string[];
+};
+
+type DragSelectableMarquee = {
+  box: DragSelectableBox; // viewport coordinates, clipped
+  matchingCount: number;
+  matchingIds: string[];
+  matchingTargets: DragSelectableTargetSnapshot[];
+  mode: DragSelectableDragMode;
+};
+
+type DragSelectableOptions = {
+  autoScroll?: boolean;
+  disabled?: boolean;
+  dragMode?: (
+    keys: DragSelectableModifierKeys,
+  ) => DragSelectableDragMode | null;
+  ignore?: string | readonly string[];
+  marqueeLabel?: string | null;
+  minimumControlDragDistance?: number;
+  minimumDragDistance?: number;
+  onSelectedIdsChange?: (
+    ids: string[],
+    change: DragSelectableSelectionChange,
+  ) => void;
+  onSelectionChange?: (selection: DragSelectableSelection) => void;
+  overlayZIndex?: number;
+  preventTextSelection?: boolean;
+  renderMarquee?: (marquee: DragSelectableMarquee) => ReactNode;
+  selectedIds?: readonly string[];
+  selectionAnnouncement?: DragSelectableSelectionAnnouncement;
+  selectionLabel?: DragSelectableSelectionLabel; // may now return null
+  shouldStartDrag?: (start: DragSelectableStart) => boolean;
+  startFromControls?: boolean;
+};
+
+type DragSelectableProviderProps = DragSelectableOptions & {
+  accessibilityLabel?: string;
+  children: ReactNode;
+  defaultSelectedIds?: readonly string[];
+  role?: "group" | "list" | "none";
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+};
+
+function useDragSelectableOptions(options: DragSelectableOptions): void;
+function dragSelectableDefaultDragMode(
+  keys: DragSelectableModifierKeys,
+): DragSelectableDragMode | null;
+function dragSelectableNextSelection(
+  currentIds: readonly string[],
+  hitIds: readonly string[],
+  mode: DragSelectableDragMode,
+): string[];
+const dragSelectableIgnoreProps: { dataSet: { dragSelectIgnore: "true" } };
+const dragSelectableIgnoreDomProps: { "data-drag-select-ignore": "true" };
+```
+
+`DragSelectableState` gains `dragMode: DragSelectableDragMode | null`, the mode
+of the active press. The target hook, the selection and change hooks, the
+geometry helpers, and the layer token keep their current API.
+
+### Option defaults
+
+| Option                       | Default                         | Meaning                                                                   |
+| ---------------------------- | ------------------------------- | ------------------------------------------------------------------------- |
+| `disabled`                   | `false`                         | No press arms, an active drag cancels, and keyboard changes are ignored.  |
+| `ignore`                     | none                            | CSS selectors. A press on or inside a match does not start a drag.        |
+| `startFromControls`          | `true`                          | A press on a control inside an enabled target can start a drag.           |
+| `minimumDragDistance`        | `4`                             | Pixels of movement before a drag starts.                                  |
+| `minimumControlDragDistance` | `10`                            | Pixels for a press on a control. The larger of the two distances applies. |
+| `dragMode`                   | `dragSelectableDefaultDragMode` | Maps the modifier keys to a mode, or to `null` for no drag.               |
+| `shouldStartDrag`            | none                            | Gives the final answer for each press that passes the fixed rules.        |
+| `preventTextSelection`       | `true`                          | Blocks text selection from the accepted press to the release.             |
+| `autoScroll`                 | `true`                          | Scrolls the press's scroll container while the pointer is near its edges. |
+| `selectedIds`                | none                            | Makes the selection controlled when it is defined.                        |
+| `onSelectedIdsChange`        | none                            | Receives each proposed selection.                                         |
+| `marqueeLabel`               | `"Select"`                      | Text in the top-left corner of the box. `null` hides it.                  |
+| `selectionLabel`             | `"N item"` / `"N items"`        | Badge text. `null` hides the badge.                                       |
+| `renderMarquee`              | none                            | Replaces the box, the label, and the badge.                               |
+
+`onSelectionChange`, `selectionAnnouncement`, and `overlayZIndex` keep their
+current defaults. The two distances use the current normalization: a negative
+value clamps to `0`, and a non-finite value falls back to the default.
+
+### Option precedence
+
+- Library defaults apply first. Provider props override them. Hook layers
+  override provider props, and the newest mounted layer wins.
+- A key whose value is `undefined` does not override.
+- `useDragSelectableOptions` adds a layer on mount, updates it in place on
+  each render, and removes it on unmount. It configures the nearest provider
+  and does nothing outside a provider.
+- The provider reads function options when it calls them, so a new function
+  identity does not re-render targets.
+- `defaultSelectedIds` is read once, when the provider mounts.
+
+### Start rules
+
+The provider evaluates each `pointerdown` inside its element in this order.
+
+Fixed rules. No option overrides them.
+
+1. An inner provider already claimed the press. Ignore it.
+2. The provider is disabled, or no enabled target is registered. Ignore the
+   press and do not claim it, so an outer provider can take it.
+3. Claim the press on the native event.
+4. Ignore `pointerType` `touch` and every `button` other than `0`.
+5. Ignore a scrollbar press. The scroll container is the pressed element or
+   its nearest scrolling ancestor, else the document scrolling element.
+   - Classic scrollbar: the point is inside the container's border box but
+     outside its borders and outside its client area.
+   - Overlay scrollbar: the container scrolls on an axis but reserves no
+     scrollbar space on that axis, and the point is within 16px of the far
+     edge on that axis. The far edge is the right edge for vertical
+     scrolling, the left edge when `direction` is `rtl`, and the bottom edge
+     for horizontal scrolling.
+
+Default rules. The first match sets `reason`, and `allowed` becomes `false`.
+Rules 7 to 9 search the pressed element and its ancestors up to the provider
+element.
+
+6. `dragMode(keys)` returns `null`: `modifier`. The default mode is `null`
+   when Control or Alt is held, else `add` for Shift, else `toggle` for Meta
+   (Command), else `replace`.
+7. The press is inside an element that matches `[data-drag-select-ignore]`
+   or an `ignore` selector: `ignored`. An invalid selector does not match and
+   gives a `devWarn` warning.
+8. The press is inside a field: `field`. Fields are `input` elements other
+   than the press types below, `textarea`, `select`, editable content
+   (`[contenteditable]` other than `false`), the roles `textbox`,
+   `searchbox`, `combobox`, `slider`, `spinbutton`, and `scrollbar`, and
+   `[draggable='true']`.
+9. The press is inside a control: `control`. A press on a control inside an
+   enabled target is allowed instead when `startFromControls` is `true`.
+   Controls are `a[href]`, `button`, `summary`, `label`, `input` of type
+   `button`, `checkbox`, `image`, `radio`, `reset`, or `submit`, and the
+   roles `button`, `link`, `checkbox`, `radio`, `switch`, `tab`, `menuitem`,
+   `menuitemcheckbox`, `menuitemradio`, and `option`. A target's root element
+   counts as the target, not as a control, even with the `checkbox` role from
+   `a11yProps`. A control that contains the target root is not searched.
+10. `shouldStartDrag(start)`, when set, gives the final answer. When it
+    allows a press that `dragMode` refused, the mode is `replace`.
+
+### Gesture
+
+- Armed: the provider accepted the press. `state.dragging` is `true`, as
+  today. Nothing is measured, and no box is drawn.
+- From the accepted press to the release, the provider blocks native
+  `dragstart`. With `preventTextSelection`, it also blocks `selectstart` and
+  removes any existing text highlight, as a click elsewhere does.
+- Started: the pointer moved the threshold distance. The provider measures
+  the targets and draws the box. With `preventTextSelection`, it sets
+  `user-select: none` on the root element and restores the old value at the
+  end. It ends the library `Pressable` press that the same pointer started,
+  so the control loses its pressed look and does not fire `onPress`. It
+  starts auto-scroll.
+- Anchor: the start point stays attached to the content of the press's
+  scroll container. A scroll during the drag (wheel, keyboard, or
+  auto-scroll) moves the start point with the content, and the provider
+  measures the targets again. The hit test uses the full box.
+- Release after a start: the provider finds the hits in document order,
+  proposes `dragSelectableNextSelection(current, hits, mode)`, and swallows
+  the next `click` wherever it lands.
+- Release before a start: no selection change and no swallowed click.
+- Cancel without a commit: `pointercancel`; `Escape` after a start (the
+  provider stops the key event); a blur whose target is the window itself;
+  `visibilitychange` to hidden; `disabled` becomes `true`; the provider
+  unmounts.
+
+### Auto-scroll
+
+After a start, with `autoScroll`, an animation-frame loop scrolls the press's
+scroll container by 16px per frame on each axis where the pointer is within
+36px of the container's visible edge or beyond it. These are the data grid's
+`autoScrollDelta` values. The loop stops on release or cancel.
+
+### Selection
+
+- `dragSelectableNextSelection`: `replace` returns the hits. `add` returns
+  the current ids, then the hits that are not current. `toggle` returns the
+  current ids without the hits, then the hits that were not current.
+- Keyboard: Space or Enter proposes `toggle` with the focused target. Shift
+  with an arrow key proposes `replace` with the range, as today. The source is
+  `keyboard`.
+- The provider skips a proposal whose set equals the current set.
+- Controlled, when the merged options define `selectedIds`: the provider
+  stores no selection. It calls `onSelectedIdsChange(proposal, change)` and
+  renders `selectedIds`. A proposal that the app does not apply changes
+  nothing.
+- Uncontrolled: the provider starts from `defaultSelectedIds`, applies each
+  proposal, and also calls `onSelectedIdsChange`.
+- `onSelectionChange(selection)` fires when the rendered selection changes,
+  from any source.
+- Announcement: the provider announces a proposal through
+  `selectionAnnouncement` when the rendered selection first equals it. It
+  does not announce a change that the app makes on its own, or a proposal
+  that the app changes or rejects.
+- `selectedTargets` holds snapshots of the current registrations. An id with
+  no registered target has `data: undefined`.
+
+### Box and wrapper
+
+- The default box keeps its look: the primary border, a 10% tint, the theme
+  radius, `marqueeLabel` at the top-left, and the `selectionLabel` badge at
+  the bottom-right.
+- `renderMarquee` replaces the box, the label, and the badge. The provider
+  still renders the fixed, non-interactive layer at the box and puts the
+  returned node inside it.
+- The drawn box is the hit box clipped to the visible rectangle of the
+  press's scroll container.
+- The provider renders one element that takes `style` and `testID`, so a
+  shell can use it as its main column. An explicit `role` wins, and `"none"`
+  renders no role. Without `role`, the element has the `group` role when
+  `accessibilityLabel` is set, and no role when it is not.
+
+### Native
+
+The native provider accepts every option and the page hook. It applies
+`selectedIds` and `defaultSelectedIds` to `target.selected` and to the
+selection state, and it ignores the gesture options.
+
+### Library gesture surfaces
+
+Library components that own a pointer gesture mark their gesture root with
+`[data-drag-select-ignore]`, so a page-wide provider never starts over them.
+The candidates are the calendar time grid and month grid, the data grid body,
+header, and resize handles, kanban cards, sortable list items, the timeline
+tracks and ruler, the video-editor `Scrubber` and `NumberScrubber`, and the
+chart scrub layer. A surface that the field rule already covers needs no
+marker.
+
+### Breaking changes
+
+The release is `@firna/ui` 5.0.0 through a `feat(drag-select)!:` commit.
+
+- Text selection is blocked during a press. `preventTextSelection: false`
+  restores the old behavior.
+- A drag can start from a control inside a row. `startFromControls: false`
+  restores the old behavior.
+- Control and Alt never start a drag. Shift adds, and Command toggles. A
+  `dragMode` that always returns `replace` restores the old behavior.
+- The click after a drag is swallowed.
+- A link or an image inside a row cannot start a native drag, because the
+  press arms the provider.
+- A press within 16px of the far edge of a scroll container with overlay
+  scrollbars does not start a drag.
+- A provider without an accessible name has no role. `role="group"` restores
+  the old behavior.
+- A press starts nothing when no enabled target is registered.
+
+## Approvals needed
+
+These existing unit tests in `tests/unit/dragSelect.test.ts` assert the old
+behavior or the old source text of the provider. Milestones 2 and 3 break
+them. They are on `origin/main`, so they change only after the user approves.
+Each rewrite keeps the original intent as a behavior test.
+
+- "drag-select ignores nested interactive controls inside targets":
+  decision 2 changes the result for buttons, checkboxes, radios, and
+  switches. Editable content stays refused.
+- "drag-select selection callback is stable across callback identities".
+- "drag-select selection callback ignores registry-only updates".
+- "drag-select provider uses the configured movement threshold".
+- "drag-select provider cancels stale pointer streams": it requires the
+  capture-phase `window` `blur` listener that causes finding 5.
+- "drag-select provider exposes provider, target, and listener hooks".
+
+## Milestone 1: Documentation and protocol
+
+Write the complete contract into the protocol doc and the READMEs before any
+code changes.
+
+- [ ] Create `docs/protocol/drag-select.md` from the "Drag Select Contract"
+      section of `docs/protocol/shared-ui-components.md` and the Contract
+      section of this plan. If it passes about 250 lines, move the option
+      reference to a linked page.
+- [ ] Replace that section in `docs/protocol/shared-ui-components.md` with a
+      short summary and a link. Every current requirement stays, either
+      unchanged in the new doc or as a change that this plan lists.
+- [ ] Update `src/drag-select/README.md`: a page-wide shell example with
+      `useDragSelectableOptions`, a controlled example, the options table, the
+      start rules, the ignore marker, and the release behavior.
+- [ ] Add a "Drag select (5.0)" section to `docs/consumer-migration.md` with
+      each breaking change and the option that restores the old behavior.
+- [ ] Update the `@firna/ui/drag-select` entry in the root `README.md`.
+
+## Milestone 2: Gesture fixes
+
+Fix the reproduced gesture bugs with the current options. Each fix starts
+with a failing test. The provider keeps its current props.
+
+- [ ] Get the user's approval for the rewrites under "Approvals needed".
+- [ ] Split `DragSelectableProvider.web.tsx` (470 lines) and
+      `DragSelectableContext.tsx` (291 lines) into focused modules (gesture
+      session, start rules, scroll anchoring, selection model, and target
+      registry), so that every file stays under 300 lines. Keep `testID` in
+      `dragSelectableTypes.ts`, where `tests/unit/testIDForwarding.test.ts`
+      looks for it.
+- [ ] Add new unit tests in new files under `tests/unit/` (the current
+      `dragSelect.test.ts` has 400 lines). Add the browser tests in a new
+      `tests/browser/drag-select.spec.ts`. The current browser tests stay in
+      `storybook.spec.ts` and must keep passing.
+- [ ] Add a full-screen "Page shell" story: a sidebar outside the provider,
+      the provider as the scrolling main column, a centered content area with
+      a title and a paragraph, and 30 rows with a library `Button` each. Add
+      an "Empty page" story with no rows.
+- [ ] Cancel only on a blur of the window itself. Tests: a click on a row
+      button, then a drag from the gutter, selects rows. A click on a row,
+      then a drag from another row, selects rows.
+- [ ] Block native `dragstart` from the accepted press to the release. Test:
+      highlight a row's text, then drag from that text; the rows are
+      selected.
+- [ ] Ignore scrollbar presses, classic and overlay. Unit-test the geometry.
+      Browser test: run Chrome without `--hide-scrollbars`, drag the main
+      column's scrollbar, and check that the selection stays.
+- [ ] Arm nothing when no enabled target is registered. Test: no box on the
+      "Empty page" story.
+- [ ] Measure the targets at the start, not at the press.
+- [ ] Anchor the start point to the scroll container's content, and measure
+      again on each scroll during a drag. Unit-test the anchor math. Browser
+      test: start on row 1, wheel-scroll 400px, release, and check that rows
+      1 to N are selected.
+- [ ] Swallow the click after a completed drag. Move `suppressNextClick` from
+      `src/sortable-list/sortableDragFocus.ts` to a new shared
+      `src/dragGesture.ts` and update the sortable list import. Tests: a row
+      `onPress` does not fire after a drag that ends on the row, and a plain
+      click still fires it.
+- [ ] Cancel on `Escape` after a start.
+- [ ] Claim presses so that the innermost active provider owns a press.
+      Test with nested providers.
+- [ ] Rewrite the approved tests as behavior tests.
+
+## Milestone 3: Options and start rules
+
+Add the options type, the page hook, and the configurable start rules.
+
+- [ ] Add `DragSelectableOptions` and the provider-only props. Put the new
+      types in their own module if `dragSelectableTypes.ts` would pass 300
+      lines.
+- [ ] Add the option merge and `useDragSelectableOptions`, shared by the web
+      and native providers. Unit tests: precedence, `undefined` keys, the
+      newest layer wins, unmount restores the earlier value, and a function
+      option is read at call time.
+- [ ] Export `dragSelectableIgnoreProps` and `dragSelectableIgnoreDomProps`.
+      Add `ignore` with the invalid-selector warning.
+- [ ] Add the field and control rules, `startFromControls`, and
+      `minimumControlDragDistance`. Unit-test each rule and its reason.
+- [ ] Add an internal function to `src/primitives/dom/usePress.ts` that ends
+      the active pointer presses. Call it at a start. Tests: after a drag
+      from a row `Button`, the button has no pressed look and fires no
+      `onPress`. A click without movement still fires `onPress`.
+- [ ] Add `dragMode`, `dragSelectableDefaultDragMode`,
+      `dragSelectableNextSelection`, and `state.dragMode`. Unit-test the
+      reducer. Browser tests: Control-drag and Alt-drag do not start,
+      Shift-drag adds, and Meta-drag toggles.
+- [ ] Add `shouldStartDrag` with `DragSelectableStart`. Unit tests: each
+      reason, and an override in both directions.
+- [ ] Add `preventTextSelection`. Browser tests: no highlight after a drag;
+      a highlight made before a press is removed; with `false`, the old
+      behavior returns.
+- [ ] Mark the library gesture surfaces with the ignore marker. Browser
+      test: a drag inside a `DataGrid` and a `SortableList` in the page shell
+      draws no box. Add source tests for the other surfaces.
+
+## Milestone 4: Controlled selection
+
+Let the app own the selection, from the provider or from the page hook.
+
+- [ ] Add `selectedIds`, `defaultSelectedIds`, `onSelectedIdsChange`, and
+      `DragSelectableSelectionChange`.
+- [ ] Send keyboard toggles and ranges through the same proposal path.
+- [ ] Apply the announcement rule. Test: a proposal that the app applies is
+      announced once; a rejected proposal and an app-made change are not.
+- [ ] Make the native provider show `selectedIds` and `defaultSelectedIds`
+      and accept the page hook.
+- [ ] Add a "Controlled selection" story. The app owns the selection with
+      click, Command-click, Shift-click, a toolbar "Clear" button, and drag.
+      Browser tests: a drag proposal that the app applies; a proposal that
+      the app rejects; the toolbar clears both the app state and the rows.
+
+## Milestone 5: Auto-scroll
+
+Scroll the press's scroll container while the pointer is near its edges.
+
+- [ ] Move `autoScrollDelta` from `src/data-grid/dataGridDragDom.ts` to
+      `src/dragGesture.ts`. Update the data grid import and its tests.
+- [ ] Add the animation-frame loop and `autoScroll`. It stops on release and
+      on cancel.
+- [ ] Browser test: hold the pointer at the bottom edge of the page-shell
+      column. Wait until the column scrolls and the selection reaches rows
+      below the first screen. Use polling expectations, not elapsed-time
+      assertions.
+
+## Milestone 6: Box and wrapper
+
+Tags: ui
+
+Make the box and the wrapper element configurable.
+
+- [ ] Add `marqueeLabel` and let `selectionLabel` return `null`.
+- [ ] Add `renderMarquee`.
+- [ ] Clip the drawn box to the visible rectangle of the scroll container.
+- [ ] Apply the wrapper role rule and add `role="none"`.
+- [ ] Add a "Custom marquee" story that uses `renderMarquee`, and a "No
+      label" story with `marqueeLabel={null}` to match the transactions
+      mockup.
+- [ ] Browser tests: the label hides; the custom box renders; the page-shell
+      provider has no role; a provider with a name keeps `group`.
+- [ ] Record the snapshot baselines for the new stories with
+      `SNAPSHOT_UPDATE=1` on Linux, and check that the axe sweep passes.
+
+## Milestone 7: Verification, commit, and review
+
+Prove the change, release it as a breaking change, and review it.
+
+- [ ] Smoke test: start Storybook and repeat each finding on the "Page
+      shell" story.
+- [ ] Manual check before merge: in the PR's Storybook preview, the user
+      drags the page-shell scrollbar in Chrome on macOS with overlay
+      scrollbars, and the selection stays.
+- [ ] Run `npm run verify`.
+- [ ] Run `cargo xtask check`.
+- [ ] Update the plan status and `plans/README.md`.
+- [ ] Run `git add -A`, commit with Conventional Commits (a
+      `feat(drag-select)!:` entry with a `BREAKING CHANGE:` footer), and push
+      the branch.
+- [ ] Run `cargo xtask review` after the push. It reviews the complete local
+      diff against `origin/main` under the `implementation-review` skill.
+      Report the findings, then apply the review-fix rule: fix the
+      `Auto-fix: yes` findings, review once more, and report the rest.
+
+## Post-merge follow-up (non-blocking)
+
+- [ ] Publish 5.0.0 through the release-please PR.
+- [ ] In the accounting app, make the shell's main column the provider and
+      repeat the original Chrome test against the published package.
