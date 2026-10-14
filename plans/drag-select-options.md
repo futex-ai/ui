@@ -427,20 +427,29 @@ split in Milestone 2 and the new selection path in Milestone 4 break them.
 Write the complete contract into the protocol doc and the READMEs before any
 code changes.
 
-- [ ] Create `docs/protocol/drag-select.md` from the "Drag Select Contract"
+- [x] Create `docs/protocol/drag-select.md` from the "Drag Select Contract"
       section of `docs/protocol/shared-ui-components.md` and the Contract
       section of this plan. If it passes about 250 lines, move the option
       reference to a linked page.
-- [ ] Replace that section in `docs/protocol/shared-ui-components.md` with a
+- [x] Replace that section in `docs/protocol/shared-ui-components.md` with a
       short summary and a link. Every current requirement stays, either
       unchanged in the new doc or as a change that this plan lists.
-- [ ] Update `src/drag-select/README.md`: a page-wide shell example with
+- [x] Update `src/drag-select/README.md`: a page-wide shell example with
       `useDragSelectableOptions`, a controlled example, the options table, the
       start rules, the ignore marker, the page-change rule for uncontrolled
       selection, and the release behavior.
-- [ ] Add a "Drag select (5.0)" section to `docs/consumer-migration.md` with
+- [x] Add a "Drag select (5.0)" section to `docs/consumer-migration.md` with
       each breaking change and the option that restores the old behavior.
-- [ ] Update the `@firna/ui/drag-select` entry in the root `README.md`.
+- [x] Update the `@firna/ui/drag-select` entry in the root `README.md`.
+
+The protocol doc refines the Contract section above in six places, and it
+wins where the two differ: hook layers are ordered by the first render of
+their component; arrays in options compare element by element; Escape and
+`disabled` are soft cancels that keep the text-selection block until the
+release and swallow the click after a started drag; the release measures the
+targets again; the page-change rule clears the stored selection in both
+modes; and `selectedTargets` is taken again when the registered targets
+change. The option reference is in `docs/protocol/drag-select-api.md`.
 
 ## Milestone 2: Gesture fixes
 

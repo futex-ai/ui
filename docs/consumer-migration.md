@@ -116,6 +116,34 @@ focus-only borders such as an input's active border. Use it only where the
 surrounding surface shows focus itself, and let that surface paint the
 indicator; remove any `outlineStyle: "none"` workaround at the same time.
 
+## Drag Select (5.0)
+
+`DragSelectableProvider` can now wrap every page of an app shell. A page sets
+the options of the nearest provider with `useDragSelectableOptions`, and an
+app can own the selection with `selectedIds` and `onSelectedIdsChange`. The
+contract is in [the drag select protocol](protocol/drag-select.md).
+
+Each change below has an option that restores the 4.x behavior:
+
+| 5.0 behavior                                                                                               | Restore the 4.x behavior                                    |
+| ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| A drag no longer highlights text. A double-click or a triple-click still selects text.                     | `preventTextSelection={false}`                              |
+| A drag can start from a control (a button, link, checkbox, or label) inside a row, after 10px of movement. | `startFromControls={false}`                                 |
+| Control and Alt never start a drag. Shift adds the rows, and Command toggles them.                         | `dragMode={() => "replace"}`                                |
+| The click after a drag is swallowed, so a drag never opens a row.                                          | None. Handle the drag result in `onSelectedIdsChange`.      |
+| The box shows no "Select" label.                                                                           | `marqueeLabel="Select"`                                     |
+| A link or an image inside a row cannot start a native drag.                                                | `ignore` the element, or `shouldStartDrag` returns `false`. |
+| A press within 16px of the far edge of a scroll container with overlay scrollbars does not start a drag.   | None. The zone is the scrollbar.                            |
+| A provider without an accessible name has no role.                                                         | `role="group"`                                              |
+| A press starts nothing when no enabled target is registered.                                               | None. A drag over no targets changed nothing.               |
+| The selection clears when the last target unregisters.                                                     | Keep the selection in the app with `selectedIds`.           |
+| `selectedTargets` reflects the current registrations, not the registrations at the moment of the drag.     | Map `selectedIds` through the app's own data.               |
+
+New in 5.0, with no 4.x equivalent: `ignore`, `dragSelectableIgnoreProps`,
+`shouldStartDrag`, `autoScroll` (on by default), `renderMarquee`,
+`selectionLabel` returning `null` to hide the badge, `role="none"`,
+`defaultSelectedIds`, and the `dragMode` field of the selection state.
+
 ## Follow-Up Gaps
 
 - Use the published `@firna/ui` package for normal migrations, or the tarball

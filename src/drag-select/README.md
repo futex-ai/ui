@@ -1,54 +1,66 @@
 # Drag Select
 
-Web drag-selection primitives for selectable rows, tiles, and other repeated
-targets. The provider is native-safe, but the DOM drag gesture and marquee
-overlay only run on web.
+Rubber-band ("marquee") selection for repeated rows, tiles, and other
+targets. One `DragSelectableProvider` can wrap one list, or the scrolling
+main column of an app shell around every page. Each page then sets the
+options it needs with `useDragSelectableOptions`. The drag gesture and the
+box run on web. Native renders the same provider and selection state without
+a gesture.
+
+The contract is in [the drag select protocol](../../docs/protocol/drag-select.md),
+and the types and defaults are in
+[the API reference](../../docs/protocol/drag-select-api.md).
 
 ## Responsibilities
 
-- Track registered selectable targets by stable id.
-- Measure target bounds on web drag start and select every target intersecting
-  the marquee box on pointer up.
-- Keep clicks and short pointer movement from starting the visible marquee or
-  committing a selection. The default threshold is `4px`.
-- Expose final selection ids, selected target metadata, live matching ids, and
-  live matching counts through hooks.
-- Render a themed, page-level marquee overlay on web.
-- Keep the marquee overlay above shared modal and dropdown surfaces, with an
-  `overlayZIndex` escape hatch for consumers with custom stacking contexts.
-- Ignore touch drags and nested interactive controls while still allowing a
-  selectable target root to begin a drag.
-- Cancel interrupted pointer streams without committing a partial selection.
-- Keep a native fallback that renders children and registers no selections.
+- Track registered targets by stable id, with keyboard and screen-reader
+  selection on every target.
+- Decide which presses can start a drag: fixed rules (touch, other buttons,
+  scrollbars, no targets), default rules (modifier keys, ignored regions,
+  fields, controls), and an app callback with the final answer.
+- Run the drag: a movement threshold, a box anchored to the scrolled
+  content, edge auto-scroll, blocked text selection and native drags, and a
+  swallowed click after the release.
+- Keep the selection, or let the app own it (`selectedIds` and
+  `onSelectedIdsChange`).
+- Render the themed box through a body-level portal above modal and dropdown
+  surfaces, or the app's own box through `renderMarquee`.
 
-## Usage
+## Page Shell
+
+The shell makes its main column the provider and keeps it off by default.
+A page turns it on and configures it with the page hook:
 
 ```tsx
 import {
   DragSelectableProvider,
-  useDragSelectableChanges,
+  useDragSelectableOptions,
   useDragSelectableTarget,
 } from "@firna/ui/drag-select";
 
-function LedgerRows({ rows }) {
+function Shell({ page }) {
   return (
-    <DragSelectableProvider>
-      <SelectionListener />
-      {rows.map((row) => (
-        <LedgerRow key={row.id} row={row} />
-      ))}
-    </DragSelectableProvider>
+    <View style={styles.app}>
+      <Sidebar />
+      <DragSelectableProvider disabled style={styles.mainColumn}>
+        {page}
+      </DragSelectableProvider>
+    </View>
   );
 }
 
-function SelectionListener() {
-  useDragSelectableChanges((state) => {
-    console.log(state.selectedCount, state.selectedIds);
+function TransactionsPage({ rows }) {
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  useDragSelectableOptions({
+    disabled: false,
+    ignore: "[data-notes]",
+    onSelectedIdsChange: (ids) => setSelectedIds(ids),
+    selectedIds,
   });
-  return null;
+  return rows.map((row) => <TransactionRow key={row.id} row={row} />);
 }
 
-function LedgerRow({ row }) {
+function TransactionRow({ row }) {
   const target = useDragSelectableTarget({
     data: row,
     id: row.id,
@@ -61,76 +73,144 @@ function LedgerRow({ row }) {
       style={target.selected ? selectedStyle : rowStyle}
     >
       <Text>{row.label}</Text>
+      <Button onPress={() => openRow(row.id)}>Open</Button>
     </View>
   );
 }
 ```
 
+- Hook layers override provider props, and a later layer wins. A key set to
+  `undefined` does not override. `ignore` selectors combine across layers.
+- The hook publishes before paint, so a changed `selectedIds` never shows a
+  stale frame.
+
+## Controlled And Uncontrolled Selection
+
+- Controlled: pass `selectedIds`. The provider stores nothing, sends each
+  proposal to `onSelectedIdsChange(ids, change)`, and renders `selectedIds`.
+  `change` has the `source` (`drag` or `keyboard`), the `mode`, the `hitIds`
+  in document order, and the `previousIds`.
+- Uncontrolled: omit `selectedIds`. The provider starts from
+  `defaultSelectedIds`, applies each proposal, and still calls
+  `onSelectedIdsChange`.
+- Selection ids are a set. Their order carries no meaning.
+- Page change: when the last target unregisters, the provider clears its
+  stored selection. An uncontrolled page in a shell therefore starts empty.
+  A filter or a reload that leaves zero rows also clears it.
+- `onSelectionChange(selection)` fires when the rendered selection changes.
+  A proposal is announced (WCAG 2.1 4.1.3) only when the rendered selection
+  becomes that proposal, so a rejected proposal stays silent.
+
+## Options
+
+| Option                       | Default                  | Use                                                    |
+| ---------------------------- | ------------------------ | ------------------------------------------------------ |
+| `disabled`                   | `false`                  | Turn the provider off. An active drag cancels.         |
+| `ignore`                     | none                     | CSS selectors where a press never starts a drag.       |
+| `startFromControls`          | `true`                   | Let a press on a control inside a row start a drag.    |
+| `minimumDragDistance`        | `4`                      | Pixels of movement before the drag starts.             |
+| `minimumControlDragDistance` | `10`                     | Pixels for a press on a control.                       |
+| `dragMode`                   | Shift adds, Meta toggles | Map modifier keys to a mode, or to `null` for no drag. |
+| `shouldStartDrag`            | none                     | Final answer for each press, with the default answer.  |
+| `preventTextSelection`       | `true`                   | Block text selection during a drag.                    |
+| `autoScroll`                 | `true`                   | Scroll the container near its edges during a drag.     |
+| `selectedIds`                | none                     | Own the selection (controlled).                        |
+| `onSelectedIdsChange`        | none                     | Receive each proposed selection.                       |
+| `onSelectionChange`          | none                     | Receive each change of the rendered selection.         |
+| `selectionAnnouncement`      | `"N items selected"`     | Live-region text. Return `""` to stay silent.          |
+| `overlayZIndex`              | the overlay layer token  | Raise the box above a custom stacking context.         |
+| `marqueeLabel`               | `null`                   | Text in the top-left corner of the box.                |
+| `selectionLabel`             | `"N items"`              | Badge text. Return `null` to hide the badge.           |
+| `renderMarquee`              | none                     | Draw your own box inside the fixed layer.              |
+
+Provider-only props: `accessibilityLabel`, `children`, `defaultSelectedIds`,
+`role` (`"group"`, `"list"`, or `"none"`), `style`, and `testID`.
+
+## Start Rules
+
+A press inside the provider starts nothing when the provider is disabled or
+has no enabled target, for touch and for every button but the main one, and
+on a scrollbar (classic, or a 16px overlay zone at the far edge of a
+container whose scrollbar takes no space). Then the default rules refuse:
+
+- Control or Alt held (`modifier`). Shift adds and Meta (Command) toggles.
+- A press inside `[data-drag-select-ignore]` or an `ignore` selector
+  (`ignored`).
+- A press inside a field: a text input, `textarea`, `select`, editable
+  content, a slider, a spin button, a combobox, or a draggable element
+  (`field`).
+- A press on a control (a link, button, label, checkbox, radio, switch, tab,
+  menu item, or option) outside an enabled row (`control`). A control inside
+  a row can start a drag after `minimumControlDragDistance`, and a press
+  without movement still activates it.
+
+`shouldStartDrag(start)` receives the default answer (`start.allowed`,
+`start.reason`) and returns the final one.
+
+Mark any region where a press must never start a drag with the ignore
+marker. Library gesture surfaces (data grid, calendar grids, kanban cards,
+sortable lists, timeline, scrubbers, chart scrub layer) carry it already.
+
+```tsx
+import {
+  dragSelectableIgnoreDomProps,
+  dragSelectableIgnoreProps,
+} from "@firna/ui/drag-select";
+
+<View {...dragSelectableIgnoreProps}>…</View>;
+<div {...dragSelectableIgnoreDomProps}>…</div>;
+```
+
+## During And After A Drag
+
+- The box follows the scrolled content: a wheel or keyboard scroll during
+  the drag keeps the start point on the row where it started.
+- Near the edge of the scroll container, the container scrolls by itself.
+- Text does not highlight during a drag. A double-click or a triple-click
+  still selects text, because a press without movement blocks nothing.
+- A drag that started on a row `Button` ends that button's press, so it does
+  not fire `onPress`.
+- After the release, the provider swallows the click, so a drag never opens
+  a row. A plain click is not swallowed.
+- Escape cancels a started drag without a change. `pointercancel`, a window
+  blur, and a hidden page also cancel it.
+
 ## Accessibility
 
-The marquee is a pointer-only gesture, so every selectable target also exposes a
-keyboard-and-screen-reader path (WCAG 2.1 — 2.5.1 Pointer Gestures, A; 2.1.1
-Keyboard, A; 4.1.2 Name, Role, Value, A):
-
-- Spread `target.a11yProps` onto the target's outer `View`. This makes it a
-  focusable `checkbox` with the correct `accessibilityRole`,
-  `accessibilityState.checked/disabled`, accessible name (`options.label`,
-  defaulting to `id`), and roving `tabIndex` (the group is a single Tab stop).
+- Spread `target.a11yProps` onto the target's outer `View`. It makes the
+  target a focusable `checkbox` with the right state, an accessible name
+  (`label`, else `id`), the shared focus marker, and a roving tab stop.
 - **Space / Enter** toggles the focused target. **Arrow Up/Down** moves the
-  roving focus (Home/End jump to the ends). **Shift + Arrow** extends the
-  selection as a contiguous range.
-- Spreading `target.a11yProps` also supplies the CSS focus marker, so keyboard
-  focus gets the shared visible indicator without a render-time focus style
-  (WCAG 2.1 — 2.4.7 Focus Visible, AA). `target.focusRingStyle` is now always
-  empty and exists only so older code compiles; the earlier
-  `target.focused ? target.focusRingStyle : null` line can be deleted.
-- Set `accessibilityLabel` (and optionally `role="list"`) on the provider so the
-  collection is announced as a named group (WCAG 2.1 — 1.3.1, A).
-- Each committed selection change is announced to assistive tech through a
-  polite live region (WCAG 2.1 — 4.1.3 Status Messages, AA). Customize the text
-  with `selectionAnnouncement`, or return an empty string to silence it.
-- Do not convey the selected state with background color alone — pair it with a
-  non-color affordance such as a check glyph or border (WCAG 2.1 — 1.4.1, A).
-  The state itself is exposed via `aria-checked`, so the glyph should be
-  `aria-hidden`.
+  focus, and Home/End jump to the ends. **Shift + Arrow** selects a range.
+- `target.focusRingStyle` is always empty and exists only so older code
+  compiles.
+- Give the provider an `accessibilityLabel` so the collection is a named
+  `group` (or pass `role="list"`). Without a name the wrapper has no role, so
+  a page-wide provider adds nothing to the accessibility tree.
+- Pair the selected state with a non-color affordance such as a check glyph
+  (WCAG 2.1 1.4.1). The state is exposed through `aria-checked`, so mark the
+  glyph `aria-hidden`.
 
-Use `useDragSelectableSelection()` when a component only needs the current
-state. Use `useDragSelectableChanges(listener)` when it needs to run an effect
-after drag matches or final selections change. `state.matchingCount` and
-`state.matchingIds` update while dragging; `state.selectedCount`,
-`state.selectedIds`, and `state.selectedTargets` update when the drag finishes.
-`state.selectedTargets` is a selection-time metadata snapshot. Use
-`state.selectedIds` to look up fresh row data from the consuming app's current
-data source.
+## State Hooks
 
-`selectionLabel` customizes the badge text in the marquee overlay. It receives
-the live matching count plus matching ids and target metadata:
+`useDragSelectableSelection()` returns the state. `useDragSelectableChanges(listener)`
+also runs `listener` after each change. `matchingCount`, `matchingIds`, and
+`matchingTargets` update during a drag. `selectedCount`, `selectedIds`, and
+`selectedTargets` follow the rendered selection. `dragging` and `dragMode`
+describe the active press, and `dragBox` is the hit box in viewport
+coordinates. `selectedTargets` is a snapshot of the registrations; use
+`selectedIds` to read fresh row data from the app's own source.
 
-```tsx
-<DragSelectableProvider
-  selectionLabel={(count, { matchingIds }) =>
-    `${count} transactions (${matchingIds.join(", ")})`
-  }
->
-  {children}
-</DragSelectableProvider>
-```
+## Key Code
 
-`accessibilityLabel` names the container group, and `role` (`"group"` default or
-`"list"`) sets its ARIA role. `selectionAnnouncement(count, selection)` builds
-the polite live-region message spoken whenever the committed selection count
-changes.
-
-`overlayZIndex` can override the default `DRAG_SELECTABLE_LAYERS.overlay` value
-when a consuming surface owns a higher portal layer.
-
-`minimumDragDistance` customizes how far the pointer must move before live
-matching, the marquee overlay, and final selection can begin. Pass `0` to start
-selection as soon as the pointer moves; negative values are clamped to `0`;
-non-finite values fall back to the default `4px`.
-
-```tsx
-<DragSelectableProvider minimumDragDistance={16}>
-  {children}
-</DragSelectableProvider>
-```
+- `DragSelectableProvider.web.tsx` and `DragSelectableProvider.tsx`: the web
+  and native providers.
+- `DragSelectableContext.tsx`: the target, selection, and change hooks.
+- `useDragSelectableOptions.ts` and `dragSelectableOptions.ts`: the page hook
+  and the option merge.
+- `useDragSelectableGesture.web.ts` and the `dragSelectableStart*`,
+  `dragSelectableScroll*`, and `dragSelectableGesture*` modules: the web
+  gesture.
+- `useDragSelectableSelectionState.ts` and `dragSelectableSelectionModel.ts`:
+  controlled and uncontrolled selection.
+- `DragSelectableOverlay.web.tsx`: the box.

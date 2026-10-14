@@ -729,40 +729,15 @@ Required behavior:
 
 ## Drag Select Contract
 
-The drag-select family covers web-only rubber-band selection for repeated rows,
-tiles, and similar rendered targets. Native platforms receive a safe provider
-fallback but no drag gesture.
-
-Required behavior:
-
-- Register selectable targets by stable id through a hook-owned ref.
-- Measure registered target bounds on drag start and select every enabled target
-  whose measured bounds intersect the marquee box on pointer up.
-- Require pointer movement to meet a provider-configurable minimum drag
-  distance before live matching, marquee rendering, or final selection starts.
-  The default minimum is `4px`; `0` starts selection immediately after movement,
-  negative values clamp to `0`, and non-finite values fall back to the default.
-- Expose final selected ids, selected target metadata, selected count, live
-  matching ids, live matching target metadata, and live matching count through
-  hooks.
-- Give every target the shared CSS focus marker through its spread `a11yProps`.
-  The legacy `focusRingStyle` result field stays for source compatibility but
-  must always be empty, so a consumer that still applies it never paints a
-  second glow over the marker's.
-- Treat selected target metadata as a snapshot captured when selection finishes;
-  consumers that need live target data should map selected ids through their own
-  current data source.
-- Provide a provider-level selection-change callback and a hook-level listener
-  for components that need side effects when selection changes.
-- Allow the marquee badge copy to be customized from the live matching count,
-  ids, and target metadata.
-- Render the web marquee through a body-level portal using shared theme primary
-  colors, radii, and a shared layer token that clears modal and dropdown
-  surfaces while allowing an explicit provider override.
-- Ignore touch drags and nested form/menu/link controls while allowing a
-  selectable target root to start the drag.
-- Keep the pure geometry helpers exported and covered by unit tests.
-- Preserve a native-safe fallback for Expo platform resolution.
+The drag-select family gives web rubber-band selection to repeated rows,
+tiles, and similar targets. One provider can wrap one list or a whole app
+shell, and a page sets the options of the nearest provider with
+`useDragSelectableOptions`. Native renders the same provider and selection
+state, but has no drag gesture. The complete contract is in
+[drag-select.md](drag-select.md): targets and hooks, option precedence, the
+start rules, the gesture, auto-scroll, controlled and uncontrolled
+selection, the box and the wrapper, and native behavior. The public types,
+option defaults, and helpers are in [drag-select-api.md](drag-select-api.md).
 
 ## Modal Contract
 
