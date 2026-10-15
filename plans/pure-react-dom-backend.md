@@ -1,5 +1,21 @@
 # Pure React DOM backend
 
+Status: Active. M0–M4 delivered: the `react-native-web` side of the
+`src/primitives` seam is now a hand-written DOM backend with vendored types, and
+a web consumer installs only `react`, `react-dom`, and `lucide-react`, with
+every component file still shared with the React Native build. M0 recorded a
+screenshot + ARIA snapshot baseline on the old backend; M1 removed the
+`react-native` type dependency and added a web-resolution typecheck; M2–M3
+ported every primitive (`ScrollView`, `TextInput`, `FlatList`, `Animated`,
+`Easing` and the gesture responder included); M4 drops the `react-native-web`
+peer and devDependency (switching off Storybook's prop docgen, the only thing
+that still wanted the package on disk, to shim its own mis-resolution of
+`react-native`), proves the three-peer build in the package smoke, and updates
+the docs — the cast cleanup it proposed was measured and none of the 19 sites
+can go, because the native typecheck also checks the `.web` files. Remaining:
+only the deferred device check for storybook-native (no simulator in the
+delivery environment).
+
 Make `@firna/ui` consumable as a plain React library on the web, with no
 `react-native-web` at runtime and no `react-native` for types, while every
 component file stays shared with the React Native build.

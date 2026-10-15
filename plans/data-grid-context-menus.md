@@ -1,5 +1,23 @@
 # Data Grid Context Menus
 
+Status: Completed. [PR #164](https://github.com/futex-ai/ui/pull/164) merged on
+2026-09-04. Delivered: right-click (web) and long-press (native) menus on
+`DataGrid` column headers, the row gutter, and cells, behind an opt-in
+`contextMenu` prop. The enabling change is a virtual `anchorRect` on
+`DropdownPortal`, which promotes the `SlashMenu` caret-rect one-off into the
+shared contract so any surface can be positioned at a point rather than against
+a measured element; `ContextMenu` (in `src/popover`, reusing `ResponsiveMenu`'s
+native bottom sheet) is the primitive built on it. The grid ships library
+defaults per region — sort / insert / hide / **delete field**; insert /
+duplicate / **delete row(s)**; edit / copy / cut / paste / clear — extensible
+through `onContextMenuEntries`, with spreadsheet selection semantics (a press
+inside the selection keeps it, outside collapses to the target) and `Shift+F10`
+/ the `ContextMenu` key for the keyboard. The header caret and the header
+context menu now render from one descriptor vocabulary, and a latent bug where a
+right-click could open a cell editor is fixed. M1–M7 complete and
+`npm run verify` green; the manual on-device native pass is the one deferred
+item.
+
 Right-clicking a column header or a row in [`DataGrid`](../src/data-grid/README.md)
 does nothing today — the browser's own menu appears. The grid already has the
 vocabulary for the actions people expect there (`DataGridColumnAction` is

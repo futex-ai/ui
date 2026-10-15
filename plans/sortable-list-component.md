@@ -1,5 +1,9 @@
 # SortableList component
 
+Status: Active. M1 delivered (web pointer + keyboard drag, optional start/end
+grab handle, vertical/horizontal flow) and `npm run verify` green; M2 (native
+drag / touch reordering + RTL) deferred.
+
 A new `@firna/ui` primitive: a drag-and-drop **sortable list**. Like the existing
 [`List`](../src/list/README.md) it is generic over its data (`items` / `itemKey`
 / `renderItem`), but it makes the rows **reorderable** by pointer and keyboard,

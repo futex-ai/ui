@@ -1,8 +1,8 @@
 # Shared Dropdown And Modal Library
 
-## Status
-
-Completed.
+Status: Completed. Commit
+[069aec7](https://github.com/futex-ai/ui/commit/069aec701b146c378a6c7f55832252b1cbbd8d57)
+completed it on 2026-06-12 without a pull request.
 
 ## Goal
 

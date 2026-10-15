@@ -1,5 +1,14 @@
 # Status dot
 
+Status: Completed. [PR #142](https://github.com/futex-ai/ui/pull/142) merged on
+2026-08-06. Delivered: `StatusDot`, the workflow graph's pulsing dot promoted
+into a standalone primitive on the badge's four-tone vocabulary, with an
+explicit `pulse` prop, a real 7 / 9 / 11px `ControlSize` scale, and a
+decorative-by-default accessible name. The opacity loop it shares with the new
+`Badge` `pulse` prop lives in `usePulse`, so no surface hand-rolls a heartbeat;
+`WorkflowStatusDot` keeps its run-status API and delegates. M1–M3 complete and
+`npm run verify` green.
+
 Promote the pulsing dot buried inside the workflow graph into `StatusDot`, a
 standalone primitive any surface can use, and give
 [`Badge`](../src/badge/Badge.tsx) a `pulse` prop so the common "● Running" pill

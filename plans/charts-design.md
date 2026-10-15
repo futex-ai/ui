@@ -1,5 +1,9 @@
 # Charts — design
 
+Status: Completed. [PR #148](https://github.com/futex-ai/ui/pull/148) merged on
+2026-08-12 and delivered the plan for this design,
+[charts-component-family.md](charts-component-family.md).
+
 The design/spec behind [`charts-component-family.md`](charts-component-family.md).
 It defines the colour system, the layering, the shared data contract, and the
 accessibility and interaction rules every chart in `@firna/ui/chart` obeys.

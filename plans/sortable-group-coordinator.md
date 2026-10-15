@@ -1,5 +1,15 @@
 # Sortable group coordinator
 
+Status: Completed. [PR #125](https://github.com/futex-ai/ui/pull/125) merged on
+2026-07-31. Delivered: `SortableGroups`, a pure-provider coordinator several
+`SortableList`s join via `groupId`, so items drag between lists by pointer and
+keyboard. One `onMove` reports
+`{ key, fromGroupId, fromIndex, toGroupId, toIndex }`; `groupFlow` picks the
+keyboard model (stacked overflow vs. Kanban-parity jumps) and `canDrop` bars
+destinations. The drag engine was generalised to N groups rather than copied,
+and the drag ghost is now a shared body-level portal. M1–M3 complete; the manual
+screen-reader pass is the one deferred item.
+
 Add **cross-list** drag-and-drop to `@firna/ui`. Today
 [`SortableList`](../src/sortable-list/README.md) is strictly single-list: its
 `onReorder` reports `{ key, fromIndex, toIndex }` with no notion of a source or
