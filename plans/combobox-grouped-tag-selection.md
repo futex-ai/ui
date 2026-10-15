@@ -114,9 +114,9 @@ entry or prop.
 - [x] `cargo xtask review` after the push; record findings here without fixing
       them. (The sandbox's codex proxy hangs on the `gpt-5.5` model the xtask
       pins, so the identical review prompt ran through `codex exec` with the
-      proxy's default model and the same read-only flags; codex's bwrap
-      sandbox also needs the `setpriv --inh-caps=-all --ambient-caps=-all
-    --bounding-set=-all` wrapper here.)
+      proxy's default model and the same read-only flags. Codex's bwrap
+      sandbox also needs every capability dropped here, through `setpriv` as
+      in the focus-indicator plan.)
 - [ ] Review finding 1 (P2): internal row ids (`combobox-group-N`,
       `combobox-footer-action`, and the older `empty` / `footer`) can collide
       with an option `value`, breaking navigation for that option. Awaiting a
