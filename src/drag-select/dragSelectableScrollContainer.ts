@@ -7,6 +7,7 @@ import type {
   DragSelectableBox,
   DragSelectablePoint,
 } from "./dragSelectableModel";
+import { dragSelectableOverflowAxes } from "./dragSelectableScrollAxes";
 
 /** The element that scrolls the content under a press. */
 export type DragSelectableScrollContainer = {
@@ -22,8 +23,6 @@ export type DragSelectableRect = {
   right: number;
   top: number;
 };
-
-const SCROLLING_OVERFLOW = new Set(["auto", "scroll", "overlay"]);
 
 /**
  * The pressed element if it scrolls, else its nearest scrolling ancestor,
@@ -55,12 +54,17 @@ export function dragSelectableElementScrolls(element: Element): boolean {
   const style = getComputedStyle(element);
   const html = element as HTMLElement;
   const borders = dragSelectableBorders(style);
+  const axes = dragSelectableOverflowAxes(
+    style.overflowX,
+    style.overflowY,
+    false,
+  );
   const scrollsY =
-    SCROLLING_OVERFLOW.has(style.overflowY) &&
+    axes.y &&
     (element.scrollHeight > element.clientHeight ||
       verticalScrollbarSpace(html, borders) > 0);
   const scrollsX =
-    SCROLLING_OVERFLOW.has(style.overflowX) &&
+    axes.x &&
     (element.scrollWidth > element.clientWidth ||
       horizontalScrollbarSpace(html, borders) > 0);
   return scrollsX || scrollsY;

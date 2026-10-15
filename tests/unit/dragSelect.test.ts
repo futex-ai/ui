@@ -17,6 +17,7 @@ import {
   hasDragSelectableMoved,
 } from "../../src/drag-select/dragSelectableModel";
 import { dragSelectableDefaultDragMode } from "../../src/drag-select/dragSelectableOptions";
+import { dragSelectableProviderAccessibility } from "../../src/drag-select/dragSelectableRole";
 import { dragSelectableStartDecision } from "../../src/drag-select/dragSelectableStartRules";
 import type { DragSelectableTargetRegistration } from "../../src/drag-select/dragSelectableTypes";
 import { DROPDOWN_LAYERS } from "../../src/dropdown/dropdownLayers";
@@ -170,6 +171,25 @@ test("drag-select starts from controls inside targets but never from editable co
   assert.equal(decide(nestedEditable).reason, "field");
   assert.equal(decide(rootButton).allowed, true);
   assert.equal(decide(rootButton).onControl, false);
+});
+
+test("drag-select names the provider element only when it has a role", () => {
+  assert.deepEqual(dragSelectableProviderAccessibility(undefined, "Rows"), {
+    accessibilityLabel: "Rows",
+    role: "group",
+  });
+  assert.deepEqual(dragSelectableProviderAccessibility(undefined, undefined), {
+    accessibilityLabel: undefined,
+    role: undefined,
+  });
+  assert.deepEqual(dragSelectableProviderAccessibility("list", "Rows"), {
+    accessibilityLabel: "Rows",
+    role: "list",
+  });
+  assert.deepEqual(dragSelectableProviderAccessibility("none", "Rows"), {
+    accessibilityLabel: undefined,
+    role: undefined,
+  });
 });
 
 test("drag-select snapshots selected target metadata on commit", () => {

@@ -16,6 +16,7 @@ import { ControlledSelectionExample } from "./dragSelectControlledExample";
 import { EmptyPageExample } from "./dragSelectEmptyPageExample";
 import { MarqueeOptionsExample } from "./dragSelectMarqueeExample";
 import { PageShellExample } from "./dragSelectPageShellExample";
+import { RowDataExample } from "./dragSelectRowDataExample";
 import { StorySurface } from "./sharedExamples";
 
 const meta = {
@@ -113,6 +114,15 @@ export const CustomMarquee: Story = {
   render: () => (
     <StorySurface>
       <MarqueeOptionsExample />
+    </StorySurface>
+  ),
+};
+
+export const RowData: Story = {
+  name: "Row data",
+  render: () => (
+    <StorySurface>
+      <RowDataExample />
     </StorySurface>
   ),
 };

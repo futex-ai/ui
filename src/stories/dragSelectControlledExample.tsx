@@ -1,8 +1,11 @@
 /**
- * A controlled drag-select example: the app owns the selection. A click
- * selects one row, Command-click or Control-click toggles a row, Shift-click
- * selects a range, the toolbar clears the selection, and a drag sends a
- * proposal that the app applies unless the selection is locked.
+ * A controlled drag-select example in the app-shell pattern: the provider
+ * wraps the page, and the page owns the selection through
+ * `useDragSelectableOptions`. A click selects one row, Command-click or
+ * Control-click toggles a row, Shift-click selects a range, the toolbar
+ * clears the selection, and a drag or a key sends a proposal that the page
+ * applies unless the selection is locked. The lock changes only the page's
+ * callback, so the provider must read the callback when it calls it.
  */
 import { useState } from "react";
 import {
@@ -17,6 +20,7 @@ import {
   Button,
   DragSelectableProvider,
   Switch,
+  useDragSelectableOptions,
   useDragSelectableTarget,
   useSharedUiTheme,
   type DragSelectableSelectionChange,
@@ -36,6 +40,19 @@ type ClickKeys = {
 };
 
 export function ControlledSelectionExample() {
+  return (
+    <DragSelectableProvider
+      selectionAnnouncement={(count) =>
+        `${count} transaction${count === 1 ? "" : "s"} selected`
+      }
+      style={styles.page}
+    >
+      <ControlledPage />
+    </DragSelectableProvider>
+  );
+}
+
+function ControlledPage() {
   const theme = useSharedUiTheme();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [anchor, setAnchor] = useState<string | null>(null);
@@ -54,6 +71,8 @@ export function ControlledSelectionExample() {
       setSelectedIds(ids);
     }
   };
+
+  useDragSelectableOptions({ onSelectedIdsChange, selectedIds });
 
   const onRowPress = (id: string, event: GestureResponderEvent) => {
     const keys = event.nativeEvent as unknown as ClickKeys;
@@ -78,7 +97,7 @@ export function ControlledSelectionExample() {
   };
 
   return (
-    <View style={styles.page}>
+    <>
       <View style={[styles.toolbar, { borderColor: theme.colors.border }]}>
         <Text
           style={[styles.count, { color: theme.colors.ink }]}
@@ -117,20 +136,16 @@ export function ControlledSelectionExample() {
       >
         {`Proposals: ${log.count}. Last: ${log.last}`}
       </Text>
-      <DragSelectableProvider
+      <View
         accessibilityLabel="Transactions"
-        onSelectedIdsChange={onSelectedIdsChange}
-        selectedIds={selectedIds}
-        selectionAnnouncement={(count) =>
-          `${count} transaction${count === 1 ? "" : "s"} selected`
-        }
+        role="group"
         style={[styles.list, { borderColor: theme.colors.border }]}
       >
         {rows.map((row) => (
           <ControlledRow key={row.id} onPress={onRowPress} row={row} />
         ))}
-      </DragSelectableProvider>
-    </View>
+      </View>
+    </>
   );
 }
 

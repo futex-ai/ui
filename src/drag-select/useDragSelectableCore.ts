@@ -30,19 +30,16 @@ export function useDragSelectableCore(
   defaultSelectedIds: readonly string[] | undefined,
 ): DragSelectableCore {
   const optionState = useDragSelectableOptionLayers(providerOptions);
-  const { options } = optionState;
+  const { options, source } = optionState;
   const clearAfterEmptyRef = useRef<() => void>(() => undefined);
   const registry = useDragSelectableRegistry(() =>
     clearAfterEmptyRef.current(),
   );
   const selection = useDragSelectableSelectionState({
     defaultSelectedIds,
-    disabled: options.disabled,
-    onSelectedIdsChange: options.onSelectedIdsChange,
-    onSelectionChange: options.onSelectionChange,
+    readOptions: source.read,
     registeredTargets: registry.registeredTargets,
     selectedIds: options.selectedIds,
-    selectionAnnouncement: options.selectionAnnouncement,
     targetsRef: registry.targetsRef,
   });
   clearAfterEmptyRef.current = selection.clearAfterEmpty;

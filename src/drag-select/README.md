@@ -82,6 +82,9 @@ function TransactionRow({ row }) {
   `undefined` does not override. `ignore` selectors combine across layers.
 - The hook publishes before paint, so a changed `selectedIds` never shows a
   stale frame.
+- A page may pass new callbacks on every render. The provider calls the
+  current ones, and the box uses the current `renderMarquee` and
+  `selectionLabel`, without a provider render.
 
 ## Controlled And Uncontrolled Selection
 
@@ -92,7 +95,8 @@ function TransactionRow({ row }) {
 - Uncontrolled: omit `selectedIds`. The provider starts from
   `defaultSelectedIds`, applies each proposal, and still calls
   `onSelectedIdsChange`.
-- Selection ids are a set. Their order carries no meaning.
+- Selection ids are a set. Their order carries no meaning, and an id listed
+  twice in `selectedIds` or `defaultSelectedIds` counts once.
 - Page change: when the last target unregisters and none of the selected
   rows registers again in the same task, the provider clears its stored
   selection. An uncontrolled page in a shell therefore starts empty. A filter
@@ -168,7 +172,8 @@ import {
 
 - The box follows the scrolled content: a wheel or keyboard scroll during
   the drag keeps the start point on the row where it started.
-- Near the edge of the scroll container, the container scrolls by itself.
+- Near the edge of the scroll container, the container scrolls by itself, on
+  the axes where its overflow lets it scroll.
 - Text does not highlight during a drag. A double-click or a triple-click
   still selects text, because a press without movement blocks nothing.
 - A drag that started on a row `Button` ends that button's press, so it does
@@ -214,7 +219,9 @@ scroll container) and puts your node inside it.
   compiles.
 - Give the provider an `accessibilityLabel` so the collection is a named
   `group` (or pass `role="list"`). Without a name the wrapper has no role, so
-  a page-wide provider adds nothing to the accessibility tree.
+  a page-wide provider adds nothing to the accessibility tree. `role="none"`
+  renders no role and drops `accessibilityLabel`, because an element with
+  no role cannot have a name.
 - Pair the selected state with a non-color affordance such as a check glyph
   (WCAG 2.1 1.4.1). The state is exposed through `aria-checked`, so mark the
   glyph `aria-hidden`.
@@ -226,8 +233,9 @@ also runs `listener` after each change. `matchingCount`, `matchingIds`, and
 `matchingTargets` update during a drag. `selectedCount`, `selectedIds`, and
 `selectedTargets` follow the rendered selection. `dragging` and `dragMode`
 describe the active press, and `dragBox` is the hit box in viewport
-coordinates. `selectedTargets` is a snapshot of the registrations; use
-`selectedIds` to read fresh row data from the app's own source.
+coordinates. `selectedTargets` is a snapshot of the registrations, with the
+target `data` current when the selection or the set of targets last changed;
+use `selectedIds` to read fresh row data from the app's own source.
 
 ## Key Code
 
@@ -244,9 +252,10 @@ coordinates. `selectedTargets` is a snapshot of the registrations; use
   default rules, `dragSelectableSession.ts` one gesture from the press to the
   release, and `dragSelectableSessionDom.ts` its DOM listeners.
   `dragSelectableTextSelection.ts` blocks text selection during a drag.
-- `dragSelectableScrollContainer.ts`, `dragSelectableScrollbar.ts`, and
-  `dragSelectableScrollAnchor.ts`: the press's scroll container, the
-  scrollbar rule, and the anchored start point.
+- `dragSelectableScrollContainer.ts`, `dragSelectableScrollAxes.ts`,
+  `dragSelectableScrollbar.ts`, and `dragSelectableScrollAnchor.ts`: the
+  press's scroll container, the axes it can scroll, the scrollbar rule, and
+  the anchored start point.
 - `useDragSelectableSelectionState.ts` and `dragSelectableSelectionModel.ts`:
   the selection, its modes, its reports, and its announcements.
 - `useDragSelectableRegistry.ts`, `dragSelectableTargetOrder.ts`, and
@@ -257,4 +266,5 @@ coordinates. `selectedTargets` is a snapshot of the registrations; use
 - `dragSelectableAutoScroll.ts`: the edge auto-scroll loop.
 - `dragSelectableIgnore.ts`: the ignore marker.
 - `DragSelectableOverlay.web.tsx` and `dragSelectableOverlayTypes.ts`: the
-  box. `dragSelectableRole.ts`: the provider element's role.
+  box, which reads its options live. `dragSelectableRole.ts`: the provider
+  element's role and name.

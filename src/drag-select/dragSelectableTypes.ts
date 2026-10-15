@@ -80,7 +80,8 @@ export type DragSelectableProviderProps = DragSelectableOptions & {
    * `accessibilityLabel` names it and has no role otherwise, so a page-wide
    * provider adds nothing to the accessibility tree. Pass `"list"` (with
    * targets laid out like list items) for a single-axis collection, or
-   * `"none"` for no role even with a name.
+   * `"none"` for no role and no name: the provider then drops
+   * `accessibilityLabel`, because an element with no role cannot be named.
    */
   role?: "group" | "list" | "none";
   style?: StyleProp<ViewStyle>;

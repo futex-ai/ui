@@ -7,6 +7,7 @@ import {
   dragSelectableRecordProposal,
   dragSelectableReportRender,
   dragSelectableStoredAfterEmpty,
+  dragSelectableUniqueIds,
 } from "../../src/drag-select/dragSelectableSelectionModel";
 
 test("drag-select compares selections as sets", () => {
@@ -103,4 +104,13 @@ test("drag-select keeps the stored selection when its targets register again", (
     dragSelectableStoredAfterEmpty(empty, () => false),
     empty,
   );
+});
+
+test("drag-select keeps each selected id once, at its first position", () => {
+  assert.deepEqual(dragSelectableUniqueIds(["b", "a", "b", "c", "a"]), [
+    "b",
+    "a",
+    "c",
+  ]);
+  assert.deepEqual(dragSelectableUniqueIds([]), []);
 });

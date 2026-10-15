@@ -161,6 +161,24 @@ test.describe("controlled selection", () => {
     );
     expect(await controlledCheckedIds(page)).toEqual(["txn_2", "txn_3"]);
   });
+
+  test("a lock that changes only the page callback applies to keys", async ({
+    page,
+  }) => {
+    const count = page.getByTestId("controlled-count");
+    await page.getByTestId("controlled-row-txn_2").focus();
+    await page.keyboard.press("Space");
+    await expect(count).toHaveText("1 selected");
+
+    await page.getByTestId("controlled-lock").click();
+    await page.getByTestId("controlled-row-txn_3").focus();
+    await page.keyboard.press("Space");
+    await expect(page.getByTestId("controlled-log")).toHaveText(
+      "Proposals: 2. Last: txn_2, txn_3 (keyboard, toggle)",
+    );
+    await expect(count).toHaveText("1 selected");
+    expect(await controlledCheckedIds(page)).toEqual(["txn_2"]);
+  });
 });
 
 test("a page change clears the uncontrolled selection", async ({ page }) => {
@@ -184,4 +202,21 @@ test("a page change clears the uncontrolled selection", async ({ page }) => {
   await expect(
     page.getByText("Selection changes: 2. Last: none"),
   ).toBeVisible();
+});
+
+test("a selection change reports the current row data", async ({ page }) => {
+  await openStory(page, "row-data");
+  await page.getByTestId("row-data-toggle-inv_1").click();
+  await expect(page.getByTestId("row-data-toggle-inv_1")).toHaveText(
+    "Mark unpaid",
+  );
+
+  await dragBetween(
+    page,
+    await pointIn(page, "row-data-inv_1", 60),
+    await pointIn(page, "row-data-inv_2", 120),
+  );
+  await expect(page.getByTestId("row-data-last-change")).toHaveText(
+    "Selected invoices: INV-0001 paid, INV-0002 unpaid",
+  );
 });

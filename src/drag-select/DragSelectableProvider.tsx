@@ -7,7 +7,7 @@
 import { View } from "../primitives/reactNative";
 
 import { DragSelectableContext } from "./DragSelectableContext";
-import { dragSelectableProviderRole } from "./dragSelectableRole";
+import { dragSelectableProviderAccessibility } from "./dragSelectableRole";
 import type { DragSelectableProviderProps } from "./dragSelectableTypes";
 import { useDragSelectableCore } from "./useDragSelectableCore";
 import { useDragSelectableProviderValue } from "./useDragSelectableProviderValue";
@@ -31,12 +31,16 @@ export function DragSelectableProvider({
     registry,
     selection,
   });
+  const accessibility = dragSelectableProviderAccessibility(
+    role,
+    accessibilityLabel,
+  );
 
   return (
     <DragSelectableContext.Provider value={context}>
       <View
-        accessibilityLabel={accessibilityLabel}
-        role={dragSelectableProviderRole(role, accessibilityLabel)}
+        accessibilityLabel={accessibility.accessibilityLabel}
+        role={accessibility.role}
         style={style}
         testID={testID}
       >

@@ -1,17 +1,27 @@
-/** The ARIA role of a provider's element. */
+/** The ARIA role and the accessible name of a provider's element. */
 import type { DragSelectableProviderProps } from "./dragSelectableTypes";
 
+/** The role and the name that a provider's element renders. */
+export type DragSelectableProviderAccessibility = {
+  accessibilityLabel: string | undefined;
+  role: "group" | "list" | undefined;
+};
+
 /**
- * An explicit role wins, and `"none"` renders no role. Without one, a named
- * provider is a `group` and an unnamed one has no role, so a page-wide
- * provider adds no anonymous group to the accessibility tree.
+ * An explicit role wins. `"none"` renders no role and no name, because an
+ * element without a role cannot be named. Without a role, a named provider
+ * is a `group` and an unnamed one has no role, so a page-wide provider adds
+ * no anonymous group to the accessibility tree.
  */
-export function dragSelectableProviderRole(
+export function dragSelectableProviderAccessibility(
   role: DragSelectableProviderProps["role"],
   accessibilityLabel: string | undefined,
-): "group" | "list" | undefined {
+): DragSelectableProviderAccessibility {
   if (role === "none") {
-    return undefined;
+    return { accessibilityLabel: undefined, role: undefined };
   }
-  return role ?? (accessibilityLabel ? "group" : undefined);
+  return {
+    accessibilityLabel,
+    role: role ?? (accessibilityLabel ? "group" : undefined),
+  };
 }

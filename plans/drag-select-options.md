@@ -1,11 +1,11 @@
 # Drag select options
 
 Status: Active. Milestones 1 to 6 are delivered on branch
-`calummoore/dragselectableprovider-improvements`, and Milestone 7 has run the
-smoke test and the complete gate (`cargo xtask check`, which runs
-`npm run verify`). Open before merge: the user's manual check of macOS
-overlay scrollbars, and the review findings under the review TODO. No PR is
-open yet. The plan closes when its PR merges.
+`calummoore/dragselectableprovider-improvements`. Milestone 7 has run the
+smoke test, the complete gate, and the review, and Milestone 8 fixes the
+review findings that the user chose to fix. Open before merge: the user's
+manual check of macOS overlay scrollbars, and any finding of the second
+review. No PR is open yet. The plan closes when its PR merges.
 
 [`DragSelectableProvider`](../src/drag-select/README.md) was built to wrap one
 list. The accounting app wants one provider around every page, so that a drag
@@ -650,22 +650,60 @@ Prove the change, release it as a breaking change, and review it.
       configured `gpt-5.6-sol` model, because the provider rejects the
       hard-coded `gpt-5.5`, and with Linux capabilities dropped for the
       sandbox. Report: `.context/drag-select-options/review-impl-2.md`.
-  - Open R1 (high): a function-only change in a hook layer does not reach
-    the selection callbacks (`onSelectedIdsChange`, `onSelectionChange`,
-    `selectionAnnouncement`), which read the options of the last provider
-    render.
-  - Open R2 (medium): auto-scroll also scrolls an axis whose `overflow` is
-    `hidden`, because `scrollBy` moves hidden overflow.
-  - Open R3 (medium): `selectedTargets` can carry stale `data`, because a
-    data-only target update does not publish the registry snapshot.
-  - Open R4 (medium): duplicate ids in `selectedIds` or
-    `defaultSelectedIds` count twice.
-  - Open R5 (medium): `role="none"` with `accessibilityLabel` renders a
-    label on an element with no role (`aria-prohibited-attr`).
-  - Open R6 (medium, test): no test checks the five new runtime exports in
-    the built package.
-  - Open R7 (low, docs): `plans/README.md` says 5.0.0 is released; it is
-    published only after the merge.
+  - Fixed in Milestone 8, R1 (high): a function-only change in a hook layer
+    did not reach the selection callbacks (`onSelectedIdsChange`,
+    `onSelectionChange`, `selectionAnnouncement`), which read the options of
+    the last provider render.
+  - Fixed in Milestone 8, R2 (medium): auto-scroll also scrolled an axis
+    whose `overflow` is `hidden`, because `scrollBy` moves hidden overflow.
+  - Fixed in Milestone 8, R3 (medium): `selectedTargets` could carry stale
+    `data`, because a data-only target update does not publish the registry
+    snapshot.
+  - Fixed in Milestone 8, R4 (medium): duplicate ids in `selectedIds` or
+    `defaultSelectedIds` counted twice.
+  - Fixed in Milestone 8, R5 (medium): `role="none"` with
+    `accessibilityLabel` rendered a label on an element with no role
+    (`aria-prohibited-attr`).
+  - Declined by the user on 2026-10-15, R6 (medium, test): no test checks
+    the five new runtime exports in the built package.
+  - Fixed in Milestone 8, R7 (low, docs): `plans/README.md` said 5.0.0 is
+    released; it is published only after the merge.
+  - Fixed in Milestone 8, R8 (medium, process, raised with the report):
+    `cargo xtask review` hard-coded a model that the provider rejects.
+
+## Milestone 8: Review fixes
+
+The user chose the recommended option for review findings R1 to R5, R7, and
+R8 on 2026-10-15, and declined R6. Each fix starts with a failing test.
+
+- [x] R1: read `onSelectedIdsChange`, `onSelectionChange`, and
+      `selectionAnnouncement` when they are called, and re-render the box
+      layer on any hook-layer change, so it reads the current
+      `renderMarquee` and `selectionLabel`. Test: the "Controlled selection"
+      story now owns its selection through the page hook, and a lock that
+      changes only the page callback rejects a keyboard proposal.
+- [x] R2: auto-scroll skips an axis that the container cannot scroll.
+      Tests: the scroll axes and the masked step, and a browser test with
+      hidden horizontal overflow in the page shell.
+- [x] R3: `selectedTargets` reads the live registrations. Test: a new "Row
+      data" story, where a row's data changes before the selection does.
+- [x] R4: count an id that `selectedIds` or `defaultSelectedIds` lists twice
+      once. Tests: `dragSelectableUniqueIds` and a built-package test.
+- [x] R5: `role="none"` drops `accessibilityLabel`. Tests: the role helper
+      and a built-package test.
+- [x] R7: `plans/README.md` says 5.0.0 ships after the merge.
+- [x] R8: `cargo xtask review` uses the model from the reviewer's Codex
+      config. Test: `codex_review_args` passes no `--model`.
+- [x] Update the protocol doc, the API reference, and the READMEs.
+- [x] Record the snapshot baselines of the "Row data" story.
+- [x] Run `cargo xtask check`: passed
+      (`.context/drag-select-options/logs/gate-2.log`).
+- [x] Run `git add -A`, commit with Conventional Commits, and push.
+- [ ] Run `cargo xtask review` once more after the push. Report its findings
+      without fixing them, as `AGENTS.md` requires, and add each open
+      finding as one line below.
+
+Evidence: `.context/drag-select-options/m8-evidence.md`.
 
 ## Post-merge follow-up (non-blocking)
 

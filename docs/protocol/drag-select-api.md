@@ -161,9 +161,12 @@ the marker itself.
 ## Tests
 
 - Unit tests cover the geometry, the option merge and layers, the start
-  rules and their reasons, the scrollbar rule, the anchor math, the session,
-  the selection reports, `autoScrollDelta`, and the marked gesture surfaces.
+  rules and their reasons, the scrollbar rule, the scroll axes, the anchor
+  math, the session, the selection reports, `autoScrollDelta`, and the
+  marked gesture surfaces.
+- Built-package tests (`npm run test:dist`) cover the exports, duplicate
+  selected ids, and the provider's role and name.
 - Browser tests in `tests/browser/drag-select*.spec.ts` cover the gesture on
   the "Page shell", "Empty page", "Nested providers", "Controlled
-  selection", and "Custom marquee" stories. The earlier drag-select tests in
-  `tests/browser/storybook.spec.ts` keep passing.
+  selection", "Custom marquee", and "Row data" stories. The earlier
+  drag-select tests in `tests/browser/storybook.spec.ts` keep passing.

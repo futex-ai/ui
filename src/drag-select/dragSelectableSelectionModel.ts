@@ -5,6 +5,14 @@
  */
 import type { DragSelectableDragMode } from "./dragSelectableOptionTypes";
 
+/**
+ * The ids without duplicates, each at its first position. Selection ids are a
+ * set, so a selection that lists an id twice counts it once.
+ */
+export function dragSelectableUniqueIds(ids: readonly string[]): string[] {
+  return [...new Set(ids)];
+}
+
 /** Whether two id lists hold the same ids, in any order. */
 export function dragSelectableIdSetsEqual(
   left: readonly string[],

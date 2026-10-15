@@ -6,6 +6,10 @@ import { HIDE_SCROLLBAR_ATTRIBUTE } from "../primitives/dom/css";
 
 import type { DragSelectablePoint } from "./dragSelectableModel";
 import {
+  dragSelectableOverflowAxes,
+  dragSelectableScrollAxes,
+} from "./dragSelectableScrollAxes";
+import {
   dragSelectableBorders,
   dragSelectableClientRect,
   dragSelectableRectContains,
@@ -95,16 +99,15 @@ export function dragSelectableScrollbarMetrics(
       element.hasAttribute(HIDE_SCROLLBAR_ATTRIBUTE),
     rtl: style.direction === "rtl",
   };
+  const axes = container.root
+    ? dragSelectableScrollAxes(container)
+    : dragSelectableOverflowAxes(style.overflowX, style.overflowY, false);
   if (container.root) {
     const view = element.ownerDocument.defaultView;
     return {
       ...shared,
-      overflowsX:
-        rootAllowsScroll(style.overflowX) &&
-        element.scrollWidth > element.clientWidth,
-      overflowsY:
-        rootAllowsScroll(style.overflowY) &&
-        element.scrollHeight > element.clientHeight,
+      overflowsX: axes.x && element.scrollWidth > element.clientWidth,
+      overflowsY: axes.y && element.scrollHeight > element.clientHeight,
       paddingBox: null,
       reservesX: (view?.innerHeight ?? 0) - element.clientHeight > 0,
       reservesY: (view?.innerWidth ?? 0) - element.clientWidth > 0,
@@ -114,12 +117,8 @@ export function dragSelectableScrollbarMetrics(
   const borders = dragSelectableBorders(style);
   return {
     ...shared,
-    overflowsX:
-      scrollingOverflow(style.overflowX) &&
-      element.scrollWidth > element.clientWidth,
-    overflowsY:
-      scrollingOverflow(style.overflowY) &&
-      element.scrollHeight > element.clientHeight,
+    overflowsX: axes.x && element.scrollWidth > element.clientWidth,
+    overflowsY: axes.y && element.scrollHeight > element.clientHeight,
     paddingBox: {
       bottom: rect.bottom - borders.bottom,
       left: rect.left + borders.left,
@@ -142,12 +141,4 @@ function outsideClientArea(
     point.y < client.top - tolerance ||
     point.y > client.bottom + tolerance
   );
-}
-
-function scrollingOverflow(value: string): boolean {
-  return value === "auto" || value === "scroll" || value === "overlay";
-}
-
-function rootAllowsScroll(value: string): boolean {
-  return value !== "hidden" && value !== "clip";
 }

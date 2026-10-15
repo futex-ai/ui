@@ -37,8 +37,6 @@ renders the same provider and selection state, but has no drag gesture.
   and `dragMode`. A listener runs after each state change.
 - `matchingIds` and `matchingTargets` update while a drag runs. The selected
   fields change only through the selection rules below.
-- The pure geometry helpers and the layer token stay exported and covered by
-  unit tests.
 
 ## Option Precedence
 
@@ -57,8 +55,11 @@ renders the same provider and selection state, but has no drag gesture.
   paints a stale frame. It configures the nearest provider and does nothing
   outside a provider.
 - A change to a non-function option re-renders the provider. Arrays compare
-  element by element. The provider reads a function option when it calls
-  it, so a new function identity alone re-renders nothing.
+  element by element. A new function identity alone does not re-render the
+  provider: it reads `onSelectedIdsChange`, `onSelectionChange`,
+  `selectionAnnouncement`, `dragMode`, and `shouldStartDrag` when it calls
+  them, and the box layer re-renders on any hook-layer change, so it draws
+  with the current `renderMarquee` and `selectionLabel`.
 - `defaultSelectedIds` is read once, when the provider mounts.
 
 ## Start Rules
@@ -80,14 +81,14 @@ Fixed rules. No option overrides them.
    overflows on that axis or it reserves scrollbar space on that axis.
    - Classic scrollbar: the point is inside the container's border box but
      outside its borders and outside its client area.
-   - Overlay scrollbar: the container's content overflows on an axis, the
-     container reserves no scrollbar space on that axis, and the point is
-     within 16px of the far edge of its client area on that axis. The far
-     edge is the right edge for vertical scrolling, the left edge when
-     `direction` is `rtl`, and the bottom edge for horizontal scrolling. The
-     rule does not apply when the container hides its scrollbar: its computed
-     `scrollbar-width` is `none`, or it has the `data-hide-scrollbar`
-     attribute that `ScrollView` writes.
+   - Overlay scrollbar: the content overflows on an axis that the container
+     can scroll (as Auto-Scroll defines), the container reserves no
+     scrollbar space on that axis, and the point is within 16px of the far
+     edge of its client area on that axis: the right edge for vertical
+     scrolling, the left edge when `direction` is `rtl`, and the bottom edge
+     for horizontal scrolling. The rule does not apply when the container
+     hides its scrollbar: its computed `scrollbar-width` is `none`, or it
+     has the `data-hide-scrollbar` attribute that `ScrollView` writes.
 
 Default rules. The first match sets `reason`, and `allowed` becomes `false`.
 Rules 7 to 9 search the pressed element and its ancestors up to and
@@ -167,9 +168,14 @@ decision) needs the larger of `minimumDragDistance` and
 
 After a start, with `autoScroll`, an animation-frame loop scrolls the press's
 scroll container by 16px per frame on each axis where the pointer is within
-36px of the container's visible edge or beyond it. These are the
-`autoScrollDelta` values from `src/dragGesture.ts`, which the data grid
-shares. The visible rectangle is the container's client area clipped to the
+36px of the container's visible edge or beyond it. It skips an axis that the
+container cannot scroll: for an element, an axis whose computed `overflow` is
+not `auto`, `scroll`, or `overlay`; for the document scrolling element, an
+axis whose viewport `overflow` (the root element's, or the `body`'s when the
+root's is `visible` on both axes) is `hidden` or `clip`. A script could
+scroll such an axis, so the loop checks first. The 16px and 36px values come
+from `autoScrollDelta` in `src/dragGesture.ts`, which the data grid shares.
+The visible rectangle is the container's client area clipped to the
 viewport, or the viewport for the document scrolling element. The loop stops
 on release and on every cancel.
 
@@ -177,7 +183,9 @@ on release and on every cancel.
 
 - Selection ids are a set. The order of ids carries no meaning. The provider
   compares a proposal with the current selection as sets, and a controlled
-  app may keep its ids in any order.
+  app may keep its ids in any order. An id that `selectedIds` or
+  `defaultSelectedIds` lists more than once counts once, at its first
+  position.
 - `dragSelectableNextSelection` defines the order of its result: `replace`
   returns the hits. `add` returns the current ids, then the hits that are not
   current. `toggle` returns the current ids without the hits, then the hits
@@ -211,8 +219,9 @@ on release and on every cancel.
   that the app changes or rejects, are not announced.
 - `selectedTargets` is a snapshot of the registrations of the selected ids.
   The provider takes it when the rendered selection or the set of registered
-  targets changes. An id with no registered target has `data: undefined`.
-  Consumers that need live data map `selectedIds` through their own source.
+  targets changes, and reads the target data current at that moment. An id
+  with no registered target has `data: undefined`. Consumers that need live
+  data map `selectedIds` through their own source.
 
 ## Box And Wrapper
 
@@ -231,9 +240,11 @@ on release and on every cancel.
   provider still renders the fixed layer at the drawn box and puts the
   returned node inside it.
 - The provider renders one element that takes `style` and `testID`, so a
-  shell can use it as its main column. An explicit `role` wins, and `"none"`
-  renders no role. Without `role`, the element has the `group` role when
-  `accessibilityLabel` is set, and no role when it is not.
+  shell can use it as its main column. An explicit `role` wins. `"none"`
+  renders no role and no accessible name: the provider drops
+  `accessibilityLabel`, because an element without a role cannot be named.
+  Without `role`, the element has the `group` role when `accessibilityLabel`
+  is set, and no role when it is not.
 
 ## Native
 

@@ -114,12 +114,32 @@ export function dragSelectableResolveOptions(
 
 /**
  * Whether two layers render the same: every non-function value is equal,
- * with arrays compared element by element. Function options are read when
- * the provider calls them, so their identity never matters here.
+ * with arrays compared element by element. The provider reads function
+ * options when it calls them, so their identity never re-renders it.
  */
 export function dragSelectableOptionValuesEqual(
   left: DragSelectableOptions,
   right: DragSelectableOptions,
+): boolean {
+  return optionsEqual(left, right, false);
+}
+
+/**
+ * Whether two layers are the same in every key, function identities
+ * included. The box layer re-renders when they differ, because it reads
+ * `renderMarquee` and `selectionLabel` at its own render.
+ */
+export function dragSelectableOptionsIdentical(
+  left: DragSelectableOptions,
+  right: DragSelectableOptions,
+): boolean {
+  return optionsEqual(left, right, true);
+}
+
+function optionsEqual(
+  left: DragSelectableOptions,
+  right: DragSelectableOptions,
+  compareFunctions: boolean,
 ): boolean {
   const leftValues = left as Record<string, unknown>;
   const rightValues = right as Record<string, unknown>;
@@ -127,7 +147,10 @@ export function dragSelectableOptionValuesEqual(
   for (const key of keys) {
     const a = leftValues[key];
     const b = rightValues[key];
-    if (typeof a === "function" || typeof b === "function") {
+    if (
+      !compareFunctions &&
+      (typeof a === "function" || typeof b === "function")
+    ) {
       continue;
     }
     if (Array.isArray(a) && Array.isArray(b)) {

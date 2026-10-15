@@ -5,7 +5,7 @@ import { useSharedUiTheme } from "../theme";
 
 import { DragSelectableContext } from "./DragSelectableContext";
 import { DragSelectableOverlay } from "./DragSelectableOverlay";
-import { dragSelectableProviderRole } from "./dragSelectableRole";
+import { dragSelectableProviderAccessibility } from "./dragSelectableRole";
 import type { DragSelectableProviderProps } from "./dragSelectableTypes";
 import { useDragSelectableCore } from "./useDragSelectableCore";
 import { useDragSelectableGesture } from "./useDragSelectableGesture";
@@ -21,12 +21,12 @@ export function DragSelectableProvider({
   ...providerOptions
 }: DragSelectableProviderProps) {
   const theme = useSharedUiTheme();
-  const { layers, options, readOptions, registry, selection } =
+  const { layers, options, registry, selection, source } =
     useDragSelectableCore(providerOptions, defaultSelectedIds);
   const gesture = useDragSelectableGesture({
     commit: selection.commitDrag,
     disabled: options.disabled,
-    readOptions,
+    readOptions: source.read,
     registry,
   });
   const context = useDragSelectableProviderValue({
@@ -35,17 +35,21 @@ export function DragSelectableProvider({
     registry,
     selection,
   });
+  const accessibility = dragSelectableProviderAccessibility(
+    role,
+    accessibilityLabel,
+  );
 
   return (
     <DragSelectableContext.Provider value={context}>
       <View
-        accessibilityLabel={accessibilityLabel}
+        accessibilityLabel={accessibility.accessibilityLabel}
         // The DOM backend forwards the literal `role` prop; the base RN
         // `accessibilityRole` type omits `"group"`, so use `role` (matching the
         // heatmap legend) to expose a named collection (WCAG 2.1 — 1.3.1
         // Info & Relationships, A).
         onPointerDown={gesture.onPointerDown}
-        role={dragSelectableProviderRole(role, accessibilityLabel)}
+        role={accessibility.role}
         style={style}
         testID={testID}
       >
@@ -53,10 +57,7 @@ export function DragSelectableProvider({
       </View>
       <DragSelectableOverlay
         activeDrag={gesture.activeDrag}
-        marqueeLabel={options.marqueeLabel}
-        overlayZIndex={options.overlayZIndex}
-        renderMarquee={options.renderMarquee}
-        selectionLabel={options.selectionLabel}
+        optionSource={source}
         theme={theme}
       />
     </DragSelectableContext.Provider>

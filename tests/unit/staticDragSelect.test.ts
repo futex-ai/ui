@@ -68,3 +68,61 @@ test(
     assert.equal(seen?.selection, seen?.listener);
   },
 );
+
+test(
+  "drag-select counts duplicate selected ids once",
+  { skip: !testBuilt },
+  async () => {
+    const ui = await loadBuiltUi();
+    const seen: Array<{ count: number; ids: string[] }> = [];
+    function Probe() {
+      const state = ui.useDragSelectableSelection();
+      seen.push({ count: state.selectedCount, ids: state.selectedIds });
+      return null;
+    }
+
+    renderToStaticMarkup(
+      createElement(
+        ui.SharedUiThemeProvider,
+        null,
+        createElement(
+          ui.DragSelectableProvider,
+          { defaultSelectedIds: ["row_1", "row_1", "row_2"] },
+          createElement(Probe),
+        ),
+        createElement(
+          ui.DragSelectableProvider,
+          { selectedIds: ["row_3", "row_2", "row_3"] },
+          createElement(Probe),
+        ),
+      ),
+    );
+    assert.deepEqual(seen, [
+      { count: 2, ids: ["row_1", "row_2"] },
+      { count: 2, ids: ["row_3", "row_2"] },
+    ]);
+  },
+);
+
+test(
+  "drag-select role none renders no role and no accessible name",
+  { skip: !testBuilt },
+  async () => {
+    const ui = await loadBuiltUi();
+    const markup = renderToStaticMarkup(
+      createElement(
+        ui.SharedUiThemeProvider,
+        null,
+        createElement(
+          ui.DragSelectableProvider,
+          { accessibilityLabel: "Rows", role: "none", testID: "rows" },
+          null,
+        ),
+      ),
+    );
+    const element = /<div[^>]*data-testid="rows"[^>]*>/.exec(markup)?.[0] ?? "";
+    assert.notEqual(element, "");
+    assert.doesNotMatch(element, /role=/);
+    assert.doesNotMatch(element, /aria-label=/);
+  },
+);

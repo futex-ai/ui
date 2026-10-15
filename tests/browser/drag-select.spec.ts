@@ -129,6 +129,37 @@ test.describe("drag-select page shell", () => {
     expect(checked).toEqual(rowRange("txn", 1, checked.length));
   });
 
+  test("auto-scroll leaves an axis with hidden overflow alone", async ({
+    page,
+  }) => {
+    const main = page.getByTestId("page-shell-main");
+    const overflow = await main.evaluate((element) => {
+      const spacer = document.createElement("div");
+      spacer.style.cssText = "flex-shrink:0;height:1px;width:3000px";
+      element.appendChild(spacer);
+      return {
+        hidden: getComputedStyle(element).overflowX,
+        wider: element.scrollWidth > element.clientWidth,
+      };
+    });
+    expect(overflow).toEqual({ hidden: "hidden", wider: true });
+
+    const column = await boxOf(page, "page-shell-main");
+    const from = await pointIn(page, "shell-row-txn_1", 160);
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down();
+    await page.mouse.move(
+      column.x + column.width - 10,
+      column.y + column.height - 10,
+      { steps: 8 },
+    );
+    await expect
+      .poll(() => main.evaluate((element) => element.scrollTop))
+      .toBeGreaterThan(200);
+    expect(await main.evaluate((element) => element.scrollLeft)).toBe(0);
+    await page.mouse.up();
+  });
+
   test("a drag that ends on its starting row sends the row no click", async ({
     page,
   }) => {

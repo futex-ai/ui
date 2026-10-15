@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { dragSelectableAutoScrollDelta } from "../../src/drag-select/dragSelectableAutoScroll";
 import { dragSelectableAnchoredPoint } from "../../src/drag-select/dragSelectableScrollAnchor";
+import { dragSelectableOverflowAxes } from "../../src/drag-select/dragSelectableScrollAxes";
 import {
   DRAG_SELECTABLE_OVERLAY_SCROLLBAR_ZONE,
   dragSelectableScrollbarHit,
@@ -132,5 +134,45 @@ test("drag-select moves the anchored start point with the scrolled content", () 
   assert.deepEqual(
     dragSelectableAnchoredPoint({ x: 300, y: 100 }, origin, origin),
     { x: 300, y: 100 },
+  );
+});
+
+test("drag-select reads the scroll axes from the overflow values", () => {
+  assert.deepEqual(dragSelectableOverflowAxes("hidden", "auto", false), {
+    x: false,
+    y: true,
+  });
+  assert.deepEqual(dragSelectableOverflowAxes("scroll", "overlay", false), {
+    x: true,
+    y: true,
+  });
+  assert.deepEqual(dragSelectableOverflowAxes("visible", "clip", false), {
+    x: false,
+    y: false,
+  });
+  assert.deepEqual(dragSelectableOverflowAxes("visible", "hidden", true), {
+    x: true,
+    y: false,
+  });
+  assert.deepEqual(dragSelectableOverflowAxes("auto", "clip", true), {
+    x: true,
+    y: false,
+  });
+});
+
+test("drag-select auto-scroll leaves an axis that cannot scroll", () => {
+  const rect = { bottom: 600, left: 200, right: 1000, top: 0 };
+  const corner = { x: 990, y: 590 };
+  assert.deepEqual(
+    dragSelectableAutoScrollDelta(corner, rect, { x: true, y: true }),
+    { dx: 16, dy: 16 },
+  );
+  assert.deepEqual(
+    dragSelectableAutoScrollDelta(corner, rect, { x: false, y: true }),
+    { dx: 0, dy: 16 },
+  );
+  assert.deepEqual(
+    dragSelectableAutoScrollDelta(corner, rect, { x: true, y: false }),
+    { dx: 16, dy: 0 },
   );
 });

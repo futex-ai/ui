@@ -3,7 +3,7 @@
  * each mounted `useDragSelectableOptions` call, ordered by the first render of
  * the component that calls it.
  */
-import { useCallback, useRef, useState } from "react";
+import { useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import {
   createDragSelectableLayerStore,
@@ -22,13 +22,26 @@ export type DragSelectableOptionLayers = Pick<
   "remove" | "set"
 >;
 
+/** Live access to the merged options. */
+export type DragSelectableOptionSource = {
+  /** The resolved options at call time. */
+  read: () => DragSelectableResolvedOptions;
+  /** Subscribes to every hook-layer change, function-only ones included. */
+  subscribe: (listener: () => void) => () => void;
+  /** A number that changes with every hook-layer change. */
+  version: () => number;
+};
+
 /** The merged options of a provider and the ways to change them. */
 export type DragSelectableOptionState = {
   layers: DragSelectableOptionLayers;
   /** The resolved options of this render. */
   options: DragSelectableResolvedOptions;
-  /** The resolved options at call time, for event handlers. */
-  readOptions: () => DragSelectableResolvedOptions;
+  /**
+   * Live options for event handlers, effects, and the box layer, which read
+   * the current callbacks even when only a function changed.
+   */
+  source: DragSelectableOptionSource;
 };
 
 /**
@@ -46,17 +59,31 @@ export function useDragSelectableOptionLayers(
       setLayerVersion((version) => version + 1),
     ),
   );
-
-  const readOptions = useCallback(
-    () =>
-      dragSelectableResolveOptions(
-        dragSelectableMergeOptions([
-          providerOptionsRef.current,
-          ...store.layers(),
-        ]),
-      ),
+  const source = useMemo<DragSelectableOptionSource>(
+    () => ({
+      read: () =>
+        dragSelectableResolveOptions(
+          dragSelectableMergeOptions([
+            providerOptionsRef.current,
+            ...store.layers(),
+          ]),
+        ),
+      subscribe: store.subscribe,
+      version: store.version,
+    }),
     [store],
   );
+  return { layers: store, options: source.read(), source };
+}
 
-  return { layers: store, options: readOptions(), readOptions };
+/**
+ * The options at this render, re-rendering the calling component on every
+ * hook-layer change. The box layer uses it, so a page that passes a new
+ * `renderMarquee` or `selectionLabel` sees it without a provider render.
+ */
+export function useDragSelectableLiveOptions(
+  source: DragSelectableOptionSource,
+): DragSelectableResolvedOptions {
+  useSyncExternalStore(source.subscribe, source.version, source.version);
+  return source.read();
 }

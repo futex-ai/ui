@@ -2,11 +2,14 @@
 import { createPortal } from "react-dom";
 import { StyleSheet, Text, View } from "../primitives/reactNative";
 
+import type { SharedUiTheme } from "../theme";
+
 import { DRAG_SELECTABLE_LAYERS } from "./dragSelectableLayers";
 import type { DragSelectableMarquee } from "./dragSelectableOptionTypes";
-import type { DragSelectableActiveDrag } from "./dragSelectableSession";
 import type { DragSelectableOverlayProps } from "./dragSelectableOverlayTypes";
-import type { SharedUiTheme } from "../theme";
+import type { DragSelectableActiveDrag } from "./dragSelectableSession";
+import type { DragSelectableSelectionLabel } from "./dragSelectableTypes";
+import { useDragSelectableLiveOptions } from "./useDragSelectableOptionLayers";
 
 /**
  * Draws the box of a started drag in a fixed, non-interactive layer in a
@@ -15,12 +18,15 @@ import type { SharedUiTheme } from "../theme";
  */
 export function DragSelectableOverlay({
   activeDrag,
-  marqueeLabel = null,
-  overlayZIndex,
-  renderMarquee,
-  selectionLabel,
+  optionSource,
   theme,
 }: DragSelectableOverlayProps) {
+  const {
+    marqueeLabel = null,
+    overlayZIndex,
+    renderMarquee,
+    selectionLabel,
+  } = useDragSelectableLiveOptions(optionSource);
   if (
     !activeDrag?.moved ||
     !activeDrag.drawnBox ||
@@ -79,7 +85,7 @@ function defaultBoxContent(
   activeDrag: DragSelectableActiveDrag,
   marquee: DragSelectableMarquee,
   marqueeLabel: string | null,
-  selectionLabel: DragSelectableOverlayProps["selectionLabel"],
+  selectionLabel: DragSelectableSelectionLabel | undefined,
   theme: SharedUiTheme,
 ) {
   const count = marquee.matchingCount;

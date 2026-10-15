@@ -91,6 +91,30 @@ test("drag-select options re-render only when a value changes", () => {
   assert.equal(changes(), 3);
 });
 
+test("drag-select options tell subscribers about function-only changes", () => {
+  const { changes, store } = storeWithCounter();
+  let heard = 0;
+  const unsubscribe = store.subscribe(() => {
+    heard += 1;
+  });
+  const label = () => "3 rows";
+  store.set(1, { ignore: ["[data-notes]"], selectionLabel: label });
+  assert.deepEqual([heard, store.version(), changes()], [1, 1, 1]);
+
+  store.set(1, { ignore: ["[data-notes]"], selectionLabel: label });
+  assert.deepEqual([heard, store.version(), changes()], [1, 1, 1]);
+
+  store.set(1, { ignore: ["[data-notes]"], selectionLabel: () => "3 rows" });
+  assert.deepEqual([heard, store.version(), changes()], [2, 2, 1]);
+
+  store.remove(1);
+  assert.deepEqual([heard, store.version(), changes()], [3, 3, 2]);
+
+  unsubscribe();
+  store.set(2, { onSelectionChange: () => undefined });
+  assert.deepEqual([heard, store.version(), changes()], [3, 4, 2]);
+});
+
 test("drag-select options normalize distances and fill defaults", () => {
   const defaults = dragSelectableResolveOptions({});
   assert.equal(defaults.minimumDragDistance, 4);

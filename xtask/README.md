@@ -16,7 +16,8 @@ calling the binary directly.
 
 - Runs the existing npm verification suite through `cargo xtask check`.
 - Runs a read-only Codex review against `origin/main` through
-  `cargo xtask review`.
+  `cargo xtask review`. The review uses the model from the reviewer's Codex
+  config (`~/.codex/config.toml`) with `xhigh` reasoning effort.
 - Prints each child command before running it so failures are easy to reproduce.
 
 ## Quick Start

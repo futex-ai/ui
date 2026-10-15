@@ -4,7 +4,9 @@ import type { MutableRefObject } from "react";
 
 import { announce } from "../announcer";
 
+import { dragSelectableSnapshotsForIds } from "./dragSelectableDom";
 import { dragSelectableIdsEqual } from "./dragSelectableModel";
+import type { DragSelectableResolvedOptions } from "./dragSelectableOptions";
 import type {
   DragSelectableDragMode,
   DragSelectableSelectionChange,
@@ -16,10 +18,10 @@ import {
   dragSelectableRecordProposal,
   dragSelectableReportRender,
   dragSelectableStoredAfterEmpty,
+  dragSelectableUniqueIds,
 } from "./dragSelectableSelectionModel";
 import type {
   DragSelectableSelection,
-  DragSelectableSelectionAnnouncement,
   DragSelectableTargetRegistration,
 } from "./dragSelectableTypes";
 
@@ -27,16 +29,17 @@ import type {
 export type DragSelectableSelectionConfig = {
   /** The starting stored selection, read once on mount. */
   defaultSelectedIds?: readonly string[];
-  disabled: boolean;
-  onSelectedIdsChange?: (
-    ids: string[],
-    change: DragSelectableSelectionChange,
-  ) => void;
-  onSelectionChange?: (selection: DragSelectableSelection) => void;
+  /**
+   * The options at call time. `disabled`, controlled mode, and the callbacks
+   * are read when a proposal or a report happens, so a page that changes
+   * only a callback is heard without a provider render.
+   */
+  readOptions: () => DragSelectableResolvedOptions;
+  /** The registry snapshot: it changes when a target registers or leaves. */
   registeredTargets: ReadonlyMap<string, DragSelectableTargetRegistration>;
-  /** The controlled selection, or `undefined` for an uncontrolled provider. */
+  /** The controlled selection of this render, or `undefined`. */
   selectedIds?: readonly string[];
-  selectionAnnouncement?: DragSelectableSelectionAnnouncement;
+  /** The live registrations, with the current target data. */
   targetsRef: MutableRefObject<Map<string, DragSelectableTargetRegistration>>;
 };
 
@@ -84,28 +87,32 @@ export function useDragSelectableSelectionState(
 ): DragSelectableSelectionState {
   const configRef = useRef(config);
   configRef.current = config;
-  const [storedIds, setStoredIds] = useState<readonly string[]>(() => [
-    ...(config.defaultSelectedIds ?? []),
-  ]);
-  const renderedIdsRef = useRef(config.selectedIds ?? storedIds);
-  const nextRenderedIds = config.selectedIds ?? storedIds;
+  const [storedIds, setStoredIds] = useState<readonly string[]>(() =>
+    dragSelectableUniqueIds(config.defaultSelectedIds ?? []),
+  );
+  const nextRenderedIds = dragSelectableUniqueIds(
+    config.selectedIds ?? storedIds,
+  );
+  const renderedIdsRef = useRef(nextRenderedIds);
   if (!dragSelectableIdsEqual(renderedIdsRef.current, nextRenderedIds)) {
     renderedIdsRef.current = nextRenderedIds;
   }
   const renderedIds = renderedIdsRef.current;
   const reportRef = useRef(dragSelectableInitialReport(renderedIds));
 
-  const { registeredTargets } = config;
+  const { registeredTargets, targetsRef } = config;
   const selection = useMemo<DragSelectableSelection>(
     () => ({
       selectedCount: renderedIds.length,
       selectedIds: [...renderedIds],
-      selectedTargets: renderedIds.map((id) => ({
-        data: registeredTargets.get(id)?.data,
-        id,
-      })),
+      selectedTargets: dragSelectableSnapshotsForIds(
+        renderedIds,
+        targetsRef.current,
+      ),
     }),
-    [registeredTargets, renderedIds],
+    // A target that registers or leaves changes `registeredTargets`; that is
+    // when the snapshot reads the live registrations again.
+    [registeredTargets, renderedIds, targetsRef],
   );
 
   useEffect(() => {
@@ -114,13 +121,16 @@ export function useDragSelectableSelectionState(
       selection.selectedIds,
     );
     reportRef.current = report.state;
-    const current = configRef.current;
+    if (!report.notify && !report.announce) {
+      return;
+    }
+    const options = configRef.current.readOptions();
     if (report.notify) {
-      current.onSelectionChange?.(selection);
+      options.onSelectionChange?.(selection);
     }
     if (report.announce) {
       announce(
-        (current.selectionAnnouncement ?? defaultSelectionAnnouncement)(
+        (options.selectionAnnouncement ?? defaultSelectionAnnouncement)(
           selection.selectedCount,
           selection,
         ),
@@ -129,16 +139,16 @@ export function useDragSelectableSelectionState(
   }, [selection]);
 
   const propose = useCallback((ids: string[], proposal: Proposal) => {
-    const current = configRef.current;
+    const options = configRef.current.readOptions();
     const previousIds = renderedIdsRef.current;
-    if (current.disabled || dragSelectableIdSetsEqual(previousIds, ids)) {
+    if (options.disabled || dragSelectableIdSetsEqual(previousIds, ids)) {
       return;
     }
     reportRef.current = dragSelectableRecordProposal(reportRef.current, ids);
-    if (current.selectedIds === undefined) {
+    if (options.selectedIds === undefined) {
       setStoredIds(ids);
     }
-    current.onSelectedIdsChange?.(ids, {
+    options.onSelectedIdsChange?.(ids, {
       ...proposal,
       previousIds: [...previousIds],
     });
