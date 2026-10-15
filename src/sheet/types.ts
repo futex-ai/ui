@@ -19,7 +19,8 @@ export type SheetProps = {
   children: ReactNode | ((state: SheetContentState) => ReactNode);
   /**
    * Native: the header dismiss control's text, default `"Cancel"`. Web: the
-   * accessible name of the modal's close button, default `"Close {title}"`.
+   * accessible name of the modal's close button, default
+   * `"Close {title ?? label}"`.
    */
   dismissLabel?: string;
   /**
