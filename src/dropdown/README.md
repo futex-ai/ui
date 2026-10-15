@@ -15,7 +15,10 @@ input-backed comboboxes in Firna apps.
 - Share keyboard navigation, hover/active row styling, right-side row content,
   section headers, disabled rows, and footer/action rows.
 - Pin optional `header` and `footer` content above and below the option list so
-  it stays visible while the rows scroll between them.
+  it stays visible while the rows scroll between them. Pinned `footerEntries`
+  rows stay in the keyboard order and in the listbox.
+- Expose a row's `secondary` line as its accessible description, and (with
+  `groupSections`) name each section's rows as a group on web.
 - Keep the keyboard-active row scrolled into the visible list viewport for long
   dropdowns and combobox result lists.
 - Include visual field labels in selector accessible names when labels are
@@ -208,6 +211,18 @@ row's pressable (`data-testid` on web) so an end-to-end test can target a
 specific row; `DropdownSelectorOption` exposes the same `testID` for the
 select-only picker.
 
+`DropdownList` has two opt-in props for custom pickers:
+
+- `footerEntries` — selectable rows pinned under the scroll area, for an action
+  such as "Create tag" that must stay visible while the options scroll. They
+  follow the scrolling rows in the arrow-key order and share the highlight. On
+  web the list container owns them with `aria-owns`, so they stay `option` (or
+  `menuitem`) rows of the list and `aria-activedescendant` can point at them.
+- `groupSections` — on web, each `section` entry and the rows after it (up to
+  the next section or divider) render inside a `role="group"` named by the
+  heading. A heading with no rows after it (an empty state or a note) stays a
+  plain line. Native keeps the flat rows.
+
 ### Row slots and the active-row color
 
 The default `solid` highlight fills the active row with `primary` and inverts
@@ -309,6 +324,14 @@ On web the option surface is a real ARIA composite (WCAG 4.1.2 Name/Role/Value):
   button that carries the detail as its accessible description (announced on
   focus); the portaled bubble is a sighted-user reveal only, so the text is never
   announced twice and never leaks into the trigger's name.
+- A row's name is its label, and its visible `secondary` line is its accessible
+  description (`aria-describedby`), so a screen reader hears both.
+- Disabled rows carry `aria-disabled`. `ComboboxMultiSelect` also renders a
+  locked value's row as disabled, so it is announced as selected and
+  unavailable.
+- With `groupSections`, each group is a `role="group"` named by its visible
+  heading (`aria-labelledby`), and pinned `footerEntries` are owned by the list
+  (`aria-owns`), so a footer action is named by its label like any option.
 
 These ARIA roles/attributes are emitted on web only; native keeps the tappable
 `button` row role and `accessibilityState` so OS screen readers are unaffected.
@@ -392,6 +415,109 @@ a `label` to anchor the button (a dev-warned no-op otherwise). For the bare,
 label-less variant pass `accessibilityLabel` to name the search input (it also
 overrides the `label`-derived name where `aria-labelledby` is not honoured, e.g.
 iOS) — mirroring `Input`.
+
+### Grouped tag picker
+
+`ComboboxMultiSelect` also covers a tag picker whose options come in
+caller-defined groups, with at most one tag per group. Every prop below is
+optional; a caller that passes none of them gets the plain chip multi-select
+above, unchanged.
+
+```tsx
+import { ComboboxMultiSelect } from "@firna/ui/dropdown";
+// Any `IconComponent`: lucide-react-native on native, lucide-react on web.
+import { Car, House } from "lucide-react-native";
+
+<ComboboxMultiSelect
+  footerAction={{
+    label: (query) => (query ? `Create tag “${query}”` : "Create tag"),
+    onPress: (query) => openCreateTag(query),
+  }}
+  label="Tags"
+  labelInfo="Tags group transactions by property, vehicle, project or anything else you track."
+  lockedValues={["flat2"]}
+  onChange={setTagIds}
+  options={[
+    {
+      description: "UK rental property",
+      group: "Properties",
+      icon: House,
+      label: "Flat 2, 14 Brook Street",
+      value: "flat2",
+    },
+    {
+      description: "UK rental property",
+      group: "Vehicles",
+      icon: Car,
+      label: "Renault Kangoo BX19 KLM",
+      value: "van",
+    },
+    {
+      description: "Consultancy trade",
+      disabled: true,
+      group: "Vehicles",
+      icon: Car,
+      label: "Skoda Octavia WK21 LMN",
+      value: "skoda",
+    },
+    {
+      chipTone: "muted",
+      description: "Archived",
+      group: "Projects",
+      label: "Loft conversion",
+      value: "loft",
+    },
+  ]}
+  placeholder="Add tag"
+  singlePerGroup
+  values={tagIds}
+/>;
+```
+
+- **`group`** — options that share a `group` render under one section heading.
+  Groups keep the order of their first option in `options`; options without a
+  group come first, with no heading. The search hides a group with no match,
+  and a query that matches a group name shows the whole group. Matching
+  ignores case.
+- **`description`** — the row's secondary line, and its accessible description.
+  It stays at AA contrast on the solid active fill and on the tinted selected
+  fill.
+- **`disabled`** — the option is listed but cannot be chosen: the row is
+  dimmed, the arrow keys skip it, and web exposes `aria-disabled`. A disabled
+  value that is already selected can still be removed.
+- **`lockedValues`** — selected values the user cannot remove: the chip has no
+  remove button, and the row shows as selected but cannot be toggled. With
+  `singlePerGroup`, the other options of a locked value's group cannot be
+  chosen either. A locked value missing from `values` is still shown as
+  selected (with a development warning).
+- **`singlePerGroup`** — choosing an option replaces the selected option of the
+  same group; choosing the selected option again removes it. Options without a
+  group are not limited. Without this prop, `onChange` receives both values and
+  the caller does the replace.
+- **`footerAction`** — a row pinned under the list, outside the scroll area.
+  The arrow keys reach it after the last option (ArrowUp from the first option
+  wraps to it), and it is the active row when nothing matches, so Enter runs
+  it. Pressing it or pressing Enter calls `onPress` with the trimmed query,
+  then clears the query and closes the list. The `footer` string still shows
+  as a static note at the end of the list, so both can show at once.
+- **`chipTone`** / **`icon`** — `chipTone: "muted"` paints the chip neutral grey,
+  for example for an archived tag. An `icon` is drawn in the option's mark and
+  inside its chip. A text `mark` stays in the row only.
+
+Chips always follow `options` order, not selection order. Backspace in the
+empty search input does not remove chips; use a chip's remove button.
+
+On phones and native, pass `presentation="sheet"`. The field then shows the
+chips and a button (the `placeholder`) instead of the search input; pressing it
+opens a bottom `Sheet` (`@firna/ui/sheet`) named by the `label`. The sheet holds
+the chips and the search input at the top (focused on open on web), the list below,
+and the pinned footer action. Selections apply as they are made, so the sheet's
+dismiss control is a Done action: the native header shows "Done", and on web
+the modal's close button is named "Done". Escape and the backdrop also close
+it, and focus returns to the field's button. Only keys pressed in the sheet's
+search input drive the list, so Enter on Done or on a chip's remove button
+works as usual. The caller picks the presentation,
+for example by viewport width; the default is the anchored `popover`.
 
 ## Theming
 

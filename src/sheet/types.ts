@@ -4,7 +4,7 @@
  * `SheetProps`, so the caller seam is identical everywhere — mirroring the
  * modal module's `types.ts` convention.
  */
-import type { ReactNode } from "react";
+import type { ReactNode, RefObject } from "react";
 
 /** State handed to a `Sheet` children render function. */
 export type SheetContentState = {
@@ -17,10 +17,22 @@ export type SheetContentState = {
 export type SheetProps = {
   /** Body: a node, or a render function given `{ close, maxHeight }`. */
   children: ReactNode | ((state: SheetContentState) => ReactNode);
-  /** Text for the header dismiss control. Native; default `"Cancel"`. */
+  /**
+   * Native: the header dismiss control's text, default `"Cancel"`. Web: the
+   * accessible name of the modal's close button, default
+   * `"Close {title ?? label}"`.
+   */
   dismissLabel?: string;
-  /** Hide the header row (the grip handle stays). Native; default `false`. */
+  /**
+   * Native: hide the header row (the grip handle stays). Web: hide the close
+   * button; the title stays. Default `false`.
+   */
   hideHeader?: boolean;
+  /**
+   * Element focused when the sheet opens, instead of the first focusable
+   * control in the body. Web only; native has no tab order.
+   */
+  initialFocusRef?: RefObject<{ focus?: () => void } | null>;
   /**
    * Accessible name for the surface (required, WCAG 4.1.2). Also the default
    * visible title when `title` is omitted.

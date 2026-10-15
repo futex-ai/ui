@@ -62,16 +62,17 @@ before the content scrolls.
 
 ## Props
 
-| Prop           | Platform | Notes                                                  |
-| -------------- | -------- | ------------------------------------------------------ |
-| `open`         | both     | Controlled visibility.                                 |
-| `onClose`      | both     | Backdrop / pan-down / Android-back / dismiss control.  |
-| `label`        | both     | Accessible name (required); default visible title.     |
-| `title`        | both     | Visible title when it should differ from `label`.      |
-| `children`     | both     | Node or `({ close, maxHeight }) => node`.              |
-| `maxHeight`    | both     | Body cap; also clamped to ~70% of the viewport.        |
-| `dismissLabel` | native   | Header dismiss control text. Default `"Cancel"`.       |
-| `hideHeader`   | native   | Hide the header row (the grip stays). Default `false`. |
+| Prop              | Platform | Notes                                                                                                 |
+| ----------------- | -------- | ----------------------------------------------------------------------------------------------------- |
+| `open`            | both     | Controlled visibility.                                                                                |
+| `onClose`         | both     | Backdrop / pan-down / Android-back / dismiss control.                                                 |
+| `label`           | both     | Accessible name (required); default visible title.                                                    |
+| `title`           | both     | Visible title when it should differ from `label`.                                                     |
+| `children`        | both     | Node or `({ close, maxHeight }) => node`.                                                             |
+| `maxHeight`       | both     | Body cap; also clamped to ~70% of the viewport.                                                       |
+| `dismissLabel`    | both     | Native: dismiss text, default `"Cancel"`. Web: close button name, default `"Close {title ?? label}"`. |
+| `hideHeader`      | both     | Native: hide the header row (the grip stays). Web: hide the close button. Default `false`.            |
+| `initialFocusRef` | web      | Element focused on open instead of the first control.                                                 |
 
 ## Accessibility
 

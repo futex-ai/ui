@@ -1,0 +1,6 @@
+- text: Tags
+- button "More information about Tags": Tags group transactions by property, vehicle, project or anything else you track.
+- text: /Flat 2, \d+ Brook Street Loft conversion/
+- button "Remove Loft conversion"
+- button "Tags, Add tag"
+- text: No tag created yet

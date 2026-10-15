@@ -75,7 +75,9 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/drag-select` for web drag-selection providers, target hooks, and
   geometry helpers.
 - `@firna/ui/dropdown` for dropdown menu, selector, combobox, layer helpers, and
-  selector trigger refs for imperative focus after async form hydration.
+  selector trigger refs for imperative focus after async form hydration. The
+  chip multi-select doubles as a grouped tag picker (one tag per group, locked
+  and disabled tags, a pinned "create" action) that can open in a bottom sheet.
 - `@firna/ui/heatmap` for the calendar contribution heatmap and its pure layout
   and color-scale helpers.
 - `@firna/ui/input` for the labelled text input, textarea, and bare input
@@ -660,6 +662,8 @@ The package export map intentionally separates runtime targets:
 - Repository automation: [xtask/README.md](xtask/README.md)
 - Shared component protocol:
   [docs/protocol/shared-ui-components.md](docs/protocol/shared-ui-components.md)
+- Combobox multi-select (grouped tag picker) protocol:
+  [docs/protocol/combobox-multi-select.md](docs/protocol/combobox-multi-select.md)
 - Rich-text collaboration protocol:
   [docs/protocol/rich-text-collaboration.md](docs/protocol/rich-text-collaboration.md)
 - Consumer migration handoff: [docs/consumer-migration.md](docs/consumer-migration.md)

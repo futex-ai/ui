@@ -72,7 +72,10 @@ Open the host on the simulator or device and choose a story in the navigator.
 The **Modal / Native sheet** stories exercise native overlays. The **RichText /
 Native editor** stories exercise editable, prefilled, and read-only attributed
 blocks; focus a block to inspect the iOS input accessory or Android in-frame
-formatting toolbar.
+formatting toolbar. The **Dropdown / Tag picker** stories open the grouped tag
+picker in the native bottom sheet (`Sheet`) and in the anchored popover; check
+that a tag can be chosen while the keyboard is open, that the pinned "Create
+tag" row stays reachable, and that the header shows "Done".
 
 ## Versions
 
