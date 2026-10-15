@@ -4,8 +4,9 @@ Status: Active. Milestones 1 to 6 are delivered on branch
 `calummoore/dragselectableprovider-improvements`. Milestone 7 has run the
 smoke test, the complete gate, and the review, and Milestone 8 fixes the
 review findings that the user chose to fix. Open before merge: the user's
-manual check of macOS overlay scrollbars, and any finding of the second
-review. No PR is open yet. The plan closes when its PR merges.
+manual check of macOS overlay scrollbars, and the three findings of the
+second review (R9 to R11). No PR is open yet. The plan closes when its PR
+merges.
 
 [`DragSelectableProvider`](../src/drag-select/README.md) was built to wrap one
 list. The accounting app wants one provider around every page, so that a drag
@@ -699,9 +700,22 @@ R8 on 2026-10-15, and declined R6. Each fix starts with a failing test.
 - [x] Run `cargo xtask check`: passed
       (`.context/drag-select-options/logs/gate-2.log`).
 - [x] Run `git add -A`, commit with Conventional Commits, and push.
-- [ ] Run `cargo xtask review` once more after the push. Report its findings
+- [x] Run `cargo xtask review` once more after the push. Report its findings
       without fixing them, as `AGENTS.md` requires, and add each open
-      finding as one line below.
+      finding as one line below. Ran on 2026-10-15 against `dd16ddb` with
+      the model from the Codex config and Linux capabilities dropped for the
+      sandbox. None of R1 to R7 came back. Report:
+      `.context/drag-select-options/review-impl-3.md`.
+  - Open R9 (medium): options that a page hook sets apply from its layout
+    effect, so server HTML misses them, and a page that passes its first
+    `selectedIds` through the hook makes the provider call
+    `onSelectionChange` once on mount.
+  - Open R10 (medium): the page-change check keeps the whole stored
+    selection when the new page registers any one of its ids, so pages
+    that share an id inherit the old selection.
+  - Open R11 (medium): a straight vertical or horizontal drag matches rows
+    but draws no box, because the clip drops a box with zero width or
+    height. Confirmed in Chrome.
 
 Evidence: `.context/drag-select-options/m8-evidence.md`.
 
