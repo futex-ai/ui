@@ -72,7 +72,10 @@ crate, or feature in the `README.md`, doc, or protocol doc next to that code.
   `tests/browser/snapshots.spec.ts-snapshots/`: a screenshot and an ARIA
   snapshot. Record the screenshots on Linux only, with
   `npx playwright test snapshots --update-snapshots`. Commit the baselines with
-  the story. The root `README.md` gives the details.
+  the story. A story that cannot be pinned, for example one with an empty
+  accessibility tree, gets an entry with a one-line reason in
+  `tests/browser/snapshotOptOuts.ts` instead. That file is the only place to
+  declare an opt-out. The root `README.md` gives the details.
 - The mockups under `docs/mockups/` are hand-written HTML files. Edit them
   directly. There is no mockup generator and no mockup check command.
 
