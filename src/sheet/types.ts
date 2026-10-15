@@ -17,9 +17,15 @@ export type SheetContentState = {
 export type SheetProps = {
   /** Body: a node, or a render function given `{ close, maxHeight }`. */
   children: ReactNode | ((state: SheetContentState) => ReactNode);
-  /** Text for the header dismiss control. Native; default `"Cancel"`. */
+  /**
+   * Native: the header dismiss control's text, default `"Cancel"`. Web: the
+   * accessible name of the modal's close button, default `"Close {title}"`.
+   */
   dismissLabel?: string;
-  /** Hide the header row (the grip handle stays). Native; default `false`. */
+  /**
+   * Native: hide the header row (the grip handle stays). Web: hide the close
+   * button; the title stays. Default `false`.
+   */
   hideHeader?: boolean;
   /**
    * Element focused when the sheet opens, instead of the first focusable

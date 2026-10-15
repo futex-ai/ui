@@ -510,7 +510,7 @@ empty search input does not remove chips; use a chip's remove button.
 On phones and native, pass `presentation="sheet"`. The field then shows the
 chips and a button (the `placeholder`) instead of the search input; pressing it
 opens a bottom `Sheet` (`@firna/ui/sheet`) named by the `label`. The sheet holds
-the chips and the search input at the top (focused on open), the list below,
+the chips and the search input at the top (focused on open on web), the list below,
 and the pinned footer action. Selections apply as they are made, so the sheet's
 dismiss control is a Done action: the native header shows "Done", and on web
 the modal's close button is named "Done". Escape and the backdrop also close
