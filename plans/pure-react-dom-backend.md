@@ -231,10 +231,10 @@ src/primitives/
 
 ## Milestones
 
-Per `AGENTS.md`, after each milestone's checks pass: `git add -A`, commit with
-a Conventional Commits message, push the branch, then run `cargo xtask review`
-so an AI reviewer checks the local diff against `origin/main`. Review findings
-are reported, not auto-fixed.
+After each milestone's checks pass, follow the `finish-work` skill that
+`AGENTS.md` names: run `git add -A`, commit with a Conventional Commits message,
+and push the branch. Then review the local diff against `origin/main` with the
+`implementation-review` skill, and apply its review-fix rule.
 
 ### M0 — Parity baseline on the current backend
 
