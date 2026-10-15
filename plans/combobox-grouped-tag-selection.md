@@ -10,7 +10,7 @@ static `footer` note.
 The contract is [Combobox Multi-Select Protocol](../docs/protocol/combobox-multi-select.md);
 the visual spec is the [tag picker mockup](../docs/mockups/combobox-tag-picker.html).
 
-**Status:** M1–M4 complete. M5 in progress. Release target: `4.1.0` (minor),
+**Status:** M1–M4 complete. M5 verified, pushed, and reviewed; four review findings await a decision. Release target: `4.1.0` (minor),
 cut by release-please from the `feat(dropdown)` commit.
 
 ## Background
@@ -109,10 +109,27 @@ entry or prop.
 - [x] `cargo xtask check` green: 1,277 unit tests (13 dist-only skips, run by
       `test:dist`), 15 dist tests, package smoke, Storybook build, and 398
       browser tests including the axe and snapshot sweeps.
-- [ ] `git add -A`, commit with Conventional Commits (`feat(dropdown)` and
+- [x] `git add -A`, commit with Conventional Commits (`feat(dropdown)` and
       `fix(dropdown)`), and push the branch.
-- [ ] `cargo xtask review` after the push; record findings here without fixing
-      them.
+- [x] `cargo xtask review` after the push; record findings here without fixing
+      them. (The sandbox's codex proxy hangs on the `gpt-5.5` model the xtask
+      pins, so the identical review prompt ran through `codex exec` with the
+      proxy's default model and the same read-only flags; codex's bwrap
+      sandbox also needs the `setpriv --inh-caps=-all --ambient-caps=-all
+    --bounding-set=-all` wrapper here.)
+- [ ] Review finding 1 (P2): internal row ids (`combobox-group-N`,
+      `combobox-footer-action`, and the older `empty` / `footer`) can collide
+      with an option `value`, breaking navigation for that option. Awaiting a
+      decision on namespacing.
+- [ ] Review finding 2 (P2): without a `listId`, `DropdownList` emits
+      `role="group"` with no `aria-labelledby` and drops `aria-describedby`
+      (`ContextMenu.web.tsx` omits it). Awaiting a decision on a `useId`
+      fallback.
+- [ ] Review finding 3 (P2): option `icon`s in rows and chips are not passed
+      `aria-hidden`; Lucide hides itself, but a custom `IconComponent` may not.
+      Awaiting a decision.
+- [ ] Review finding 4 (P3): the README tag-picker example uses `House`
+      without importing it. Awaiting a decision.
 
 ## Open questions
 
