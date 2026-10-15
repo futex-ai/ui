@@ -1,0 +1,20 @@
+- text: Tags
+- button "More information about Tags": Tags group transactions by property, vehicle, project or anything else you track.
+- text: /Flat 2, \d+ Brook Street Loft conversion/
+- button "Remove Loft conversion"
+- combobox "Tags" [expanded]
+- text: No tag created yet
+- listbox "Tags":
+  - group "Properties":
+    - text: ""
+    - option /Flat 2, \d+ Brook Street/ [disabled] [selected]: /Flat 2, \d+ Brook Street UK rental property/
+    - option /Flat 3, \d+ Brook Street/ [disabled]: /Flat 3, \d+ Brook Street UK rental property/
+  - group "Vehicles":
+    - text: ""
+    - option "Renault Kangoo BX19 KLM": Renault Kangoo BX19 KLM UK rental property
+    - option "Skoda Octavia WK21 LMN" [disabled]: Skoda Octavia WK21 LMN Consultancy trade
+  - group "Projects":
+    - text: ""
+    - option "Loft conversion" [selected]: L Loft conversion Archived
+    - option "Website rebuild": W Website rebuild Consultancy trade
+  - option "Create tag"

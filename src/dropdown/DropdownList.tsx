@@ -1,6 +1,6 @@
 /** Branded dropdown list rows with shared hover and keyboard state. */
 import { Check, IconComponent } from "../primitives/icons";
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, ReactNode, useMemo } from "react";
 import {
   Platform,
   Pressable,
@@ -12,52 +12,32 @@ import {
 import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
 
+import { DEFAULT_DROPDOWN_HIGHLIGHT } from "./dropdownHighlightVariant";
+import type { DropdownHighlightVariant } from "./dropdownHighlightVariant";
 import {
-  DEFAULT_DROPDOWN_HIGHLIGHT,
   createDropdownListStyles,
   dropdownRowHighlight,
 } from "./dropdownListStyles";
-import type {
-  DropdownHighlightVariant,
-  DropdownListStyles,
-} from "./dropdownListStyles";
+import type { DropdownListStyles } from "./dropdownListStyles";
+import { DropdownGroup } from "./DropdownGroup";
 import {
-  dropdownListNavigationItems,
-  selectedDropdownListEntryId,
+  dropdownListContainerA11y,
+  dropdownListSegments,
+  dropdownRowDomId,
 } from "./dropdownListModel";
-import {
-  dropdownKeyAction,
-  navigationResetKey,
-  nextSelectableId,
-  selectedOrFirstId,
-  shouldResetDropdownListActiveId,
-} from "./dropdownNavigation";
-import type { DropdownNavigationItem } from "./dropdownNavigation";
-import { scrollDropdownActiveRowIntoView } from "./dropdownScroll";
+import { useDropdownListNavigation } from "./useDropdownListNavigation";
 
 export {
   dropdownListNavigationItems,
+  dropdownRowDomId,
   selectedDropdownListEntryId,
 } from "./dropdownListModel";
-export type { DropdownHighlightVariant } from "./dropdownListStyles";
+export type { DropdownHighlightVariant } from "./dropdownHighlightVariant";
 
 /** How the option list and its rows are exposed to assistive tech. */
 export type DropdownListRole = "listbox" | "menu";
 
-/**
- * Stable DOM id for a row so a trigger/input can point `aria-activedescendant`
- * at the active option (WCAG 4.1.2). Returns `undefined` when either part is
- * missing so the attribute is simply omitted rather than dangling.
- */
-export function dropdownRowDomId(
-  listId: string | undefined,
-  rowId: string | null | undefined,
-): string | undefined {
-  if (!listId || !rowId) {
-    return undefined;
-  }
-  return `${listId}-row-${rowId}`;
-}
+const NO_ENTRIES: DropdownListEntry[] = [];
 
 /**
  * Content for a row's `leading`/`right` slot: either a plain node the caller
@@ -115,6 +95,20 @@ type DropdownListProps = {
   activeId?: string | null;
   entries: DropdownListEntry[];
   footer?: ReactNode;
+  /**
+   * Selectable rows pinned below the scroll area, so an action such as
+   * "Create tag" stays visible while the options scroll. They share the list's
+   * keyboard navigation and highlight, and on web the container owns them
+   * (`aria-owns`) so they stay part of its listbox or menu.
+   */
+  footerEntries?: DropdownListEntry[];
+  /**
+   * Name groups by their section headings. On web, each `section` entry and
+   * the rows after it, up to the next section or divider, render inside a
+   * `role="group"` labelled by the heading. A heading with no rows after it
+   * stays a plain line. Defaults to `false`.
+   */
+  groupSections?: boolean;
   header?: ReactNode;
   /**
    * How focused/selected rows are highlighted. Defaults to `"solid"`. See
@@ -149,6 +143,8 @@ export function DropdownList({
   activeId: controlledActiveId,
   entries,
   footer,
+  footerEntries = NO_ENTRIES,
+  groupSections = false,
   header,
   highlightVariant = DEFAULT_DROPDOWN_HIGHLIGHT,
   label,
@@ -163,105 +159,73 @@ export function DropdownList({
 }: DropdownListProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createDropdownListStyles(theme), [theme]);
-  const rowRefs = useRef(new Map<string, View>());
-  const scrollRef = useRef<ScrollView>(null);
-  const navItems = useMemo<DropdownNavigationItem[]>(
-    () => dropdownListNavigationItems(entries),
-    [entries],
-  );
-  const navKey = navigationResetKey(navItems);
-  const selectedId = selectedDropdownListEntryId(entries);
-  const [uncontrolledActiveId, setUncontrolledActiveId] = useState<
-    string | null
-  >(selectedOrFirstId(navItems, selectedId));
-  const activeId =
-    controlledActiveId === undefined
-      ? uncontrolledActiveId
-      : controlledActiveId;
-  const setActiveId = (id: string | null) => {
-    if (controlledActiveId === undefined) {
-      setUncontrolledActiveId(id);
-    }
-    onActiveIdChange?.(id);
-  };
+  const { activeId, keyProps, scrollRef, setActiveId, setRowRef } =
+    useDropdownListNavigation({
+      controlledActiveId,
+      entries,
+      footerEntries,
+      maxHeight,
+      onActiveIdChange,
+      onClose,
+    });
 
-  useEffect(() => {
-    if (shouldResetDropdownListActiveId(controlledActiveId)) {
-      setUncontrolledActiveId(selectedOrFirstId(navItems, selectedId));
-    }
-  }, [controlledActiveId, navKey, selectedId]);
-
-  // Also re-run when the list's height changes: a web portal lays the list out
-  // once at its natural height to measure it, then clamps it to the room
-  // beside the anchor, which can hide an active row that was in view.
-  useEffect(() => {
-    scrollDropdownActiveRowIntoView(
-      scrollRef.current,
-      activeId ? rowRefs.current.get(activeId) : null,
-    );
-  }, [activeId, maxHeight, navKey]);
-
-  const setRowRef = (id: string) => (node: View | null) => {
-    if (node) {
-      rowRefs.current.set(id, node);
-      return;
-    }
-    rowRefs.current.delete(id);
-  };
-
-  const keyProps = {
-    onKeyDown: (event: {
-      key?: string;
-      nativeEvent?: { key?: string };
-      preventDefault?: () => void;
-    }) => {
-      const action = dropdownKeyAction(
-        event.nativeEvent?.key ?? event.key ?? "",
-      );
-      if (!action) return;
-      event.preventDefault?.();
-      if (action === "close") {
-        onClose();
-        return;
-      }
-      if (action === "moveDown" || action === "moveUp") {
-        setActiveId(
-          nextSelectableId(navItems, activeId, action === "moveDown" ? 1 : -1),
-        );
-        return;
-      }
-      if (action === "select" || action === "toggle") {
-        const active = entries.find((entry) => entry.id === activeId);
-        if (active && "onPress" in active && !active.disabled) {
-          active.onPress?.();
-        }
-      }
-    },
-  };
-
-  // `listbox`/`menu` (and `option`/`menuitem`) are web ARIA roles; gate them to
-  // web so native list semantics are not regressed (the rows stay tappable
-  // Pressables on native). WCAG 4.1.2 Name/Role/Value. They are passed via the
-  // literal `role` prop because `listbox`/`option` are absent from the bundled
-  // React Native `AccessibilityRole`/`Role` types (RNW forwards them at
-  // runtime); the cast is scoped to this web-only props object.
   const isWeb = Platform.OS === "web";
   const itemRole: "menuitem" | "option" =
     listRole === "menu" ? "menuitem" : "option";
-  const containerA11y: object = isWeb
-    ? ({
-        "aria-label": label,
-        // `aria-required` is allowed on `role="listbox"` but not on `menu`, so
-        // only expose it for the listbox container (WCAG 4.1.2).
-        ...(required && listRole === "listbox"
-          ? { "aria-required": true }
-          : {}),
-        nativeID: listId,
-        role: listRole,
-      } as unknown as object)
-    : {};
+  const containerA11y = dropdownListContainerA11y({
+    isWeb,
+    label,
+    listId,
+    listRole,
+    ownedIds: footerEntries.flatMap(
+      (entry) => dropdownRowDomId(listId, entry.id) ?? [],
+    ),
+    required,
+  });
 
-  const hasChrome = Boolean(search) || Boolean(header) || Boolean(footer);
+  // Pinned rows register no scroll ref: they sit outside the scroll area, so
+  // moving the active row onto one must not scroll the options.
+  const renderRow = (entry: DropdownListEntry, pinned: boolean) => (
+    <DropdownRow
+      active={entry.id === activeId}
+      entry={entry}
+      highlightVariant={highlightVariant}
+      isWeb={isWeb}
+      itemRole={itemRole}
+      key={entry.id}
+      onHover={() => setActiveId(entry.id)}
+      onRowRef={pinned ? undefined : setRowRef(entry.id)}
+      rowDomId={dropdownRowDomId(listId, entry.id)}
+      styles={styles}
+      theme={theme}
+    />
+  );
+  // Groups are a web ARIA structure; native keeps the flat rows.
+  const rows =
+    isWeb && groupSections
+      ? dropdownListSegments(entries, true).map((segment, index) =>
+          segment.heading ? (
+            <DropdownGroup
+              heading={segment.heading}
+              key={segment.heading.id}
+              listId={listId}
+              styles={styles}
+            >
+              {segment.entries.map((entry) => renderRow(entry, false))}
+            </DropdownGroup>
+          ) : (
+            <Fragment key={`rows-${index}`}>
+              {segment.entries.map((entry) => renderRow(entry, false))}
+            </Fragment>
+          ),
+        )
+      : entries.map((entry) => renderRow(entry, false));
+
+  const hasChrome =
+    Boolean(search) ||
+    Boolean(header) ||
+    Boolean(footer) ||
+    footerEntries.length > 0;
   const scroll = (
     <ScrollView
       keyboardShouldPersistTaps="handled"
@@ -271,21 +235,7 @@ export function DropdownList({
       {...containerA11y}
       {...keyProps}
     >
-      {entries.map((entry) => (
-        <DropdownRow
-          active={entry.id === activeId}
-          entry={entry}
-          highlightVariant={highlightVariant}
-          isWeb={isWeb}
-          itemRole={itemRole}
-          key={entry.id}
-          onHover={() => setActiveId(entry.id)}
-          onRowRef={setRowRef(entry.id)}
-          rowDomId={dropdownRowDomId(listId, entry.id)}
-          styles={styles}
-          theme={theme}
-        />
-      ))}
+      {rows}
     </ScrollView>
   );
 
@@ -301,6 +251,11 @@ export function DropdownList({
       {search ? <View style={styles.searchRegion}>{search}</View> : null}
       {header ? <View style={styles.headerRegion}>{header}</View> : null}
       {scroll}
+      {footerEntries.length > 0 ? (
+        <View style={styles.footerEntriesRegion}>
+          {footerEntries.map((entry) => renderRow(entry, true))}
+        </View>
+      ) : null}
       {footer ? <View style={styles.footerRegion}>{footer}</View> : null}
     </View>
   );
@@ -324,7 +279,7 @@ function DropdownRow({
   isWeb: boolean;
   itemRole: "menuitem" | "option";
   onHover: () => void;
-  onRowRef: (node: View | null) => void;
+  onRowRef?: (node: View | null) => void;
   rowDomId?: string;
   styles: DropdownListStyles;
   theme: SharedUiTheme;
@@ -370,9 +325,14 @@ function DropdownRow({
   // `AccessibilityRole` type (RNW forwards `role` at runtime). On native, keep
   // the tappable `button` role so the OS exposes a familiar control. `option`
   // carries `aria-selected`; `menuitem` has no selected state (an action menu).
-  // WCAG 4.1.2 Name/Role/Value.
+  // WCAG 4.1.2 Name/Role/Value. The row's name is its label, so the visible
+  // secondary line is wired in as its description; otherwise assistive tech
+  // would never hear it (WCAG 1.3.1).
+  const secondaryId =
+    entry.secondary && rowDomId ? `${rowDomId}-secondary` : undefined;
   const webRoleProps: object = isWeb
     ? ({
+        "aria-describedby": secondaryId,
         nativeID: rowDomId,
         role: itemRole,
         ...(itemRole === "option"
@@ -415,7 +375,13 @@ function DropdownRow({
           {entry.label}
         </Text>
         {entry.secondary ? (
-          <Text style={[styles.secondary, highlight.secondaryStyle]}>
+          <Text
+            nativeID={secondaryId}
+            style={[
+              [styles.secondary, highlight.secondaryStyle],
+              highlight.secondaryLineStyle,
+            ]}
+          >
             {entry.secondary}
           </Text>
         ) : null}

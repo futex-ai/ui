@@ -1,104 +1,52 @@
 /** Input-backed chip multi-select for combobox forms. */
-import { Check, IconComponent } from "../primitives/icons";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "../primitives/reactNative";
+import { useId, useMemo, useRef } from "react";
+import { Pressable, Text, TextInput, View } from "../primitives/reactNative";
 
-import { announce } from "../announcer";
-import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
-import { type FocusIndicator, useFocusRing } from "../focusRing";
-import { inputSizeTokens, LabelInfo } from "../input";
-import { useSharedUiTheme } from "../theme";
+import { useFocusRing } from "../focusRing";
+import { LabelInfo } from "../input";
 import type { SharedUiTheme } from "../theme";
+import { useSharedUiTheme } from "../theme";
 
+import { ComboboxChips } from "./ComboboxOptionParts";
+import type { ComboboxChipPalette } from "./ComboboxOptionParts";
 import { ComboboxPopover } from "./ComboboxPopover";
+import { ComboboxSheet, ComboboxSheetTrigger } from "./ComboboxSheet";
 import {
   DropdownList,
   DropdownListEntry,
   dropdownRowDomId,
 } from "./DropdownList";
-import type { DropdownHighlightVariant } from "./DropdownList";
-import { comboboxInputA11y, filterComboboxOptions } from "./comboboxModel";
+import { comboboxInputA11y } from "./comboboxModel";
+import { comboboxOptionEntry } from "./comboboxMultiSelectEntries";
+import type {
+  ComboboxOptionSection,
+  ComboboxSelection,
+} from "./comboboxMultiSelectModel";
+import {
+  MULTI_SELECT_SIZES,
+  createComboboxMultiSelectStyles,
+} from "./comboboxMultiSelectStyles";
+import type { ComboboxMultiSelectStyles } from "./comboboxMultiSelectStyles";
+import type {
+  ComboboxMultiSelectFieldProps,
+  ComboboxMultiSelectOption,
+  ComboboxMultiSelectPickerProps,
+} from "./comboboxMultiSelectTypes";
 import { useComboboxNavigation } from "./useComboboxNavigation";
+import { useComboboxAutoFocus, useComboboxPicker } from "./useComboboxPicker";
 
-export type ComboboxMultiSelectOption = {
-  color?: string;
-  label: string;
-  mark?: string;
-  value: string;
-};
+export type ComboboxMultiSelectProps = ComboboxMultiSelectFieldProps &
+  ComboboxMultiSelectPickerProps & {
+    /** Called with the next selected values. */
+    onChange: (values: string[]) => void;
+    options: ComboboxMultiSelectOption[];
+    /** Test identifier forwarded to the root element (`data-testid` on web). */
+    testID?: string;
+    values: string[];
+  };
 
-export type ComboboxMultiSelectProps = {
-  /**
-   * Accessible name for the search input. When a `label` is set the input is
-   * already named from it (via `aria-labelledby`); pass this to name the bare,
-   * label-less variant, or to override the name where `aria-labelledby` is not
-   * honoured (e.g. iOS, which does not map it). Mirrors `Input`.
-   */
-  accessibilityLabel?: string;
-  /** Focus the search input when the control mounts. */
-  autoFocus?: boolean;
-  /**
-   * Corner radius (px) of the control box. Defaults to `theme.radii.md`; pass
-   * `0` for square corners (e.g. an in-grid cell editor that must match a
-   * square container).
-   */
-  borderRadius?: number;
-  /** Validation message shown below the control; turns its border rose. */
-  error?: string | null;
-  /**
-   * How the control shows keyboard focus: the shared `ring` glow, the browser's
-   * `outline`, or `none` — no glow, no outline, and no focus border, which
-   * leaves the caller to show focus some other way (WCAG 2.1 — 2.4.7 Focus
-   * Visible, AA). Defaults to the theme's `focusIndicator`.
-   */
-  focusIndicator?: FocusIndicator;
-  footer?: string;
-  /** How the keyboard-focused row is highlighted. Defaults to `"solid"`. */
-  highlightVariant?: DropdownHighlightVariant;
-  /** Helper text shown below the control. */
-  hint?: string;
-  /** Force the rose invalid border independent of `error`. */
-  invalid?: boolean;
-  /** Field label shown above the control. Omit for a bare, label-less control. */
-  label?: string;
-  /**
-   * Supplementary help text revealed by an ⓘ button after the label. Pressing
-   * the button opens a small bubble with this text (built on `Popover`);
-   * screen-reader users get it from the button's description. Unlike `hint` it
-   * is not shown until requested. Requires a `label` to anchor the button.
-   */
-  labelInfo?: string;
-  /** Icon for the {@link labelInfo} button. Defaults to the lucide `Info` glyph. */
-  labelInfoIcon?: IconComponent;
-  /**
-   * Accessible name for the {@link labelInfo} button. Defaults to
-   * `More information about {label}`.
-   */
-  labelInfoLabel?: string;
-  onChange: (values: string[]) => void;
-  options: ComboboxMultiSelectOption[];
-  placeholder?: string;
-  /** Marks the field required (adds a `*` to the label, wires `aria-required`). */
-  required?: boolean;
-  /**
-   * Keep the control at one fixed-height row instead of wrapping selected chips,
-   * showing the first selection plus a `+N` summary for the remainder. Useful
-   * inside dense table and data-grid cells.
-   */
-  singleLine?: boolean;
-  /** Control density. Defaults to `md`, matching the shared input size scale. */
-  size?: ControlSize;
-  /** Test identifier forwarded to the root element (`data-testid` on web). */
-  testID?: string;
-  values: string[];
-};
+const NO_LOCKED_VALUES: string[] = [];
 
 export function ComboboxMultiSelect({
   accessibilityLabel,
@@ -107,6 +55,7 @@ export function ComboboxMultiSelect({
   error,
   focusIndicator,
   footer,
+  footerAction,
   highlightVariant,
   hint,
   invalid: invalidProp = false,
@@ -114,11 +63,14 @@ export function ComboboxMultiSelect({
   labelInfo,
   labelInfoIcon,
   labelInfoLabel,
+  lockedValues = NO_LOCKED_VALUES,
   onChange,
   options,
   placeholder = "Search to add...",
+  presentation = "popover",
   required = false,
   singleLine = false,
+  singlePerGroup = false,
   size = "md",
   testID,
   values,
@@ -133,48 +85,41 @@ export function ComboboxMultiSelect({
       createComboboxMultiSelectStyles(theme, borderRadius, size, singleLine),
     [theme, borderRadius, singleLine, size],
   );
+  const palette = useMemo(() => comboboxChipPalette(theme), [theme]);
+  const sheet = presentation === "sheet";
   const anchorRef = useRef<View>(null);
   const inputRef = useRef<TextInput>(null);
-  const autoFocusAtRef = useRef(0);
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  useEffect(() => {
-    if (!autoFocus) {
-      return;
-    }
-    autoFocusAtRef.current = Date.now();
-    const focusInput = () => inputRef.current?.focus();
-    focusInput();
-    if (typeof requestAnimationFrame === "undefined") {
-      return;
-    }
-    const frame = requestAnimationFrame(focusInput);
-    return () => cancelAnimationFrame(frame);
-  }, [autoFocus]);
-  const selected = options.filter((option) => values.includes(option.value));
-  const visibleSelected = singleLine ? selected.slice(0, 1) : selected;
-  const hiddenSelectedCount = selected.length - visibleSelected.length;
-  const filtered = useMemo(
-    () => filterComboboxOptions(options, query),
-    [options, query],
+  // The sheet presentation has no input in the field, only its trigger; its
+  // search input lives in the sheet.
+  const triggerRef = useRef<View>(null);
+  const sheetInputRef = useRef<TextInput>(null);
+  const autoFocusAtRef = useComboboxAutoFocus(
+    autoFocus,
+    sheet ? triggerRef : inputRef,
   );
-  const entries = entriesForOptions(
-    filtered,
+  const picker = useComboboxPicker({
+    footerAction,
+    lockedValues,
+    onChange,
+    options,
+    singlePerGroup,
+    styles,
     values,
-    (value) => {
-      onChange(
-        values.includes(value)
-          ? values.filter((selectedValue) => selectedValue !== value)
-          : [...values, value],
-      );
-      setQuery("");
-    },
+  });
+  const { close, open, query, setOpen, setQuery } = picker;
+  const entries = entriesForOptions(
+    picker.sections,
+    picker.selection,
+    picker.toggle,
     styles,
     footer,
   );
   const navigation = useComboboxNavigation({
-    entries,
-    onClose: () => setOpen(false),
+    entries: [...entries, ...picker.footerEntries],
+    // The sheet is a dialog with its own buttons: only its search input's keys
+    // drive the list, so Enter on Done or on a chip's remove button stays put.
+    keyTarget: sheet ? sheetInputRef : undefined,
+    onClose: close,
     onOpen: () => setOpen(true),
     open,
   });
@@ -215,19 +160,24 @@ export function ComboboxMultiSelect({
           "aria-errormessage": error ? errorId : undefined,
         } as unknown as object);
 
-  // Announce the result count so screen readers hear matches change as the
-  // query filters, without focus leaving the input (WCAG 4.1.3).
-  const matchCount = filtered.length;
-  useEffect(() => {
-    if (!open || !query.trim()) {
-      return;
-    }
-    announce(
-      matchCount === 0
-        ? "No matching options"
-        : `${matchCount} ${matchCount === 1 ? "option" : "options"} available`,
-    );
-  }, [matchCount, open, query]);
+  const chipProps = {
+    isLocked: (value: string) => picker.selection.locked.has(value),
+    onRemove: picker.remove,
+    options: picker.selected,
+    palette,
+  };
+  const listProps = {
+    activeId: navigation.activeId,
+    entries,
+    footerEntries: picker.footerEntries,
+    groupSections: true,
+    highlightVariant,
+    label: label ?? placeholder,
+    listId,
+    listRole: "listbox" as const,
+    onActiveIdChange: navigation.setActiveId,
+    onClose: close,
+  };
 
   return (
     <View
@@ -263,7 +213,7 @@ export function ComboboxMultiSelect({
         <Pressable
           {...focus.focusRingProps}
           onPress={() => {
-            inputRef.current?.focus();
+            (sheet ? triggerRef : inputRef).current?.focus();
             setOpen(true);
           }}
           style={[
@@ -277,96 +227,96 @@ export function ComboboxMultiSelect({
           ]}
           tabIndex={-1}
         >
-          {visibleSelected.map((option) => (
-            <View key={option.value} style={styles.chip}>
-              <Text numberOfLines={1} style={styles.chipText}>
-                {option.label}
-              </Text>
-              {singleLine ? null : (
-                <Pressable
-                  accessibilityLabel={`Remove ${option.label}`}
-                  accessibilityRole="button"
-                  onPress={() =>
-                    onChange(values.filter((value) => value !== option.value))
-                  }
-                  style={styles.chipRemove}
-                >
-                  {/* The visible "x" is decorative — the Pressable's name is
-                      "Remove {label}". Hide it from AT so the name is not polluted
-                      by the glyph (WCAG 2.5.3 Label in Name). */}
-                  <Text aria-hidden style={styles.chipRemoveText}>
-                    x
-                  </Text>
-                </Pressable>
-              )}
-            </View>
-          ))}
-          {hiddenSelectedCount > 0 ? (
-            <View style={[styles.chip, styles.chipSummary]}>
-              <Text
-                accessibilityLabel={`${hiddenSelectedCount} more selected`}
-                style={styles.chipText}
-              >
-                +{hiddenSelectedCount}
-              </Text>
-            </View>
-          ) : null}
-          <TextInput
-            {...focus.focusTargetProps}
-            accessibilityHint={error ?? hint}
-            // Name the input from the visible label via `aria-labelledby` (so the
-            // accessible name IS the visible text — WCAG 2.5.3), unless the caller
-            // supplied an explicit `accessibilityLabel`, which then wins on both
-            // platforms. Mirrors `Input`/`InputFrame`.
-            accessibilityLabel={accessibilityLabel}
-            aria-invalid={invalid}
-            aria-labelledby={
-              accessibilityLabel === undefined && label ? labelId : undefined
-            }
-            aria-required={required}
-            onChangeText={setQuery}
-            onBlur={() => {
-              focus.onBlur();
-              // An in-place editor can mount during pointer-down. Ignore the
-              // matching release's transient focus transfer so the newly
-              // mounted search input remains ready for immediate typing.
-              if (autoFocus && Date.now() - autoFocusAtRef.current < 250) {
-                inputRef.current?.focus();
-              }
-            }}
-            onFocus={(event) => {
-              focus.onFocus(event);
-              setOpen(true);
-            }}
-            placeholder={placeholder}
-            placeholderTextColor={theme.colors.placeholder}
-            ref={inputRef}
-            style={styles.input}
-            value={query}
-            {...comboboxInputA11y({ activeDescendant, controls: listId, open })}
-            {...describedByA11y}
-            {...navigation.keyProps}
+          <ComboboxChips
+            {...chipProps}
+            iconSize={MULTI_SELECT_SIZES[size].chipIconSize}
+            singleLine={singleLine}
+            styles={styles}
           />
-        </Pressable>
-        <ComboboxPopover
-          anchorRef={anchorRef}
-          onClose={() => setOpen(false)}
-          open={open}
-        >
-          {(placement) => (
-            <DropdownList
-              activeId={navigation.activeId}
-              entries={entries}
-              highlightVariant={highlightVariant}
-              label={label ?? placeholder}
-              listId={listId}
-              listRole="listbox"
-              maxHeight={placement.maxHeight}
-              onActiveIdChange={navigation.setActiveId}
-              onClose={() => setOpen(false)}
+          {sheet ? (
+            <ComboboxSheetTrigger
+              accessibilityLabel={
+                accessibilityLabel ??
+                [label, placeholder].filter(Boolean).join(", ")
+              }
+              describedBy={describedByA11y}
+              focus={focus}
+              hint={error ?? hint}
+              invalid={invalid}
+              onPress={() => setOpen(true)}
+              open={open}
+              placeholder={placeholder}
+              styles={styles}
+              triggerRef={triggerRef}
+            />
+          ) : (
+            <TextInput
+              {...focus.focusTargetProps}
+              accessibilityHint={error ?? hint}
+              // Name the input from the visible label via `aria-labelledby` (so the
+              // accessible name IS the visible text — WCAG 2.5.3), unless the caller
+              // supplied an explicit `accessibilityLabel`, which then wins on both
+              // platforms. Mirrors `Input`/`InputFrame`.
+              accessibilityLabel={accessibilityLabel}
+              aria-invalid={invalid}
+              aria-labelledby={
+                accessibilityLabel === undefined && label ? labelId : undefined
+              }
+              aria-required={required}
+              onChangeText={setQuery}
+              onBlur={() => {
+                focus.onBlur();
+                // An in-place editor can mount during pointer-down. Ignore the
+                // matching release's transient focus transfer so the newly
+                // mounted search input remains ready for immediate typing.
+                if (autoFocus && Date.now() - autoFocusAtRef.current < 250) {
+                  inputRef.current?.focus();
+                }
+              }}
+              onFocus={(event) => {
+                focus.onFocus(event);
+                setOpen(true);
+              }}
+              placeholder={placeholder}
+              placeholderTextColor={theme.colors.placeholder}
+              ref={inputRef}
+              style={styles.input}
+              value={query}
+              {...comboboxInputA11y({
+                activeDescendant,
+                controls: listId,
+                open,
+              })}
+              {...describedByA11y}
+              {...navigation.keyProps}
             />
           )}
-        </ComboboxPopover>
+        </Pressable>
+        {sheet ? (
+          <ComboboxSheet
+            activeDescendant={activeDescendant}
+            chips={chipProps}
+            focusIndicator={focusIndicator}
+            inputKeyProps={navigation.keyProps}
+            inputRef={sheetInputRef}
+            invalid={invalid}
+            label={label ?? accessibilityLabel ?? placeholder}
+            list={listProps}
+            onClose={close}
+            onQueryChange={setQuery}
+            open={open}
+            placeholder={placeholder}
+            query={query}
+            required={required}
+            size={size}
+          />
+        ) : (
+          <ComboboxPopover anchorRef={anchorRef} onClose={close} open={open}>
+            {(placement) => (
+              <DropdownList {...listProps} maxHeight={placement.maxHeight} />
+            )}
+          </ComboboxPopover>
+        )}
       </View>
       {error ? (
         // `role="alert"` (assertive live region) announces a newly-shown
@@ -389,29 +339,22 @@ export function ComboboxMultiSelect({
   );
 }
 
+/** Option rows under their group headings, then the empty state and the note. */
 function entriesForOptions(
-  options: ComboboxMultiSelectOption[],
-  values: string[],
+  sections: ComboboxOptionSection<ComboboxMultiSelectOption>[],
+  selection: ComboboxSelection,
   onSelect: (value: string) => void,
   styles: ComboboxMultiSelectStyles,
   footer?: string,
 ): DropdownListEntry[] {
-  const optionRows: DropdownListEntry[] = options.map((option) => {
-    const selected = values.includes(option.value);
-    return {
-      id: option.value,
-      label: option.label,
-      leading: <OptionMark option={option} styles={styles} />,
-      onPress: () => onSelect(option.value),
-      // Tinted from the row's content color rather than pinned to `primaryDeep`,
-      // which all but vanishes (~1.3:1) on the solid active fill.
-      right: selected
-        ? ({ color }: { color: string }) => <Check color={color} size={15} />
-        : null,
-      selected,
-      type: "item",
-    };
-  });
+  const optionRows: DropdownListEntry[] = sections.flatMap((section) => [
+    ...(section.title
+      ? [{ id: section.id, label: section.title, type: "section" as const }]
+      : []),
+    ...section.options.map((option) =>
+      comboboxOptionEntry(option, selection, onSelect, styles),
+    ),
+  ]);
   const rows: DropdownListEntry[] =
     optionRows.length > 0
       ? optionRows
@@ -422,183 +365,23 @@ function entriesForOptions(
   return rows;
 }
 
-function OptionMark({
-  option,
-  styles,
-}: {
-  option: ComboboxMultiSelectOption;
-  styles: ComboboxMultiSelectStyles;
-}) {
-  return (
-    <View
-      style={[
-        styles.mark,
-        option.color ? { backgroundColor: option.color } : null,
-      ]}
-    >
-      <Text style={styles.markText}>
-        {option.mark ?? option.label[0] ?? "?"}
-      </Text>
-    </View>
-  );
-}
-
-function createComboboxMultiSelectStyles(
-  theme: SharedUiTheme,
-  borderRadius = theme.radii.md,
-  size: ControlSize = "md",
-  singleLine = false,
-) {
-  const baseText = { fontFamily: theme.fonts.sans } as const;
-  const inputSize = inputSizeTokens(size);
-  const sizing = MULTI_SELECT_SIZES[size];
-  return StyleSheet.create({
-    chip: {
-      alignItems: "center",
+/**
+ * Chip colors per `chipTone`, shared by the field's chips and the sheet's.
+ * `default` is the theme's primary tint (`primarySoft` fill, `primaryDeep`
+ * text); `muted` is a neutral grey for a value that is still applied but no
+ * longer current, such as an archived tag. Both texts clear AA on their fill.
+ */
+function comboboxChipPalette(theme: SharedUiTheme): ComboboxChipPalette {
+  return {
+    default: {
       backgroundColor: theme.colors.primarySoft,
       borderColor: theme.colors.primaryBorder,
-      borderRadius: theme.radii.pill,
-      borderWidth: 1,
-      flexDirection: "row",
-      flexShrink: singleLine ? 1 : 0,
-      gap: sizing.gap,
-      maxWidth: "100%",
-      paddingHorizontal: sizing.chipPaddingHorizontal,
-      paddingVertical: sizing.chipPaddingVertical,
-    },
-    chipRemove: {
-      alignItems: "center",
-      height: sizing.removeSize,
-      justifyContent: "center",
-      width: sizing.removeSize,
-    },
-    chipRemoveText: {
-      ...baseText,
       color: theme.colors.primaryDeep,
-      fontSize: sizing.chipFontSize,
-      fontWeight: "800",
-      lineHeight: sizing.chipLineHeight,
     },
-    chipSummary: {
-      flexShrink: 0,
-      paddingHorizontal: singleLine ? 5 : sizing.chipPaddingHorizontal,
-    },
-    chipText: {
-      ...baseText,
-      color: theme.colors.primaryDeep,
-      flexShrink: singleLine ? 1 : 0,
-      fontSize: sizing.chipFontSize,
-      fontWeight: "700",
-      lineHeight: sizing.chipLineHeight,
-      minWidth: 0,
-    },
-    control: {
-      alignItems: "center",
-      backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.controlBorder,
-      borderRadius,
-      borderWidth: 1,
-      flexDirection: "row",
-      flexWrap: singleLine ? "nowrap" : "wrap",
-      gap: singleLine ? 3 : sizing.gap,
-      height: singleLine ? inputSize.boxHeight : undefined,
-      minHeight: inputSize.boxHeight,
-      overflow: singleLine ? "hidden" : "visible",
-      paddingHorizontal: singleLine ? 6 : sizing.controlPaddingHorizontal,
-      paddingVertical: sizing.controlPaddingVertical,
-    },
-    controlActive: { borderColor: theme.colors.primary },
-    // Rose border + soft ring for the invalid state (matches DropdownSelector).
-    controlInvalid: {
-      borderColor: theme.colors.rose,
-      boxShadow: `0 0 0 2px ${theme.colors.roseSoft}`,
-    },
-    error: {
-      ...baseText,
-      color: theme.colors.rose,
-      fontSize: 11,
-      fontWeight: "700",
-      lineHeight: 16,
-    },
-    // The label + control + messages stack.
-    field: { gap: 6 },
-    hint: {
-      ...baseText,
-      color: theme.colors.muted,
-      fontSize: 11,
-      lineHeight: 16.5,
-    },
-    input: {
-      ...baseText,
-      color: theme.colors.ink,
-      flex: singleLine ? 1 : undefined,
-      flexGrow: singleLine ? undefined : 1,
-      flexShrink: 1,
-      fontSize: inputSize.inputFontSize,
-      minWidth: singleLine ? 28 : 130,
-      padding: 0,
-    },
-    label: {
-      ...baseText,
+    muted: {
+      backgroundColor: theme.colors.soft,
+      borderColor: theme.colors.border2,
       color: theme.colors.ink2,
-      fontSize: 12,
-      fontWeight: "700",
-      lineHeight: 18,
     },
-    // The label + optional ⓘ info button share one baseline-centred row.
-    labelRow: { alignItems: "center", flexDirection: "row", gap: 4 },
-    mark: {
-      alignItems: "center",
-      backgroundColor: theme.colors.primary,
-      borderRadius: 12,
-      height: 24,
-      justifyContent: "center",
-      width: 24,
-    },
-    markText: {
-      ...baseText,
-      color: theme.colors.onSolid,
-      fontSize: 11,
-      fontWeight: "800",
-    },
-    required: { color: theme.colors.rose },
-    wrap: { position: "relative" },
-  });
+  };
 }
-
-const MULTI_SELECT_SIZES = {
-  sm: {
-    chipFontSize: 11,
-    chipLineHeight: 16,
-    chipPaddingHorizontal: 7,
-    chipPaddingVertical: 1,
-    controlPaddingHorizontal: 8,
-    controlPaddingVertical: 5,
-    gap: 4,
-    removeSize: 16,
-  },
-  md: {
-    chipFontSize: 12,
-    chipLineHeight: 18,
-    chipPaddingHorizontal: 9,
-    chipPaddingVertical: 3,
-    controlPaddingHorizontal: 8,
-    controlPaddingVertical: 6,
-    gap: 6,
-    removeSize: 18,
-  },
-  lg: {
-    chipFontSize: 13,
-    chipLineHeight: 20,
-    chipPaddingHorizontal: 10,
-    chipPaddingVertical: 4,
-    controlPaddingHorizontal: 10,
-    controlPaddingVertical: 8,
-    gap: 8,
-    removeSize: 20,
-  },
-} as const satisfies Record<ControlSize, object>;
-
-type ComboboxMultiSelectStyles = ReturnType<
-  typeof createComboboxMultiSelectStyles
->;

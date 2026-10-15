@@ -698,6 +698,14 @@ Required behavior:
   close, hover active state, outside pointer close, loading/empty rows, section
   headers, dividers, footers, secondary text, right-side content, and danger or
   warning row tones.
+- Expose a row's secondary text as its accessible description. On request
+  (`groupSections`), name each section's rows as a web `role="group"` labelled
+  by the heading. Pinned footer rows (`footerEntries`) sit outside the scroll
+  area, follow the options in the arrow-key order, and stay in the list's
+  accessibility tree through `aria-owns`.
+- Keep a row's `secondary` line at WCAG 2.1 AA on every highlight fill in every
+  shipped theme. Trailing `rightText` keeps the muted grey on the light tinted
+  fills.
 - Keep the keyboard-active option scrolled into the visible list viewport when
   navigation moves through long dropdown or combobox lists.
 - Include the field label in selector accessible names when a visual label is
@@ -717,7 +725,13 @@ Required behavior:
 - Size chip multi-selects from the shared control scale and provide a
   fixed-height single-line mode for dense table or data-grid editors, so their
   chips cannot expand over neighboring rows; summarize overflow selections and
-  keep checked option rows enabled as removal toggles.
+  keep checked option rows enabled as removal toggles (a locked value is the
+  one exception).
+- Support grouped tag pickers on the chip multi-select: option groups with
+  group-name search, descriptions, disabled options, locked values, one value
+  per group, a pinned footer action, chip tones and icons, and a bottom-sheet
+  presentation for phones. The full contract is in
+  [combobox-multi-select.md](combobox-multi-select.md).
 - Provide an action-menu wrapper that owns the trigger anchor, controlled or
   uncontrolled open state, portal/list composition, and default close-after-row
   selection behavior for common trigger-backed menus.

@@ -3,6 +3,11 @@ import { StyleSheet } from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
 
+import type {
+  DropdownHighlightVariant,
+  DropdownRowTone,
+} from "./dropdownHighlightVariant";
+
 export function createDropdownListStyles(theme: SharedUiTheme) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
   return StyleSheet.create({
@@ -19,6 +24,13 @@ export function createDropdownListStyles(theme: SharedUiTheme) {
       borderTopColor: theme.colors.border,
       borderTopWidth: 1,
       marginTop: 4,
+    },
+    // Pinned `footerEntries` rows, separated from the options by a hairline.
+    footerEntriesRegion: {
+      borderTopColor: theme.colors.border,
+      borderTopWidth: 1,
+      marginTop: 4,
+      paddingTop: 4,
     },
     footerRegion: {
       borderTopColor: theme.colors.border,
@@ -100,6 +112,9 @@ export function createDropdownListStyles(theme: SharedUiTheme) {
     // `primarySoft` is only ~4.2:1), so hierarchy here leans on the subtext's
     // smaller size/weight rather than a lighter color.
     itemSecondaryOnSolid: { color: theme.colors.onSolid },
+    // The `secondary` line on the light tinted fills, where muted grey falls
+    // under AA (4.27:1 on `primarySoft` in the default theme).
+    itemSecondaryOnTint: { color: theme.colors.primaryDeep },
     itemSelectedFill: { backgroundColor: theme.colors.primarySoft },
     itemText: { flex: 1, minWidth: 0 },
     leading: { alignItems: "center", justifyContent: "center" },
@@ -147,24 +162,6 @@ export function createDropdownListStyles(theme: SharedUiTheme) {
 
 export type DropdownListStyles = ReturnType<typeof createDropdownListStyles>;
 
-/**
- * How the focused (active) and selected option rows are highlighted:
- * - `solid` — focused row filled with `primary` under a white label (default).
- * - `ring` — focused row outlined with a `primary` ring, no fill.
- * - `ringFill` — focused row outlined with a `primary` ring over a light fill.
- * - `dot` — focused row gets a soft fill plus a leading `primary` dot.
- *
- * In every variant a selected `option` row is marked with a trailing checkmark
- * (so selection survives independently of which row is focused). The legacy
- * left-accent bar is replaced by these variants.
- */
-export type DropdownHighlightVariant = "dot" | "ring" | "ringFill" | "solid";
-
-export const DEFAULT_DROPDOWN_HIGHLIGHT: DropdownHighlightVariant = "solid";
-
-/** Tone accent for a dropdown row, mirroring `DropdownListEntry["tone"]`. */
-export type DropdownRowTone = "amber" | "danger" | "default" | "muted";
-
 export type DropdownRowHighlight = {
   /** Color for the trailing selection checkmark. */
   checkColor: string;
@@ -188,6 +185,8 @@ export type DropdownRowHighlight = {
   rowStyle: object | null;
   /** Subtext color override for the row, or `null` to keep the muted subtext. */
   secondaryStyle: object | null;
+  /** Extra color for the `secondary` line only, layered over `secondaryStyle`. */
+  secondaryLineStyle: object | null;
   /** Whether a trailing selection checkmark should be shown. */
   showCheck: boolean;
   /** Whether the `dot` marker itself is shown (focused rows only). */
@@ -221,6 +220,7 @@ export function dropdownRowHighlight(
   let rowStyle: object | null = null;
   let labelStyle: object | null = null;
   let secondaryStyle: object | null = null;
+  let secondaryLineStyle: object | null = null;
   // Resolved in lockstep with `labelStyle` so a caller-rendered slot always
   // matches the label beside it. The base is `itemLabel`'s own color.
   let contentColor = theme.colors.ink;
@@ -237,10 +237,12 @@ export function dropdownRowHighlight(
     } else if (variant === "ringFill") {
       rowStyle = styles.itemActiveRingFill;
       labelStyle = styles.itemLabelActive;
+      secondaryLineStyle = styles.itemSecondaryOnTint;
       contentColor = theme.colors.primaryDeep;
     } else {
       rowStyle = styles.itemActiveDot;
       labelStyle = styles.itemLabelActive;
+      secondaryLineStyle = styles.itemSecondaryOnTint;
       contentColor = theme.colors.primaryDeep;
     }
   } else if (state.selected && (variant === "solid" || variant === "dot")) {
@@ -248,6 +250,7 @@ export function dropdownRowHighlight(
     // and `ringFill` stay flat and lean on the checkmark alone.
     rowStyle = styles.itemSelectedFill;
     labelStyle = styles.itemLabelActive;
+    secondaryLineStyle = styles.itemSecondaryOnTint;
     contentColor = theme.colors.primaryDeep;
   }
   // The tone accent wins off the inverted row, mirroring how `DropdownList`
@@ -266,6 +269,7 @@ export function dropdownRowHighlight(
     invertText,
     labelStyle,
     rowStyle,
+    secondaryLineStyle,
     secondaryStyle,
     showCheck: state.selected,
     showDot: variant === "dot" && isActive,
