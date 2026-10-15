@@ -1,0 +1,6 @@
+- text: Tags
+- button "More information about Tags": Tags group transactions by property, vehicle, project or anything else you track.
+- text: /Flat 2, \d+ Brook Street Old office fit-out/
+- button "Remove Old office fit-out"
+- combobox "Tags"
+- text: "Selected: flat2, fitout · Created: none"

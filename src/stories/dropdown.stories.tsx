@@ -10,6 +10,7 @@ import {
 } from "../index";
 import type { DropdownHighlightVariant } from "../index";
 
+import { ComboboxTagPickerExample } from "./comboboxTagPickerExample";
 import { DropdownAsyncFocusExample } from "./dropdownAsyncFocusExample";
 import {
   ActionMenuExample,
@@ -256,6 +257,37 @@ export const ChipMultiSelectValidation: Story = {
   render: () => (
     <StorySurface>
       <ChipMultiSelectValidationExample />
+    </StorySurface>
+  ),
+};
+
+export const ChipMultiSelectTagPicker: Story = {
+  name: "Chip multi-select · grouped tag picker",
+  render: () => (
+    <StorySurface>
+      <ComboboxTagPickerExample />
+    </StorySurface>
+  ),
+};
+
+export const ChipMultiSelectTagPickerOpen: Story = {
+  name: "Chip multi-select · grouped tag picker, open",
+  // Top-aligned so the open list has the room to show every group.
+  parameters: { layout: "padded" },
+  render: () => (
+    <StorySurface>
+      <ComboboxTagPickerExample autoFocus />
+    </StorySurface>
+  ),
+};
+
+export const ChipMultiSelectTagPickerDark: Story = {
+  name: "Chip multi-select · grouped tag picker, dark",
+  // Top-aligned so the open list has the room to show every group.
+  parameters: { layout: "padded" },
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <ComboboxTagPickerExample autoFocus />
     </StorySurface>
   ),
 };

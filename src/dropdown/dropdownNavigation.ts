@@ -3,6 +3,12 @@
 export type DropdownNavigationItem = {
   disabled?: boolean;
   id: string;
+  /**
+   * Reachable by keyboard but never activated, like a locked row or a disabled
+   * row that stays focusable. Navigation stops on it; opening a list prefers a
+   * row that can be activated.
+   */
+  inert?: boolean;
   selectable?: boolean;
 };
 
@@ -38,7 +44,7 @@ export function dropdownTriggerKeyAction(
 export function firstSelectableId(
   items: DropdownNavigationItem[],
 ): string | null {
-  return items.find(isSelectable)?.id ?? null;
+  return items.find(isActivatable)?.id ?? items.find(isSelectable)?.id ?? null;
 }
 
 export function nextSelectableId(
@@ -66,7 +72,7 @@ export function navigationResetKey(items: DropdownNavigationItem[]): string {
   return items
     .map(
       (item) =>
-        `${item.id}:${item.selectable === false ? "0" : "1"}:${item.disabled ? "1" : "0"}`,
+        `${item.id}:${item.selectable === false ? "0" : "1"}:${item.disabled ? "1" : "0"}${item.inert ? ":inert" : ""}`,
     )
     .join("|");
 }
@@ -77,7 +83,7 @@ export function selectedOrFirstId(
 ): string | null {
   if (
     selectedId &&
-    items.some((item) => item.id === selectedId && isSelectable(item))
+    items.some((item) => item.id === selectedId && isActivatable(item))
   ) {
     return selectedId;
   }
@@ -109,4 +115,8 @@ export function nextDropdownValue(
 
 function isSelectable(item: DropdownNavigationItem): boolean {
   return item.selectable !== false && !item.disabled;
+}
+
+function isActivatable(item: DropdownNavigationItem): boolean {
+  return isSelectable(item) && !item.inert;
 }

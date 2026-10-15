@@ -55,19 +55,30 @@ export function filterComboboxOptions<TOption extends ComboboxFilterOption>(
 /**
  * Filter labeled options within each section and drop sections that no longer
  * have any matching options, so empty section titles never render. An empty
- * query returns the sections unchanged.
+ * query returns the sections unchanged. With `matchTitles`, a section whose
+ * title contains the query keeps all of its options.
  */
-export function filterComboboxSections<TOption extends ComboboxFilterOption>(
-  sections: ComboboxFilterSection<TOption>[],
+export function filterComboboxSections<
+  TOption extends ComboboxFilterOption,
+  TSection extends ComboboxFilterSection<TOption> =
+    ComboboxFilterSection<TOption>,
+>(
+  sections: TSection[],
   query: string,
-): ComboboxFilterSection<TOption>[] {
-  if (!query.trim()) {
+  { matchTitles = false }: { matchTitles?: boolean } = {},
+): TSection[] {
+  const needle = query.trim().toLowerCase();
+  if (!needle) {
     return sections;
   }
   return sections
-    .map((section) => ({
-      ...section,
-      options: filterComboboxOptions(section.options, query),
-    }))
+    .map((section) =>
+      matchTitles && section.title?.toLowerCase().includes(needle)
+        ? section
+        : {
+            ...section,
+            options: filterComboboxOptions(section.options, query),
+          },
+    )
     .filter((section) => section.options.length > 0);
 }

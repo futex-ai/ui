@@ -62,6 +62,7 @@ const FORWARDING_FILES = [
   "dropdown/ComboboxMultiSelect.tsx",
   "dropdown/ComboboxPopover.tsx",
   "dropdown/ComboboxPopover.web.tsx",
+  "dropdown/DropdownIconBox.tsx",
   "dropdown/DropdownList.tsx",
   "dropdown/DropdownMenu.tsx",
   "dropdown/DropdownPortal.tsx",

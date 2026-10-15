@@ -708,6 +708,24 @@ Required behavior:
   own their hydration timing and must use that handle to focus the first real
   field after replacing a loading placeholder.
 - Preserve no-match empty rows even when combobox footers are present.
+- Let a section heading group the rows that follow it, up to the next section,
+  divider, or the end of the list. On web the heading labels a `role="group"`
+  that holds those rows through `aria-labelledby`.
+- Let a list pin rows under its scroll area. Pinned rows join keyboard
+  navigation after the scrolling rows and stay inside the listbox or menu
+  element, so an input's `aria-activedescendant` can point at them.
+- Skip disabled rows in keyboard navigation unless a row opts into staying
+  reachable, and support locked rows that keep their selected styling but
+  cannot be activated. Both are exposed as `aria-disabled` and show an inset
+  `primary` ring, not the activation fill, while keyboard-active. Pointer hover
+  never makes them active.
+- Reference a row's secondary text from the row through `aria-describedby`, and
+  keep that text at AA contrast on every row fill (`primaryDeep` on the soft
+  selected and active fills).
+- Chip multi-selects follow the
+  [Combobox Multi-Select Protocol](combobox-multi-select.md): grouped options
+  and group-name search, option descriptions, disabled and locked options, a
+  pinned footer action, one value per group, and per-option chip styling.
 - Keep input-backed comboboxes on a non-modal web portal so text inputs retain
   focus while results are open.
 - Give field-style selectors and chip multi-selects the shared input border and

@@ -20,6 +20,14 @@ export function createDropdownListStyles(theme: SharedUiTheme) {
       borderTopWidth: 1,
       marginTop: 4,
     },
+    // Pinned rows (`footerEntries`) under the scrolling rows. The rows carry
+    // their own padding, so the region only adds the separating rule.
+    footerEntriesRegion: {
+      borderTopColor: theme.colors.border,
+      borderTopWidth: 1,
+      marginTop: 4,
+      paddingTop: 4,
+    },
     footerRegion: {
       borderTopColor: theme.colors.border,
       borderTopWidth: 1,
@@ -100,10 +108,21 @@ export function createDropdownListStyles(theme: SharedUiTheme) {
     // `primarySoft` is only ~4.2:1), so hierarchy here leans on the subtext's
     // smaller size/weight rather than a lighter color.
     itemSecondaryOnSolid: { color: theme.colors.onSolid },
+    // Secondary-line color on the soft fills (the selected row, the active
+    // `ringFill` and `dot` rows). `muted` drops below AA there in the default
+    // theme (~4.3:1 on `primarySoft`, ~4.5:1 on `soft`), so the line takes the
+    // `primaryDeep` the active label already uses, which clears AA on both
+    // fills in every theme.
+    itemSecondaryOnSoft: { color: theme.colors.primaryDeep },
     itemSelectedFill: { backgroundColor: theme.colors.primarySoft },
     itemText: { flex: 1, minWidth: 0 },
     leading: { alignItems: "center", justifyContent: "center" },
+    // Wraps the scrolling rows and the pinned `footerEntries` rows so both sit
+    // inside one listbox/menu element while the rows still scroll.
+    pinnedList: { flexShrink: 1, minHeight: 0 },
     right: { alignItems: "center", justifyContent: "center" },
+    // A locked row's trailing lock glyph sits beside the selection check.
+    rightGlyphs: { flexDirection: "row", gap: 6 },
     // Trailing text (e.g. an account code). Muted grey at rest like the subtext;
     // on the solid active fill it picks up the highlight's secondary override
     // (`onSolid`) so it stays legible instead of fading to ~1.2:1. Tabular figures
@@ -188,6 +207,13 @@ export type DropdownRowHighlight = {
   rowStyle: object | null;
   /** Subtext color override for the row, or `null` to keep the muted subtext. */
   secondaryStyle: object | null;
+  /**
+   * Color override for the secondary line alone on the soft fills (the
+   * selected row, the active `ringFill` and `dot` rows), where the muted
+   * subtext drops below AA; `null` elsewhere. Applied after `secondaryStyle`.
+   * Trailing `rightText` keeps `secondaryStyle`.
+   */
+  descriptionStyle: object | null;
   /** Whether a trailing selection checkmark should be shown. */
   showCheck: boolean;
   /** Whether the `dot` marker itself is shown (focused rows only). */
@@ -221,6 +247,7 @@ export function dropdownRowHighlight(
   let rowStyle: object | null = null;
   let labelStyle: object | null = null;
   let secondaryStyle: object | null = null;
+  let descriptionStyle: object | null = null;
   // Resolved in lockstep with `labelStyle` so a caller-rendered slot always
   // matches the label beside it. The base is `itemLabel`'s own color.
   let contentColor = theme.colors.ink;
@@ -237,10 +264,12 @@ export function dropdownRowHighlight(
     } else if (variant === "ringFill") {
       rowStyle = styles.itemActiveRingFill;
       labelStyle = styles.itemLabelActive;
+      descriptionStyle = styles.itemSecondaryOnSoft;
       contentColor = theme.colors.primaryDeep;
     } else {
       rowStyle = styles.itemActiveDot;
       labelStyle = styles.itemLabelActive;
+      descriptionStyle = styles.itemSecondaryOnSoft;
       contentColor = theme.colors.primaryDeep;
     }
   } else if (state.selected && (variant === "solid" || variant === "dot")) {
@@ -248,6 +277,7 @@ export function dropdownRowHighlight(
     // and `ringFill` stay flat and lean on the checkmark alone.
     rowStyle = styles.itemSelectedFill;
     labelStyle = styles.itemLabelActive;
+    descriptionStyle = styles.itemSecondaryOnSoft;
     contentColor = theme.colors.primaryDeep;
   }
   // The tone accent wins off the inverted row, mirroring how `DropdownList`
@@ -263,6 +293,7 @@ export function dropdownRowHighlight(
   return {
     checkColor: invertText ? theme.colors.onSolid : theme.colors.primary,
     contentColor,
+    descriptionStyle,
     invertText,
     labelStyle,
     rowStyle,

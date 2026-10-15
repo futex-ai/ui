@@ -1,6 +1,6 @@
 /** Input-backed chip multi-select for combobox forms. */
-import { Check, IconComponent } from "../primitives/icons";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import type { IconComponent } from "../primitives/icons";
+import { useId, useMemo, useRef, useState } from "react";
 import {
   Pressable,
   StyleSheet,
@@ -9,7 +9,6 @@ import {
   View,
 } from "../primitives/reactNative";
 
-import { announce } from "../announcer";
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
@@ -17,6 +16,7 @@ import { inputSizeTokens, LabelInfo } from "../input";
 import { useSharedUiTheme } from "../theme";
 import type { SharedUiTheme } from "../theme";
 
+import { ComboboxChip } from "./ComboboxChip";
 import { ComboboxPopover } from "./ComboboxPopover";
 import {
   DropdownList,
@@ -24,15 +24,36 @@ import {
   dropdownRowDomId,
 } from "./DropdownList";
 import type { DropdownHighlightVariant } from "./DropdownList";
-import { comboboxInputA11y, filterComboboxOptions } from "./comboboxModel";
+import { comboboxInputA11y } from "./comboboxModel";
+import {
+  comboboxOptionCount,
+  filterComboboxOptionSections,
+  groupComboboxOptions,
+  isComboboxValueLocked,
+  toggleComboboxValue,
+} from "./comboboxMultiSelectModel";
+import type {
+  ComboboxOptionSection,
+  ComboboxSelectionRules,
+} from "./comboboxMultiSelectModel";
+import {
+  comboboxFooterActionRow,
+  comboboxOptionRows,
+} from "./comboboxMultiSelectRows";
+import type { ComboboxRowLook } from "./comboboxMultiSelectRows";
+import type {
+  ComboboxFooterAction,
+  ComboboxMultiSelectOption,
+} from "./comboboxMultiSelectTypes";
+import { MULTI_SELECT_SIZES } from "./comboboxMultiSelectSizes";
+import {
+  useComboboxAutoFocus,
+  useComboboxResultAnnouncement,
+} from "./useComboboxFieldEffects";
 import { useComboboxNavigation } from "./useComboboxNavigation";
 
-export type ComboboxMultiSelectOption = {
-  color?: string;
-  label: string;
-  mark?: string;
-  value: string;
-};
+/** Shared empty default for `lockedValues`, so it keeps a stable identity. */
+const NO_VALUES: string[] = [];
 
 export type ComboboxMultiSelectProps = {
   /**
@@ -59,7 +80,19 @@ export type ComboboxMultiSelectProps = {
    * Visible, AA). Defaults to the theme's `focusIndicator`.
    */
   focusIndicator?: FocusIndicator;
+  /**
+   * Static note shown as the last row of the list, for example which options
+   * can be picked. Use {@link footerAction} for a pressable row.
+   */
   footer?: string;
+  /**
+   * A pressable row pinned under the list, outside the scroll area, such as
+   * "Create tag". Its `label` and `onPress` receive the trimmed query. Arrow
+   * keys reach it after the last option and Enter activates it; activation
+   * calls `onPress(query)`, then closes the list and clears the query. It can
+   * show alongside {@link footer}.
+   */
+  footerAction?: ComboboxFooterAction;
   /** How the keyboard-focused row is highlighted. Defaults to `"solid"`. */
   highlightVariant?: DropdownHighlightVariant;
   /** Helper text shown below the control. */
@@ -82,6 +115,12 @@ export type ComboboxMultiSelectProps = {
    * `More information about {label}`.
    */
   labelInfoLabel?: string;
+  /**
+   * Selected values that cannot be removed: their chips have no remove button
+   * and their rows keep the selected state but cannot be toggled. Values that
+   * are not in `values` are ignored.
+   */
+  lockedValues?: string[];
   onChange: (values: string[]) => void;
   options: ComboboxMultiSelectOption[];
   placeholder?: string;
@@ -93,6 +132,13 @@ export type ComboboxMultiSelectProps = {
    * inside dense table and data-grid cells.
    */
   singleLine?: boolean;
+  /**
+   * Allow at most one selected option per `group`: choosing an option replaces
+   * the group's selected value, and choosing the selected option still removes
+   * it. A group that holds a locked value cannot change, so its other options
+   * are disabled. Options without a group are unaffected. Defaults to `false`.
+   */
+  singlePerGroup?: boolean;
   /** Control density. Defaults to `md`, matching the shared input size scale. */
   size?: ControlSize;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
@@ -107,6 +153,7 @@ export function ComboboxMultiSelect({
   error,
   focusIndicator,
   footer,
+  footerAction,
   highlightVariant,
   hint,
   invalid: invalidProp = false,
@@ -114,11 +161,13 @@ export function ComboboxMultiSelect({
   labelInfo,
   labelInfoIcon,
   labelInfoLabel,
+  lockedValues = NO_VALUES,
   onChange,
   options,
   placeholder = "Search to add...",
   required = false,
   singleLine = false,
+  singlePerGroup = false,
   size = "md",
   testID,
   values,
@@ -135,52 +184,69 @@ export function ComboboxMultiSelect({
   );
   const anchorRef = useRef<View>(null);
   const inputRef = useRef<TextInput>(null);
-  const autoFocusAtRef = useRef(0);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  useEffect(() => {
-    if (!autoFocus) {
-      return;
-    }
-    autoFocusAtRef.current = Date.now();
-    const focusInput = () => inputRef.current?.focus();
-    focusInput();
-    if (typeof requestAnimationFrame === "undefined") {
-      return;
-    }
-    const frame = requestAnimationFrame(focusInput);
-    return () => cancelAnimationFrame(frame);
-  }, [autoFocus]);
+  const keepAutoFocus = useComboboxAutoFocus(autoFocus, inputRef);
   const selected = options.filter((option) => values.includes(option.value));
   const visibleSelected = singleLine ? selected.slice(0, 1) : selected;
   const hiddenSelectedCount = selected.length - visibleSelected.length;
+  const rules: ComboboxSelectionRules = {
+    lockedValues,
+    options,
+    singlePerGroup,
+    values,
+  };
+  const sections = useMemo(() => groupComboboxOptions(options), [options]);
   const filtered = useMemo(
-    () => filterComboboxOptions(options, query),
-    [options, query],
+    () => filterComboboxOptionSections(sections, query),
+    [sections, query],
   );
+  const rowLook: ComboboxRowLook = {
+    markGlyphColor: theme.colors.onSolid,
+    styles,
+  };
   const entries = entriesForOptions(
     filtered,
-    values,
-    (value) => {
-      onChange(
-        values.includes(value)
-          ? values.filter((selectedValue) => selectedValue !== value)
-          : [...values, value],
-      );
-      setQuery("");
+    rules,
+    (option) => {
+      const next = toggleComboboxValue(option, rules);
+      if (next !== values) {
+        onChange([...next]);
+        setQuery("");
+      }
     },
-    styles,
+    rowLook,
     footer,
   );
+  // The footer action is pinned under the list rather than scrolling with it,
+  // and joins keyboard navigation after the last option.
+  const footerEntries: DropdownListEntry[] = footerAction
+    ? [
+        comboboxFooterActionRow(
+          footerAction,
+          query,
+          () => {
+            setOpen(false);
+            setQuery("");
+          },
+          styles,
+        ),
+      ]
+    : [];
+
+  const reactId = useId();
+  const inputId = `${reactId}-input`;
+  const listId = `${reactId}-list`;
   const navigation = useComboboxNavigation({
-    entries,
+    entries:
+      footerEntries.length > 0 ? [...entries, ...footerEntries] : entries,
     onClose: () => setOpen(false),
     onOpen: () => setOpen(true),
     open,
+    // Keys aimed at the chip remove buttons, or anything else outside the
+    // input and its list, belong to that control.
+    ownerIds: [inputId, listId],
   });
-
-  const reactId = useId();
-  const listId = `${reactId}-list`;
   const labelId = `${reactId}-label`;
   const errorId = `${reactId}-error`;
   const hintId = `${reactId}-hint`;
@@ -215,19 +281,7 @@ export function ComboboxMultiSelect({
           "aria-errormessage": error ? errorId : undefined,
         } as unknown as object);
 
-  // Announce the result count so screen readers hear matches change as the
-  // query filters, without focus leaving the input (WCAG 4.1.3).
-  const matchCount = filtered.length;
-  useEffect(() => {
-    if (!open || !query.trim()) {
-      return;
-    }
-    announce(
-      matchCount === 0
-        ? "No matching options"
-        : `${matchCount} ${matchCount === 1 ? "option" : "options"} available`,
-    );
-  }, [matchCount, open, query]);
+  useComboboxResultAnnouncement(comboboxOptionCount(filtered), open, query);
 
   return (
     <View
@@ -278,28 +332,21 @@ export function ComboboxMultiSelect({
           tabIndex={-1}
         >
           {visibleSelected.map((option) => (
-            <View key={option.value} style={styles.chip}>
-              <Text numberOfLines={1} style={styles.chipText}>
-                {option.label}
-              </Text>
-              {singleLine ? null : (
-                <Pressable
-                  accessibilityLabel={`Remove ${option.label}`}
-                  accessibilityRole="button"
-                  onPress={() =>
-                    onChange(values.filter((value) => value !== option.value))
-                  }
-                  style={styles.chipRemove}
-                >
-                  {/* The visible "x" is decorative — the Pressable's name is
-                      "Remove {label}". Hide it from AT so the name is not polluted
-                      by the glyph (WCAG 2.5.3 Label in Name). */}
-                  <Text aria-hidden style={styles.chipRemoveText}>
-                    x
-                  </Text>
-                </Pressable>
-              )}
-            </View>
+            <ComboboxChip
+              glyphColors={{
+                default: theme.colors.primaryDeep,
+                muted: theme.colors.muted,
+              }}
+              glyphSize={MULTI_SELECT_SIZES[size].chipIconSize}
+              key={option.value}
+              locked={isComboboxValueLocked(option.value, rules)}
+              onRemove={() =>
+                onChange(values.filter((value) => value !== option.value))
+              }
+              option={option}
+              styles={styles}
+              trailing={!singleLine}
+            />
           ))}
           {hiddenSelectedCount > 0 ? (
             <View style={[styles.chip, styles.chipSummary]}>
@@ -327,17 +374,13 @@ export function ComboboxMultiSelect({
             onChangeText={setQuery}
             onBlur={() => {
               focus.onBlur();
-              // An in-place editor can mount during pointer-down. Ignore the
-              // matching release's transient focus transfer so the newly
-              // mounted search input remains ready for immediate typing.
-              if (autoFocus && Date.now() - autoFocusAtRef.current < 250) {
-                inputRef.current?.focus();
-              }
+              keepAutoFocus();
             }}
             onFocus={(event) => {
               focus.onFocus(event);
               setOpen(true);
             }}
+            nativeID={inputId}
             placeholder={placeholder}
             placeholderTextColor={theme.colors.placeholder}
             ref={inputRef}
@@ -357,6 +400,7 @@ export function ComboboxMultiSelect({
             <DropdownList
               activeId={navigation.activeId}
               entries={entries}
+              footerEntries={footerEntries}
               highlightVariant={highlightVariant}
               label={label ?? placeholder}
               listId={listId}
@@ -390,28 +434,18 @@ export function ComboboxMultiSelect({
 }
 
 function entriesForOptions(
-  options: ComboboxMultiSelectOption[],
-  values: string[],
-  onSelect: (value: string) => void,
-  styles: ComboboxMultiSelectStyles,
+  sections: ComboboxOptionSection[],
+  rules: ComboboxSelectionRules,
+  onSelect: (option: ComboboxMultiSelectOption) => void,
+  look: ComboboxRowLook,
   footer?: string,
 ): DropdownListEntry[] {
-  const optionRows: DropdownListEntry[] = options.map((option) => {
-    const selected = values.includes(option.value);
-    return {
-      id: option.value,
-      label: option.label,
-      leading: <OptionMark option={option} styles={styles} />,
-      onPress: () => onSelect(option.value),
-      // Tinted from the row's content color rather than pinned to `primaryDeep`,
-      // which all but vanishes (~1.3:1) on the solid active fill.
-      right: selected
-        ? ({ color }: { color: string }) => <Check color={color} size={15} />
-        : null,
-      selected,
-      type: "item",
-    };
-  });
+  const optionRows: DropdownListEntry[] = comboboxOptionRows(
+    sections,
+    rules,
+    onSelect,
+    look,
+  );
   const rows: DropdownListEntry[] =
     optionRows.length > 0
       ? optionRows
@@ -420,27 +454,6 @@ function entriesForOptions(
     rows.push({ id: "footer", label: footer, type: "section" });
   }
   return rows;
-}
-
-function OptionMark({
-  option,
-  styles,
-}: {
-  option: ComboboxMultiSelectOption;
-  styles: ComboboxMultiSelectStyles;
-}) {
-  return (
-    <View
-      style={[
-        styles.mark,
-        option.color ? { backgroundColor: option.color } : null,
-      ]}
-    >
-      <Text style={styles.markText}>
-        {option.mark ?? option.label[0] ?? "?"}
-      </Text>
-    </View>
-  );
 }
 
 function createComboboxMultiSelectStyles(
@@ -453,6 +466,14 @@ function createComboboxMultiSelectStyles(
   const inputSize = inputSizeTokens(size);
   const sizing = MULTI_SELECT_SIZES[size];
   return StyleSheet.create({
+    // A 24px box for the footer action's plus glyph, so its label lines up
+    // with the option labels beside their 24px marks.
+    actionMark: {
+      alignItems: "center",
+      height: 24,
+      justifyContent: "center",
+      width: 24,
+    },
     chip: {
       alignItems: "center",
       backgroundColor: theme.colors.primarySoft,
@@ -465,6 +486,14 @@ function createComboboxMultiSelectStyles(
       maxWidth: "100%",
       paddingHorizontal: sizing.chipPaddingHorizontal,
       paddingVertical: sizing.chipPaddingVertical,
+    },
+    // `chipTone: "muted"` (for example an archived tag): an outlined chip on
+    // the control's own `surface`, so it recedes beside the filled chips.
+    // `muted` ink clears AA on `surface` in every theme, unlike on `soft`
+    // (4.498:1 in the default theme).
+    chipMuted: {
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.border2,
     },
     chipRemove: {
       alignItems: "center",
@@ -492,6 +521,7 @@ function createComboboxMultiSelectStyles(
       lineHeight: sizing.chipLineHeight,
       minWidth: 0,
     },
+    chipTextMuted: { color: theme.colors.muted },
     control: {
       alignItems: "center",
       backgroundColor: theme.colors.surface,
@@ -562,42 +592,11 @@ function createComboboxMultiSelectStyles(
       fontWeight: "800",
     },
     required: { color: theme.colors.rose },
+    // A locked row's lock and check share the trailing slot.
+    selectedGlyphs: { alignItems: "center", flexDirection: "row", gap: 6 },
     wrap: { position: "relative" },
   });
 }
-
-const MULTI_SELECT_SIZES = {
-  sm: {
-    chipFontSize: 11,
-    chipLineHeight: 16,
-    chipPaddingHorizontal: 7,
-    chipPaddingVertical: 1,
-    controlPaddingHorizontal: 8,
-    controlPaddingVertical: 5,
-    gap: 4,
-    removeSize: 16,
-  },
-  md: {
-    chipFontSize: 12,
-    chipLineHeight: 18,
-    chipPaddingHorizontal: 9,
-    chipPaddingVertical: 3,
-    controlPaddingHorizontal: 8,
-    controlPaddingVertical: 6,
-    gap: 6,
-    removeSize: 18,
-  },
-  lg: {
-    chipFontSize: 13,
-    chipLineHeight: 20,
-    chipPaddingHorizontal: 10,
-    chipPaddingVertical: 4,
-    controlPaddingHorizontal: 10,
-    controlPaddingVertical: 8,
-    gap: 8,
-    removeSize: 20,
-  },
-} as const satisfies Record<ControlSize, object>;
 
 type ComboboxMultiSelectStyles = ReturnType<
   typeof createComboboxMultiSelectStyles

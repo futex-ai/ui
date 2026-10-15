@@ -1,0 +1,21 @@
+- text: Tags
+- button "More information about Tags": Tags group transactions by property, vehicle, project or anything else you track.
+- text: /Flat 2, \d+ Brook Street Old office fit-out/
+- button "Remove Old office fit-out"
+- combobox "Tags" [expanded]
+- text: "Selected: flat2, fitout · Created: none"
+- listbox "Tags":
+  - group "Properties":
+    - text: ""
+    - option /Flat 2, \d+ Brook Street/ [disabled] [selected]: /Flat 2, \d+ Brook Street UK rental property/
+    - option "9 Mill Lane" [disabled]: 9 Mill Lane UK rental property
+  - group "Vehicles":
+    - text: ""
+    - option "Renault Kangoo BX19 KLM": Renault Kangoo BX19 KLM UK rental property
+    - option "Skoda Octavia WK21 LMN" [disabled]: Skoda Octavia WK21 LMN Consultancy trade
+  - group "Projects":
+    - text: ""
+    - option "Loft conversion"
+    - option "Old office fit-out" [selected]: O Old office fit-out Archived
+  - text: Archived tags show in grey.
+  - option "Create tag"

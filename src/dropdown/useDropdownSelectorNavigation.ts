@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { DropdownListEntry } from "./DropdownList";
 import {
   dropdownListNavigationItems,
+  isActivatableDropdownListEntry,
   selectedDropdownListEntryId,
 } from "./dropdownListModel";
 import {
@@ -97,7 +98,7 @@ export function useDropdownSelectorNavigation({
         return true;
       }
       const active = entries.find((entry) => entry.id === activeId);
-      if (active && "onPress" in active && !active.disabled) {
+      if (isActivatableDropdownListEntry(active)) {
         active.onPress?.();
       }
       return true;

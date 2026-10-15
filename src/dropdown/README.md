@@ -14,6 +14,9 @@ input-backed comboboxes in Firna apps.
   the trigger when it does not fit below, and clamp menu height.
 - Share keyboard navigation, hover/active row styling, right-side row content,
   section headers, disabled rows, and footer/action rows.
+- Group rows under labelled section headings, pin action rows under the list,
+  and keep disabled or locked rows reachable when a picker needs them
+  announced.
 - Pin optional `header` and `footer` content above and below the option list so
   it stays visible while the rows scroll between them.
 - Keep the keyboard-active row scrolled into the visible list viewport for long
@@ -310,6 +313,11 @@ On web the option surface is a real ARIA composite (WCAG 4.1.2 Name/Role/Value):
   focus); the portaled bubble is a sighted-user reveal only, so the text is never
   announced twice and never leaks into the trigger's name.
 
+- A `section` entry with `group: true` renders its rows inside a
+  `role="group"` labelled by the heading. A row's `secondary` text is its
+  `aria-describedby` description, and disabled and locked rows carry
+  `aria-disabled` (a locked row also stays `aria-selected`).
+
 These ARIA roles/attributes are emitted on web only; native keeps the tappable
 `button` row role and `accessibilityState` so OS screen readers are unaffected.
 
@@ -392,6 +400,93 @@ a `label` to anchor the button (a dev-warned no-op otherwise). For the bare,
 label-less variant pass `accessibilityLabel` to name the search input (it also
 overrides the `label`-derived name where `aria-labelledby` is not honoured, e.g.
 iOS) — mirroring `Input`.
+
+### Grouped tag picker
+
+`ComboboxMultiSelect` also covers grouped tag selection. Every piece is opt-in,
+so a caller that passes none of these keeps the flat list and the static
+`footer` note. The full contract is the
+[Combobox Multi-Select Protocol](../../docs/protocol/combobox-multi-select.md).
+
+```tsx
+import { ComboboxMultiSelect } from "@firna/ui/dropdown";
+
+<ComboboxMultiSelect
+  footer="Archived tags show in grey."
+  footerAction={{
+    label: (query) => (query ? `Create tag “${query}”` : "Create tag"),
+    onPress: (query) => openCreateTag(query),
+  }}
+  label="Tags"
+  lockedValues={["flat2"]}
+  onChange={setTagIds}
+  options={[
+    {
+      description: "UK rental property",
+      group: "Properties",
+      icon: House,
+      label: "Flat 2, 14 Brook Street",
+      value: "flat2",
+    },
+    {
+      description: "Consultancy trade",
+      disabled: true,
+      group: "Vehicles",
+      label: "Skoda Octavia WK21 LMN",
+      value: "skoda",
+    },
+    { chipTone: "muted", label: "Old office fit-out", value: "fitout" },
+  ]}
+  placeholder="Add tag"
+  singlePerGroup
+  values={tagIds}
+/>;
+```
+
+- **`group`** lists options under section headings, in the order of each
+  group's first option; ungrouped options come first with no heading. Typing
+  matches option labels, and a query that matches a group name lists the whole
+  group. Empty groups hide while filtering.
+- **`description`** renders as the row's secondary line and is announced as
+  its description. It stays at AA contrast on every row fill.
+- **`disabled`** lists an option that cannot be chosen. Arrow keys still reach
+  it, so a screen reader announces it as unavailable along with its
+  description.
+- **`lockedValues`** fixes selected values: the chip shows a lock instead of
+  the remove button, and the row keeps its selected state but cannot be
+  toggled. Backspace never removes chips.
+- **`footerAction`** pins a pressable row under the list. Arrow keys reach it
+  after the last option; a press or Enter calls `onPress` with the trimmed
+  query, then closes the list and clears the query. It shows alongside the
+  static `footer` note.
+- **`singlePerGroup`** keeps at most one value per group: choosing an option
+  replaces the group's value, and choosing it again removes it. A group that
+  holds a locked value cannot change, so its other options are disabled.
+- **`chipTone: "muted"`** outlines an option's chip in grey (for example an
+  archived tag), and **`icon`** shows a glyph in the row mark and at the start
+  of the chip.
+
+Chips keep `options` order, and `singleLine`, `label`, `labelInfo`, `hint`,
+`error`, and `required` behave as before. The list always opens in the anchored
+popover; a bottom-sheet presentation is not available yet (see
+[the plan](../../plans/combobox-grouped-tag-selection.md#open-questions)).
+
+### List groups, pinned rows, and fixed rows
+
+The tag picker is built from `DropdownList` features any custom picker can use:
+
+- A `section` entry with `group: true` groups the rows after it, up to the next
+  section or divider. On web the heading labels a `role="group"` around them.
+- `footerEntries` pins rows under the scroll area. They follow the scrolling
+  rows in keyboard order and stay inside the listbox or menu element.
+- `focusableWhenDisabled` keeps a disabled row reachable by arrow keys, and
+  `locked` marks a selected row that cannot be activated; both show an inset
+  ring while keyboard-active and are exposed as `aria-disabled`.
+- A row's `secondary` text is its accessible description on web.
+
+`useComboboxNavigation` takes `ownerIds` (the input and list ids). Its document
+key listener then ignores keydowns aimed at other focused controls, so Enter on
+a chip's remove button removes that chip instead of toggling the active row.
 
 ## Theming
 

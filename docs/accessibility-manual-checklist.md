@@ -24,7 +24,9 @@ changes.
 - [ ] Actions nested inside a field (an input's clear ✕, a chip's remove ✕, the
       wheel date trigger's clear ✕) show their **own** browser outline when
       focused, and the surrounding field does not glow — the indicator must
-      point at the action Enter will fire, not at the field (2.4.7, AA).
+      point at the action Enter will fire, not at the field (2.4.7, AA). Enter
+      on a chip's remove ✕ removes that chip even while the option list is
+      open.
 - [ ] Overlays (modal, popover, dropdown, calendar) move focus into the surface
       on open, trap it sensibly, and restore it to the trigger on close; `Escape`
       dismisses the top-most layer only. If a modal replaces a loading skeleton
@@ -51,6 +53,11 @@ on Windows).
 - [ ] Status updates not given focus are announced: toasts, validation results,
       filtered result counts, calendar month changes, selection counts (4.1.3
       Status Messages, AA).
+- [ ] In the grouped chip multi-select (tag picker), arrowing into a group
+      announces its heading; disabled and locked options are reached and
+      announced as unavailable (a locked one also as selected) with their
+      description; the pinned footer action is announced by its label, for
+      example `Create tag “van”` (1.3.1 / 4.1.2, A).
 
 ### Vision / display
 

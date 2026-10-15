@@ -4,9 +4,10 @@ Shared UI component library for Firna React Native and web surfaces. The first c
 
 ## Key Features
 
-- Shared dropdown menu, selector, combobox, drag-select, segmented control,
-  radio card, switch, spinner, loaders (six indeterminate shapes plus
-  determinate progress bar and ring), button, labelled input/textarea,
+- Shared dropdown menu, selector, combobox, grouped chip multi-select,
+  drag-select, segmented control, radio card, switch, spinner, loaders (six
+  indeterminate shapes plus determinate progress bar and ring), button,
+  labelled input/textarea,
   data table,
   editable data grid (Airtable/Notion-style),
   a from-scratch interactive chart family (bar, line, area, sparkline, stat
@@ -75,7 +76,10 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/drag-select` for web drag-selection providers, target hooks, and
   geometry helpers.
 - `@firna/ui/dropdown` for dropdown menu, selector, combobox, layer helpers, and
-  selector trigger refs for imperative focus after async form hydration.
+  selector trigger refs for imperative focus after async form hydration. The
+  chip multi-select also works as a grouped tag picker: option groups with
+  group-name search, descriptions, disabled and locked options, one value per
+  group, and a pinned "Create …" action.
 - `@firna/ui/heatmap` for the calendar contribution heatmap and its pure layout
   and color-scale helpers.
 - `@firna/ui/input` for the labelled text input, textarea, and bare input
@@ -662,6 +666,8 @@ The package export map intentionally separates runtime targets:
   [docs/protocol/shared-ui-components.md](docs/protocol/shared-ui-components.md)
 - Rich-text collaboration protocol:
   [docs/protocol/rich-text-collaboration.md](docs/protocol/rich-text-collaboration.md)
+- Chip multi-select (grouped tag picker) protocol:
+  [docs/protocol/combobox-multi-select.md](docs/protocol/combobox-multi-select.md)
 - Consumer migration handoff: [docs/consumer-migration.md](docs/consumer-migration.md)
 - Active and completed implementation plans: [plans/README.md](plans/README.md)
 
