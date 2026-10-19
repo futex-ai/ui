@@ -3,6 +3,7 @@ import { Check } from "../primitives/icons";
 import { Pressable, Text, TextInput, View } from "../primitives/reactNative";
 import type { StyleProp, TextStyle } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import type { SharedUiTheme } from "../theme";
 
 import { nativeBlockText } from "./nativeRichTextEditing";
@@ -19,6 +20,8 @@ export type NativeRichTextBlockProps = {
   accessibilityLabel: string;
   active: boolean;
   block: RichTextBlock;
+  /** Web `data-*` attributes for the element that carries `testID`, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Collaboration overlay for this block, or `null` when there is none. */
   decoration: NativeInlineDecoration | null;
   index: number;
@@ -46,6 +49,7 @@ export function NativeRichTextBlock({
   accessibilityLabel,
   active,
   block,
+  dataSet,
   decoration,
   index,
   inputAccessoryViewID,
@@ -75,6 +79,7 @@ export function NativeRichTextBlock({
         onPress={() => onPressDivider(index)}
         style={styles.dividerTarget}
         testID={testID}
+        {...dataSetProps({ dataSet })}
       >
         <View style={styles.divider} />
       </Pressable>
@@ -89,7 +94,11 @@ export function NativeRichTextBlock({
     block.type === "codeBlock" ? styles.codeBlock : null,
   ];
   return (
-    <View style={rowStyle} testID={readOnly ? testID : undefined}>
+    <View
+      style={rowStyle}
+      testID={readOnly ? testID : undefined}
+      {...dataSetProps(readOnly ? { dataSet } : undefined)}
+    >
       {block.type === "check" ? (
         <Pressable
           accessibilityLabel={`${accessibilityLabel}, ${block.checked ? "completed" : "not completed"}`}
@@ -147,6 +156,7 @@ export function NativeRichTextBlock({
             style={[styles.input, textStyle]}
             submitBehavior={block.type === "codeBlock" ? "newline" : "submit"}
             testID={testID}
+            {...dataSetProps({ dataSet })}
             underlineColorAndroid="transparent"
           >
             {content}

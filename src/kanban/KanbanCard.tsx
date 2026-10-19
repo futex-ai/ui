@@ -15,6 +15,7 @@ import type { ReactNode } from "react";
 import { Text, View } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import { createKanbanStyles } from "./kanbanStyles";
@@ -27,6 +28,8 @@ export type KanbanCardProps = {
    * file count. Rendered as a wrapping row; omit for a card with no chips.
    */
   chips?: ReactNode[];
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** A right-aligned footer date / timestamp. A string is given the muted mono treatment; any node renders as-is. Ignored when `footer` is set. */
   date?: ReactNode;
   /**
@@ -54,6 +57,7 @@ export type KanbanCardProps = {
 export function KanbanCard({
   avatar,
   chips,
+  dataSet,
   date,
   footer,
   meta,
@@ -66,7 +70,11 @@ export function KanbanCard({
   const hasSlotFooter =
     avatar != null || meta != null || date != null || footer != null;
   return (
-    <View style={styles.cardInner} testID={testID}>
+    <View
+      style={styles.cardInner}
+      testID={testID}
+      {...dataSetProps({ dataSet })}
+    >
       {isText(title) ? <Text style={styles.cardTitle}>{title}</Text> : title}
       {chips && chips.length > 0 ? (
         <View style={styles.chipsRow}>{chips}</View>

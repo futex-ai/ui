@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import Svg, { Line, Path } from "../primitives/svg";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import type { FocusIndicator } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
@@ -36,6 +37,8 @@ export type WaterfallChartProps = {
   accessibilityLabel?: string;
   focusIndicator?: FocusIndicator;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   testID?: string;
 };
 
@@ -59,6 +62,7 @@ export function WaterfallChart({
   accessibilityLabel,
   focusIndicator,
   style,
+  dataSet,
   testID,
 }: WaterfallChartProps) {
   const theme = useSharedUiTheme();
@@ -109,6 +113,7 @@ export function WaterfallChart({
         ) : undefined
       }
       testID={testID}
+      {...dataSetProps({ dataSet })}
       title={title}
     >
       {(layout, styles) => {

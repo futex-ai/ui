@@ -1351,6 +1351,75 @@ test("a modal with no focusable body content opens on its footer action", async 
   await expect(page.getByText("Published")).toBeVisible();
 });
 
+test("a modal form opens on its first field, past the help and chip buttons before it", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=modal-examples--form-with-field-controls&viewMode=story",
+  );
+  const dialog = page.getByRole("dialog", { name: "Workspace settings" });
+  await expect(dialog).toBeVisible();
+
+  const nameField = page.getByRole("textbox", { name: "Workspace name" });
+  const nameHelp = page.getByRole("button", {
+    name: "More information about Workspace name",
+  });
+  const booksHelp = page.getByRole("button", {
+    name: "More information about Linked books",
+  });
+  const removeGreenhouse = page.getByRole("button", {
+    name: "Remove Greenhouse Studio",
+  });
+  const removePayroll = page.getByRole("button", {
+    name: "Remove Payroll Reserve",
+  });
+  const booksField = page.getByRole("combobox", { name: "Linked books" });
+  const emailField = page.getByRole("textbox", { name: "Billing email" });
+  const clearEmail = page.getByRole("button", { name: "Clear Billing email" });
+  const save = page.getByRole("button", { name: "Save", exact: true });
+  const closeButton = page.getByRole("button", {
+    name: "Close Workspace settings",
+  });
+
+  // The ⓘ help button precedes the field in DOM order, yet focus lands on the
+  // field it describes: the button carries the initial-focus skip marker.
+  await expect(nameField).toBeFocused();
+
+  // The marker moves only the landing spot. Every marked control — help
+  // buttons, chip-remove buttons, the clear button — keeps its place in the
+  // Tab cycle, which still ends on the close button and wraps to the ⓘ.
+  const cycle = [
+    booksHelp,
+    removeGreenhouse,
+    removePayroll,
+    booksField,
+    emailField,
+    clearEmail,
+    save,
+    closeButton,
+    nameHelp,
+    nameField,
+  ];
+  for (const stop of cycle) {
+    await page.keyboard.press("Tab");
+    await expect(stop).toBeFocused();
+  }
+  await page.keyboard.press("Shift+Tab");
+  await expect(nameHelp).toBeFocused();
+
+  // Tabbing through the combobox opened its list, which stays open as a
+  // non-modal layer; Escape closes that top-most layer first, then the modal.
+  await expect(booksField).toHaveAttribute("aria-expanded", "true");
+  await page.keyboard.press("Escape");
+  await expect(booksField).toHaveAttribute("aria-expanded", "false");
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+
+  // Reopening lands on the field again rather than on the last focused control.
+  await page.getByRole("button", { name: "Open workspace settings" }).click();
+  await expect(nameField).toBeFocused();
+});
+
 test("a dropdown inside a modal closes on Escape without closing the modal", async ({
   page,
 }) => {

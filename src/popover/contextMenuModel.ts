@@ -7,11 +7,14 @@
  * can load it directly (importing `react-native` here would make esbuild try to
  * transform RN's Flow source and fail the whole test file).
  */
+import type { DataSet } from "../dataSet";
 import type { DropdownListEntry, DropdownPoint } from "../dropdown";
 
 export type ContextMenuProps = {
   /** Accessible name for the menu surface; the native sheet's default title. */
   accessibilityLabel: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   entries: DropdownListEntry[];
   /** Body cap. Defaults to 320. */
   maxHeight?: number;

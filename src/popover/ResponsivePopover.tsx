@@ -11,6 +11,7 @@ import type { ResponsivePopoverProps } from "./responsivePopoverModel";
 
 export function ResponsivePopover({
   children,
+  dataSet,
   dismissLabel,
   hideSheetHeader,
   label,
@@ -22,6 +23,7 @@ export function ResponsivePopover({
 }: ResponsivePopoverProps) {
   return (
     <Sheet
+      dataSet={dataSet}
       dismissLabel={dismissLabel}
       hideHeader={hideSheetHeader}
       label={label}

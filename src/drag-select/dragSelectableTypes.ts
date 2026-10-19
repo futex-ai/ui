@@ -8,6 +8,7 @@ import type {
   ViewStyle,
 } from "../primitives/reactNative";
 
+import type { DataSet } from "../dataSet";
 import type { FocusIndicator } from "../focusRing";
 
 import type { DragSelectableBox } from "./dragSelectableModel";
@@ -62,6 +63,8 @@ export type DragSelectableProviderProps = {
    */
   accessibilityLabel?: string;
   children: ReactNode;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   disabled?: boolean;
   minimumDragDistance?: number;
   onSelectionChange?: (selection: DragSelectableSelection) => void;

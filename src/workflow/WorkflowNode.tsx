@@ -15,6 +15,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import {
   type FocusIndicator,
   PressableHoverState,
@@ -42,6 +43,8 @@ const STATUS_LABELS: Record<WorkflowNodeStatus, string> = {
 };
 
 export type WorkflowStatusDotProps = {
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /**
    * Hide the dot from assistive technology. Set this when it sits inside a node
    * whose own accessible name already states the status, so the status is not
@@ -61,6 +64,8 @@ export type WorkflowNodeProps = {
   accessibilityLabel?: string;
   /** Override the type chip's fill (defaults to the type's category color). */
   color?: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /**
    * How a pressable node shows keyboard focus: the shared `ring` glow, the
    * browser's `outline`, or `none` for no focus styling at all, which leaves
@@ -93,6 +98,7 @@ export type WorkflowNodeProps = {
  * to mute the announcement when the surrounding node already states the status.
  */
 export function WorkflowStatusDot({
+  dataSet,
   decorative = false,
   size = "md",
   status,
@@ -103,6 +109,7 @@ export function WorkflowStatusDot({
   return (
     <StatusDot
       color={resolveStatusColor(theme.colors, status)}
+      dataSet={dataSet}
       label={decorative ? undefined : STATUS_LABELS[status]}
       pulse={status === "running"}
       size={size}
@@ -115,6 +122,7 @@ export function WorkflowStatusDot({
 export function WorkflowNode({
   accessibilityLabel,
   color,
+  dataSet,
   focusIndicator,
   node,
   onPress,
@@ -181,7 +189,7 @@ export function WorkflowNode({
         accessibilityLabel={label}
         accessibilityRole="button"
         accessibilityState={{ selected }}
-        {...focus.focusRingProps}
+        {...dataSetProps(focus.focusRingProps, { dataSet })}
         onBlur={focus.onBlur}
         onFocus={focus.onFocus}
         onPress={() => onPress(node)}
@@ -211,6 +219,7 @@ export function WorkflowNode({
         style,
       ]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {body(false)}
     </View>

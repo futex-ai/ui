@@ -12,6 +12,7 @@ import {
   type ViewStyle,
 } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
@@ -48,6 +49,8 @@ export type ChartFrameProps = {
   accessibilityLabel?: string;
   focusIndicator?: FocusIndicator;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   testID?: string;
 };
 
@@ -84,6 +87,7 @@ export function ChartFrame({
   accessibilityLabel,
   focusIndicator,
   style,
+  dataSet,
   testID,
 }: ChartFrameProps) {
   const theme = useSharedUiTheme();
@@ -125,6 +129,7 @@ export function ChartFrame({
       role={accessibilityLabel ? "group" : undefined}
       style={[styles.root, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {title || caption ? (
         <View style={styles.header}>

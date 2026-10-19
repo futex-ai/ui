@@ -3,11 +3,15 @@ import { useEffect, useRef, useState } from "react";
 import { Platform, StyleSheet, Text, View } from "../primitives/reactNative";
 import type { TextProps } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
+
 import type { ToastItem } from "./toastModel";
 
 export type ToastLiveRegionProps = {
   /** The live toast queue; new entries are announced as they appear. */
   toasts: ToastItem[];
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -32,7 +36,11 @@ export type ToastLiveRegionProps = {
  * suppress their own live announcement (see {@link Toast}) so a toast is
  * announced exactly once, from here.
  */
-export function ToastLiveRegion({ toasts, testID }: ToastLiveRegionProps) {
+export function ToastLiveRegion({
+  toasts,
+  dataSet,
+  testID,
+}: ToastLiveRegionProps) {
   const [polite, setPolite] = useState("");
   const [assertive, setAssertive] = useState("");
   // Ids whose announcement has already been written, so re-renders (e.g. a
@@ -100,7 +108,12 @@ export function ToastLiveRegion({ toasts, testID }: ToastLiveRegionProps) {
   }, [toasts]);
 
   return (
-    <View pointerEvents="none" style={styles.region} testID={testID}>
+    <View
+      pointerEvents="none"
+      style={styles.region}
+      testID={testID}
+      {...dataSetProps({ dataSet })}
+    >
       <Text {...POLITE_REGION_PROPS} accessibilityLiveRegion="polite">
         {polite}
       </Text>

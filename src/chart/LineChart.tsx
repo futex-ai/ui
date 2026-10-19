@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import Svg, { Circle, G, Line, Path } from "../primitives/svg";
 
 import { announce } from "../announcer";
+import { dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import { ChartAxisLabels, ChartGridLines, type AxisTick } from "./ChartAxis";
@@ -75,6 +76,7 @@ export function LineChart({
   accessibilityLabel,
   focusIndicator,
   style,
+  dataSet,
   testID,
 }: LineChartProps) {
   const theme = useSharedUiTheme();
@@ -170,6 +172,7 @@ export function LineChart({
         ) : undefined
       }
       testID={testID}
+      {...dataSetProps({ dataSet })}
       title={title}
     >
       {(layout, styles) => {

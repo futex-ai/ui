@@ -11,6 +11,7 @@ import {
 import Svg, { Circle } from "../primitives/svg";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 import { useReducedMotion } from "../useReducedMotion";
 
@@ -33,6 +34,8 @@ export type SpinnerProps = {
   accessibilityLabel?: string;
   /** Accent color of the leading arc. Defaults to the theme primary. */
   color?: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Milliseconds for one full rotation. Defaults to 800. */
   duration?: number;
   /** Diameter: the shared `sm` / `md` / `lg` scale, or an explicit pixel size. */
@@ -65,6 +68,7 @@ export type SpinnerProps = {
 export function Spinner({
   accessibilityLabel = "Loading",
   color,
+  dataSet,
   duration = 800,
   size = "md",
   style,
@@ -123,6 +127,7 @@ export function Spinner({
       aria-busy
       style={[styles.container, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       <Animated.View
         aria-hidden

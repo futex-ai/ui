@@ -20,6 +20,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 import {
@@ -64,6 +65,8 @@ export type ScrubberProps = {
   /** Accessible name. Defaults to `"Seek"`. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -81,6 +84,7 @@ export function Scrubber({
   accessibilityLabel = "Seek",
   buffered,
   currentTime,
+  dataSet,
   duration,
   focusIndicator,
   fps = DEFAULT_FPS,
@@ -172,7 +176,7 @@ export function Scrubber({
       accessibilityLabel={accessibilityLabel}
       accessibilityRole={web ? undefined : "adjustable"}
       accessibilityValue={scrub.accessibilityValue}
-      {...focus.focusRingProps}
+      {...dataSetProps(focus.focusRingProps, { dataSet })}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onLayout={(event: LayoutChangeEvent) =>

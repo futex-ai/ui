@@ -15,6 +15,7 @@ import { ResponsiveMenu } from "./ResponsiveMenu";
  */
 export function ContextMenu({
   accessibilityLabel,
+  dataSet,
   entries,
   maxHeight = 320,
   onClose,
@@ -27,6 +28,7 @@ export function ContextMenu({
   return (
     <ResponsiveMenu
       anchorRef={anchorRef}
+      dataSet={dataSet}
       entries={entries}
       highlightVariant="ring"
       label={accessibilityLabel}

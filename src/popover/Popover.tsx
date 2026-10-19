@@ -4,6 +4,7 @@ import type { ReactNode, RefObject } from "react";
 import { StyleSheet, View } from "../primitives/reactNative";
 import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import {
   DropdownPortal,
   type DropdownPlacement,
@@ -44,6 +45,8 @@ export type PopoverContentState = {
 export type PopoverProps = DropdownPlacementOptions & {
   /** Popover body: a node, or a render function given `close` and `placement`. */
   children: ReactNode | ((state: PopoverContentState) => ReactNode);
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Initial open state when the popover is uncontrolled. */
   defaultOpen?: boolean;
   /**
@@ -104,6 +107,7 @@ export function Popover({
   align,
   anchorWidthAsMinimum,
   children,
+  dataSet,
   defaultOpen = false,
   gutter,
   initialFocusRef,
@@ -140,7 +144,12 @@ export function Popover({
   const toggle = useCallback(() => setOpen(!open), [open, setOpen]);
 
   return (
-    <View ref={anchorRef} style={[styles.anchor, style]} testID={testID}>
+    <View
+      ref={anchorRef}
+      style={[styles.anchor, style]}
+      testID={testID}
+      {...dataSetProps({ dataSet })}
+    >
       {trigger({
         close,
         open,

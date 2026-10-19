@@ -7,6 +7,7 @@ import { Text, View } from "../primitives/reactNative";
 import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import { Badge } from "../badge";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import { RichTextCollabCard } from "./RichTextCollabCard";
@@ -27,6 +28,8 @@ export type RichTextCollabRailProps = {
   /** Everyone who can appear, in the same order the editor is given them. */
   collaborators: readonly RichTextCollaborator[];
   commentThreads?: readonly RichTextCommentThread[];
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Message shown when there is nothing to review. */
   emptyLabel?: string;
   /** Also list resolved threads and already-reviewed changes. */
@@ -63,6 +66,7 @@ export function RichTextCollabRail({
   activeCommentThreadId = null,
   collaborators,
   commentThreads = [],
+  dataSet,
   emptyLabel = "No open comments or changes",
   includeResolved = false,
   localCollaboratorId,
@@ -99,7 +103,11 @@ export function RichTextCollabRail({
   );
 
   return (
-    <View style={[styles.rail, style]} testID={testID}>
+    <View
+      style={[styles.rail, style]}
+      testID={testID}
+      {...dataSetProps({ dataSet })}
+    >
       <View style={styles.railHeader}>
         <Text style={styles.railTitle}>{title}</Text>
         {items.length > 0 ? (

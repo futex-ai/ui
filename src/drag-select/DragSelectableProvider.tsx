@@ -2,6 +2,8 @@
 import { useCallback, useMemo, useRef } from "react";
 import { View } from "../primitives/reactNative";
 
+import { dataSetProps } from "../dataSet";
+
 import {
   DragSelectableContext,
   emptyDragSelectableState,
@@ -19,6 +21,7 @@ const emptyMap = new Map<string, DragSelectableTargetRegistration>();
 export function DragSelectableProvider({
   accessibilityLabel,
   children,
+  dataSet,
   role = "group",
   style,
   testID,
@@ -54,6 +57,7 @@ export function DragSelectableProvider({
         role={role}
         style={style}
         testID={testID}
+        {...dataSetProps({ dataSet })}
       >
         {children}
       </View>

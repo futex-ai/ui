@@ -25,6 +25,7 @@ import {
 import Svg, { Path } from "../primitives/svg";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 import {
@@ -80,6 +81,8 @@ export type KeyframeEditorProps = {
   /** Names the editor as a region for assistive tech. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -99,6 +102,7 @@ type KeyframeKeyEvent = {
 
 export function KeyframeEditor({
   accessibilityLabel,
+  dataSet,
   emptyLabel = "No animated properties",
   endTime,
   focusIndicator,
@@ -193,7 +197,11 @@ export function KeyframeEditor({
 
   if (tracks.length === 0) {
     return (
-      <View style={[styles.root, style]} testID={testID}>
+      <View
+        style={[styles.root, style]}
+        testID={testID}
+        {...dataSetProps({ dataSet })}
+      >
         <Text style={styles.empty}>{emptyLabel}</Text>
       </View>
     );
@@ -205,6 +213,7 @@ export function KeyframeEditor({
       role={accessibilityLabel ? "group" : undefined}
       style={[styles.root, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {tracks.map((track) => {
         const range = trackRange(track);

@@ -16,6 +16,7 @@ import {
   ViewStyle,
 } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";
 import { compareIso, parseIso } from "../date/dateMath";
 import { useSharedUiTheme } from "../theme";
@@ -62,6 +63,8 @@ export type MonthViewProps = {
   onCreateEvent?: (range: CalendarDraftRange) => void;
   /** Extra style for the grid container. */
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -76,6 +79,7 @@ export function MonthView({
   onSelectEvent,
   onCreateEvent,
   style,
+  dataSet,
   testID,
 }: MonthViewProps) {
   const theme = useSharedUiTheme();
@@ -110,6 +114,7 @@ export function MonthView({
       ref={drag.bindGrid.ref}
       style={[styles.monthGrid, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       <View style={styles.monthWeekdayRow}>
         {labels.map((label) => (

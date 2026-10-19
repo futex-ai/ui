@@ -108,6 +108,9 @@ test("web modal opens focus on caller content rather than the close button", () 
     /initialFocusTargetRef\.current\?\.current \?\?\s*webModalInitialFocusTarget\(surfaceRef, closeButtonRef\)/,
   );
   assert.match(source, /\(element\) => element !== closeButton/);
+  // Secondary controls marked `data-firna-initial-focus="skip"` are passed over
+  // too; `tests/unit/initialFocus.test.ts` pins that helper and the trap.
+  assert.match(source, /initialFocusLanding\(/);
   assert.match(source, /return callerControl \?\? closeButton \?\? surface/);
 });
 

@@ -12,6 +12,7 @@ import type { SheetProps } from "./types";
 
 export function Sheet({
   children,
+  dataSet,
   dismissLabel,
   hideHeader = false,
   label,
@@ -32,6 +33,7 @@ export function Sheet({
       // `hideHeader` only drops the close control on web; the modal frame always
       // shows the title. The full headerless sheet is a native affordance.
       closeLabel={dismissLabel}
+      dataSet={dataSet}
       onClose={onClose}
       placement="bottom-sheet"
       showCloseButton={!hideHeader}

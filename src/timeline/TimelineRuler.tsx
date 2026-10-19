@@ -18,6 +18,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
@@ -60,6 +61,8 @@ export type TimelineRulerProps = {
   /** Accessible name for the scrub slider. Defaults to `"Playhead"`. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -75,6 +78,7 @@ type RulerKeyEvent = {
 
 export function TimelineRuler({
   accessibilityLabel = "Playhead",
+  dataSet,
   duration,
   focusIndicator,
   fps = DEFAULT_FPS,
@@ -177,7 +181,7 @@ export function TimelineRuler({
       accessibilityLabel={accessibilityLabel}
       accessibilityRole={web ? undefined : "adjustable"}
       accessibilityValue={scrub.accessibilityValue}
-      {...focus.focusRingProps}
+      {...dataSetProps(focus.focusRingProps, { dataSet })}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onMoveShouldSetResponder={() => Boolean(onSeek)}

@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Text, View } from "../primitives/reactNative";
 import Svg, { Path } from "../primitives/svg";
 
+import { dataSetProps } from "../dataSet";
 import { devWarn } from "../devWarn";
 import { useSharedUiTheme } from "../theme";
 
@@ -59,6 +60,7 @@ export function DonutChart({
   accessibilityLabel,
   focusIndicator,
   style,
+  dataSet,
   testID,
 }: DonutChartProps) {
   const theme = useSharedUiTheme();
@@ -152,6 +154,7 @@ export function DonutChart({
         ) : undefined
       }
       testID={testID}
+      {...dataSetProps({ dataSet })}
       title={title}
       xAxisHeight={0}
       yAxisWidth={0}

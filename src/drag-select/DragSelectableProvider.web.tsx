@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View } from "../primitives/reactNative";
 
 import { announce } from "../announcer";
+import { dataSetProps } from "../dataSet";
 import { DragSelectableContext } from "./DragSelectableContext";
 import {
   dragSelectableBoundsForBox,
@@ -60,6 +61,7 @@ function defaultSelectionAnnouncement(count: number): string {
 export function DragSelectableProvider({
   accessibilityLabel,
   children,
+  dataSet,
   disabled = false,
   minimumDragDistance,
   onSelectionChange,
@@ -456,6 +458,7 @@ export function DragSelectableProvider({
         role={role}
         style={style}
         testID={testID}
+        {...dataSetProps({ dataSet })}
       >
         {children}
       </View>

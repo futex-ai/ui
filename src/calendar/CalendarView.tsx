@@ -10,6 +10,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { StyleProp, View, ViewStyle } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { todayIso } from "../date/dateMath";
 import { useSharedUiTheme } from "../theme";
 
@@ -62,6 +63,8 @@ export type CalendarViewProps = CalendarTimeGridConfig & {
   hideToolbar?: boolean;
   /** Extra style for the calendar container. */
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -125,6 +128,7 @@ export function CalendarView({
   pxPerHour,
   hideToolbar = false,
   style,
+  dataSet,
   testID,
 }: CalendarViewProps) {
   const theme = useSharedUiTheme();
@@ -168,7 +172,11 @@ export function CalendarView({
   };
 
   return (
-    <View style={[styles.root, style]} testID={testID}>
+    <View
+      style={[styles.root, style]}
+      testID={testID}
+      {...dataSetProps({ dataSet })}
+    >
       {hideToolbar ? null : (
         <CalendarToolbar
           agendaDays={agendaDays}

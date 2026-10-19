@@ -20,6 +20,7 @@ import {
   ViewStyle,
 } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import {
   focusItemAt,
@@ -48,6 +49,8 @@ export type RadioCardProps = {
   accessibilityLabel?: string;
   body?: string;
   checked?: boolean;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   disabled?: boolean;
   /**
    * How this card shows keyboard focus: the shared `ring` glow, the browser's
@@ -68,6 +71,7 @@ export function RadioCard({
   accessibilityLabel,
   body,
   checked = false,
+  dataSet,
   disabled = false,
   focusIndicator,
   onPress,
@@ -146,7 +150,7 @@ export function RadioCard({
       accessibilityState={{ checked, disabled: disabledState }}
       aria-checked={checked}
       disabled={disabledState}
-      {...focus.focusRingProps}
+      {...dataSetProps(focus.focusRingProps, { dataSet })}
       onBlur={focus.onBlur}
       onFocus={handleFocus}
       onPress={onPress}
@@ -226,6 +230,8 @@ const RadioCardGroupContext = createContext<RadioCardGroupContextValue | null>(
 export type RadioCardGroupProps = {
   accessibilityLabel?: string;
   children: ReactNode;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Marks the group invalid for assistive tech (→ `aria-invalid`). */
   invalid?: boolean;
   /** Visible group label; doubles as the accessible name when set. */
@@ -250,6 +256,7 @@ export type RadioCardGroupProps = {
 export function RadioCardGroup({
   accessibilityLabel,
   children,
+  dataSet,
   invalid = false,
   label,
   required = false,
@@ -389,6 +396,7 @@ export function RadioCardGroup({
         aria-required={required}
         style={[styles.group, style]}
         testID={testID}
+        {...dataSetProps({ dataSet })}
       >
         {label ? <Text style={styles.radioTitle}>{label}</Text> : null}
         {children}

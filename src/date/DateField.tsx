@@ -11,6 +11,7 @@ import {
 import { Platform, Text, View } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { LabelInfo } from "../input";
 import { useSharedUiTheme } from "../theme";
 
@@ -72,6 +73,8 @@ export type DateFieldProps = {
   size?: ControlSize;
   /** z-index for the open trigger wrappers and web calendar portal. */
   zIndex?: number;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -99,6 +102,7 @@ export function DateField({
   variant = "calendar",
   size = "md",
   zIndex,
+  dataSet,
   testID,
 }: DateFieldProps) {
   const theme = useSharedUiTheme();
@@ -123,7 +127,11 @@ export function DateField({
     [error ? errorId : null, hint ? hintId : null].filter(Boolean).join(" ") ||
     undefined;
   return (
-    <View style={[styles.field, open ? openLayer : null]} testID={testID}>
+    <View
+      style={[styles.field, open ? openLayer : null]}
+      testID={testID}
+      {...dataSetProps({ dataSet })}
+    >
       <FieldLabel
         label={label}
         labelInfo={labelInfo}
@@ -219,6 +227,8 @@ export type DateInputProps = {
   errorText?: string;
   /** Helper text, also folded into the native `accessibilityHint`. */
   hintText?: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -250,6 +260,7 @@ export function DateInput({
   errorId,
   errorText,
   hintText,
+  dataSet,
   testID,
 }: DateInputProps) {
   const theme = useSharedUiTheme();
@@ -287,6 +298,7 @@ export function DateInput({
         field.open ? openLayer : null,
       ]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {/* The editable type-or-pick input only fits the calendar popover. The
           wheel is a tap-to-open sheet (typing a date doesn't pair with a

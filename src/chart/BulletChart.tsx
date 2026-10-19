@@ -8,6 +8,7 @@ import {
 } from "../primitives/reactNative";
 import Svg, { Line, Rect } from "../primitives/svg";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import { CHART_MARKS } from "./chartMarks";
@@ -30,6 +31,8 @@ export type BulletChartProps = {
   valueFormat?: (value: number) => string;
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   testID?: string;
 };
 
@@ -50,6 +53,7 @@ export function BulletChart({
   valueFormat,
   accessibilityLabel,
   style,
+  dataSet,
   testID,
 }: BulletChartProps) {
   const format = valueFormat ?? ((v: number) => String(v));
@@ -71,6 +75,7 @@ export function BulletChart({
       role={accessibilityLabel ? "group" : undefined}
       style={[{ gap: 4, width: "100%" }, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {rows.map((row) => (
         <BulletRowView

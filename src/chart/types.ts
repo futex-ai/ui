@@ -2,6 +2,7 @@
 import type { ReactNode } from "react";
 import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
+import type { DataSet } from "../dataSet";
 import type { FocusIndicator } from "../focusRing";
 
 import type { ChartSeries } from "./series/stack";
@@ -63,6 +64,8 @@ export type ChartCommonProps = {
   accessibilityLabel?: string;
   focusIndicator?: FocusIndicator;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   testID?: string;
 };
 

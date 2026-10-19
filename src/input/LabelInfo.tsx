@@ -3,7 +3,9 @@ import { Info, IconComponent } from "../primitives/icons";
 import { useId, useMemo } from "react";
 import { Platform, Pressable, Text } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
+import { skipInitialFocusProps } from "../initialFocus";
 import { Popover } from "../popover";
 import { useSharedUiTheme } from "../theme";
 
@@ -30,6 +32,8 @@ export type LabelInfoProps = {
    * AA). Defaults to the theme's `focusIndicator`.
    */
   focusIndicator?: FocusIndicator;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -56,6 +60,7 @@ export function LabelInfo({
   icon: Icon = Info,
   accessibilityLabel,
   focusIndicator,
+  dataSet,
   testID,
 }: LabelInfoProps) {
   const theme = useSharedUiTheme();
@@ -65,6 +70,7 @@ export function LabelInfo({
   const isWeb = Platform.OS === "web";
   return (
     <Popover
+      dataSet={dataSet}
       gutter={6}
       // Sighted-only reveal: the accessible copy lives on the button, so the
       // bubble must not steal focus (WCAG 2.4.3) or re-announce the text.
@@ -79,7 +85,7 @@ export function LabelInfo({
           accessibilityRole="button"
           aria-describedby={isWeb ? descriptionId : undefined}
           hitSlop={8}
-          {...focus.focusRingProps}
+          {...dataSetProps(focus.focusRingProps, skipInitialFocusProps)}
           onBlur={focus.onBlur}
           onFocus={focus.onFocus}
           onPress={toggle}

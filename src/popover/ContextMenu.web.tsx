@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { View } from "../primitives/reactNative";
 
+import { dataSetProps } from "../dataSet";
 import {
   DropdownList,
   DropdownPortal,
@@ -33,6 +34,7 @@ const noop = () => {};
  */
 export function ContextMenu({
   accessibilityLabel,
+  dataSet,
   entries,
   maxHeight = 320,
   minWidth = 220,
@@ -105,7 +107,7 @@ export function ContextMenu({
       zIndex={zIndex}
     >
       {(placement) => (
-        <View ref={contentRef} testID={testID}>
+        <View ref={contentRef} testID={testID} {...dataSetProps({ dataSet })}>
           <DropdownList
             activeId={activeId}
             entries={menuEntries}

@@ -14,6 +14,7 @@ import {
   type ViewStyle,
 } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import type { FocusIndicator } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
@@ -50,6 +51,8 @@ export type MatrixHeatmapProps = {
     value: number | null;
   }) => void;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   testID?: string;
 };
 
@@ -73,6 +76,7 @@ export function MatrixHeatmap({
   focusIndicator,
   onCellPress,
   style,
+  dataSet,
   testID,
 }: MatrixHeatmapProps) {
   const theme = useSharedUiTheme();
@@ -143,6 +147,7 @@ export function MatrixHeatmap({
         ) : undefined
       }
       testID={testID}
+      {...dataSetProps({ dataSet })}
       title={title}
       xAxisHeight={0}
       yAxisWidth={0}

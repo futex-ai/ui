@@ -11,6 +11,7 @@ import { createWheelPickerStyles } from "./wheelPickerStyles";
 
 type DateWheelSheetProps = Pick<
   DatePickerOverlayProps,
+  | "dataSet"
   | "label"
   | "max"
   | "min"
@@ -30,6 +31,7 @@ export function DateWheelSheet({
   onSelect,
   onClose,
   label,
+  dataSet,
   testID,
 }: DateWheelSheetProps) {
   const theme = useSharedUiTheme();
@@ -38,6 +40,7 @@ export function DateWheelSheet({
 
   return (
     <WebModalFrame
+      dataSet={dataSet}
       footer={
         <>
           <Pressable

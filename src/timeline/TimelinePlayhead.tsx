@@ -13,6 +13,7 @@ import {
   type ViewStyle,
 } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import { createTimelineStyles } from "./timelineStyles";
@@ -30,6 +31,8 @@ export type TimelinePlayheadProps = {
   /** Overrides the rose default — used to tint an in/out preview head. */
   color?: string;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -39,6 +42,7 @@ const HEAD_OFFSET = 6;
 
 export function TimelinePlayhead({
   color,
+  dataSet,
   height,
   pixelsPerSecond,
   rulerHeight,
@@ -66,6 +70,7 @@ export function TimelinePlayhead({
         style,
       ]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       <View
         style={[

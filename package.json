@@ -100,6 +100,11 @@
       "react-native": "./dist/heatmap/index.js",
       "import": "./dist/node/heatmap/index.js"
     },
+    "./initialFocus": {
+      "types": "./dist/node/initialFocus.d.ts",
+      "react-native": "./dist/initialFocus.js",
+      "import": "./dist/node/initialFocus.js"
+    },
     "./input": {
       "types": "./dist/node/input/index.d.ts",
       "react-native": "./dist/input/index.js",

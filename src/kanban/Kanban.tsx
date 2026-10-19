@@ -20,6 +20,7 @@ import { Platform, ScrollView, View } from "../primitives/reactNative";
 import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { DragGhostPortal } from "../dragGhostPortal";
 import type { FocusIndicator } from "../focusRing";
 import { SkeletonPulseProvider } from "../skeleton";
@@ -58,6 +59,8 @@ export type KanbanProps<Card> = {
   columnWidth?: number;
   /** The status columns, rendered left to right. */
   columns: KanbanColumnDef[];
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /**
    * How cards and the column add buttons show keyboard focus: the shared `ring`
    * glow, the browser's `outline`, or `none` for no focus styling at all, which
@@ -138,6 +141,7 @@ export function Kanban<Card>({
   columnAddLabel,
   columnWidth = 286,
   columns,
+  dataSet,
   focusIndicator,
   loading = false,
   loadingCardCount = 3,
@@ -275,6 +279,7 @@ export function Kanban<Card>({
       role={accessibilityLabel ? "group" : undefined}
       style={[styles.board, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       <ScrollView
         contentContainerStyle={styles.boardRow}

@@ -13,3 +13,4 @@ storybook-native/android/
 debug-storybook.log
 .dist-web-types/
 .dist-node/
+.context/

@@ -2,6 +2,7 @@
 import { useMemo } from "react";
 import { Pressable, Text, View } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
@@ -25,6 +26,8 @@ export type ChartLegendProps = {
   onToggle?: (id: string) => void;
   keyShape?: LegendKeyShape;
   focusIndicator?: FocusIndicator;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   testID?: string;
 };
 
@@ -46,6 +49,7 @@ export function ChartLegend({
   onToggle,
   keyShape = "rect",
   focusIndicator,
+  dataSet,
   testID,
 }: ChartLegendProps) {
   const theme = useSharedUiTheme();
@@ -73,7 +77,12 @@ export function ChartLegend({
   );
 
   return (
-    <View role="list" style={styles.row} testID={testID}>
+    <View
+      role="list"
+      style={styles.row}
+      testID={testID}
+      {...dataSetProps({ dataSet })}
+    >
       {entries.map((entry) => (
         <LegendEntry
           entry={entry}

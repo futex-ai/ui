@@ -8,6 +8,7 @@ import {
 } from "../primitives/reactNative";
 import Svg, { Path } from "../primitives/svg";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import { arcPath, GAUGE_START, GAUGE_SWEEP, gaugeAngles } from "./arcGeometry";
@@ -40,6 +41,8 @@ export type GaugeChartProps = {
   loading?: boolean;
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   testID?: string;
 };
 
@@ -56,6 +59,7 @@ export function GaugeChart({
   loading,
   accessibilityLabel,
   style,
+  dataSet,
   testID,
 }: GaugeChartProps) {
   const theme = useSharedUiTheme();
@@ -93,6 +97,7 @@ export function GaugeChart({
       loading={loading}
       style={style}
       testID={testID}
+      {...dataSetProps({ dataSet })}
       title={title}
       xAxisHeight={0}
       yAxisWidth={0}

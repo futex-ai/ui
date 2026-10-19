@@ -19,6 +19,7 @@ import {
 import { Platform, Pressable, Text, View } from "../primitives/reactNative";
 
 import { announce } from "../announcer";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import {
   type FocusableRef,
@@ -77,6 +78,8 @@ export type CalendarMonthProps = DateBounds & {
    * to the theme's `focusIndicator`.
    */
   focusIndicator?: FocusIndicator;
+  /** Web `data-*` attributes for the header element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -88,6 +91,7 @@ export function CalendarMonth({
   max,
   onSelect,
   focusIndicator,
+  dataSet,
   testID,
 }: CalendarMonthProps) {
   const theme = useSharedUiTheme();
@@ -157,7 +161,7 @@ export function CalendarMonth({
 
   return (
     <>
-      <View style={s.head} testID={testID}>
+      <View style={s.head} testID={testID} {...dataSetProps({ dataSet })}>
         <NavButton
           focusIndicator={focusIndicator}
           label={pickingYear ? "Previous years" : "Previous month"}

@@ -4,6 +4,7 @@ import { useId, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
 
@@ -53,6 +54,8 @@ export type DateRangeFieldProps = {
   size?: ControlSize;
   /** z-index for open trigger wrappers and web calendar portals. */
   zIndex?: number;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -78,6 +81,7 @@ export function DateRangeField({
   variant = "calendar",
   size = "md",
   zIndex,
+  dataSet,
   testID,
 }: DateRangeFieldProps) {
   const theme = useSharedUiTheme();
@@ -121,6 +125,7 @@ export function DateRangeField({
     <View
       style={[fieldStyles.field, anyOpen ? openLayer : null]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       <FieldLabel
         label={label}

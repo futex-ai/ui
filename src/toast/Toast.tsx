@@ -12,6 +12,7 @@ import { Platform, Pressable, Text, View } from "../primitives/reactNative";
 import type { ViewProps } from "../primitives/reactNative";
 
 import { Button } from "../button";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
@@ -34,6 +35,8 @@ export type ToastProps = {
   toast: ToastItem;
   /** Invoked with the toast id when it should leave the stack. */
   onDismiss: (id: string) => void;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -52,7 +55,7 @@ type ToastPauseHandlers = {
  * pausing while the pointer or keyboard focus is over the toast is local state.
  * A sticky toast (`duration === null`) never starts a timer.
  */
-export function Toast({ toast, onDismiss, testID }: ToastProps) {
+export function Toast({ toast, onDismiss, dataSet, testID }: ToastProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createToastStyles(theme), [theme]);
   const accent = toastToneAccent(theme, toast.tone);
@@ -173,6 +176,7 @@ export function Toast({ toast, onDismiss, testID }: ToastProps) {
         toast.surfaceStyle,
       ]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {/* The leading/tone icon is decorative — its meaning is carried by the
           toast copy and the assistive-tech announcement, so hide it (1.1.1, A). */}

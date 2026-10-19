@@ -29,6 +29,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { DropdownMenu, type DropdownListEntry } from "../dropdown";
 import type { FocusIndicator } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
@@ -86,6 +87,8 @@ export type TransportBarProps = {
   /** Names the transport as a group for assistive tech. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -98,6 +101,7 @@ export function TransportBar({
   accessibilityLabel = "Transport",
   buffered,
   currentTime,
+  dataSet,
   duration,
   focusIndicator,
   fps = DEFAULT_FPS,
@@ -165,6 +169,7 @@ export function TransportBar({
       role="group"
       style={[styles.transport, { gap: metrics.gap }, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {leading}
       {button(

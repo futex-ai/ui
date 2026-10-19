@@ -20,6 +20,7 @@ import {
 
 import { announce } from "../announcer";
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { devWarn } from "../devWarn";
 import {
   type FocusIndicator,
@@ -75,6 +76,8 @@ export type DropdownSelectorSection = {
 export type SelectorVariant = "field" | "map" | "mobilePeriod" | "pill";
 
 type DropdownSelectorProps = {
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   error?: string | null;
   /**
    * How the trigger shows keyboard focus: the shared `ring` glow, the browser's
@@ -148,6 +151,7 @@ export function DropdownSelector(props: DropdownSelectorProps) {
 }
 
 function DropdownSelectorView({
+  dataSet,
   error,
   focus,
   footer,
@@ -305,7 +309,11 @@ function DropdownSelectorView({
   ) : null;
 
   return (
-    <View style={label ? styles.field : null} testID={testID}>
+    <View
+      style={label ? styles.field : null}
+      testID={testID}
+      {...dataSetProps({ dataSet })}
+    >
       {label ? (
         <SelectorLabel
           label={label}
@@ -408,6 +416,7 @@ function DropdownSelectorView({
 }
 
 export function ReadOnlySelector({
+  dataSet,
   label,
   required = false,
   size = "md",
@@ -415,6 +424,8 @@ export function ReadOnlySelector({
   value,
   variant = "field",
 }: {
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   label?: string;
   required?: boolean;
   /** Control density of the default `field` variant: `sm`, `md` (default), or `lg`. */
@@ -431,7 +442,11 @@ export function ReadOnlySelector({
   );
   const accessibleLabel = selectorAccessibleLabel(label, value);
   return (
-    <View style={label ? styles.field : null} testID={testID}>
+    <View
+      style={label ? styles.field : null}
+      testID={testID}
+      {...dataSetProps({ dataSet })}
+    >
       {label ? (
         <SelectorLabel label={label} required={required} styles={styles} />
       ) : null}

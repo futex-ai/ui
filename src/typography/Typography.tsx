@@ -7,6 +7,7 @@ import {
   TextStyle,
 } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import {
@@ -36,6 +37,8 @@ export type TextProps = {
    * contrast you then own). Omit to keep the variant's default.
    */
   color?: TypographyColor | (string & {});
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Truncate to this many lines with a trailing ellipsis. */
   numberOfLines?: number;
   /** Extra style merged on top of the variant style. */
@@ -64,6 +67,7 @@ export type TextProps = {
 export function Text({
   children,
   color,
+  dataSet,
   numberOfLines,
   style,
   testID,
@@ -95,6 +99,7 @@ export function Text({
         style,
       ]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {children}
     </RNText>

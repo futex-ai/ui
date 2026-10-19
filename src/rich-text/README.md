@@ -57,7 +57,9 @@ import { RichTextEditor } from "@firna/ui/rich-text";
 
 On native, the exact `testID` remains on the first editable block for backwards
 compatible typing automation. The outer field uses `${testID}-field`; remaining
-blocks use `${testID}-block-N`.
+blocks use `${testID}-block-N`. `dataSet` follows the same path as `testID`: the
+web editable root takes it as literal `data-*` attributes, and on native it
+reaches the first editable block, where it is inert.
 
 ### Markdown Contract
 

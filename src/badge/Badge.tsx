@@ -5,6 +5,7 @@ import { Platform, Text, View } from "../primitives/reactNative";
 import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { PulseHalo } from "../status-dot/PulseHalo";
 import { useSharedUiTheme } from "../theme";
 
@@ -33,6 +34,8 @@ export type BadgeProps = {
    * border on any variant (not just `outline`).
    */
   borderColor?: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /**
    * Show a small leading status dot, tinted to the resolved text color by
    * default (override with {@link dotColor}). The dot reinforces the label; the
@@ -89,6 +92,7 @@ export function Badge({
   borderColor,
   children,
   color,
+  dataSet,
   dot = false,
   dotColor,
   pulse = false,
@@ -119,6 +123,7 @@ export function Badge({
         style,
       ]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {dot ? (
         <View

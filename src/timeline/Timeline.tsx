@@ -23,6 +23,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import type { FocusIndicator } from "../focusRing";
 import type { FocusableRef } from "../keyboardNavigation";
 import { useSharedUiTheme } from "../theme";
@@ -123,6 +124,8 @@ export type TimelineProps = {
   /** Names the whole timeline as a region for assistive tech. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -133,6 +136,7 @@ const TRAILING_RUNWAY = 2;
 export function Timeline({
   accessibilityLabel,
   clips,
+  dataSet,
   duration,
   emptyLabel = "No tracks yet",
   focusIndicator,
@@ -316,7 +320,11 @@ export function Timeline({
 
   if (tracks.length === 0) {
     return (
-      <View style={[styles.root, style]} testID={testID}>
+      <View
+        style={[styles.root, style]}
+        testID={testID}
+        {...dataSetProps({ dataSet })}
+      >
         <Text style={styles.empty}>{emptyLabel}</Text>
       </View>
     );
@@ -473,6 +481,7 @@ export function Timeline({
       role={accessibilityLabel ? "group" : undefined}
       style={[styles.root, maxHeight ? { maxHeight } : null, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {maxHeight ? <ScrollView>{body}</ScrollView> : body}
     </View>

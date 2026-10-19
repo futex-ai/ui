@@ -7,6 +7,16 @@ export type NativeRichTextTestIDs = {
   field: string | undefined;
 };
 
+/**
+ * The block that carries the public editor identifier: the first editable
+ * block, since a divider cannot take typing. `-1` when every block is a divider.
+ */
+export function nativeRichTextPrimaryBlock(
+  document: readonly RichTextBlock[],
+): number {
+  return document.findIndex((block) => block.type !== "divider");
+}
+
 /** Keep the public ID editable while naming the field and remaining blocks. */
 export function buildNativeRichTextTestIDs(
   document: readonly RichTextBlock[],
@@ -18,7 +28,7 @@ export function buildNativeRichTextTestIDs(
       field: undefined,
     };
   }
-  const primaryBlock = document.findIndex((block) => block.type !== "divider");
+  const primaryBlock = nativeRichTextPrimaryBlock(document);
   return {
     blocks: document.map((_, index) =>
       index === primaryBlock ? testID : `${testID}-block-${index}`,

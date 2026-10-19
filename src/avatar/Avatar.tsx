@@ -8,6 +8,7 @@ import {
   ViewStyle,
 } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { DotGridLoader } from "../loader/DotGridLoader";
 import { LOADER_DURATIONS } from "../loader/loaderStyles";
 import { useSharedUiTheme } from "../theme";
@@ -21,6 +22,8 @@ export type AvatarTone = "soft" | "solid";
 export type AvatarProps = {
   /** Accessible name for the person/entity (e.g. their full name). Defaults to the visible initials. */
   accessibilityLabel?: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /**
    * Hide the avatar from assistive tech. Use when the disc is purely decorative
    * and sits beside a visible label that already names the person/entity, so the
@@ -69,6 +72,7 @@ export type AvatarProps = {
  */
 export function Avatar({
   accessibilityLabel,
+  dataSet,
   decorative = false,
   label,
   loading = false,
@@ -115,6 +119,7 @@ export function Avatar({
         style,
       ]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {loading ? (
         // The grid is decorative: the container above already carries the busy

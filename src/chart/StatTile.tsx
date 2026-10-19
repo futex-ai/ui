@@ -13,6 +13,7 @@ import {
   type ViewStyle,
 } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import { Sparkline } from "./Sparkline";
@@ -37,6 +38,8 @@ export type StatTileProps = {
   /** A short trend behind the number. */
   trend?: readonly (number | null)[];
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   testID?: string;
 };
 
@@ -48,6 +51,7 @@ export function StatTile({
   deltaDirection = "up-is-good",
   trend,
   style,
+  dataSet,
   testID,
 }: StatTileProps) {
   const theme = useSharedUiTheme();
@@ -121,6 +125,7 @@ export function StatTile({
       accessible
       style={[styles.root, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       <Text style={styles.label}>{label}</Text>
       <Text style={styles.value}>{formatStatValue(value, valueFormat)}</Text>
@@ -165,11 +170,18 @@ export function StatTile({
 export type StatTileRowProps = {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   testID?: string;
 };
 
 /** A KPI row: several headline numbers reading as one band. */
-export function StatTileRow({ children, style, testID }: StatTileRowProps) {
+export function StatTileRow({
+  children,
+  style,
+  dataSet,
+  testID,
+}: StatTileRowProps) {
   return (
     <View
       style={[
@@ -181,6 +193,7 @@ export function StatTileRow({ children, style, testID }: StatTileRowProps) {
         style,
       ]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {children}
     </View>

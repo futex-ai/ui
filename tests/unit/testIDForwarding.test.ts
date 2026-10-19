@@ -214,7 +214,11 @@ test("AnimatedBorder keeps its default testID while allowing a caller override",
 
 test("SegmentedControl forwards testID on its root without disturbing the thumb", () => {
   const source = readSource("../../src/segmented/SegmentedControl.tsx");
-  assert.match(source, /<View style=\{styles\.field\} testID=\{testID\}>/);
+  // The same root also takes the caller's `dataSet` through the shared spread.
+  assert.match(
+    source,
+    /<View\s+style=\{styles\.field\}\s+testID=\{testID\}\s+\{\.\.\.dataSetProps\(\{ dataSet \}\)\}\s*>/,
+  );
   // The internal thumb keeps its own functional testID.
   assert.match(source, /testID="segmentedThumb"/);
 });

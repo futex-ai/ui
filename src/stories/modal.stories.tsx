@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { darkSharedUiTheme } from "../index";
+import { ModalFormExample } from "./modalFormExample";
 import {
   ConfirmModalExample,
   ModalExample,
@@ -48,6 +49,15 @@ export const ConfirmWebModal: Story = {
   render: () => (
     <StorySurface>
       <ConfirmModalExample />
+    </StorySurface>
+  ),
+};
+
+export const FormWithFieldControls: Story = {
+  name: "Form opens on its first field",
+  render: () => (
+    <StorySurface>
+      <ModalFormExample />
     </StorySurface>
   ),
 };

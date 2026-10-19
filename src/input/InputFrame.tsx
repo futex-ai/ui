@@ -12,7 +12,9 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
+import { skipInitialFocusProps } from "../initialFocus";
 import { useSharedUiTheme } from "../theme";
 
 import {
@@ -34,6 +36,8 @@ export type InputFrameProps = Omit<TextInputProps, "style"> & {
    * only meaningful while `invalid` (which sets `aria-invalid`). (WCAG 2.1 3.3.1)
    */
   "aria-errormessage"?: string;
+  /** Web `data-*` attributes for the input element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Renders the rose invalid border (independent of any message). */
   invalid?: boolean;
   /** Control density: `sm`, `md` (default), or `lg`. */
@@ -137,6 +141,7 @@ export function InputFrame({
   clearable = false,
   clearAccessibilityLabel,
   clearVisible,
+  dataSet,
   focusIndicator,
   focusRingInset = false,
   inputRef,
@@ -247,7 +252,7 @@ export function InputFrame({
         </View>
       ) : null}
       <TextInput
-        {...focus.focusTargetProps}
+        {...dataSetProps(focus.focusTargetProps, { dataSet })}
         ref={setInputRef}
         aria-invalid={invalid}
         aria-required={required}
@@ -289,11 +294,14 @@ export function InputFrame({
           tree). Opt-in, and only shown once there is a value to remove. It keeps
           the browser's own focus outline: the frame's CSS glow follows only the
           input, so the outline is what tells a keyboard user the next Enter
-          clears the field rather than submitting it (WCAG 2.1 — 2.4.7). */}
+          clears the field rather than submitting it (WCAG 2.1 — 2.4.7). An
+          opening modal never lands on it either: the field is the landing spot,
+          and the button stays one Tab away. */}
       {showClear ? (
         <Pressable
           accessibilityLabel={clearLabel}
           accessibilityRole="button"
+          {...skipInitialFocusProps}
           hitSlop={8}
           onPress={handleClear}
           style={styles.iconButton}
@@ -349,6 +357,7 @@ function SuffixAdornment({
       <Pressable
         accessibilityLabel={label}
         accessibilityRole="button"
+        {...skipInitialFocusProps}
         hitSlop={8}
         onPress={onPress}
         style={style}

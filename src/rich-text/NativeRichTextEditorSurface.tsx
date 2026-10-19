@@ -7,6 +7,7 @@ import {
 } from "../primitives/reactNative";
 import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
+import type { DataSet } from "../dataSet";
 import type { SharedUiTheme } from "../theme";
 import { Label } from "../typography";
 
@@ -25,7 +26,10 @@ import {
 } from "./nativeRichTextFocus";
 import type { NativeTextSelection } from "./nativeTextEdit";
 import type { NativeRichTextStyles } from "./nativeRichTextStyles";
-import { buildNativeRichTextTestIDs } from "./nativeRichTextTestIDs";
+import {
+  buildNativeRichTextTestIDs,
+  nativeRichTextPrimaryBlock,
+} from "./nativeRichTextTestIDs";
 import type {
   InlineMark,
   RichTextDocument,
@@ -41,6 +45,8 @@ export type NativeRichTextEditorSurfaceProps = {
   /** Collaboration overlay to project onto the document, or `null` for none. */
   collabState: RichTextAnnotationInput | null;
   collaboratorPalette: RichTextCollabPalette;
+  /** Web `data-*` attributes for the first editable block, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   document: RichTextDocument;
   editorFocused: boolean;
   /** Paint the primary frame border while focused; off for `focusIndicator="none"`. */
@@ -82,6 +88,7 @@ export function NativeRichTextEditorSurface({
   canUndo,
   collabState,
   collaboratorPalette,
+  dataSet,
   document,
   editorFocused,
   focusBorder,
@@ -120,6 +127,7 @@ export function NativeRichTextEditorSurface({
   ];
   const activeType = document[activeBlock]?.type ?? "paragraph";
   const testIDs = buildNativeRichTextTestIDs(document, testID);
+  const primaryBlock = nativeRichTextPrimaryBlock(document);
   const annotations =
     collabState && hasRichTextAnnotations(collabState)
       ? annotateRichTextDocument(document, collabState)
@@ -148,6 +156,7 @@ export function NativeRichTextEditorSurface({
               accessibilityLabel={`${label ?? "Rich text editor"}, ${nativeBlockKind(block)}, block ${index + 1} of ${document.length}`}
               active={activeBlock === index}
               block={block}
+              dataSet={index === primaryBlock ? dataSet : undefined}
               decoration={
                 annotations
                   ? {

@@ -20,6 +20,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import type { FocusIndicator } from "../focusRing";
 import { ContextMenu } from "../popover";
 import { useSharedUiTheme } from "../theme";
@@ -160,6 +161,8 @@ export type DataGridProps = {
    * element's accessible name either way.
    */
   overflowTooltip?: DataGridOverflowTooltipMode;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   testID?: string;
 };
 
@@ -190,6 +193,7 @@ export function DataGrid({
   accessibilityLabel,
   focusIndicator,
   overflowTooltip,
+  dataSet,
   testID,
 }: DataGridProps) {
   const theme = useSharedUiTheme();
@@ -341,7 +345,7 @@ export function DataGrid({
         fontSize={metrics.fontSize}
         mode={overflowTooltip}
       >
-        <View testID={testID}>
+        <View testID={testID} {...dataSetProps({ dataSet })}>
           <DataGridCardStack
             accessibilityLabel={accessibilityLabel}
             cellLoading={cellLoading}
@@ -379,6 +383,7 @@ export function DataGrid({
         }
         style={styles.grid}
         testID={testID}
+        {...dataSetProps({ dataSet })}
       >
         <ScrollView
           horizontal

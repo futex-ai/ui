@@ -112,7 +112,10 @@ areas — and dismisses on outside-press or Escape. Screen-reader users get the
 same text from the button's own description (announced on focus), so the reveal
 is a sighted-user affordance and its bubble is not announced separately. Use it
 for occasional "what is this / why we ask" detail; keep the short, always-on
-guidance in `hint`.
+guidance in `hint`. The button sits before the field in DOM order, so it carries
+the initial-focus skip marker (`skipInitialFocusProps` from
+`@firna/ui/initialFocus`): a modal that opens on this field lands on the input,
+with the ⓘ one Shift+Tab away.
 
 ```tsx
 <Input
@@ -138,7 +141,9 @@ affordance.
 `onChangeText("")` by default (which also returns focus to the input), or
 `onClear` when provided. Pass `clearVisible` to drive the button's visibility
 explicitly when the value is committed separately from the live input text (the
-date field does this).
+date field does this). Like the ⓘ button and a labelled suffix button, the clear
+button carries the initial-focus skip marker, so an opening modal lands on the
+field rather than on one of its secondary buttons.
 
 ### Sizes
 

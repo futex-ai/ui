@@ -15,6 +15,7 @@ import {
   ViewStyle,
 } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { addDays, parseIso, SHORT_MONTHS } from "../date/dateMath";
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
@@ -38,6 +39,8 @@ export type AgendaViewProps = {
   onSelectEvent?: (occurrence: CalendarOccurrence) => void;
   /** Extra style for the agenda container. */
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -53,6 +56,7 @@ export function AgendaView({
   agendaDays = 30,
   onSelectEvent,
   style,
+  dataSet,
   testID,
 }: AgendaViewProps) {
   const theme = useSharedUiTheme();
@@ -65,7 +69,11 @@ export function AgendaView({
   );
 
   return (
-    <View style={[styles.agenda, style]} testID={testID}>
+    <View
+      style={[styles.agenda, style]}
+      testID={testID}
+      {...dataSetProps({ dataSet })}
+    >
       <ScrollView
         contentContainerStyle={styles.agendaContent}
         style={styles.agendaScroll}

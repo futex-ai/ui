@@ -7,6 +7,7 @@ import {
 } from "../primitives/reactNative";
 import Svg, { Circle, Polygon, Rect } from "../primitives/svg";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import type { FocusIndicator } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
@@ -58,6 +59,8 @@ export type ScatterChartProps = {
   accessibilityLabel?: string;
   focusIndicator?: FocusIndicator;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   testID?: string;
 };
 
@@ -78,6 +81,7 @@ export function ScatterChart({
   accessibilityLabel,
   focusIndicator,
   style,
+  dataSet,
   testID,
 }: ScatterChartProps) {
   const theme = useSharedUiTheme();
@@ -134,6 +138,7 @@ export function ScatterChart({
       hideTableToggle
       style={style}
       testID={testID}
+      {...dataSetProps({ dataSet })}
       title={title}
     >
       {(layout, styles) => {

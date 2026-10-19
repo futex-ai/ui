@@ -23,6 +23,7 @@ import {
   View,
 } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
@@ -57,6 +58,8 @@ export type DateWheelProps = DateBounds & {
    * AA). Defaults to the theme's `focusIndicator`.
    */
   focusIndicator?: FocusIndicator;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -83,6 +86,7 @@ export function DateWheel({
   max,
   onChange,
   focusIndicator,
+  dataSet,
   testID,
 }: DateWheelProps) {
   const theme = useSharedUiTheme();
@@ -152,7 +156,7 @@ export function DateWheel({
     // No accessibilityLabel/role on the wrapper: a labelled container merges its
     // descendants into one node on native (VoiceOver/TalkBack), which would
     // swallow the individual row buttons. The sheet (overlay) names the picker.
-    <View style={styles.frame} testID={testID}>
+    <View style={styles.frame} testID={testID} {...dataSetProps({ dataSet })}>
       <View style={styles.wheel}>
         {/* Behind the columns (rendered first): the centered selection pill. */}
         <View pointerEvents="none" style={styles.selectionBand} />

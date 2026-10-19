@@ -19,6 +19,7 @@ import {
 
 import { Button } from "../button";
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import type { FocusIndicator } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
@@ -48,6 +49,8 @@ export type WorkflowBuilderProps = {
   accessibilityLabel?: string;
   /** Label for the trailing add-step button. Defaults to "Add step". */
   addStepLabel?: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Render the dotted graph-paper canvas background (web). Defaults to `true`. */
   dotted?: boolean;
   /**
@@ -89,6 +92,7 @@ export type WorkflowBuilderProps = {
 export function WorkflowBuilder({
   accessibilityLabel = "Workflow builder",
   addStepLabel = "Add step",
+  dataSet,
   dotted = true,
   focusIndicator,
   graph,
@@ -231,6 +235,7 @@ export function WorkflowBuilder({
       accessibilityLabel={accessibilityLabel}
       style={[styles.canvas, dottedStyle, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       <View style={styles.graph}>
         {renderSteps(graph.steps, true)}

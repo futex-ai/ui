@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import { View } from "../primitives/reactNative";
 import type { ViewStyle } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
+
 import { Toast } from "./Toast";
 import { ToastLiveRegion } from "./ToastLiveRegion";
 import { TOAST_LAYERS } from "./toastLayers";
@@ -17,6 +19,8 @@ export type ToastViewportProps = {
   placement: ToastPlacement;
   toasts: ToastItem[];
   onDismiss: (id: string) => void;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -35,6 +39,7 @@ export function ToastViewport({
   placement,
   toasts,
   onDismiss,
+  dataSet,
   testID,
 }: ToastViewportProps) {
   if (typeof document === "undefined") {
@@ -62,6 +67,7 @@ export function ToastViewport({
             ...toastViewportInset(placement),
           }}
           testID={testID}
+          {...dataSetProps({ dataSet })}
         >
           {toasts.map((toast) => (
             <Toast key={toast.id} onDismiss={onDismiss} toast={toast} />

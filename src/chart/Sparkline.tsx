@@ -8,6 +8,7 @@ import {
 } from "../primitives/reactNative";
 import Svg, { Circle, Path, Rect } from "../primitives/svg";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import { CHART_MARKS } from "./chartMarks";
@@ -36,6 +37,8 @@ export type SparklineProps = {
    */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   testID?: string;
 };
 
@@ -54,6 +57,7 @@ export function Sparkline({
   height = 28,
   accessibilityLabel,
   style,
+  dataSet,
   testID,
 }: SparklineProps) {
   const theme = useSharedUiTheme();
@@ -152,6 +156,7 @@ export function Sparkline({
       role={accessibilityLabel ? "img" : undefined}
       style={[{ height, width: width === undefined ? "100%" : width }, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       <Svg height={height} width={measured}>
         {body}

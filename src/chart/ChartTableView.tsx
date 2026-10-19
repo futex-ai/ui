@@ -1,6 +1,7 @@
 /** The accessible table twin every chart ships alongside its marks. */
 import { useMemo } from "react";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { Table, type TableColumn } from "../table";
 
 import type { NormalizedSeries } from "./series/stack";
@@ -16,6 +17,8 @@ export type ChartTableViewProps = {
   valueFormat?: (value: number) => string;
   /** Accessible label for the table. */
   accessibilityLabel?: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   testID?: string;
 };
 
@@ -42,6 +45,7 @@ export function ChartTableView({
   categoryLabel = "Category",
   valueFormat,
   accessibilityLabel,
+  dataSet,
   testID,
 }: ChartTableViewProps) {
   const columns = useMemo<TableColumn[]>(
@@ -90,6 +94,7 @@ export function ChartTableView({
       rowKey={(row) => row.key}
       rows={rows}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     />
   );
 }
