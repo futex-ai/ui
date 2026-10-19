@@ -1,6 +1,6 @@
 # Web modal stack
 
-Status: Active. Branch `calummoore/bootstrap-v7`, no pull request yet. The plan
+Status: Active. Branch `calummoore/palette-forms-overlay-discussion`, no pull request yet. The plan
 closes when its PR merges.
 
 `WebModalFrame` is the library's dialog. On web, each open frame portals itself
