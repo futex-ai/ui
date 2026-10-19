@@ -219,9 +219,18 @@ Own commit, so it can be dropped on its own.
 
 - [ ] Add the scrollbar-gutter padding math to `webModalStackModel.ts` with a
       unit test.
-- [ ] In `webModalStack.ts`, store the document element's `overflow` and
-      `padding-right` on the first push, set `overflow: hidden` and pad by the
-      scrollbar width, and restore both on the last pop.
+- [ ] In `webModalStack.ts`, store the `overflow` and `padding-right` of the
+      root element and the body on the first push, set `overflow: hidden` on
+      both and pad by the scrollbar width, and restore all of them on the
+      last pop. iOS Safari ignores the lock on one element alone.
+- [ ] Smoke test on iOS Safari by hand, on an iPhone or the iOS Simulator,
+      because the browser tests run in Chromium only: open the stacked story
+      and try to scroll the page under the sheet with touch. Save the
+      evidence under `.context/web-modal-stack/` and name the file here.
+- [ ] When iOS Safari still scrolls the page, fix the body in place instead:
+      `position: fixed`, full width, and the saved scroll offset as a negative
+      `top`, then restore the offset on the last pop. Keep the offset math in
+      `webModalStackModel.ts` with a unit test.
 - [ ] Give the "Stacked web modals" story tall page content. Add a browser
       test: `overflow` is hidden while a dialog is open and restored after,
       and a fixed-width page element does not shift.
