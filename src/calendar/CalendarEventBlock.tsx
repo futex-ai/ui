@@ -14,6 +14,7 @@ import {
   ViewStyle,
 } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
@@ -36,6 +37,8 @@ export type CalendarEventBlockProps = {
   onSelect?: (occurrence: CalendarOccurrence) => void;
   /** Extra style for the block container. */
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
 };
 
 /**
@@ -48,6 +51,7 @@ export function CalendarEventBlock({
   position,
   onSelect,
   style,
+  dataSet,
 }: CalendarEventBlockProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createCalendarStyles(theme), [theme]);
@@ -74,6 +78,7 @@ export function CalendarEventBlock({
         hideWebOutlineView,
       ]}
       testID={`calendar-event-${occurrence.key}`}
+      {...dataSetProps({ dataSet })}
     >
       <Text numberOfLines={1} style={styles.eventBlockTitle}>
         {occurrence.event.title}

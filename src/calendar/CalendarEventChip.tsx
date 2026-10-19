@@ -15,6 +15,7 @@ import {
   ViewStyle,
 } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
@@ -35,6 +36,8 @@ export type CalendarEventChipProps = {
   onSelect?: (occurrence: CalendarOccurrence) => void;
   /** Extra style for the chip container. */
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
 };
 
 /**
@@ -47,6 +50,7 @@ export function CalendarEventChip({
   variant = "bar",
   onSelect,
   style,
+  dataSet,
 }: CalendarEventChipProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createCalendarStyles(theme), [theme]);
@@ -68,6 +72,7 @@ export function CalendarEventChip({
           hideWebOutlineView,
         ]}
         testID={`calendar-event-${occurrence.key}`}
+        {...dataSetProps({ dataSet })}
       >
         <View style={[styles.chipDotMarker, { backgroundColor: color }]} />
         <Text numberOfLines={1} style={styles.chipDotText}>
@@ -90,6 +95,7 @@ export function CalendarEventChip({
         hideWebOutlineView,
       ]}
       testID={`calendar-event-${occurrence.key}`}
+      {...dataSetProps({ dataSet })}
     >
       <Text numberOfLines={1} style={styles.chipText}>
         {occurrence.event.title}

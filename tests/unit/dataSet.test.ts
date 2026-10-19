@@ -116,7 +116,41 @@ test("every public component that carries a testID also takes and forwards dataS
     ) {
       missingForward.push(name);
     }
+    // A component with no `testID` prop can still identify its host with a
+    // derived identifier (a calendar event chip is `calendar-event-<key>`).
+    // That host is the component's identified element, so it takes the
+    // caller's `dataSet` the same way.
+    const derivedOnly =
+      /testID=\{/.test(source) &&
+      !/testID\?: string/.test(source) &&
+      !/testID=\{testID\}/.test(source);
+    if (derivedOnly && !/dataSet\?: DataSet/.test(source)) {
+      missingProp.push(name);
+    }
+    if (derivedOnly && !/dataSetProps\(|dataSet=\{dataSet\}/.test(source)) {
+      missingForward.push(name);
+    }
   }
   assert.deepEqual(missingProp, []);
   assert.deepEqual(missingForward, []);
+});
+
+test("calendar event chips and blocks forward dataSet beside their derived identifiers", () => {
+  const chip = readFileSync(
+    new URL("../../src/calendar/CalendarEventChip.tsx", import.meta.url),
+    "utf8",
+  );
+  const block = readFileSync(
+    new URL("../../src/calendar/CalendarEventBlock.tsx", import.meta.url),
+    "utf8",
+  );
+  const forward =
+    /testID=\{`calendar-event-\$\{occurrence\.key\}`\}\s*\{\.\.\.dataSetProps\(\{ dataSet \}\)\}/g;
+
+  // Both chip variants and the block put the caller's `dataSet` on the same
+  // `Pressable` that carries the derived identifier.
+  assert.equal(chip.match(forward)?.length, 2);
+  assert.equal(block.match(forward)?.length, 1);
+  assert.match(chip, /dataSet\?: DataSet/);
+  assert.match(block, /dataSet\?: DataSet/);
 });
