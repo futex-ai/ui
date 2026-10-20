@@ -96,6 +96,8 @@ The package name is `@firna/ui`. Public exports are available from:
   collaboration layer (live carets, tracked changes, comment threads) with its
   `RichTextPresenceBar` and `RichTextCollabRail` surfaces.
 - `@firna/ui/segmented` for themed single-select segmented controls.
+- `@firna/ui/sheet` for the modal bottom sheet, gesture-driven on native, and
+  `SheetTextInput`, which keeps the native sheet above the keyboard.
 - `@firna/ui/sortable-list` for the drag-and-drop sortable list (pointer +
   keyboard reordering, an optional start/end grab handle, and vertical or
   horizontal flow), plus the `SortableGroups` coordinator that lets several
@@ -664,6 +666,9 @@ The package export map intentionally separates runtime targets:
   [docs/protocol/shared-ui-components.md](docs/protocol/shared-ui-components.md)
 - Combobox multi-select (grouped tag picker) protocol:
   [docs/protocol/combobox-multi-select.md](docs/protocol/combobox-multi-select.md)
+- Dropdown list rows protocol:
+  [docs/protocol/dropdown-list.md](docs/protocol/dropdown-list.md)
+- Sheet protocol: [docs/protocol/sheet.md](docs/protocol/sheet.md)
 - Rich-text collaboration protocol:
   [docs/protocol/rich-text-collaboration.md](docs/protocol/rich-text-collaboration.md)
 - Consumer migration handoff: [docs/consumer-migration.md](docs/consumer-migration.md)

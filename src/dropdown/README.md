@@ -324,8 +324,12 @@ On web the option surface is a real ARIA composite (WCAG 4.1.2 Name/Role/Value):
   button that carries the detail as its accessible description (announced on
   focus); the portaled bubble is a sighted-user reveal only, so the text is never
   announced twice and never leaks into the trigger's name.
+- Each list is one Tab stop: no row is ever a Tab stop. The trigger or the
+  search input keeps focus while the arrow keys move the active row (WCAG
+  2.1.1).
 - A row's name is its label, and its visible `secondary` line is its accessible
-  description (`aria-describedby`), so a screen reader hears both.
+  description, so a screen reader hears both: `aria-describedby` on web, and
+  the accessibility hint on native.
 - Disabled rows carry `aria-disabled`. `ComboboxMultiSelect` also renders a
   locked value's row as disabled, so it is announced as selected and
   unavailable.
@@ -334,7 +338,7 @@ On web the option surface is a real ARIA composite (WCAG 4.1.2 Name/Role/Value):
   (`aria-owns`), so a footer action is named by its label like any option.
 
 These ARIA roles/attributes are emitted on web only; native keeps the tappable
-`button` row role and `accessibilityState` so OS screen readers are unaffected.
+`button` row role, `accessibilityState`, and the secondary line as the hint.
 
 Use `DropdownPortal` plus `DropdownList` directly for custom pickers that need
 to own the anchor ref, surface body, or list wiring. The portal treats the
@@ -461,6 +465,8 @@ import { Car, House } from "lucide-react-native";
       value: "skoda",
     },
     {
+      // A text mark in the chip, in the chip's text colour.
+      chipLeading: ({ color }) => <Text style={{ color }}>L</Text>,
       chipTone: "muted",
       description: "Archived",
       group: "Projects",
@@ -500,9 +506,12 @@ import { Car, House } from "lucide-react-native";
   it. Pressing it or pressing Enter calls `onPress` with the trimmed query,
   then clears the query and closes the list. The `footer` string still shows
   as a static note at the end of the list, so both can show at once.
-- **`chipTone`** / **`icon`** — `chipTone: "muted"` paints the chip neutral grey,
-  for example for an archived tag. An `icon` is drawn in the option's mark and
-  inside its chip. A text `mark` stays in the row only.
+- **`chipTone`** / **`icon`** / **`chipLeading`** — `chipTone: "muted"` paints
+  the chip neutral grey, for example for an archived tag. An `icon` is drawn in
+  the option's mark and at the start of its chip. `chipLeading` draws your own
+  content at the start of the chip instead of the icon; as a render function it
+  gets the chip's text colour, so a text mark matches the label on each tone. A
+  text `mark` shows in the row only.
 
 Chips always follow `options` order, not selection order. Backspace in the
 empty search input does not remove chips; use a chip's remove button.
@@ -510,14 +519,18 @@ empty search input does not remove chips; use a chip's remove button.
 On phones and native, pass `presentation="sheet"`. The field then shows the
 chips and a button (the `placeholder`) instead of the search input; pressing it
 opens a bottom `Sheet` (`@firna/ui/sheet`) named by the `label`. The sheet holds
-the chips and the search input at the top (focused on open on web), the list below,
-and the pinned footer action. Selections apply as they are made, so the sheet's
-dismiss control is a Done action: the native header shows "Done", and on web
-the modal's close button is named "Done". Escape and the backdrop also close
-it, and focus returns to the field's button. Only keys pressed in the sheet's
-search input drive the list, so Enter on Done or on a chip's remove button
-works as usual. The caller picks the presentation,
-for example by viewport width; the default is the anchored `popover`.
+the chips and the search input at the top, the list below, and the pinned
+footer action. Selections apply as they are made, so the sheet's dismiss
+control is a visible "Done" text button on both platforms. The backdrop, and
+Escape on web, also close it. On web, the search input takes focus when the
+sheet opens, and focus returns to the field's button when it closes. Only keys
+pressed in the sheet's search input drive the list, so Enter on Done or on a
+chip's remove button works as usual. An `accessibilityLabel` names the sheet's
+search input as well as the field's, and the field's `error` and `hint`
+describe both. On native, the sheet's search input is a `SheetTextInput`, so
+the sheet stays above the keyboard while you type, and one tap chooses a row
+even while the keyboard is open. The caller picks the presentation, for example
+by viewport width; the default is the anchored `popover`.
 
 ## Theming
 
@@ -548,3 +561,25 @@ the modal surface. Keep `DROPDOWN_LAYERS.portal` above
 (`1_000_000`) so anchored menus and popovers clear consumer content stacks.
 `DropdownPortal` accepts `zIndex` for the rare screen that owns an even higher
 custom layer.
+
+## Key Code
+
+- `DropdownList.tsx` — the option list: scroll area, pinned regions, groups.
+- `DropdownRow.tsx` and `dropdownRowA11y.ts` — one row, and its name, role,
+  description, and Tab order per platform.
+- `dropdownListStyles.ts` — row styles and the highlight per state and variant.
+- `ComboboxMultiSelect.tsx` — the chip field; `ComboboxFieldParts.tsx` holds its
+  label row and messages.
+- `useComboboxPicker.ts` and `comboboxMultiSelectModel.ts` — open state,
+  search, grouping, and the selection rules.
+- `comboboxMultiSelectEntries.tsx` — the option rows and the footer action row.
+- `comboboxSearchInputA11y.ts` — the name and description of both search
+  inputs.
+- `ComboboxSheet.tsx` — the sheet presentation and its trigger button.
+
+## Related Docs
+
+- [Dropdown list requirements](../../docs/protocol/dropdown-list.md)
+- [Combobox multi-select requirements](../../docs/protocol/combobox-multi-select.md)
+- [Sheet requirements](../../docs/protocol/sheet.md)
+- The Dropdown Contract in [shared-ui-components.md](../../docs/protocol/shared-ui-components.md)

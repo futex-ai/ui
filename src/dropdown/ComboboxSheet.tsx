@@ -37,7 +37,7 @@ export type ComboboxSheetProps = {
   inputA11y: object;
   /** Key handling shared with the field's navigation hook. */
   inputKeyProps: ReturnType<typeof useComboboxNavigation>["keyProps"];
-  /** The search input; focused when the sheet opens. */
+  /** The search input; focused when the sheet opens on web. */
   inputRef: RefObject<TextInput | null>;
   /** Name of the sheet. */
   label: string;

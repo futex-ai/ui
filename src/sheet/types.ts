@@ -9,7 +9,10 @@ import type { TextInputProps } from "../primitives/reactNative";
 
 /** State handed to a `Sheet` children render function. */
 export type SheetContentState = {
-  /** Animate the sheet closed (its dismiss then fires `onClose`). */
+  /**
+   * Close the sheet. On native it animates the sheet down, and its dismiss then
+   * fires `onClose`. On web it calls `onClose` at once.
+   */
   close: () => void;
   /** Body height available before the content scrolls. */
   maxHeight: number;
@@ -19,9 +22,9 @@ export type SheetProps = {
   /** Body: a node, or a render function given `{ close, maxHeight }`. */
   children: ReactNode | ((state: SheetContentState) => ReactNode);
   /**
-   * Native: the header dismiss control's text, default `"Cancel"`. Web: the
-   * accessible name of the modal's close button, default
-   * `"Close {title ?? label}"`.
+   * Native: the header dismiss control's text, default `"Cancel"`. Web: when
+   * set, the close button shows this text, which also names it. Without it,
+   * the web close button is an ✕ icon named `"Close {title ?? label}"`.
    */
   dismissLabel?: string;
   /**
@@ -35,13 +38,17 @@ export type SheetProps = {
    */
   initialFocusRef?: RefObject<{ focus?: () => void } | null>;
   /**
-   * Accessible name for the surface (required, WCAG 4.1.2). Also the default
-   * visible title when `title` is omitted.
+   * Accessible name for the surface on both platforms (required, WCAG 4.1.2),
+   * also when `title` differs. Also the default visible title when `title` is
+   * omitted.
    */
   label: string;
   /** Cap on the body height; also clamped to ~70% of the viewport. */
   maxHeight?: number;
-  /** Dismiss: backdrop tap, pan-down, Android back, or the header control. */
+  /**
+   * Dismiss: a backdrop tap or the dismiss control, on both platforms. Native
+   * adds a pan down and the Android back button. Web adds Escape.
+   */
   onClose: () => void;
   /** Controlled open state. */
   open: boolean;

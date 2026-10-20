@@ -118,6 +118,26 @@ const cancelRef = useRef<View | null>(null);
 </WebModalFrame>;
 ```
 
+The dialog takes its accessible name from the visible `title`. Pass
+`accessibilityLabel` when assistive tech should hear a different name; the web
+`Sheet` uses it so that its `label` names the sheet even with a separate
+`title`. Pass `closeText` to show visible text, such as "Done", in place of the
+✕ close icon. The text then names the button, so leave `closeLabel` for the
+icon:
+
+```tsx
+<WebModalFrame
+  accessibilityLabel="Rename tag"
+  closeText="Done"
+  onClose={onClose}
+  placement="bottom-sheet"
+  title="Tag name"
+  visible={open}
+>
+  <TagNameField />
+</WebModalFrame>
+```
+
 ## Theming
 
 Modal surfaces read colors, fonts, and radii from `SharedUiThemeProvider`. The
@@ -137,7 +157,9 @@ npm run test:browser
 
 ### Key Code
 
-- `WebModalFrame.web.tsx` - web modal frame and focus/close behavior.
+- `WebModalFrame.web.tsx` - web modal frame: header, close button, surface, and portal.
+- `useWebModalFocusTrap.ts` - web focus and Escape effects: inert background, initial focus, restore, the Tab trap.
+- `webModalFocus.ts` - DOM helpers for the initial focus target and the Tab trap.
 - `WebModalFrame.tsx` - native RN `Modal` frame (sheet + dialog).
 - `webModalFrameStyles.ts` - theme-driven web style factory.
 - `WebModalPortal.web.tsx` - DOM portal boundary.
@@ -149,4 +171,6 @@ npm run test:browser
 ### Related Docs
 
 - Plan: `plans/shared-dropdown-modal-library.md`.
+- Sheet requirements, including the dialog name and the close text:
+  `docs/protocol/sheet.md`.
 - Dropdown boundary: `src/dropdown/README.md`.

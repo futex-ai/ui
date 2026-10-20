@@ -8,8 +8,9 @@ import { loadBuiltUi, testBuilt } from "./builtUi";
  * combobox option's `description`) at WCAG 2.1 — 1.4.3 AA (4.5:1) against the
  * fill the row is painted with, in all four shipped themes. Trailing
  * `rightText` is not covered: it keeps the muted grey on the tinted fills,
- * which an existing browser test pins. The styles module imports the platform
- * seam, so this runs against the built web output under `npm run test:dist`.
+ * below AA in the default theme, as futex-ai/ui#176 tracks. The styles module
+ * imports the platform seam, so this runs against the built web output under
+ * `npm run test:dist`.
  */
 const STATES = [
   { active: false, label: "rest", selected: false },
