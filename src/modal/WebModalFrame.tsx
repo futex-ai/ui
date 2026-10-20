@@ -39,10 +39,12 @@ import { webModalCanClose, webModalMaxWidth } from "./webModalModel";
 import type { WebModalCloseSource } from "./webModalModel";
 
 export function WebModalFrame({
+  accessibilityLabel,
   body,
   children,
   closeDisabled = false,
   closeLabel,
+  closeText,
   dismissible = true,
   footer,
   bodyStyle,
@@ -100,15 +102,22 @@ export function WebModalFrame({
       </View>
       {showCloseButton ? (
         <Pressable
-          accessibilityLabel={closeLabel ?? `Close ${title}`}
+          accessibilityLabel={closeText ?? closeLabel ?? `Close ${title}`}
           accessibilityRole="button"
           accessibilityState={{ disabled: closeDisabled }}
           disabled={closeDisabled}
           hitSlop={10}
           onPress={() => requestClose("closeButton")}
-          style={[styles.closeButton, closeDisabled ? styles.disabled : null]}
+          style={[
+            closeText ? styles.closeTextButton : styles.closeButton,
+            closeDisabled ? styles.disabled : null,
+          ]}
         >
-          <X color={theme.colors.ink2} size={18} />
+          {closeText ? (
+            <Text style={styles.closeText}>{closeText}</Text>
+          ) : (
+            <X color={theme.colors.ink2} size={18} />
+          )}
         </Pressable>
       ) : null}
     </View>
@@ -126,7 +135,7 @@ export function WebModalFrame({
         dismissible={canDismiss}
         footer={footerBlock}
         header={header}
-        label={title}
+        label={accessibilityLabel ?? title}
         onClose={() => onCloseRef.current()}
         open={visible}
         scroll={scroll}
@@ -159,7 +168,7 @@ export function WebModalFrame({
         style={styles.center}
       >
         <View
-          accessibilityLabel={title}
+          accessibilityLabel={accessibilityLabel ?? title}
           accessibilityViewIsModal
           style={[
             styles.surface,
@@ -210,6 +219,20 @@ function createNativeModalStyles(theme: SharedUiTheme) {
       height: 34,
       justifyContent: "center",
       width: 34,
+    },
+    closeText: {
+      ...baseText,
+      color: theme.colors.primaryDeep,
+      fontSize: 15,
+      fontWeight: "700",
+      lineHeight: 20,
+    },
+    closeTextButton: {
+      alignItems: "center",
+      borderRadius: theme.radii.md,
+      height: 34,
+      justifyContent: "center",
+      paddingHorizontal: 8,
     },
     disabled: { opacity: 0.55 },
     footer: {

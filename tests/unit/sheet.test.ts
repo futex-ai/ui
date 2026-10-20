@@ -45,13 +45,37 @@ test("web sheet reuses the modal frame bottom-sheet placement", () => {
   assert.doesNotMatch(source, /@gorhom\/bottom-sheet/);
 });
 
-test("public sheet entrypoint exports the component and sizing helper only", () => {
+test("public sheet entrypoint exports the component, its text input, and the sizing helper", () => {
   const source = readSource("../../src/sheet/index.ts");
 
-  assert.match(source, /\.\/Sheet/);
+  assert.match(source, /\.\/Sheet"/);
+  assert.match(source, /\.\/SheetTextInput"/);
   assert.match(source, /sheetModel/);
   // The internal shell is not part of the public surface.
   assert.doesNotMatch(source, /BottomSheetShell/);
+});
+
+// The native sheet renders only on a device, so these native contracts are
+// pinned in the source, like the shell test above.
+test("the native sheet lets a tap reach a row while the keyboard is open", () => {
+  const shellSource = readSource("../../src/sheet/BottomSheetShell.tsx");
+
+  assert.match(
+    shellSource,
+    /<BottomSheetScrollView[\s\S]*?keyboardShouldPersistTaps="handled"/,
+  );
+});
+
+test("the native sheet text input lifts the sheet only inside a sheet", () => {
+  const native = readSource("../../src/sheet/SheetTextInput.tsx");
+  const web = readSource("../../src/sheet/SheetTextInput.web.tsx");
+
+  // Inside a gorhom sheet, gorhom's input sets the keyboard target that lifts
+  // the sheet. Outside one, where gorhom's input throws, a plain input renders.
+  assert.match(native, /BottomSheetTextInput/);
+  assert.match(native, /useBottomSheetInternal\(true\) !== null/);
+  assert.match(native, /if \(!insideSheet\)[\s\S]*?<TextInput /);
+  assert.doesNotMatch(web, /@gorhom\/bottom-sheet/);
 });
 
 function readSource(relativePath: string) {

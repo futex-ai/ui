@@ -6,17 +6,12 @@
  */
 import { useMemo } from "react";
 import type { ComponentProps, RefObject } from "react";
-import {
-  Platform,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from "../primitives/reactNative";
+import { Platform, Pressable, Text, View } from "../primitives/reactNative";
+import type { TextInput } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
-import { Sheet } from "../sheet";
+import { Sheet, SheetTextInput } from "../sheet";
 import { useSharedUiTheme } from "../theme";
 
 import { ComboboxChips } from "./ComboboxOptionParts";
@@ -115,7 +110,7 @@ export function ComboboxSheet({
                 singleLine={false}
                 styles={styles}
               />
-              <TextInput
+              <SheetTextInput
                 {...focus.focusTargetProps}
                 {...inputA11y}
                 onBlur={focus.onBlur}

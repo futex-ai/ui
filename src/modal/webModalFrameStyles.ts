@@ -38,6 +38,21 @@ export function createWebModalFrameStyles(theme: SharedUiTheme) {
       justifyContent: "center",
       width: 34,
     },
+    // `closeText`: a text button as tall as the ✕ button, sized to its text.
+    closeText: {
+      ...baseText,
+      color: theme.colors.primaryDeep,
+      fontSize: 15,
+      fontWeight: "700",
+      lineHeight: 20,
+    },
+    closeTextButton: {
+      alignItems: "center",
+      borderRadius: theme.radii.md,
+      height: 34,
+      justifyContent: "center",
+      paddingHorizontal: 8,
+    },
     disabled: { opacity: 0.55 },
     footer: {
       borderTopColor: theme.colors.border,

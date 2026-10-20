@@ -5,6 +5,7 @@
  * modal module's `types.ts` convention.
  */
 import type { ReactNode, RefObject } from "react";
+import type { TextInputProps } from "../primitives/reactNative";
 
 /** State handed to a `Sheet` children render function. */
 export type SheetContentState = {
@@ -48,4 +49,13 @@ export type SheetProps = {
   testID?: string;
   /** Visible title when it should read differently from `label`. */
   title?: string;
+};
+
+/**
+ * Props of {@link SheetTextInput}: the platform text input props. Use the
+ * input only inside a `Sheet` body.
+ */
+export type SheetTextInputProps = TextInputProps & {
+  /** Test identifier forwarded to the input (`data-testid` on web). */
+  testID?: string;
 };

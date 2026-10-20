@@ -79,7 +79,7 @@ test("removing an unknown layer is harmless", () => {
 });
 
 test("modal and dropdown route Escape through the shared layer stack", () => {
-  const modalSource = readSource("../../src/modal/WebModalFrame.web.tsx");
+  const modalSource = readWebModalFrameSources();
   const dismissSource = readSource("../../src/dropdown/useDropdownDismiss.ts");
 
   // The modal no longer closes itself from its own Escape keydown handler; it
@@ -97,4 +97,18 @@ test("modal and dropdown route Escape through the shared layer stack", () => {
 
 function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
+}
+
+/**
+ * The web modal frame's source with the focus hook and helpers it delegates
+ * to, so these contracts hold wherever the frame keeps that code.
+ */
+function readWebModalFrameSources() {
+  return [
+    "../../src/modal/WebModalFrame.web.tsx",
+    "../../src/modal/useWebModalFocusTrap.ts",
+    "../../src/modal/webModalFocus.ts",
+  ]
+    .map(readSource)
+    .join("\n");
 }

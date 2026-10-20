@@ -19,10 +19,21 @@ import type { WebModalPlacement, WebModalSize } from "./webModalModel";
 export type Focusable = { focus?: () => void };
 
 export type WebModalFrameProps = {
+  /**
+   * Accessible name of the dialog. Defaults to the visible `title`. Set it when
+   * the name that assistive tech announces should differ from the title.
+   */
+  accessibilityLabel?: string;
   body?: ReactNode;
   children?: ReactNode;
   closeDisabled?: boolean;
+  /** Accessible name of the ✕ close button. Defaults to `Close {title}`. */
   closeLabel?: string;
+  /**
+   * Visible text for the close button, such as "Done", shown instead of the ✕
+   * icon. The text is then also the button's accessible name.
+   */
+  closeText?: string;
   /**
    * How the close button shows keyboard focus: the shared `ring` glow, the
    * browser's `outline`, or `none` for no focus styling at all, which leaves
