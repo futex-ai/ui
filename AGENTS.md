@@ -41,8 +41,9 @@ repository-wide rules. Put a rule for one component, crate, or feature in the
 - Targeted tests: `node --import tsx --test tests/unit/<name>.test.ts` runs one
   unit test file. `npx playwright test tests/browser/<name>.spec.ts` runs one
   browser spec. Playwright starts Storybook itself.
-- Typecheck: `npm run typecheck` checks the native files, and
-  `npm run typecheck:web` checks the `.web` files.
+- Typecheck: `npm run typecheck` and `npm run typecheck:web`. Run both after a
+  TypeScript change. The section "Two type-check passes" in
+  `src/primitives/README.md` says how they differ.
 - Early check: `npm run format:check`. The repository has no lint yet. After a
   change under `xtask/`, also run `cargo fmt --all -- --check`,
   `cargo clippy --workspace --all-targets -- -D warnings`, and
@@ -58,8 +59,9 @@ repository-wide rules. Put a rule for one component, crate, or feature in the
 - Unit tests use the Node test runner through `tsx`, in
   `tests/unit/*.test.ts`. Browser tests use Playwright, in
   `tests/browser/*.spec.ts`.
-- The public entry points are the files that the `exports` map in
-  `package.json` names, for example `src/button/index.ts`.
+- The public entry points are the source files that build to the targets of
+  the `exports` map in `package.json`, for example `src/button/index.ts` for
+  `@firna/ui/button`.
 - Product code warns only through `devWarn` in `src/devWarn.ts`. It writes in
   development builds only. The library has no logger and no error tracking.
 - The story snapshot sweep pins a screenshot and an ARIA snapshot of each
