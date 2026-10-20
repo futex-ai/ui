@@ -40,7 +40,7 @@ function ensureRegion(politeness: AnnouncePoliteness): HTMLElement | null {
   region.setAttribute("aria-live", politeness);
   region.setAttribute("aria-atomic", "true");
   // An open web modal leaves a marked region exposed.
-  region.setAttribute(LIVE_REGION_ATTRIBUTE, "");
+  region.setAttribute(LIVE_REGION_ATTRIBUTE, "true");
   // Visually hidden but available to assistive tech.
   Object.assign(region.style, {
     border: "0",

@@ -50,11 +50,12 @@ though it is now cross-platform.
   `role="heading"`). Background page content is made `inert`/`aria-hidden` while
   the modal is open and restored on close, since RNW does not emit `inert` for
   `accessibilityViewIsModal`. The library's live regions, which carry the
-  `data-firna-live-region` marker from `announce`, stay exposed, so a status
-  message such as a result count is still heard while the modal is open. The
-  backdrop is a mouse-only dismiss target hidden from assistive tech and the
-  tab order (Escape is the accessible close path). The close button shows a
-  focus-visible ring on keyboard focus.
+  `data-firna-live-region` marker (the `announce` regions and the toast live
+  region), stay exposed, so a status message such as a result count or a
+  toast is still heard while the modal is open. The backdrop is a mouse-only
+  dismiss target hidden from assistive tech and the tab order (Escape is the
+  accessible close path). The close button shows a focus-visible ring on
+  keyboard focus.
 - Keep web close behavior explicit: Escape, backdrop press, close button, and
   request-close all use the same policy. Escape is routed through the shared
   escape-layer stack (`src/escapeLayer.ts`), so a dropdown, popover, or nested

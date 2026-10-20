@@ -9,6 +9,8 @@ const SHEET_STORY =
   "/iframe.html?id=dropdown-tag-picker--tag-sheet&viewMode=story";
 const SHEET_IN_MODAL_STORY =
   "/iframe.html?id=dropdown-tag-picker--tag-sheet-in-modal&viewMode=story";
+const TOAST_OVER_MODAL_STORY =
+  "/iframe.html?id=modal-examples--toast-over-modal&viewMode=story";
 
 test("a modal that opens over the live region leaves it exposed", async ({
   page,
@@ -33,6 +35,24 @@ test("a modal that opens over the live region leaves it exposed", async ({
   await expect(region).not.toHaveAttribute("aria-hidden");
   await input.fill("flat");
   await expect(region).toHaveText("2 options available");
+});
+
+test("a toast that shows while a modal is open is announced", async ({
+  page,
+}) => {
+  await page.goto(TOAST_OVER_MODAL_STORY);
+  const modal = page.getByRole("dialog", { name: "Edit transaction" });
+  await expect(modal).toBeVisible();
+  await modal.getByRole("button", { name: "Save" }).click();
+
+  // The toast live region existed before the modal opened.
+  const region = page.locator('[aria-live="polite"][aria-atomic="true"]');
+  await expect(region).toContainText("Saved. Your changes were saved.");
+  expect(
+    await region.evaluate(
+      (node) => node.closest('[inert], [aria-hidden="true"]') === null,
+    ),
+  ).toBe(true);
 });
 
 test("a sheet opened from a modal traps Tab on its own", async ({ page }) => {
