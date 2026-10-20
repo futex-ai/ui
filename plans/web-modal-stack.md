@@ -370,10 +370,25 @@ Own commit, so it can be dropped on its own.
       run covers both, because it runs `npm run verify`. The log is
       `gate-1.log`.
 - [x] Commit with Conventional Commits and push the branch.
-- [ ] Run `cargo xtask review`, and review the complete local diff against
+- [x] Run `cargo xtask review`, and review the complete local diff against
       `origin/main` with the `implementation-review` skill after the push.
       Report the findings, then apply the review-fix rule: fix the
       `Auto-fix: yes` findings, re-review once, and report the rest.
+      `cargo xtask review` failed twice with `model_not_found` for
+      `gpt-5.5`, so the skill reviews are the reviews of record:
+      `review/review-1.md` and `review/review-2.md`. Finding 1 was fixed in
+      `ede2202`, and the re-review found nothing new.
+  - 2. Scroll-lock contract overstates layout stability. Severity Medium,
+       effort Medium. Recommended: B, reserve the scrollbar gutter during the
+       lock and extend each dialog layer over it.
+  - Outside the scope: `.storybook/main.ts`: Vite reloads every story page
+    when Playwright writes a trace under `.context/`. Separate branch.
+  - Outside the scope: `src/button`: `Button` does not forward
+    `aria-controls`, so a popover trigger built with it loses the link to
+    its popup. Separate branch.
+  - Outside the scope: `xtask/src/review.rs`: the review command hardcodes
+    `gpt-5.5`, which the configured Codex provider does not serve.
+    Separate branch.
 
 ## Post-merge follow-up (non-blocking)
 
