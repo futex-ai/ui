@@ -59,9 +59,16 @@ test(
       tagWith(markup, 'id="list-row-end"'),
       /aria-label="Custom end"/,
     );
-    // The list is one Tab stop: no row takes focus from the Tab key.
-    assert.doesNotMatch(markup, /tabindex="0"/);
+    // The list is one Tab stop and no row is: by default the list itself is
+    // the stop, and a list that a combobox controls leaves the stop to it.
     assert.match(tagWith(markup, 'id="list-row-start"'), /tabindex="-1"/);
+    assert.match(tagWith(markup, 'id="list-row-end"'), /tabindex="-1"/);
+    assert.match(tagWith(markup, 'role="listbox"'), /tabindex="0"/);
+    const controlled = await renderList({
+      entries: [{ id: "only", label: "Only", type: "item" }],
+      focusable: false,
+    });
+    assert.doesNotMatch(tagWith(controlled, 'role="listbox"'), /tabindex=/);
   },
 );
 

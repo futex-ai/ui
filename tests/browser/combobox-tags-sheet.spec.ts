@@ -8,9 +8,9 @@ import { chipRemoveNames } from "./comboboxTags";
  * `GroupedTagPickerExample` sheet stories.
  */
 const SHEET_STORY =
-  "/iframe.html?id=dropdown-examples--chip-multi-select-tag-sheet&viewMode=story";
+  "/iframe.html?id=dropdown-tag-picker--tag-sheet&viewMode=story";
 const OPEN_SHEET_STORY =
-  "/iframe.html?id=dropdown-examples--chip-multi-select-tag-sheet-open&viewMode=story";
+  "/iframe.html?id=dropdown-tag-picker--tag-sheet-open&viewMode=story";
 
 async function openSheet(page: Page) {
   await page.goto(SHEET_STORY);

@@ -324,9 +324,13 @@ On web the option surface is a real ARIA composite (WCAG 4.1.2 Name/Role/Value):
   button that carries the detail as its accessible description (announced on
   focus); the portaled bubble is a sighted-user reveal only, so the text is never
   announced twice and never leaks into the trigger's name.
-- Each list is one Tab stop: no row is ever a Tab stop. The trigger or the
-  search input keeps focus while the arrow keys move the active row (WCAG
-  2.1.1).
+- Each list is one Tab stop, and no row is ever a Tab stop (WCAG 2.1.1). When a
+  combobox input controls the list, as in `ComboboxMultiSelect` and a
+  `searchable` selector, the input is the stop and keeps focus. Otherwise the
+  list itself is the stop and points `aria-activedescendant` at the active row,
+  so a list that scrolls stays reachable from the keyboard. Pass
+  `focusable={false}` to a custom `DropdownList` that a combobox input
+  controls.
 - A row's name is its label, and its visible `secondary` line is its accessible
   description, so a screen reader hears both: `aria-describedby` on web, and
   the accessibility hint on native.

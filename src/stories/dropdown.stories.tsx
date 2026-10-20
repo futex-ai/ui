@@ -10,7 +10,6 @@ import {
 } from "../index";
 import type { DropdownHighlightVariant } from "../index";
 
-import { GroupedTagPickerExample } from "./comboboxTagPickerExample";
 import { DropdownAsyncFocusExample } from "./dropdownAsyncFocusExample";
 import {
   ActionMenuExample,
@@ -257,46 +256,6 @@ export const ChipMultiSelectValidation: Story = {
   render: () => (
     <StorySurface>
       <ChipMultiSelectValidationExample />
-    </StorySurface>
-  ),
-};
-
-export const ChipMultiSelectGroupedTags: Story = {
-  name: "Chip multi-select · grouped tags",
-  render: () => (
-    <StorySurface>
-      <GroupedTagPickerExample />
-    </StorySurface>
-  ),
-};
-
-export const ChipMultiSelectGroupedTagsOpen: Story = {
-  name: "Chip multi-select · grouped tags, open",
-  render: () => (
-    <StorySurface>
-      <GroupedTagPickerExample autoFocus />
-    </StorySurface>
-  ),
-};
-
-export const ChipMultiSelectTagSheet: Story = {
-  name: "Chip multi-select · tags in a sheet",
-  render: () => (
-    <StorySurface>
-      <GroupedTagPickerExample presentation="sheet" />
-    </StorySurface>
-  ),
-};
-
-export const ChipMultiSelectTagSheetOpen: Story = {
-  name: "Chip multi-select · tags in a sheet, open",
-  render: () => (
-    <StorySurface>
-      <GroupedTagPickerExample
-        hint="Choose one tag per group."
-        presentation="sheet"
-        startOpen
-      />
     </StorySurface>
   ),
 };

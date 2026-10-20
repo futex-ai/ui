@@ -58,6 +58,7 @@ test("ungrouped lists stay one run of rows", () => {
 
 test("the list container owns pinned rows on web only", () => {
   const web = dropdownListContainerA11y({
+    focusable: false,
     isWeb: true,
     label: "Tags",
     listId: "list",
@@ -69,6 +70,7 @@ test("the list container owns pinned rows on web only", () => {
   assert.equal(web["aria-required"], true);
   assert.equal(web.role, "listbox");
   const plain = dropdownListContainerA11y({
+    focusable: false,
     isWeb: true,
     listId: "list",
     listRole: "menu",
@@ -80,10 +82,35 @@ test("the list container owns pinned rows on web only", () => {
   assert.equal("aria-required" in plain, false);
   assert.deepEqual(
     dropdownListContainerA11y({
+      focusable: true,
       isWeb: false,
       listRole: "listbox",
       ownedIds: ["x"],
     }),
     {},
   );
+});
+
+test("a focusable list is the Tab stop and points at its active row", () => {
+  const focusable = dropdownListContainerA11y({
+    activeRowId: "list-row-van",
+    focusable: true,
+    isWeb: true,
+    listId: "list",
+    listRole: "listbox",
+    ownedIds: [],
+  }) as Record<string, unknown>;
+  assert.equal(focusable.tabIndex, 0);
+  assert.equal(focusable["aria-activedescendant"], "list-row-van");
+  // A combobox input controls the list instead: no stop, no active row.
+  const controlled = dropdownListContainerA11y({
+    activeRowId: "list-row-van",
+    focusable: false,
+    isWeb: true,
+    listId: "list",
+    listRole: "listbox",
+    ownedIds: [],
+  }) as Record<string, unknown>;
+  assert.equal("tabIndex" in controlled, false);
+  assert.equal("aria-activedescendant" in controlled, false);
 });

@@ -101,11 +101,18 @@ export function dropdownListSegments(
  * rows stay tappable Pressables on native). WCAG 4.1.2 Name/Role/Value. They are
  * passed via the literal `role` prop because `listbox`/`option` are absent from
  * the bundled React Native `AccessibilityRole`/`Role` types (the web backend
- * forwards them at runtime); the cast is scoped to this web-only props object.
- * `ownedIds` are rows rendered outside the container, such as pinned footer
- * rows, that `aria-owns` keeps inside the listbox or menu.
+ * forwards them at runtime).
+ *
+ * - `ownedIds` are rows rendered outside the container, such as pinned footer
+ *   rows, that `aria-owns` keeps inside the listbox or menu.
+ * - A list is one Tab stop, and rows never are. A `focusable` list is that
+ *   stop itself and points `aria-activedescendant` at the active row, so a
+ *   list that scrolls stays reachable from the keyboard (WCAG 2.1.1). A list
+ *   that a combobox input controls is not focusable: the input is the stop.
  */
 export function dropdownListContainerA11y({
+  activeRowId,
+  focusable,
   isWeb,
   label,
   listId,
@@ -113,6 +120,9 @@ export function dropdownListContainerA11y({
   ownedIds,
   required,
 }: {
+  /** The DOM id of the active row, when one is active. */
+  activeRowId?: string;
+  focusable: boolean;
   isWeb: boolean;
   label?: string;
   listId?: string;
@@ -123,15 +133,17 @@ export function dropdownListContainerA11y({
   if (!isWeb) {
     return {};
   }
-  return {
+  const props: object = {
     "aria-label": label,
     ...(ownedIds.length > 0 ? { "aria-owns": ownedIds.join(" ") } : {}),
     // `aria-required` is allowed on `role="listbox"` but not on `menu`, so
     // only expose it for the listbox container (WCAG 4.1.2).
     ...(required && listRole === "listbox" ? { "aria-required": true } : {}),
+    ...(focusable ? { "aria-activedescendant": activeRowId, tabIndex: 0 } : {}),
     nativeID: listId,
     role: listRole,
-  } as unknown as object;
+  };
+  return props;
 }
 
 /**

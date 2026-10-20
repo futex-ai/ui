@@ -14,10 +14,13 @@ contrast.
 
 ## Keyboard
 
-- A dropdown list is one Tab stop.
-- The list's trigger or search input keeps focus, and the arrow keys move the
-  active row.
-- Tab never moves focus onto a row.
+- A dropdown list is one Tab stop, and no row is a Tab stop.
+- When a combobox input controls the list, the input is that stop and keeps
+  focus.
+- Otherwise the list itself is that stop, so a list that scrolls stays
+  reachable from the keyboard.
+- A list that is the stop points assistive tech at its active row.
+- The arrow keys move the active row.
 - Decision: rows are not Tab stops. Rejected: rows as Tab stops. Reason: a
   list is a composite widget, which is one Tab stop under WCAG 2.1, and a row
   with focus let Space choose the active row instead of the focused one.

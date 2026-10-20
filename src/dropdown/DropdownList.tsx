@@ -83,6 +83,13 @@ export type DropdownListEntry =
 type DropdownListProps = {
   activeId?: string | null;
   entries: DropdownListEntry[];
+  /**
+   * Whether the list itself is a Tab stop. Defaults to `true`, so a list that
+   * scrolls stays reachable from the keyboard; on web the list then points
+   * `aria-activedescendant` at the active row. Pass `false` when a combobox
+   * input controls the list and keeps focus. Rows are never Tab stops.
+   */
+  focusable?: boolean;
   footer?: ReactNode;
   /**
    * Selectable rows pinned below the scroll area, so an action such as
@@ -131,6 +138,7 @@ type DropdownListProps = {
 export function DropdownList({
   activeId: controlledActiveId,
   entries,
+  focusable = true,
   footer,
   footerEntries = NO_ENTRIES,
   groupSections = false,
@@ -162,6 +170,8 @@ export function DropdownList({
   const itemRole: "menuitem" | "option" =
     listRole === "menu" ? "menuitem" : "option";
   const containerA11y = dropdownListContainerA11y({
+    activeRowId: dropdownRowDomId(listId, activeId),
+    focusable,
     isWeb,
     label,
     listId,

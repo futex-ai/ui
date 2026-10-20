@@ -159,6 +159,8 @@ export function ComboboxMultiSelect({
   const listProps = {
     activeId: navigation.activeId,
     entries,
+    // The search input controls the list and keeps focus.
+    focusable: false,
     footerEntries: picker.footerEntries,
     groupSections: true,
     highlightVariant,

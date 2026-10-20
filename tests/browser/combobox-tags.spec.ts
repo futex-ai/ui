@@ -10,7 +10,7 @@ import { chipRemoveNames } from "./comboboxTags";
  * The sheet presentation is in `combobox-tags-sheet.spec.ts`.
  */
 const TAGS_STORY =
-  "/iframe.html?id=dropdown-examples--chip-multi-select-grouped-tags&viewMode=story";
+  "/iframe.html?id=dropdown-tag-picker--grouped-tags&viewMode=story";
 
 async function openTags(page: Page) {
   await page.goto(TAGS_STORY);
