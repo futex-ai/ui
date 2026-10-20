@@ -68,7 +68,7 @@ export const StackedWebModals: Story = {
   render: () => (
     <StorySurface>
       <ToastProvider>
-        <ModalStackExample />
+        <ModalStackExample scrollablePage />
       </ToastProvider>
     </StorySurface>
   ),

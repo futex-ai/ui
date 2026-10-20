@@ -7,6 +7,8 @@ import {
   Button,
   Caption,
   Input,
+  List,
+  ListItem,
   WebModalFrame,
   useAnnouncer,
   useToast,
@@ -22,12 +24,32 @@ type AccountDialogs = "closed" | "confirm" | "settings";
 /** The status that the page's refresh action shows and announces. */
 const ACCOUNT_UP_TO_DATE = "Account details are up to date.";
 
+/** The kinds of account activity that the sample list repeats. */
+const ACTIVITY_TITLES = [
+  "Signed in on a new browser",
+  "Updated the display name",
+  "Downloaded an invoice",
+  "Changed the notification settings",
+] as const;
+
+/** Sample account activity, long enough that the page scrolls. */
+const ACCOUNT_ACTIVITY = Array.from({ length: 24 }, (_, index) => ({
+  id: `activity-${index}`,
+  title: ACTIVITY_TITLES[index % ACTIVITY_TITLES.length],
+  when: index === 0 ? "Today" : index === 1 ? "Yesterday" : `${index} days ago`,
+}));
+
 export type ModalStackExampleProps = {
   /**
    * Opens both dialogs in the first render commit, and adds a page action that
    * reopens both with one state update.
    */
   openAtMount?: boolean;
+  /**
+   * Adds a fixed-width list of recent activity below the page actions, so the
+   * page scrolls behind the dialogs.
+   */
+  scrollablePage?: boolean;
 };
 
 /**
@@ -40,6 +62,7 @@ export type ModalStackExampleProps = {
  */
 export function ModalStackExample({
   openAtMount = false,
+  scrollablePage = false,
 }: ModalStackExampleProps) {
   const [dialogs, setDialogs] = useState<AccountDialogs>(
     openAtMount ? "confirm" : "closed",
@@ -85,6 +108,17 @@ export function ModalStackExample({
         ) : null}
       </View>
       {refreshed ? <Caption>{ACCOUNT_UP_TO_DATE}</Caption> : null}
+      {scrollablePage ? (
+        <List
+          accessibilityLabel="Recent activity"
+          itemKey={(entry) => entry.id}
+          items={ACCOUNT_ACTIVITY}
+          renderItem={(entry) => (
+            <ListItem description={entry.when} title={entry.title} />
+          )}
+          style={styles.activity}
+        />
+      ) : null}
       <WebModalFrame
         footer={
           <Button onPress={saveChanges} tone="primary">
@@ -139,6 +173,7 @@ export function ModalStackExample({
 
 const styles = StyleSheet.create({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+  activity: { width: 480 },
   dangerAction: { alignSelf: "flex-start" },
   page: { gap: 12 },
 });

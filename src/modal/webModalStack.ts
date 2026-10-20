@@ -5,6 +5,7 @@ import type { Focusable } from "./types";
 import { focusWebModalElement, trapWebModalFocus } from "./webModalFocusTrap";
 import type { WebModalCloseSource } from "./webModalModel";
 import { getWebModalRoot } from "./webModalRoot";
+import { lockPageScroll, unlockPageScroll } from "./webModalScrollLock";
 import {
   createWebModalStackState,
   pushWebModalStack,
@@ -67,6 +68,7 @@ export function pushWebModalLayer(layer: WebModalLayer): void {
   applyLayerRoots();
   if (pushed.pageLock === "lock") {
     document.addEventListener("keydown", handleKeyDown, true);
+    lockPageScroll();
   }
   if (pushed.isTop) {
     focusWebModalElement(layer.initialFocusTarget());
@@ -95,6 +97,7 @@ export function removeWebModalLayer(layer: WebModalLayer): void {
   applyLayerRoots();
   if (removal.pageLock === "unlock") {
     document.removeEventListener("keydown", handleKeyDown, true);
+    unlockPageScroll();
   }
   for (const candidate of webModalRestoreCandidates(removal)) {
     if (candidate.kind === "element") {

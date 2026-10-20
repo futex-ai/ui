@@ -174,6 +174,75 @@ test("removal applies released nodes and layer roots before restoring focus", ()
   );
 });
 
+test("the stack locks page scroll on its lock transition and unlocks before focus returns", () => {
+  const source = readSource("../../src/modal/webModalStack.ts");
+  const push = source.slice(
+    source.indexOf("export function pushWebModalLayer"),
+    source.indexOf("export function removeWebModalLayer"),
+  );
+  const removal = source.slice(
+    source.indexOf("export function removeWebModalLayer"),
+    source.indexOf("export function topWebModalLayer"),
+  );
+  // Stacked dialogs lock once and unlock once, and the page is unlocked
+  // before focus returns to it. The lock itself lives in its own module.
+  assert.match(
+    source,
+    /import \{ lockPageScroll, unlockPageScroll \} from "\.\/webModalScrollLock"/,
+  );
+  assert.match(push, /pushed\.pageLock === "lock"\) \{[^}]*lockPageScroll\(\)/);
+  assert.match(
+    removal,
+    /removal\.pageLock === "unlock"\) \{[^}]*unlockPageScroll\(\)/,
+  );
+  assert.ok(
+    removal.indexOf("unlockPageScroll()") <
+      removal.indexOf("webModalRestoreCandidates(removal)"),
+  );
+  assert.doesNotMatch(source, /saveInlineDeclaration|style\.setProperty/);
+});
+
+test("the page scroll lock saves, hides, pads, and restores exactly", () => {
+  const source = readSource("../../src/modal/webModalScrollLock.ts");
+  const lock = source.slice(source.indexOf("export function lockPageScroll"));
+  // The module gives the stack its two calls and nothing else, and it stays
+  // internal to the modal implementation.
+  assert.deepEqual(source.match(/^export \w+ \w+/gm), [
+    "export function lockPageScroll",
+    "export function unlockPageScroll",
+  ]);
+  assert.doesNotMatch(
+    readSource("../../src/modal/index.ts"),
+    /webModalScrollLock/,
+  );
+  // Every touched inline declaration is saved before anything changes.
+  for (const saved of [
+    'saveInlineDeclaration(root, "overflow-x")',
+    'saveInlineDeclaration(root, "overflow-y")',
+    'saveInlineDeclaration(body, "overflow-x")',
+    'saveInlineDeclaration(body, "overflow-y")',
+    'saveInlineDeclaration(body, "padding-right")',
+  ]) {
+    const index = lock.indexOf(saved);
+    assert.ok(index >= 0 && index < lock.indexOf("root.style.setProperty"));
+  }
+  // Both elements hide their overflow, and the padding comes from the width
+  // measured before and after that change.
+  const before = lock.indexOf("const clientWidthBefore = root.clientWidth");
+  const hidden = lock.indexOf('root.style.setProperty("overflow", "hidden")');
+  assert.ok(before >= 0 && before < hidden);
+  assert.match(lock, /body\.style\.setProperty\("overflow", "hidden"\)/);
+  assert.match(
+    lock,
+    /webModalScrollLockPadding\(\s*paddingRight,\s*clientWidthBefore,\s*root\.clientWidth,\s*\)/,
+  );
+  // The unlock restores each saved value and removes the ones it added.
+  assert.match(
+    source,
+    /if \(value === ""\) \{\s*element\.style\.removeProperty\(property\);\s*\} else \{\s*element\.style\.setProperty\(property, value, priority\);/,
+  );
+});
+
 test("stack modules remain internal to the modal implementation", () => {
   const source = readSource("../../src/modal/index.ts");
   assert.doesNotMatch(

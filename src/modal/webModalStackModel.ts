@@ -203,3 +203,18 @@ export function webModalRootMoves<E>(
   }
   return moves;
 }
+
+/**
+ * The body's `padding-right`, in px, while the page scroll is locked: its
+ * computed padding plus the width that hiding the scrollbar gave back, so the
+ * page keeps its layout. `null` when hiding the scrollbar gained no width, as
+ * on a page that already reserves its gutter, which leaves the padding alone.
+ */
+export function webModalScrollLockPadding(
+  computedPaddingRight: number,
+  clientWidthBefore: number,
+  clientWidthAfter: number,
+): number | null {
+  const gained = clientWidthAfter - clientWidthBefore;
+  return gained > 0 ? computedPaddingRight + gained : null;
+}

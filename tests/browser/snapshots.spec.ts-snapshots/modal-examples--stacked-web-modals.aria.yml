@@ -1,2 +1,27 @@
 - button "Manage account"
 - button "Refresh account"
+- list "Recent activity":
+  - listitem: Signed in on a new browser Today
+  - listitem: Updated the display name Yesterday
+  - listitem: Downloaded an invoice 2 days ago
+  - listitem: Changed the notification settings 3 days ago
+  - listitem: Signed in on a new browser 4 days ago
+  - listitem: Updated the display name 5 days ago
+  - listitem: Downloaded an invoice 6 days ago
+  - listitem: Changed the notification settings 7 days ago
+  - listitem: Signed in on a new browser 8 days ago
+  - listitem: Updated the display name 9 days ago
+  - listitem: /Downloaded an invoice \d+ days ago/
+  - listitem: /Changed the notification settings \d+ days ago/
+  - listitem: /Signed in on a new browser \d+ days ago/
+  - listitem: /Updated the display name \d+ days ago/
+  - listitem: /Downloaded an invoice \d+ days ago/
+  - listitem: /Changed the notification settings \d+ days ago/
+  - listitem: /Signed in on a new browser \d+ days ago/
+  - listitem: /Updated the display name \d+ days ago/
+  - listitem: /Downloaded an invoice \d+ days ago/
+  - listitem: /Changed the notification settings \d+ days ago/
+  - listitem: /Signed in on a new browser \d+ days ago/
+  - listitem: /Updated the display name \d+ days ago/
+  - listitem: /Downloaded an invoice \d+ days ago/
+  - listitem: /Changed the notification settings \d+ days ago/

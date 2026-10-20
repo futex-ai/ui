@@ -146,7 +146,9 @@ npm run test:browser
 - `webModalStackModel.ts` - pure stack order, opener inheritance, focus-return,
   background-membership, and page-lock rules.
 - `webModalStack.ts` - applies the stack to the DOM, including background
-  state, focus return, the shared Tab trap, and page scroll lock.
+  state, focus return, and the shared Tab trap.
+- `webModalScrollLock.ts` - locks page scroll while a dialog is open and pads
+  the body so that the hidden scrollbar does not shift the layout.
 - `webModalRoot.ts` - provides the shared overlay root under `document.body`.
 - `webModalFocusTrap.ts` - selects initial focus and cycles Tab within the top
   dialog.

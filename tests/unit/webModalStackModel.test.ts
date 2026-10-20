@@ -8,6 +8,7 @@ import {
   removeWebModalStack,
   webModalRestoreCandidates,
   webModalRootMoves,
+  webModalScrollLockPadding,
   webModalStackBelow,
   webModalStackTop,
 } from "../../src/modal/webModalStackModel";
@@ -257,4 +258,17 @@ test("root moves correct every permutation without moving the focused top", () =
   assert.deepEqual(webModalRootMoves(order, order), []);
   assert.deepEqual(webModalRootMoves([page], [page]), []);
   assert.deepEqual(webModalRootMoves([], []), []);
+});
+
+test("scroll lock pads the body by the width that hiding the scrollbar gains", () => {
+  // No gutter, for example overlay scrollbars or a page that reserves its
+  // gutter: the width does not change, so the padding stays as it is.
+  assert.equal(webModalScrollLockPadding(0, 1280, 1280), null);
+  // A 15px classic scrollbar comes back as 15px of padding.
+  assert.equal(webModalScrollLockPadding(0, 1265, 1280), 15);
+  // An existing padding keeps its width, and the gutter adds to it.
+  assert.equal(webModalScrollLockPadding(8, 1265, 1280), 23);
+  // A zero or negative difference never shrinks or replaces the padding.
+  assert.equal(webModalScrollLockPadding(8, 1280, 1280), null);
+  assert.equal(webModalScrollLockPadding(8, 1280, 1270), null);
 });

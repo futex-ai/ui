@@ -175,8 +175,12 @@ paint two backdrops today, and this repo has no modal mockup.
   `insertBefore`, so the node that holds focus never moves. One
   capture-phase keydown listener, installed on the first push and removed
   on the last pop, traps Tab inside the top surface. The stack exposes its
-  top layer, so a frame's Escape layer can close it. The scroll lock joins
-  in M4.
+  top layer, so a frame's Escape layer can close it. It calls the scroll
+  lock on the first push and the last pop.
+- `src/modal/webModalScrollLock.ts`: the page scroll lock from M4. It saves
+  the inline overflow and padding values that it touches, hides overflow on
+  the root element and the body, pads the body by the width that the hidden
+  scrollbar gives back, and restores every saved value.
 - `src/modal/webModalFocusTrap.ts`: the focusable selector, the trap, the
   initial-focus target, and the focus helper, moved out of the frame file.
   The helpers take elements, not refs, so the stack can call them.
@@ -331,26 +335,34 @@ Tags: ui
 The stack locks page scroll on the first push and releases it on the last pop.
 Own commit, so it can be dropped on its own.
 
-- [ ] Add the scrollbar-gutter padding math to `webModalStackModel.ts` with a
+- [x] Add the scrollbar-gutter padding math to `webModalStackModel.ts` with a
       unit test.
-- [ ] In `webModalStack.ts`, store the `overflow` and `padding-right` of the
+- [x] In `webModalStack.ts`, store the `overflow` and `padding-right` of the
       root element and the body on the first push, set `overflow: hidden` on
       both and pad by the scrollbar width, and restore all of them on the
       last pop. iOS Safari ignores the lock on one element alone.
+- [x] Move the lock into `src/modal/webModalScrollLock.ts`, so the stack
+      module stays near its size target and the milestone reverts as one
+      module.
 - [ ] Smoke test on iOS Safari by hand, on an iPhone or the iOS Simulator,
       because the browser tests run in Chromium only: open the stacked story
       and try to scroll the page under the sheet with touch. Save the
       evidence under `.context/web-modal-stack/` and name the file here.
+      Blocked: the delivery sandbox has no iPhone and no iOS Simulator.
 - [ ] When iOS Safari still scrolls the page, fix the body in place instead:
       `position: fixed`, full width, and the saved scroll offset as a negative
       `top`, then restore the offset on the last pop. Keep the offset math in
       `webModalStackModel.ts` with a unit test.
-- [ ] Give the "Stacked web modals" story tall page content. Add a browser
+- [x] Give the "Stacked web modals" story tall page content. Add a browser
       test: `overflow` is hidden while a dialog is open and restored after,
-      and a fixed-width page element does not shift.
-- [ ] Re-record the "Stacked web modals" snapshot baseline after the tall
+      and a fixed-width page element does not shift. The test is
+      `tests/browser/modal-scroll-lock.spec.ts`, and its failing run is
+      `m4-failing-run.txt`.
+- [x] Re-record the "Stacked web modals" snapshot baseline after the tall
       content, and check that no other baseline changed.
-- [ ] Commit as `feat(modal): lock page scroll while a dialog is open`.
+- [x] Commit as `feat(modal): lock page scroll while a dialog is open`.
+      Committed as `feat(modal): lock page scroll under web dialogs`,
+      because the planned title passes the 50-character limit.
 
 ## Milestone 5: Verification, commit, and review
 
