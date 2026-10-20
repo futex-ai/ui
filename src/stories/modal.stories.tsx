@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { darkSharedUiTheme } from "../index";
+import { ToastProvider, darkSharedUiTheme } from "../index";
+import { ModalStackExample } from "./modalStackExample";
 import {
   ConfirmModalExample,
   ModalExample,
@@ -57,6 +58,28 @@ export const ResizableBottomSheet: Story = {
   render: () => (
     <StorySurface>
       <ResizableSheetExample />
+    </StorySurface>
+  ),
+};
+
+export const StackedWebModals: Story = {
+  name: "Stacked web modals",
+  render: () => (
+    <StorySurface>
+      <ToastProvider>
+        <ModalStackExample />
+      </ToastProvider>
+    </StorySurface>
+  ),
+};
+
+export const StackedAtMount: Story = {
+  name: "Stacked at mount",
+  render: () => (
+    <StorySurface>
+      <ToastProvider>
+        <ModalStackExample openAtMount />
+      </ToastProvider>
     </StorySurface>
   ),
 };

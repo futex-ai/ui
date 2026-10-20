@@ -253,33 +253,39 @@ The frame joins the stack, the toast region and the announcer become exempt,
 and a stacked story with browser tests captures findings 1 to 3 before the
 wiring lands.
 
-- [ ] Add `src/stories/modalStackExample.tsx` and two stories under
+- [x] Add `src/stories/modalStackExample.tsx` and two stories under
       `Modal/Examples`: "Stacked web modals" with a page trigger, a first
       dialog with a text field, an "Open confirm" button, and a "Show toast"
       button, and a confirm dialog with Cancel and Delete; and "Stacked at
       mount", which opens both dialogs in one state update. Wrap the stories
       in a `ToastProvider`. The confirm renders inside the first dialog's
       content in both stories.
-- [ ] Add `tests/browser/modal-stack.spec.ts` before the wiring, so the
+- [x] Add `tests/browser/modal-stack.spec.ts` before the wiring, so the
       tests fail first:
-  - [ ] Tab from Cancel reaches Delete in the confirm dialog (finding 1).
-  - [ ] The confirm root has no `inert`. The first dialog root and the page
+  - [x] Tab from Cancel reaches Delete in the confirm dialog (finding 1).
+  - [x] The confirm root has no `inert`. The first dialog root and the page
         carry `inert` and `aria-hidden`.
-  - [ ] Escape closes only the confirm, focus returns to "Open confirm", and
+  - [x] Escape closes only the confirm, focus returns to "Open confirm", and
         Tab then moves inside the first dialog.
-  - [ ] Closing the first dialog restores the page and focuses the page
+  - [x] Closing the first dialog restores the page and focuses the page
         trigger.
-  - [ ] "Stacked at mount" leaves the confirm live (finding 2).
-  - [ ] A toast raised from the first dialog is not `aria-hidden`, and its
+  - [x] "Stacked at mount" leaves the confirm live (finding 2).
+  - [x] A toast raised from the first dialog is not `aria-hidden`, and its
         close button works (finding 3).
-  - [ ] Two backdrops are present while both dialogs are open.
-  - [ ] Both dialogs sit in one shared overlay root, in stack order.
-  - [ ] In "Stacked at mount", the confirm paints above the first dialog and
+  - [x] Two backdrops are present while both dialogs are open.
+  - [x] Both dialogs sit in one shared overlay root, in stack order.
+  - [x] In "Stacked at mount", the confirm paints above the first dialog and
         holds focus, and Escape closes only the confirm.
-  - [ ] A toast that was visible before the confirm opened keeps a working
+  - [x] A toast that was visible before the confirm opened keeps a working
         close button.
-- [ ] Save the failing run under `.context/web-modal-stack/` and name the
-      file here.
+  - [x] Delete closes both dialogs and focuses the page trigger.
+  - [x] "Stacked at mount" closes in stack order, and its page action
+        reopens both dialogs in one update.
+- [x] Save the failing run under `.context/web-modal-stack/` and name the
+      file here: `m3-failing-run.txt`.
+- [ ] Add a page action that announces through the shared announcer, and a
+      browser test that the announcer region stays live under a dialog.
+      Save its failing run before the wiring.
 - [ ] Portal the frame straight into the shared root, and keep
       `WebModalPortal.web.tsx` a `document.body` portal. Add
       `src/modal/useWebModalLayer.ts` with the parent-layer context, and wire
