@@ -75,3 +75,16 @@ test("focus gives the control the primary border", async ({ page }) => {
   await page.getByRole("combobox", { name: "Linked books" }).focus();
   await expect.poll(border).toBe("rgb(79, 120, 100)");
 });
+
+test("Tab leaves the field without stopping on an option row", async ({
+  page,
+}) => {
+  await page.goto(story("chip-multi-select"));
+  await page.getByRole("combobox", { name: "Linked books" }).click();
+  await expect(page.getByRole("option").first()).toBeVisible();
+  await page.keyboard.press("Tab");
+  const role = await page.evaluate(() =>
+    document.activeElement?.getAttribute("role"),
+  );
+  expect(role).not.toBe("option");
+});

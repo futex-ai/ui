@@ -1,6 +1,6 @@
 /** Bookfolio-shaped grouped tag picker fixtures for Storybook. */
 import { Car, House } from "../primitives/icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "../primitives/reactNative";
 
 import { ComboboxMultiSelect, useSharedUiTheme } from "../index";
@@ -65,16 +65,31 @@ function ChipMark({ color, letter }: { color: string; letter: string }) {
  * A transaction's Tags field: one tag per group, the posted property locked,
  * a tag from another business listed but unavailable, an archived tag in a
  * muted chip, and a pinned action that creates a tag from the search text.
- * `autoFocus` opens the list on mount, so the snapshot sweep pins the rows.
+ * `autoFocus` opens the popover list on mount, and `startOpen` opens the sheet,
+ * so the snapshot and accessibility sweeps cover the open states.
  */
 export function GroupedTagPickerExample({
   autoFocus = false,
+  hint,
   presentation = "popover",
+  startOpen = false,
 }: {
   autoFocus?: boolean;
+  hint?: string;
   presentation?: ComboboxMultiSelectPresentation;
+  startOpen?: boolean;
 }) {
   const theme = useSharedUiTheme();
+  // The field has no `open` prop, so the story presses the sheet button once.
+  useEffect(() => {
+    if (startOpen && typeof document !== "undefined") {
+      document
+        .querySelector<HTMLElement>(
+          '[data-testid="grouped-tag-picker"] [aria-haspopup="dialog"]',
+        )
+        ?.click();
+    }
+  }, [startOpen]);
   const [options, setOptions] = useState(tagOptions);
   const [values, setValues] = useState(["flat2", "loft"]);
   const [lastCreate, setLastCreate] = useState<string | null>(null);
@@ -93,6 +108,7 @@ export function GroupedTagPickerExample({
             setLastCreate(label);
           },
         }}
+        hint={hint}
         label="Tags"
         labelInfo="Tags group transactions by property, vehicle, project or anything else you track."
         lockedValues={["flat2"]}
@@ -101,6 +117,7 @@ export function GroupedTagPickerExample({
         placeholder="Add tag"
         presentation={presentation}
         singlePerGroup
+        testID="grouped-tag-picker"
         values={values}
       />
       <Text style={[styles.status, { color: theme.colors.ink2 }]}>

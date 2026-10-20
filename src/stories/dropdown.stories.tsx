@@ -288,6 +288,19 @@ export const ChipMultiSelectTagSheet: Story = {
   ),
 };
 
+export const ChipMultiSelectTagSheetOpen: Story = {
+  name: "Chip multi-select · tags in a sheet, open",
+  render: () => (
+    <StorySurface>
+      <GroupedTagPickerExample
+        hint="Choose one tag per group."
+        presentation="sheet"
+        startOpen
+      />
+    </StorySurface>
+  ),
+};
+
 function ChipMultiSelectValidationExample() {
   // A required multi-select that surfaces a programmatically associated error:
   // the combobox input reflects aria-required/aria-invalid and references its

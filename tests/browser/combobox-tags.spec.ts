@@ -1,15 +1,16 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
+import { chipRemoveNames } from "./comboboxTags";
+
 /**
  * The grouped tag picker (`ComboboxMultiSelect` with `group`, `description`,
- * `disabled`, `lockedValues`, `singlePerGroup`, `footerAction`, and the sheet
- * presentation), driven through the `GroupedTagPickerExample` stories.
+ * `disabled`, `lockedValues`, `singlePerGroup`, and `footerAction`) in the
+ * popover presentation, driven through the `GroupedTagPickerExample` stories.
+ * The sheet presentation is in `combobox-tags-sheet.spec.ts`.
  */
 const TAGS_STORY =
   "/iframe.html?id=dropdown-examples--chip-multi-select-grouped-tags&viewMode=story";
-const SHEET_STORY =
-  "/iframe.html?id=dropdown-examples--chip-multi-select-tag-sheet&viewMode=story";
 
 async function openTags(page: Page) {
   await page.goto(TAGS_STORY);
@@ -17,14 +18,6 @@ async function openTags(page: Page) {
   await input.click();
   await expect(page.getByRole("listbox")).toBeVisible();
   return input;
-}
-
-function chipRemoveNames(page: Page) {
-  return page
-    .getByRole("button", { name: /^Remove / })
-    .evaluateAll((buttons) =>
-      buttons.map((button) => button.getAttribute("aria-label")),
-    );
 }
 
 test("tag groups are labelled and a group name finds the whole group", async ({
@@ -161,66 +154,4 @@ test("the open tag list has no axe violations", async ({ page }) => {
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze();
   expect(results.violations.map((violation) => violation.id)).toEqual([]);
-});
-
-test("the sheet presentation holds the search, the list, and a Done action", async ({
-  page,
-}) => {
-  await page.goto(SHEET_STORY);
-  const trigger = page.getByRole("button", { name: "Tags, Add tag" });
-  await expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
-  await trigger.click();
-
-  const sheet = page.getByRole("dialog", { name: "Tags" });
-  await expect(sheet).toBeVisible();
-  const input = sheet.getByRole("combobox", { name: "Tags" });
-  await expect(input).toBeFocused();
-
-  await input.fill("web");
-  await page.keyboard.press("Enter");
-  // Choosing keeps the sheet open for the next tag and clears the search.
-  await expect(sheet).toBeVisible();
-  await expect(input).toHaveValue("");
-  await expect(
-    sheet.getByRole("option", { name: "Website rebuild" }),
-  ).toHaveAttribute("aria-selected", "true");
-
-  await sheet.getByRole("button", { name: "Done" }).click();
-  await expect(sheet).toBeHidden();
-  await expect(trigger).toBeFocused();
-  expect(await chipRemoveNames(page)).toEqual(["Remove Website rebuild"]);
-
-  // Escape closes it too.
-  await trigger.click();
-  await expect(sheet).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(sheet).toBeHidden();
-});
-
-test("keys on the sheet's buttons reach those buttons, not the list", async ({
-  page,
-}) => {
-  await page.goto(SHEET_STORY);
-  const trigger = page.getByRole("button", { name: "Tags, Add tag" });
-  await trigger.click();
-  const sheet = page.getByRole("dialog", { name: "Tags" });
-  const renault = sheet.getByRole("option", {
-    name: "Renault Kangoo BX19 KLM",
-  });
-  await expect(sheet.getByRole("combobox", { name: "Tags" })).toBeFocused();
-
-  // Enter on a chip's remove button removes that chip; the active option row
-  // (Renault, the first choosable row) is not toggled.
-  await sheet.getByRole("button", { name: "Remove Loft conversion" }).focus();
-  await page.keyboard.press("Enter");
-  await expect(
-    sheet.getByRole("button", { name: "Remove Loft conversion" }),
-  ).toHaveCount(0);
-  await expect(renault).toHaveAttribute("aria-selected", "false");
-
-  // Enter on Done closes the sheet without choosing anything.
-  await sheet.getByRole("button", { name: "Done" }).focus();
-  await page.keyboard.press("Enter");
-  await expect(sheet).toBeHidden();
-  expect(await chipRemoveNames(page)).toEqual([]);
 });

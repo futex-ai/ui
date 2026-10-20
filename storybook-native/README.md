@@ -73,9 +73,31 @@ The **Modal / Native sheet** stories exercise native overlays. The **RichText /
 Native editor** stories exercise editable, prefilled, and read-only attributed
 blocks; focus a block to inspect the iOS input accessory or Android in-frame
 formatting toolbar. The **Dropdown / Tag picker** stories open the grouped tag
-picker in the native bottom sheet (`Sheet`) and in the anchored popover; check
-that a tag can be chosen while the keyboard is open, that the pinned "Create
-tag" row stays reachable, and that the header shows "Done".
+picker in the native bottom sheet (`Sheet`) and in the anchored popover. Run the
+device checklist below on them.
+
+## Device checklist: sheet stories
+
+No automated test renders the native sheet, so run these checks on an iOS and
+an Android device or simulator after a change to the sheet, the modal's bottom
+sheet, or the tag picker. Use the **Dropdown / Tag picker → Sheet** story, and
+**Modal / Native sheet** for the shared sheet.
+
+- [ ] The field's "Add tag" button opens the sheet. The header shows the title
+      "Tags" and a "Done" text button.
+- [ ] The search input sits at the top with the chips. Tapping it shows the
+      keyboard, and the sheet rises so the input and the list stay above the
+      keyboard.
+- [ ] With the keyboard open, one tap on a tag chooses it. The keyboard does not
+      need a first tap to close.
+- [ ] While you type a new tag name, the pinned "Create tag “…”" row stays in
+      view. Tapping it runs the action and closes the sheet.
+- [ ] VoiceOver and TalkBack read a tag's description after its name, for
+      example "Skoda Octavia WK21 LMN" then "Consultancy trade". They report the
+      Skoda row and the locked "Flat 2" row as unavailable.
+- [ ] "Done", a pan down, and the Android back button each close the sheet.
+- [ ] In **Modal / Native sheet**, the bottom sheet still scrolls and closes as
+      before.
 
 ## Versions
 
