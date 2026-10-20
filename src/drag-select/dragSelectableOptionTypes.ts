@@ -117,6 +117,13 @@ export type DragSelectableOptions = {
    */
   selectedIds?: readonly string[];
   /**
+   * Names the page or view that an uncontrolled selection belongs to. When
+   * it changes, the provider clears its stored selection, so the new scope
+   * starts with an empty selection. A page shell sets it to the current
+   * route.
+   */
+  selectionScope?: string | number;
+  /**
    * Customizes the polite live-region announcement of an applied proposal
    * (WCAG 2.1 — 4.1.3 Status Messages, AA). Return an empty string to stay
    * silent.

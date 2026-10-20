@@ -2,8 +2,10 @@
  * The app-shell example for the drag-select stories: one provider is the
  * scrolling main column around every page, beside a sidebar that sits outside
  * it. The provider is off by default, and each page turns it on with
- * `useDragSelectableOptions`. The sidebar switches between two pages with
- * different row ids.
+ * `useDragSelectableOptions`. The sidebar switches between three pages, and
+ * two of them list some of the same transactions. The shell names the page
+ * with `selectionScope`, so each page starts with an empty selection. With
+ * `scoped` off, the shell shows the rule for a provider without a scope.
  */
 import { useState } from "react";
 import {
@@ -25,32 +27,26 @@ import {
 import type { DragSelectableSelection } from "../index";
 import {
   rowCountLabel,
-  shellInvoices,
-  shellTransactions,
+  shellPageIds,
+  shellPages,
   ShellRowView,
+  type ShellPageId,
 } from "./dragSelectShellRow";
 import { InvoiceTools } from "./dragSelectShellTools";
-
-type ShellPage = "transactions" | "invoices";
-
-const pageCopy: Record<ShellPage, { body: string; title: string }> = {
-  invoices: {
-    body: "Invoices sent this quarter. Drag across rows to select them.",
-    title: "Invoices",
-  },
-  transactions: {
-    body: "Bank transactions for this month. Drag across rows to select them, or open one to see its details.",
-    title: "Transactions",
-  },
-};
 
 /** Counts the provider's `onSelectionChange` calls for the status line. */
 type SelectionLog = { calls: number; lastIds: string };
 
-export function PageShellExample() {
+/** The props of the page-shell example. */
+export type PageShellExampleProps = {
+  /** Names each page with `selectionScope`. On by default. */
+  scoped?: boolean;
+};
+
+export function PageShellExample({ scoped = true }: PageShellExampleProps) {
   const theme = useSharedUiTheme();
   const { height } = useWindowDimensions();
-  const [page, setPage] = useState<ShellPage>("transactions");
+  const [page, setPage] = useState<ShellPageId>("transactions");
   const [opened, setOpened] = useState("none");
   const [log, setLog] = useState<SelectionLog>({ calls: 0, lastIds: "none" });
   const [keepTextSelection, setKeepTextSelection] = useState(false);
@@ -69,7 +65,7 @@ export function PageShellExample() {
         <Text style={[styles.sidebarCopy, { color: theme.colors.muted }]}>
           Books for Greenhouse Studio
         </Text>
-        {(["transactions", "invoices"] as const).map((key) => (
+        {shellPageIds.map((key) => (
           <Button
             block
             key={key}
@@ -77,7 +73,7 @@ export function PageShellExample() {
             size="sm"
             tone={page === key ? "primary" : "ghost"}
           >
-            {pageCopy[key].title}
+            {shellPages[key].title}
           </Button>
         ))}
         <View style={styles.setting}>
@@ -100,6 +96,7 @@ export function PageShellExample() {
         disabled
         onSelectionChange={onSelectionChange}
         selectionLabel={(count) => rowCountLabel(count)}
+        selectionScope={scoped ? page : undefined}
         style={[styles.main, webScrollColumn]}
         testID="page-shell-main"
       >
@@ -127,24 +124,23 @@ function ShellPage({
   log: SelectionLog;
   onOpen: (id: string) => void;
   opened: string;
-  page: ShellPage;
+  page: ShellPageId;
 }) {
   const theme = useSharedUiTheme();
   useDragSelectableOptions({
     disabled: false,
     preventTextSelection: !keepTextSelection,
   });
-  const pageRows = page === "transactions" ? shellTransactions : shellInvoices;
   return (
     <View style={styles.content} testID="page-shell-content">
       <Text
         accessibilityRole="header"
         style={[styles.title, { color: theme.colors.ink }]}
       >
-        {pageCopy[page].title}
+        {shellPages[page].title}
       </Text>
       <Text style={[styles.body, { color: theme.colors.muted }]}>
-        {pageCopy[page].body}
+        {shellPages[page].body}
       </Text>
       <ShellStatus log={log} opened={opened} />
       <View
@@ -156,7 +152,7 @@ function ShellPage({
           },
         ]}
       >
-        {pageRows.map((row) => (
+        {shellPages[page].rows.map((row) => (
           <ShellRowView key={row.id} onOpen={onOpen} row={row} />
         ))}
       </View>

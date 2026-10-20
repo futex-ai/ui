@@ -1,6 +1,7 @@
 /**
- * Sample rows for the drag-select app-shell stories: the transactions and
- * invoices pages, and the row that every page renders.
+ * Sample pages for the drag-select app-shell stories: their rows, their
+ * copy, and the row that every page renders. Reconciliation lists some of
+ * the same transactions as Transactions, so two pages share row ids.
  */
 import { StyleSheet, Text, View } from "../primitives/reactNative";
 
@@ -38,6 +39,36 @@ export const shellInvoices: ShellRow[] = Array.from(
     label: `Invoice INV-${String(index + 1).padStart(4, "0")}`,
   }),
 );
+
+/** The pages that the app-shell sidebar switches between. */
+export const shellPageIds = [
+  "transactions",
+  "invoices",
+  "reconciliation",
+] as const;
+
+export type ShellPageId = (typeof shellPageIds)[number];
+
+export const shellPages: Record<
+  ShellPageId,
+  { body: string; rows: ShellRow[]; title: string }
+> = {
+  invoices: {
+    body: "Invoices sent this quarter. Drag across rows to select them.",
+    rows: shellInvoices,
+    title: "Invoices",
+  },
+  reconciliation: {
+    body: "Transactions to match against this month's bank statement. Drag across rows to select them.",
+    rows: shellTransactions.slice(0, 10),
+    title: "Reconciliation",
+  },
+  transactions: {
+    body: "Bank transactions for this month. Drag across rows to select them, or open one to see its details.",
+    rows: shellTransactions,
+    title: "Transactions",
+  },
+};
 
 export function rowCountLabel(count: number) {
   return `${count} row${count === 1 ? "" : "s"}`;

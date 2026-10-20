@@ -75,9 +75,10 @@ The package name is `@firna/ui`. Public exports are available from:
 - `@firna/ui/drag-select` for rubber-band selection of rows and tiles: a
   provider that can wrap one list or every page of an app shell, the
   `useDragSelectableOptions` page hook, target and state hooks, controlled
-  (`selectedIds`) or uncontrolled selection, configurable start rules and an
-  ignore marker, edge auto-scroll, a custom box through `renderMarquee`, and
-  geometry helpers. The gesture runs on web; native keeps the selection state.
+  (`selectedIds`) or uncontrolled selection, a selection scope per page,
+  configurable start rules and an ignore marker, edge auto-scroll, a custom
+  box through `renderMarquee`, and geometry helpers. The gesture runs on
+  web; native keeps the selection state.
 - `@firna/ui/dropdown` for dropdown menu, selector, combobox, layer helpers, and
   selector trigger refs for imperative focus after async form hydration.
 - `@firna/ui/heatmap` for the calendar contribution heatmap and its pure layout
@@ -667,7 +668,7 @@ The package export map intentionally separates runtime targets:
 - Rich-text collaboration protocol:
   [docs/protocol/rich-text-collaboration.md](docs/protocol/rich-text-collaboration.md)
 - Drag select protocol: [docs/protocol/drag-select.md](docs/protocol/drag-select.md)
-  and its [API reference](docs/protocol/drag-select-api.md)
+  and its [option reference](docs/protocol/drag-select-api.md)
 - Consumer migration handoff: [docs/consumer-migration.md](docs/consumer-migration.md)
 - Active and completed implementation plans: [plans/README.md](plans/README.md)
 

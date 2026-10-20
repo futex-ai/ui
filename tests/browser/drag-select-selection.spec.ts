@@ -11,7 +11,7 @@ import {
 /**
  * Controlled and uncontrolled selection: the "Controlled selection" story,
  * where the app owns the selection, and the page change on the "Page shell"
- * story.
+ * story, with and without its selection scope.
  */
 
 const REGION = "#firna-ui-live-region-polite";
@@ -181,6 +181,43 @@ test.describe("controlled selection", () => {
   });
 });
 
+test("a page's starting selection is not reported as a change", async ({
+  page,
+}) => {
+  await openStory(page, "restored-selection");
+  await expect(page.getByTestId("controlled-count")).toHaveText("2 selected");
+  expect(await controlledCheckedIds(page)).toEqual(["txn_2", "txn_4"]);
+  await expect(page.getByTestId("controlled-changes")).toHaveText(
+    "Selection changes: 0",
+  );
+
+  await page.getByTestId("controlled-row-txn_6").click();
+  expect(await controlledCheckedIds(page)).toEqual(["txn_6"]);
+  await expect(page.getByTestId("controlled-changes")).toHaveText(
+    "Selection changes: 1",
+  );
+});
+
+test("rows selected on one page stay unselected on a page with the same rows", async ({
+  page,
+}) => {
+  await openStory(page, "page-shell");
+  await dragBetween(
+    page,
+    await pointIn(page, "shell-row-txn_1", 160),
+    await pointIn(page, "shell-row-txn_3", 200),
+  );
+  await expect(page.getByText("Selected 3 rows")).toBeVisible();
+
+  await page.getByRole("button", { name: "Reconciliation" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Reconciliation" }),
+  ).toBeVisible();
+  await expect(page.getByTestId("shell-row-txn_1")).toBeVisible();
+  await expect(page.getByText("Selected 0 rows")).toBeVisible();
+  expect(await checkedRowIds(page)).toEqual([]);
+});
+
 test("a page change clears the uncontrolled selection", async ({ page }) => {
   await openStory(page, "page-shell");
   await dragBetween(
@@ -202,6 +239,34 @@ test("a page change clears the uncontrolled selection", async ({ page }) => {
   await expect(
     page.getByText("Selection changes: 2. Last: none"),
   ).toBeVisible();
+});
+
+test("without a scope, a page change keeps the selection only while a selected row returns", async ({
+  page,
+}) => {
+  await openStory(page, "page-shell", "scoped:!false");
+  await dragBetween(
+    page,
+    await pointIn(page, "shell-row-txn_1", 160),
+    await pointIn(page, "shell-row-txn_3", 200),
+  );
+  await expect(page.getByText("Selected 3 rows")).toBeVisible();
+
+  await page.getByRole("button", { name: "Reconciliation" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Reconciliation" }),
+  ).toBeVisible();
+  expect(await checkedRowIds(page)).toEqual(rowRange("txn", 1, 3));
+
+  await page.getByRole("button", { name: "Invoices" }).click();
+  await expect(page.getByText("Selected 0 rows")).toBeVisible();
+  await expect(
+    page.getByText("Selection changes: 2. Last: none"),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Transactions" }).click();
+  await expect(page.getByTestId("shell-row-txn_1")).toBeVisible();
+  expect(await checkedRowIds(page)).toEqual([]);
 });
 
 test("a selection change reports the current row data", async ({ page }) => {

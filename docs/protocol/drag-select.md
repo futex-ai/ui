@@ -2,10 +2,9 @@
 
 ## Status
 
-Implemented contract for `@firna/ui/drag-select` 5.0, delivered by the
-[drag select options plan](../../plans/drag-select-options.md). The
-[drag select API reference](drag-select-api.md) lists the public types, the
-option defaults, and the exported helpers.
+Implemented requirements for `@firna/ui/drag-select` 5.0. The
+[option reference](drag-select-api.md) gives the option defaults, the state,
+the helpers, and the library surfaces that carry the ignore marker.
 
 ## Purpose
 
@@ -17,26 +16,24 @@ renders the same provider and selection state, but has no drag gesture.
 
 ## Targets And Hooks
 
-- A target registers by a stable id through the `ref` that
-  `useDragSelectableTarget` returns. Registration ends when the node detaches.
+- A target registers with a stable id through the `ref` that
+  `useDragSelectableTarget` returns. It leaves when that element leaves.
 - Spreading `target.a11yProps` makes the target a focusable `checkbox` with a
-  roving tab stop, the shared CSS focus marker, and an accessible name
-  (`label`, else `id`). The legacy `focusRingStyle` result field is always
-  empty, so a consumer that still applies it never paints a second glow.
+  roving tab stop, the shared focus marker, and an accessible name: `label`,
+  else `id`. `target.focusRingStyle` is always empty, so a consumer that
+  applies it never paints a second glow.
 - `a11yProps` go on the registered root, or on a descendant of it when the
   row also holds other controls, because a `checkbox` must not contain a
-  control. On web they write `data-drag-select-target` with the target id,
-  and keyboard focus moves to the element that carries them.
+  control. Keyboard focus moves to the element that carries them. On web,
+  that element has `data-drag-select-target` with the target id.
 - Keyboard: Space or Enter toggles the focused target. Arrow Up and Arrow Down
   move the roving focus, and Home and End jump to the ends. Shift with an
   arrow key selects the range from the focused target to the next one.
   Keyboard order is document order, with `order` as the tie-breaker.
 - `useDragSelectableSelection()` and `useDragSelectableChanges(listener)`
-  expose the state: `selectedIds`, `selectedCount`, `selectedTargets`,
-  `matchingIds`, `matchingCount`, `matchingTargets`, `dragging`, `dragBox`,
-  and `dragMode`. A listener runs after each state change.
-- `matchingIds` and `matchingTargets` update while a drag runs. The selected
-  fields change only through the selection rules below.
+  expose the state that the option reference lists. A listener runs after
+  each state change. The matching fields update while a drag runs, and the
+  selected fields change only through the selection rules below.
 
 ## Option Precedence
 
@@ -49,46 +46,42 @@ renders the same provider and selection state, but has no drag gesture.
 - A key whose value is `undefined` does not override.
 - `ignore` is the exception: the provider combines the selectors of the
   provider props and of every layer.
-- `useDragSelectableOptions` adds its layer on mount, updates it on each
-  render, and removes it on unmount. It publishes in a layout effect (an
-  ordinary effect during server rendering), so a changed `selectedIds` never
-  paints a stale frame. It configures the nearest provider and does nothing
+- `useDragSelectableOptions` adds its layer when its component mounts,
+  updates it on each render, and removes it on unmount. A page's options
+  apply before the browser paints, so a changed `selectedIds` never shows a
+  stale frame. The hook configures the nearest provider and does nothing
   outside a provider.
-- A change to a non-function option re-renders the provider. Arrays compare
-  element by element. A new function identity alone does not re-render the
-  provider: it reads `onSelectedIdsChange`, `onSelectionChange`,
-  `selectionAnnouncement`, `dragMode`, and `shouldStartDrag` when it calls
-  them, and the box layer re-renders on any hook-layer change, so it draws
-  with the current `renderMarquee` and `selectionLabel`.
+- The provider always uses the newest value of every option. That includes
+  callbacks and render functions whose identity changes on each render.
 - `defaultSelectedIds` is read once, when the provider mounts.
 
 ## Start Rules
 
-The web provider evaluates each `pointerdown` inside its element in this
-order. A press that passes every rule arms the provider.
+The web provider checks each press inside its element in this order. A press
+that passes every rule arms the provider.
 
 Fixed rules. No option overrides them.
 
-1. An inner provider already claimed the press. Ignore it.
+1. An inner provider took the press. Ignore it.
 2. The provider is disabled, or no enabled target is registered. Ignore the
-   press and do not claim it, so an outer provider can take it.
-3. Claim the press on the native event.
+   press, so that an outer provider can take it.
+3. Take the press, so that no outer provider takes it.
 4. Ignore `pointerType` `touch` and every `button` other than `0`.
 5. Ignore a scrollbar press. The scroll container is the pressed element if
-   it scrolls, else its nearest scrolling ancestor, else the document
-   scrolling element. An element scrolls on an axis when its computed
-   `overflow` on that axis is `auto`, `scroll`, or `overlay`, and its content
-   overflows on that axis or it reserves scrollbar space on that axis.
+   it scrolls, else its nearest scrolling ancestor, else the document. An
+   element scrolls on an axis when its computed `overflow` on that axis is
+   `auto`, `scroll`, or `overlay`, and its content overflows on that axis or
+   it reserves scrollbar space on that axis.
    - Classic scrollbar: the point is inside the container's border box but
      outside its borders and outside its client area.
    - Overlay scrollbar: the content overflows on an axis that the container
-     can scroll (as Auto-Scroll defines), the container reserves no
-     scrollbar space on that axis, and the point is within 16px of the far
-     edge of its client area on that axis: the right edge for vertical
-     scrolling, the left edge when `direction` is `rtl`, and the bottom edge
-     for horizontal scrolling. The rule does not apply when the container
-     hides its scrollbar: its computed `scrollbar-width` is `none`, or it
-     has the `data-hide-scrollbar` attribute that `ScrollView` writes.
+     can scroll, the container reserves no scrollbar space on that axis, and
+     the point is within 16px of the far edge of its client area on that
+     axis: the right edge for vertical scrolling, the left edge when
+     `direction` is `rtl`, and the bottom edge for horizontal scrolling. The
+     rule does not apply when the container hides its scrollbar: its computed
+     `scrollbar-width` is `none`, or it is a library `ScrollView` that hides
+     its scroll indicators.
 
 Default rules. The first match sets `reason`, and `allowed` becomes `false`.
 Rules 7 to 9 search the pressed element and its ancestors up to and
@@ -99,7 +92,7 @@ including the provider element.
    (Command), else `replace`.
 7. The press is inside an element that matches `[data-drag-select-ignore]`
    or an `ignore` selector: `ignored`. An invalid selector matches nothing
-   and gives one `devWarn` warning.
+   and gives one development warning.
 8. The press is inside a field: `field`. Fields are `input` elements other
    than the press types in rule 9, `textarea`, `select`, editable content
    (`[contenteditable]` other than `false`), the roles `textbox`, `searchbox`,
@@ -110,12 +103,11 @@ including the provider element.
    Controls are `a[href]`, `button`, `summary`, `label`, `input` of type
    `button`, `checkbox`, `image`, `radio`, `reset`, or `submit`, and the roles
    `button`, `link`, `checkbox`, `radio`, `switch`, `tab`, `menuitem`,
-   `menuitemcheckbox`, `menuitemradio`, and `option`. A registered target's
-   root element and the element that carries its `a11yProps` count as the
-   target, not as a control, even with the `checkbox` role from
-   `a11yProps`. The control search stops at the
-   innermost registered target that contains the press, so a control that
-   contains the target root is not searched.
+   `menuitemcheckbox`, `menuitemradio`, and `option`. A target's root element
+   and the element that carries its `a11yProps` count as the target, not as
+   a control, even with the `checkbox` role. The control search stops at the
+   innermost target that contains the press, so a control that contains the
+   target root does not count.
 10. `shouldStartDrag(start)`, when set, gives the final answer. When it
     allows a press that `dragMode` refused, the mode is `replace`.
 
@@ -126,58 +118,48 @@ decision) needs the larger of `minimumDragDistance` and
 
 ## Gesture
 
-- Armed: the provider accepted the press. `state.dragging` is `true` and
-  `state.dragMode` is the press mode. Nothing is measured, and no box is
-  drawn. The provider does not call `preventDefault()` on the press, so
-  focus, double-click, and triple-click keep their default behavior.
-- From the accepted press to the release, the provider blocks native
-  `dragstart`, so a link, an image, or highlighted text cannot start a native
-  drag.
-- Started: the pointer moved the threshold distance from the press point.
-  The provider measures the enabled targets and draws the box. With
-  `preventTextSelection`, it removes the text highlight, blocks
-  `selectstart`, and sets `user-select: none` on the document element until
-  the release, then restores the old value. A press without a start blocks
-  no text selection. The start ends the library `Pressable` press that the
-  same pointer started, so the control loses its pressed look and does not
-  fire `onPress` on release. The start pushes an Escape layer and starts
-  auto-scroll.
+- Armed: the provider accepted the press. `state.dragging` is `true`,
+  `state.dragMode` is the press mode, and no box is drawn yet. Focus,
+  double-click, and triple-click keep their default browser behavior.
+- From the accepted press to the release, no native drag starts from a
+  link, an image, or highlighted text.
+- Started: the pointer moved the threshold distance from the press point,
+  and the provider draws the box. With `preventTextSelection`, the start
+  removes any text highlight, and no text highlights until the release. A
+  press without a start blocks no text selection. The start ends the library
+  `Pressable` press that the same pointer started, so the control loses its
+  pressed look and does not fire `onPress` on release.
 - Anchor: the start point stays attached to the content of the press's
   scroll container. A scroll of that container, or of any ancestor that
-  moves it, moves the start point with the content (wheel, keyboard, or
-  auto-scroll). The provider then measures the targets again. The hit test
-  uses the full box from the anchored start point to the pointer.
-- Release after a start: the provider measures the enabled targets again.
-  The hits are the targets whose bounds intersect the full box, in document
-  order. It proposes `dragSelectableNextSelection(current, hits, mode)` with
-  source `drag`, and swallows the next `click` wherever it lands.
+  moves it, moves the start point with the content. The hit box runs from
+  the anchored start point to the pointer.
+- Release after a start: the hits are the enabled targets whose bounds touch
+  the hit box, in document order. The provider proposes
+  `dragSelectableNextSelection(current, hits, mode)` with source `drag`, and
+  swallows the next `click` wherever it lands.
 - Release before a start: no selection change and no swallowed click.
 - Only the pointer that pressed moves and releases the drag. Other pointers
   are ignored, except that a `pointercancel` of any pointer cancels.
-- Hard cancel, without a commit: `pointercancel`; a `blur` whose target is
-  the window itself; `visibilitychange` to hidden; the provider unmounts. The
-  provider stops at once and restores the page.
-- Soft cancel, without a commit: Escape after a start (the shared Escape
-  layer consumes the key, so a modal under the provider stays open), and
-  `disabled` becoming `true`. The box disappears and `state.dragging` becomes
-  `false` at once. Because the button is still down, the text-selection and
-  native-drag blocks stay until the release, and the click after the release
-  is swallowed when the drag had started.
+- Hard cancel, without a commit: `pointercancel`, a `blur` of the window
+  itself, `visibilitychange` to hidden, or an unmount. The provider stops at
+  once and restores the page.
+- Soft cancel, without a commit: Escape after a start, and `disabled`
+  becoming `true`. The Escape key reaches no other Escape handler, so a modal
+  under the provider stays open. The box disappears and `state.dragging`
+  becomes `false` at once. Until the release, text still does not highlight
+  and no native drag starts. The click after the release is swallowed when
+  the drag had started.
 
 ## Auto-Scroll
 
-After a start, with `autoScroll`, an animation-frame loop scrolls the press's
-scroll container by 16px per frame on each axis where the pointer is within
-36px of the container's visible edge or beyond it. It skips an axis that the
-container cannot scroll: for an element, an axis whose computed `overflow` is
-not `auto`, `scroll`, or `overlay`; for the document scrolling element, an
-axis whose viewport `overflow` (the root element's, or the `body`'s when the
-root's is `visible` on both axes) is `hidden` or `clip`. A script could
-scroll such an axis, so the loop checks first. The 16px and 36px values come
-from `autoScrollDelta` in `src/dragGesture.ts`, which the data grid shares.
-The visible rectangle is the container's client area clipped to the
-viewport, or the viewport for the document scrolling element. The loop stops
-on release and on every cancel.
+After a start, with `autoScroll`, the press's scroll container scrolls 16px
+each frame on each axis where the pointer is within 36px of the container's
+visible edge or beyond it. It never scrolls an axis that the container
+cannot scroll. For an element, that is an axis whose computed `overflow` is
+not `auto`, `scroll`, or `overlay`. For the document, it is an axis whose
+viewport `overflow` is `hidden` or `clip`. The visible edge is the edge of
+the container's client area clipped to the viewport, or of the viewport for
+the document. Auto-scroll stops on release and on every cancel.
 
 ## Selection
 
@@ -200,17 +182,31 @@ on release and on every cancel.
   nothing.
 - Uncontrolled: the provider starts from `defaultSelectedIds`, applies each
   proposal, and also calls `onSelectedIdsChange`.
-- Page change: when the last registered target unregisters, the provider
-  checks its stored selection at the end of the task (a microtask). It
-  clears the stored selection unless one of its ids registered again by
-  then, as React's development double mount does. In uncontrolled mode the
-  clear changes the rendered selection, so `onSelectionChange` fires with an
-  empty selection. The clear is not a proposal, so it is not announced and
-  `onSelectedIdsChange` does not fire. A page in a shell starts with an
-  empty selection. A filter or a reload that leaves zero rows also clears
-  the selection.
+- Starting selection: when a page hook starts to set `selectedIds`, that
+  selection is the page's starting selection. The provider does not report
+  it through `onSelectionChange` and does not announce it. Later changes
+  report as usual.
+- Scope: `selectionScope` names the page or view that an uncontrolled
+  selection belongs to. When the merged value changes, the stored selection
+  clears, and the new scope never shows the old selection. A scope that
+  comes back later starts empty too. The clear fires `onSelectionChange`
+  when the rendered selection changes, and it is not announced. Decision:
+  the shell names each page with `selectionScope`, rather than requiring
+  unique ids across pages, because two pages can show the same records.
+- Last target gone: when the last registered target unregisters and none of
+  the selected ids registers again in the same task, the stored selection
+  clears. The rule applies with or without a scope. Without a scope, it is
+  the rule that clears the selection on a page change. A remount of the same
+  targets keeps the selection. In
+  uncontrolled mode the clear fires `onSelectionChange` with an empty
+  selection. The clear is not a proposal, so it is not announced and
+  `onSelectedIdsChange` does not fire. A filter or a reload that leaves zero
+  rows also clears the selection. Decision: the provider waits for the end
+  of the task, rather than clearing at once, because a development remount
+  of the same rows must keep the selection.
 - `onSelectionChange(selection)` fires when the rendered selection changes
-  as a set, from any source. The initial selection does not fire it.
+  as a set, from any source, except for the initial selection and a page's
+  starting selection.
 - Announcement: a proposal waits for the next change of the rendered
   selection. When that change makes the rendered selection equal to the
   proposal, the provider announces it through `selectionAnnouncement` (WCAG
@@ -219,9 +215,9 @@ on release and on every cancel.
   that the app changes or rejects, are not announced.
 - `selectedTargets` is a snapshot of the registrations of the selected ids.
   The provider takes it when the rendered selection or the set of registered
-  targets changes, and reads the target data current at that moment. An id
-  with no registered target has `data: undefined`. Consumers that need live
-  data map `selectedIds` through their own source.
+  targets changes, with the target data current at that moment. An id with
+  no registered target has `data: undefined`. Consumers that need live data
+  map `selectedIds` through their own source.
 
 ## Box And Wrapper
 
@@ -229,13 +225,17 @@ on release and on every cancel.
   layer with the `data-drag-select-marquee` attribute. Its z-index is
   `overlayZIndex`, else `DRAG_SELECTABLE_LAYERS.overlay`, which clears the
   modal and dropdown layers.
-- The drawn box is the hit box clipped to the visible rectangle of the
-  press's scroll container. No box renders when the clipped box is empty.
+- The drawn box is the hit box cut to the visible rectangle of the press's
+  scroll container. The box of a straight drag, which has no width or no
+  height, still draws, as a line. No box draws when the hit box and the
+  visible rectangle do not touch. Decision: a straight drag draws a line,
+  rather than a box widened to at least 1px, so the drawn box that
+  `renderMarquee` receives stays the cut hit box.
 - The default box has the theme primary border, a 10% primary tint, the
   theme `sm` radius, and the `selectionLabel` badge at the bottom-right. It
   shows `marqueeLabel` in the top-left corner when the option is a string.
 - `selectionLabel(count, context)` returns the badge text from the live
-  matching count, ids, and target metadata. `null` hides the badge.
+  matching targets. `null` hides the badge.
 - `renderMarquee(marquee)` replaces the box, the label, and the badge. The
   provider still renders the fixed layer at the drawn box and puts the
   returned node inside it.
@@ -249,11 +249,7 @@ on release and on every cancel.
 ## Native
 
 The native provider accepts every option and the page hook. It applies
-`selectedIds` and `defaultSelectedIds` to `target.selected` and to the
-selection state, and it follows the selection and page-change rules. It has
-no drag gesture and no keyboard handler, so it ignores the gesture and box
-options.
-
-The library gesture surfaces that carry the ignore marker, and the tests
-that cover this contract, are listed in the
-[API reference](drag-select-api.md#library-gesture-surfaces).
+`selectedIds`, `defaultSelectedIds`, and `selectionScope` to
+`target.selected` and to the selection state, and it follows the selection
+rules. It has no drag gesture and no keyboard handler, so it ignores the
+gesture and box options.

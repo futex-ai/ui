@@ -142,7 +142,9 @@ Each change below has an option that restores the 4.x behavior:
 New in 5.0, with no 4.x equivalent: `ignore`, `dragSelectableIgnoreProps`,
 `shouldStartDrag`, `autoScroll` (on by default), `renderMarquee`,
 `selectionLabel` returning `null` to hide the badge, `role="none"`,
-`defaultSelectedIds`, and the `dragMode` field of the selection state.
+`defaultSelectedIds`, `selectionScope`, and the `dragMode` field of the
+selection state. A shell that wraps every page should set `selectionScope` to
+the current route, so that each page starts with an empty selection.
 
 ## Follow-Up Gaps
 

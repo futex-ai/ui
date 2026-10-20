@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { dragSelectableAutoScrollDelta } from "../../src/drag-select/dragSelectableAutoScroll";
+import { dragSelectableBox } from "../../src/drag-select/dragSelectableModel";
 import { dragSelectableAnchoredPoint } from "../../src/drag-select/dragSelectableScrollAnchor";
 import { dragSelectableOverflowAxes } from "../../src/drag-select/dragSelectableScrollAxes";
 import {
@@ -9,6 +10,7 @@ import {
   dragSelectableScrollbarHit,
   type DragSelectableScrollbarMetrics,
 } from "../../src/drag-select/dragSelectableScrollbar";
+import { dragSelectableClipBox } from "../../src/drag-select/dragSelectableScrollContainer";
 
 const client = { bottom: 720, left: 200, right: 1265, top: 0 };
 
@@ -175,4 +177,28 @@ test("drag-select auto-scroll leaves an axis that cannot scroll", () => {
     dragSelectableAutoScrollDelta(corner, rect, { x: true, y: false }),
     { dx: 16, dy: 0 },
   );
+});
+
+test("drag-select keeps a cut box that has no width or no height", () => {
+  const visible = { bottom: 600, left: 200, right: 1000, top: 0 };
+  const vertical = dragSelectableBox({ x: 300, y: 50 }, { x: 300, y: 400 });
+  assert.deepEqual(dragSelectableClipBox(vertical, visible), {
+    bottom: 400,
+    height: 350,
+    left: 300,
+    right: 300,
+    top: 50,
+    width: 0,
+  });
+  const horizontal = dragSelectableBox({ x: 300, y: 50 }, { x: 1200, y: 50 });
+  assert.deepEqual(dragSelectableClipBox(horizontal, visible), {
+    bottom: 50,
+    height: 0,
+    left: 300,
+    right: 1000,
+    top: 50,
+    width: 700,
+  });
+  const outside = dragSelectableBox({ x: 100, y: 50 }, { x: 150, y: 400 });
+  assert.equal(dragSelectableClipBox(outside, visible), null);
 });

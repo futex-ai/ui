@@ -2,11 +2,10 @@
 
 Status: Active. Milestones 1 to 6 are delivered on branch
 `calummoore/dragselectableprovider-improvements`. Milestone 7 has run the
-smoke test, the complete gate, and the review, and Milestone 8 fixes the
-review findings that the user chose to fix. Open before merge: the user's
-manual check of macOS overlay scrollbars, and the three findings of the
-second review (R9 to R11). No PR is open yet. The plan closes when its PR
-merges.
+smoke test, the complete gate, and the review. Milestone 8 fixed the first
+review's findings, and Milestone 9 fixes the second review's findings, R9 to
+R11. Open before merge: the user's manual check of macOS overlay scrollbars.
+No PR is open yet. The plan closes when its PR merges.
 
 [`DragSelectableProvider`](../src/drag-select/README.md) was built to wrap one
 list. The accounting app wants one provider around every page, so that a drag
@@ -58,6 +57,20 @@ Chrome check confirmed (see the evidence file); the work ships in one PR;
 a container with a hidden scrollbar is exempt from the overlay-scrollbar
 rule; and the `Tags: ui` line is removed, because every milestone in this UI
 library is UI work.
+
+Second review decisions (2026-10-20). R9: the user chose no
+server-rendering work, so server HTML may miss the options that a page hook
+sets. The browser half of R9 got the recommended fix by default: the first
+`selectedIds` that a page hook sets is the page's starting selection, and it
+fires no `onSelectionChange`. R10: the user chose A, a `selectionScope`
+option that the shell sets per page, because pages can show the same
+records. Rejected: unique ids across pages (B), keeping the selection only
+when every selected id returns (C), and a provider keyed by the route (D).
+R11: the user chose A, a straight drag's box drawn as a line, over a box of
+at least 1px (B), so the drawn box that `renderMarquee` receives stays the
+cut hit box. The same day, the shared skills update moved code names
+and mechanics out of protocol docs; Milestone 9 applies that to the
+drag-select protocol docs, because it touches them.
 
 The Storybook stories and the accounting app's transactions mockup are the
 visual spec. This repo gets no new HTML mockup, as in the
@@ -718,6 +731,45 @@ R8 on 2026-10-15, and declined R6. Each fix starts with a failing test.
     height. Confirmed in Chrome.
 
 Evidence: `.context/drag-select-options/m8-evidence.md`.
+
+## Milestone 9: Second review fixes
+
+Fix R9 to R11 from the second review under Milestone 8, with the options
+that the user chose on 2026-10-20. Each fix starts with a failing test.
+
+- [x] R11: keep a cut box that has no width or no height, so a straight
+      drag draws its box as a line. Tests: the cut keeps such a box, and a
+      browser test drags straight down in the page shell.
+- [x] R10: add a `selectionScope` option. When its merged value changes, the
+      stored selection clears, so the new scope starts empty. The
+      page-change rule stays for providers without a scope. Tests: a
+      "Reconciliation" page in the page shell lists the same transactions;
+      rows selected on Transactions are not selected there.
+- [x] R9: when a page hook starts to set `selectedIds`, that selection is the
+      page's starting selection: no `onSelectionChange` and no announcement.
+      No server-rendering work. Tests: a "Restored selection" story starts
+      with two rows selected through the page hook, and a unit test covers
+      the owner rule.
+- [x] Move code names and mechanics out of `docs/protocol/drag-select.md` and
+      `docs/protocol/drag-select-api.md`, as the `documentation` skill
+      requires for a protocol doc that a change touches. Their homes are the
+      README's Key Code, the doc comments, and the tests.
+- [x] Update the protocol doc, the API reference, the README, and the
+      consumer migration for R9 to R11.
+- [x] Keep a browser test of the last-target-gone rule without a scope.
+      The page shell now sets a scope, so the old page-change test no
+      longer reaches that rule. The story's `scoped` arg turns the scope off
+      for a new test. The protocol doc and the README now say that the rule
+      applies with or without a scope.
+- [x] Record the snapshot baselines of the changed and new stories.
+- [x] Run `cargo xtask check`: passed
+      (`.context/drag-select-options/logs/gate-3.log`).
+- [ ] Run `git add -A`, commit with Conventional Commits, and push.
+- [ ] Run `cargo xtask review` after the push. Report its findings without
+      fixing them, as `AGENTS.md` requires, and add each open finding as one
+      line below.
+
+Evidence: `.context/drag-select-options/m9-evidence.md`.
 
 ## Post-merge follow-up (non-blocking)
 

@@ -7,9 +7,10 @@ options it needs with `useDragSelectableOptions`. The drag gesture and the
 box run on web. Native renders the same provider and selection state without
 a gesture.
 
-The contract is in [the drag select protocol](../../docs/protocol/drag-select.md),
-and the types and defaults are in
-[the API reference](../../docs/protocol/drag-select-api.md).
+The requirements are in
+[the drag select protocol](../../docs/protocol/drag-select.md), and the
+option defaults are in
+[the option reference](../../docs/protocol/drag-select-api.md).
 
 ## Responsibilities
 
@@ -28,8 +29,9 @@ and the types and defaults are in
 
 ## Page Shell
 
-The shell makes its main column the provider and keeps it off by default.
-A page turns it on and configures it with the page hook:
+The shell makes its main column the provider, keeps it off by default, and
+names the current page with `selectionScope`. A page turns the provider on
+and configures it with the page hook:
 
 ```tsx
 import {
@@ -38,11 +40,15 @@ import {
   useDragSelectableTarget,
 } from "@firna/ui/drag-select";
 
-function Shell({ page }) {
+function Shell({ page, route }) {
   return (
     <View style={styles.app}>
       <Sidebar />
-      <DragSelectableProvider disabled style={styles.mainColumn}>
+      <DragSelectableProvider
+        disabled
+        selectionScope={route}
+        style={styles.mainColumn}
+      >
         {page}
       </DragSelectableProvider>
     </View>
@@ -97,9 +103,14 @@ function TransactionRow({ row }) {
   `onSelectedIdsChange`.
 - Selection ids are a set. Their order carries no meaning, and an id listed
   twice in `selectedIds` or `defaultSelectedIds` counts once.
-- Page change: when the last target unregisters and none of the selected
-  rows registers again in the same task, the provider clears its stored
-  selection. An uncontrolled page in a shell therefore starts empty. A filter
+- A page that passes a restored selection through the page hook starts with
+  it: the provider does not report that starting selection as a change.
+- Scope: when `selectionScope` changes, the uncontrolled selection clears,
+  so each page in a shell starts empty, even when two pages show the same
+  records.
+- With or without a scope, the selection clears when the last target
+  unregisters and none of the selected rows registers again in the same task.
+  Without a scope, this rule clears the selection on a page change. A filter
   or a reload that leaves zero rows also clears it. React's development
   double mount keeps it, because the same rows register again at once.
 - `onSelectionChange(selection)` fires when the rendered selection changes.
@@ -122,6 +133,7 @@ function TransactionRow({ row }) {
 | `selectedIds`                | none                     | Own the selection (controlled).                        |
 | `onSelectedIdsChange`        | none                     | Receive each proposed selection.                       |
 | `onSelectionChange`          | none                     | Receive each change of the rendered selection.         |
+| `selectionScope`             | none                     | Name the page, so a new page starts empty.             |
 | `selectionAnnouncement`      | `"N items selected"`     | Live-region text. Return `""` to stay silent.          |
 | `overlayZIndex`              | the overlay layer token  | Raise the box above a custom stacking context.         |
 | `marqueeLabel`               | `null`                   | Text in the top-left corner of the box.                |
@@ -190,7 +202,8 @@ The default box has the theme primary border and a light tint, with the
 the top-left corner, and a `selectionLabel` that returns `null` hides the
 badge. `renderMarquee` draws your own box: the provider still renders the
 fixed, non-interactive layer at the box (clipped to the visible part of the
-scroll container) and puts your node inside it.
+scroll container) and puts your node inside it. A straight drag, with no
+width or no height, draws its box as a line.
 
 ```tsx
 <DragSelectableProvider
@@ -257,7 +270,8 @@ use `selectedIds` to read fresh row data from the app's own source.
   press's scroll container, the axes it can scroll, the scrollbar rule, and
   the anchored start point.
 - `useDragSelectableSelectionState.ts` and `dragSelectableSelectionModel.ts`:
-  the selection, its modes, its reports, and its announcements.
+  the selection, its modes, and its scope. `useDragSelectableSelectionReport.ts`
+  reports and announces its changes and spots a page's starting selection.
 - `useDragSelectableRegistry.ts`, `dragSelectableTargetOrder.ts`, and
   `dragSelectableTargetNode.ts`: the registered targets, their document
   order, and the element that takes their focus.
@@ -268,3 +282,7 @@ use `selectedIds` to read fresh row data from the app's own source.
 - `DragSelectableOverlay.web.tsx` and `dragSelectableOverlayTypes.ts`: the
   box, which reads its options live. `dragSelectableRole.ts`: the provider
   element's role and name.
+- Tests: `tests/unit/dragSelect*.test.ts` for the rules and the geometry,
+  `tests/unit/staticDragSelect.test.ts` for the built package, and
+  `tests/browser/drag-select*.spec.ts` for the gesture on the "Drag
+  Select/Examples" stories.

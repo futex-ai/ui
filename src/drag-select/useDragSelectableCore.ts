@@ -40,6 +40,8 @@ export function useDragSelectableCore(
     readOptions: source.read,
     registeredTargets: registry.registeredTargets,
     selectedIds: options.selectedIds,
+    selectionOwner: source.selectionOwner(),
+    selectionScope: options.selectionScope,
     targetsRef: registry.targetsRef,
   });
   clearAfterEmptyRef.current = selection.clearAfterEmpty;

@@ -15,7 +15,10 @@ import { NestedProvidersExample } from "./dragSelectNestedExample";
 import { ControlledSelectionExample } from "./dragSelectControlledExample";
 import { EmptyPageExample } from "./dragSelectEmptyPageExample";
 import { MarqueeOptionsExample } from "./dragSelectMarqueeExample";
-import { PageShellExample } from "./dragSelectPageShellExample";
+import {
+  PageShellExample,
+  type PageShellExampleProps,
+} from "./dragSelectPageShellExample";
 import { RowDataExample } from "./dragSelectRowDataExample";
 import { StorySurface } from "./sharedExamples";
 
@@ -72,12 +75,13 @@ export const DisabledDuringDrag: Story = {
   ),
 };
 
-export const PageShell: Story = {
+export const PageShell: StoryObj<PageShellExampleProps> = {
   name: "Page shell",
+  args: { scoped: true },
   parameters: { layout: "fullscreen" },
-  render: () => (
+  render: (args) => (
     <SharedUiThemeProvider theme={defaultSharedUiTheme}>
-      <PageShellExample />
+      <PageShellExample {...args} />
     </SharedUiThemeProvider>
   ),
 };
@@ -105,6 +109,15 @@ export const ControlledSelection: Story = {
   render: () => (
     <StorySurface>
       <ControlledSelectionExample />
+    </StorySurface>
+  ),
+};
+
+export const RestoredSelection: Story = {
+  name: "Restored selection",
+  render: () => (
+    <StorySurface>
+      <ControlledSelectionExample initialSelectedIds={["txn_2", "txn_4"]} />
     </StorySurface>
   ),
 };

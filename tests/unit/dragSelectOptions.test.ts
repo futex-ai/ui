@@ -6,6 +6,7 @@ import {
   dragSelectableDefaultDragMode,
   dragSelectableMergeOptions,
   dragSelectableResolveOptions,
+  dragSelectableSelectionOwner,
 } from "../../src/drag-select/dragSelectableOptions";
 import type { DragSelectableOptions } from "../../src/drag-select/dragSelectableOptionTypes";
 import { dragSelectableNextSelection } from "../../src/drag-select/dragSelectableSelectionModel";
@@ -176,4 +177,44 @@ test("drag-select turns hits into the next selection for each mode", () => {
   );
   assert.deepEqual(dragSelectableNextSelection([], [], "replace"), []);
   assert.deepEqual(dragSelectableNextSelection(["a"], [], "add"), ["a"]);
+});
+
+test("drag-select names the newest layer that sets selectedIds as the owner", () => {
+  const { store } = storeWithCounter();
+  const owner = (provider: DragSelectableOptions = {}) =>
+    dragSelectableSelectionOwner(provider, store.entries());
+  assert.equal(owner(), null);
+  assert.equal(owner({ selectedIds: [] }), "provider");
+
+  store.set(4, { selectedIds: ["txn_1"] });
+  store.set(2, { disabled: false });
+  assert.deepEqual(
+    store.entries().map(([order]) => order),
+    [2, 4],
+  );
+  assert.equal(owner({ selectedIds: [] }), 4);
+
+  store.set(7, { selectedIds: undefined });
+  assert.equal(owner(), 4);
+  store.set(9, { selectedIds: ["txn_2"] });
+  assert.equal(owner(), 9);
+  store.remove(9);
+  store.remove(4);
+  assert.equal(owner({ selectedIds: [] }), "provider");
+});
+
+test("drag-select merges selectionScope like other values", () => {
+  const { changes, resolved, store } = storeWithCounter();
+  assert.equal(
+    resolved({ selectionScope: "transactions" }).selectionScope,
+    "transactions",
+  );
+  store.set(1, { selectionScope: "reconciliation" });
+  assert.equal(
+    resolved({ selectionScope: "transactions" }).selectionScope,
+    "reconciliation",
+  );
+  assert.equal(changes(), 1);
+  store.set(1, { selectionScope: "reconciliation" });
+  assert.equal(changes(), 1);
 });

@@ -2,11 +2,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MutableRefObject } from "react";
 
-import { announce } from "../announcer";
-
 import { dragSelectableSnapshotsForIds } from "./dragSelectableDom";
 import { dragSelectableIdsEqual } from "./dragSelectableModel";
-import type { DragSelectableResolvedOptions } from "./dragSelectableOptions";
+import type {
+  DragSelectableResolvedOptions,
+  DragSelectableSelectionOwner,
+} from "./dragSelectableOptions";
 import type {
   DragSelectableDragMode,
   DragSelectableSelectionChange,
@@ -16,14 +17,17 @@ import {
   dragSelectableInitialReport,
   dragSelectableNextSelection,
   dragSelectableRecordProposal,
-  dragSelectableReportRender,
   dragSelectableStoredAfterEmpty,
+  dragSelectableStoredForScope,
+  dragSelectableStoredIdsIn,
   dragSelectableUniqueIds,
+  type DragSelectableStoredSelection,
 } from "./dragSelectableSelectionModel";
 import type {
   DragSelectableSelection,
   DragSelectableTargetRegistration,
 } from "./dragSelectableTypes";
+import { useDragSelectableSelectionReport } from "./useDragSelectableSelectionReport";
 
 /** What the selection state needs from its provider. */
 export type DragSelectableSelectionConfig = {
@@ -39,6 +43,10 @@ export type DragSelectableSelectionConfig = {
   registeredTargets: ReadonlyMap<string, DragSelectableTargetRegistration>;
   /** The controlled selection of this render, or `undefined`. */
   selectedIds?: readonly string[];
+  /** Who sets the rendered `selectedIds` in this render. */
+  selectionOwner: DragSelectableSelectionOwner;
+  /** The `selectionScope` of this render. */
+  selectionScope?: string | number;
   /** The live registrations, with the current target data. */
   targetsRef: MutableRefObject<Map<string, DragSelectableTargetRegistration>>;
 };
@@ -62,12 +70,6 @@ export type DragSelectableSelectionState = {
 
 type Proposal = Omit<DragSelectableSelectionChange, "previousIds">;
 
-function defaultSelectionAnnouncement(count: number): string {
-  return count === 0
-    ? "Selection cleared"
-    : `${count} item${count === 1 ? "" : "s"} selected`;
-}
-
 const afterTask: (run: () => void) => void =
   typeof queueMicrotask === "function"
     ? queueMicrotask
@@ -80,18 +82,21 @@ const afterTask: (run: () => void) => void =
  * proposal; the provider skips a proposal that equals the rendered
  * selection as a set, stores the rest unless the app controls the
  * selection, sends each to `onSelectedIdsChange`, reports each change of the
- * rendered selection once, and announces a change that a proposal made.
+ * rendered selection once, and announces a change that a proposal made. The
+ * stored selection belongs to the `selectionScope` it was made in.
  */
 export function useDragSelectableSelectionState(
   config: DragSelectableSelectionConfig,
 ): DragSelectableSelectionState {
   const configRef = useRef(config);
   configRef.current = config;
-  const [storedIds, setStoredIds] = useState<readonly string[]>(() =>
-    dragSelectableUniqueIds(config.defaultSelectedIds ?? []),
-  );
+  const scope = config.selectionScope;
+  const [stored, setStored] = useState<DragSelectableStoredSelection>(() => ({
+    ids: dragSelectableUniqueIds(config.defaultSelectedIds ?? []),
+    scope,
+  }));
   const nextRenderedIds = dragSelectableUniqueIds(
-    config.selectedIds ?? storedIds,
+    config.selectedIds ?? dragSelectableStoredIdsIn(stored, scope),
   );
   const renderedIdsRef = useRef(nextRenderedIds);
   if (!dragSelectableIdsEqual(renderedIdsRef.current, nextRenderedIds)) {
@@ -115,28 +120,16 @@ export function useDragSelectableSelectionState(
     [registeredTargets, renderedIds, targetsRef],
   );
 
+  useDragSelectableSelectionReport({
+    owner: config.selectionOwner,
+    readOptions: config.readOptions,
+    reportRef,
+    selection,
+  });
+
   useEffect(() => {
-    const report = dragSelectableReportRender(
-      reportRef.current,
-      selection.selectedIds,
-    );
-    reportRef.current = report.state;
-    if (!report.notify && !report.announce) {
-      return;
-    }
-    const options = configRef.current.readOptions();
-    if (report.notify) {
-      options.onSelectionChange?.(selection);
-    }
-    if (report.announce) {
-      announce(
-        (options.selectionAnnouncement ?? defaultSelectionAnnouncement)(
-          selection.selectedCount,
-          selection,
-        ),
-      );
-    }
-  }, [selection]);
+    setStored((current) => dragSelectableStoredForScope(current, scope));
+  }, [scope]);
 
   const propose = useCallback((ids: string[], proposal: Proposal) => {
     const options = configRef.current.readOptions();
@@ -146,7 +139,7 @@ export function useDragSelectableSelectionState(
     }
     reportRef.current = dragSelectableRecordProposal(reportRef.current, ids);
     if (options.selectedIds === undefined) {
-      setStoredIds(ids);
+      setStored({ ids, scope: options.selectionScope });
     }
     options.onSelectedIdsChange?.(ids, {
       ...proposal,
@@ -191,9 +184,12 @@ export function useDragSelectableSelectionState(
   const clearAfterEmpty = useCallback(() => {
     afterTask(() => {
       const targets = configRef.current.targetsRef.current;
-      setStoredIds((stored) =>
-        dragSelectableStoredAfterEmpty(stored, (id) => targets.has(id)),
-      );
+      setStored((current) => {
+        const ids = dragSelectableStoredAfterEmpty(current.ids, (id) =>
+          targets.has(id),
+        );
+        return ids === current.ids ? current : { ...current, ids };
+      });
     });
   }, []);
 

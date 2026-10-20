@@ -1,96 +1,14 @@
-# Drag Select API Reference
+# Drag Select Option Reference
 
-The public types, option defaults, and helpers of `@firna/ui/drag-select`
-5.0, the library gesture surfaces that carry the ignore marker, and the
-tests that cover them. The behavior behind them is in
+The option defaults, the state, the callback arguments, the helpers, and the
+library gesture surfaces of `@firna/ui/drag-select` 5.0. The package's type
+declarations give the exact types. The behavior behind them is in
 [drag-select.md](drag-select.md).
 
-## Options And Provider Props
-
-```ts
-type DragSelectableDragMode = "replace" | "add" | "toggle";
-
-type DragSelectableModifierKeys = {
-  altKey: boolean;
-  ctrlKey: boolean;
-  metaKey: boolean;
-  shiftKey: boolean;
-};
-
-type DragSelectableStartReason = "modifier" | "ignored" | "field" | "control";
-
-type DragSelectableStart = {
-  allowed: boolean; // the answer of the default rules
-  reason: DragSelectableStartReason | null; // null when allowed
-  element: Element; // the pressed element
-  targetId: string | null; // the registered target that contains the press
-  keys: DragSelectableModifierKeys;
-  mode: DragSelectableDragMode | null; // from dragMode
-  event: PointerEvent;
-};
-
-type DragSelectableSelectionChange = {
-  source: "drag" | "keyboard";
-  mode: DragSelectableDragMode;
-  hitIds: string[]; // in document order
-  previousIds: string[];
-};
-
-type DragSelectableMarquee = {
-  box: DragSelectableBox; // viewport coordinates, clipped
-  matchingCount: number;
-  matchingIds: string[];
-  matchingTargets: DragSelectableTargetSnapshot[];
-  mode: DragSelectableDragMode;
-};
-
-type DragSelectableSelectionLabel = (
-  count: number,
-  context: DragSelectableSelectionLabelContext,
-) => string | null;
-
-type DragSelectableOptions = {
-  autoScroll?: boolean;
-  disabled?: boolean;
-  dragMode?: (
-    keys: DragSelectableModifierKeys,
-  ) => DragSelectableDragMode | null;
-  ignore?: string | readonly string[];
-  marqueeLabel?: string | null;
-  minimumControlDragDistance?: number;
-  minimumDragDistance?: number;
-  onSelectedIdsChange?: (
-    ids: string[],
-    change: DragSelectableSelectionChange,
-  ) => void;
-  onSelectionChange?: (selection: DragSelectableSelection) => void;
-  overlayZIndex?: number;
-  preventTextSelection?: boolean;
-  renderMarquee?: (marquee: DragSelectableMarquee) => ReactNode;
-  selectedIds?: readonly string[];
-  selectionAnnouncement?: DragSelectableSelectionAnnouncement;
-  selectionLabel?: DragSelectableSelectionLabel;
-  shouldStartDrag?: (start: DragSelectableStart) => boolean;
-  startFromControls?: boolean;
-};
-
-type DragSelectableProviderProps = DragSelectableOptions & {
-  accessibilityLabel?: string;
-  children: ReactNode;
-  defaultSelectedIds?: readonly string[];
-  role?: "group" | "list" | "none";
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-};
-```
-
-`DragSelectableState` has the selection fields, the live matching fields,
-`dragBox` (the full hit box in viewport coordinates, or `null`), `dragging`,
-and `dragMode` (the mode of the active press, or `null`). The target hook,
-its result, the selection and change hooks, the geometry helpers, and the
-layer token keep their 4.x API.
-
 ## Option Defaults
+
+`DragSelectableProvider` and `useDragSelectableOptions` both take these
+options.
 
 | Option                       | Default                          | Meaning                                                                                    |
 | ---------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------ |
@@ -106,6 +24,7 @@ layer token keep their 4.x API.
 | `selectedIds`                | none                             | Makes the selection controlled when it is defined.                                         |
 | `onSelectedIdsChange`        | none                             | Receives each proposed selection.                                                          |
 | `onSelectionChange`          | none                             | Receives each change of the rendered selection.                                            |
+| `selectionScope`             | none                             | Names the page or view of an uncontrolled selection. A change clears the selection.        |
 | `selectionAnnouncement`      | `"N items selected"`             | Live-region text for an applied proposal. An empty string announces nothing.               |
 | `overlayZIndex`              | `DRAG_SELECTABLE_LAYERS.overlay` | The z-index of the box layer.                                                              |
 | `marqueeLabel`               | `null`                           | Text in the top-left corner of the box. `null` shows no label.                             |
@@ -117,56 +36,73 @@ The default announcement is `"Selection cleared"` for zero ids, else
 normalization: a negative value clamps to `0`, and a non-finite value falls
 back to the default. `0` starts the drag on the first movement.
 
+The provider also takes `accessibilityLabel`, `children`,
+`defaultSelectedIds`, `role` (`"group"`, `"list"`, or `"none"`), `style`, and
+`testID`. The page hook does not take them.
+
+## State
+
+The state of `useDragSelectableSelection()` and `useDragSelectableChanges()`
+has these fields:
+
+- `selectedIds`, `selectedCount`, and `selectedTargets`: the rendered
+  selection.
+- `matchingIds`, `matchingCount`, and `matchingTargets`: the targets that
+  the hit box touches during a drag.
+- `dragBox`: the full hit box in viewport coordinates, or `null`.
+- `dragging`: whether a press is armed or a drag runs.
+- `dragMode`: the mode of the active press, or `null`.
+
+## Callback Arguments
+
+`shouldStartDrag(start)` receives:
+
+- `allowed` and `reason`: the answer of the default rules, and the reason of
+  a refusal, or `null` when they allow the press.
+- `element`: the pressed element.
+- `targetId`: the registered target that contains the press, or `null`.
+- `keys`: the modifier keys, and `mode`: the mode that `dragMode` gave, or
+  `null` when it refused the press.
+- `event`: the native `pointerdown`.
+
+`onSelectedIdsChange(ids, change)` receives the proposed ids and a change
+with:
+
+- `source`: `drag` or `keyboard`.
+- `mode`: the drag mode of the proposal.
+- `hitIds`: the hits, in document order.
+- `previousIds`: the rendered selection when the proposal was made.
+
+`renderMarquee(marquee)` receives the drawn box in viewport coordinates,
+the matching count, ids, and targets, and the drag mode.
+
 ## Helpers
 
-```ts
-function useDragSelectableOptions(options: DragSelectableOptions): void;
-function dragSelectableDefaultDragMode(
-  keys: DragSelectableModifierKeys,
-): DragSelectableDragMode | null;
-function dragSelectableNextSelection(
-  currentIds: readonly string[],
-  hitIds: readonly string[],
-  mode: DragSelectableDragMode,
-): string[];
-const dragSelectableIgnoreProps: { dataSet: { dragSelectIgnore: "true" } };
-const dragSelectableIgnoreDomProps: { "data-drag-select-ignore": "true" };
-```
-
+- `useDragSelectableOptions(options)` sets options on the nearest provider
+  while its component is mounted.
+- `dragSelectableDefaultDragMode(keys)` is the default `dragMode`.
+- `dragSelectableNextSelection(currentIds, hitIds, mode)` returns the
+  proposal of a drag, in the order that the protocol gives.
 - Spread `dragSelectableIgnoreProps` on a library primitive (`View`,
   `Pressable`, `Text`) and `dragSelectableIgnoreDomProps` on a raw DOM
   element. Both write `data-drag-select-ignore="true"`, so a press inside the
   element never starts a drag.
-- `dragSelectableIdsEqual` stays exported and compares two id lists in
-  order. The provider compares selections as sets instead.
+- `dragSelectableIdsEqual` compares two id lists in order. The provider
+  compares selections as sets instead.
 - `DRAG_SELECTABLE_LAYERS`, `dragSelectableOverlayClearsSurface`, and the
-  geometry helpers (`dragSelectableBox`, `dragSelectableBoundsForBox`,
+  geometry helpers `dragSelectableBox`, `dragSelectableBoundsForBox`,
   `dragSelectableIdsForBox`, `dragSelectableIntersectsBox`,
-  `dragSelectablePointFromEvent`, `dragSelectableThresholdForValue`,
-  `hasDragSelectableMoved`) keep their 4.x signatures.
+  `dragSelectablePointFromEvent`, `dragSelectableThresholdForValue`, and
+  `hasDragSelectableMoved` serve apps that draw their own selection UI.
 
 ## Library Gesture Surfaces
 
-Library components that own a pointer gesture mark their gesture root with
-`[data-drag-select-ignore]`, so a page-wide provider never starts over them:
-the calendar time-grid day columns and the month grid, the data grid element
-(header, resize handles, and body), the kanban board, the sortable list, the
-timeline element that holds the ruler and the track lanes, and the
-video-editor `NumberScrubber`. The video-editor `Scrubber` and the timeline
-ruler are `slider`s on web, which the field rule already refuses. The chart
-scrub hook (`useChartScrub`) is a native-only `PanResponder` with no web
-gesture, so it needs no marker; an app that spreads its handlers on web adds
+Library components that own a pointer gesture carry the ignore marker on
+their gesture root, so a page-wide provider never starts over them: the
+calendar time-grid day columns and the month grid, the data grid with its
+header, resize handles, and body, the kanban board, the sortable list, the
+timeline ruler and track lanes, and the video-editor `NumberScrubber`. The
+video-editor `Scrubber` and the timeline ruler are `slider`s on web, which
+the field rule refuses. `useChartScrub` from `@firna/ui/chart` has no web
+gesture, so it needs no marker. An app that uses its handlers on web adds
 the marker itself.
-
-## Tests
-
-- Unit tests cover the geometry, the option merge and layers, the start
-  rules and their reasons, the scrollbar rule, the scroll axes, the anchor
-  math, the session, the selection reports, `autoScrollDelta`, and the
-  marked gesture surfaces.
-- Built-package tests (`npm run test:dist`) cover the exports, duplicate
-  selected ids, and the provider's role and name.
-- Browser tests in `tests/browser/drag-select*.spec.ts` cover the gesture on
-  the "Page shell", "Empty page", "Nested providers", "Controlled
-  selection", "Custom marquee", and "Row data" stories. The earlier
-  drag-select tests in `tests/browser/storybook.spec.ts` keep passing.

@@ -2,7 +2,7 @@
 - button "Clear" [disabled]
 - text: Lock selection
 - switch "Lock selection"
-- text: "Proposals: 0. Last: none"
+- text: "Proposals: 0. Last: none Selection changes: 0"
 - group "Transactions":
   - checkbox /Stripe payout, -GBP \d+\.\d+/: /Stripe payout -GBP \d+\.\d+/
   - checkbox /Cursor Hosting Ltd, -GBP \d+\.\d+/: /Cursor Hosting Ltd -GBP \d+\.\d+/

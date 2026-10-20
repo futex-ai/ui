@@ -166,6 +166,30 @@ function optionsEqual(
   return true;
 }
 
+/**
+ * Who sets the rendered `selectedIds`: a page-hook layer, by its order, the
+ * provider props, or nobody, which leaves the selection uncontrolled.
+ */
+export type DragSelectableSelectionOwner = number | "provider" | null;
+
+/**
+ * The owner of the rendered `selectedIds`: the newest page-hook layer that
+ * sets it, else the provider props when they set it, else nobody. `layers`
+ * holds each layer with its order, the earliest first.
+ */
+export function dragSelectableSelectionOwner(
+  providerOptions: DragSelectableOptions,
+  layers: readonly (readonly [number, DragSelectableOptions])[],
+): DragSelectableSelectionOwner {
+  for (let index = layers.length - 1; index >= 0; index -= 1) {
+    const [order, options] = layers[index];
+    if (options.selectedIds !== undefined) {
+      return order;
+    }
+  }
+  return providerOptions.selectedIds !== undefined ? "provider" : null;
+}
+
 function normalizedDistance(value: number | undefined, fallback: number) {
   if (value === undefined || !Number.isFinite(value)) {
     return fallback;

@@ -6,7 +6,10 @@ import {
   dragSelectableInitialReport,
   dragSelectableRecordProposal,
   dragSelectableReportRender,
+  dragSelectableStartsSelection,
   dragSelectableStoredAfterEmpty,
+  dragSelectableStoredForScope,
+  dragSelectableStoredIdsIn,
   dragSelectableUniqueIds,
 } from "../../src/drag-select/dragSelectableSelectionModel";
 
@@ -113,4 +116,28 @@ test("drag-select keeps each selected id once, at its first position", () => {
     "c",
   ]);
   assert.deepEqual(dragSelectableUniqueIds([]), []);
+});
+
+test("drag-select starts a page selection when a new page layer sets selectedIds", () => {
+  assert.equal(dragSelectableStartsSelection(null, 3), true);
+  assert.equal(dragSelectableStartsSelection(3, 5), true);
+  assert.equal(dragSelectableStartsSelection("provider", 3), true);
+  assert.equal(dragSelectableStartsSelection(3, 3), false);
+  assert.equal(dragSelectableStartsSelection(3, null), false);
+  assert.equal(dragSelectableStartsSelection(null, "provider"), false);
+});
+
+test("drag-select keeps the stored selection only in its own scope", () => {
+  const stored = { ids: ["txn_1", "txn_2"], scope: "transactions" };
+  assert.equal(dragSelectableStoredIdsIn(stored, "transactions"), stored.ids);
+  assert.deepEqual(dragSelectableStoredIdsIn(stored, "reconciliation"), []);
+  assert.equal(dragSelectableStoredForScope(stored, "transactions"), stored);
+  assert.deepEqual(dragSelectableStoredForScope(stored, "reconciliation"), {
+    ids: [],
+    scope: "reconciliation",
+  });
+
+  const unscoped = { ids: ["txn_1"], scope: undefined };
+  assert.equal(dragSelectableStoredIdsIn(unscoped, undefined), unscoped.ids);
+  assert.deepEqual(dragSelectableStoredIdsIn(unscoped, 1), []);
 });

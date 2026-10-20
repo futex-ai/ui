@@ -733,11 +733,12 @@ The drag-select family gives web rubber-band selection to repeated rows,
 tiles, and similar targets. One provider can wrap one list or a whole app
 shell, and a page sets the options of the nearest provider with
 `useDragSelectableOptions`. Native renders the same provider and selection
-state, but has no drag gesture. The complete contract is in
+state, but has no drag gesture. The requirements are in
 [drag-select.md](drag-select.md): targets and hooks, option precedence, the
 start rules, the gesture, auto-scroll, controlled and uncontrolled
-selection, the box and the wrapper, and native behavior. The public types,
-option defaults, and helpers are in [drag-select-api.md](drag-select-api.md).
+selection, the selection scope, the box and the wrapper, and native
+behavior. The option defaults, the state, the helpers, and the library
+gesture surfaces are in [drag-select-api.md](drag-select-api.md).
 
 ## Modal Contract
 

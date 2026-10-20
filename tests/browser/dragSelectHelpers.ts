@@ -64,9 +64,13 @@ export async function marqueeCount(page: Page): Promise<number> {
   return page.locator("[data-drag-select-marquee]").count();
 }
 
-/** Opens a drag-select story by its export name in kebab case. */
-export async function openStory(page: Page, story: string) {
-  await page.goto(`/iframe.html?id=drag-select-examples--${story}`);
+/**
+ * Opens a drag-select story by its export name in kebab case. `args` sets
+ * Storybook URL args, for example `scoped:!false`.
+ */
+export async function openStory(page: Page, story: string, args?: string) {
+  const query = args === undefined ? "" : `&args=${args}`;
+  await page.goto(`/iframe.html?id=drag-select-examples--${story}${query}`);
   await page.waitForSelector("#storybook-root *");
 }
 

@@ -1,6 +1,7 @@
 - text: Ledger Books for Greenhouse Studio
 - button "Transactions"
 - button "Invoices"
+- button "Reconciliation"
 - text: Highlight text while dragging
 - switch "Highlight text while dragging"
 - heading "Transactions" [level=1]

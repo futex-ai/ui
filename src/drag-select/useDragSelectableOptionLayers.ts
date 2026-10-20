@@ -12,7 +12,9 @@ import {
 import {
   dragSelectableMergeOptions,
   dragSelectableResolveOptions,
+  dragSelectableSelectionOwner,
   type DragSelectableResolvedOptions,
+  type DragSelectableSelectionOwner,
 } from "./dragSelectableOptions";
 import type { DragSelectableOptions } from "./dragSelectableOptionTypes";
 
@@ -26,6 +28,8 @@ export type DragSelectableOptionLayers = Pick<
 export type DragSelectableOptionSource = {
   /** The resolved options at call time. */
   read: () => DragSelectableResolvedOptions;
+  /** Who sets the rendered `selectedIds` at call time. */
+  selectionOwner: () => DragSelectableSelectionOwner;
   /** Subscribes to every hook-layer change, function-only ones included. */
   subscribe: (listener: () => void) => () => void;
   /** A number that changes with every hook-layer change. */
@@ -67,6 +71,11 @@ export function useDragSelectableOptionLayers(
             providerOptionsRef.current,
             ...store.layers(),
           ]),
+        ),
+      selectionOwner: () =>
+        dragSelectableSelectionOwner(
+          providerOptionsRef.current,
+          store.entries(),
         ),
       subscribe: store.subscribe,
       version: store.version,

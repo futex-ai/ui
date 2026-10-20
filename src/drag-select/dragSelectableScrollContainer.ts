@@ -111,7 +111,11 @@ export function dragSelectableVisibleRect(
   };
 }
 
-/** The part of a box inside a rectangle, or `null` when they do not overlap. */
+/**
+ * The part of a box inside a rectangle, or `null` when they do not touch.
+ * Edges count, as in the hit test, so the box of a straight drag, which has
+ * no width or no height, stays and draws as a line.
+ */
 export function dragSelectableClipBox(
   box: DragSelectableBox,
   rect: DragSelectableRect,
@@ -120,7 +124,7 @@ export function dragSelectableClipBox(
   const right = Math.min(box.right, rect.right);
   const top = Math.max(box.top, rect.top);
   const bottom = Math.min(box.bottom, rect.bottom);
-  if (right <= left || bottom <= top) {
+  if (right < left || bottom < top) {
     return null;
   }
   return {

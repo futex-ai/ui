@@ -5,7 +5,9 @@
  * Control-click toggles a row, Shift-click selects a range, the toolbar
  * clears the selection, and a drag or a key sends a proposal that the page
  * applies unless the selection is locked. The lock changes only the page's
- * callback, so the provider must read the callback when it calls it.
+ * callback, so the provider must read the callback when it calls it. A page
+ * can start with a restored selection, which is its starting selection and
+ * not a change.
  */
 import { useState } from "react";
 import {
@@ -39,22 +41,37 @@ type ClickKeys = {
   shiftKey?: boolean;
 };
 
-export function ControlledSelectionExample() {
+export function ControlledSelectionExample({
+  initialSelectedIds = [],
+}: {
+  initialSelectedIds?: string[];
+}) {
+  const [changes, setChanges] = useState(0);
   return (
     <DragSelectableProvider
+      onSelectionChange={() => setChanges((count) => count + 1)}
       selectionAnnouncement={(count) =>
         `${count} transaction${count === 1 ? "" : "s"} selected`
       }
       style={styles.page}
     >
-      <ControlledPage />
+      <ControlledPage
+        changes={changes}
+        initialSelectedIds={initialSelectedIds}
+      />
     </DragSelectableProvider>
   );
 }
 
-function ControlledPage() {
+function ControlledPage({
+  changes,
+  initialSelectedIds,
+}: {
+  changes: number;
+  initialSelectedIds: string[];
+}) {
   const theme = useSharedUiTheme();
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState(initialSelectedIds);
   const [anchor, setAnchor] = useState<string | null>(null);
   const [locked, setLocked] = useState(false);
   const [log, setLog] = useState<ProposalLog>({ count: 0, last: "none" });
@@ -135,6 +152,12 @@ function ControlledPage() {
         testID="controlled-log"
       >
         {`Proposals: ${log.count}. Last: ${log.last}`}
+      </Text>
+      <Text
+        style={[styles.meta, { color: theme.colors.muted }]}
+        testID="controlled-changes"
+      >
+        {`Selection changes: ${changes}`}
       </Text>
       <View
         accessibilityLabel="Transactions"

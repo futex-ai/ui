@@ -16,6 +16,20 @@ async function holdLedgerDrag(page: Page) {
   await expect(page.locator(MARQUEE)).toBeVisible();
 }
 
+test("a straight drag draws its box as a line", async ({ page }) => {
+  await openStory(page, "page-shell");
+  const from = await pointIn(page, "shell-row-txn_1", 160);
+  const to = await pointIn(page, "shell-row-txn_3", 160);
+  expect(to.x).toBe(from.x);
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  await page.mouse.move(to.x, to.y, { steps: 8 });
+  await expect(page.locator(MARQUEE)).toBeVisible();
+  await expect(page.locator(MARQUEE)).toHaveText("3 rows");
+  await page.mouse.up();
+  await expect(page.getByText("Selected 3 rows")).toBeVisible();
+});
+
 test("the default box shows the badge and no label", async ({ page }) => {
   await openStory(page, "ledger-rows");
   await holdLedgerDrag(page);

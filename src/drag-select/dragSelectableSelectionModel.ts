@@ -1,8 +1,10 @@
 /**
  * Pure selection rules: ids form a set, a drag mode turns hits into a
- * proposal, and a provider reports a change of the rendered selection once,
- * announcing it only when it is the proposal that the provider made.
+ * proposal, a stored selection belongs to a scope, and a provider reports a
+ * change of the rendered selection once, announcing it only when it is the
+ * proposal that the provider made.
  */
+import type { DragSelectableSelectionOwner } from "./dragSelectableOptions";
 import type { DragSelectableDragMode } from "./dragSelectableOptionTypes";
 
 /**
@@ -125,4 +127,43 @@ export function dragSelectableStoredAfterEmpty(
     return storedIds;
   }
   return [];
+}
+
+/**
+ * Whether a render starts a page's selection: a page-hook layer, other than
+ * the owner of the last report, now sets `selectedIds`. That selection is
+ * the page's starting selection, so the provider reports nothing for it.
+ */
+export function dragSelectableStartsSelection(
+  previousOwner: DragSelectableSelectionOwner,
+  owner: DragSelectableSelectionOwner,
+): boolean {
+  return typeof owner === "number" && owner !== previousOwner;
+}
+
+/** A provider's stored selection and the `selectionScope` it belongs to. */
+export type DragSelectableStoredSelection = {
+  ids: readonly string[];
+  scope: string | number | undefined;
+};
+
+const noIds: readonly string[] = Object.freeze([]);
+
+/** The stored ids that apply in `scope`: none when they belong to another. */
+export function dragSelectableStoredIdsIn(
+  stored: DragSelectableStoredSelection,
+  scope: string | number | undefined,
+): readonly string[] {
+  return Object.is(stored.scope, scope) ? stored.ids : noIds;
+}
+
+/**
+ * The stored selection for `scope`: unchanged in its own scope, else empty,
+ * so a scope that comes back later starts empty too.
+ */
+export function dragSelectableStoredForScope(
+  stored: DragSelectableStoredSelection,
+  scope: string | number | undefined,
+): DragSelectableStoredSelection {
+  return Object.is(stored.scope, scope) ? stored : { ids: noIds, scope };
 }

@@ -12,6 +12,8 @@ import type { DragSelectableOptions } from "./dragSelectableOptionTypes";
 
 /** The option layers of a provider. */
 export type DragSelectableLayerStore = {
+  /** The layers with their keys, ordered by key, the earliest first. */
+  entries: () => Array<readonly [number, DragSelectableOptions]>;
   /** The layers, ordered by key, the earliest first. */
   layers: () => DragSelectableOptions[];
   /** Removes the layer with this key. */
@@ -53,11 +55,11 @@ export function createDragSelectableLayerStore(
       onValueChange();
     }
   };
+  const entries = () =>
+    [...layers.entries()].sort(([left], [right]) => left - right);
   return {
-    layers: () =>
-      [...layers.entries()]
-        .sort(([left], [right]) => left - right)
-        .map(([, options]) => options),
+    entries,
+    layers: () => entries().map(([, options]) => options),
     remove: (order) => {
       const previous = layers.get(order);
       if (!previous) {
