@@ -21,6 +21,7 @@ export function DropdownRow({
   active,
   entry,
   highlightVariant,
+  inputKeepsFocus,
   isWeb,
   itemRole,
   onHover,
@@ -32,6 +33,8 @@ export function DropdownRow({
   active: boolean;
   entry: DropdownListEntry;
   highlightVariant: DropdownHighlightVariant;
+  /** A combobox input controls the list, so a press keeps focus there. */
+  inputKeepsFocus: boolean;
   isWeb: boolean;
   itemRole: "menuitem" | "option";
   onHover: () => void;
@@ -77,7 +80,13 @@ export function DropdownRow({
       <Check color={highlight.checkColor} size={16} strokeWidth={2.5} />
     ) : null;
   // The name, state, role, and description per platform (WCAG 1.3.1, 4.1.2).
-  const a11y = dropdownRowA11y({ entry, isWeb, itemRole, rowDomId });
+  const a11y = dropdownRowA11y({
+    entry,
+    inputKeepsFocus,
+    isWeb,
+    itemRole,
+    rowDomId,
+  });
   return (
     <Pressable
       disabled={entry.disabled}

@@ -17,6 +17,7 @@ contrast.
 - A dropdown list is one Tab stop, and no row is a Tab stop.
 - When a combobox input controls the list, the input is that stop and keeps
   focus.
+- On web, a pointer press on a row of such a list leaves focus in the input.
 - Otherwise the list itself is that stop, so a list that scrolls stays
   reachable from the keyboard.
 - A list that is the stop points assistive tech at its active row.

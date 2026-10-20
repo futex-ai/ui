@@ -1,5 +1,5 @@
 /** Branded dropdown list rows with shared hover and keyboard state. */
-import { Fragment, ReactNode, useMemo } from "react";
+import { Fragment, ReactNode, useId, useMemo } from "react";
 import { Platform, ScrollView, View } from "../primitives/reactNative";
 
 import { useSharedUiTheme } from "../theme";
@@ -87,7 +87,8 @@ type DropdownListProps = {
    * Whether the list itself is a Tab stop. Defaults to `true`, so a list that
    * scrolls stays reachable from the keyboard; on web the list then points
    * `aria-activedescendant` at the active row. Pass `false` when a combobox
-   * input controls the list and keeps focus. Rows are never Tab stops.
+   * input controls the list and keeps focus; on web a pointer press on a row
+   * then leaves focus in the input. Rows are never Tab stops.
    */
   focusable?: boolean;
   footer?: ReactNode;
@@ -116,7 +117,8 @@ type DropdownListProps = {
   /**
    * Stable `nativeID` for the list container. Used both as the `aria-controls`
    * target on the trigger/input and as the prefix for per-row ids that back
-   * `aria-activedescendant`.
+   * `aria-activedescendant`. Defaults to an id that the list makes itself, so
+   * a list that is its own Tab stop still names its active row.
    */
   listId?: string;
   /** Container/row roles: `listbox`/`option` (default) or `menu`/`menuitem`. */
@@ -145,7 +147,7 @@ export function DropdownList({
   header,
   highlightVariant = DEFAULT_DROPDOWN_HIGHLIGHT,
   label,
-  listId,
+  listId: listIdProp,
   listRole = "listbox",
   maxHeight,
   onActiveIdChange,
@@ -156,6 +158,8 @@ export function DropdownList({
 }: DropdownListProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createDropdownListStyles(theme), [theme]);
+  const ownListId = useId();
+  const listId = listIdProp ?? ownListId;
   const { activeId, keyProps, scrollRef, setActiveId, setRowRef } =
     useDropdownListNavigation({
       controlledActiveId,
@@ -189,6 +193,7 @@ export function DropdownList({
       active={entry.id === activeId}
       entry={entry}
       highlightVariant={highlightVariant}
+      inputKeepsFocus={!focusable}
       isWeb={isWeb}
       itemRole={itemRole}
       key={entry.id}

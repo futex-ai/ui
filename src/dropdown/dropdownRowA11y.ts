@@ -27,6 +27,9 @@ export type DropdownRowA11y = {
  *   secondary line as `aria-describedby`. The row is not a Tab stop: the list
  *   is one Tab stop whose trigger or input keeps focus while the arrow keys
  *   move the active row (WCAG 2.1.1, 4.1.2).
+ * - Web, with `inputKeepsFocus`: a pointer press on the row does not move
+ *   focus. A row with `tabIndex={-1}` still takes focus from a click, which
+ *   would take the keys away from the combobox input that controls the list.
  * - Native: the tappable `button` role, and the secondary line as the
  *   accessibility hint, because the row's name replaces the text of its
  *   children for VoiceOver and TalkBack (WCAG 1.3.1).
@@ -36,11 +39,14 @@ export type DropdownRowA11y = {
  */
 export function dropdownRowA11y({
   entry,
+  inputKeepsFocus = false,
   isWeb,
   itemRole,
   rowDomId,
 }: {
   entry: DropdownSelectableEntry;
+  /** A combobox input controls the list and keeps focus. */
+  inputKeepsFocus?: boolean;
   isWeb: boolean;
   itemRole: "menuitem" | "option";
   rowDomId?: string;
@@ -71,6 +77,12 @@ export function dropdownRowA11y({
     ...(itemRole === "option"
       ? { "aria-selected": Boolean(entry.selected) }
       : {}),
+    ...(inputKeepsFocus ? { onMouseDown: keepFocus } : {}),
   };
   return { props, secondaryId };
+}
+
+/** Cancels the focus change that a `mousedown` makes by default. */
+function keepFocus(event: { preventDefault: () => void }) {
+  event.preventDefault();
 }

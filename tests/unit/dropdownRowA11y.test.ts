@@ -68,3 +68,28 @@ test("a native row is a button whose hint is its secondary line", () => {
     accessibilityState: { disabled: undefined, selected: true },
   });
 });
+
+test("a web row of a list that an input controls keeps focus on a pointer press", () => {
+  const web = dropdownRowA11y({
+    entry: tag,
+    inputKeepsFocus: true,
+    isWeb: true,
+    itemRole: "option",
+    rowDomId: "list-row-skoda",
+  });
+  const { onMouseDown } = web.props as {
+    onMouseDown?: (event: { preventDefault: () => void }) => void;
+  };
+  let prevented = 0;
+  onMouseDown?.({ preventDefault: () => (prevented += 1) });
+  assert.equal(prevented, 1);
+
+  // Native has no pointer focus to keep.
+  const native = dropdownRowA11y({
+    entry: tag,
+    inputKeepsFocus: true,
+    isWeb: false,
+    itemRole: "option",
+  });
+  assert.equal("onMouseDown" in native.props, false);
+});

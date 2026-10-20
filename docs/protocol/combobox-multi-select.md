@@ -86,7 +86,8 @@ bottom sheet are in [sheet.md](sheet.md).
 ## Presentation
 
 - `presentation="popover"`, the default, opens the list below the field.
-- In the popover, focus stays in the search input while the list is open.
+- In the popover, focus stays in the search input while the list is open,
+  also when the user presses a row.
 - `presentation="sheet"` shows a button with the placeholder in place of the
   field's search input. The chips stay in the field.
 - The button, or a press anywhere on the field, opens a bottom sheet.

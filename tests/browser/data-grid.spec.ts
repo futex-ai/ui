@@ -1738,6 +1738,24 @@ test("Shift+F10 opens the cell menu from the keyboard", async ({ page }) => {
   ).toHaveCount(1);
 });
 
+test("the cell menu names its active row", async ({ page }) => {
+  await gotoDataGridStory(page, "context-menus");
+
+  await page.getByText("Why we moved every workflow").click();
+  await page.keyboard.press("Shift+F10");
+  const menu = page.getByRole("menu");
+  await expect(menu).toBeVisible();
+
+  // The menu is one Tab stop, so it points assistive tech at its active row.
+  await page.keyboard.press("ArrowDown");
+  const activeId = await menu.getAttribute("aria-activedescendant");
+  expect(activeId).toBeTruthy();
+  await expect(menu.locator(`[id="${activeId}"]`)).toHaveAttribute(
+    "role",
+    "menuitem",
+  );
+});
+
 test("a grid without contextMenu leaves the browser menu alone", async ({
   page,
 }) => {

@@ -156,6 +156,12 @@ export function ComboboxMultiSelect({
     options: picker.selected,
     palette,
   };
+  // Focus the control before opening, so the web sheet can give focus back to
+  // the button on close: WebKit does not focus a button on a click.
+  const openPicker = () => {
+    (sheet ? triggerRef : inputRef).current?.focus();
+    setOpen(true);
+  };
   const listProps = {
     activeId: navigation.activeId,
     entries,
@@ -188,10 +194,7 @@ export function ComboboxMultiSelect({
       <View ref={anchorRef} style={styles.wrap}>
         <Pressable
           {...focus.focusRingProps}
-          onPress={() => {
-            (sheet ? triggerRef : inputRef).current?.focus();
-            setOpen(true);
-          }}
+          onPress={openPicker}
           style={[
             styles.control,
             invalid
@@ -218,7 +221,7 @@ export function ComboboxMultiSelect({
               description={comboboxFieldDescriptionA11y(fieldText)}
               focus={focus}
               invalid={invalid}
-              onPress={() => setOpen(true)}
+              onPress={openPicker}
               open={open}
               placeholder={placeholder}
               styles={styles}

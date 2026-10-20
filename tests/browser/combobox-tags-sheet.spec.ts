@@ -74,6 +74,31 @@ test("keys on the sheet's buttons reach those buttons, not the list", async ({
   expect(await chipRemoveNames(page)).toEqual([]);
 });
 
+test("a tap on a row keeps focus in the sheet's search", async ({ page }) => {
+  const { input, sheet } = await openSheet(page);
+  await sheet.getByRole("option", { name: "Website rebuild" }).click();
+  await expect(input).toBeFocused();
+
+  await page.keyboard.type("flat 3");
+  await expect(input).toHaveValue("flat 3");
+  expect(await chipRemoveNames(page)).toEqual(["Remove Website rebuild"]);
+});
+
+test("the sheet gives focus back to its button after a press that did not focus it", async ({
+  page,
+}) => {
+  // The story opens the sheet with `HTMLElement.click()`. Like a click in
+  // WebKit, that press does not focus the button.
+  await page.goto(OPEN_SHEET_STORY);
+  const sheet = page.getByRole("dialog", { name: "Tags" });
+  await expect(sheet).toBeVisible();
+  await sheet.getByRole("button", { name: "Done" }).click();
+  await expect(sheet).toBeHidden();
+  await expect(
+    page.getByRole("button", { name: "Tags, Add tag" }),
+  ).toBeFocused();
+});
+
 test("the Create tag row runs from the sheet with the query", async ({
   page,
 }) => {

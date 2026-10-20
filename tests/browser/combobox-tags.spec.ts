@@ -113,6 +113,18 @@ test("one tag per group: choosing a tag replaces the group's tag", async ({
   ).toHaveAttribute("aria-selected", "true");
 });
 
+test("a click on a row keeps focus in the search", async ({ page }) => {
+  const input = await openTags(page);
+  await page.getByRole("option", { name: "Website rebuild" }).click();
+  await expect(input).toBeFocused();
+
+  // The typed text, with its space, goes to the search. The space does not
+  // toggle the row under the pointer.
+  await page.keyboard.type("flat 3");
+  await expect(input).toHaveValue("flat 3");
+  expect(await chipRemoveNames(page)).toEqual(["Remove Website rebuild"]);
+});
+
 test("the footer action runs from the keyboard with the query", async ({
   page,
 }) => {
