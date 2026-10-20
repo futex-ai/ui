@@ -20,6 +20,7 @@ import {
 } from "./dropdownListStyles";
 import type { DropdownListStyles } from "./dropdownListStyles";
 import { DropdownGroup } from "./DropdownGroup";
+import { dropdownRowA11y } from "./dropdownRowA11y";
 import {
   dropdownListContainerA11y,
   dropdownListSegments,
@@ -320,39 +321,16 @@ function DropdownRow({
     !entry.rightText ? (
       <Check color={highlight.checkColor} size={16} strokeWidth={2.5} />
     ) : null;
-  // On web, expose the correct ARIA list-item role (`option`/`menuitem`) via
-  // the literal `role` prop, because `option` is missing from the bundled RN
-  // `AccessibilityRole` type (RNW forwards `role` at runtime). On native, keep
-  // the tappable `button` role so the OS exposes a familiar control. `option`
-  // carries `aria-selected`; `menuitem` has no selected state (an action menu).
-  // WCAG 4.1.2 Name/Role/Value. The row's name is its label, so the visible
-  // secondary line is wired in as its description; otherwise assistive tech
-  // would never hear it (WCAG 1.3.1).
-  const secondaryId =
-    entry.secondary && rowDomId ? `${rowDomId}-secondary` : undefined;
-  const webRoleProps: object = isWeb
-    ? ({
-        "aria-describedby": secondaryId,
-        nativeID: rowDomId,
-        role: itemRole,
-        ...(itemRole === "option"
-          ? { "aria-selected": Boolean(entry.selected) }
-          : {}),
-      } as unknown as object)
-    : { accessibilityRole: "button" as const };
+  // The name, state, role, and description per platform (WCAG 1.3.1, 4.1.2).
+  const a11y = dropdownRowA11y({ entry, isWeb, itemRole, rowDomId });
   return (
     <Pressable
-      accessibilityLabel={entry.accessibilityLabel ?? entry.label}
-      accessibilityState={{
-        disabled: entry.disabled,
-        selected: itemRole === "option" ? entry.selected : undefined,
-      }}
       disabled={entry.disabled}
       onHoverIn={entry.disabled ? undefined : onHover}
       onPress={entry.onPress}
       ref={onRowRef}
       testID={entry.testID}
-      {...webRoleProps}
+      {...a11y.props}
       style={[
         styles.item,
         entry.type === "footer" ? styles.footer : null,
@@ -376,7 +354,7 @@ function DropdownRow({
         </Text>
         {entry.secondary ? (
           <Text
-            nativeID={secondaryId}
+            nativeID={a11y.secondaryId}
             style={[
               [styles.secondary, highlight.secondaryStyle],
               highlight.secondaryLineStyle,

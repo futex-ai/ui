@@ -59,6 +59,9 @@ test(
       tagWith(markup, 'id="list-row-end"'),
       /aria-label="Custom end"/,
     );
+    // The list is one Tab stop: no row takes focus from the Tab key.
+    assert.doesNotMatch(markup, /tabindex="0"/);
+    assert.match(tagWith(markup, 'id="list-row-start"'), /tabindex="-1"/);
   },
 );
 

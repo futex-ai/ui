@@ -38,12 +38,13 @@ export type ComboboxSheetProps = {
   chips: Omit<ChipProps, "iconSize" | "singleLine" | "styles">;
   /** The field's `focusIndicator`, applied to the sheet's search box. */
   focusIndicator?: FocusIndicator;
+  /** Name, description, and state of the search input. */
+  inputA11y: object;
   /** Key handling shared with the field's navigation hook. */
   inputKeyProps: ReturnType<typeof useComboboxNavigation>["keyProps"];
   /** The search input; focused when the sheet opens. */
   inputRef: RefObject<TextInput | null>;
-  invalid: boolean;
-  /** Name of the sheet and of its search input. */
+  /** Name of the sheet. */
   label: string;
   /** The option list, without the parts the sheet supplies. */
   list: Omit<ComponentProps<typeof DropdownList>, "maxHeight" | "search">;
@@ -52,7 +53,6 @@ export type ComboboxSheetProps = {
   open: boolean;
   placeholder: string;
   query: string;
-  required: boolean;
   size: ControlSize;
 };
 
@@ -65,9 +65,9 @@ export function ComboboxSheet({
   activeDescendant,
   chips,
   focusIndicator,
+  inputA11y,
   inputKeyProps,
   inputRef,
-  invalid,
   label,
   list,
   onClose,
@@ -75,7 +75,6 @@ export function ComboboxSheet({
   open,
   placeholder,
   query,
-  required,
   size,
 }: ComboboxSheetProps) {
   const theme = useSharedUiTheme();
@@ -118,9 +117,7 @@ export function ComboboxSheet({
               />
               <TextInput
                 {...focus.focusTargetProps}
-                accessibilityLabel={label}
-                aria-invalid={invalid}
-                aria-required={required}
+                {...inputA11y}
                 onBlur={focus.onBlur}
                 onChangeText={onQueryChange}
                 onFocus={focus.onFocus}
@@ -150,9 +147,8 @@ export function ComboboxSheet({
  */
 export function ComboboxSheetTrigger({
   accessibilityLabel,
-  describedBy,
+  description,
   focus,
-  hint,
   invalid,
   onPress,
   open,
@@ -161,10 +157,9 @@ export function ComboboxSheetTrigger({
   triggerRef,
 }: {
   accessibilityLabel: string;
-  /** Web-only `aria-describedby` props for the field's error and hint. */
-  describedBy: object;
+  /** The field's error and hint, as the button's description. */
+  description: object;
   focus: ReturnType<typeof useFocusRing>;
-  hint?: string;
   invalid: boolean;
   onPress: () => void;
   open: boolean;
@@ -181,7 +176,6 @@ export function ComboboxSheetTrigger({
   return (
     <Pressable
       {...focus.focusTargetProps}
-      accessibilityHint={hint}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       aria-invalid={invalid}
@@ -191,7 +185,7 @@ export function ComboboxSheetTrigger({
       ref={triggerRef}
       style={styles.sheetTrigger}
       {...popupA11y}
-      {...describedBy}
+      {...description}
     >
       <Text numberOfLines={1} style={styles.sheetTriggerText}>
         {placeholder}

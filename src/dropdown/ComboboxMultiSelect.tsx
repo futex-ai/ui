@@ -19,6 +19,11 @@ import {
 } from "./DropdownList";
 import { comboboxInputA11y } from "./comboboxModel";
 import { comboboxOptionEntry } from "./comboboxMultiSelectEntries";
+import {
+  comboboxFieldDescriptionA11y,
+  comboboxSearchInputA11y,
+} from "./comboboxSearchInputA11y";
+import type { ComboboxSearchInputPlacement } from "./comboboxSearchInputA11y";
 import type {
   ComboboxOptionSection,
   ComboboxSelection,
@@ -145,20 +150,24 @@ export function ComboboxMultiSelect({
   const labelInfoName =
     labelInfoLabel ??
     (label ? `More information about ${label}` : "More information");
-  // Describe the input with whichever messages exist (error first so it reads
-  // before the hint). RNW does NOT map `accessibilityHint` to `aria-describedby`
-  // (WCAG 3.3.1 / 1.3.1), so emit the literal `aria-*` ourselves — as a cast
-  // object because RNW's bundled types omit these attributes on `TextInput`.
-  const describedBy =
-    [error ? errorId : null, hint ? hintId : null].filter(Boolean).join(" ") ||
-    undefined;
-  const describedByA11y =
-    typeof document === "undefined"
-      ? {}
-      : ({
-          "aria-describedby": describedBy,
-          "aria-errormessage": error ? errorId : undefined,
-        } as unknown as object);
+  // The field's error and hint describe the search input and the sheet
+  // button. `document` is absent on native, the same gate as `Platform.OS`.
+  const fieldText = {
+    error,
+    hint,
+    ids: { errorId, hintId, labelId },
+    isWeb: typeof document !== "undefined",
+  };
+  const searchInputA11y = (placement: ComboboxSearchInputPlacement) =>
+    comboboxSearchInputA11y({
+      ...fieldText,
+      accessibilityLabel,
+      invalid,
+      label,
+      placeholder,
+      placement,
+      required,
+    });
 
   const chipProps = {
     isLocked: (value: string) => picker.selection.locked.has(value),
@@ -239,9 +248,8 @@ export function ComboboxMultiSelect({
                 accessibilityLabel ??
                 [label, placeholder].filter(Boolean).join(", ")
               }
-              describedBy={describedByA11y}
+              description={comboboxFieldDescriptionA11y(fieldText)}
               focus={focus}
-              hint={error ?? hint}
               invalid={invalid}
               onPress={() => setOpen(true)}
               open={open}
@@ -252,17 +260,7 @@ export function ComboboxMultiSelect({
           ) : (
             <TextInput
               {...focus.focusTargetProps}
-              accessibilityHint={error ?? hint}
-              // Name the input from the visible label via `aria-labelledby` (so the
-              // accessible name IS the visible text — WCAG 2.5.3), unless the caller
-              // supplied an explicit `accessibilityLabel`, which then wins on both
-              // platforms. Mirrors `Input`/`InputFrame`.
-              accessibilityLabel={accessibilityLabel}
-              aria-invalid={invalid}
-              aria-labelledby={
-                accessibilityLabel === undefined && label ? labelId : undefined
-              }
-              aria-required={required}
+              {...searchInputA11y("field")}
               onChangeText={setQuery}
               onBlur={() => {
                 focus.onBlur();
@@ -287,7 +285,6 @@ export function ComboboxMultiSelect({
                 controls: listId,
                 open,
               })}
-              {...describedByA11y}
               {...navigation.keyProps}
             />
           )}
@@ -297,9 +294,9 @@ export function ComboboxMultiSelect({
             activeDescendant={activeDescendant}
             chips={chipProps}
             focusIndicator={focusIndicator}
+            inputA11y={searchInputA11y("sheet")}
             inputKeyProps={navigation.keyProps}
             inputRef={sheetInputRef}
-            invalid={invalid}
             label={label ?? accessibilityLabel ?? placeholder}
             list={listProps}
             onClose={close}
@@ -307,7 +304,6 @@ export function ComboboxMultiSelect({
             open={open}
             placeholder={placeholder}
             query={query}
-            required={required}
             size={size}
           />
         ) : (
