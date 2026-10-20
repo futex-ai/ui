@@ -56,6 +56,35 @@ message were applied as their recommended options, with no explicit answer:
    it. Dropdown and popover layers do not: a popover left open under a dialog
    is background.
 
+## Implementation decisions (2026-10-20)
+
+The implementer applied these as defaults while refining the mechanics, with
+no explicit answer from the user:
+
+8. **Tree order for nested dialogs.** React runs a child's effects before
+   its parent's, so a dialog nested inside another dialog's content would
+   push first and end up below its parent. Each frame links to its parent
+   frame through a React context, and the stack inserts a new layer below
+   every open layer that descends from it. Chosen over a documented rule
+   that nested dialogs must open in separate commits, because a confirm
+   inside a dialog's component is the common app pattern.
+9. **Escape follows the stack.** A frame's Escape layer closes the stack's
+   top dialog, so two frames that pushed their Escape layers in reverse
+   order in one commit still close the top one first. Chosen over an
+   insert-below call on the shared Escape stack, which would add a second
+   ordering rule.
+10. **Page inertness by membership.** A page node stays inert while any
+    dialog that opened while the node was on the page is open. Chosen over
+    one shared reference count, which would leave a popover from the top
+    dialog inert after a later dialog closes.
+11. **The public portal stays on `document.body`.** The frame portals
+    straight into the shared root. Chosen over pointing `WebModalPortal` at
+    the root, because consumer content there would be neither page nor
+    dialog and would never become inert.
+12. **The live-overlay attribute has its own owner module.** Chosen over a
+    modal-owned constant, so the toast and the announcer do not import the
+    modal module.
+
 Contract owners:
 
 - [Web overlays protocol](../docs/protocol/web-overlays.md), new in M1.
@@ -70,54 +99,92 @@ paint two backdrops today, and this repo has no modal mockup.
 
 ### Behaviour at the boundary (M1 writes these into the protocol doc)
 
-- Every web dialog renders inside one shared overlay root under
-  `document.body`, in opening order.
+- Every `WebModalFrame` dialog on web renders inside one shared overlay root
+  under `document.body`. DOM order inside the root is the stack order.
 - While a dialog is open, the page and every dialog beneath the top one are
   inert and hidden from assistive technology. Only the top dialog receives
   focus, Tab, Escape, and pointer input.
-- Dialogs that mount in the same render commit stack in tree order. The last
-  one is on top.
+- Opening a dialog puts it on top. Dialogs that mount in the same render
+  commit stack in tree order: a dialog rendered inside another dialog's
+  content is above it, and a later sibling is above an earlier one.
 - Closing the top dialog returns focus to the element that opened it, also
   when that element is inside the dialog beneath. When that element is gone
-  or inert, focus moves to the dialog beneath, or to the page when none is
-  left.
-- Closing a dialog that is not on top does not move focus.
+  or inert, focus moves into the dialog beneath, to the control where it
+  lands when that dialog opens. When no dialog is left and that element is
+  gone, focus stays where the browser puts it.
+- Closing a dialog that is not on top does not move focus. A dialog above it
+  that opened from inside it later returns focus to the element that opened
+  the closed dialog.
+- An overlay that was open on the page or in a dialog when a later dialog
+  opened, such as a dropdown, is background while that later dialog is
+  open, and is live again when it closes.
+- Content rendered through the public modal portal is page content, not a
+  stacked dialog.
 - The toast region and the announcer stay announced and operable while a
   dialog is open.
 - The page does not scroll while a dialog is open, and the removed scrollbar
   does not shift the layout.
 - Each dialog keeps its own backdrop. Stacked dialogs darken the page
   cumulatively.
-- Escape closes the top-most overlay only. Unchanged.
+- Escape closes the top-most overlay only, also for two dialogs that
+  mounted in the same commit.
 
 ### Mechanics (web only)
 
-- `src/modal/webModalStackModel.ts`: pure. An ordered layer list with `top`
-  and `below`, the focus-restore target resolution, and the page-lock
-  transitions on the first push and the last pop. Tested with `node:test`.
+- `src/modal/webModalStackModel.ts`: pure and generic over the layer and
+  node types, so `node:test` covers every rule without a DOM:
+  - The ordered entry list, where each entry holds a layer and the element
+    that opened it, with `top` and `below`.
+  - Tree-order insertion: a new layer goes below the first open layer that
+    descends from it through the parent links. It takes over that layer's
+    opener, and that layer falls back to the dialog beneath.
+  - Removal. The layer directly above a removed non-top layer inherits the
+    removed layer's opener when its own opener was inside the removed one.
+  - The focus-restore target: the opener when it is usable, else the new
+    top, else nothing.
+  - Page inertness by membership: each page node is background for every
+    layer pushed while it was on the page, and is restored when the last of
+    those layers is removed.
+  - The moves that put the layer roots in stack order.
+  - The page-lock transitions on the first push and the last pop.
 - `src/modal/webModalRoot.ts`: creates `<div data-firna-modal-root>` under
   `document.body` once, unstyled, so fixed-position layers stay
-  viewport-relative. DOM order inside the root is the stack order, and the
-  frames keep one `z-index`.
+  viewport-relative, and the frames keep one `z-index`. It returns the
+  cached root while it is connected, else finds or creates it, and returns
+  `null` without a document.
+- `src/liveOverlay.ts`: the owner of the `data-firna-live-overlay` attribute
+  name and its `dataSet` key, shared by the stack, the toast viewport, and
+  the announcer.
 - `src/modal/webModalStack.ts`: the DOM side. `push` snapshots
-  `document.activeElement` and applies the stack. `remove` applies the stack
-  and then restores focus, so the dialog beneath is live before focus lands
-  in it. `apply` marks every non-exempt, non-root body child inert and
-  `aria-hidden`, remembers each node's first-seen prior state, and restores
-  all of them on the last pop. It marks every lower dialog root inert and
-  `aria-hidden`, clears the top one, and keeps one capture-phase keydown
-  listener that traps Tab inside the top surface. The scroll lock joins in
-  M4.
+  `document.activeElement`, records the entry through the model, applies
+  the stack, and focuses the layer's initial target when the layer is the
+  new top. `remove` applies the stack and then restores focus, so the
+  dialog beneath is live before focus lands in it. `apply` marks the page
+  nodes, the body children other than the root and the live overlays,
+  inert and `aria-hidden` by membership, and remembers each node's
+  first-seen prior state. It marks every lower layer root inert and
+  `aria-hidden`, clears the top one, and moves misplaced layer roots with
+  `insertBefore`, so the node that holds focus never moves. One
+  capture-phase keydown listener, installed on the first push and removed
+  on the last pop, traps Tab inside the top surface. The stack exposes its
+  top layer, so a frame's Escape layer can close it. The scroll lock joins
+  in M4.
 - `src/modal/webModalFocusTrap.ts`: the focusable selector, the trap, the
   initial-focus target, and the focus helper, moved out of the frame file.
-- `src/modal/useWebModalLayer.ts`: one effect on `visible` that pushes a
-  layer with root and surface getters and the initial focus target, and
-  removes it on close.
-- `WebModalPortal.web.tsx` portals into the shared root.
-  `WebModalFrame.web.tsx` drops its inert, Tab-trap, and focus-restore
-  effects and keeps the Escape layer and the sheet height logic. The file
-  falls under the 300-line limit.
-- `ToastViewport.web.tsx` and `announcer.ts` set `data-firna-live-overlay`
+  The helpers take elements, not refs, so the stack can call them.
+- `src/modal/useWebModalLayer.ts`: one layout effect on `visible` that
+  pushes a layer with its parent from context, root and surface getters,
+  the initial focus target, and a close request, and removes it on close.
+  It also gives the frame the context value that links nested frames. A
+  layout effect applies order, inertness, and focus before paint.
+- `WebModalFrame.web.tsx` portals straight into the shared root, provides
+  the layer context to its content, and routes its Escape layer to the
+  stack's top dialog. It drops its inert, Tab-trap, and focus-restore
+  effects and keeps the sheet height logic. The file falls under the
+  300-line limit.
+- `WebModalPortal.web.tsx` stays a `document.body` portal, because it is
+  public API.
+- `ToastViewport.web.tsx` and `announcer.ts` set the live-overlay attribute
   on their body-level nodes.
 - Native `WebModalFrame.tsx` is unchanged. iOS presents one sibling `Modal`
   at a time, so a second native dialog must render inside the first.
@@ -155,6 +222,14 @@ still uses its own effects, so the product keeps working.
       removing a middle layer keeps the top, `top` and `below` partition,
       restore target resolution, and page-lock transitions only on the first
       push and the last pop.
+  - [ ] Tree-order insertion: a parent pushed after its descendant goes
+        below it and takes over its opener, and siblings keep push order.
+  - [ ] Opener inheritance when a non-top layer is removed.
+  - [ ] Page inertness by membership: a node added after the first push is
+        restored when the layer that marked it is removed, and a node marked
+        by several layers stays inert until the last one is removed.
+  - [ ] The moves that put the layer roots in stack order.
+- [ ] Add `src/liveOverlay.ts` with the attribute name and the `dataSet` key.
 - [ ] Add `src/modal/webModalFocusTrap.ts`. Move the focusable selector,
       `webModalFocusableElements`, `trapWebModalFocus`,
       `webModalInitialFocusTarget`, and `focusWebModalElement` out of
@@ -181,7 +256,8 @@ wiring lands.
       dialog with a text field, an "Open confirm" button, and a "Show toast"
       button, and a confirm dialog with Cancel and Delete; and "Stacked at
       mount", which opens both dialogs in one state update. Wrap the stories
-      in a `ToastProvider`.
+      in a `ToastProvider`. The confirm renders inside the first dialog's
+      content in both stories.
 - [ ] Add `tests/browser/modal-stack.spec.ts` before the wiring, so the
       tests fail first:
   - [ ] Tab from Cancel reaches Delete in the confirm dialog (finding 1).
@@ -195,16 +271,28 @@ wiring lands.
   - [ ] A toast raised from the first dialog is not `aria-hidden`, and its
         close button works (finding 3).
   - [ ] Two backdrops are present while both dialogs are open.
+  - [ ] Both dialogs sit in one shared overlay root, in stack order.
+  - [ ] In "Stacked at mount", the confirm paints above the first dialog and
+        holds focus, and Escape closes only the confirm.
+  - [ ] A toast that was visible before the confirm opened keeps a working
+        close button.
 - [ ] Save the failing run under `.context/web-modal-stack/` and name the
       file here.
-- [ ] Point `WebModalPortal.web.tsx` at the shared root. Add
-      `src/modal/useWebModalLayer.ts` and wire `WebModalFrame.web.tsx` to it.
-      Remove the inert, Tab-trap, and focus-restore effects from the frame.
+- [ ] Portal the frame straight into the shared root, and keep
+      `WebModalPortal.web.tsx` a `document.body` portal. Add
+      `src/modal/useWebModalLayer.ts` with the parent-layer context, and wire
+      `WebModalFrame.web.tsx` to it. Route the frame's Escape layer to the
+      stack's top dialog. Remove the inert, Tab-trap, and focus-restore
+      effects from the frame.
+- [ ] Update the source assertions in `tests/unit/webModal.test.ts` and
+      `tests/unit/escapeLayer.test.ts` for the wired frame.
 - [ ] Set `data-firna-live-overlay` in `ToastViewport.web.tsx` and
       `announcer.ts`.
 - [ ] Keep the existing modal browser tests in `tests/browser/storybook.spec.ts`
       green: focus restore with nested dropdowns, footer-action initial focus,
       nested dropdown Escape, and the web sheet.
+- [ ] Record the snapshot sweep baselines for the new stories with
+      `--update-snapshots=missing`, and check that no other baseline changed.
 - [ ] Run the axe sweep. If it reports `aria-hidden-focus` on a stacked
       story, record the triage here and ask before any baseline entry.
 - [ ] Smoke test in `npm run storybook`: open the stacked story, Tab, Escape,
@@ -234,6 +322,8 @@ Own commit, so it can be dropped on its own.
 - [ ] Give the "Stacked web modals" story tall page content. Add a browser
       test: `overflow` is hidden while a dialog is open and restored after,
       and a fixed-width page element does not shift.
+- [ ] Re-record the "Stacked web modals" snapshot baseline after the tall
+      content, and check that no other baseline changed.
 - [ ] Commit as `feat(modal): lock page scroll while a dialog is open`.
 
 ## Milestone 5: Verification, commit, and review
