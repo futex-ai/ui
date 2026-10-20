@@ -5,6 +5,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { loadBuiltUi, testBuilt } from "./builtUi";
+import { tagWith } from "./staticMarkup";
 
 /**
  * Server-rendered markup of the grouped tag picker, from the built web output
@@ -46,16 +47,6 @@ async function renderField(props: Record<string, unknown>) {
         ...props,
       }),
     ),
-  );
-}
-
-/** The opening tag of the first element that carries `attribute`. */
-function tagWith(markup: string, attribute: string): string {
-  const index = markup.indexOf(attribute);
-  assert.ok(index >= 0, `markup has ${attribute}`);
-  return markup.slice(
-    markup.lastIndexOf("<", index),
-    markup.indexOf(">", index),
   );
 }
 

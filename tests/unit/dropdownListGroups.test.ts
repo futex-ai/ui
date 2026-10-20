@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import type { DropdownListEntry } from "../../src/dropdown/DropdownList";
@@ -88,33 +87,3 @@ test("the list container owns pinned rows on web only", () => {
     {},
   );
 });
-
-test("dropdown list renders labelled groups, pinned rows, and row descriptions", () => {
-  const list = readSource("../../src/dropdown/DropdownList.tsx");
-  const group = readSource("../../src/dropdown/DropdownGroup.tsx");
-
-  // Groups are opt-in and web-only, so native lists and every existing caller
-  // keep their flat rows.
-  assert.match(list, /groupSections = false/);
-  assert.match(list, /isWeb && groupSections/);
-  assert.match(group, /role: "group"/);
-  assert.match(group, /"aria-labelledby": headingId/);
-  assert.match(
-    group,
-    /<Text nativeID=\{headingId\} style=\{styles\.section\}>/,
-  );
-  // Pinned rows render between the scroll area and the footer node, and the
-  // container owns them so they stay part of the listbox.
-  assert.match(
-    list,
-    /\{scroll\}[\s\S]*styles\.footerEntriesRegion[\s\S]*styles\.footerRegion/,
-  );
-  assert.match(list, /ownedIds: footerEntries\.flatMap/);
-  // The visible secondary line is the row's accessible description.
-  assert.match(list, /"aria-describedby": secondaryId/);
-  assert.match(list, /nativeID=\{secondaryId\}/);
-});
-
-function readSource(relativePath: string) {
-  return readFileSync(new URL(relativePath, import.meta.url), "utf8");
-}

@@ -292,20 +292,6 @@ test("selector keyboard stepping starts from the list edge when value is empty o
   assert.equal(nextDropdownValue(options, "missing", -1), "flat_rate");
 });
 
-test("dropdown list pins header and footer content outside the scroll area", () => {
-  const source = readSource("../../src/dropdown/DropdownList.tsx");
-
-  // Header renders before the scrollable rows, footer after them, so both
-  // stay fixed while the option list scrolls between them.
-  assert.match(
-    source,
-    /styles\.headerRegion[\s\S]*\{scroll\}[\s\S]*styles\.footerRegion/,
-  );
-  // The scroll body shrinks (rather than owning maxHeight) when chrome is
-  // present so the pinned regions keep their natural height.
-  assert.match(source, /hasChrome \? styles\.scroll : \{ maxHeight \}/);
-});
-
 test("dropdown selector forwards header and footer content to the list", () => {
   const source = readSource("../../src/dropdown/DropdownSelector.tsx");
 
@@ -313,19 +299,6 @@ test("dropdown selector forwards header and footer content to the list", () => {
   assert.match(source, /footer\?: ReactNode;/);
   assert.match(source, /<DropdownList[\s\S]*footer=\{footer\}/);
   assert.match(source, /<DropdownList[\s\S]*header=\{header\}/);
-});
-
-test("dropdown list pins the search slot above the header and options", () => {
-  const source = readSource("../../src/dropdown/DropdownList.tsx");
-
-  // The search region renders before the header, which renders before the
-  // scrollable rows, so the search input stays fixed while options scroll.
-  assert.match(
-    source,
-    /styles\.searchRegion[\s\S]*styles\.headerRegion[\s\S]*\{scroll\}/,
-  );
-  // The search slot also counts as chrome so the scroll body shrinks for it.
-  assert.match(source, /Boolean\(search\)/);
 });
 
 test("dropdown selector filters options through a searchable input", () => {
@@ -376,14 +349,10 @@ test("dropdown selector fits wider content up to an overridable default cap", ()
 });
 
 test("dropdown row inverts its subtext on the solid active fill", () => {
-  const list = readSource("../../src/dropdown/DropdownList.tsx");
   const stylesSource = readSource("../../src/dropdown/dropdownListStyles.ts");
 
-  // The subtext line picks up the highlight's secondary override on top of the
-  // base muted style, so an active solid row's subtext is recolored rather than
-  // left at the muted grey that vanishes against the `primary` fill.
-  assert.match(list, /styles\.secondary, highlight\.secondaryStyle/);
-  // The solid active row maps the subtext to `onSolid`, mirroring the inverted
+  // The rendered inversion is pinned in staticDropdownList.test.ts. The solid
+  // active row maps the subtext to `onSolid`, mirroring the inverted
   // label, and the highlight shape exposes that override.
   assert.match(
     stylesSource,
@@ -399,22 +368,15 @@ test("dropdown row inverts its subtext on the solid active fill", () => {
 });
 
 test("dropdown item rows forward a per-entry testID to the row pressable", () => {
-  const list = readSource("../../src/dropdown/DropdownList.tsx");
   const selector = readSource("../../src/dropdown/DropdownSelector.tsx");
 
-  // The item/footer entry carries an optional testID, forwarded to its row.
-  assert.match(
-    list,
-    /Test identifier forwarded to this row's pressable[\s\S]*?testID\?: string;/,
-  );
-  assert.match(list, /testID=\{entry\.testID\}/);
+  // The row forwards the entry's testID (pinned in staticDropdownList.test.ts).
   // The selector option exposes the same testID and threads it into the entry.
   assert.match(selector, /testID\?: string;/);
   assert.match(selector, /testID: option\.testID,/);
 });
 
 test("dropdown danger row uses a red solid highlight with inverted text", () => {
-  const list = readSource("../../src/dropdown/DropdownList.tsx");
   const stylesSource = readSource("../../src/dropdown/dropdownListStyles.ts");
 
   // The solid active fill is tone-aware: danger/amber rows take their deep
@@ -431,60 +393,37 @@ test("dropdown danger row uses a red solid highlight with inverted text", () => 
     stylesSource,
     /tone === "danger"[\s\S]*?return styles\.itemActiveSolidDanger/,
   );
-  // The highlight reports the inverted (solid active) row, and DropdownList uses
-  // that to drop the tone accent so the white label wins instead of red-on-fill.
+  // The highlight reports the inverted (solid active) row, and the list uses
+  // that to drop the tone accent so the white label wins instead of
+  // red-on-fill (rendered in staticDropdownList.test.ts).
   assert.match(stylesSource, /invertText/);
-  assert.match(list, /tone: entry\.tone/);
-  assert.match(list, /highlight\.invertText\s*\?\s*null/);
 });
 
 test("dropdown row renders trailing rightText that inverts on the solid fill", () => {
-  const list = readSource("../../src/dropdown/DropdownList.tsx");
   const stylesSource = readSource("../../src/dropdown/dropdownListStyles.ts");
   const selector = readSource("../../src/dropdown/DropdownSelector.tsx");
 
   // The trailing text is library-rendered (like `secondary`) over the base muted
   // style, so it reuses the active-row inversion instead of staying muted grey
-  // (~1.2:1) on the `primary` fill.
-  assert.match(list, /styles\.rightText, highlight\.secondaryStyle/);
+  // (~1.2:1) on the `primary` fill. staticDropdownList.test.ts renders the
+  // inversion and the check that a rightText replaces.
   assert.match(
     stylesSource,
     /rightText: \{[\s\S]*?color: theme\.colors\.muted[\s\S]*?\}/,
   );
-  // The rightText occupies the trailing slot like a custom `right` node, so it
-  // suppresses the redundant selection check rather than doubling up.
-  assert.match(list, /!entry\.right\s*&&\s*!entry\.rightText/);
   // The selector forwards an option's `rightText` straight through to the row.
   assert.match(selector, /rightText\?: string;/);
   assert.match(selector, /rightText: option\.rightText/);
 });
 
 test("dropdown row slots can render against the active row's content color", () => {
-  const list = readSource("../../src/dropdown/DropdownList.tsx");
   const stylesSource = readSource("../../src/dropdown/dropdownListStyles.ts");
   const selector = readSource("../../src/dropdown/DropdownSelector.tsx");
 
   // A caller node is opaque to the library, so an icon hard-coded to `ink`
   // stayed near-black on the `primary` fill while the label beside it inverted
   // to white. Both slots take an optional render function instead, handed the
-  // row's resolved content color so the caller can tint its own glyph.
-  assert.match(
-    list,
-    /export type DropdownRowSlot =\s*\|\s*ReactNode\s*\|\s*\(\(state: \{ color: string \}\) => ReactNode\);/,
-  );
-  assert.match(list, /leading\?: DropdownRowSlot;/);
-  assert.match(list, /right\?: DropdownRowSlot;/);
-  // Both slots resolve through the same helper, so `leading` and `right` cannot
-  // drift apart the way `secondary`/`rightText` did.
-  assert.match(
-    list,
-    /renderRowSlot\(entry\.leading, highlight\.contentColor\)/,
-  );
-  assert.match(list, /renderRowSlot\(entry\.right, highlight\.contentColor\)/);
-  assert.match(
-    list,
-    /function renderRowSlot\([\s\S]*?typeof slot === "function" \? slot\(\{ color \}\) : slot/,
-  );
+  // row's resolved content color (rendered in staticDropdownList.test.ts).
 
   // The highlight resolves the content color alongside the label style in the
   // same state branch, so a slot always matches the label beside it.
