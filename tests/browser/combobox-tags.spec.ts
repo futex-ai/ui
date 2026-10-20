@@ -113,7 +113,7 @@ test("one tag per group: choosing a tag replaces the group's tag", async ({
   ).toHaveAttribute("aria-selected", "true");
 });
 
-test("a click on a row keeps focus in the search", async ({ page }) => {
+test("a click in the list keeps focus in the search", async ({ page }) => {
   const input = await openTags(page);
   await page.getByRole("option", { name: "Website rebuild" }).click();
   await expect(input).toBeFocused();
@@ -123,6 +123,16 @@ test("a click on a row keeps focus in the search", async ({ page }) => {
   await page.keyboard.type("flat 3");
   await expect(input).toHaveValue("flat 3");
   expect(await chipRemoveNames(page)).toEqual(["Remove Website rebuild"]);
+
+  // A group heading and the empty-state line keep focus in the search too.
+  await page
+    .getByRole("group", { name: "Properties" })
+    .getByText("Properties", { exact: true })
+    .click();
+  await expect(input).toBeFocused();
+  await input.fill("zzz");
+  await page.getByRole("listbox").getByText("No matching options").click();
+  await expect(input).toBeFocused();
 });
 
 test("the footer action runs from the keyboard with the query", async ({

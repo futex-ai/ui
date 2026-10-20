@@ -9,6 +9,7 @@ import type { DropdownHighlightVariant } from "./dropdownHighlightVariant";
 import { createDropdownListStyles } from "./dropdownListStyles";
 import { DropdownGroup } from "./DropdownGroup";
 import { DropdownRow } from "./DropdownRow";
+import { dropdownListKeepFocusProps } from "./dropdownListKeepFocus";
 import {
   dropdownListContainerA11y,
   dropdownListSegments,
@@ -88,7 +89,8 @@ type DropdownListProps = {
    * scrolls stays reachable from the keyboard; on web the list then points
    * `aria-activedescendant` at the active row. Pass `false` when a combobox
    * input controls the list and keeps focus; on web a pointer press on a row
-   * then leaves focus in the input. Rows are never Tab stops.
+   * or any other line then leaves focus in the input. Rows are never Tab
+   * stops.
    */
   focusable?: boolean;
   footer?: ReactNode;
@@ -185,6 +187,10 @@ export function DropdownList({
     ),
     required,
   });
+  const keepFocusProps = dropdownListKeepFocusProps({
+    inputKeepsFocus: !focusable,
+    isWeb,
+  });
 
   // Pinned rows register no scroll ref: they sit outside the scroll area, so
   // moving the active row onto one must not scroll the options.
@@ -193,7 +199,6 @@ export function DropdownList({
       active={entry.id === activeId}
       entry={entry}
       highlightVariant={highlightVariant}
-      inputKeepsFocus={!focusable}
       isWeb={isWeb}
       itemRole={itemRole}
       key={entry.id}
@@ -237,6 +242,7 @@ export function DropdownList({
       style={hasChrome ? styles.scroll : { maxHeight }}
       testID={hasChrome ? undefined : testID}
       {...containerA11y}
+      {...keepFocusProps}
       {...keyProps}
     >
       {rows}
@@ -256,7 +262,7 @@ export function DropdownList({
       {header ? <View style={styles.headerRegion}>{header}</View> : null}
       {scroll}
       {footerEntries.length > 0 ? (
-        <View style={styles.footerEntriesRegion}>
+        <View style={styles.footerEntriesRegion} {...keepFocusProps}>
           {footerEntries.map((entry) => renderRow(entry, true))}
         </View>
       ) : null}

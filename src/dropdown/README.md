@@ -327,11 +327,12 @@ On web the option surface is a real ARIA composite (WCAG 4.1.2 Name/Role/Value):
 - Each list is one Tab stop, and no row is ever a Tab stop (WCAG 2.1.1). When a
   combobox input controls the list, as in `ComboboxMultiSelect` and a
   `searchable` selector, the input is the stop and keeps focus, also when the
-  user clicks or taps a row. Otherwise the list itself is the stop and points
-  `aria-activedescendant` at the active row, so a list that scrolls stays
-  reachable from the keyboard. Pass `focusable={false}` to a custom
-  `DropdownList` that a combobox input controls. A `DropdownList` without a
-  `listId` makes its own, so its rows always have ids to point at.
+  user clicks or taps a row, a heading, or another line of the list. Otherwise
+  the list itself is the stop and points `aria-activedescendant` at the active
+  row, so a list that scrolls stays reachable from the keyboard. Pass
+  `focusable={false}` to a custom `DropdownList` that a combobox input
+  controls. A `DropdownList` without a `listId` makes its own, so its rows
+  always have ids to point at.
 - A row's name is its label, and its visible `secondary` line is its accessible
   description, so a screen reader hears both: `aria-describedby` on web, and
   the accessibility hint on native.
@@ -574,6 +575,8 @@ custom layer.
 - `DropdownList.tsx` — the option list: scroll area, pinned regions, groups.
 - `DropdownRow.tsx` and `dropdownRowA11y.ts` — one row, and its name, role,
   description, and Tab order per platform.
+- `dropdownListKeepFocus.ts` — keeps focus in a combobox input while the
+  pointer presses its list.
 - `dropdownListStyles.ts` — row styles and the highlight per state and variant.
 - `ComboboxMultiSelect.tsx` — the chip field; `ComboboxFieldParts.tsx` holds its
   label row and messages.

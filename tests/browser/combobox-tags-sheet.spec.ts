@@ -74,7 +74,9 @@ test("keys on the sheet's buttons reach those buttons, not the list", async ({
   expect(await chipRemoveNames(page)).toEqual([]);
 });
 
-test("a tap on a row keeps focus in the sheet's search", async ({ page }) => {
+test("a tap in the list keeps focus in the sheet's search", async ({
+  page,
+}) => {
   const { input, sheet } = await openSheet(page);
   await sheet.getByRole("option", { name: "Website rebuild" }).click();
   await expect(input).toBeFocused();
@@ -82,6 +84,13 @@ test("a tap on a row keeps focus in the sheet's search", async ({ page }) => {
   await page.keyboard.type("flat 3");
   await expect(input).toHaveValue("flat 3");
   expect(await chipRemoveNames(page)).toEqual(["Remove Website rebuild"]);
+
+  // A group heading keeps focus in the search too.
+  await sheet
+    .getByRole("group", { name: "Properties" })
+    .getByText("Properties", { exact: true })
+    .click();
+  await expect(input).toBeFocused();
 });
 
 test("the sheet gives focus back to its button after a press that did not focus it", async ({
