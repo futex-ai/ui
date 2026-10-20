@@ -151,7 +151,12 @@ test("node becomes a pressable button with selected and focus rings", () => {
   assert.match(source, /accessibilityState=\{\{ selected \}\}/);
   assert.match(source, /useFocusRing/);
   assert.match(source, /selected \? styles\.nodeSelected : null/);
-  assert.match(source, /\.\.\.focus\.focusRingProps/);
+  // The caller's `dataSet` merges into the ring markers rather than replacing
+  // them, so a `data-*` hook never silently removes the focus glow.
+  assert.match(
+    source,
+    /\.\.\.dataSetProps\(focus\.focusRingProps, \{ dataSet \}\)/,
+  );
   assert.match(
     source,
     /useFocusRing\(\{ offset: -2, indicator: focusIndicator \}\)/,

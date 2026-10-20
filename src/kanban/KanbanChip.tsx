@@ -6,6 +6,7 @@ import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import { resolveBadgeColors } from "../badge/badgeStyles";
 import type { BadgeTone } from "../badge/badgeStyles";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import { createKanbanChipStyles } from "./kanbanStyles";
@@ -26,6 +27,8 @@ export type KanbanChipProps = {
    * or channel color beyond the semantic tones. Takes precedence over `tone`.
    */
   color?: KanbanChipColor;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** A decorative leading node (e.g. a channel or file icon), hidden from assistive tech. */
   leading?: ReactNode;
   /**
@@ -60,6 +63,7 @@ export type KanbanChipProps = {
 export function KanbanChip({
   children,
   color,
+  dataSet,
   leading,
   plain = false,
   style,
@@ -80,6 +84,7 @@ export function KanbanChip({
         style,
       ]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {leading != null ? (
         // The icon restates what the label already says (the channel, a file),

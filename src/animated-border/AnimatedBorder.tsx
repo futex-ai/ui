@@ -17,6 +17,7 @@ import {
 } from "../primitives/reactNative";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "../primitives/svg";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { devWarn } from "../devWarn";
 import { useSharedUiTheme } from "../theme";
 import { useReducedMotion } from "../useReducedMotion";
@@ -97,6 +98,8 @@ export type AnimatedBorderProps = {
    * the theme `primary`.
    */
   color?: AnimatedBorderColor;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Milliseconds for one full lap of the perimeter. Default 1600. */
   duration?: number;
   /** Height of the bordered box in px; omit to use the square `size`. Default 0. */
@@ -162,6 +165,7 @@ export function AnimatedBorder({
   borderWidth = DEFAULT_BORDER_WIDTH,
   children,
   color,
+  dataSet,
   duration = DEFAULT_DURATION_MS,
   height,
   shape = "rounded-rect",
@@ -297,6 +301,7 @@ export function AnimatedBorder({
         pointerEvents="none"
         style={[{ height: resolvedHeight, width: resolvedWidth }, style]}
         testID={testID ?? "animated-border"}
+        {...dataSetProps({ dataSet })}
       >
         {svg}
       </View>
@@ -304,7 +309,11 @@ export function AnimatedBorder({
   }
 
   return (
-    <View style={[animatedBorderStyles.frame, style]} testID={testID}>
+    <View
+      style={[animatedBorderStyles.frame, style]}
+      testID={testID}
+      {...dataSetProps({ dataSet })}
+    >
       {children}
       <View
         {...decorative}

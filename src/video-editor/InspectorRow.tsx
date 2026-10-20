@@ -14,6 +14,7 @@ import { useMemo } from "react";
 import { Pressable, Text, TextInput, View } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { DropdownMenu, type DropdownListEntry } from "../dropdown";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { Switch } from "../switch";
@@ -38,11 +39,14 @@ export type InspectorRowProps = {
   keyframed?: boolean;
   size?: ControlSize;
   focusIndicator?: FocusIndicator;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
 
 export function InspectorRow({
+  dataSet,
   focusIndicator,
   keyframed = false,
   onChange,
@@ -57,7 +61,7 @@ export function InspectorRow({
   const metrics = videoEditorSizing[size];
 
   return (
-    <View style={styles.row} testID={testID}>
+    <View style={styles.row} testID={testID} {...dataSetProps({ dataSet })}>
       <Text
         numberOfLines={1}
         style={[styles.rowLabel, { fontSize: metrics.fontSize }]}

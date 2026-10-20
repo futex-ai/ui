@@ -19,6 +19,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { devWarn } from "../devWarn";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { LabelInfo } from "../input";
@@ -84,6 +85,8 @@ export type SegmentedControlProps<T extends string> = {
    * the `outline` variant, which has no thumb.
    */
   animated?: boolean;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   disabled?: boolean;
   error?: string | null;
   /**
@@ -148,6 +151,7 @@ type PillRect = { height: number; width: number; x: number; y: number };
 export function SegmentedControl<T extends string>({
   accessibilityLabel,
   animated = true,
+  dataSet,
   disabled = false,
   error,
   focusIndicator,
@@ -321,7 +325,7 @@ export function SegmentedControl<T extends string>({
   );
 
   return (
-    <View style={styles.field} testID={testID}>
+    <View style={styles.field} testID={testID} {...dataSetProps({ dataSet })}>
       {label ? (
         <View style={styles.labelRow}>
           <Text style={styles.label}>

@@ -14,6 +14,7 @@ import {
   type ViewStyle,
 } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 export { sharedExtent } from "./chartFacets";
@@ -42,6 +43,8 @@ export type ChartGridProps<T> = {
   minPanelWidth?: number;
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   testID?: string;
 };
 
@@ -52,6 +55,7 @@ export function ChartGrid<T>({
   minPanelWidth = 220,
   accessibilityLabel,
   style,
+  dataSet,
   testID,
 }: ChartGridProps<T>) {
   const theme = useSharedUiTheme();
@@ -74,6 +78,7 @@ export function ChartGrid<T>({
       role={accessibilityLabel ? "group" : undefined}
       style={[{ flexDirection: "row", flexWrap: "wrap", width: "100%" }, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {facets.map((facet) => (
         <View

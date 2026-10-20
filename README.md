@@ -35,6 +35,12 @@ Shared UI component library for Firna React Native and web surfaces. The first c
   for every control, or per instance — picks the glow (`ring`), the browser
   outline on the control's visible box (`outline`), or no focus styling at all
   (`none`) for a control embedded in a surface that shows focus itself.
+- A modal opens on the caller's first field, never on a secondary control that
+  precedes it in DOM order. The ⓘ help button beside a label, a chip-remove
+  button, and an input's clear button carry an initial-focus skip marker, and
+  any component or raw element can carry the same marker.
+- Every component takes `dataSet`, the React Native Web spelling of `data-*`
+  attributes, forwarded to the element that carries its `testID`.
 - Portaled, anchored web date/dropdown/popover overlays, each placed by its
   own measured size so it flips above its trigger rather than being clipped,
   with content-sized selector menus and z-index escape hatches, plus
@@ -129,12 +135,28 @@ The package name is `@firna/ui`. Public exports are available from:
   caller-owned local style sheets. The hook's `indicator` option (a control's
   `focusIndicator` prop, else the theme's) picks the marker: the glow, the
   browser outline, or none; see [Focus indicators](#focus-indicators).
+- `@firna/ui/initialFocus` for the initial-focus skip marker: spread
+  `skipInitialFocusProps` on a Firna primitive or library component, or
+  `skipInitialFocusDomProps` on a raw DOM element, and an opening modal never
+  lands focus on it. `skipsInitialFocus` and `initialFocusLanding` are the
+  pure helpers the modal reads the marker with. See
+  [Initial focus in modals](#initial-focus-in-modals).
 - `@firna/ui/toast` for the toast provider, the `useToast` hook, the
   `toastController` method API, and transient notification toasts including
   card and solid variants with optional custom leading icons.
 - `@firna/ui/workflow` for the branching workflow builder — a step-graph canvas
   (color-coded nodes, tinted edge labels, forks, legend, add-step) for
   constructing automation workflows.
+
+Every component also takes `dataSet`, the React Native Web spelling of `data-*`
+attributes: each camelCase key becomes one hyphenated attribute on the element
+that carries the component's `testID`, so `dataSet={{ analyticsId: "save" }}`
+renders `data-analytics-id="save"` on web and is ignored on native. Library
+markers already on that element (the focus-ring host markers, the initial-focus
+skip marker) are kept; a caller key of the same name wins. `dataSetProps`,
+exported from `@firna/ui`, merges several `dataSet` sources into one spread for
+custom components built on the primitives, and `dataSetDomProps` spells a
+`dataSet` as the literal `data-*` attributes a raw DOM element takes.
 
 ## Installation
 
@@ -370,6 +392,42 @@ Later consumer rules can override the focus treatment at equal specificity.
 No `focusIndicator` setting is required for static rendering; `outline` and
 `none` are purely opt-outs for consumers that want the browser default or supply
 their own focus treatment.
+
+### Initial focus in modals
+
+On web, `WebModalFrame` moves focus into the dialog when it opens: onto the
+first focusable element the caller rendered, in DOM order, skipping the close
+button. A form field's label row comes before the field, so without help the
+ⓘ `labelInfo` button would take that landing, and a pre-filled multi-select
+would open on its first chip-remove button. Those secondary controls carry the
+initial-focus skip marker, `data-firna-initial-focus="skip"`, and the landing
+picker passes over them: a form opens on its first field. The marker changes
+only where focus lands. A marked control keeps its place in the Tab cycle and
+inside the focus trap, so the ⓘ is one Shift+Tab away from the field it
+describes.
+
+The library marks an input's ⓘ, clear, and labelled suffix buttons and a
+multi-select's chip-remove buttons. Mark your own control the same way: on a
+Firna primitive or any library component spread `skipInitialFocusProps`, which
+is a `dataSet`; on a raw DOM element spread `skipInitialFocusDomProps`. The
+marker is inherited, so a container that carries it excludes everything inside
+it. When every caller control is marked, focus falls back to the close button,
+then to the dialog surface, exactly as for a modal with nothing focusable.
+`initialFocusRef` still wins over the marker when a call site names its own
+landing spot.
+
+```tsx
+import { Button } from "@firna/ui/button";
+import { skipInitialFocusProps } from "@firna/ui/initialFocus";
+
+// A secondary action rendered before the form: never the landing spot.
+<Button {...skipInitialFocusProps} onPress={openHelp} tone="ghost">
+  What is this?
+</Button>;
+```
+
+The "Form opens on its first field" story under Modal/Examples renders the
+pattern, and native ignores the marker because it has no tab order.
 
 ### Chart colors
 

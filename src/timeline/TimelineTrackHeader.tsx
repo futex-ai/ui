@@ -32,6 +32,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
@@ -54,6 +55,8 @@ export type TimelineTrackHeaderProps = {
   /** How the toggles show keyboard focus. */
   focusIndicator?: FocusIndicator;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -68,6 +71,7 @@ const KIND_ICON: Record<TimelineTrackKind, ComponentType<IconProps>> = {
 type IconProps = { color?: string; size?: number };
 
 export function TimelineTrackHeader({
+  dataSet,
   focusIndicator,
   height,
   onToggle,
@@ -84,7 +88,11 @@ export function TimelineTrackHeader({
   const isAudio = track.kind === "audio";
 
   return (
-    <View style={[styles.header, { height, width }, style]} testID={testID}>
+    <View
+      style={[styles.header, { height, width }, style]}
+      testID={testID}
+      {...dataSetProps({ dataSet })}
+    >
       <View style={styles.headerTopRow}>
         <KindIcon color={theme.colors.muted} size={metrics.iconSize} />
         <Text

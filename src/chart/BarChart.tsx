@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import Svg, { Path } from "../primitives/svg";
 
+import { dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import {
@@ -75,6 +76,7 @@ export function BarChart({
   accessibilityLabel,
   focusIndicator,
   style,
+  dataSet,
   testID,
 }: BarChartProps) {
   const theme = useSharedUiTheme();
@@ -162,6 +164,7 @@ export function BarChart({
         ) : undefined
       }
       testID={testID}
+      {...dataSetProps({ dataSet })}
       title={title}
       yAxisWidth={orientation === "horizontal" ? 72 : CHART_BANDS.yAxisWidth}
     >

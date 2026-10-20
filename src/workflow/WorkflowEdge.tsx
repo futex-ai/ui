@@ -10,6 +10,7 @@ import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 import { Platform, Pressable, Text, View } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import {
   type FocusIndicator,
   PressableHoverState,
@@ -26,6 +27,8 @@ import {
 import type { WorkflowEdgeTone } from "./workflowTypes";
 
 export type WorkflowConnectorProps = {
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Match the graph density. Defaults to `md`. */
   size?: ControlSize;
   /** Extra style for the connector. */
@@ -36,6 +39,7 @@ export type WorkflowConnectorProps = {
 
 /** The 2px vertical rule that links two spine elements. */
 export function WorkflowConnector({
+  dataSet,
   size = "md",
   style,
   testID,
@@ -56,6 +60,7 @@ export function WorkflowConnector({
       role="none"
       style={[styles.connector, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     />
   );
 }
@@ -63,6 +68,8 @@ export function WorkflowConnector({
 export type WorkflowInsertButtonProps = {
   /** Announced name for the button. Defaults to "Add step". */
   accessibilityLabel?: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /**
    * How this button shows keyboard focus: the shared `ring` glow, the browser's
    * `outline`, or `none` for no focus styling at all, which leaves the caller
@@ -88,6 +95,7 @@ export type WorkflowInsertButtonProps = {
  */
 export function WorkflowInsertButton({
   accessibilityLabel = "Add step",
+  dataSet,
   focusIndicator,
   onPress,
   size = "md",
@@ -105,7 +113,7 @@ export function WorkflowInsertButton({
     <Pressable
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
-      {...focus.focusRingProps}
+      {...dataSetProps(focus.focusRingProps, { dataSet })}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onPress}
@@ -131,6 +139,8 @@ export type WorkflowEdgeLabelProps = {
   accessibilityLabel?: string;
   /** The pill text. */
   children: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Match the graph density. Defaults to `md`. */
   size?: ControlSize;
   /** Extra style for the pill. */
@@ -150,6 +160,7 @@ export type WorkflowEdgeLabelProps = {
 export function WorkflowEdgeLabel({
   accessibilityLabel,
   children,
+  dataSet,
   size = "md",
   style,
   testID,
@@ -172,6 +183,7 @@ export function WorkflowEdgeLabel({
         style,
       ]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       <Text
         accessibilityLabel={accessibilityLabel}
@@ -196,6 +208,8 @@ export const defaultWorkflowLegend: WorkflowLegendItem[] = [
 ];
 
 export type WorkflowLegendProps = {
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** The keys to show. Defaults to {@link defaultWorkflowLegend}. */
   items?: WorkflowLegendItem[];
   /** Match the graph density. Defaults to `md`. */
@@ -208,6 +222,7 @@ export type WorkflowLegendProps = {
 
 /** A centered row of edge-label pills keying the graph's transition tones. */
 export function WorkflowLegend({
+  dataSet,
   items = defaultWorkflowLegend,
   size = "md",
   style,
@@ -224,6 +239,7 @@ export function WorkflowLegend({
       role="list"
       style={[styles.legend, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {items.map((item) => (
         // The `list` container owns `listitem` children so assistive tech reads

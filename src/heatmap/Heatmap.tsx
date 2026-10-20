@@ -10,6 +10,7 @@ import {
   ViewStyle,
 } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { compareIso, formatDisplay, parseIso } from "../date/dateMath";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import {
@@ -113,6 +114,8 @@ export type HeatmapProps = {
   accessibilityLabel?: string;
   /** Style override for the outer container. */
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -283,6 +286,7 @@ export function Heatmap({
   cellAccessibilityLabel,
   accessibilityLabel,
   style,
+  dataSet,
   testID,
 }: HeatmapProps) {
   const theme = useSharedUiTheme();
@@ -544,6 +548,7 @@ export function Heatmap({
       role={accessibilityLabel ? "group" : undefined}
       style={[styles.container, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       <View style={styles.body}>
         {showWeekdayLabels ? (

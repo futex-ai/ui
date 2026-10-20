@@ -131,7 +131,12 @@ test("list item makes only the title column pressable, leaving trailing free", (
   assert.match(source, /accessibilityState=\{\{ disabled \}\}/);
   // The button still owns the shared CSS focus marker + pressed dim.
   assert.match(source, /useFocusRing/);
-  assert.match(source, /\.\.\.focus\.focusRingProps/);
+  // The caller's `dataSet` merges into the ring markers rather than replacing
+  // them, so a `data-*` hook never silently removes the focus glow.
+  assert.match(
+    source,
+    /\.\.\.dataSetProps\(focus\.focusRingProps, \{ dataSet \}\)/,
+  );
   assert.match(source, /focus\.focusRingVariables/);
   assert.match(
     source,
@@ -153,9 +158,11 @@ test("list item forwards testID to its press target when pressable", () => {
   // React Native Testing Library dispatches `fireEvent.press` from the queried
   // host up through its ancestors. The identifier therefore belongs on the
   // Pressable itself when `onPress` is present, not on its parent row View.
+  // `dataSet` rides the same conditional as `testID`, so it lands on the
+  // static row only when the identifier does, and on the press target otherwise.
   assert.match(
     source,
-    /<View style=\{styles\.itemRow\} testID=\{onPress \? undefined : testID\}>/,
+    /<View\s+style=\{styles\.itemRow\}\s+testID=\{onPress \? undefined : testID\}\s+\{\.\.\.dataSetProps\(onPress \? undefined : \{ dataSet \}\)\}\s*>/,
   );
   assert.match(source, /<PressableTitle[\s\S]*?testID=\{testID\}[\s\S]*?>/);
   assert.match(

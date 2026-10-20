@@ -19,7 +19,12 @@ test("input frame wires invalid + required a11y and the focus ring", () => {
   );
   assert.match(source, /target: "descendant"/);
   assert.match(source, /\.\.\.focus\.focusRingProps/);
-  assert.match(source, /\.\.\.focus\.focusTargetProps/);
+  // The caller's `dataSet` merges into the input's target marker rather than
+  // replacing it, so a `data-*` hook never silently removes the focus glow.
+  assert.match(
+    source,
+    /\.\.\.dataSetProps\(focus\.focusTargetProps, \{ dataSet \}\)/,
+  );
   // `none` drops the focus border with the ring; an explicit `active` stays.
   assert.match(
     source,
@@ -370,7 +375,12 @@ test("label info exposes the detail on the button and reveals a visual-only bubb
   // The trigger is an accessible, keyboard-reachable button with its own ring.
   assert.match(source, /accessibilityRole="button"/);
   assert.match(source, /accessibilityLabel=\{accessibilityLabel\}/);
-  assert.match(source, /\.\.\.focus\.focusRingProps/);
+  // Its ring markers merge with the initial-focus skip marker in one `dataSet`,
+  // so an opening modal lands on the field the ⓘ describes, not on the ⓘ.
+  assert.match(
+    source,
+    /\.\.\.dataSetProps\(focus\.focusRingProps, skipInitialFocusProps\)/,
+  );
   assert.match(source, /focus\.focusRingVariables/);
   // The default glyph is lucide `Info`, overridable via the `icon` prop.
   assert.match(source, /icon: Icon = Info/);

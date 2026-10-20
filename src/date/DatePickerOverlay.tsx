@@ -18,6 +18,7 @@ import {
   View,
 } from "../primitives/reactNative";
 
+import { dataSetProps } from "../dataSet";
 import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
 
@@ -40,6 +41,7 @@ function CalendarSheet({
   onSelect,
   onClose,
   label,
+  dataSet,
   testID,
 }: DatePickerOverlayProps) {
   const theme = useSharedUiTheme();
@@ -51,6 +53,7 @@ function CalendarSheet({
       animationType="slide"
       onRequestClose={onClose}
       testID={testID}
+      {...dataSetProps({ dataSet })}
       transparent
       visible
     >

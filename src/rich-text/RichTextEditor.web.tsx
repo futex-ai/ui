@@ -10,6 +10,7 @@ import {
 import type { CSSProperties } from "react";
 import { StyleSheet, Text, View } from "../primitives/reactNative";
 
+import { dataSetDomProps } from "../dataSet";
 import { useFocusRing } from "../focusRing";
 import { useDocumentKeyCapture } from "../keyboardNavigation";
 import { useSharedUiTheme } from "../theme";
@@ -117,6 +118,7 @@ export function RichTextEditor({
   autoFocus = false,
   collaborators = NO_COLLABORATORS,
   commentThreads = NO_COMMENT_THREADS,
+  dataSet,
   focusIndicator,
   label,
   localCollaboratorId,
@@ -948,6 +950,7 @@ export function RichTextEditor({
             aria-multiline="true"
             contentEditable={!readOnly}
             data-testid={testID}
+            {...dataSetDomProps(dataSet)}
             onBlur={focus.onBlur}
             // A read-only document never moves the DOM selection, so the
             // pointer is the only way its comment anchors can be picked.

@@ -8,6 +8,7 @@
 import type { ReactNode, RefObject } from "react";
 import type { View } from "../primitives/reactNative";
 
+import type { DataSet } from "../dataSet";
 import type { DropdownPlacement } from "../dropdown";
 
 /** Which surface the responsive popover resolved to on this platform. */
@@ -38,6 +39,8 @@ export type ResponsivePopoverProps = {
   anchorRef: RefObject<View | null>;
   /** Body: a node, or a render function given the per-platform content state. */
   children: ReactNode | ((state: ResponsivePopoverContentState) => ReactNode);
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Native sheet dismiss control label. Default `"Cancel"`. */
   dismissLabel?: string;
   /** Hide the native sheet header row. Default `false`. */

@@ -2,6 +2,7 @@
 import { useEffect, useRef } from "react";
 import { View } from "../primitives/reactNative";
 
+import { dataSetProps } from "../dataSet";
 import { devWarn } from "../devWarn";
 
 import {
@@ -56,6 +57,7 @@ export function DropdownPortal({
   anchorRef,
   anchorWidthAsMinimum,
   children,
+  dataSet,
   fitContentWidth = false,
   gutter,
   margin,
@@ -170,6 +172,7 @@ export function DropdownPortal({
           fitContentWidth ? dropdownContentWidthStyle(widthBounds) : null,
         ]}
         testID={testID}
+        {...dataSetProps({ dataSet })}
       >
         {children(placement)}
       </View>

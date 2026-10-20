@@ -13,6 +13,7 @@ import { useMemo } from "react";
 import { Image, Pressable, Text, View } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import {
   type FocusIndicator,
   type PressableHoverState,
@@ -48,12 +49,15 @@ export type MediaBinItemProps = {
   /** Fired on a second press or on Enter — "put this in the sequence". */
   onActivate?: (asset: MediaAsset) => void;
   focusIndicator?: FocusIndicator;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
 
 export function MediaBinItem({
   asset,
+  dataSet,
   focusIndicator,
   onActivate,
   onPress,
@@ -99,7 +103,7 @@ export function MediaBinItem({
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
-      {...focus.focusRingProps}
+      {...dataSetProps(focus.focusRingProps, { dataSet })}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onLongPress={onActivate ? () => onActivate(asset) : undefined}

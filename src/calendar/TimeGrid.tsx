@@ -15,6 +15,7 @@ import {
   ViewStyle,
 } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { parseIso } from "../date/dateMath";
 import { useSharedUiTheme } from "../theme";
 
@@ -58,6 +59,8 @@ export type TimeGridProps = CalendarTimeGridConfig & {
   onCreateEvent?: (range: CalendarDraftRange) => void;
   /** Extra style for the grid container. */
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -81,6 +84,7 @@ export function TimeGrid({
   slotMinutes = 30,
   pxPerHour = 48,
   style,
+  dataSet,
   testID,
 }: TimeGridProps) {
   const theme = useSharedUiTheme();
@@ -106,7 +110,11 @@ export function TimeGrid({
   });
 
   return (
-    <View style={[styles.timeGrid, style]} testID={testID}>
+    <View
+      style={[styles.timeGrid, style]}
+      testID={testID}
+      {...dataSetProps({ dataSet })}
+    >
       <ColumnHeaderRow dates={dates} today={today} styles={styles} />
       <AllDayRow
         dates={dates}

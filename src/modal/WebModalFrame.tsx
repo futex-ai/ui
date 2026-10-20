@@ -29,6 +29,7 @@ import {
   View,
 } from "../primitives/reactNative";
 
+import { dataSetProps } from "../dataSet";
 import { BottomSheetShell } from "../sheet/BottomSheetShell";
 import type { BottomSheetHandle } from "../sheet/BottomSheetShell";
 import type { SharedUiTheme } from "../theme";
@@ -56,6 +57,7 @@ export function WebModalFrame({
   subtitleStyle,
   surfaceStyle,
   subtitle,
+  dataSet,
   testID,
   title,
   titleStyle,
@@ -123,6 +125,7 @@ export function WebModalFrame({
     // the shared shell; the modal only injects its own chrome (header/footer).
     return (
       <BottomSheetShell
+        dataSet={dataSet}
         dismissible={canDismiss}
         footer={footerBlock}
         header={header}
@@ -144,6 +147,7 @@ export function WebModalFrame({
       onRequestClose={() => requestClose("escape")}
       statusBarTranslucent
       testID={testID}
+      {...dataSetProps({ dataSet })}
       transparent
       visible={visible}
     >

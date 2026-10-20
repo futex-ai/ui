@@ -18,6 +18,7 @@ export function ResponsivePopover({
   align = "end",
   anchorRef,
   children,
+  dataSet,
   initialFocusRef,
   label,
   manageFocus,
@@ -44,6 +45,7 @@ export function ResponsivePopover({
     >
       {(placement) => (
         <PopoverSurface
+          dataSet={dataSet}
           initialFocusRef={initialFocusRef}
           label={label}
           manageFocus={manageFocus}

@@ -3,6 +3,8 @@ import { useRef } from "react";
 import type { ReactNode, RefObject } from "react";
 import { View } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
+
 import {
   DropdownPlacement,
   DropdownPlacementOptions,
@@ -19,6 +21,8 @@ import { useDropdownSurfacePlacement } from "./useDropdownSurfacePlacement";
 type ComboboxPopoverProps = DropdownPlacementOptions & {
   anchorRef: RefObject<View | null>;
   children: (placement: DropdownPlacement) => ReactNode;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   onClose: () => void;
   open: boolean;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
@@ -37,6 +41,7 @@ export function ComboboxPopover({
   anchorRef,
   anchorWidthAsMinimum,
   children,
+  dataSet,
   gutter,
   margin,
   maxHeight,
@@ -77,6 +82,7 @@ export function ComboboxPopover({
         ref={surfaceRef}
         style={[surfaceStyles.surface, dropdownSurfaceRect(placement)]}
         testID={testID}
+        {...dataSetProps({ dataSet })}
       >
         {children(placement)}
       </View>

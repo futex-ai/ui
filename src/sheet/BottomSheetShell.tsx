@@ -22,6 +22,7 @@ import { Modal, StyleSheet } from "../primitives/reactNative";
 import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
 
@@ -45,6 +46,8 @@ export type BottomSheetShellProps = {
   children: ReactNode;
   /** Extra padding/styles merged onto the scroll content container. */
   contentContainerStyle?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Backdrop tap and pan-down close (default `true`). */
   dismissible?: boolean;
   /** Footer node pinned after the body inside the scroll column. */
@@ -70,6 +73,7 @@ export type BottomSheetShellProps = {
 export function BottomSheetShell({
   children,
   contentContainerStyle,
+  dataSet,
   dismissible = true,
   footer,
   header,
@@ -109,6 +113,7 @@ export function BottomSheetShell({
       }
       statusBarTranslucent
       testID={testID}
+      {...dataSetProps({ dataSet })}
       transparent
       visible={open}
     >

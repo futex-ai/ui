@@ -19,6 +19,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
@@ -75,6 +76,8 @@ export type TimelineClipProps = {
   focusIndicator?: FocusIndicator;
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -90,6 +93,7 @@ export function TimelineClip({
   accessibilityLabel,
   clip,
   colors,
+  dataSet,
   focusIndicator,
   fps = DEFAULT_FPS,
   onFocus,
@@ -151,7 +155,7 @@ export function TimelineClip({
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
-      {...focus.focusRingProps}
+      {...dataSetProps(focus.focusRingProps, { dataSet })}
       onBlur={focus.onBlur}
       onFocus={(event) => {
         focus.onFocus(event);

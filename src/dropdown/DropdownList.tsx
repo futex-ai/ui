@@ -9,6 +9,7 @@ import {
   View,
 } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
 
@@ -113,6 +114,8 @@ export type DropdownListEntry =
 
 type DropdownListProps = {
   activeId?: string | null;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   entries: DropdownListEntry[];
   footer?: ReactNode;
   header?: ReactNode;
@@ -147,6 +150,7 @@ type DropdownListProps = {
 
 export function DropdownList({
   activeId: controlledActiveId,
+  dataSet,
   entries,
   footer,
   header,
@@ -268,6 +272,7 @@ export function DropdownList({
       ref={scrollRef}
       style={hasChrome ? styles.scroll : { maxHeight }}
       testID={hasChrome ? undefined : testID}
+      {...dataSetProps(hasChrome ? undefined : { dataSet })}
       {...containerA11y}
       {...keyProps}
     >
@@ -297,7 +302,11 @@ export function DropdownList({
     return scroll;
   }
   return (
-    <View style={[styles.chrome, { maxHeight }]} testID={testID}>
+    <View
+      style={[styles.chrome, { maxHeight }]}
+      testID={testID}
+      {...dataSetProps({ dataSet })}
+    >
       {search ? <View style={styles.searchRegion}>{search}</View> : null}
       {header ? <View style={styles.headerRegion}>{header}</View> : null}
       {scroll}
@@ -449,10 +458,13 @@ function renderRowSlot(slot: DropdownRowSlot, color: string): ReactNode {
 
 export function DropdownIconBox({
   Icon,
+  dataSet,
   testID,
   tone = "sage",
 }: {
   Icon: IconComponent;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
   tone?: "danger" | "sage";
@@ -465,6 +477,7 @@ export function DropdownIconBox({
     <View
       style={[styles.iconBox, tone === "danger" ? styles.iconBoxDanger : null]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       <Icon color={color} size={14} />
     </View>

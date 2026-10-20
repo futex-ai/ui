@@ -20,6 +20,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import {
@@ -51,6 +52,8 @@ export type LevelMeterProps = {
   /** Names the meter as a group for assistive tech. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -61,6 +64,7 @@ const DEFAULT_LABELS = ["Left", "Right", "Centre", "LFE"] as const;
 export function LevelMeter({
   accessibilityLabel = "Audio levels",
   channelLabels,
+  dataSet,
   length,
   minDb = METER_MIN_DB,
   peakHolds,
@@ -87,6 +91,7 @@ export function LevelMeter({
       role="group"
       style={[{ gap: 2, width: length }, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {values.map((db, index) => {
         const channel =

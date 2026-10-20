@@ -7,6 +7,8 @@
 import { useMemo } from "react";
 import { StyleProp, ViewStyle } from "../primitives/reactNative";
 
+import { type DataSet } from "../dataSet";
+
 import { weekDates } from "./calendarMath";
 import { getOccurrences } from "./recurrence";
 import { TimeGrid } from "./TimeGrid";
@@ -35,6 +37,8 @@ export type WeekViewProps = CalendarTimeGridConfig & {
   onCreateEvent?: (range: CalendarDraftRange) => void;
   /** Extra style for the grid container. */
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -53,6 +57,7 @@ export function WeekView({
   slotMinutes,
   pxPerHour,
   style,
+  dataSet,
   testID,
 }: WeekViewProps) {
   const dates = useMemo(
@@ -65,6 +70,7 @@ export function WeekView({
   );
   return (
     <TimeGrid
+      dataSet={dataSet}
       dates={dates}
       maxHour={maxHour}
       minHour={minHour}

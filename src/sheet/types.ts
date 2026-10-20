@@ -6,6 +6,8 @@
  */
 import type { ReactNode } from "react";
 
+import type { DataSet } from "../dataSet";
+
 /** State handed to a `Sheet` children render function. */
 export type SheetContentState = {
   /** Animate the sheet closed (its dismiss then fires `onClose`). */
@@ -17,6 +19,8 @@ export type SheetContentState = {
 export type SheetProps = {
   /** Body: a node, or a render function given `{ close, maxHeight }`. */
   children: ReactNode | ((state: SheetContentState) => ReactNode);
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Text for the header dismiss control. Native; default `"Cancel"`. */
   dismissLabel?: string;
   /** Hide the header row (the grip handle stays). Native; default `false`. */

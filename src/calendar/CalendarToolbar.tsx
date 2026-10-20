@@ -9,6 +9,7 @@ import { ChevronLeft, ChevronRight } from "../primitives/icons";
 import { useMemo } from "react";
 import { Pressable, Text, View } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";
 import { SegmentedControl } from "../segmented";
 import { useSharedUiTheme } from "../theme";
@@ -43,6 +44,8 @@ export type CalendarToolbarProps = {
   onToday: () => void;
   /** Change the active view. */
   onViewChange: (view: CalendarViewType) => void;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -57,6 +60,7 @@ export function CalendarToolbar({
   onStep,
   onToday,
   onViewChange,
+  dataSet,
   testID,
 }: CalendarToolbarProps) {
   const theme = useSharedUiTheme();
@@ -68,7 +72,7 @@ export function CalendarToolbar({
   );
 
   return (
-    <View style={styles.toolbar} testID={testID}>
+    <View style={styles.toolbar} testID={testID} {...dataSetProps({ dataSet })}>
       <View style={styles.toolbarLeft}>
         <Pressable
           accessibilityLabel="Previous"

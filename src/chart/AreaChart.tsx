@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import Svg, { G, Path } from "../primitives/svg";
 
+import { dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import { ChartAxisLabels, ChartGridLines, type AxisTick } from "./ChartAxis";
@@ -62,6 +63,7 @@ export function AreaChart({
   accessibilityLabel,
   focusIndicator,
   style,
+  dataSet,
   testID,
 }: AreaChartProps) {
   const theme = useSharedUiTheme();
@@ -148,6 +150,7 @@ export function AreaChart({
         ) : undefined
       }
       testID={testID}
+      {...dataSetProps({ dataSet })}
       title={title}
     >
       {(layout, styles) => {

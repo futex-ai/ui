@@ -25,6 +25,7 @@ import { View } from "../primitives/reactNative";
 import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { devWarn } from "../devWarn";
 import { DragGhostPortal } from "../dragGhostPortal";
 import type { FocusIndicator } from "../focusRing";
@@ -62,6 +63,8 @@ const GHOST_FIXED = { position: "fixed" } as unknown as ViewStyle;
 export type SortableListProps<Item> = {
   /** Accessible label for the whole list. */
   accessibilityLabel?: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /**
    * How the drag rows / handles show keyboard focus: the shared `ring` glow,
    * the browser's `outline`, or `none` for no focus styling at all, which
@@ -135,6 +138,7 @@ export type SortableListProps<Item> = {
  */
 export function SortableList<Item>({
   accessibilityLabel,
+  dataSet,
   focusIndicator,
   gap,
   groupId,
@@ -388,6 +392,7 @@ export function SortableList<Item>({
         style,
       ]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {flow.map((entry, position) => (
         <Fragment key={keys[entry.index]}>

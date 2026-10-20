@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { ReactNode, RefObject } from "react";
 import { StyleSheet, View } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import {
@@ -14,6 +15,8 @@ import { DROPDOWN_LAYERS } from "./dropdownLayers";
 type ComboboxPopoverProps = DropdownPlacementOptions & {
   anchorRef?: RefObject<View | null>;
   children: (placement: DropdownPlacement) => ReactNode;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   onClose: () => void;
   open: boolean;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
@@ -22,6 +25,7 @@ type ComboboxPopoverProps = DropdownPlacementOptions & {
 
 export function ComboboxPopover({
   children,
+  dataSet,
   maxHeight = 280,
   maxWidth,
   minWidth = 220,
@@ -62,6 +66,7 @@ export function ComboboxPopover({
     <View
       style={[styles.surface, { maxHeight, maxWidth, minWidth }]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {children(placement)}
     </View>

@@ -4,6 +4,7 @@ import { StyleProp, View, ViewStyle } from "../primitives/reactNative";
 import Svg, { Circle } from "../primitives/svg";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { resolveSpinnerSize } from "../spinner/spinnerStyles";
 import { useSharedUiTheme } from "../theme";
 
@@ -15,6 +16,8 @@ export type ProgressRingProps = {
   accessibilityLabel?: string;
   /** Arc color. Defaults to the theme primary. */
   color?: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Diameter: the shared `sm` / `md` / `lg` scale, or an explicit pixel size. */
   size?: ControlSize | number;
   /** Extra style for the ring container. */
@@ -45,6 +48,7 @@ export type ProgressRingProps = {
 export function ProgressRing({
   accessibilityLabel = "Progress",
   color,
+  dataSet,
   size = "md",
   style,
   testID,
@@ -77,6 +81,7 @@ export function ProgressRing({
       accessibilityValue={progress.accessibilityValue}
       style={[styles.container, { width: diameter }, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       <Svg
         aria-hidden

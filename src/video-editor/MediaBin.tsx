@@ -23,6 +23,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { Input } from "../input";
 import { useSharedUiTheme } from "../theme";
@@ -62,6 +63,8 @@ export type MediaBinProps = {
   /** Names the bin as a region for assistive tech. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -69,6 +72,7 @@ export type MediaBinProps = {
 export function MediaBin({
   accessibilityLabel,
   assets,
+  dataSet,
   emptyLabel = "Nothing matches",
   focusIndicator,
   grouped = true,
@@ -132,6 +136,7 @@ export function MediaBin({
       role={accessibilityLabel ? "group" : undefined}
       style={[styles.root, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {title || onViewChange || onQueryChange ? (
         <View style={styles.header}>

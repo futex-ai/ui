@@ -377,6 +377,11 @@ input instead of growing across adjacent rows. Selected option rows are enabled
 toggles, so pressing a checked row removes that value even when its chip is
 summarized. Pass `autoFocus` when the control mounts as an active embedded
 editor; its border and shared focus glow then match the text-input family.
+The chip-remove buttons come before the text input in DOM order and carry the
+initial-focus skip marker (`skipInitialFocusProps` from
+`@firna/ui/initialFocus`), so a modal that opens on a pre-filled multi-select
+lands on its input, not on "Remove …"; the buttons keep their place in the Tab
+cycle.
 
 Set `autoFocus` when the multi-select mounts as an in-place editor. Focus opens
 the option list immediately and gives the control the same primary active border

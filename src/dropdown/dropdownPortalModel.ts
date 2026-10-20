@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import type { ReactNode, RefObject } from "react";
 import { StyleSheet, View } from "../primitives/reactNative";
 
+import { type DataSet } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import { DROPDOWN_LAYERS } from "./dropdownLayers";
@@ -28,6 +29,8 @@ export type DropdownPortalProps = DropdownPlacementOptions & {
    */
   anchorRect?: DropdownAnchorRect | null;
   children: (placement: DropdownPlacement) => ReactNode;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Let the surface grow to its intrinsic content width between its width bounds. */
   fitContentWidth?: boolean;
   onClose: () => void;

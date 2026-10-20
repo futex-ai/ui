@@ -11,8 +11,10 @@ import {
 
 import { announce } from "../announcer";
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { devWarn } from "../devWarn";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
+import { skipInitialFocusProps } from "../initialFocus";
 import { inputSizeTokens, LabelInfo } from "../input";
 import { useSharedUiTheme } from "../theme";
 import type { SharedUiTheme } from "../theme";
@@ -50,6 +52,8 @@ export type ComboboxMultiSelectProps = {
    * square container).
    */
   borderRadius?: number;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Validation message shown below the control; turns its border rose. */
   error?: string | null;
   /**
@@ -104,6 +108,7 @@ export function ComboboxMultiSelect({
   accessibilityLabel,
   autoFocus = false,
   borderRadius,
+  dataSet,
   error,
   focusIndicator,
   footer,
@@ -233,6 +238,7 @@ export function ComboboxMultiSelect({
     <View
       style={label || error || hint ? styles.field : undefined}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {label ? (
         <View style={styles.labelRow}>
@@ -286,6 +292,7 @@ export function ComboboxMultiSelect({
                 <Pressable
                   accessibilityLabel={`Remove ${option.label}`}
                   accessibilityRole="button"
+                  {...skipInitialFocusProps}
                   onPress={() =>
                     onChange(values.filter((value) => value !== option.value))
                   }

@@ -64,6 +64,7 @@ export function RichTextEditor({
   autoFocus = false,
   collaborators = NO_COLLABORATORS,
   commentThreads = NO_COMMENT_THREADS,
+  dataSet,
   focusIndicator,
   label,
   localCollaboratorId,
@@ -276,6 +277,7 @@ export function RichTextEditor({
       canUndo={historyAvailability.canUndo}
       collabState={collabState}
       collaboratorPalette={collaboratorPalette}
+      dataSet={dataSet}
       document={document}
       editorFocused={editorFocused}
       focusBorder={focus.indicator !== "none"}

@@ -6,6 +6,8 @@
 import type { RefObject } from "react";
 import type { View } from "../primitives/reactNative";
 
+import { type DataSet } from "../dataSet";
+
 // Defined in the shared focus-ring helper; re-exported here so date consumers
 // (and the `@firna/ui/date` subpath) keep importing it from this module.
 export type { PressableHoverState } from "../focusRing";
@@ -41,6 +43,8 @@ export type DatePickerOverlayProps = DateBounds & {
   variant?: DatePickerVariant;
   /** Field label, used as the wheel bottom sheet's title/accessibility name. */
   label?: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
   /** Optional z-index override for the web calendar popover. */

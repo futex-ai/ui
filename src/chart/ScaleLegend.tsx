@@ -1,6 +1,7 @@
 /** The key for a continuous scale: a gradient strip with labelled ends. */
 import { Text, View } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 export type ScaleLegendProps = {
@@ -10,6 +11,8 @@ export type ScaleLegendProps = {
   maxLabel: string;
   /** Names the quantity, e.g. "Sessions". */
   title?: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   testID?: string;
 };
 
@@ -27,6 +30,7 @@ export function ScaleLegend({
   minLabel,
   maxLabel,
   title,
+  dataSet,
   testID,
 }: ScaleLegendProps) {
   const theme = useSharedUiTheme();
@@ -47,6 +51,7 @@ export function ScaleLegend({
         paddingTop: 10,
       }}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       <Text style={label}>{minLabel}</Text>
       {/* The swatches carry no information the two labels do not, so they are

@@ -10,6 +10,7 @@
 import { useMemo } from "react";
 import { ScrollView, View } from "../primitives/reactNative";
 
+import { dataSetProps } from "../dataSet";
 import { DropdownPortal } from "../dropdown";
 import { useSharedUiTheme } from "../theme";
 
@@ -32,11 +33,13 @@ export function DatePickerOverlay({
   variant = "calendar",
   label,
   zIndex,
+  dataSet,
   testID,
 }: DatePickerOverlayProps) {
   if (variant === "wheel") {
     return (
       <DateWheelSheet
+        dataSet={dataSet}
         label={label}
         max={max}
         min={min}
@@ -51,6 +54,7 @@ export function DatePickerOverlay({
   return (
     <CalendarPopover
       anchorRef={anchorRef}
+      dataSet={dataSet}
       label={label}
       max={max}
       min={min}
@@ -74,6 +78,7 @@ function CalendarPopover({
   onClose,
   label,
   zIndex,
+  dataSet,
   testID,
 }: Pick<
   DatePickerOverlayProps,
@@ -86,6 +91,7 @@ function CalendarPopover({
   | "onClose"
   | "label"
   | "zIndex"
+  | "dataSet"
   | "testID"
 >) {
   const theme = useSharedUiTheme();
@@ -113,6 +119,7 @@ function CalendarPopover({
           role="dialog"
           style={s.portalBody}
           testID={testID}
+          {...dataSetProps({ dataSet })}
         >
           <ScrollView>
             <CalendarMonth

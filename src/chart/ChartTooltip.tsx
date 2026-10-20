@@ -15,6 +15,7 @@
 import { useMemo } from "react";
 import { Text, View } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import type { Rect } from "./chartLayout";
@@ -35,6 +36,8 @@ export type ChartTooltipProps = {
   x: number;
   y: number;
   plot: Rect;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   testID?: string;
 };
 
@@ -48,6 +51,7 @@ export function ChartTooltip({
   x,
   y,
   plot,
+  dataSet,
   testID,
 }: ChartTooltipProps) {
   const theme = useSharedUiTheme();
@@ -114,6 +118,7 @@ export function ChartTooltip({
         },
       ]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       <Text style={styles.title}>{title}</Text>
       {rows.map((row) => (

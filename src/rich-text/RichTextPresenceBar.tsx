@@ -4,6 +4,7 @@ import { Text, View } from "../primitives/reactNative";
 import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import { Avatar } from "../avatar";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import { richTextCollabPalette } from "./richTextCollabPalette";
@@ -28,6 +29,8 @@ export type RichTextPresenceBarProps = {
   presence: readonly RichTextPresence[];
   /** Extra style for the row. */
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -45,6 +48,7 @@ export function RichTextPresenceBar({
   size = 24,
   presence,
   style,
+  dataSet,
   testID,
 }: RichTextPresenceBarProps) {
   const theme = useSharedUiTheme();
@@ -70,7 +74,11 @@ export function RichTextPresenceBar({
   );
 
   return (
-    <View style={[styles.presenceBar, style]} testID={testID}>
+    <View
+      style={[styles.presenceBar, style]}
+      testID={testID}
+      {...dataSetProps({ dataSet })}
+    >
       {live.length === 0 ? null : (
         <View style={styles.avatarStack}>
           {live.map((id, index) => {

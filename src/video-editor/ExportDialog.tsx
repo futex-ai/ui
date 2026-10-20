@@ -16,6 +16,7 @@ import { Text, View } from "../primitives/reactNative";
 
 import { Button } from "../button";
 import type { ControlSize } from "../controlSize";
+import type { DataSet } from "../dataSet";
 import type { FocusIndicator } from "../focusRing";
 import { ProgressBar } from "../loader";
 import { WebModalFrame } from "../modal";
@@ -63,6 +64,8 @@ export type ExportDialogProps = {
   title?: string;
   size?: ControlSize;
   focusIndicator?: FocusIndicator;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -82,6 +85,7 @@ const RESOLUTION_OPTIONS = [
 ];
 
 export function ExportDialog({
+  dataSet,
   duration,
   errorMessage,
   focusIndicator,
@@ -241,6 +245,7 @@ export function ExportDialog({
 
   return (
     <WebModalFrame
+      dataSet={dataSet}
       focusIndicator={focusIndicator}
       footer={
         <>

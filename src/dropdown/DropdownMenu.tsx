@@ -12,6 +12,8 @@ import type { ReactElement, ReactNode } from "react";
 import { Platform, StyleSheet, View } from "../primitives/reactNative";
 import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
+
 import { DropdownList } from "./DropdownList";
 import type {
   DropdownHighlightVariant,
@@ -73,6 +75,8 @@ export type DropdownMenuProps = DropdownPlacementOptions & {
   children: DropdownMenuTrigger;
   /** Close automatically after selectable row presses. Defaults to true. */
   closeOnSelect?: boolean;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Initial open state when uncontrolled. */
   defaultOpen?: boolean;
   /** Rows rendered in the menu list. */
@@ -115,6 +119,7 @@ export function DropdownMenu({
   anchorWidthAsMinimum,
   children,
   closeOnSelect = true,
+  dataSet,
   defaultOpen = false,
   entries,
   footer,
@@ -236,7 +241,12 @@ export function DropdownMenu({
       : surfaceHoverProps;
 
   return (
-    <View ref={anchorRef} style={[styles.anchor, style]} testID={testID}>
+    <View
+      ref={anchorRef}
+      style={[styles.anchor, style]}
+      testID={testID}
+      {...dataSetProps({ dataSet })}
+    >
       {dropdownMenuTriggerNode(children, menuState, menuTriggerProps)}
       <DropdownPortal
         align={align}

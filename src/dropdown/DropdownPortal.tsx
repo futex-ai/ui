@@ -2,6 +2,7 @@
 import { useRef } from "react";
 import { Modal, Pressable, StyleSheet, View } from "../primitives/reactNative";
 
+import { dataSetProps } from "../dataSet";
 import { devWarn } from "../devWarn";
 
 import { dropdownContentWidthStyle } from "./dropdownContentWidthStyle";
@@ -27,6 +28,7 @@ export function DropdownPortal({
   anchorRef,
   anchorWidthAsMinimum,
   children,
+  dataSet,
   fitContentWidth = false,
   gutter,
   margin,
@@ -102,6 +104,7 @@ export function DropdownPortal({
                 : null,
             ]}
             testID={testID}
+            {...dataSetProps({ dataSet })}
           >
             {children(placement)}
           </Pressable>

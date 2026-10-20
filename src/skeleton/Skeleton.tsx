@@ -35,6 +35,7 @@ import {
 } from "../primitives/reactNative";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "../primitives/svg";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 import { useReducedMotion } from "../useReducedMotion";
 
@@ -106,9 +107,12 @@ function useSkeletonSweep() {
  * `aria-busy`, not by the placeholder.
  */
 function Placeholder({
+  dataSet,
   shape,
   testID,
 }: {
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   shape: StyleProp<ViewStyle>;
   testID?: string;
 }) {
@@ -155,6 +159,7 @@ function Placeholder({
       onLayout={onLayout}
       style={[styles.placeholder, shape]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {animate && size.width > 0 ? (
         <Animated.View
@@ -187,6 +192,8 @@ function Placeholder({
 }
 
 export type SkeletonBarProps = {
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /**
    * Grow factor inside a row {@link SkeletonGroup}, instead of a fixed `width`.
    * Takes precedence over `width`.
@@ -210,6 +217,7 @@ export type SkeletonBarProps = {
  * a {@link SkeletonGroup} / {@link SkeletonPulseProvider}.
  */
 export function SkeletonBar({
+  dataSet,
   flex,
   height = 12,
   radius = "sm",
@@ -222,6 +230,7 @@ export function SkeletonBar({
     flex !== undefined ? { flex, minWidth: 0 } : { width };
   return (
     <Placeholder
+      dataSet={dataSet}
       shape={[
         sizing,
         { borderRadius: resolveSkeletonRadius(theme, radius), height },
@@ -233,6 +242,8 @@ export function SkeletonBar({
 }
 
 export type SkeletonCircleProps = {
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Diameter in px (e.g. an avatar's size). */
   diameter: number;
   /** Extra style for the circle. */
@@ -247,12 +258,14 @@ export type SkeletonCircleProps = {
  * {@link SkeletonBar}.
  */
 export function SkeletonCircle({
+  dataSet,
   diameter,
   style,
   testID,
 }: SkeletonCircleProps) {
   return (
     <Placeholder
+      dataSet={dataSet}
       shape={[
         { borderRadius: diameter / 2, height: diameter, width: diameter },
         style,
@@ -299,6 +312,8 @@ export function SkeletonPulseProvider({
 
 export type SkeletonGroupProps = {
   children: ReactNode;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Lay the children out in a `row` (default) or a `column`. */
   direction?: "column" | "row";
   /** Gap between children in px. Defaults to 12. */
@@ -318,6 +333,7 @@ export type SkeletonGroupProps = {
  */
 export function SkeletonGroup({
   children,
+  dataSet,
   direction = "row",
   gap = 12,
   style,
@@ -335,6 +351,7 @@ export function SkeletonGroup({
           style,
         ]}
         testID={testID}
+        {...dataSetProps({ dataSet })}
       >
         {children}
       </View>

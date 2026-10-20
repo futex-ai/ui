@@ -9,6 +9,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { devWarn } from "../devWarn";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
@@ -36,6 +37,8 @@ export type SwitchProps = {
    * name matches the visible text (WCAG 2.1 — 2.5.3 Label in Name, A).
    */
   "aria-labelledby"?: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   disabled?: boolean;
   /**
    * How this control shows keyboard focus: the shared `ring` glow, the
@@ -56,6 +59,7 @@ export type SwitchProps = {
 export function Switch({
   accessibilityLabel,
   "aria-labelledby": ariaLabelledBy,
+  dataSet,
   disabled = false,
   focusIndicator,
   onValueChange,
@@ -107,7 +111,7 @@ export function Switch({
 
   return (
     <Pressable
-      {...focus.focusTargetProps}
+      {...dataSetProps(focus.focusTargetProps, { dataSet })}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="switch"
       accessibilityState={{ checked: value, disabled: disabledState }}

@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { StyleProp, View, ViewStyle } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { Spinner } from "../spinner";
 import { useSharedUiTheme } from "../theme";
 
@@ -23,6 +24,8 @@ export type LoaderProps = {
   accessibilityLabel?: string;
   /** Accent color of the animated elements. Defaults to the theme primary. */
   color?: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /**
    * Milliseconds for one full animation cycle. Defaults per variant — see
    * {@link LOADER_DURATIONS} — because a nine-dot wave needs longer to read than
@@ -64,6 +67,7 @@ export type LoaderProps = {
 export function Loader({
   accessibilityLabel = "Loading",
   color,
+  dataSet,
   duration,
   size = "md",
   style,
@@ -78,6 +82,7 @@ export function Loader({
       <Spinner
         accessibilityLabel={accessibilityLabel}
         color={color}
+        dataSet={dataSet}
         duration={duration ?? LOADER_DURATIONS.ring}
         size={size}
         style={style}
@@ -91,6 +96,7 @@ export function Loader({
     <LoaderSurface
       accessibilityLabel={accessibilityLabel}
       color={color}
+      dataSet={dataSet}
       duration={duration ?? LOADER_DURATIONS[variant]}
       size={size}
       style={style}
@@ -108,6 +114,7 @@ export function Loader({
 function LoaderSurface({
   accessibilityLabel,
   color,
+  dataSet,
   duration,
   size,
   style,
@@ -116,6 +123,8 @@ function LoaderSurface({
 }: {
   accessibilityLabel: string;
   color?: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   duration: number;
   size: ControlSize | number;
   style?: StyleProp<ViewStyle>;
@@ -139,6 +148,7 @@ function LoaderSurface({
       aria-busy
       style={[styles.container, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       <View aria-hidden>
         <LoaderShape shape={shape} variant={variant} />

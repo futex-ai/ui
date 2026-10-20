@@ -12,8 +12,10 @@ import type { RefObject } from "react";
 import { Pressable, ScrollView, Text, View } from "../primitives/reactNative";
 import type { ViewStyle } from "../primitives/reactNative";
 
+import { dataSetProps } from "../dataSet";
 import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
 import { useFocusRing } from "../focusRing";
+import { initialFocusLanding } from "../initialFocus";
 import { useSharedUiTheme } from "../theme";
 import { useReducedMotion } from "../useReducedMotion";
 
@@ -67,6 +69,7 @@ export function WebModalFrame({
   subtitleStyle,
   surfaceStyle,
   subtitle,
+  dataSet,
   testID,
   title,
   titleStyle,
@@ -260,7 +263,12 @@ export function WebModalFrame({
     <View style={[styles.footer, footerStyle]}>{footer}</View>
   ) : null;
   const modal = (
-    <View style={styles.layer} pointerEvents="box-none" testID={testID}>
+    <View
+      style={styles.layer}
+      pointerEvents="box-none"
+      testID={testID}
+      {...dataSetProps({ dataSet })}
+    >
       {/* Backdrop is a mouse-only dismiss target: hidden from assistive tech and
           skipped by the keyboard (Escape already provides the accessible close
           path), so it never injects a full-viewport "Close" control into the AT
@@ -341,14 +349,22 @@ export function WebModalFrame({
  * with "dismiss" preselected is a poor landing spot: it is the least likely
  * thing the user came to do, and a reflexive Enter throws the dialog away.
  *
+ * A control that carries the `data-firna-initial-focus="skip"` marker (see
+ * `initialFocus.ts`) is passed over the same way, as is anything inside a
+ * marked container. The library marks the secondary controls that sit inside
+ * a field — an input's ⓘ help button, clear button, and suffix button, a
+ * multi-select's chip-remove buttons — so a form opens on its first field
+ * rather than on the help button that precedes it in DOM order.
+ *
  * Tab order itself needs no rework. A focus trap is a cycle, so starting on the
  * caller's first control already yields `field → … → action → close → field`:
  * the close button is the last stop on the way round, and Shift+Tab from the
- * landing element reaches it immediately.
+ * landing element reaches it immediately. The marker never touches that cycle.
  *
  * Falls back to the close button when the caller rendered nothing focusable at
- * all, then to the surface itself (`tabIndex={-1}`), so focus always enters the
- * dialog and screen readers announce it rather than being left on the trigger.
+ * all, or only marked controls, then to the surface itself (`tabIndex={-1}`),
+ * so focus always enters the dialog and screen readers announce it rather than
+ * being left on the trigger.
  */
 function webModalInitialFocusTarget(
   surfaceRef: RefObject<View | null>,
@@ -361,8 +377,10 @@ function webModalInitialFocusTarget(
   // Null once `showCloseButton` is false — the Pressable is unmounted, so React
   // has cleared the ref and every focusable below is already caller content.
   const closeButton = webModalElement(closeButtonRef);
-  const callerControl = webModalFocusableElements(surface).find(
-    (element) => element !== closeButton,
+  const callerControl = initialFocusLanding(
+    webModalFocusableElements(surface).filter(
+      (element) => element !== closeButton,
+    ),
   );
   return callerControl ?? closeButton ?? surface;
 }

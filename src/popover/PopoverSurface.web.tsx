@@ -4,6 +4,7 @@ import type { ReactNode, RefObject } from "react";
 import { View } from "../primitives/reactNative";
 import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { hideWebOutlineView } from "../focusRing";
 
 import type { PopoverSurfaceRole } from "./popoverModel";
@@ -12,6 +13,8 @@ type Focusable = { focus?: () => void };
 
 export type PopoverSurfaceProps = {
   children: ReactNode;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /**
    * Element to focus when the surface opens. Defaults to the surface container
    * itself, which lands keyboard/screen-reader focus inside the popover without
@@ -64,6 +67,7 @@ function asFocusable(value: unknown): Focusable | null {
  */
 export function PopoverSurface({
   children,
+  dataSet,
   initialFocusRef,
   label,
   manageFocus = true,
@@ -112,6 +116,7 @@ export function PopoverSurface({
       style={[shouldManageFocus ? hideWebOutlineView : null, style]}
       tabIndex={shouldManageFocus ? -1 : undefined}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {children}
     </View>

@@ -48,7 +48,12 @@ test("button exposes the shared CSS focus marker and variables", () => {
 
   // CSS, rather than render-time focus state, paints the shared glow.
   assert.match(source, /useFocusRing/);
-  assert.match(source, /\.\.\.focus\.focusRingProps/);
+  // The caller's `dataSet` merges into the ring markers rather than replacing
+  // them, so a `data-*` hook never silently removes the focus glow.
+  assert.match(
+    source,
+    /\.\.\.dataSetProps\(focus\.focusRingProps, \{ dataSet \}\)/,
+  );
   assert.match(source, /focus\.focusRingVariables/);
   assert.doesNotMatch(source, /focus\.focusVisible \? focus\.focusRingStyle/);
 });

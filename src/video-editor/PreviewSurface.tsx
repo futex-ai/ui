@@ -20,6 +20,7 @@ import {
   type ViewStyle,
 } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import {
@@ -52,6 +53,8 @@ export type PreviewSurfaceProps = {
   /** Names the monitor as a region for assistive tech. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -61,6 +64,7 @@ export function PreviewSurface({
   aspect = "16:9",
   badge,
   children,
+  dataSet,
   maxHeight,
   overlay,
   placeholder = "No preview",
@@ -80,6 +84,7 @@ export function PreviewSurface({
       role={accessibilityLabel ? "group" : undefined}
       style={[styles.letterbox, maxHeight ? { maxHeight } : null, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       <View
         style={[

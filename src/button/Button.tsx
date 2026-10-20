@@ -13,6 +13,7 @@ import {
 } from "../primitives/reactNative";
 
 import { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { devWarn } from "../devWarn";
 import {
   type FocusIndicator,
@@ -122,6 +123,8 @@ type ButtonBaseProps = ButtonRoleState & {
    * with `style` to drop the row direction and the fixed track height.
    */
   content?: ReactNode;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Milliseconds held before `onLongPress` fires. Defaults to the platform value. */
   delayLongPress?: number;
   /** Disable the button; a button without `onPress` is also treated as disabled. */
@@ -312,6 +315,7 @@ export function Button({
   checked,
   children,
   content,
+  dataSet,
   delayLongPress,
   disabled = false,
   expanded,
@@ -461,7 +465,7 @@ export function Button({
       delayLongPress={delayLongPress}
       disabled={disabledState}
       hitSlop={hitSlop}
-      {...focus.focusRingProps}
+      {...dataSetProps(focus.focusRingProps, { dataSet })}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       // Block activation while busy without unfocusing/hiding the control. The

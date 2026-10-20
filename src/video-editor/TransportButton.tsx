@@ -15,6 +15,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import {
   type FocusIndicator,
   type PressableHoverState,
@@ -41,6 +42,8 @@ export type TransportButtonProps = {
   size?: ControlSize;
   focusIndicator?: FocusIndicator;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -48,6 +51,7 @@ export type TransportButtonProps = {
 export function TransportButton({
   Icon,
   active = false,
+  dataSet,
   disabled = false,
   focusIndicator,
   label,
@@ -73,7 +77,7 @@ export function TransportButton({
       accessibilityLabel={label}
       accessibilityRole="button"
       disabled={disabled}
-      {...focus.focusRingProps}
+      {...dataSetProps(focus.focusRingProps, { dataSet })}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onPress}

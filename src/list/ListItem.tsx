@@ -11,6 +11,7 @@ import { ReactNode, useMemo } from "react";
 import { Pressable, Text, View } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { devWarn } from "../devWarn";
 import {
   type FocusIndicator,
@@ -27,6 +28,11 @@ export type ListItemProps = {
    * Defaults to a string/number `title`; required when `title` is a rich node.
    */
   accessibilityLabel?: string;
+  /**
+   * Web `data-*` attributes for the title press target when `onPress` is set,
+   * or the static row otherwise, keyed in camelCase. Ignored on native.
+   */
+  dataSet?: DataSet;
   /** Secondary line under the title. A string/number is given the muted text treatment; any node renders as-is. */
   description?: ReactNode;
   /** Disable the pressable title (only relevant with `onPress`). */
@@ -70,6 +76,7 @@ export type ListItemProps = {
  */
 export function ListItem({
   accessibilityLabel,
+  dataSet,
   description,
   disabled = false,
   focusIndicator,
@@ -104,12 +111,17 @@ export function ListItem({
     </>
   );
   return (
-    <View style={styles.itemRow} testID={onPress ? undefined : testID}>
+    <View
+      style={styles.itemRow}
+      testID={onPress ? undefined : testID}
+      {...dataSetProps(onPress ? undefined : { dataSet })}
+    >
       {leading != null ? (
         <View style={styles.itemLeading}>{leading}</View>
       ) : null}
       {onPress ? (
         <PressableTitle
+          dataSet={dataSet}
           disabled={disabled}
           focusIndicator={focusIndicator}
           label={resolvedName}
@@ -140,6 +152,7 @@ export function ListItem({
  */
 function PressableTitle({
   children,
+  dataSet,
   disabled,
   focusIndicator,
   label,
@@ -148,6 +161,8 @@ function PressableTitle({
   testID,
 }: {
   children: ReactNode;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   disabled: boolean;
   focusIndicator: FocusIndicator | undefined;
   label?: string;
@@ -162,7 +177,7 @@ function PressableTitle({
       accessibilityRole="button"
       accessibilityState={{ disabled }}
       disabled={disabled}
-      {...focus.focusRingProps}
+      {...dataSetProps(focus.focusRingProps, { dataSet })}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       onPress={onPress}

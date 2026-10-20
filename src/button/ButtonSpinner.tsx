@@ -3,11 +3,14 @@ import { LoaderCircle } from "../primitives/icons";
 import { useEffect, useRef } from "react";
 import { Animated, Easing, Platform } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useReducedMotion } from "../useReducedMotion";
 
 export type ButtonSpinnerProps = {
   /** Tint, matched to the button's label colour. */
   color: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Diameter in px, matched to the leading icon size for the button size. */
   size: number;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
@@ -23,7 +26,12 @@ export type ButtonSpinnerProps = {
  * motion the loader is shown static (still a clear "in progress" affordance)
  * rather than animating (best practice, WCAG 2.1 — 2.3.3 AAA).
  */
-export function ButtonSpinner({ color, size, testID }: ButtonSpinnerProps) {
+export function ButtonSpinner({
+  color,
+  dataSet,
+  size,
+  testID,
+}: ButtonSpinnerProps) {
   const reducedMotion = useReducedMotion();
   const spin = useRef(new Animated.Value(0)).current;
 
@@ -59,6 +67,7 @@ export function ButtonSpinner({ color, size, testID }: ButtonSpinnerProps) {
       importantForAccessibility="no-hide-descendants"
       style={{ height: size, transform: [{ rotate }], width: size }}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       <LoaderCircle color={color} size={size} />
     </Animated.View>

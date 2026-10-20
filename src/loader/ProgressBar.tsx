@@ -10,6 +10,7 @@ import {
   ViewStyle,
 } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useReducedMotion } from "../useReducedMotion";
 import { useSharedUiTheme } from "../theme";
 
@@ -36,6 +37,8 @@ export type ProgressBarProps = {
   accessibilityLabel?: string;
   /** Fill color. Defaults to the theme primary. */
   color?: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Milliseconds for one indeterminate sweep. Ignored when `value` is set. */
   duration?: number;
   /** Track thickness in pixels. Defaults to 6. */
@@ -71,6 +74,7 @@ export type ProgressBarProps = {
 export function ProgressBar({
   accessibilityLabel = "Loading",
   color,
+  dataSet,
   duration = DEFAULT_DURATION,
   height = DEFAULT_HEIGHT,
   style,
@@ -105,6 +109,7 @@ export function ProgressBar({
       onLayout={onLayout}
       style={[styles.track, { backgroundColor: track }, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {determinate ? (
         <DeterminateFill color={accent} fraction={fraction} height={height} />

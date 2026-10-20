@@ -41,7 +41,14 @@ though it is now cross-platform.
   re-engages on every Tab, so focus that escapes to `<body>` is pulled back in),
   and focus returns to the previously focused element on close. Because the trap
   is a cycle, starting on the caller's first control puts the close button last
-  on the way round: `field → … → action → close → field`.
+  on the way round: `field → … → action → close → field`. A control that
+  carries the initial-focus skip marker (`data-firna-initial-focus="skip"`,
+  from `src/initialFocus.ts`) is passed over the same way, as is everything
+  inside a marked container. The library marks the secondary controls inside a
+  field — an input's ⓘ help, clear, and labelled suffix buttons, a
+  multi-select's chip-remove buttons — so a form opens on its first field rather
+  than on the ⓘ that precedes it in DOM order. The marker changes only the
+  landing: a marked control keeps its place in the Tab cycle and in the trap.
 - Expose correct dialog semantics: the surface is a `role="dialog"` with
   `aria-modal` and is named by its title via `aria-labelledby` (the title is a
   `role="heading"`). Background page content is made `inert`/`aria-hidden` while
@@ -118,6 +125,26 @@ const cancelRef = useRef<View | null>(null);
 </WebModalFrame>;
 ```
 
+When a secondary control of your own precedes the form, mark it instead of
+naming a landing spot at every call site. Spread `skipInitialFocusProps` from
+`@firna/ui/initialFocus` on a Firna primitive or any library component (it is a
+`dataSet`), or `skipInitialFocusDomProps` on a raw DOM element; a marked
+container excludes everything inside it. `initialFocusRef` still wins over the
+marker, and when every caller control is marked focus falls back to the close
+button, then the surface. The "Form opens on its first field" story renders the
+library's own markers inside a modal form.
+
+```tsx
+import { skipInitialFocusProps } from "@firna/ui/initialFocus";
+
+<WebModalFrame onClose={onClose} title="Invite teammate" visible={open}>
+  <Button {...skipInitialFocusProps} onPress={openHelp} tone="ghost">
+    How invitations work
+  </Button>
+  <InviteForm />
+</WebModalFrame>;
+```
+
 ## Theming
 
 Modal surfaces read colors, fonts, and radii from `SharedUiThemeProvider`. The
@@ -145,6 +172,8 @@ npm run test:browser
 - `modalLayers.ts` - shared z-index contract (web).
 - `types.ts` - shared cross-platform prop contract.
 - `webModalModel.ts` - pure close-policy and size helpers.
+- `../initialFocus.ts` - the skip marker and the pure landing helper the web
+  frame reads it with.
 
 ### Related Docs
 

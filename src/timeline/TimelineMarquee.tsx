@@ -9,6 +9,7 @@
 import { useMemo } from "react";
 import { View } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import type { TimelineMarqueeRect } from "./timelineDragTypes";
@@ -18,11 +19,14 @@ import { timeToX } from "./timelineTime";
 export type TimelineMarqueeProps = {
   rect: TimelineMarqueeRect;
   pixelsPerSecond: number;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
 
 export function TimelineMarquee({
+  dataSet,
   pixelsPerSecond,
   rect,
   testID,
@@ -46,6 +50,7 @@ export function TimelineMarquee({
         },
       ]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     />
   );
 }
@@ -56,11 +61,14 @@ export type TimelineSnapLineProps = {
   pixelsPerSecond: number;
   /** Height to draw the rule across, in px. */
   height: number;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
 
 export function TimelineSnapLine({
+  dataSet,
   height,
   pixelsPerSecond,
   testID,
@@ -78,6 +86,7 @@ export function TimelineSnapLine({
         { height, left: timeToX(time, pixelsPerSecond), top: 0 },
       ]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     />
   );
 }

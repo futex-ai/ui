@@ -18,6 +18,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import {
   type FocusIndicator,
   PressableHoverState,
@@ -56,6 +57,8 @@ export type TableProps<Row> = {
   cell: (row: Row, columnKey: string) => ReactNode;
   /** Column definitions controlling layout, alignment, and the header labels. */
   columns: TableColumn[];
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /**
    * How pressable rows show keyboard focus: the shared `ring` glow, the
    * browser's `outline`, or `none` for no focus styling at all, which leaves
@@ -110,6 +113,7 @@ export function Table<Row>({
   accessibilityLabel,
   cell,
   columns,
+  dataSet,
   focusIndicator,
   headless = false,
   loading = false,
@@ -137,6 +141,7 @@ export function Table<Row>({
       aria-busy={loading || undefined}
       style={[styles.table, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {headless ? null : (
         <View style={styles.headRow}>
@@ -229,6 +234,8 @@ export type TableCellProps = {
   /** Render the text bold, e.g. a subtotal / total label. (`numeric` is already bold.) */
   bold?: boolean;
   children: ReactNode;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Render as secondary / muted text. */
   muted?: boolean;
   /** Tabular-figure numeric styling (bold, right-aligned), for amounts. */
@@ -250,6 +257,7 @@ export function TableCell({
   align,
   bold,
   children,
+  dataSet,
   muted,
   numeric,
   size = "md",
@@ -269,6 +277,7 @@ export function TableCell({
         align === "right" ? styles.tdRight : null,
       ]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {children}
     </Text>

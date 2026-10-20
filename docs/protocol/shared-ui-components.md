@@ -108,6 +108,25 @@ live carets, tracked changes, and comment threads — is specified in
   button, a chip-remove button, the wheel date trigger's clear button — keeps
   the browser's own focus outline and leaves the host unlit, so keyboard users
   can tell which action Enter will activate (WCAG 2.1 — 2.4.7).
+- Where focus lands when an overlay opens is a separate contract from how focus
+  paints. One marker, `data-firna-initial-focus="skip"`, keeps a control from
+  being that landing spot; it is inherited by everything inside a marked
+  container, and it never removes the control from the Tab order or from a
+  focus trap. The library puts it on every secondary control that sits inside
+  a field and precedes or follows its input — the ⓘ help button, the clear
+  button, a labelled suffix button, a multi-select's chip-remove buttons — so
+  a form opens on its first field. The marker must ship in both spellings
+  (`skipInitialFocusProps` as a `dataSet`, `skipInitialFocusDomProps` as the
+  literal attribute), and the landing check must be a pure helper
+  (`skipsInitialFocus`, `initialFocusLanding`) so every overlay reads it the
+  same way.
+- Every public component accepts `dataSet` and forwards it to the element that
+  carries its `testID`. Because `dataSet` is one object per element, a caller's
+  attributes merge into any library markers already on that element (the
+  focus-ring host and target markers, the initial-focus skip marker) rather
+  than replacing them; a caller key of the same name wins. React Native's own
+  prop types do not declare `dataSet`, so components forward it through
+  `dataSetProps` as a JSX spread rather than as a literal attribute.
 - The web theme provider serializes those variables on a `display: contents`
   boundary so its HTML is self-contained. SSR/static consumers emit
   `domBackendCss` plus a `:root` variable fallback in `<head>` before their own
@@ -776,7 +795,11 @@ Required behavior:
 - Support close policy for Escape, backdrop press, close button, request close,
   non-dismissible flows, and busy/disabled close states.
 - Move focus into the modal on open, trap Tab focus inside the modal while it is
-  open, and restore previous focus on close.
+  open, and restore previous focus on close. The landing is the first focusable
+  element the caller rendered, skipping the close button and any control that
+  carries the initial-focus skip marker; `initialFocusRef` overrides it, and a
+  modal whose caller controls are all marked or absent lands on the close
+  button, then on the dialog surface.
 - Use accessible dialog labeling and close labels.
 - Provide native-safe fallback files that return `null` rather than replacing
   iOS or Android native sheets, action sheets, OS pickers, or platform modals.

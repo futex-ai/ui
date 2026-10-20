@@ -1,6 +1,8 @@
 /** Distribution: how a single measure is spread, not what it totals. */
 import { useMemo } from "react";
 
+import { dataSetProps } from "../dataSet";
+
 import { BarChart } from "./BarChart";
 import { binValues } from "./series/stack";
 import { compactNumber } from "./scale/ticks";
@@ -33,6 +35,7 @@ export function HistogramChart({
   binLabelFormat,
   title,
   caption,
+  dataSet,
   testID,
   ...rest
 }: HistogramChartProps) {
@@ -72,6 +75,7 @@ export function HistogramChart({
       // Forwarded explicitly rather than through the spread, so the testID
       // contract is visible here and the repo's forwarding guard can see it.
       testID={testID}
+      {...dataSetProps({ dataSet })}
       // One series: the title says what is plotted, so a one-swatch legend
       // would only restate it.
       showLegend={false}

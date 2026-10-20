@@ -20,6 +20,7 @@ import { useCallback, useId, useMemo } from "react";
 import type { ReactNode, RefObject } from "react";
 import type { View } from "../primitives/reactNative";
 
+import type { DataSet } from "../dataSet";
 import {
   DropdownList,
   closeDropdownMenuEntries,
@@ -53,6 +54,8 @@ export type ResponsiveMenuProps = {
   anchorRef: RefObject<View | null>;
   /** Close automatically after selectable row presses. Defaults to `true`. */
   closeOnSelect?: boolean;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Native sheet dismiss control label. Default `"Cancel"`. */
   dismissLabel?: string;
   /** Rows rendered in the menu, or a factory given the menu state. */
@@ -100,6 +103,7 @@ export function ResponsiveMenu({
   align,
   anchorRef,
   closeOnSelect = true,
+  dataSet,
   dismissLabel,
   entries,
   footer,
@@ -151,6 +155,7 @@ export function ResponsiveMenu({
     <ResponsivePopover
       align={align}
       anchorRef={anchorRef}
+      dataSet={dataSet}
       dismissLabel={dismissLabel}
       hideSheetHeader={hideSheetHeader}
       label={label}

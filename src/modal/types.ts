@@ -11,6 +11,7 @@ import type {
   ViewStyle,
 } from "../primitives/reactNative";
 
+import type { DataSet } from "../dataSet";
 import type { FocusIndicator } from "../focusRing";
 
 import type { WebModalPlacement, WebModalSize } from "./webModalModel";
@@ -53,6 +54,8 @@ export type WebModalFrameProps = {
   surfaceStyle?: StyleProp<ViewStyle>;
   /** Header subtitle; a node so callers can embed inline links. */
   subtitle?: ReactNode;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
   title: string;

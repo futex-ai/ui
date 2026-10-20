@@ -24,6 +24,7 @@ import type { SheetProps } from "./types";
  */
 export function Sheet({
   children,
+  dataSet,
   dismissLabel = "Cancel",
   hideHeader = false,
   label,
@@ -71,6 +72,7 @@ export function Sheet({
 
   return (
     <BottomSheetShell
+      dataSet={dataSet}
       header={header}
       label={label}
       maxHeight={cap}

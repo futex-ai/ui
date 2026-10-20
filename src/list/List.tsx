@@ -21,6 +21,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import {
   type FocusIndicator,
   PressableHoverState,
@@ -44,6 +45,8 @@ const SKELETON_DESCRIPTION_WIDTHS = ["82%", "70%", "90%"] as const;
 export type ListProps<Item> = {
   /** Accessible label for the whole list. */
   accessibilityLabel?: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /**
    * How pressable items show keyboard focus: the shared `ring` glow, the
    * browser's `outline`, or `none` for no focus styling at all, which leaves
@@ -100,6 +103,7 @@ export type ListProps<Item> = {
  */
 export function List<Item>({
   accessibilityLabel,
+  dataSet,
   focusIndicator,
   itemDisabled,
   itemKey,
@@ -130,6 +134,7 @@ export function List<Item>({
         role="list"
         style={[styles.list, style]}
         testID={testID}
+        {...dataSetProps({ dataSet })}
       >
         <SkeletonPulseProvider>
           {Array.from({ length: loadingItemCount }).map((_, index) => {
@@ -181,6 +186,7 @@ export function List<Item>({
       role="list"
       style={[styles.list, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {items.map((item, index) => {
         const last = index === items.length - 1;

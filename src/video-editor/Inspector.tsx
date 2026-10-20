@@ -23,6 +23,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
@@ -54,12 +55,15 @@ export type InspectorProps = {
   /** Names the panel as a region for assistive tech. */
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
 
 export function Inspector({
   accessibilityLabel,
+  dataSet,
   emptyLabel = "Nothing selected",
   focusIndicator,
   keyframedIds = [],
@@ -120,6 +124,7 @@ export function Inspector({
       role={accessibilityLabel ? "group" : undefined}
       style={[styles.root, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {title ? (
         <Text numberOfLines={1} style={styles.title}>

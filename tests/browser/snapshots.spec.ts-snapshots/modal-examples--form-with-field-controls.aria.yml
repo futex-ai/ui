@@ -1,0 +1,18 @@
+- dialog "Workspace settings":
+  - heading "Workspace settings" [level=1]
+  - button "Close Workspace settings"
+  - text: Workspace name
+  - button "More information about Workspace name": Shown to teammates in the switcher and on every invitation.
+  - textbox "Workspace name":
+    - /placeholder: Acme Ltd
+  - text: Linked books
+  - button "More information about Linked books": Linked books scope reports to specific ledgers.
+  - text: Greenhouse Studio
+  - button "Remove Greenhouse Studio"
+  - text: Payroll Reserve
+  - button "Remove Payroll Reserve"
+  - combobox "Linked books"
+  - text: Billing email
+  - textbox "Billing email": billing@acme.example
+  - button "Clear Billing email"
+  - button "Save"

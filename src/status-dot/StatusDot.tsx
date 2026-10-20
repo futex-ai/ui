@@ -4,6 +4,7 @@ import { View } from "../primitives/reactNative";
 import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { type DataSet, dataSetProps } from "../dataSet";
 import { useSharedUiTheme } from "../theme";
 
 import { PulseHalo } from "./PulseHalo";
@@ -20,6 +21,8 @@ export type StatusDotProps = {
    * graph's fainter `skipped` dot comes through here.
    */
   color?: string;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /**
    * The announced name (e.g. "Running"). Omit — the default — to leave the dot
    * decorative: a status dot almost always sits beside text that already states
@@ -57,6 +60,7 @@ export type StatusDotProps = {
  */
 export function StatusDot({
   color,
+  dataSet,
   label,
   pulse = false,
   size = "md",
@@ -83,6 +87,7 @@ export function StatusDot({
       importantForAccessibility={decorative ? "no-hide-descendants" : undefined}
       style={[styles.dot, style]}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {/* Behind the fill, so the translucent ping never tints the dot itself. */}
       {pulse ? <PulseHalo color={fill} /> : null}

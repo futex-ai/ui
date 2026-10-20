@@ -1,4 +1,5 @@
 /** Shared public prop types for the web and native rich-text editors. */
+import type { DataSet } from "../dataSet";
 import type { FocusIndicator } from "../focusRing";
 
 import type { RichTextCollabProps } from "./richTextCollabTypes";
@@ -41,6 +42,8 @@ export type SlashMenuItem = {
 export type RichTextEditorProps = RichTextCollabProps & {
   /** Focus the editor after it mounts. */
   autoFocus?: boolean;
+  /** Web `data-*` attributes for the editable root, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /**
    * How the editor frame shows keyboard focus: the shared `ring` glow, the
    * browser's `outline`, or `none` for no focus styling at all, which leaves

@@ -3,12 +3,16 @@ import type { ReactNode, RefObject } from "react";
 import { View } from "../primitives/reactNative";
 import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
+import { type DataSet, dataSetProps } from "../dataSet";
+
 import type { PopoverSurfaceRole } from "./popoverModel";
 
 type Focusable = { focus?: () => void };
 
 export type PopoverSurfaceProps = {
   children: ReactNode;
+  /** Web `data-*` attributes for the root element, keyed in camelCase. Ignored on native. */
+  dataSet?: DataSet;
   /**
    * Element focused when the surface opens (web only). Inert on native, where
    * the platform manages focus for the modal-backed dropdown surface.
@@ -49,6 +53,7 @@ export type PopoverSurfaceProps = {
  */
 export function PopoverSurface({
   children,
+  dataSet,
   label,
   nativeID,
   role,
@@ -63,6 +68,7 @@ export function PopoverSurface({
       role={named ? (role ?? "dialog") : undefined}
       style={style}
       testID={testID}
+      {...dataSetProps({ dataSet })}
     >
       {children}
     </View>
