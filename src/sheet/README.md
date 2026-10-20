@@ -54,24 +54,54 @@ const [open, setOpen] = useState(false);
 </Sheet>;
 ```
 
-The sheet is **controlled**: pass `open` and handle `onClose` (backdrop tap,
-pan-down, Android back, or the header dismiss control). The `children` body may
-be a plain node or a `({ close, maxHeight }) => node` render function, where
-`close` animates the sheet down and `maxHeight` is the body height available
-before the content scrolls.
+The sheet is **controlled**: pass `open` and handle `onClose`. A backdrop tap or
+the dismiss control calls it on both platforms. Native adds a pan down and the
+Android back button; web adds Escape. The `children` body may be a plain node or
+a `({ close, maxHeight }) => node` render function, where `maxHeight` is the
+body height available before the content scrolls. `close` closes the sheet: on
+native it animates the sheet down, and on web it calls `onClose` at once.
+
+### Text input
+
+Use `SheetTextInput` for text entry in a sheet body. It takes the platform text
+input props. On native it keeps the sheet above the software keyboard while it
+has focus; a plain text input does not lift the gorhom sheet. Outside a sheet it
+renders a plain input. On web it is the plain input.
+
+```tsx
+import { Sheet, SheetTextInput } from "@firna/ui/sheet";
+
+<Sheet
+  dismissLabel="Done"
+  label="Rename tag"
+  onClose={close}
+  open={open}
+  title="Tag name"
+>
+  <SheetTextInput
+    accessibilityLabel="Tag name"
+    onChangeText={setName}
+    value={name}
+  />
+</Sheet>;
+```
+
+On native, a tap on a row or a button in the sheet reaches it while the
+keyboard is open; the keyboard does not take the first tap.
 
 ## Props
 
-| Prop           | Platform | Notes                                                  |
-| -------------- | -------- | ------------------------------------------------------ |
-| `open`         | both     | Controlled visibility.                                 |
-| `onClose`      | both     | Backdrop / pan-down / Android-back / dismiss control.  |
-| `label`        | both     | Accessible name (required); default visible title.     |
-| `title`        | both     | Visible title when it should differ from `label`.      |
-| `children`     | both     | Node or `({ close, maxHeight }) => node`.              |
-| `maxHeight`    | both     | Body cap; also clamped to ~70% of the viewport.        |
-| `dismissLabel` | native   | Header dismiss control text. Default `"Cancel"`.       |
-| `hideHeader`   | native   | Hide the header row (the grip stays). Default `false`. |
+| Prop              | Platform | Notes                                                                                                                                  |
+| ----------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `open`            | both     | Controlled visibility.                                                                                                                 |
+| `onClose`         | both     | Backdrop and dismiss control. Native: also pan-down and Android back. Web: also Escape.                                                |
+| `label`           | both     | Accessible name (required), also when `title` differs; default visible title.                                                          |
+| `title`           | both     | Visible title when it should differ from `label`.                                                                                      |
+| `children`        | both     | Node or `({ close, maxHeight }) => node`.                                                                                              |
+| `maxHeight`       | both     | Body cap; also clamped to ~70% of the viewport.                                                                                        |
+| `dismissLabel`    | both     | Native: dismiss text, default `"Cancel"`. Web: when set, visible text on the close button; else an ✕ named `"Close {title ?? label}"`. |
+| `hideHeader`      | both     | Native: hide the header row (the grip stays). Web: hide the close button. Default `false`.                                             |
+| `initialFocusRef` | web      | Element focused on open instead of the first control.                                                                                  |
 
 ## Accessibility
 
@@ -79,7 +109,9 @@ The surface is a modal dialog named by `label` (WCAG 4.1.2). Native uses
 `accessibilityViewIsModal` for focus containment and closes on the Android back
 button; web inherits the modal frame's focus trap, focus restore, and
 escape-layer dismissal, so a dropdown or combobox opened inside the sheet
-consumes Escape first and only the top-most overlay closes.
+consumes Escape first and only the top-most overlay closes. On web, a sheet
+opened from a modal traps Tab on its own, and the library's live regions stay
+exposed while the sheet is open, so a result count in the sheet is heard.
 
 ## Development
 
@@ -94,3 +126,19 @@ npm run typecheck
 npm run storybook:build
 npm run test:browser
 ```
+
+Run the sheet checklist in `storybook-native/README.md` on a device after a
+change to the native sheet.
+
+### Key Code
+
+- `Sheet.tsx` / `Sheet.web.tsx` — the native gorhom sheet and the web modal
+  frame placement.
+- `SheetTextInput.tsx` / `SheetTextInput.web.tsx` — the sheet's text input.
+- `BottomSheetShell.tsx` — the internal gorhom wiring shared with the modal's
+  native bottom sheet.
+- `sheetModel.ts` and `types.ts` — the height cap and the shared props.
+
+### Related Docs
+
+- Requirements: [docs/protocol/sheet.md](../../docs/protocol/sheet.md)

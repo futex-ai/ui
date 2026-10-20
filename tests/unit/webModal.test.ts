@@ -41,7 +41,7 @@ test("web modal size tokens are stable and ordered", () => {
 });
 
 test("web modal uses a document body portal with Escape and focus handling", () => {
-  const source = readSource("../../src/modal/WebModalFrame.web.tsx");
+  const source = readWebModalFrameSources();
   const portalSource = readSource("../../src/modal/WebModalPortal.web.tsx");
   const nativePortalFallback = readSource("../../src/modal/WebModalPortal.tsx");
 
@@ -98,7 +98,7 @@ test("native modal keeps non-scrolling sheet bodies out of a parent scroller", (
 });
 
 test("web modal opens focus on caller content rather than the close button", () => {
-  const source = readSource("../../src/modal/WebModalFrame.web.tsx");
+  const source = readWebModalFrameSources();
 
   // An explicit `initialFocusRef` still wins; otherwise the frame picks the
   // first focusable the caller rendered, skipping the close button even though
@@ -112,7 +112,7 @@ test("web modal opens focus on caller content rather than the close button", () 
 });
 
 test("web modal focus restore lifecycle is decoupled from close callback changes", () => {
-  const source = readSource("../../src/modal/WebModalFrame.web.tsx");
+  const source = readWebModalFrameSources();
 
   assert.match(source, /onCloseRef\.current = onClose/);
   assert.match(source, /webModalCanClose\(closePolicyRef\.current, source\)/);
@@ -120,7 +120,7 @@ test("web modal focus restore lifecycle is decoupled from close callback changes
 });
 
 test("web modal frame styles are theme-driven", () => {
-  const source = readSource("../../src/modal/WebModalFrame.web.tsx");
+  const source = readWebModalFrameSources();
   const stylesSource = readSource("../../src/modal/webModalFrameStyles.ts");
 
   assert.match(source, /useSharedUiTheme/);
@@ -139,4 +139,18 @@ test("public modal entrypoint exports frame, portal, models, and layers", () => 
 
 function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
+}
+
+/**
+ * The web modal frame's source with the focus hook and helpers it delegates
+ * to, so these contracts hold wherever the frame keeps that code.
+ */
+function readWebModalFrameSources() {
+  return [
+    "../../src/modal/WebModalFrame.web.tsx",
+    "../../src/modal/useWebModalFocusTrap.ts",
+    "../../src/modal/webModalFocus.ts",
+  ]
+    .map(readSource)
+    .join("\n");
 }

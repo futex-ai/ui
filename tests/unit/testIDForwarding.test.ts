@@ -62,6 +62,7 @@ const FORWARDING_FILES = [
   "dropdown/ComboboxMultiSelect.tsx",
   "dropdown/ComboboxPopover.tsx",
   "dropdown/ComboboxPopover.web.tsx",
+  "dropdown/DropdownIconBox.tsx",
   "dropdown/DropdownList.tsx",
   "dropdown/DropdownMenu.tsx",
   "dropdown/DropdownPortal.tsx",
@@ -95,6 +96,8 @@ const FORWARDING_FILES = [
   "sheet/BottomSheetShell.tsx",
   "sheet/Sheet.tsx",
   "sheet/Sheet.web.tsx",
+  "sheet/SheetTextInput.tsx",
+  "sheet/SheetTextInput.web.tsx",
   "skeleton/Skeleton.tsx",
   "sortable-list/SortableList.tsx",
   "spinner/Spinner.tsx",
@@ -170,6 +173,8 @@ test("forwarding components declare an optional testID prop", () => {
     "rich-text/RichTextEditor.web.tsx": "rich-text/richTextTypes.ts",
     "sheet/Sheet.tsx": "sheet/types.ts",
     "sheet/Sheet.web.tsx": "sheet/types.ts",
+    "sheet/SheetTextInput.tsx": "sheet/types.ts",
+    "sheet/SheetTextInput.web.tsx": "sheet/types.ts",
   };
   for (const file of FORWARDING_FILES) {
     const own = readSource(`../../src/${file}`);

@@ -14,6 +14,7 @@ export function Sheet({
   children,
   dismissLabel,
   hideHeader = false,
+  initialFocusRef,
   label,
   maxHeight,
   onClose,
@@ -29,9 +30,14 @@ export function Sheet({
       : children;
   return (
     <WebModalFrame
+      // The sheet is named by `label` on both platforms, also when a separate
+      // visible `title` is set.
+      accessibilityLabel={label}
       // `hideHeader` only drops the close control on web; the modal frame always
-      // shows the title. The full headerless sheet is a native affordance.
-      closeLabel={dismissLabel}
+      // shows the title. The full headerless sheet is a native affordance. A
+      // `dismissLabel` shows as visible text, as in the native header.
+      closeText={dismissLabel}
+      initialFocusRef={initialFocusRef}
       onClose={onClose}
       placement="bottom-sheet"
       showCloseButton={!hideHeader}

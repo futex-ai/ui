@@ -386,6 +386,8 @@ function DropdownSelectorView({
           <DropdownList
             activeId={navigation.activeId}
             entries={entries}
+            // A searchable selector's search input controls the list.
+            focusable={!searchable}
             footer={footer}
             header={header}
             highlightVariant={highlightVariant}

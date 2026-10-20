@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { darkSharedUiTheme } from "../index";
 import { SheetExample, StorySurface } from "./sharedExamples";
+import { SheetTextInputExample } from "./sheetTextInputExample";
 
 const meta = {
   title: "Sheet/Examples",
@@ -32,6 +33,20 @@ export const Dark: Story = {
   render: () => (
     <StorySurface theme={darkSharedUiTheme}>
       <SheetExample />
+    </StorySurface>
+  ),
+};
+
+/**
+ * A sheet that edits text. `SheetTextInput` keeps the native sheet above the
+ * keyboard. The sheet is named by `label` while its visible `title` differs,
+ * and its `dismissLabel` shows as visible text on web too.
+ */
+export const TextInput: Story = {
+  name: "Text input",
+  render: () => (
+    <StorySurface>
+      <SheetTextInputExample />
     </StorySurface>
   ),
 };

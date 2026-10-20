@@ -128,6 +128,9 @@ export function BottomSheetShell({
             <BottomSheetScrollView
               accessibilityLabel={label}
               accessibilityViewIsModal
+              // A tap on a row or a button inside the sheet must reach it while
+              // the keyboard is open, not only close the keyboard.
+              keyboardShouldPersistTaps="handled"
               contentContainerStyle={nativeStyle([
                 styles.content,
                 contentContainerStyle,

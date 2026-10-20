@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { Platform, StyleSheet, Text, View } from "../primitives/reactNative";
 import type { TextProps } from "../primitives/reactNative";
 
+import { LIVE_REGION_DATA_SET } from "../liveRegion";
+
 import type { ToastItem } from "./toastModel";
 
 export type ToastLiveRegionProps = {
@@ -100,7 +102,12 @@ export function ToastLiveRegion({ toasts, testID }: ToastLiveRegionProps) {
   }, [toasts]);
 
   return (
-    <View pointerEvents="none" style={styles.region} testID={testID}>
+    <View
+      {...LIVE_REGION_MARKER}
+      pointerEvents="none"
+      style={styles.region}
+      testID={testID}
+    >
       <Text {...POLITE_REGION_PROPS} accessibilityLiveRegion="polite">
         {polite}
       </Text>
@@ -110,6 +117,12 @@ export function ToastLiveRegion({ toasts, testID }: ToastLiveRegionProps) {
     </View>
   );
 }
+
+// An open web modal leaves a marked region exposed, so a toast that shows
+// above the modal is still announced. `dataSet` is web-only and absent from
+// the native `View` types, so it travels in a spread object.
+const LIVE_REGION_MARKER: object =
+  Platform.OS === "web" ? { dataSet: LIVE_REGION_DATA_SET } : {};
 
 // `aria-live` (typed on RN) plus `aria-atomic` (not in RN's prop types, but RNW
 // forwards the literal attribute to the DOM) so the whole message — title and

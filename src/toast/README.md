@@ -23,7 +23,9 @@ screen.
   read as one unit) rather than from a region born with its content, which some
   screen readers skip (WCAG 2.1 — 4.1.3 Status Messages, AA). The visible toast
   keeps its `status` / `alert` role for identification but suppresses its own
-  live announcement (`aria-live="off"`) so it is announced exactly once.
+  live announcement (`aria-live="off"`) so it is announced exactly once. On
+  web, the live region carries the library's live-region marker, so an open
+  modal leaves it exposed and a toast that shows above a modal is announced.
 - Offer a `solid` visual variant for compact filled feedback while keeping the
   default `card` variant unchanged.
 - Let callers replace, add, or hide the leading icon so progress and branded

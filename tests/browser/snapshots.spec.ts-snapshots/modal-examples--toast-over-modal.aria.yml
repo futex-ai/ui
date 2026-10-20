@@ -1,0 +1,5 @@
+- dialog "Edit transaction":
+  - heading "Edit transaction" [level=1]
+  - button "Close Edit transaction"
+  - text: Save keeps this form open and shows a toast.
+  - button "Save"

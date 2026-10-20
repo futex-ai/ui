@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { darkSharedUiTheme } from "../index";
+import { ModalToastExample } from "./modalToastExample";
 import {
   ConfirmModalExample,
   ModalExample,
@@ -57,6 +58,15 @@ export const ResizableBottomSheet: Story = {
   render: () => (
     <StorySurface>
       <ResizableSheetExample />
+    </StorySurface>
+  ),
+};
+
+export const ToastOverModal: Story = {
+  name: "Toast over a modal",
+  render: () => (
+    <StorySurface>
+      <ModalToastExample />
     </StorySurface>
   ),
 };

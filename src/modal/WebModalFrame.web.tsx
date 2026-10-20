@@ -8,35 +8,24 @@ import {
   useRef,
   useState,
 } from "react";
-import type { RefObject } from "react";
 import { Pressable, ScrollView, Text, View } from "../primitives/reactNative";
 import type { ViewStyle } from "../primitives/reactNative";
 
-import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
 import { useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 import { useReducedMotion } from "../useReducedMotion";
 
 import { createWebModalFrameStyles } from "./webModalFrameStyles";
+import { useWebModalFocusTrap } from "./useWebModalFocusTrap";
 import { WebModalPortal } from "./WebModalPortal";
 import { webModalCanClose, webModalMaxWidth } from "./webModalModel";
 import type { WebModalCloseSource } from "./webModalModel";
-import type { Focusable, WebModalFrameProps } from "./types";
+import type { WebModalFrameProps } from "./types";
 
 type ClosePolicyRef = {
   closeDisabled: boolean;
   dismissible: boolean;
 };
-
-const WEB_MODAL_FOCUSABLE_SELECTOR = [
-  "a[href]",
-  "button:not([disabled])",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  "[contenteditable='true']",
-  "[tabindex]:not([tabindex='-1'])",
-].join(",");
 
 // Web-only: ease the bottom sheet to its new height when its content grows or
 // shrinks, mirroring the native gorhom sheet's spring instead of snapping.
@@ -48,10 +37,12 @@ const SHEET_HEIGHT_TRANSITION = {
 } as unknown as ViewStyle;
 
 export function WebModalFrame({
+  accessibilityLabel,
   body,
   children,
   closeDisabled = false,
   closeLabel,
+  closeText,
   focusIndicator,
   dismissible = true,
   footer,
@@ -89,7 +80,6 @@ export function WebModalFrame({
   });
   const initialFocusTargetRef = useRef(initialFocusRef);
   const onCloseRef = useRef(onClose);
-  const previousFocusRef = useRef<HTMLElement | null>(null);
   const surfaceRef = useRef<View>(null);
   closePolicyRef.current = { closeDisabled, dismissible };
   initialFocusTargetRef.current = initialFocusRef;
@@ -100,109 +90,13 @@ export function WebModalFrame({
     }
   }, []);
 
-  // RNW does not emit `inert`/`aria-hidden` for `accessibilityViewIsModal`, so
-  // the background stays in the AT tree and tab order. Imperatively mark every
-  // sibling of the modal's portal root inert while the modal is open, then
-  // restore each node's prior state on close. `inert` also removes the
-  // background from sequential focus, reinforcing the JS focus trap below.
-  //
-  // This effect is declared *before* the focus-restore effect on purpose: React
-  // runs cleanups in declaration order, so the background is un-inerted here
-  // first, before the focus effect's cleanup tries to restore focus to a
-  // previously-focused background element (focusing an `inert` node is a no-op).
-  useEffect(() => {
-    if (!visible || typeof document === "undefined") {
-      return;
-    }
-    // Capture the trigger element here, before `inert` is applied below — marking
-    // its container inert blurs it to `<body>`, so we must snapshot it first so
-    // focus can be restored to it on close.
-    previousFocusRef.current =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
-    const surface = surfaceRef.current as unknown;
-    const root =
-      surface instanceof HTMLElement ? webModalPortalRoot(surface) : null;
-    const body = document.body;
-    const siblings = Array.from(body.children).filter(
-      (node): node is HTMLElement =>
-        node instanceof HTMLElement && node !== root,
-    );
-    const restorers = siblings.map((node) => {
-      const hadInert = node.hasAttribute("inert");
-      const prevAriaHidden = node.getAttribute("aria-hidden");
-      node.setAttribute("inert", "");
-      node.setAttribute("aria-hidden", "true");
-      return () => {
-        if (!hadInert) {
-          node.removeAttribute("inert");
-        }
-        if (prevAriaHidden === null) {
-          node.removeAttribute("aria-hidden");
-        } else {
-          node.setAttribute("aria-hidden", prevAriaHidden);
-        }
-      };
-    });
-    return () => {
-      for (const restore of restorers) {
-        restore();
-      }
-    };
-  }, [visible]);
-
-  useEffect(() => {
-    if (!visible || typeof document === "undefined") {
-      return;
-    }
-    // The trigger to restore on close is captured by the inertness effect above
-    // (which runs first, before `inert` blurs it). The portal children are
-    // committed before this effect runs, so the DOM is queryable and focus can
-    // move into the surface synchronously (no `setTimeout(0)` race).
-    focusWebModalElement(
-      initialFocusTargetRef.current?.current ??
-        webModalInitialFocusTarget(surfaceRef, closeButtonRef),
-    );
-    return () => {
-      focusWebModalElement(previousFocusRef.current);
-      previousFocusRef.current = null;
-    };
-  }, [visible]);
-
-  // Escape goes through the shared escape-layer stack rather than this modal's
-  // own keydown listener, so a dropdown, popover, or nested modal opened above
-  // this surface consumes Escape first and this modal stays open. Only the
-  // top-most layer closes; see escapeLayer.ts.
-  useEffect(() => {
-    if (!visible || typeof document === "undefined") {
-      return;
-    }
-    const layer = { onEscape: () => requestClose("escape") };
-    pushEscapeLayer(layer);
-    return () => {
-      removeEscapeLayer(layer);
-    };
-  }, [requestClose, visible]);
-
-  useEffect(() => {
-    if (!visible || typeof document === "undefined") {
-      return;
-    }
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Trap on every Tab while the modal is visible — not only when focus is
-      // already inside the surface — so focus that escaped to <body> (e.g. after
-      // a click on the inert backdrop) is pulled back in on the next Tab. The
-      // trap helper already handles the focus-outside case.
-      if (event.key === "Tab") {
-        trapWebModalFocus(event, surfaceRef);
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown, true);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown, true);
-    };
-  }, [visible]);
+  useWebModalFocusTrap({
+    closeButtonRef,
+    initialFocusTargetRef,
+    requestClose,
+    surfaceRef,
+    visible,
+  });
 
   // Re-measure from scratch on each open: drop the cached height when the sheet
   // closes so a reopen with different content sizes to it instead of animating
@@ -236,7 +130,8 @@ export function WebModalFrame({
       </View>
       {showCloseButton ? (
         <Pressable
-          accessibilityLabel={closeLabel ?? `Close ${title}`}
+          // Visible text names the button (WCAG 2.5.3); the ✕ icon needs a label.
+          accessibilityLabel={closeText ?? closeLabel ?? `Close ${title}`}
           accessibilityRole="button"
           accessibilityState={{ disabled: closeDisabled }}
           disabled={closeDisabled}
@@ -246,12 +141,16 @@ export function WebModalFrame({
           onPress={() => requestClose("closeButton")}
           ref={closeButtonRef}
           style={[
-            styles.closeButton,
+            closeText ? styles.closeTextButton : styles.closeButton,
             closeDisabled ? styles.disabled : null,
             closeRing.focusRingVariables,
           ]}
         >
-          <X aria-hidden color={theme.colors.ink2} size={18} />
+          {closeText ? (
+            <Text style={styles.closeText}>{closeText}</Text>
+          ) : (
+            <X aria-hidden color={theme.colors.ink2} size={18} />
+          )}
         </Pressable>
       ) : null}
     </View>
@@ -281,7 +180,9 @@ export function WebModalFrame({
       >
         <View
           accessibilityViewIsModal
-          aria-labelledby={titleId}
+          // Named by the visible title unless the caller names it.
+          aria-label={accessibilityLabel}
+          aria-labelledby={accessibilityLabel ? undefined : titleId}
           aria-modal
           ref={surfaceRef}
           role="dialog"
@@ -331,107 +232,4 @@ export function WebModalFrame({
   );
 
   return <WebModalPortal visible={visible}>{modal}</WebModalPortal>;
-}
-
-/**
- * Where focus lands when a modal opens, absent an explicit `initialFocusRef`:
- * the first control the *caller* rendered — the form field, or the footer's
- * action button when the body holds nothing focusable. The close button is
- * skipped even though it comes first in DOM order, because opening a dialog
- * with "dismiss" preselected is a poor landing spot: it is the least likely
- * thing the user came to do, and a reflexive Enter throws the dialog away.
- *
- * Tab order itself needs no rework. A focus trap is a cycle, so starting on the
- * caller's first control already yields `field → … → action → close → field`:
- * the close button is the last stop on the way round, and Shift+Tab from the
- * landing element reaches it immediately.
- *
- * Falls back to the close button when the caller rendered nothing focusable at
- * all, then to the surface itself (`tabIndex={-1}`), so focus always enters the
- * dialog and screen readers announce it rather than being left on the trigger.
- */
-function webModalInitialFocusTarget(
-  surfaceRef: RefObject<View | null>,
-  closeButtonRef: RefObject<View | null>,
-): HTMLElement | null {
-  const surface = webModalElement(surfaceRef);
-  if (!surface) {
-    return null;
-  }
-  // Null once `showCloseButton` is false — the Pressable is unmounted, so React
-  // has cleared the ref and every focusable below is already caller content.
-  const closeButton = webModalElement(closeButtonRef);
-  const callerControl = webModalFocusableElements(surface).find(
-    (element) => element !== closeButton,
-  );
-  return callerControl ?? closeButton ?? surface;
-}
-
-function trapWebModalFocus(
-  event: KeyboardEvent,
-  surfaceRef: RefObject<View | null>,
-): void {
-  const surface = webModalElement(surfaceRef);
-  if (!surface) {
-    return;
-  }
-  const focusable = webModalFocusableElements(surface);
-  if (focusable.length === 0) {
-    event.preventDefault();
-    focusWebModalElement(surface);
-    return;
-  }
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-  const activeElement = document.activeElement;
-  const activeInside = activeElement ? surface.contains(activeElement) : false;
-  if (event.shiftKey && (!activeInside || activeElement === first)) {
-    event.preventDefault();
-    focusWebModalElement(last);
-    return;
-  }
-  if (!event.shiftKey && (!activeInside || activeElement === last)) {
-    event.preventDefault();
-    focusWebModalElement(first);
-  }
-}
-
-function webModalFocusableElements(surface: HTMLElement): HTMLElement[] {
-  return Array.from(
-    surface.querySelectorAll<HTMLElement>(WEB_MODAL_FOCUSABLE_SELECTOR),
-  ).filter(webModalElementIsFocusable);
-}
-
-function webModalElementIsFocusable(element: HTMLElement): boolean {
-  const disabled = (element as HTMLElement & { disabled?: boolean }).disabled;
-  if (disabled || element.getAttribute("aria-disabled") === "true") {
-    return false;
-  }
-  const style = window.getComputedStyle(element);
-  return style.display !== "none" && style.visibility !== "hidden";
-}
-
-/** RNW resolves a `View` ref to its host node; narrow it for DOM-only work. */
-function webModalElement(ref: RefObject<View | null>): HTMLElement | null {
-  const node = ref.current as unknown;
-  return node instanceof HTMLElement ? node : null;
-}
-
-/**
- * The surface lives inside the portal subtree mounted on `document.body`. Walk
- * up from the surface to find the direct child of `body` that roots this modal,
- * so the background-inertness effect can skip it (and only it) when hiding the
- * rest of the page.
- */
-function webModalPortalRoot(surface: HTMLElement): HTMLElement | null {
-  const body = surface.ownerDocument.body;
-  let node: HTMLElement | null = surface;
-  while (node && node.parentElement !== body) {
-    node = node.parentElement;
-  }
-  return node;
-}
-
-function focusWebModalElement(target: Focusable | null | undefined): void {
-  target?.focus?.();
 }

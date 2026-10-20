@@ -39,6 +39,14 @@ export type ComboboxFilterSection<TOption extends ComboboxFilterOption> = {
   title?: string;
 };
 
+export type ComboboxSectionFilterOptions = {
+  /**
+   * Keep every option of a section whose title matches the query, so a search
+   * for a group name shows the whole group. Defaults to `false`.
+   */
+  matchTitles?: boolean;
+};
+
 export function filterComboboxOptions<TOption extends ComboboxFilterOption>(
   options: TOption[],
   query: string,
@@ -55,19 +63,26 @@ export function filterComboboxOptions<TOption extends ComboboxFilterOption>(
 /**
  * Filter labeled options within each section and drop sections that no longer
  * have any matching options, so empty section titles never render. An empty
- * query returns the sections unchanged.
+ * query returns the sections unchanged. With `matchTitles`, a section whose
+ * title matches keeps all of its options. Matching ignores case.
  */
 export function filterComboboxSections<TOption extends ComboboxFilterOption>(
   sections: ComboboxFilterSection<TOption>[],
   query: string,
+  { matchTitles = false }: ComboboxSectionFilterOptions = {},
 ): ComboboxFilterSection<TOption>[] {
-  if (!query.trim()) {
+  const needle = query.trim().toLowerCase();
+  if (!needle) {
     return sections;
   }
   return sections
-    .map((section) => ({
-      ...section,
-      options: filterComboboxOptions(section.options, query),
-    }))
+    .map((section) =>
+      matchTitles && section.title?.toLowerCase().includes(needle)
+        ? section
+        : {
+            ...section,
+            options: filterComboboxOptions(section.options, query),
+          },
+    )
     .filter((section) => section.options.length > 0);
 }

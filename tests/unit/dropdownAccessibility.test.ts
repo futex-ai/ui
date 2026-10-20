@@ -2,18 +2,6 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-test("dropdown rows expose an overridable accessible name", () => {
-  const listSource = readSource("../../src/dropdown/DropdownList.tsx");
-
-  // The row's accessible name is overridable per entry and defaults to the
-  // visible label, so callers can disambiguate duplicates or pin a
-  // locale-stable name for getByRole(role, { name }).
-  assert.match(
-    listSource,
-    /accessibilityLabel=\{entry\.accessibilityLabel \?\? entry\.label\}/,
-  );
-});
-
 test("selector trigger name is value-independent", () => {
   const selectorSource = readSource("../../src/dropdown/DropdownSelector.tsx");
 

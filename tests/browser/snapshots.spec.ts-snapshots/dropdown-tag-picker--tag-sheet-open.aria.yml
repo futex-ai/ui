@@ -1,0 +1,20 @@
+- dialog "Tags":
+  - heading "Tags" [level=1]
+  - button "Done"
+  - text: /Flat 2, \d+ Brook Street L Loft conversion/
+  - button "Remove Loft conversion"
+  - combobox "Tags" [expanded]
+  - listbox "Tags":
+    - group "Properties":
+      - text: ""
+      - option /Flat 2, \d+ Brook Street/ [disabled] [selected]: /Flat 2, \d+ Brook Street UK rental property/
+      - option /Flat 3, \d+ Brook Street/ [disabled]: /Flat 3, \d+ Brook Street UK rental property/
+    - group "Vehicles":
+      - text: ""
+      - option "Renault Kangoo BX19 KLM": Renault Kangoo BX19 KLM UK rental property
+      - option "Skoda Octavia WK21 LMN" [disabled]: Skoda Octavia WK21 LMN Consultancy trade
+    - group "Projects":
+      - text: ""
+      - option "Loft conversion" [selected]: L Loft conversion Archived
+      - option "Website rebuild": W Website rebuild Consultancy trade
+    - option "Create tag"

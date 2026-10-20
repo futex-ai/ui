@@ -41,14 +41,21 @@ though it is now cross-platform.
   re-engages on every Tab, so focus that escapes to `<body>` is pulled back in),
   and focus returns to the previously focused element on close. Because the trap
   is a cycle, starting on the caller's first control puts the close button last
-  on the way round: `field → … → action → close → field`.
+  on the way round: `field → … → action → close → field`. When a modal opens
+  above another modal, such as a sheet from a modal form, only the top modal
+  traps Tab: the top modal makes the lower one `inert`, and a modal inside an
+  `inert` subtree leaves Tab alone.
 - Expose correct dialog semantics: the surface is a `role="dialog"` with
   `aria-modal` and is named by its title via `aria-labelledby` (the title is a
   `role="heading"`). Background page content is made `inert`/`aria-hidden` while
   the modal is open and restored on close, since RNW does not emit `inert` for
-  `accessibilityViewIsModal`. The backdrop is a mouse-only dismiss target hidden
-  from assistive tech and the tab order (Escape is the accessible close path).
-  The close button shows a focus-visible ring on keyboard focus.
+  `accessibilityViewIsModal`. The library's live regions, which carry the
+  `data-firna-live-region` marker (the `announce` regions and the toast live
+  region), stay exposed, so a status message such as a result count or a
+  toast is still heard while the modal is open. The backdrop is a mouse-only
+  dismiss target hidden from assistive tech and the tab order (Escape is the
+  accessible close path). The close button shows a focus-visible ring on
+  keyboard focus.
 - Keep web close behavior explicit: Escape, backdrop press, close button, and
   request-close all use the same policy. Escape is routed through the shared
   escape-layer stack (`src/escapeLayer.ts`), so a dropdown, popover, or nested
@@ -118,6 +125,26 @@ const cancelRef = useRef<View | null>(null);
 </WebModalFrame>;
 ```
 
+The dialog takes its accessible name from the visible `title`. Pass
+`accessibilityLabel` when assistive tech should hear a different name; the web
+`Sheet` uses it so that its `label` names the sheet even with a separate
+`title`. Pass `closeText` to show visible text, such as "Done", in place of the
+✕ close icon. The text then names the button, so leave `closeLabel` for the
+icon:
+
+```tsx
+<WebModalFrame
+  accessibilityLabel="Rename tag"
+  closeText="Done"
+  onClose={onClose}
+  placement="bottom-sheet"
+  title="Tag name"
+  visible={open}
+>
+  <TagNameField />
+</WebModalFrame>
+```
+
 ## Theming
 
 Modal surfaces read colors, fonts, and radii from `SharedUiThemeProvider`. The
@@ -137,7 +164,9 @@ npm run test:browser
 
 ### Key Code
 
-- `WebModalFrame.web.tsx` - web modal frame and focus/close behavior.
+- `WebModalFrame.web.tsx` - web modal frame: header, close button, surface, and portal.
+- `useWebModalFocusTrap.ts` - web focus and Escape effects: inert background (the live regions stay exposed), initial focus, restore, the Tab trap.
+- `webModalFocus.ts` - DOM helpers for the initial focus target and the Tab trap, which only the top modal of a stack runs.
 - `WebModalFrame.tsx` - native RN `Modal` frame (sheet + dialog).
 - `webModalFrameStyles.ts` - theme-driven web style factory.
 - `WebModalPortal.web.tsx` - DOM portal boundary.
@@ -149,4 +178,6 @@ npm run test:browser
 ### Related Docs
 
 - Plan: `plans/shared-dropdown-modal-library.md`.
+- Sheet requirements, including the dialog name and the close text:
+  `docs/protocol/sheet.md`.
 - Dropdown boundary: `src/dropdown/README.md`.

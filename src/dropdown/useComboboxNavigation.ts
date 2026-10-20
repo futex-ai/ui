@@ -1,5 +1,6 @@
 /** Keyboard state for input-backed combobox result lists. */
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { RefObject } from "react";
 
 import {
   DropdownListEntry,
@@ -15,6 +16,13 @@ import {
 
 type ComboboxNavigationOptions = {
   entries: DropdownListEntry[];
+  /**
+   * Handle only keys pressed in this element (the search input) on web, so
+   * other controls on the same surface, such as a dialog's buttons, keep
+   * their own Enter and arrow keys. Omit it to handle keys anywhere while the
+   * list is open.
+   */
+  keyTarget?: RefObject<unknown>;
   onClose: () => void;
   onOpen: () => void;
   open: boolean;
@@ -28,6 +36,7 @@ type ComboboxKeyboardEvent = {
 
 export function useComboboxNavigation({
   entries,
+  keyTarget,
   onClose,
   onOpen,
   open,
@@ -99,6 +108,10 @@ export function useComboboxNavigation({
       return;
     }
     const handleDocumentKeyDown = (event: KeyboardEvent) => {
+      // The web backend's `TextInput` ref is its DOM element.
+      if (keyTarget && event.target !== keyTarget.current) {
+        return;
+      }
       if (handleKeyDown(event)) {
         event.stopPropagation();
       }
@@ -106,7 +119,7 @@ export function useComboboxNavigation({
     document.addEventListener("keydown", handleDocumentKeyDown, true);
     return () =>
       document.removeEventListener("keydown", handleDocumentKeyDown, true);
-  }, [handleKeyDown, open]);
+  }, [handleKeyDown, keyTarget, open]);
 
   return {
     activeId,
