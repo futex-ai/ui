@@ -217,31 +217,31 @@ touched contracts move to a new linked page.
 Pure and DOM modules land with unit tests and no behaviour change. The frame
 still uses its own effects, so the product keeps working.
 
-- [ ] Add `src/modal/webModalStackModel.ts` and
+- [x] Add `src/modal/webModalStackModel.ts` and
       `tests/unit/webModalStackModel.test.ts`: push and remove keep order,
       removing a middle layer keeps the top, `top` and `below` partition,
       restore target resolution, and page-lock transitions only on the first
       push and the last pop.
-  - [ ] Tree-order insertion: a parent pushed after its descendant goes
+  - [x] Tree-order insertion: a parent pushed after its descendant goes
         below it and takes over its opener, and siblings keep push order.
-  - [ ] Opener inheritance when a non-top layer is removed.
-  - [ ] Page inertness by membership: a node added after the first push is
+  - [x] Opener inheritance when a non-top layer is removed.
+  - [x] Page inertness by membership: a node added after the first push is
         restored when the layer that marked it is removed, and a node marked
         by several layers stays inert until the last one is removed.
-  - [ ] The moves that put the layer roots in stack order.
-- [ ] Add `src/liveOverlay.ts` with the attribute name and the `dataSet` key.
-- [ ] Add `src/modal/webModalFocusTrap.ts`. Move the focusable selector,
+  - [x] The moves that put the layer roots in stack order.
+- [x] Add `src/liveOverlay.ts` with the attribute name and the `dataSet` key.
+- [x] Add `src/modal/webModalFocusTrap.ts`. Move the focusable selector,
       `webModalFocusableElements`, `trapWebModalFocus`,
       `webModalInitialFocusTarget`, and `focusWebModalElement` out of
       `WebModalFrame.web.tsx`. Update the source assertions in
       `tests/unit/webModal.test.ts`.
-- [ ] Add `src/modal/webModalRoot.ts`: idempotent root creation, safe when
+- [x] Add `src/modal/webModalRoot.ts`: idempotent root creation, safe when
       `document` is undefined.
-- [ ] Add `src/modal/webModalStack.ts` with push, remove, and apply, the
+- [x] Add `src/modal/webModalStack.ts` with push, remove, and apply, the
       single Tab listener, the inert bookkeeping, and the focus restore
       order. Add `tests/unit/webModalStack.test.ts` with source assertions in
       the style of `tests/unit/escapeLayer.test.ts`.
-- [ ] Run `npm test`, `npm run typecheck`, and `npm run typecheck:web`.
+- [x] Run `npm test`, `npm run typecheck`, and `npm run typecheck:web`.
 
 ## Milestone 3: Frame wiring, live overlays, story, and browser tests
 

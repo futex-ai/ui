@@ -18,25 +18,20 @@ import { useSharedUiTheme } from "../theme";
 import { useReducedMotion } from "../useReducedMotion";
 
 import { createWebModalFrameStyles } from "./webModalFrameStyles";
+import {
+  focusWebModalElement,
+  trapWebModalFocus,
+  webModalInitialFocusTarget,
+} from "./webModalFocusTrap";
 import { WebModalPortal } from "./WebModalPortal";
 import { webModalCanClose, webModalMaxWidth } from "./webModalModel";
 import type { WebModalCloseSource } from "./webModalModel";
-import type { Focusable, WebModalFrameProps } from "./types";
+import type { WebModalFrameProps } from "./types";
 
 type ClosePolicyRef = {
   closeDisabled: boolean;
   dismissible: boolean;
 };
-
-const WEB_MODAL_FOCUSABLE_SELECTOR = [
-  "a[href]",
-  "button:not([disabled])",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  "[contenteditable='true']",
-  "[tabindex]:not([tabindex='-1'])",
-].join(",");
 
 // Web-only: ease the bottom sheet to its new height when its content grows or
 // shrinks, mirroring the native gorhom sheet's spring instead of snapping.
@@ -162,7 +157,10 @@ export function WebModalFrame({
     // move into the surface synchronously (no `setTimeout(0)` race).
     focusWebModalElement(
       initialFocusTargetRef.current?.current ??
-        webModalInitialFocusTarget(surfaceRef, closeButtonRef),
+        webModalInitialFocusTarget(
+          webModalElement(surfaceRef),
+          webModalElement(closeButtonRef),
+        ),
     );
     return () => {
       focusWebModalElement(previousFocusRef.current);
@@ -195,7 +193,7 @@ export function WebModalFrame({
       // a click on the inert backdrop) is pulled back in on the next Tab. The
       // trap helper already handles the focus-outside case.
       if (event.key === "Tab") {
-        trapWebModalFocus(event, surfaceRef);
+        trapWebModalFocus(event, webModalElement(surfaceRef));
       }
     };
     document.addEventListener("keydown", handleKeyDown, true);
@@ -333,84 +331,6 @@ export function WebModalFrame({
   return <WebModalPortal visible={visible}>{modal}</WebModalPortal>;
 }
 
-/**
- * Where focus lands when a modal opens, absent an explicit `initialFocusRef`:
- * the first control the *caller* rendered — the form field, or the footer's
- * action button when the body holds nothing focusable. The close button is
- * skipped even though it comes first in DOM order, because opening a dialog
- * with "dismiss" preselected is a poor landing spot: it is the least likely
- * thing the user came to do, and a reflexive Enter throws the dialog away.
- *
- * Tab order itself needs no rework. A focus trap is a cycle, so starting on the
- * caller's first control already yields `field → … → action → close → field`:
- * the close button is the last stop on the way round, and Shift+Tab from the
- * landing element reaches it immediately.
- *
- * Falls back to the close button when the caller rendered nothing focusable at
- * all, then to the surface itself (`tabIndex={-1}`), so focus always enters the
- * dialog and screen readers announce it rather than being left on the trigger.
- */
-function webModalInitialFocusTarget(
-  surfaceRef: RefObject<View | null>,
-  closeButtonRef: RefObject<View | null>,
-): HTMLElement | null {
-  const surface = webModalElement(surfaceRef);
-  if (!surface) {
-    return null;
-  }
-  // Null once `showCloseButton` is false — the Pressable is unmounted, so React
-  // has cleared the ref and every focusable below is already caller content.
-  const closeButton = webModalElement(closeButtonRef);
-  const callerControl = webModalFocusableElements(surface).find(
-    (element) => element !== closeButton,
-  );
-  return callerControl ?? closeButton ?? surface;
-}
-
-function trapWebModalFocus(
-  event: KeyboardEvent,
-  surfaceRef: RefObject<View | null>,
-): void {
-  const surface = webModalElement(surfaceRef);
-  if (!surface) {
-    return;
-  }
-  const focusable = webModalFocusableElements(surface);
-  if (focusable.length === 0) {
-    event.preventDefault();
-    focusWebModalElement(surface);
-    return;
-  }
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-  const activeElement = document.activeElement;
-  const activeInside = activeElement ? surface.contains(activeElement) : false;
-  if (event.shiftKey && (!activeInside || activeElement === first)) {
-    event.preventDefault();
-    focusWebModalElement(last);
-    return;
-  }
-  if (!event.shiftKey && (!activeInside || activeElement === last)) {
-    event.preventDefault();
-    focusWebModalElement(first);
-  }
-}
-
-function webModalFocusableElements(surface: HTMLElement): HTMLElement[] {
-  return Array.from(
-    surface.querySelectorAll<HTMLElement>(WEB_MODAL_FOCUSABLE_SELECTOR),
-  ).filter(webModalElementIsFocusable);
-}
-
-function webModalElementIsFocusable(element: HTMLElement): boolean {
-  const disabled = (element as HTMLElement & { disabled?: boolean }).disabled;
-  if (disabled || element.getAttribute("aria-disabled") === "true") {
-    return false;
-  }
-  const style = window.getComputedStyle(element);
-  return style.display !== "none" && style.visibility !== "hidden";
-}
-
 /** RNW resolves a `View` ref to its host node; narrow it for DOM-only work. */
 function webModalElement(ref: RefObject<View | null>): HTMLElement | null {
   const node = ref.current as unknown;
@@ -430,8 +350,4 @@ function webModalPortalRoot(surface: HTMLElement): HTMLElement | null {
     node = node.parentElement;
   }
   return node;
-}
-
-function focusWebModalElement(target: Focusable | null | undefined): void {
-  target?.focus?.();
 }
