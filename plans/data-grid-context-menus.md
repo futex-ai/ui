@@ -14,7 +14,7 @@ through `onContextMenuEntries`, with spreadsheet selection semantics (a press
 inside the selection keeps it, outside collapses to the target) and `Shift+F10`
 / the `ContextMenu` key for the keyboard. The header caret and the header
 context menu now render from one descriptor vocabulary, and a latent bug where a
-right-click could open a cell editor is fixed. M1–M7 complete and
+right-click could open a cell editor is fixed. M1–M8 complete and
 `npm run verify` green; the manual on-device native pass is the one deferred
 item.
 

@@ -2,7 +2,7 @@
 
 Status: Active. M1 delivered (web pointer + keyboard drag, optional start/end
 grab handle, vertical/horizontal flow) and `npm run verify` green; M2 (native
-drag / touch reordering + RTL) deferred.
+drag / touch reordering + RTL) deferred as a follow-up.
 
 A new `@firna/ui` primitive: a drag-and-drop **sortable list**. Like the existing
 [`List`](../src/list/README.md) it is generic over its data (`items` / `itemKey`
@@ -17,9 +17,6 @@ title, a status tag, and the row's own up / down / archive controls). Those row
 controls are consumer content; the primitive supplies the reorder behaviour and
 the optional grab handle. The living spec is the Storybook story
 (`src/stories/sortableList.stories.tsx`).
-
-**Status:** M1 delivered — `npm run verify` green. M2 (native drag / touch
-reordering) deferred as a follow-up.
 
 ---
 

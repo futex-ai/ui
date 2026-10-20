@@ -1,12 +1,15 @@
 # Disable the focus ring
 
-Status: Active. M1–M5 delivered: a theme kill switch + per-instance prop on
-every ring-bearer, backed by one `useFocusRing` primitive; disabled rings
-restore the UA outline (WCAG 2.4.7). M6 in progress: a tri-state
-`focusIndicator` (`ring` / `outline` / `none`) replaces the boolean
-`disableFocusRing` / `theme.focusRing` so a control can also turn focus styling
-off completely, for a field embedded in a surface that shows focus itself.
-Deferred: `DateField`/`DateRangeField` composite forwarding.
+Status: Completed. [PR #173](https://github.com/futex-ai/ui/pull/173) merged on
+2026-09-30. M1–M5 delivered: a theme kill switch + per-instance prop on every
+ring-bearer, backed by one `useFocusRing` primitive; disabled rings restore the
+UA outline (WCAG 2.4.7). M6 delivered: a tri-state `focusIndicator` (`ring` /
+`outline` / `none`) replaces the boolean `disableFocusRing` /
+`theme.focusRing` so a control can also turn focus styling off completely, for
+a field embedded in a surface that shows focus itself. Deferred:
+`DateField`/`DateRangeField` composite forwarding. Two review findings stay
+open under M6: the charts do not forward `focusIndicator` to `ChartFrame`, and
+`plans/charts-design.md` still lists `disableFocusRing`.
 
 Add a first-class way to **turn off the shared focus glow** — both globally (a
 theme flag) and per instance (a public `disableFocusRing` prop on every control

@@ -1,6 +1,7 @@
 # Pure React DOM backend
 
-Status: Active. M0–M4 delivered: the `react-native-web` side of the
+Status: Completed. [PR #168](https://github.com/futex-ai/ui/pull/168) merged on
+2026-09-17. M0–M4 delivered: the `react-native-web` side of the
 `src/primitives` seam is now a hand-written DOM backend with vendored types, and
 a web consumer installs only `react`, `react-dom`, and `lucide-react`, with
 every component file still shared with the React Native build. M0 recorded a
@@ -14,7 +15,9 @@ that still wanted the package on disk, to shim its own mis-resolution of
 the docs — the cast cleanup it proposed was measured and none of the 19 sites
 can go, because the native typecheck also checks the `.web` files. Remaining:
 only the deferred device check for storybook-native (no simulator in the
-delivery environment).
+delivery environment). Two findings from the review of the M4 commit stay open,
+under M4: `onClickCapture` is not forwarded, and `createResponderEvent`
+hard-codes `altKey` and `ctrlKey`.
 
 Make `@firna/ui` consumable as a plain React library on the web, with no
 `react-native-web` at runtime and no `react-native` for types, while every
@@ -247,10 +250,10 @@ src/primitives/
 
 ## Milestones
 
-After each milestone's checks pass, follow the `finish-work` skill that
-`AGENTS.md` names: run `git add -A`, commit with a Conventional Commits message,
-and push the branch. Then review the local diff against `origin/main` with the
-`implementation-review` skill, and apply its review-fix rule.
+Per `AGENTS.md`, after each milestone's checks pass: `git add -A`, commit with
+a Conventional Commits message, push the branch, then run `cargo xtask review`
+so an AI reviewer checks the local diff against `origin/main`. Review findings
+are reported, not auto-fixed.
 
 ### M0 — Parity baseline on the current backend
 
@@ -1032,7 +1035,8 @@ smoke proves a web consumer needs only `react`, `react-dom`, and
 **Review follow-ups (open, from the AI review of the M4 commit).** Two findings,
 both verbatim transcriptions of `react-native-web` 0.21.2 behaviour rather than
 regressions, reported here with recommendations and deliberately not applied
-(AGENTS.md: review findings are reported, not auto-fixed):
+(the `AGENTS.md` rule at that time: review findings are reported, not
+auto-fixed):
 
 1. `PanResponder.panHandlers.onClickCapture` — the click suppressor that keeps a
    finished mouse pan from also activating whatever is under the cursor — is
