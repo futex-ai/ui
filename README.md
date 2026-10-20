@@ -634,6 +634,9 @@ The package export map intentionally separates runtime targets:
 - Shared focus-glow primitive: [src/focusRing.ts](src/focusRing.ts), its
   marker spellings in [src/focusRingHost.ts](src/focusRingHost.ts), and the
   CSS rules in [src/primitives/dom/css.ts](src/primitives/dom/css.ts)
+- Screen-reader announcer: [src/announcer.ts](src/announcer.ts), and the
+  live-region marker that an open web modal leaves exposed in
+  [src/liveRegion.ts](src/liveRegion.ts)
 - Button component: [src/button/README.md](src/button/README.md)
 - Calendar component: [src/calendar/README.md](src/calendar/README.md)
 - Input and textarea components: [src/input/README.md](src/input/README.md)

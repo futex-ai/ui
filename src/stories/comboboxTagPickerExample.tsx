@@ -3,7 +3,12 @@ import { Car, House } from "../primitives/icons";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "../primitives/reactNative";
 
-import { ComboboxMultiSelect, useSharedUiTheme } from "../index";
+import {
+  Button,
+  ComboboxMultiSelect,
+  WebModalFrame,
+  useSharedUiTheme,
+} from "../index";
 import type {
   ComboboxMultiSelectOption,
   ComboboxMultiSelectPresentation,
@@ -123,6 +128,27 @@ export function GroupedTagPickerExample({
       <Text style={[styles.status, { color: theme.colors.ink2 }]}>
         {lastCreate ? `Created tag: ${lastCreate}` : "No tag created yet"}
       </Text>
+    </View>
+  );
+}
+
+/**
+ * The sheet presentation in a modal form. The sheet opens as a second modal
+ * above the form, so the story covers a nested modal: only the top modal
+ * traps Tab, and the form behind it is inert.
+ */
+export function TagSheetInModalExample() {
+  const [visible, setVisible] = useState(true);
+  return (
+    <View>
+      <Button onPress={() => setVisible(true)}>Edit transaction</Button>
+      <WebModalFrame
+        onClose={() => setVisible(false)}
+        title="Edit transaction"
+        visible={visible}
+      >
+        <GroupedTagPickerExample presentation="sheet" />
+      </WebModalFrame>
     </View>
   );
 }

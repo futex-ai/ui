@@ -48,12 +48,17 @@ export function webModalInitialFocusTarget(
   return callerControl ?? closeButton ?? surface;
 }
 
+/**
+ * Keeps Tab and Shift+Tab inside the modal's surface. A modal under another
+ * modal does not trap: the top modal marks the rest of the page inert, this
+ * modal included, so only the top modal moves focus.
+ */
 export function trapWebModalFocus(
   event: KeyboardEvent,
   surfaceRef: RefObject<View | null>,
 ): void {
   const surface = webModalElement(surfaceRef);
-  if (!surface) {
+  if (!surface || surface.closest("[inert]")) {
     return;
   }
   const focusable = webModalFocusableElements(surface);

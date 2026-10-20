@@ -8,6 +8,7 @@ import type { RefObject } from "react";
 import type { View } from "../primitives/reactNative";
 
 import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
+import { LIVE_REGION_ATTRIBUTE } from "../liveRegion";
 
 import type { Focusable } from "./types";
 import {
@@ -39,6 +40,8 @@ export function useWebModalFocusTrap({
   // sibling of the modal's portal root inert while the modal is open, then
   // restore each node's prior state on close. `inert` also removes the
   // background from sequential focus, reinforcing the JS focus trap below.
+  // The library's live regions stay exposed, so the modal's own status
+  // messages, such as a result count, still reach screen readers.
   //
   // This effect is declared *before* the focus-restore effect on purpose: React
   // runs cleanups in declaration order, so the background is un-inerted here
@@ -61,7 +64,9 @@ export function useWebModalFocusTrap({
     const body = document.body;
     const siblings = Array.from(body.children).filter(
       (node): node is HTMLElement =>
-        node instanceof HTMLElement && node !== root,
+        node instanceof HTMLElement &&
+        node !== root &&
+        !node.hasAttribute(LIVE_REGION_ATTRIBUTE),
     );
     const restorers = siblings.map((node) => {
       const hadInert = node.hasAttribute("inert");
@@ -127,7 +132,8 @@ export function useWebModalFocusTrap({
       // Trap on every Tab while the modal is visible — not only when focus is
       // already inside the surface — so focus that escaped to <body> (e.g. after
       // a click on the inert backdrop) is pulled back in on the next Tab. The
-      // trap helper already handles the focus-outside case.
+      // trap helper already handles the focus-outside case, and it leaves Tab
+      // to the top modal when another modal covers this one.
       if (event.key === "Tab") {
         trapWebModalFocus(event, surfaceRef);
       }

@@ -109,7 +109,9 @@ The surface is a modal dialog named by `label` (WCAG 4.1.2). Native uses
 `accessibilityViewIsModal` for focus containment and closes on the Android back
 button; web inherits the modal frame's focus trap, focus restore, and
 escape-layer dismissal, so a dropdown or combobox opened inside the sheet
-consumes Escape first and only the top-most overlay closes.
+consumes Escape first and only the top-most overlay closes. On web, a sheet
+opened from a modal traps Tab on its own, and the library's live regions stay
+exposed while the sheet is open, so a result count in the sheet is heard.
 
 ## Development
 

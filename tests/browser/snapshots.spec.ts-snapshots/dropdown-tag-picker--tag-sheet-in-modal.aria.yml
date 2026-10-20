@@ -1,0 +1,9 @@
+- dialog "Edit transaction":
+  - heading "Edit transaction" [level=1]
+  - button "Close Edit transaction"
+  - text: Tags
+  - button "More information about Tags": Tags group transactions by property, vehicle, project or anything else you track.
+  - text: /Flat 2, \d+ Brook Street L Loft conversion/
+  - button "Remove Loft conversion"
+  - button "Tags, Add tag"
+  - text: No tag created yet

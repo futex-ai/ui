@@ -1,12 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { GroupedTagPickerExample } from "./comboboxTagPickerExample";
+import {
+  GroupedTagPickerExample,
+  TagSheetInModalExample,
+} from "./comboboxTagPickerExample";
 import { StorySurface } from "./sharedExamples";
 
 /**
  * `ComboboxMultiSelect` as a grouped tag picker: groups, descriptions,
  * disabled and locked tags, one tag per group, chip marks, and a pinned
- * "Create tag" row, in the popover and in the sheet presentation.
+ * "Create tag" row, in the popover and in the sheet presentation, also when
+ * the sheet opens from a modal.
  */
 const meta = {
   title: "Dropdown/Tag picker",
@@ -52,6 +56,15 @@ export const TagSheetOpen: Story = {
         presentation="sheet"
         startOpen
       />
+    </StorySurface>
+  ),
+};
+
+export const TagSheetInModal: Story = {
+  name: "Tags in a sheet, in a modal",
+  render: () => (
+    <StorySurface>
+      <TagSheetInModalExample />
     </StorySurface>
   ),
 };

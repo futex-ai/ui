@@ -1,3 +1,4 @@
+import { LIVE_REGION_ATTRIBUTE } from "./liveRegion";
 import { AccessibilityInfo, Platform } from "./primitives/reactNative";
 
 /**
@@ -38,6 +39,8 @@ function ensureRegion(politeness: AnnouncePoliteness): HTMLElement | null {
   region.setAttribute("role", politeness === "assertive" ? "alert" : "status");
   region.setAttribute("aria-live", politeness);
   region.setAttribute("aria-atomic", "true");
+  // An open web modal leaves a marked region exposed.
+  region.setAttribute(LIVE_REGION_ATTRIBUTE, "");
   // Visually hidden but available to assistive tech.
   Object.assign(region.style, {
     border: "0",

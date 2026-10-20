@@ -49,3 +49,8 @@ offers what the sheet needs. These hold for every modal frame placement.
   the dialog.
 - `closeText` shows visible text in place of the ✕ icon, and the text names the
   close button.
+- On web, while the modal is open, the rest of the page is inert and hidden
+  from assistive tech. The library's live regions stay exposed, so status
+  messages, such as a result count, are still heard.
+- On web, when a modal opens above another modal, only the top modal keeps Tab
+  inside it.
