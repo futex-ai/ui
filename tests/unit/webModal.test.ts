@@ -108,16 +108,76 @@ test("native modal frame renders an RN Modal sheet with native a11y containment"
   assert.match(nativeSource, /onRequestClose=/);
   assert.match(nativeSource, /accessibilityViewIsModal/);
   assert.match(nativeSource, /webModalCanClose/);
-  // No DOM APIs leak into the native build, and neither native modal file
-  // reaches the web modal stack, its root, or React DOM.
+  // No DOM APIs leak into the native build, and no native modal file reaches
+  // the web modal stack, its root, or React DOM. That includes the native
+  // overlay input-owner hook, which shared overlay code imports.
   assert.doesNotMatch(nativeSource, /createPortal|document\.body/);
   for (const native of [
     nativeSource,
     readSource("../../src/modal/WebModalPortal.tsx"),
+    readSource("../../src/modal/useOverlayInputOwner.ts"),
   ]) {
     assert.doesNotMatch(
       native,
       /webModalStack|webModalRoot|useWebModalLayer|react-dom/,
+    );
+  }
+  assert.doesNotMatch(
+    readSource("../../src/modal/useOverlayInputOwner.ts"),
+    /^import /m,
+  );
+});
+
+test("overlay document listeners ignore input that a dialog above them owns", () => {
+  const webOwner = readSource("../../src/modal/useOverlayInputOwner.web.ts");
+  const nativeOwner = readSource("../../src/modal/useOverlayInputOwner.ts");
+
+  // An overlay owns input while its containing dialog, or the page outside
+  // every dialog, is the top of the web modal stack. Native always owns it.
+  assert.match(
+    webOwner,
+    /const containingLayer = useContext\(WebModalLayerContext\)/,
+  );
+  assert.match(webOwner, /\(\) => topWebModalLayer\(\) === containingLayer/);
+  assert.match(
+    nativeOwner,
+    /function ownsInput\(\): boolean \{\s*return true;/,
+  );
+  // Every overlay document listener that acts on input asks first.
+  for (const file of [
+    "dropdown/useDropdownDismiss.ts",
+    "dropdown/useDropdownSelectorNavigation.ts",
+    "dropdown/useComboboxNavigation.ts",
+    "popover/ContextMenu.web.tsx",
+    "data-grid/dataGridSelectEditors.tsx",
+  ]) {
+    const source = readSource(`../../src/${file}`);
+    assert.match(
+      source,
+      /const ownsInput = useOverlayInputOwner\(\);/,
+      `${file} reads the overlay input owner`,
+    );
+    assert.match(
+      source,
+      /=> \{\s*if \(!ownsInput\(\)\) \{\s*return;\s*\}/,
+      `${file} ignores input that it does not own`,
+    );
+  }
+  for (const file of [
+    "data-grid/dataGridEditorHooks.ts",
+    "date/useOutsideClose.ts",
+  ]) {
+    assert.match(
+      readSource(`../../src/${file}`),
+      /if \([^)]*ownsInput\(\)/,
+      `${file} acts only on input that it owns`,
+    );
+  }
+  // The hook stays internal to the library.
+  for (const entry of ["index.ts", "modal/index.ts", "dropdown/index.ts"]) {
+    assert.doesNotMatch(
+      readSource(`../../src/${entry}`),
+      /useOverlayInputOwner/,
     );
   }
 });

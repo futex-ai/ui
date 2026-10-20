@@ -9,6 +9,7 @@ import {
   hasSelectableDropdownMenuEntry,
   useDropdownSelectorNavigation,
 } from "../dropdown";
+import { useOverlayInputOwner } from "../modal/useOverlayInputOwner";
 
 import type { ContextMenuProps } from "./contextMenuModel";
 
@@ -68,12 +69,17 @@ export function ContextMenu({
   // which a wheel is not — so without this the menu would stay pinned to a
   // point whose content has moved out from under it. Capture phase because
   // scroll events do not bubble; scrolls inside the menu's own list are ignored
-  // so a long menu can still be scrolled.
+  // so a long menu can still be scrolled, and so are scrolls inside a web
+  // dialog above the menu, which owns that input.
+  const ownsInput = useOverlayInputOwner();
   useEffect(() => {
     if (!isOpen || typeof window === "undefined") {
       return;
     }
     const handleScroll = (event: Event) => {
+      if (!ownsInput()) {
+        return;
+      }
       const node = contentRef.current as unknown as {
         contains?: (other: Node) => boolean;
       } | null;
@@ -85,7 +91,7 @@ export function ContextMenu({
     };
     window.addEventListener("scroll", handleScroll, true);
     return () => window.removeEventListener("scroll", handleScroll, true);
-  }, [isOpen]);
+  }, [isOpen, ownsInput]);
 
   const handleActiveIdChange = useCallback(
     (id: string | null) => setActiveId(id),

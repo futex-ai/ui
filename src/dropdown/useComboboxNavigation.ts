@@ -1,6 +1,8 @@
 /** Keyboard state for input-backed combobox result lists. */
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { useOverlayInputOwner } from "../modal/useOverlayInputOwner";
+
 import {
   DropdownListEntry,
   dropdownListNavigationItems,
@@ -94,11 +96,17 @@ export function useComboboxNavigation({
   // them (WCAG 2.1.1 Keyboard). The listener runs first and stops propagation
   // for the keys it claims, so the `onKeyDown` in `keyProps` — which the web
   // backend does deliver, and which native needs — never handles one twice.
+  // Keys typed into a web dialog above the open list are the dialog's, so the
+  // listener handles a key only while the list owns input.
+  const ownsInput = useOverlayInputOwner();
   useEffect(() => {
     if (!open || typeof document === "undefined") {
       return;
     }
     const handleDocumentKeyDown = (event: KeyboardEvent) => {
+      if (!ownsInput()) {
+        return;
+      }
       if (handleKeyDown(event)) {
         event.stopPropagation();
       }
@@ -106,7 +114,7 @@ export function useComboboxNavigation({
     document.addEventListener("keydown", handleDocumentKeyDown, true);
     return () =>
       document.removeEventListener("keydown", handleDocumentKeyDown, true);
-  }, [handleKeyDown, open]);
+  }, [handleKeyDown, open, ownsInput]);
 
   return {
     activeId,

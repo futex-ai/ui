@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { ToastProvider, darkSharedUiTheme } from "../index";
 import { ModalFromPopoverExample } from "./modalFromPopoverExample";
+import { ModalOverOverlaysExample } from "./modalOverOverlaysExample";
 import { ModalStackExample } from "./modalStackExample";
 import {
   ConfirmModalExample,
@@ -90,6 +91,15 @@ export const DialogFromPopover: Story = {
   render: () => (
     <StorySurface>
       <ModalFromPopoverExample />
+    </StorySurface>
+  ),
+};
+
+export const DialogsOverOpenOverlays: Story = {
+  name: "Dialogs over open overlays",
+  render: () => (
+    <StorySurface>
+      <ModalOverOverlaysExample />
     </StorySurface>
   ),
 };

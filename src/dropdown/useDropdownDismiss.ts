@@ -4,6 +4,7 @@ import type { RefObject } from "react";
 import { View } from "../primitives/reactNative";
 
 import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
+import { useOverlayInputOwner } from "../modal/useOverlayInputOwner";
 
 import {
   dropdownSurfacesAbove,
@@ -29,6 +30,9 @@ type DropdownDismissOptions = {
  * the open menu registers as the top layer, so pressing Escape closes the menu —
  * even when it is opened inside a web modal — without also closing the modal
  * beneath it, which registers a layer of its own. See {@link pushEscapeLayer}.
+ *
+ * While a web dialog above the dropdown owns input, a press reads as neither
+ * inside nor outside: the dropdown stays as it is until that dialog closes.
  */
 export function useDropdownDismiss({
   anchorRef,
@@ -38,6 +42,7 @@ export function useDropdownDismiss({
 }: DropdownDismissOptions): void {
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  const ownsInput = useOverlayInputOwner();
   // A stable identity so this portal registers and unregisters the same layer.
   const dismissLayerRef = useRef<DropdownDismissLayer>({
     surface: () => surfaceRef.current as unknown as DropdownNode | null,
@@ -50,6 +55,9 @@ export function useDropdownDismiss({
     const dismissLayer = dismissLayerRef.current;
     pushDropdownDismissLayer(dismissLayer);
     const handlePointerDown = (event: Event) => {
+      if (!ownsInput()) {
+        return;
+      }
       const anchorNode = anchorRef.current as unknown as DropdownNode | null;
       const surfaceNode = surfaceRef.current as unknown as DropdownNode | null;
       // A menu opened inside this surface renders in its own sibling portal, so
@@ -74,5 +82,5 @@ export function useDropdownDismiss({
       removeEscapeLayer(layer);
       removeDropdownDismissLayer(dismissLayer);
     };
-  }, [anchorRef, open, surfaceRef]);
+  }, [anchorRef, open, ownsInput, surfaceRef]);
 }

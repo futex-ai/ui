@@ -154,6 +154,8 @@ npm run test:browser
   dialog.
 - `useWebModalLayer.ts` - connects frame visibility and parent-dialog context
   to the stack.
+- `useOverlayInputOwner.web.ts` - lets an overlay's document listeners ignore
+  input while a dialog above the overlay owns it. The native file is a no-op.
 - `../liveOverlay.ts` - owns the live-overlay marker shared by the stack,
   toast viewport, and announcer.
 - `webModalFrameStyles.ts` - theme-driven web style factory.

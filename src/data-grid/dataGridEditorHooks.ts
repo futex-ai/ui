@@ -1,6 +1,7 @@
 /** Shared props + hooks for the in-cell editors. */
 import { type RefObject, useEffect, useRef } from "react";
 
+import { useOverlayInputOwner } from "../modal/useOverlayInputOwner";
 import type { SharedUiTheme } from "../theme";
 
 import type { DataGridCellValue, DataGridColumn } from "./types";
@@ -44,19 +45,23 @@ export function useEditorAutofocus<T>(inputRef: RefObject<T | null>) {
   return () => Date.now() - mountAtRef.current >= 250;
 }
 
-/** Cancel the editor on Escape via a document listener (field keys do not bubble). */
+/**
+ * Cancel the editor on Escape via a document listener (field keys do not
+ * bubble). An Escape meant for a web dialog above the grid leaves the edit be.
+ */
 export function useEscapeKey(onCancel: () => void) {
+  const ownsInput = useOverlayInputOwner();
   useEffect(() => {
     if (typeof document === "undefined") {
       return;
     }
     const handler = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && ownsInput()) {
         event.preventDefault();
         onCancel();
       }
     };
     document.addEventListener("keydown", handler, true);
     return () => document.removeEventListener("keydown", handler, true);
-  }, [onCancel]);
+  }, [onCancel, ownsInput]);
 }
