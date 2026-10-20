@@ -1,5 +1,11 @@
 /** Pure row helpers for dropdown lists. */
-import type { DropdownListEntry, DropdownListRole } from "./DropdownList";
+import type { ReactNode } from "react";
+
+import type {
+  DropdownListEntry,
+  DropdownListRole,
+  DropdownRowSlot,
+} from "./DropdownList";
 import type { DropdownNavigationItem } from "./dropdownNavigation";
 
 export function dropdownListNavigationItems(
@@ -126,4 +132,18 @@ export function dropdownListContainerA11y({
     nativeID: listId,
     role: listRole,
   } as unknown as object;
+}
+
+/**
+ * Resolves a slot against the content color of the row or chip that draws
+ * it. A plain node passes through untouched (the caller owns its color); a
+ * render function receives the color so its glyph tracks the active row's
+ * inversion or the chip's tone. `ReactNode` excludes functions, so the
+ * `typeof` check discriminates the union safely.
+ */
+export function renderDropdownSlot(
+  slot: DropdownRowSlot,
+  color: string,
+): ReactNode {
+  return typeof slot === "function" ? slot({ color }) : slot;
 }

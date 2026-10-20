@@ -226,3 +226,51 @@ test(
     );
   },
 );
+
+test(
+  "a chip slot draws in the chip's text color and replaces the icon",
+  { skip: !testBuilt },
+  async () => {
+    const { ComboboxMultiSelect, SharedUiThemeProvider, defaultSharedUiTheme } =
+      await loadBuiltUi();
+    const { colors } = defaultSharedUiTheme;
+    const mark = ({ color }: { color: string }) =>
+      createElement("span", { "data-chip-mark": color }, "M");
+    const markup = renderToStaticMarkup(
+      createElement(
+        SharedUiThemeProvider,
+        null,
+        createElement(ComboboxMultiSelect, {
+          onChange: () => undefined,
+          options: [
+            {
+              chipLeading: mark,
+              icon: House,
+              label: "Loft conversion",
+              value: "loft",
+            },
+            {
+              chipLeading: mark,
+              chipTone: "muted",
+              label: "Old project",
+              value: "old",
+            },
+            {
+              chipLeading: createElement("span", { "data-chip-node": "kept" }),
+              label: "Node project",
+              value: "node",
+            },
+          ],
+          values: ["loft", "old", "node"],
+        }),
+      ),
+    );
+    const marks = [...markup.matchAll(/data-chip-mark="([^"]+)"/g)].map(
+      (match) => match[1],
+    );
+    assert.deepEqual(marks, [colors.primaryDeep, colors.ink2]);
+    assert.match(markup, /data-chip-node="kept"/);
+    // The slot takes the icon's place in the chip.
+    assert.doesNotMatch(markup, /data-icon="house"/);
+  },
+);

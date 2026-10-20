@@ -1,6 +1,7 @@
 /** The chips and leading marks that `ComboboxMultiSelect` draws per option. */
 import { Pressable, Text, View } from "../primitives/reactNative";
 
+import { renderDropdownSlot } from "./dropdownListModel";
 import type { ComboboxMultiSelectStyles } from "./comboboxMultiSelectStyles";
 import type {
   ComboboxChipTone,
@@ -56,7 +57,9 @@ export function ComboboxChips({
               },
             ]}
           >
-            {Icon ? (
+            {option.chipLeading !== undefined ? (
+              renderDropdownSlot(option.chipLeading, colors.color)
+            ) : Icon ? (
               <Icon aria-hidden color={colors.color} size={iconSize} />
             ) : null}
             <Text

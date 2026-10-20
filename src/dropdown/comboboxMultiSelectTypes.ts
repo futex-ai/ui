@@ -4,6 +4,7 @@ import type { IconComponent } from "../primitives/icons";
 import type { ControlSize } from "../controlSize";
 import type { FocusIndicator } from "../focusRing";
 
+import type { DropdownRowSlot } from "./DropdownList";
 import type { DropdownHighlightVariant } from "./dropdownHighlightVariant";
 
 /**
@@ -14,6 +15,13 @@ import type { DropdownHighlightVariant } from "./dropdownHighlightVariant";
 export type ComboboxChipTone = "default" | "muted";
 
 export type ComboboxMultiSelectOption = {
+  /**
+   * Content drawn at the start of the option's chip, in place of its `icon`,
+   * such as a short text mark. A render function gets the chip's text color,
+   * so the content matches the chip label on each tone. The option row keeps
+   * its own mark.
+   */
+  chipLeading?: DropdownRowSlot;
   /** Chip appearance for this option. Defaults to `"default"`. */
   chipTone?: ComboboxChipTone;
   /** Fill of the option's leading mark. Defaults to the theme `primary`. */

@@ -40,6 +40,7 @@ const tagOptions: ComboboxMultiSelectOption[] = [
     value: "skoda",
   },
   {
+    chipLeading: ({ color }) => <ChipMark color={color} letter="L" />,
     chipTone: "muted",
     description: "Archived",
     group: "Projects",
@@ -47,12 +48,18 @@ const tagOptions: ComboboxMultiSelectOption[] = [
     value: "loft",
   },
   {
+    chipLeading: ({ color }) => <ChipMark color={color} letter="W" />,
     description: "Consultancy trade",
     group: "Projects",
     label: "Website rebuild",
     value: "website",
   },
 ];
+
+/** A project tag's text mark, drawn in the chip's text color. */
+function ChipMark({ color, letter }: { color: string; letter: string }) {
+  return <Text style={[styles.chipMark, { color }]}>{letter}</Text>;
+}
 
 /**
  * A transaction's Tags field: one tag per group, the posted property locked,
@@ -104,6 +111,7 @@ export function GroupedTagPickerExample({
 }
 
 const styles = StyleSheet.create({
+  chipMark: { fontSize: 11, fontWeight: "800", lineHeight: 16 },
   example: { gap: 14, minWidth: 320 },
   status: { fontSize: 12, lineHeight: 18 },
 });

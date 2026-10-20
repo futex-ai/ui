@@ -25,6 +25,7 @@ import {
   dropdownListContainerA11y,
   dropdownListSegments,
   dropdownRowDomId,
+  renderDropdownSlot,
 } from "./dropdownListModel";
 import { useDropdownListNavigation } from "./useDropdownListNavigation";
 
@@ -345,7 +346,7 @@ function DropdownRow({
       ) : null}
       {entry.leading ? (
         <View style={styles.leading}>
-          {renderRowSlot(entry.leading, highlight.contentColor)}
+          {renderDropdownSlot(entry.leading, highlight.contentColor)}
         </View>
       ) : null}
       <View style={styles.itemText}>
@@ -366,7 +367,7 @@ function DropdownRow({
       </View>
       {entry.right ? (
         <View style={styles.right}>
-          {renderRowSlot(entry.right, highlight.contentColor)}
+          {renderDropdownSlot(entry.right, highlight.contentColor)}
         </View>
       ) : entry.rightText ? (
         <View style={styles.right}>
@@ -379,16 +380,6 @@ function DropdownRow({
       ) : null}
     </Pressable>
   );
-}
-
-/**
- * Resolves a row slot against the row's content color. A plain node passes
- * through untouched (the caller owns its color); a render function receives the
- * color so its glyph tracks the active row's inversion. `ReactNode` excludes
- * functions, so the `typeof` check discriminates the union safely.
- */
-function renderRowSlot(slot: DropdownRowSlot, color: string): ReactNode {
-  return typeof slot === "function" ? slot({ color }) : slot;
 }
 
 export function DropdownIconBox({
