@@ -3,8 +3,9 @@
 Status: Active. Milestones 1 to 6 are delivered on branch
 `calummoore/dragselectableprovider-improvements`. Milestone 7 has run the
 smoke test, the complete gate, and the review. Milestone 8 fixed the first
-review's findings, and Milestone 9 fixes the second review's findings, R9 to
-R11. Open before merge: the user's manual check of macOS overlay scrollbars.
+review's findings, and Milestone 9 fixed the second review's findings, R9 to
+R11. Open before merge: the user's decisions on the third review's findings,
+R12 to R14, and the user's manual check of macOS overlay scrollbars.
 No PR is open yet. The plan closes when its PR merges.
 
 [`DragSelectableProvider`](../src/drag-select/README.md) was built to wrap one
@@ -764,10 +765,19 @@ that the user chose on 2026-10-20. Each fix starts with a failing test.
 - [x] Record the snapshot baselines of the changed and new stories.
 - [x] Run `cargo xtask check`: passed
       (`.context/drag-select-options/logs/gate-3.log`).
-- [ ] Run `git add -A`, commit with Conventional Commits, and push.
-- [ ] Run `cargo xtask review` after the push. Report its findings without
+- [x] Run `git add -A`, commit with Conventional Commits, and push:
+      `1da6352`.
+- [x] Run `cargo xtask review` after the push. Report its findings without
       fixing them, as `AGENTS.md` requires, and add each open finding as one
-      line below.
+      line below. Ran on 2026-10-20 against `1da6352`. None of R9 to R11 came
+      back. R12 and R13 reproduce in Chrome. Report:
+      `.context/drag-select-options/review-impl-4.md`.
+  - R12. Presses inside a portal start page drags. Severity Medium, effort
+    Small. Recommended: A, refuse a press outside the provider element.
+  - R13. A restored layer hides a selection change. Severity Medium, effort
+    Small. Recommended: A, only a newer layer starts a page selection.
+  - R14. Docs say an ignored press never starts. Severity Low, effort Small.
+    Recommended: A, say that `shouldStartDrag` can override the default.
 
 Evidence: `.context/drag-select-options/m9-evidence.md`.
 
