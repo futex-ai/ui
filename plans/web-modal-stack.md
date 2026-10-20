@@ -366,8 +366,10 @@ Own commit, so it can be dropped on its own.
 
 ## Milestone 5: Verification, commit, and review
 
-- [ ] Run `npm run verify` and `cargo xtask check`.
-- [ ] Commit with Conventional Commits and push the branch.
+- [x] Run `npm run verify` and `cargo xtask check`. One `cargo xtask check`
+      run covers both, because it runs `npm run verify`. The log is
+      `gate-1.log`.
+- [x] Commit with Conventional Commits and push the branch.
 - [ ] Run `cargo xtask review`, and review the complete local diff against
       `origin/main` with the `implementation-review` skill after the push.
       Report the findings, then apply the review-fix rule: fix the
