@@ -14,11 +14,14 @@ takes at most one tag from each caller-defined group. The rules for the rows of
 the option list are in [dropdown-list.md](dropdown-list.md). The rules for the
 bottom sheet are in [sheet.md](sheet.md).
 
-## Compatibility
+## Defaults
 
 - Every grouped tag-picker prop is optional.
-- A caller that passes none of them sees the same rows, chips, keyboard
-  behaviour, and accessibility tree as before these props.
+- Without them, the list has no section headings, no descriptions, and no
+  pinned row, and every chip has a remove button.
+- Without `presentation`, the list opens in the popover.
+- The keyboard rules of the list are in
+  [dropdown-list.md](dropdown-list.md#keyboard).
 - `footer` is a static note on the last line of the scrolling list, after the
   empty state. It is not selectable.
 
@@ -49,6 +52,11 @@ bottom sheet are in [sheet.md](sheet.md).
 - A value that matches no option shows no chip.
 - A locked value's chip has no remove button.
 - A locked value's row shows as selected and cannot change.
+- Decision: a locked value's row is disabled. This is an exception to the
+  [Dropdown Contract](shared-ui-components.md#dropdown-contract) rule that
+  checked rows stay enabled as removal toggles. Rejected: an enabled row that
+  ignores presses. Reason: a disabled row tells assistive tech that the row
+  cannot change.
 - Any other selected value can be removed from its chip and from its row, also
   when its option is `disabled`.
 - An unselected option can be chosen unless it is `disabled`, or unless
@@ -107,22 +115,33 @@ bottom sheet are in [sheet.md](sheet.md).
 - Decision: the caller picks the presentation. Rejected: switch to the sheet by
   screen width inside the component. Reason: the caller knows its layout, and
   a fixed default keeps current callers unchanged.
+- Decision: on web, the sheet is a modal dialog. This is an exception to the
+  [Dropdown Contract](shared-ui-components.md#dropdown-contract) rule that
+  input-backed comboboxes stay on a non-modal web portal. Rejected: a
+  non-modal sheet. Reason: the sheet covers the page, so the page behind it
+  must not take focus or be read.
 
 ## Accessibility
 
 - On web, each search input is a combobox that refers to its list and to the
   active option.
 - An explicit `accessibilityLabel` names both search inputs.
-- Without it, the field's search input takes its name from the visible label.
+- On web and Android, without it, the field's search input takes its name from
+  the visible label.
+- On iOS, only `accessibilityLabel` names the field's search input.
 - Without it, the sheet's search input takes the label text, else the
   placeholder.
 - Decision: `accessibilityLabel` names the sheet's search input too. Rejected:
   the label first. Reason: callers set `accessibilityLabel` to override the
   name, and the override must hold in both presentations.
-- Each search input is described by the error, then the hint.
+- On web, each search input is described by the error, then the hint.
+- On native, the hint of each search input is the error when there is one,
+  else the hint.
 - On web, each search input reports `invalid` and `required`.
-- The sheet button reports that it opens a dialog and whether the dialog is
-  open. The error and the hint describe it.
+- On web, the sheet button reports that it opens a dialog and whether the
+  dialog is open. The error and the hint describe it.
+- On native, the sheet button reports whether the sheet is open. Its hint is
+  the error when there is one, else the hint.
 - A row that cannot change reports as disabled. A locked row also reports as
   selected.
 - A chip's remove button is named "Remove {label}".

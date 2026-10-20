@@ -531,8 +531,10 @@ Escape on web, also close it. On web, the search input takes focus when the
 sheet opens, and focus returns to the field's button when it closes. Only keys
 pressed in the sheet's search input drive the list, so Enter on Done or on a
 chip's remove button works as usual. An `accessibilityLabel` names the sheet's
-search input as well as the field's, and the field's `error` and `hint`
-describe both. On native, the sheet's search input is a `SheetTextInput`, so
+search input as well as the field's. On web, the field's `error` and `hint`
+describe both search inputs and the sheet button. On native, the hint of each
+is the `error` when there is one, else the `hint`. The sheet's search input is
+a `SheetTextInput` on native, so
 the sheet stays above the keyboard while you type, and one tap chooses a row
 even while the keyboard is open. The caller picks the presentation, for example
 by viewport width; the default is the anchored `popover`.

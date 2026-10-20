@@ -88,7 +88,11 @@ export type ComboboxMultiSelectFieldProps = {
    * honoured (e.g. iOS, which does not map it). Mirrors `Input`.
    */
   accessibilityLabel?: string;
-  /** Focus the search input when the control mounts. */
+  /**
+   * Focus the field's search input when the control mounts. With
+   * `presentation="sheet"` the field has no search input, so the sheet
+   * button takes focus instead, and the sheet stays closed.
+   */
   autoFocus?: boolean;
   /**
    * Corner radius (px) of the control box. Defaults to `theme.radii.md`; pass

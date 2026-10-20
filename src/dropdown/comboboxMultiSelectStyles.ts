@@ -7,7 +7,8 @@ import type { SharedUiTheme } from "../theme";
 
 /**
  * Layout for the field, its chips, and the sheet trigger. Chip colors come
- * from the chip palette in `ComboboxMultiSelect.tsx`, keyed by `chipTone`.
+ * from `comboboxChipPalette` in `ComboboxOptionParts.tsx`, keyed by
+ * `chipTone`.
  */
 export function createComboboxMultiSelectStyles(
   theme: SharedUiTheme,
