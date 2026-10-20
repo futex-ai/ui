@@ -33,6 +33,9 @@ screen.
   consent banner — so a confirmation or error stays visible. On native the
   overlay can still sit beneath a platform `Modal` (which renders in its own
   window); show critical confirmations before opening such a modal.
+- Keep the web toast region operable while a dialog is open. Its live-region
+  messages remain announced under the
+  [live-overlay contract](../../docs/protocol/web-overlays.md#live-overlays).
 
 ## What This Component Does
 
@@ -166,5 +169,6 @@ npm run test:browser
 
 ### Related Docs
 
+- Live overlays: [Web overlays protocol](../../docs/protocol/web-overlays.md#live-overlays).
 - Modal boundary: `src/modal/README.md`.
 - Shared component protocol: `docs/protocol/shared-ui-components.md`.

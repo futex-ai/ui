@@ -3,8 +3,8 @@
 Reusable modal chrome for Firna apps, rendered as a centered dialog or a bottom
 sheet. It is cross-platform via the file-resolution seam:
 
-- **React Native Web** — `WebModalFrame.web.tsx` renders through a `document.body`
-  portal with a JS focus trap and the shared escape-layer stack.
+- **Web** — dialogs share one overlay root under `document.body` and one modal
+  stack for focus, background content, and page scroll.
 - **Native iOS/Android** — `WebModalFrame.tsx` renders through a React Native
   `Modal` overlay. `placement="bottom-sheet"` uses `@gorhom/bottom-sheet` for a
   gesture-driven native sheet (drag/flick to dismiss, spring motion, a backdrop
@@ -26,45 +26,48 @@ though it is now cross-platform.
 
 ## Responsibilities
 
-- Render web dialogs through a `document.body` portal so they escape React
-  Native Web stacking contexts.
+- Render web dialogs inside one shared overlay root so they escape page
+  stacking contexts.
+- Keep only the top dialog live. The page and lower dialogs stay inert and
+  hidden from assistive technology while covered by an open dialog.
+- Keep nested dialogs in tree order when they open together. A child dialog
+  stays above its parent, and later siblings stay above earlier siblings.
+- Move focus into the top dialog and keep Tab inside it. Restore focus to its
+  opener on close, or to the dialog beneath when the opener is unavailable.
+  Closing a lower dialog does not move focus.
+- Lock page scroll until the last dialog closes without shifting the layout.
+- Keep the toast region operable and its messages announced while dialogs are
+  open.
 - Provide consistent backdrop, title/subtitle, close control, scrollable body,
   footer actions, size variants, and busy/non-dismissible close policy.
 - Honour `scroll={false}` on native bottom sheets with a static body, so nested
   controls such as date-wheel columns own their scrolling gestures.
 - Support a centered dialog (`placement="center"`, the default) or a bottom
   sheet (`placement="bottom-sheet"`) pinned full-width to the viewport bottom.
-- Keep web focus behavior in one place: on open, focus enters the first control
-  the caller rendered — the form field, or the footer's action button when the
-  body holds nothing focusable — never the close button, which is skipped
-  despite coming first in DOM order. Tab stays inside the modal (the trap
-  re-engages on every Tab, so focus that escapes to `<body>` is pulled back in),
-  and focus returns to the previously focused element on close. Because the trap
-  is a cycle, starting on the caller's first control puts the close button last
-  on the way round: `field → … → action → close → field`.
-- Expose correct dialog semantics: the surface is a `role="dialog"` with
-  `aria-modal` and is named by its title via `aria-labelledby` (the title is a
-  `role="heading"`). Background page content is made `inert`/`aria-hidden` while
-  the modal is open and restored on close, since RNW does not emit `inert` for
-  `accessibilityViewIsModal`. The backdrop is a mouse-only dismiss target hidden
-  from assistive tech and the tab order (Escape is the accessible close path).
-  The close button shows a focus-visible ring on keyboard focus.
-- Keep web close behavior explicit: Escape, backdrop press, close button, and
-  request-close all use the same policy. Escape is routed through the shared
-  escape-layer stack (`src/escapeLayer.ts`), so a dropdown, popover, or nested
-  modal opened above this surface consumes Escape first and only the top-most
-  overlay closes. While a modal is open the stack consumes Escape (the host
-  app's own document/window Escape handlers will not fire); an open overlay owns
-  Escape.
+- Expose named dialog semantics and a labelled close control. Keep the backdrop
+  out of the tab order and the accessibility tree.
+  On web, the close button shows a focus-visible ring according to the theme's
+  `focusIndicator`, overridable with the frame's `focusIndicator` prop.
+- Apply close policy to Escape, backdrop presses, the close button, and close
+  requests. Route Escape to the topmost overlay only, including dropdowns and
+  popovers opened inside the top dialog.
 - Define modal layer tokens so nested dropdowns and comboboxes render above
   modal content while ordinary page content stays underneath the modal.
 
+The [web overlays protocol](../../docs/protocol/web-overlays.md) defines the
+focus, background-content, and layering rules.
+
 ## What This Component Does
 
-`WebModalFrame` is the public frame. The web build (`WebModalFrame.web.tsx`)
-renders through `WebModalPortal.web.tsx` (`react-dom` `createPortal`); the native
-build (`WebModalFrame.tsx`) renders through a React Native `Modal`. Metro/`tsc`
-platform resolution picks the right file, and both honour the same props.
+`WebModalFrame` is the public frame. On web, it renders directly into the shared
+overlay root and joins the internal modal stack. The public `WebModalPortal`
+stays a separate `document.body` portal. Its content follows page-content rules
+and does not join the dialog stack.
+
+On native, the frame renders through a React Native `Modal`. Platform
+resolution selects the implementation, and both platforms share the same props.
+On iOS, a second native dialog must render inside the first dialog's content.
+iOS presents one sibling modal at a time.
 
 Use it for confirmation dialogs, form dialogs, and content-heavy dialogs, plus
 bottom sheets on mobile (`placement="bottom-sheet"`). Do not use it for anchored
@@ -91,9 +94,10 @@ Use `dismissible={false}` when Escape/backdrop should not close the modal, and
 a bottom-pinned mobile-web sheet.
 
 Pass `initialFocusRef` (web-only) to override where focus lands on open. Reach
-for it when the default — the first focusable control in DOM order — is the
-wrong landing spot, most often on a destructive confirmation, where focus should
-start on the safe action:
+for it when the first focusable caller control is the wrong landing spot, such
+as a destructive confirmation where focus should start on the safe action.
+Without a focusable caller control, focus falls back to the close button, then
+the dialog surface.
 
 ```tsx
 const cancelRef = useRef<View | null>(null);
@@ -137,10 +141,22 @@ npm run test:browser
 
 ### Key Code
 
-- `WebModalFrame.web.tsx` - web modal frame and focus/close behavior.
+- `WebModalFrame.web.tsx` - web dialog presentation and stack integration.
 - `WebModalFrame.tsx` - native RN `Modal` frame (sheet + dialog).
+- `webModalStackModel.ts` - pure stack order, opener inheritance, focus-return,
+  background-membership, and page-lock rules.
+- `webModalStack.ts` - applies the stack to the DOM, including background
+  state, focus return, the shared Tab trap, and page scroll lock.
+- `webModalRoot.ts` - provides the shared overlay root under `document.body`.
+- `webModalFocusTrap.ts` - selects initial focus and cycles Tab within the top
+  dialog.
+- `useWebModalLayer.ts` - connects frame visibility and parent-dialog context
+  to the stack.
+- `../liveOverlay.ts` - owns the live-overlay marker shared by the stack,
+  toast viewport, and announcer.
 - `webModalFrameStyles.ts` - theme-driven web style factory.
-- `WebModalPortal.web.tsx` - DOM portal boundary.
+- `WebModalPortal.web.tsx` - public `document.body` portal for content outside
+  the dialog stack.
 - `WebModalPortal.tsx` - native-safe portal fallback (the native frame uses an RN `Modal`, not a portal).
 - `modalLayers.ts` - shared z-index contract (web).
 - `types.ts` - shared cross-platform prop contract.
@@ -148,5 +164,7 @@ npm run test:browser
 
 ### Related Docs
 
-- Plan: `plans/shared-dropdown-modal-library.md`.
-- Dropdown boundary: `src/dropdown/README.md`.
+- [Web overlays protocol](../../docs/protocol/web-overlays.md).
+- [Web modal stack plan](../../plans/web-modal-stack.md).
+- [Shared dropdown and modal library plan](../../plans/shared-dropdown-modal-library.md).
+- [Dropdown boundary](../dropdown/README.md).

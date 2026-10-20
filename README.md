@@ -39,6 +39,9 @@ Shared UI component library for Firna React Native and web surfaces. The first c
   own measured size so it flips above its trigger rather than being clipped,
   with content-sized selector menus and z-index escape hatches, plus
   touch-friendly native date sheets.
+- Stacked web dialogs with focus control for the top dialog, ordered focus
+  return, a page scroll lock, and live toast feedback, plus native dialogs and
+  bottom sheets.
 - Platform files shared by Expo, React Native, and the library's own DOM
   backend on web.
 - Focused unit tests, browser interaction tests, and package export checks.
@@ -86,7 +89,8 @@ The package name is `@firna/ui`. Public exports are available from:
   interchangeable indeterminate shapes (`ring`, `dot-grid`, `dots`, `bars`,
   `blades`, `pulse`), plus `ProgressBar` and `ProgressRing` for work whose total
   is known.
-- `@firna/ui/modal` for web modal frame, portal, model, and layer helpers.
+- `@firna/ui/modal` for the shared dialog frame with automatic web stacking
+  and native modal presentation, plus the public portal, model, and layer helpers.
 - `@firna/ui/popover` for generic anchored popovers.
 - `@firna/ui/radio` for themed titled radio-option cards.
 - `@firna/ui/rich-text` for the Notion-style block editor with markdown in/out,
@@ -660,6 +664,8 @@ The package export map intentionally separates runtime targets:
 - Repository automation: [xtask/README.md](xtask/README.md)
 - Shared component protocol:
   [docs/protocol/shared-ui-components.md](docs/protocol/shared-ui-components.md)
+- Web overlays protocol:
+  [docs/protocol/web-overlays.md](docs/protocol/web-overlays.md)
 - Rich-text collaboration protocol:
   [docs/protocol/rich-text-collaboration.md](docs/protocol/rich-text-collaboration.md)
 - Consumer migration handoff: [docs/consumer-migration.md](docs/consumer-migration.md)

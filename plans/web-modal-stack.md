@@ -196,21 +196,23 @@ before the code changes. The parent doc passes the length target, so the
 touched contracts move to a new linked page.
 
 - [x] Add `.context/` to `.gitignore`.
-- [ ] Create `docs/protocol/web-overlays.md`. Move the Modal Contract and the
+- [x] Create `docs/protocol/web-overlays.md`. Move the Modal Contract and the
       Layering Contract there from `shared-ui-components.md`. Add the
       requirements under "Behaviour at the boundary" above, each with its
       decision in force and the rejected alternative. Keep the page under
       250 lines.
-- [ ] In `docs/protocol/shared-ui-components.md`, replace the moved sections
+- [x] In `docs/protocol/shared-ui-components.md`, replace the moved sections
       with links to the new page. Add one sentence to the Toast Contract that
       links the live-overlay requirement.
-- [ ] Update `src/modal/README.md`: the stack in Responsibilities, the new
+- [x] Update `src/modal/README.md`: the stack in Responsibilities, the new
       modules under Key Code, the native sibling-modal note, and the new
       protocol page under Related Docs.
-- [ ] Update `src/toast/README.md`: the region stays live under dialogs.
-- [ ] Update the root `README.md`: the modal feature bullet, the
+- [x] Update `src/toast/README.md`: the region stays live under dialogs.
+- [x] Update the root `README.md`: the modal feature bullet, the
       `@firna/ui/modal` line, and the protocol doc list.
-- [ ] Run `npx prettier --check` on the changed Markdown.
+- [x] Correct the stale native note in `docs/consumer-migration.md`, which
+      still called `WebModalFrame` web-only.
+- [x] Run `npx prettier --check` on the changed Markdown.
 
 ## Milestone 2: Stack model, root, and focus-trap modules
 
