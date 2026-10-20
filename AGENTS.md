@@ -4,30 +4,15 @@
 apps. It is published to npm. Each component family has a directory under
 `src/`. The platform seam is in `src/primitives`, and the Storybook stories are
 in `src/stories`. Tests are in `tests/unit` and `tests/browser`. The specs are
-in `docs/protocol`, the mockups are in `docs/mockups`, and the plans are in
-`plans/`. The Rust crate `xtask/` is the task runner.
+in `docs/protocol`, and the plans are in `plans/`. The Rust crate `xtask/` is
+the task runner.
 
 This file holds the rules that are specific to this repository. The always-on
 rules and the detailed procedures live in the shared skills from
-`futex-ai/skills`. Read the skill at the named moment instead of guessing the
-rule. Keep this file to repository-wide rules. Put a rule for one component,
-crate, or feature in the `README.md`, doc, or protocol doc next to that code.
-
-## Shared skills
-
-- `finish-work`: before you say work is complete, and before you commit.
-- `plans`: before you create, edit, or tick a plan under `plans/`.
-- `implementation-review`: after you push, before you run or apply a review.
-- `deterministic-tests`: when a test flakes, or when a test would assert
-  elapsed time.
-- `git-commit`: before and after you commit, and when you open a pull request.
-- `git-merge`: before you merge or rebase, and after each merge commit.
-- `documentation`: before you edit a `README.md`, a doc, or a protocol doc, and
-  when a change or a review option conflicts with a protocol doc.
-- `rust`: before you edit Rust. The only Rust crate is `xtask/`.
-- `mockups`: before you create or change a mockup under `docs/mockups`.
-- `product-ui`: before you implement or change a component, a story, or
-  user-facing copy.
+`futex-ai/skills`. Each skill's description says when to read it. Read the
+skill at that moment instead of guessing the rule. Keep this file to
+repository-wide rules. Put a rule for one component, crate, or feature in the
+`README.md`, doc, or protocol doc next to that code.
 
 ## Communication
 
@@ -39,10 +24,11 @@ crate, or feature in the `README.md`, doc, or protocol doc next to that code.
   earlier messages, the diff, or the plan.
 - Report outcomes faithfully. Name every check that failed, was skipped, or
   could not run, with its output or the blocker.
-- Ask for all decisions in one numbered message. For each decision give its
-  severity and effort, the context, the impact if no action is taken, lettered
-  options, and a recommended option. Do the independent work first, then stop
-  and wait.
+- Ask for all decisions in one numbered message. List decisions and review
+  findings by severity, highest first. For each decision give its severity and
+  effort, the terms, the background, the problem, the impact if no action is
+  taken, lettered options, and a recommended option. Do the independent work
+  first, then stop and wait.
 - End every task with a final report: what changed and the commit, each
   decision and its outcome, the checks that ran, anything skipped, and the
   outstanding decisions or review items that still need the user.
@@ -55,9 +41,10 @@ crate, or feature in the `README.md`, doc, or protocol doc next to that code.
 - Targeted tests: `node --import tsx --test tests/unit/<name>.test.ts` runs one
   unit test file. `npx playwright test tests/browser/<name>.spec.ts` runs one
   browser spec. Playwright starts Storybook itself.
-- Early check: `npm run format:check`, `npm run typecheck`, and
-  `npm run typecheck:web`. After a change under `xtask/`, also run
-  `cargo fmt --all -- --check`,
+- Typecheck: `npm run typecheck` checks the native files, and
+  `npm run typecheck:web` checks the `.web` files.
+- Early check: `npm run format:check`. The repository has no lint yet. After a
+  change under `xtask/`, also run `cargo fmt --all -- --check`,
   `cargo clippy --workspace --all-targets -- -D warnings`, and
   `cargo test --workspace`.
 - Complete gate: `cargo xtask check`. It runs `npm run verify`: the format
@@ -68,16 +55,28 @@ crate, or feature in the `README.md`, doc, or protocol doc next to that code.
 
 ## Repository rules
 
-- Each Storybook story has two baselines in
-  `tests/browser/snapshots.spec.ts-snapshots/`: a screenshot and an ARIA
-  snapshot. Record the screenshots on Linux only, with
-  `npx playwright test snapshots --update-snapshots`. Commit the baselines with
-  the story. A story that cannot be pinned, for example one with an empty
-  accessibility tree, gets an entry with a one-line reason in
-  `tests/browser/snapshotOptOuts.ts` instead. That file is the only place to
-  declare an opt-out. The root `README.md` gives the details.
-- The mockups under `docs/mockups/` are hand-written HTML files. Edit them
-  directly. There is no mockup generator and no mockup check command.
+- Unit tests use the Node test runner through `tsx`, in
+  `tests/unit/*.test.ts`. Browser tests use Playwright, in
+  `tests/browser/*.spec.ts`.
+- The public entry points are the files that the `exports` map in
+  `package.json` names, for example `src/button/index.ts`.
+- Product code warns only through `devWarn` in `src/devWarn.ts`. It writes in
+  development builds only. The library has no logger and no error tracking.
+- The story snapshot sweep pins a screenshot and an ARIA snapshot of each
+  Storybook story in `tests/browser/snapshots.spec.ts-snapshots/`. Record the
+  screenshots on Linux only, with
+  `npx playwright test snapshots --update-snapshots`, and commit the baselines
+  with the story.
+- When a story cannot have a stable baseline, add an entry with a one-line
+  reason and a `scope` to `tests/browser/snapshotOptOuts.ts`. That file is the
+  only place to declare an opt-out. The scope `aria` or `screenshot` skips that
+  one baseline, and `story` skips both. Commit each baseline that the entry
+  does not skip. The root `README.md` gives the details.
+- This library has no mockup requirement. The `mockups` skill and the mockup
+  milestones of the `plans` skill do not apply here, and the library has no
+  Mokly catalogue. The Storybook story of a component is its visual spec. The
+  three hand-written HTML files under `docs/mockups/` are older design
+  references.
 
 ## Product
 
@@ -121,19 +120,16 @@ crate, or feature in the `README.md`, doc, or protocol doc next to that code.
 
 ## Rules from another repository
 
-The previous `AGENTS.md` had these rules. This repository does not have the
-paths and commands that they name. They stay here until the user decides to
-keep or drop them.
+The previous `AGENTS.md` had these rules for another repository. This
+repository has no `ts/app` directory, no `crates/` directory, no database
+migrations, and no `docs/dev/` directory. Its `cargo xtask` has only `check`,
+which runs `npm run verify`, and `review`. The rules stay here until the user
+decides to keep or drop them.
 
 - Native product screens, logged-in web product screens, and logged-out web
   marketing routes belong in the Expo app under `ts/app`. Marketing routes stay
   hidden from native mobile navigation. Before you build UI under `ts/app`,
   check `ts/app/src/components`.
-- Migrated mockup HTML under `docs/mockups/` is generated from `.source.tsx`
-  page modules in `docs/mockups/src/pages/` and components in
-  `docs/mockups/src/components/`. After a change there, run
-  `npm run mockups:build`, `mockups:check`, `mockups:test`, and
-  `mockups:typecheck`.
 - `cargo xtask rust-file-length-lint --all` checks the 300-line cap on Rust
   files under `crates/` and `xtask/`.
 - `docs/dev/rust/architecture/dependencies.md` describes how to add
