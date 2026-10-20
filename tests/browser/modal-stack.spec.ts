@@ -4,9 +4,11 @@ import {
   BACKGROUND,
   LIVE,
   LIVE_REGIONS,
+  announceFromPage,
   backdropCounts,
   expectHiding,
   openAtMount,
+  openDialogFromPopover,
   openInTurn,
   ownsItsCentre,
   paintsAbove,
@@ -18,11 +20,14 @@ import {
 /**
  * Stacked web dialogs, on the "Stacked web modals" and "Stacked at mount"
  * stories: an account settings dialog renders a delete confirmation inside its
- * own content, and raises toasts. The tests pin the web overlays protocol
+ * own content and raises toasts, and the page announces through the shared
+ * announcer. The "Dialog from a popover" story opens a dialog from a popover
+ * action, so the dialog's opener is the trigger that the popover returns focus
+ * to as it closes. The tests pin the web overlays protocol
  * (`docs/protocol/web-overlays.md`): one shared overlay root in stack order, a
  * live top dialog over an inert page and inert lower dialogs, Tab and Escape
  * for the top dialog only, ordered focus restore, one backdrop per dialog, and
- * toasts that stay announced and operable over dialogs.
+ * toasts and announcements that stay announced and operable over dialogs.
  */
 
 test("Tab moves from Cancel to Delete in the confirmation and back", async ({
@@ -85,6 +90,30 @@ test("Delete closes both dialogs and focuses the page trigger", async ({
   await expect(ui.settings).toBeHidden();
   await expectHiding(ui.manageAccount, LIVE, "the page is live again");
   await expect(ui.manageAccount).toBeFocused();
+});
+
+test("a dialog opened from a popover returns focus to its trigger on Escape", async ({
+  page,
+}) => {
+  const ui = await openDialogFromPopover(page);
+  await page.keyboard.press("Escape");
+  await expect(ui.rename).toBeHidden();
+  await expect(
+    ui.trigger,
+    "focus returns to the popover trigger",
+  ).toBeFocused();
+});
+
+test("a dialog opened from a popover returns focus to its trigger from its close button", async ({
+  page,
+}) => {
+  const ui = await openDialogFromPopover(page);
+  await ui.closeRename.click();
+  await expect(ui.rename).toBeHidden();
+  await expect(
+    ui.trigger,
+    "focus returns to the popover trigger",
+  ).toBeFocused();
 });
 
 test("each stacked dialog keeps its own backdrop", async ({ page }) => {
@@ -202,4 +231,17 @@ test("a toast shown before the confirmation opened keeps a working close button"
     ui.confirm.locator(":focus"),
     "Tab brings focus back into the top dialog",
   ).toHaveCount(1);
+});
+
+test("an announcement made before a dialog opens stays announced under it", async ({
+  page,
+}) => {
+  const ui = await announceFromPage(page);
+  await ui.manageAccount.click();
+  await expect(ui.settings).toBeVisible();
+  await expectHiding(
+    ui.announcement,
+    LIVE,
+    "the announcer region stays announced while a dialog is open",
+  );
 });

@@ -1,4 +1,4 @@
-/** Portal-backed modal frame for Expo web surfaces. */
+/** Modal frame for Expo web surfaces, portalled into the shared modal root. */
 import { X } from "../primitives/icons";
 import {
   useCallback,
@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type { RefObject } from "react";
+import { createPortal } from "react-dom";
 import { Pressable, ScrollView, Text, View } from "../primitives/reactNative";
 import type { ViewStyle } from "../primitives/reactNative";
 
@@ -17,15 +17,12 @@ import { useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 import { useReducedMotion } from "../useReducedMotion";
 
+import { useWebModalLayer, WebModalLayerContext } from "./useWebModalLayer";
 import { createWebModalFrameStyles } from "./webModalFrameStyles";
-import {
-  focusWebModalElement,
-  trapWebModalFocus,
-  webModalInitialFocusTarget,
-} from "./webModalFocusTrap";
-import { WebModalPortal } from "./WebModalPortal";
 import { webModalCanClose, webModalMaxWidth } from "./webModalModel";
 import type { WebModalCloseSource } from "./webModalModel";
+import { getWebModalRoot } from "./webModalRoot";
+import { topWebModalLayer } from "./webModalStack";
 import type { WebModalFrameProps } from "./types";
 
 type ClosePolicyRef = {
@@ -82,12 +79,10 @@ export function WebModalFrame({
     closeDisabled,
     dismissible,
   });
-  const initialFocusTargetRef = useRef(initialFocusRef);
+  const layerRef = useRef<View>(null);
   const onCloseRef = useRef(onClose);
-  const previousFocusRef = useRef<HTMLElement | null>(null);
   const surfaceRef = useRef<View>(null);
   closePolicyRef.current = { closeDisabled, dismissible };
-  initialFocusTargetRef.current = initialFocusRef;
   onCloseRef.current = onClose;
   const requestClose = useCallback((source: WebModalCloseSource) => {
     if (webModalCanClose(closePolicyRef.current, source)) {
@@ -95,110 +90,35 @@ export function WebModalFrame({
     }
   }, []);
 
-  // RNW does not emit `inert`/`aria-hidden` for `accessibilityViewIsModal`, so
-  // the background stays in the AT tree and tab order. Imperatively mark every
-  // sibling of the modal's portal root inert while the modal is open, then
-  // restore each node's prior state on close. `inert` also removes the
-  // background from sequential focus, reinforcing the JS focus trap below.
-  //
-  // This effect is declared *before* the focus-restore effect on purpose: React
-  // runs cleanups in declaration order, so the background is un-inerted here
-  // first, before the focus effect's cleanup tries to restore focus to a
-  // previously-focused background element (focusing an `inert` node is a no-op).
-  useEffect(() => {
-    if (!visible || typeof document === "undefined") {
-      return;
-    }
-    // Capture the trigger element here, before `inert` is applied below — marking
-    // its container inert blurs it to `<body>`, so we must snapshot it first so
-    // focus can be restored to it on close.
-    previousFocusRef.current =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
-    const surface = surfaceRef.current as unknown;
-    const root =
-      surface instanceof HTMLElement ? webModalPortalRoot(surface) : null;
-    const body = document.body;
-    const siblings = Array.from(body.children).filter(
-      (node): node is HTMLElement =>
-        node instanceof HTMLElement && node !== root,
-    );
-    const restorers = siblings.map((node) => {
-      const hadInert = node.hasAttribute("inert");
-      const prevAriaHidden = node.getAttribute("aria-hidden");
-      node.setAttribute("inert", "");
-      node.setAttribute("aria-hidden", "true");
-      return () => {
-        if (!hadInert) {
-          node.removeAttribute("inert");
-        }
-        if (prevAriaHidden === null) {
-          node.removeAttribute("aria-hidden");
-        } else {
-          node.setAttribute("aria-hidden", prevAriaHidden);
-        }
-      };
-    });
-    return () => {
-      for (const restore of restorers) {
-        restore();
-      }
-    };
-  }, [visible]);
-
-  useEffect(() => {
-    if (!visible || typeof document === "undefined") {
-      return;
-    }
-    // The trigger to restore on close is captured by the inertness effect above
-    // (which runs first, before `inert` blurs it). The portal children are
-    // committed before this effect runs, so the DOM is queryable and focus can
-    // move into the surface synchronously (no `setTimeout(0)` race).
-    focusWebModalElement(
-      initialFocusTargetRef.current?.current ??
-        webModalInitialFocusTarget(
-          webModalElement(surfaceRef),
-          webModalElement(closeButtonRef),
-        ),
-    );
-    return () => {
-      focusWebModalElement(previousFocusRef.current);
-      previousFocusRef.current = null;
-    };
-  }, [visible]);
+  // The shared web modal stack owns what used to be per-frame effects: page
+  // and lower-dialog inertness, the single Tab trap, initial focus, and focus
+  // restore on close. See webModalStack.ts.
+  const layer = useWebModalLayer({
+    closeButtonRef,
+    initialFocusRef,
+    layerRef,
+    requestClose,
+    surfaceRef,
+    visible,
+  });
 
   // Escape goes through the shared escape-layer stack rather than this modal's
-  // own keydown listener, so a dropdown, popover, or nested modal opened above
-  // this surface consumes Escape first and this modal stays open. Only the
-  // top-most layer closes; see escapeLayer.ts.
+  // own keydown listener, so a dropdown or popover opened above the top dialog
+  // consumes Escape first. The layer closes the modal stack's top dialog, not
+  // necessarily this frame: frames that open in one render commit push their
+  // Escape layers nested frame first, so the top Escape layer can belong to
+  // the dialog beneath. A passive effect, like the stack layer's, so the two
+  // register and leave in the same effect phase.
   useEffect(() => {
-    if (!visible || typeof document === "undefined") {
+    if (!visible) {
       return;
     }
-    const layer = { onEscape: () => requestClose("escape") };
-    pushEscapeLayer(layer);
-    return () => {
-      removeEscapeLayer(layer);
+    const escapeLayer = {
+      onEscape: () => topWebModalLayer()?.requestClose("escape"),
     };
-  }, [requestClose, visible]);
-
-  useEffect(() => {
-    if (!visible || typeof document === "undefined") {
-      return;
-    }
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Trap on every Tab while the modal is visible — not only when focus is
-      // already inside the surface — so focus that escaped to <body> (e.g. after
-      // a click on the inert backdrop) is pulled back in on the next Tab. The
-      // trap helper already handles the focus-outside case.
-      if (event.key === "Tab") {
-        trapWebModalFocus(event, webModalElement(surfaceRef));
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown, true);
+    pushEscapeLayer(escapeLayer);
     return () => {
-      document.removeEventListener("keydown", handleKeyDown, true);
+      removeEscapeLayer(escapeLayer);
     };
   }, [visible]);
 
@@ -211,7 +131,10 @@ export function WebModalFrame({
     }
   }, [visible]);
 
-  if (!visible || typeof document === "undefined") {
+  // The portal needs its container while rendering. `getWebModalRoot` appends
+  // the shared root once, for the first open frame, and reuses it after.
+  const root = visible ? getWebModalRoot() : null;
+  if (!root) {
     return null;
   }
 
@@ -258,7 +181,12 @@ export function WebModalFrame({
     <View style={[styles.footer, footerStyle]}>{footer}</View>
   ) : null;
   const modal = (
-    <View style={styles.layer} pointerEvents="box-none" testID={testID}>
+    <View
+      pointerEvents="box-none"
+      ref={layerRef}
+      style={styles.layer}
+      testID={testID}
+    >
       {/* Backdrop is a mouse-only dismiss target: hidden from assistive tech and
           skipped by the keyboard (Escape already provides the accessible close
           path), so it never injects a full-viewport "Close" control into the AT
@@ -328,26 +256,13 @@ export function WebModalFrame({
     </View>
   );
 
-  return <WebModalPortal visible={visible}>{modal}</WebModalPortal>;
-}
-
-/** RNW resolves a `View` ref to its host node; narrow it for DOM-only work. */
-function webModalElement(ref: RefObject<View | null>): HTMLElement | null {
-  const node = ref.current as unknown;
-  return node instanceof HTMLElement ? node : null;
-}
-
-/**
- * The surface lives inside the portal subtree mounted on `document.body`. Walk
- * up from the surface to find the direct child of `body` that roots this modal,
- * so the background-inertness effect can skip it (and only it) when hiding the
- * rest of the page.
- */
-function webModalPortalRoot(surface: HTMLElement): HTMLElement | null {
-  const body = surface.ownerDocument.body;
-  let node: HTMLElement | null = surface;
-  while (node && node.parentElement !== body) {
-    node = node.parentElement;
-  }
-  return node;
+  // The layer portals straight into the shared root, not through the public
+  // `WebModalPortal`, which stays a `document.body` portal for page content.
+  // The context links frames rendered in this dialog's content to its layer.
+  return createPortal(
+    <WebModalLayerContext.Provider value={layer}>
+      {modal}
+    </WebModalLayerContext.Provider>,
+    root,
+  );
 }

@@ -84,6 +84,14 @@ no explicit answer from the user:
 12. **The live-overlay attribute has its own owner module.** Chosen over a
     modal-owned constant, so the toast and the announcer do not import the
     modal module.
+13. **The stack layer and the Escape layer register in passive effects.**
+    React runs every passive cleanup in a commit before any passive create.
+    Overlays, also consumer-owned ones such as a command palette, return
+    focus to their trigger in a passive cleanup. So when one action closes
+    an overlay and opens a dialog, the dialog records the trigger as its
+    opener. Chosen over layout effects, which ran before those cleanups and
+    recorded no opener. Moving the library's popover to layout timing would
+    not fix consumer overlays.
 
 Contract owners:
 
@@ -172,11 +180,12 @@ paint two backdrops today, and this repo has no modal mockup.
 - `src/modal/webModalFocusTrap.ts`: the focusable selector, the trap, the
   initial-focus target, and the focus helper, moved out of the frame file.
   The helpers take elements, not refs, so the stack can call them.
-- `src/modal/useWebModalLayer.ts`: one layout effect on `visible` that
+- `src/modal/useWebModalLayer.ts`: one passive effect on `visible` that
   pushes a layer with its parent from context, root and surface getters,
   the initial focus target, and a close request, and removes it on close.
-  It also gives the frame the context value that links nested frames. A
-  layout effect applies order, inertness, and focus before paint.
+  It also gives the frame the context value that links nested frames. The
+  effect is passive, so a closing overlay returns focus before the push
+  records the opener (decision 13).
 - `WebModalFrame.web.tsx` portals straight into the shared root, provides
   the layer context to its content, and routes its Escape layer to the
   stack's top dialog. It drops its inert, Tab-trap, and focus-restore
@@ -283,28 +292,37 @@ wiring lands.
         reopens both dialogs in one update.
 - [x] Save the failing run under `.context/web-modal-stack/` and name the
       file here: `m3-failing-run.txt`.
-- [ ] Add a page action that announces through the shared announcer, and a
+- [x] Add a page action that announces through the shared announcer, and a
       browser test that the announcer region stays live under a dialog.
-      Save its failing run before the wiring.
-- [ ] Portal the frame straight into the shared root, and keep
+      Save its failing run before the wiring: `m3-failing-run-announcer.txt`.
+- [x] Portal the frame straight into the shared root, and keep
       `WebModalPortal.web.tsx` a `document.body` portal. Add
       `src/modal/useWebModalLayer.ts` with the parent-layer context, and wire
       `WebModalFrame.web.tsx` to it. Route the frame's Escape layer to the
       stack's top dialog. Remove the inert, Tab-trap, and focus-restore
       effects from the frame.
-- [ ] Update the source assertions in `tests/unit/webModal.test.ts` and
+- [x] Update the source assertions in `tests/unit/webModal.test.ts` and
       `tests/unit/escapeLayer.test.ts` for the wired frame.
-- [ ] Set `data-firna-live-overlay` in `ToastViewport.web.tsx` and
+- [x] Set `data-firna-live-overlay` in `ToastViewport.web.tsx` and
       `announcer.ts`.
-- [ ] Keep the existing modal browser tests in `tests/browser/storybook.spec.ts`
+- [x] Keep the existing modal browser tests in `tests/browser/storybook.spec.ts`
       green: focus restore with nested dropdowns, footer-action initial focus,
       nested dropdown Escape, and the web sheet.
-- [ ] Record the snapshot sweep baselines for the new stories with
+- [x] Record the snapshot sweep baselines for the new stories with
       `--update-snapshots=missing`, and check that no other baseline changed.
-- [ ] Run the axe sweep. If it reports `aria-hidden-focus` on a stacked
+- [x] Run the axe sweep. If it reports `aria-hidden-focus` on a stacked
       story, record the triage here and ask before any baseline entry.
-- [ ] Smoke test in `npm run storybook`: open the stacked story, Tab, Escape,
-      and raise a toast. Save a screenshot under `.context/web-modal-stack/`.
+- [x] Smoke test in `npm run storybook`: open the stacked story, Tab, Escape,
+      and raise a toast. Save a screenshot under `.context/web-modal-stack/`:
+      `m3-smoke.png`. The passing spec run is `m3-passing-run.txt`.
+- [x] Add a browser test that fails first: an action that closes a popover
+      and opens a dialog in one update returns focus to the popover trigger
+      when the dialog closes. The failing run is
+      `m3-failing-run-popover.txt`.
+- [x] Register the stack layer and the Escape layer in passive effects
+      (decision 13), and update their source assertions.
+- [x] Export the live-overlay view props from `src/liveOverlay.ts`, and use
+      them in both toast files instead of local copies.
 
 ## Milestone 4: Page scroll lock
 

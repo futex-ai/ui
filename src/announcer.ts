@@ -1,5 +1,7 @@
 import { AccessibilityInfo, Platform } from "./primitives/reactNative";
 
+import { LIVE_OVERLAY_ATTRIBUTE } from "./liveOverlay";
+
 /**
  * Shared screen-reader announcer for transient status messages.
  *
@@ -38,6 +40,9 @@ function ensureRegion(politeness: AnnouncePoliteness): HTMLElement | null {
   region.setAttribute("role", politeness === "assertive" ? "alert" : "status");
   region.setAttribute("aria-live", politeness);
   region.setAttribute("aria-atomic", "true");
+  // A body-level live overlay: an open web dialog never makes it inert or
+  // hides it, so announcements still reach assistive technology.
+  region.setAttribute(LIVE_OVERLAY_ATTRIBUTE, "");
   // Visually hidden but available to assistive tech.
   Object.assign(region.style, {
     border: "0",

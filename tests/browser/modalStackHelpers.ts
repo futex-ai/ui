@@ -5,6 +5,7 @@ import { WEB_MODAL_ROOT_ATTRIBUTE } from "../../src/modal/webModalRoot";
 
 const STACKED_STORY = "/iframe.html?id=modal-examples--stacked-web-modals";
 const AT_MOUNT_STORY = "/iframe.html?id=modal-examples--stacked-at-mount";
+const POPOVER_STORY = "/iframe.html?id=modal-examples--dialog-from-popover";
 
 /** The persistent `aria-live` regions that announce toasts. */
 export const LIVE_REGIONS = '[aria-live="polite"], [aria-live="assertive"]';
@@ -29,6 +30,9 @@ export function storyControls(page: Page) {
   const dialog = (name: string) =>
     page.getByRole("dialog", { includeHidden: true, name });
   return {
+    announcement: page
+      .getByRole("status", { includeHidden: true })
+      .filter({ hasText: "Account details are up to date." }),
     cancel: button("Cancel"),
     closeSettings: button("Close Account settings"),
     confirm: dialog("Delete your account?"),
@@ -40,6 +44,7 @@ export function storyControls(page: Page) {
       name: "Display name",
     }),
     manageAccount: button("Manage account"),
+    refreshAccount: button("Refresh account"),
     reopenBoth: button("Delete my account"),
     saveChanges: button("Save changes"),
     settings: dialog("Account settings"),
@@ -72,6 +77,15 @@ export async function openAtMount(page: Page): Promise<StoryControls> {
   return ui;
 }
 
+/** Announces from the page, so the announcer region exists before a dialog. */
+export async function announceFromPage(page: Page): Promise<StoryControls> {
+  const ui = storyControls(page);
+  await page.goto(STACKED_STORY);
+  await ui.refreshAccount.click();
+  await expect(ui.announcement).toBeAttached();
+  return ui;
+}
+
 /** Opens the settings dialog and raises a sticky toast from it. */
 export async function raiseToastFromSettings(
   page: Page,
@@ -81,6 +95,33 @@ export async function raiseToastFromSettings(
   await ui.manageAccount.click();
   await ui.saveChanges.click();
   await expect(ui.toast).toBeVisible();
+  return ui;
+}
+
+/**
+ * Opens the "Rename book" dialog from the book options popover. The popover's
+ * action closes the popover and opens the dialog in one update.
+ */
+export async function openDialogFromPopover(page: Page) {
+  const button = (name: string) =>
+    page.getByRole("button", { exact: true, includeHidden: true, name });
+  const ui = {
+    bookName: page.getByRole("textbox", {
+      includeHidden: true,
+      name: "Book name",
+    }),
+    closeRename: button("Close Rename book"),
+    rename: page.getByRole("dialog", {
+      includeHidden: true,
+      name: "Rename book",
+    }),
+    trigger: button("Book options"),
+  };
+  await page.goto(POPOVER_STORY);
+  await ui.trigger.click();
+  await button("Rename book").click();
+  await expect(ui.rename).toBeVisible();
+  await expect(ui.bookName).toBeFocused();
   return ui;
 }
 

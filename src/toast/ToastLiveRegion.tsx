@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { Platform, StyleSheet, Text, View } from "../primitives/reactNative";
 import type { TextProps } from "../primitives/reactNative";
 
+import { LIVE_OVERLAY_VIEW_PROPS } from "../liveOverlay";
+
 import type { ToastItem } from "./toastModel";
 
 export type ToastLiveRegionProps = {
@@ -31,6 +33,10 @@ export type ToastLiveRegionProps = {
  * The visible toast surfaces keep their `role` for landmark/identification but
  * suppress their own live announcement (see {@link Toast}) so a toast is
  * announced exactly once, from here.
+ *
+ * On web the region renders at body level, so it carries the live-overlay
+ * marker: an open web dialog never makes it inert or hides it. Native ignores
+ * the marker.
  */
 export function ToastLiveRegion({ toasts, testID }: ToastLiveRegionProps) {
   const [polite, setPolite] = useState("");
@@ -100,7 +106,12 @@ export function ToastLiveRegion({ toasts, testID }: ToastLiveRegionProps) {
   }, [toasts]);
 
   return (
-    <View pointerEvents="none" style={styles.region} testID={testID}>
+    <View
+      {...LIVE_OVERLAY_VIEW_PROPS}
+      pointerEvents="none"
+      style={styles.region}
+      testID={testID}
+    >
       <Text {...POLITE_REGION_PROPS} accessibilityLiveRegion="polite">
         {polite}
       </Text>

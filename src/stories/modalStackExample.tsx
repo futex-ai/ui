@@ -2,7 +2,15 @@
 import { useRef, useState } from "react";
 import { StyleSheet, View } from "../primitives/reactNative";
 
-import { Body, Button, Input, WebModalFrame, useToast } from "../index";
+import {
+  Body,
+  Button,
+  Caption,
+  Input,
+  WebModalFrame,
+  useAnnouncer,
+  useToast,
+} from "../index";
 
 /**
  * Which account dialogs are open. The delete confirmation only opens over the
@@ -10,6 +18,9 @@ import { Body, Button, Input, WebModalFrame, useToast } from "../index";
  * update opens or closes both.
  */
 type AccountDialogs = "closed" | "confirm" | "settings";
+
+/** The status that the page's refresh action shows and announces. */
+const ACCOUNT_UP_TO_DATE = "Account details are up to date.";
 
 export type ModalStackExampleProps = {
   /**
@@ -23,7 +34,9 @@ export type ModalStackExampleProps = {
  * An account page whose settings dialog renders its delete confirmation inside
  * its own content, the way app code nests a confirm. The confirmation opens on
  * Cancel, the safe action. Its toasts are sticky with a close control, so no
- * timer dismisses them. Render it inside a `ToastProvider`.
+ * timer dismisses them. The page's refresh action announces through the shared
+ * announcer, so the announcer's region exists before a dialog opens. Render it
+ * inside a `ToastProvider`.
  */
 export function ModalStackExample({
   openAtMount = false,
@@ -32,9 +45,15 @@ export function ModalStackExample({
     openAtMount ? "confirm" : "closed",
   );
   const [displayName, setDisplayName] = useState("Alex Morgan");
+  const [refreshed, setRefreshed] = useState(false);
   const cancelRef = useRef<View>(null);
+  const { announce } = useAnnouncer();
   const { toast } = useToast();
 
+  const refreshAccount = () => {
+    setRefreshed(true);
+    announce(ACCOUNT_UP_TO_DATE);
+  };
   const saveChanges = () => {
     toast({
       description: "Your display name is updated.",
@@ -50,18 +69,22 @@ export function ModalStackExample({
 
   return (
     <View style={styles.page}>
-      <Button hasPopup="dialog" onPress={() => setDialogs("settings")}>
-        Manage account
-      </Button>
-      {openAtMount ? (
-        <Button
-          hasPopup="dialog"
-          onPress={() => setDialogs("confirm")}
-          tone="danger"
-        >
-          Delete my account
+      <View style={styles.actions}>
+        <Button hasPopup="dialog" onPress={() => setDialogs("settings")}>
+          Manage account
         </Button>
-      ) : null}
+        <Button onPress={refreshAccount}>Refresh account</Button>
+        {openAtMount ? (
+          <Button
+            hasPopup="dialog"
+            onPress={() => setDialogs("confirm")}
+            tone="danger"
+          >
+            Delete my account
+          </Button>
+        ) : null}
+      </View>
+      {refreshed ? <Caption>{ACCOUNT_UP_TO_DATE}</Caption> : null}
       <WebModalFrame
         footer={
           <Button onPress={saveChanges} tone="primary">
@@ -115,6 +138,7 @@ export function ModalStackExample({
 }
 
 const styles = StyleSheet.create({
+  actions: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   dangerAction: { alignSelf: "flex-start" },
-  page: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+  page: { gap: 12 },
 });

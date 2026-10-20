@@ -1,0 +1,6 @@
+- dialog "Delete your account?":
+  - heading "Delete your account?" [level=1]
+  - button "Close Delete your account?"
+  - text: This removes your account and its data. You can't undo this.
+  - button "Cancel"
+  - button "Delete"

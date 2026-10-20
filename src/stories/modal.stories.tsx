@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { ToastProvider, darkSharedUiTheme } from "../index";
+import { ModalFromPopoverExample } from "./modalFromPopoverExample";
 import { ModalStackExample } from "./modalStackExample";
 import {
   ConfirmModalExample,
@@ -80,6 +81,15 @@ export const StackedAtMount: Story = {
       <ToastProvider>
         <ModalStackExample openAtMount />
       </ToastProvider>
+    </StorySurface>
+  ),
+};
+
+export const DialogFromPopover: Story = {
+  name: "Dialog from a popover",
+  render: () => (
+    <StorySurface>
+      <ModalFromPopoverExample />
     </StorySurface>
   ),
 };

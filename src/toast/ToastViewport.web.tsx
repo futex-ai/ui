@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import { View } from "../primitives/reactNative";
 import type { ViewStyle } from "../primitives/reactNative";
 
+import { LIVE_OVERLAY_VIEW_PROPS } from "../liveOverlay";
+
 import { Toast } from "./Toast";
 import { ToastLiveRegion } from "./ToastLiveRegion";
 import { TOAST_LAYERS } from "./toastLayers";
@@ -29,7 +31,9 @@ const fixedPosition = "fixed" as unknown as ViewStyle["position"];
  * Renders the toast stack through a `document.body` portal so it escapes React
  * Native Web stacking contexts and floats above modals and page chrome. The
  * region is `pointerEvents="box-none"` so only the toasts themselves catch
- * pointer events while the rest of the page stays interactive.
+ * pointer events while the rest of the page stays interactive. Both body-level
+ * nodes, the live region and the visible stack, carry the live-overlay marker,
+ * so an open web dialog never makes them inert or hides them.
  */
 export function ToastViewport({
   placement,
@@ -50,6 +54,7 @@ export function ToastViewport({
       <ToastLiveRegion toasts={toasts} />
       {toasts.length > 0 ? (
         <View
+          {...LIVE_OVERLAY_VIEW_PROPS}
           aria-label="Notifications"
           pointerEvents="box-none"
           role="region"

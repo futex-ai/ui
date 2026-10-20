@@ -40,20 +40,30 @@ test("web modal size tokens are stable and ordered", () => {
   assert.equal(webModalMaxWidth("md") < webModalMaxWidth("lg"), true);
 });
 
-test("web modal uses a document body portal with Escape and focus handling", () => {
+test("web modal portals into the shared root and leaves focus to the stack", () => {
   const source = readSource("../../src/modal/WebModalFrame.web.tsx");
   const focusSource = readSource("../../src/modal/webModalFocusTrap.ts");
   const portalSource = readSource("../../src/modal/WebModalPortal.web.tsx");
   const nativePortalFallback = readSource("../../src/modal/WebModalPortal.tsx");
 
+  // The public portal stays a `document.body` portal for page content, while
+  // the frame portals straight into the shared modal root.
   assert.match(portalSource, /createPortal/);
   assert.match(portalSource, /document\.body/);
-  assert.match(source, /WebModalPortal/);
-  assert.match(source, /document\.addEventListener\("keydown"/);
+  assert.match(source, /const root = visible \? getWebModalRoot\(\) : null/);
+  assert.match(
+    source,
+    /createPortal\(\s*<WebModalLayerContext\.Provider value=\{layer\}>\s*\{modal\}\s*<\/WebModalLayerContext\.Provider>,\s*root,\s*\)/,
+  );
+  assert.doesNotMatch(source, /from "\.\/WebModalPortal"/);
+  // The stack owns page inertness, the single Tab trap, and focus restore, so
+  // the frame installs no keydown listener and marks nothing inert itself.
+  assert.doesNotMatch(
+    source,
+    /document\.addEventListener|trapWebModalFocus|previousFocusRef|setAttribute\("inert"/,
+  );
   assert.match(focusSource, /surface\.contains\(activeElement\)/);
-  assert.match(source, /previousFocusRef/);
-  assert.match(source, /trapWebModalFocus/);
-  assert.match(source, /event\.key === "Tab"/);
+  assert.match(source, /ref=\{layerRef\}/);
   assert.match(source, /role="dialog"/);
   // The web frame uses a DOM portal; the native portal stays a no-op because the
   // native frame renders through a React Native `Modal` instead.
@@ -62,6 +72,31 @@ test("web modal uses a document body portal with Escape and focus handling", () 
     /createPortal|document\.body|<Modal|from "\.\.\/primitives\/reactNative"/,
   );
   assert.match(nativePortalFallback, /return null/);
+});
+
+test("web modal joins the stack in a passive effect with a parent-layer link", () => {
+  const source = readSource("../../src/modal/WebModalFrame.web.tsx");
+  const hook = readSource("../../src/modal/useWebModalLayer.ts");
+
+  assert.match(source, /const layer = useWebModalLayer\(\{/);
+  // One stable layer per frame instance, linked to the enclosing frame, so a
+  // nested dialog that registers first still ends up above its parent.
+  assert.match(hook, /const parent = useContext\(WebModalLayerContext\)/);
+  assert.match(hook, /const \[layer\] = useState<WebModalLayer>\(\(\) => \(\{/);
+  // A passive effect, never a layout effect: an overlay that closes in the
+  // same update returns focus in its passive cleanup, which React runs before
+  // this push, so the push records that trigger as the dialog's opener.
+  assert.match(
+    hook,
+    /useEffect\(\(\) => \{\s*if \(!visible\) \{\s*return;\s*\}\s*pushWebModalLayer\(layer\);\s*return \(\) => \{\s*removeWebModalLayer\(layer\);\s*\};\s*\}, \[layer, visible\]\)/,
+  );
+  assert.doesNotMatch(hook, /useLayoutEffect/);
+  assert.match(hook, /root: \(\) => hostElement\(layerRef\)/);
+  assert.match(hook, /surface: \(\) => hostElement\(surfaceRef\)/);
+  assert.match(
+    hook,
+    /requestClose: \(source\) => requestCloseRef\.current\(source\)/,
+  );
 });
 
 test("native modal frame renders an RN Modal sheet with native a11y containment", () => {
@@ -73,8 +108,18 @@ test("native modal frame renders an RN Modal sheet with native a11y containment"
   assert.match(nativeSource, /onRequestClose=/);
   assert.match(nativeSource, /accessibilityViewIsModal/);
   assert.match(nativeSource, /webModalCanClose/);
-  // No DOM APIs leak into the native build.
+  // No DOM APIs leak into the native build, and neither native modal file
+  // reaches the web modal stack, its root, or React DOM.
   assert.doesNotMatch(nativeSource, /createPortal|document\.body/);
+  for (const native of [
+    nativeSource,
+    readSource("../../src/modal/WebModalPortal.tsx"),
+  ]) {
+    assert.doesNotMatch(
+      native,
+      /webModalStack|webModalRoot|useWebModalLayer|react-dom/,
+    );
+  }
 });
 
 test("native modal bottom sheet delegates to the shared sheet shell", () => {
@@ -99,15 +144,15 @@ test("native modal keeps non-scrolling sheet bodies out of a parent scroller", (
 });
 
 test("web modal opens focus on caller content rather than the close button", () => {
-  const source = readSource("../../src/modal/WebModalFrame.web.tsx");
+  const hook = readSource("../../src/modal/useWebModalLayer.ts");
   const focusSource = readSource("../../src/modal/webModalFocusTrap.ts");
 
   // An explicit `initialFocusRef` still wins; otherwise the frame picks the
   // first focusable the caller rendered, skipping the close button even though
   // it comes first in DOM order, and only then falls back to close/surface.
   assert.match(
-    source,
-    /initialFocusTargetRef\.current\?\.current \?\?\s*webModalInitialFocusTarget\(\s*webModalElement\(surfaceRef\),\s*webModalElement\(closeButtonRef\),?\s*\)/,
+    hook,
+    /initialFocusTargetRef\.current\?\.current \?\?\s*webModalInitialFocusTarget\(\s*hostElement\(surfaceRef\),\s*hostElement\(closeButtonRef\),?\s*\)/,
   );
   assert.match(focusSource, /\(element\) => element !== closeButton/);
   assert.match(
@@ -118,10 +163,15 @@ test("web modal opens focus on caller content rather than the close button", () 
 
 test("web modal focus restore lifecycle is decoupled from close callback changes", () => {
   const source = readSource("../../src/modal/WebModalFrame.web.tsx");
+  const hook = readSource("../../src/modal/useWebModalLayer.ts");
 
   assert.match(source, /onCloseRef\.current = onClose/);
   assert.match(source, /webModalCanClose\(closePolicyRef\.current, source\)/);
   assert.match(source, /}, \[visible\]\)/);
+  // A new close callback never re-pushes the stack layer, which would move
+  // focus: the layer reads the latest callback through a ref.
+  assert.match(hook, /requestCloseRef\.current = requestClose/);
+  assert.match(hook, /}, \[layer, visible\]\)/);
 });
 
 test("web modal frame styles are theme-driven", () => {
