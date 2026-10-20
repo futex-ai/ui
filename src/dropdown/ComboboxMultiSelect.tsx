@@ -1,38 +1,29 @@
 /** Input-backed chip multi-select for combobox forms. */
 import { useId, useMemo, useRef } from "react";
-import { Pressable, Text, TextInput, View } from "../primitives/reactNative";
+import { Pressable, TextInput, View } from "../primitives/reactNative";
 
-import { devWarn } from "../devWarn";
 import { useFocusRing } from "../focusRing";
-import { LabelInfo } from "../input";
-import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
 
-import { ComboboxChips } from "./ComboboxOptionParts";
-import type { ComboboxChipPalette } from "./ComboboxOptionParts";
+import {
+  ComboboxFieldLabel,
+  ComboboxFieldMessages,
+} from "./ComboboxFieldParts";
+import { ComboboxChips, comboboxChipPalette } from "./ComboboxOptionParts";
 import { ComboboxPopover } from "./ComboboxPopover";
 import { ComboboxSheet, ComboboxSheetTrigger } from "./ComboboxSheet";
-import {
-  DropdownList,
-  DropdownListEntry,
-  dropdownRowDomId,
-} from "./DropdownList";
+import { DropdownList, dropdownRowDomId } from "./DropdownList";
 import { comboboxInputA11y } from "./comboboxModel";
-import { comboboxOptionEntry } from "./comboboxMultiSelectEntries";
+import { comboboxOptionEntries } from "./comboboxMultiSelectEntries";
 import {
   comboboxFieldDescriptionA11y,
   comboboxSearchInputA11y,
 } from "./comboboxSearchInputA11y";
 import type { ComboboxSearchInputPlacement } from "./comboboxSearchInputA11y";
-import type {
-  ComboboxOptionSection,
-  ComboboxSelection,
-} from "./comboboxMultiSelectModel";
 import {
   MULTI_SELECT_SIZES,
   createComboboxMultiSelectStyles,
 } from "./comboboxMultiSelectStyles";
-import type { ComboboxMultiSelectStyles } from "./comboboxMultiSelectStyles";
 import type {
   ComboboxMultiSelectFieldProps,
   ComboboxMultiSelectOption,
@@ -112,7 +103,7 @@ export function ComboboxMultiSelect({
     values,
   });
   const { close, open, query, setOpen, setQuery } = picker;
-  const entries = entriesForOptions(
+  const entries = comboboxOptionEntries(
     picker.sections,
     picker.selection,
     picker.toggle,
@@ -140,16 +131,6 @@ export function ComboboxMultiSelect({
       : undefined;
 
   const invalid = invalidProp || Boolean(error);
-  // The ⓘ button anchors to the label row, so it needs a label to sit beside.
-  if (labelInfo && !label) {
-    devWarn(
-      "ComboboxMultiSelect: `labelInfo` needs a `label` to anchor the ⓘ " +
-        "button; it is ignored without one.",
-    );
-  }
-  const labelInfoName =
-    labelInfoLabel ??
-    (label ? `More information about ${label}` : "More information");
   // The field's error and hint describe the search input and the sheet
   // button. `document` is absent on native, the same gate as `Platform.OS`.
   const fieldText = {
@@ -193,31 +174,15 @@ export function ComboboxMultiSelect({
       style={label || error || hint ? styles.field : undefined}
       testID={testID}
     >
-      {label ? (
-        <View style={styles.labelRow}>
-          {/* The label <Text> carries its own `nativeID`, so the input's
-              `aria-labelledby` name is the visible label text alone — the ⓘ
-              button is a sibling, never folded into the accessible name. */}
-          <Text nativeID={labelId} style={styles.label}>
-            {label}
-            {/* Visual-only `*`; the required state is conveyed programmatically
-                via `aria-required`. Hide it from AT so it does not leak into the
-                input's `aria-labelledby` name. */}
-            {required ? (
-              <Text aria-hidden style={styles.required}>
-                {" *"}
-              </Text>
-            ) : null}
-          </Text>
-          {labelInfo ? (
-            <LabelInfo
-              accessibilityLabel={labelInfoName}
-              icon={labelInfoIcon}
-              info={labelInfo}
-            />
-          ) : null}
-        </View>
-      ) : null}
+      <ComboboxFieldLabel
+        label={label}
+        labelId={labelId}
+        labelInfo={labelInfo}
+        labelInfoIcon={labelInfoIcon}
+        labelInfoLabel={labelInfoLabel}
+        required={required}
+        styles={styles}
+      />
       <View ref={anchorRef} style={styles.wrap}>
         <Pressable
           {...focus.focusRingProps}
@@ -314,70 +279,13 @@ export function ComboboxMultiSelect({
           </ComboboxPopover>
         )}
       </View>
-      {error ? (
-        // `role="alert"` (assertive live region) announces a newly-shown
-        // validation message without moving focus — WCAG 2.1 4.1.3 (AA).
-        <Text
-          accessibilityLiveRegion="assertive"
-          accessibilityRole="alert"
-          nativeID={errorId}
-          style={styles.error}
-        >
-          {error}
-        </Text>
-      ) : null}
-      {hint ? (
-        <Text nativeID={hintId} style={styles.hint}>
-          {hint}
-        </Text>
-      ) : null}
+      <ComboboxFieldMessages
+        error={error}
+        errorId={errorId}
+        hint={hint}
+        hintId={hintId}
+        styles={styles}
+      />
     </View>
   );
-}
-
-/** Option rows under their group headings, then the empty state and the note. */
-function entriesForOptions(
-  sections: ComboboxOptionSection<ComboboxMultiSelectOption>[],
-  selection: ComboboxSelection,
-  onSelect: (value: string) => void,
-  styles: ComboboxMultiSelectStyles,
-  footer?: string,
-): DropdownListEntry[] {
-  const optionRows: DropdownListEntry[] = sections.flatMap((section) => [
-    ...(section.title
-      ? [{ id: section.id, label: section.title, type: "section" as const }]
-      : []),
-    ...section.options.map((option) =>
-      comboboxOptionEntry(option, selection, onSelect, styles),
-    ),
-  ]);
-  const rows: DropdownListEntry[] =
-    optionRows.length > 0
-      ? optionRows
-      : [{ id: "empty", label: "No matching options", type: "section" }];
-  if (footer) {
-    rows.push({ id: "footer", label: footer, type: "section" });
-  }
-  return rows;
-}
-
-/**
- * Chip colors per `chipTone`, shared by the field's chips and the sheet's.
- * `default` is the theme's primary tint (`primarySoft` fill, `primaryDeep`
- * text); `muted` is a neutral grey for a value that is still applied but no
- * longer current, such as an archived tag. Both texts clear AA on their fill.
- */
-function comboboxChipPalette(theme: SharedUiTheme): ComboboxChipPalette {
-  return {
-    default: {
-      backgroundColor: theme.colors.primarySoft,
-      borderColor: theme.colors.primaryBorder,
-      color: theme.colors.primaryDeep,
-    },
-    muted: {
-      backgroundColor: theme.colors.soft,
-      borderColor: theme.colors.border2,
-      color: theme.colors.ink2,
-    },
-  };
 }

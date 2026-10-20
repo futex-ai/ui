@@ -1,5 +1,6 @@
 export * from "./ComboboxMultiSelect";
 export * from "./ComboboxPopover";
+export * from "./DropdownIconBox";
 export * from "./DropdownList";
 export * from "./DropdownMenu";
 export * from "./DropdownPortal";

@@ -8,7 +8,10 @@ import {
   COMBOBOX_FOOTER_ACTION_ID,
   comboboxOptionState,
 } from "./comboboxMultiSelectModel";
-import type { ComboboxSelection } from "./comboboxMultiSelectModel";
+import type {
+  ComboboxOptionSection,
+  ComboboxSelection,
+} from "./comboboxMultiSelectModel";
 import type { ComboboxMultiSelectStyles } from "./comboboxMultiSelectStyles";
 import type {
   ComboboxFooterAction,
@@ -76,4 +79,30 @@ export function comboboxFooterActionEntries(
       type: "item",
     },
   ];
+}
+
+/** Option rows under their group headings, then the empty state and the note. */
+export function comboboxOptionEntries(
+  sections: ComboboxOptionSection<ComboboxMultiSelectOption>[],
+  selection: ComboboxSelection,
+  onSelect: (value: string) => void,
+  styles: ComboboxMultiSelectStyles,
+  footer?: string,
+): DropdownListEntry[] {
+  const optionRows: DropdownListEntry[] = sections.flatMap((section) => [
+    ...(section.title
+      ? [{ id: section.id, label: section.title, type: "section" as const }]
+      : []),
+    ...section.options.map((option) =>
+      comboboxOptionEntry(option, selection, onSelect, styles),
+    ),
+  ]);
+  const rows: DropdownListEntry[] =
+    optionRows.length > 0
+      ? optionRows
+      : [{ id: "empty", label: "No matching options", type: "section" }];
+  if (footer) {
+    rows.push({ id: "footer", label: footer, type: "section" });
+  }
+  return rows;
 }

@@ -1,6 +1,8 @@
 /** The chips and leading marks that `ComboboxMultiSelect` draws per option. */
 import { Pressable, Text, View } from "../primitives/reactNative";
 
+import type { SharedUiTheme } from "../theme";
+
 import { renderDropdownSlot } from "./dropdownListModel";
 import type { ComboboxMultiSelectStyles } from "./comboboxMultiSelectStyles";
 import type {
@@ -137,4 +139,25 @@ export function ComboboxOptionMark({
       )}
     </View>
   );
+}
+
+/**
+ * Chip colors per `chipTone`, shared by the field's chips and the sheet's.
+ * `default` is the theme's primary tint (`primarySoft` fill, `primaryDeep`
+ * text); `muted` is a neutral grey for a value that is still applied but no
+ * longer current, such as an archived tag. Both texts clear AA on their fill.
+ */
+export function comboboxChipPalette(theme: SharedUiTheme): ComboboxChipPalette {
+  return {
+    default: {
+      backgroundColor: theme.colors.primarySoft,
+      borderColor: theme.colors.primaryBorder,
+      color: theme.colors.primaryDeep,
+    },
+    muted: {
+      backgroundColor: theme.colors.soft,
+      borderColor: theme.colors.border2,
+      color: theme.colors.ink2,
+    },
+  };
 }
