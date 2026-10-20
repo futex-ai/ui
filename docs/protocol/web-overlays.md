@@ -2,8 +2,8 @@
 
 ## Status
 
-Required contract for shared dialogs, web overlay stacking, and live
-notifications.
+Implemented contract for shared dialogs, web overlay stacking, live
+notifications, and the page scroll lock.
 
 ## Purpose
 
