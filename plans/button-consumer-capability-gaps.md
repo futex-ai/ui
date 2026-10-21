@@ -1,5 +1,14 @@
 # Button consumer capability gaps
 
+Status: Completed. [PR #151](https://github.com/futex-ai/ui/pull/151) merged on
+2026-08-13. M1–M6 delivered: the press lifecycle (`onPressIn` / `onPressOut`
+/ `onLongPress` / `delayLongPress` + a forwarded gesture event), a functional
+`style` plus a pressed treatment on every tone, the `onMedia` tone for controls
+on imagery, `hitSlop` and `boxSize`, `labelStyle` / `numberOfLines` / `trailing`
+/ `content`, and `hasPopup`. Closes every Button item on the consumer capability
+list except `SegmentedControl`, which is out of scope and belongs in its own
+plan.
+
 Close the remaining reasons a consumer app still hand-rolls a `Pressable`
 instead of using [`Button`](../src/button/Button.tsx): the press lifecycle,
 per-state styling, a tone for imagery, a tap area independent of the visible

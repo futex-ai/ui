@@ -1,5 +1,9 @@
 # Rich Text Editor — detailed design
 
+Status: Completed. [PR #115](https://github.com/futex-ai/ui/pull/115) merged on
+2026-07-22 and completed the plan for this design,
+[rich-text-editor-component.md](rich-text-editor-component.md).
+
 Implementation-level design for
 [plans/rich-text-editor-component.md](rich-text-editor-component.md). The plan
 holds scope and milestones; this doc holds the contracts implementers build

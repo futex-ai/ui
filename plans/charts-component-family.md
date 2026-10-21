@@ -1,5 +1,17 @@
 # Charts component family
 
+Status: Completed. [PR #148](https://github.com/futex-ai/ui/pull/148) merged on
+2026-08-12. Delivered: the `@firna/ui/chart` family (bar, line, area, sparkline,
+stat tile, donut, gauge, bullet, funnel, matrix heatmap, scatter, bubble,
+histogram, waterfall, small multiples) built from this library's primitives and
+`react-native-svg` with no charting dependency. M1 closed the theme's missing
+series-colour gap with a palette derived by enumerating all 40,320 slot
+orderings against the four shipped themes' real surfaces; M2–M8 built the
+foundations then the charts. M1–M8 complete and `npm run verify` green (839
+unit, 257 browser tests). Deferred: entry animation and the manual on-device
+native scrub pass. Design and colour derivation in
+[charts-design.md](charts-design.md).
+
 A new `@firna/ui/chart` family: interactive, cross-platform charts built from
 this library's own primitives and `react-native-svg`, with **no charting
 dependency**. Design and colour derivation live in

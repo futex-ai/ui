@@ -1,5 +1,12 @@
 # Data Grid component
 
+Status: Completed. [PR #73](https://github.com/futex-ai/ui/pull/73) merged on
+2026-07-01. Delivered: the Airtable/Notion-style editable `DataGrid` primitive
+(cell-range drag + keyboard selection, virtualized infinite scroll, column
+menus, add column/row, typed editable cells, responsive card stack). M1–M9
+complete and `npm run verify` green; the on-device native pass (M7) is the one
+deferred manual item.
+
 A new `@firna/ui` primitive: an Airtable / Notion–style **editable data grid**. It
 is a distinct primitive from the existing static [`Table`](../src/table/README.md)
 (read-only flex rows) — the data grid adds cell-range selection, keyboard

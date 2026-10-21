@@ -1,5 +1,13 @@
 # Avatar loading state
 
+Status: Completed. [PR #139](https://github.com/futex-ai/ui/pull/139) merged on
+2026-08-05. Delivered: `Avatar` gains `loading?: boolean` (default `false`),
+which swaps the initials for the library's existing `dot-grid` loader without
+changing the disc's fill, corner, or footprint. The dots take the foreground
+color the initials would have used — now resolved once by
+`avatarForegroundColor` — and the disc reports `progressbar` + busy semantics
+while loading. M1–M2 complete and `npm run verify` green.
+
 Give [`Avatar`](../src/avatar/Avatar.tsx) a `loading` prop that replaces the
 initials with the loader family's `dot-grid` shape while the person or entity
 behind the disc is still being fetched.
