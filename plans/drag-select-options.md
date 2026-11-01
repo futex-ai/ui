@@ -1,12 +1,11 @@
 # Drag select options
 
-Status: Active. Milestones 1 to 6 are delivered on branch
-`calummoore/dragselectableprovider-improvements`. Milestone 7 has run the
-smoke test, the complete gate, and the review. Milestone 8 fixed the first
-review's findings, and Milestone 9 fixed the second review's findings, R9 to
-R11. Open before merge: the user's decisions on the third review's findings,
-R12 to R14, and the user's manual check of macOS overlay scrollbars.
-No PR is open yet. The plan closes when its PR merges.
+Status: Active. Milestones 1 to 9 are delivered on branch
+`calummoore/dragselectableprovider-improvements`. Milestone 10 fixes the
+third review's findings, R12 to R14, with the options that the user chose on
+2026-11-01. Open before merge: the user's manual check of macOS overlay
+scrollbars, which needs the pull request's Storybook preview. No PR is open
+yet. The plan closes when its PR merges.
 
 [`DragSelectableProvider`](../src/drag-select/README.md) was built to wrap one
 list. The accounting app wants one provider around every page, so that a drag
@@ -72,6 +71,33 @@ at least 1px (B), so the drawn box that `renderMarquee` receives stays the
 cut hit box. The same day, the shared skills update moved code names
 and mechanics out of protocol docs; Milestone 9 applies that to the
 drag-select protocol docs, because it touches them.
+
+Third review decisions (2026-11-01). R12: the user chose A. The provider
+refuses a press whose element is outside the provider element, before it
+claims the press, so content that a portal draws, such as a modal, starts no
+drag. Rejected: the ignore marker on each library portal (B), because app
+portals stay exposed. R13: the user chose A. Only a layer newer than the
+previous owner of `selectedIds` starts a page selection, so a change back to
+an older layer reports. Rejected: a started flag for each layer in the layer
+store (B), because the layer order already shows which layer is newer. R14:
+the user chose A. The docs say that the ignore marker and `ignore` refuse a
+press by default, and that `shouldStartDrag` can still allow it. Rejected: a
+fixed ignore rule (B), because it removes an override that apps may want.
+
+Design calls (2026-11-01, the orchestrator's calls):
+
+- The R12 browser test uses a note modal on the Invoices page of the "Page
+  shell" story, not a new story. The page shell is the app-shell example,
+  and its default page and baselines stay the same.
+- R14 also corrects the same wording for the Control and Alt refusal of the
+  default `dragMode`, because `shouldStartDrag` can override that default
+  rule too.
+- The `ui implementor` writes the component fixes with their tests, and the
+  `docs implementor` writes the docs, because the 2026-10-14 plan check
+  treats every milestone of this library as UI work.
+- The merge of `origin/main` keeps its deletion of `plans/README.md`, because
+  each plan now records its own status. Justification:
+  `.context/drag-select-options/merge-decisions.md`.
 
 The Storybook stories and the accounting app's transactions mockup are the
 visual spec. This repo gets no new HTML mockup, as in the
@@ -780,6 +806,42 @@ that the user chose on 2026-10-20. Each fix starts with a failing test.
     Recommended: A, say that `shouldStartDrag` can override the default.
 
 Evidence: `.context/drag-select-options/m9-evidence.md`.
+
+## Milestone 10: Third review fixes
+
+Fix R12 to R14 from the third review under Milestone 9, with the options
+that the user chose on 2026-11-01. Each code fix starts with a failing test.
+
+Depends on: Milestone 9.
+
+- [ ] R13: a new owner of `selectedIds` starts a page selection only when
+      its layer is newer than the previous owner. Test: the reverse case in
+      the unit test of the owner rule.
+- [ ] R12 fixture: on the Invoices page of the "Page shell" story, an "Add a
+      note" button opens a `WebModalFrame` with a note field. The modal
+      renders inside the page, so React sends its presses to the provider.
+- [ ] R12: the provider refuses a press whose element is outside the
+      provider element, before it claims the press. Test: a browser test
+      drags from the note field to a row behind the modal, and no row is
+      selected.
+- [ ] R14: the doc comments, the drag-select README, the option reference,
+      and the library READMEs say that the ignore marker and `ignore` refuse
+      a press by default, and that `shouldStartDrag` can still allow it. The
+      same applies to the Control and Alt refusal of the default `dragMode`.
+- [ ] Update the protocol doc and the drag-select README for R12 and R13.
+- [ ] Run each new browser test 10 times.
+- [ ] Run `cargo xtask check`.
+- [ ] Run `git add -A`, commit with Conventional Commits, and push.
+- [ ] Review the branch with the `implementation-review` skill against
+      `origin/main` after the push. Record each round in the findings file
+      of the branch. Run the finding checks, fix the `fix now` findings,
+      record a follow-up item for each other finding, re-review once, and
+      report.
+- [ ] Delete the plan, as the `plans` skill says, when every other
+      milestone TODO is ticked.
+- [ ] Open the pull request.
+
+Evidence: `.context/drag-select-options/m10-evidence.md`.
 
 ## Post-merge follow-up (non-blocking)
 
