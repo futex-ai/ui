@@ -22,7 +22,7 @@ import test from "node:test";
  */
 const REPO_ROOT = fileURLToPath(new URL("../../", import.meta.url));
 
-/** Directories whose source ships visuals or specifies them. */
+/** Directories whose source ships visuals or keeps design references. */
 const SCANNED_DIRS = ["src", "docs/mockups", ".storybook"];
 
 const SCANNED_EXTENSIONS = new Set([".css", ".html", ".ts", ".tsx"]);
@@ -64,7 +64,7 @@ const ALLOWED: ReadonlyMap<string, number> = new Map([
   ["src/rich-text/nativeRichTextStyles.ts", 2],
   // The web renderer's inline `borderLeft` shorthand on <blockquote>.
   ["src/rich-text/domRender.web.ts", 1],
-  // The same rule in the rich-text-editor mockup, which is part of the spec.
+  // The same rule in the rich-text-editor mockup, a design reference.
   ["docs/mockups/rich-text-editor.html", 1],
 ]);
 

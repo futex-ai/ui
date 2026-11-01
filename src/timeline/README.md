@@ -206,6 +206,5 @@ same maths the component uses:
 ## Related docs
 
 - [Video editor panels](../video-editor/README.md)
-- [Plan](../../plans/video-editor-components.md)
 - [Design spec](../../docs/superpowers/specs/2026-08-12-video-editor-ui-design.md)
 - [Mockup](../../docs/mockups/video-editor.html)

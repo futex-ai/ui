@@ -1,5 +1,9 @@
 # @firna/ui — WCAG 2.1 AA Remediation Plan
 
+Status: Active. Phases 0–2 delivered (automated gate green, empty
+`axe-baseline.json`); remaining: the manual screen-reader / 200% zoom /
+forced-colors release pass in §7 and the AAA/2.2 best-practice backlog.
+
 ## 1. Executive Summary
 
 ### Current posture

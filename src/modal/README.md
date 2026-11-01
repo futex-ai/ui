@@ -148,5 +148,4 @@ npm run test:browser
 
 ### Related Docs
 
-- Plan: `plans/shared-dropdown-modal-library.md`.
 - Dropdown boundary: `src/dropdown/README.md`.

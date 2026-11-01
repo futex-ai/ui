@@ -670,7 +670,6 @@ The package export map intentionally separates runtime targets:
 - Drag select protocol: [docs/protocol/drag-select.md](docs/protocol/drag-select.md)
   and its [option reference](docs/protocol/drag-select-api.md)
 - Consumer migration handoff: [docs/consumer-migration.md](docs/consumer-migration.md)
-- Active and completed implementation plans: [plans/README.md](plans/README.md)
 
 ## Related Repositories
 

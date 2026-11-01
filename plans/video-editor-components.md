@@ -1,6 +1,15 @@
 # Video editor components
 
-Status: complete — M1–M8 delivered and `npm run verify` green. Design spec:
+Status: Completed. [PR #153](https://github.com/futex-ai/ui/pull/153) merged on
+2026-08-21. Delivered: two new families. `@firna/ui/timeline` is a controlled
+multi-track timeline with the full pro edit vocabulary (move, trim, slip, roll,
+razor, ripple, magnetic) by pointer, touch, and keyboard, previewed live through
+the same `applyTimelineEdits` reducer consumers use. `@firna/ui/video-editor`
+adds the panels around it — program monitor, transport, level meter, media bin,
+property inspector, effects rack, keyframe editor, and export dialog — all
+chrome-only, with no media dependency. The `Full editor` Storybook story
+assembles the whole family in light, dark, and compact. M1–M8 delivered and
+`npm run verify` green. Design spec:
 [`docs/superpowers/specs/2026-08-12-video-editor-ui-design.md`](../docs/superpowers/specs/2026-08-12-video-editor-ui-design.md).
 
 Two new families: a reusable `@firna/ui/timeline`, and `@firna/ui/video-editor`

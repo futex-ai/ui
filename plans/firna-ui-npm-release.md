@@ -1,8 +1,7 @@
 # Firna UI Npm Release
 
-## Status
-
-Completed.
+Status: Completed. [PR #17](https://github.com/futex-ai/ui/pull/17) merged on
+2026-06-15.
 
 ## Implementation Notes
 

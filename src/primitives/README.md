@@ -34,8 +34,7 @@ The library's own DOM backend: plain React elements, no `react-native-web`.
 Its parity target is `react-native-web` 0.21.2's own output — the same element
 per role, the same `aria-*` attributes, the same translated CSS — because the
 screenshot and ARIA baselines in `tests/browser/snapshots.spec.ts-snapshots`
-were recorded on that backend and are what prove the swap changed nothing
-(`plans/pure-react-dom-backend.md`, Decision 3).
+were recorded on that backend and are what prove the swap changed nothing.
 
 - `resolveStyle.ts` + `styleTables.ts` translate a `StyleProp` into inline
   styles: the `styleq` merge, `preprocess`, the left-to-right resolution of the
@@ -113,8 +112,6 @@ nothing: one zero-specificity `:where()` rule strips the browser outline from
 its focus target, only outside forced-colors mode, so a caller's own focus
 style always wins and forced colors keep the system outline.
 
-The list of places the backend deliberately differs from `react-native-web`
-lives in the plan's M2 and M3 sections. The one worth knowing here:
 `ScrollView` does not set `transform: translateZ(0)`. It is a zero translation
 with no visual meaning, but it promotes the scroller to its own compositing
 layer, and Chromium then snaps fractionally-positioned content inside that
@@ -140,7 +137,7 @@ The files split by topic: `layout.ts` and `style.ts` (colours, dimensions,
 `gestures.ts`, `platform.ts`, and an `index.ts` that re-exports them.
 
 The one rule when editing them: **ours may be wider than React Native's, never
-narrower.** Decision 7 of the plan is an assignability contract — a native
+narrower.** This is an assignability contract — a native
 consumer's React Native `style`, prop bag, or event handler has to keep
 flowing into a prop typed here — so every union is copied whole (even the
 platform-only values the web backend ignores) and no member React Native
