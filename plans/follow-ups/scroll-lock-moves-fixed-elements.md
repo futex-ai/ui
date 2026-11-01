@@ -1,0 +1,33 @@
+# Scroll lock still moves fixed page elements
+
+- **Severity:** Medium. **Effort:** Medium. **Confidence:** High. **Harder later:** Yes.
+- **Kind:** Needs decision.
+- **Added:** 2026-11-01, from `calummoore/palette-forms-overlay-discussion`, review finding 2.
+- **Location:** `src/modal/webModalScrollLock.ts:41` and `docs/protocol/web-overlays.md:134`.
+- **Reason:** The protocol and the code disagree, and no recorded user decision says which side is right.
+
+- **Terms:**
+  - **Web modal stack:** the internal list of open web dialogs in `src/modal/webModalStack.ts`. Only its top dialog takes input.
+  - **Scroll lock:** the code in `src/modal/webModalScrollLock.ts` that stops the page from scrolling while a web dialog is open.
+  - **Gutter:** the strip at the right edge of the page where a classic scrollbar sits. Overlay scrollbars, the default on macOS and iOS, take no gutter.
+  - **Fixed-position element:** an element with `position: fixed`, such as a sticky header or a floating button. The browser places it against the viewport, not the page.
+- **Background:**
+  - `WebModalFrame` is the dialog of the `@firna/ui` library. On web, each open dialog joins the web modal stack.
+  - When the first dialog opens, the scroll lock sets `overflow: hidden` on the root element and the body. Without a scrollbar, the page gets the gutter back, so content would move right by the gutter width.
+  - To stop that move, the lock pads the body on the right by the width that the hidden scrollbar gave back. It measures `document.documentElement.clientWidth` before and after the overflow change. When the last dialog closes, it restores every inline value that it changed.
+  - `docs/protocol/web-overlays.md`, section "Page Scroll", requires this: "Removing the page scrollbar does not shift the layout."
+  - A separate open check on iOS Safari may add a `position: fixed` fallback to the same lock. The chosen option must work with that fallback.
+- **Problem:** Body padding moves only the content in the normal flow. A fixed-position element places itself against the viewport, so the padding does not reach it. In Chromium with a 15 px classic scrollbar, a fixed element pinned to the right edge moved from x = 845 to x = 860 when a dialog opened.
+- **Impact if no action:** On browsers with classic scrollbars, fixed headers and floating buttons jump by the gutter width each time a dialog opens and closes. The protocol promises more than the code does.
+- **Root question:** How does the page keep every element, also a fixed-position element, in place when the scroll lock hides the scrollbar?
+- **Options:**
+  - **A.** Limit the requirement to content in the normal flow. Change the protocol line and the modal README, and record the user's decision. Fixed elements keep moving. Effort: Small.
+  - **B.** Reserve the gutter instead of padding the body. Set `scrollbar-gutter: stable` on the root element during the lock, and restore its earlier value on unlock. Extend each dialog layer over the reserved gutter, because a Chromium probe showed a 15 px strip at the right edge with no backdrop. Keep the padding for browsers without `scrollbar-gutter`. Add a fixed element to `tests/browser/modal-scroll-lock.spec.ts`. Effort: Medium.
+  - **C.** Keep the padding. Publish the gutter width as a CSS custom property while the lock is on, so that consumers pad their own fixed elements. This adds a public contract and work for each consumer. Effort: Small.
+- **Left out:**
+  - Keep the scrollbar and block wheel and touch scrolling with listeners: it fails the goal, because a user can still drag the visible scrollbar.
+  - Fix the body with `position: fixed` and a negative `top`: it hides the scrollbar in the same way, so fixed elements still move.
+- **Wider fix:** None. The `documentation` skill already keeps the protocol and the code aligned.
+- **Previous examples:** None found.
+- **Recommendation:** B. It keeps all content still with no consumer work, so the protocol stays true as written.
+- **Action:** ask the user, because the protocol and the code disagree, and no recorded user decision says which side is right.
