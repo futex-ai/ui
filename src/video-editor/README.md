@@ -181,6 +181,5 @@ and in any non-React context.
 ## Related docs
 
 - [Timeline](../timeline/README.md)
-- [Plan](../../plans/video-editor-components.md)
 - [Design spec](../../docs/superpowers/specs/2026-08-12-video-editor-ui-design.md)
 - [Mockup](../../docs/mockups/video-editor.html)

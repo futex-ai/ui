@@ -663,8 +663,6 @@ The package export map intentionally separates runtime targets:
 - Rich-text collaboration protocol:
   [docs/protocol/rich-text-collaboration.md](docs/protocol/rich-text-collaboration.md)
 - Consumer migration handoff: [docs/consumer-migration.md](docs/consumer-migration.md)
-- Implementation plans: [plans/](plans/). The first paragraph of each plan
-  states whether it is active or completed.
 
 ## Related Repositories
 
