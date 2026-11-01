@@ -1,6 +1,7 @@
 # Web modal stack
 
-Status: Active. Branch `calummoore/palette-forms-overlay-discussion`, no pull request yet. The plan
+Status: Active. [PR #179](https://github.com/futex-ai/ui/pull/179) is open. Milestones 1 to 5 are
+done, except the manual iOS Safari check of milestone 4 and its conditional fallback. The plan
 closes when its PR merges.
 
 `WebModalFrame` is the library's dialog. On web, each open frame portals itself
