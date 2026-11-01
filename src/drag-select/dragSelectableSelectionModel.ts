@@ -130,15 +130,21 @@ export function dragSelectableStoredAfterEmpty(
 }
 
 /**
- * Whether a render starts a page's selection: a page-hook layer, other than
- * the owner of the last report, now sets `selectedIds`. That selection is
- * the page's starting selection, so the provider reports nothing for it.
+ * Whether a render starts a page's selection: a page-hook layer now sets
+ * `selectedIds`, and the owner of the last report was not a layer or was an
+ * older one. That selection is the page's starting selection, so the provider
+ * reports nothing for it. A layer gets a higher order than every layer before
+ * it, so a lower order is an older layer whose `selectedIds` returns when a
+ * newer layer leaves. That change reports as usual.
  */
 export function dragSelectableStartsSelection(
   previousOwner: DragSelectableSelectionOwner,
   owner: DragSelectableSelectionOwner,
 ): boolean {
-  return typeof owner === "number" && owner !== previousOwner;
+  if (typeof owner !== "number") {
+    return false;
+  }
+  return typeof previousOwner !== "number" || owner > previousOwner;
 }
 
 /** A provider's stored selection and the `selectionScope` it belongs to. */

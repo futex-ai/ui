@@ -125,6 +125,7 @@ test("drag-select starts a page selection when a new page layer sets selectedIds
   assert.equal(dragSelectableStartsSelection(3, 3), false);
   assert.equal(dragSelectableStartsSelection(3, null), false);
   assert.equal(dragSelectableStartsSelection(null, "provider"), false);
+  assert.equal(dragSelectableStartsSelection(7, 5), false);
 });
 
 test("drag-select keeps the stored selection only in its own scope", () => {

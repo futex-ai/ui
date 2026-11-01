@@ -14,9 +14,9 @@ import type {
 export const dragSelectableDefaultControlThreshold = 10;
 
 /**
- * The default `dragMode`: Control and Alt never start a drag, Shift adds the
+ * The default `dragMode`: Control and Alt refuse the press, Shift adds the
  * hits, Meta (Command) toggles them, and a plain press replaces the
- * selection.
+ * selection. `shouldStartDrag` can still allow a refused press.
  */
 export function dragSelectableDefaultDragMode(
   keys: DragSelectableModifierKeys,

@@ -1,5 +1,6 @@
 /**
- * The start rules for a `pointerdown` inside a web provider: the claim that
+ * The start rules for a `pointerdown` that reaches a web provider: the check
+ * that the provider element contains the pressed element, the claim that
  * gives a press to the innermost active provider, the fixed rules, and the
  * default rules with the app's final answer.
  */
@@ -41,7 +42,7 @@ export type DragSelectablePressEvent = {
 export type DragSelectablePressContext = {
   hasEnabledTarget: () => boolean;
   options: DragSelectableResolvedOptions;
-  /** The provider element, which received the press. */
+  /** The provider element, whose `pointerdown` handler received the press. */
   provider: Element;
   targets: () => Iterable<DragSelectableTargetRegistration>;
 };
@@ -87,12 +88,21 @@ export function dragSelectablePressedElement(
 
 /**
  * Applies the start rules to a `pointerdown`. Returns the accepted press, or
- * `null` when the press must not arm the provider.
+ * `null` when the press must not arm the provider. The provider element must
+ * contain the pressed element: React sends a press inside a portal through
+ * the portal's React parents, so a press in a modal that a page opens reaches
+ * a provider whose element does not contain it. Such a press, and a press
+ * without an element, returns `null` before the claim, so the provider never
+ * takes it.
  */
 export function dragSelectableAcceptPress(
   event: DragSelectablePressEvent,
   context: DragSelectablePressContext,
 ): DragSelectableAcceptedPress | null {
+  const element = dragSelectablePressedElement(event.target);
+  if (!element || !context.provider.contains(element)) {
+    return null;
+  }
   const { options } = context;
   const active = !options.disabled && context.hasEnabledTarget();
   if (!dragSelectableClaimPress(event, active)) {
@@ -102,10 +112,6 @@ export function dragSelectableAcceptPress(
     return null;
   }
   if (event.button !== undefined && event.button !== 0) {
-    return null;
-  }
-  const element = dragSelectablePressedElement(event.target);
-  if (!element) {
     return null;
   }
   const point = { x: event.clientX, y: event.clientY };

@@ -55,8 +55,9 @@ function StatusList() {
 ```
 
 The list carries the drag-select ignore marker (`data-drag-select-ignore`),
-so a page-wide `DragSelectableProvider` never starts a selection box over a
-reorder.
+so by default a page-wide `DragSelectableProvider` does not start a selection
+box over a reorder. The provider's `shouldStartDrag` option can still allow
+such a press.
 
 ### The reorder contract
 

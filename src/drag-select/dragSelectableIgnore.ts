@@ -1,6 +1,7 @@
 /**
- * The ignore marker: a press on or inside a marked element never starts a
- * drag. Library gesture surfaces carry it, and apps spread it on their own.
+ * The ignore marker: the default start rules refuse a press on or inside a
+ * marked element, and `shouldStartDrag` can still allow it. Library gesture
+ * surfaces carry the marker, and apps spread it on their own.
  */
 
 /** The attribute that both spellings of the marker write. */

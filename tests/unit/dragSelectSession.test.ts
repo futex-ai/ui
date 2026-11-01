@@ -1,9 +1,18 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { dragSelectableClaimPress } from "../../src/drag-select/dragSelectablePress";
+import { dragSelectableResolveOptions } from "../../src/drag-select/dragSelectableOptions";
+import {
+  dragSelectableAcceptPress,
+  dragSelectableClaimPress,
+} from "../../src/drag-select/dragSelectablePress";
 import { startDragSelectableSession } from "../../src/drag-select/dragSelectableSession";
 
+import {
+  asElement,
+  FakeElement,
+  withFakeDomGlobals,
+} from "./dragSelectFakeDom";
 import {
   attached,
   fakeSessionEnv,
@@ -193,6 +202,26 @@ test("drag-select gives a press to the innermost active provider", () => {
   const inactiveInner = {};
   assert.equal(dragSelectableClaimPress(inactiveInner, false), false);
   assert.equal(dragSelectableClaimPress(inactiveInner, true), true);
+});
+
+test("drag-select refuses a press outside the provider element without claiming it", () => {
+  const provider = new FakeElement();
+  const portalContent = new FakeElement();
+  const outside = {
+    clientX: 300,
+    clientY: 25,
+    target: asElement(portalContent),
+  };
+  withFakeDomGlobals(() => {
+    const accepted = dragSelectableAcceptPress(outside, {
+      hasEnabledTarget: () => true,
+      options: dragSelectableResolveOptions({}),
+      provider: asElement(provider),
+      targets: () => [],
+    });
+    assert.equal(accepted, null);
+  });
+  assert.equal(dragSelectableClaimPress(outside, true), true);
 });
 
 test("drag-select starts the drag effects at the start, not at the press", () => {

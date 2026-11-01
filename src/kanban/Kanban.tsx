@@ -271,7 +271,7 @@ export function Kanban<Card>({
       accessibilityState={loading ? { busy: true } : undefined}
       aria-busy={loading || undefined}
       // The drag hit-tests cards within this container (web); on native the
-      // binder is inert. The marker keeps a page-wide drag-select off the board.
+      // binder is inert. The marker keeps page drag-select off by default.
       {...dragSelectableIgnoreProps}
       ref={drag.bindBoard.ref}
       role={accessibilityLabel ? "group" : undefined}

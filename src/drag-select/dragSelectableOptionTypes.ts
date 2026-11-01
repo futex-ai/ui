@@ -80,11 +80,17 @@ export type DragSelectableOptions = {
   autoScroll?: boolean;
   /** Turns the provider off: no press arms and a running drag cancels. */
   disabled?: boolean;
-  /** Maps the modifier keys of a press to a mode, or to `null` for no drag. */
+  /**
+   * Maps the modifier keys of a press to a mode, or to `null` to refuse the
+   * press. `shouldStartDrag` can still allow a refused press.
+   */
   dragMode?: (
     keys: DragSelectableModifierKeys,
   ) => DragSelectableDragMode | null;
-  /** CSS selectors of regions where a press never starts a drag. */
+  /**
+   * CSS selectors of regions where the default rules refuse a press.
+   * `shouldStartDrag` can still allow it.
+   */
   ignore?: string | readonly string[];
   /** Text in the top-left corner of the default box. `null` shows none. */
   marqueeLabel?: string | null;

@@ -63,8 +63,9 @@ a full deck with in/out marks, loop, speed, and metering in an editor.
 
 `NumberScrubber` carries the drag-select ignore marker
 (`data-drag-select-ignore`), and `Scrubber` is a `slider`, which drag-select
-refuses already, so a page-wide `DragSelectableProvider` never starts a
-selection box over a scrub.
+refuses as a field, so by default a page-wide `DragSelectableProvider` does
+not start a selection box over a scrub. The provider's `shouldStartDrag`
+option can still allow such a press.
 
 ### The property model
 

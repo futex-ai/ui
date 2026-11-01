@@ -87,8 +87,9 @@ const [rows, setRows] = useState<DataGridRow[]>([
 
 The grid element (`role="grid"`, with the header, the resize handles, and
 the body) carries the drag-select ignore marker (`data-drag-select-ignore`),
-so a page-wide `DragSelectableProvider` never starts a selection box over the
-grid's own cell-range drag.
+so by default a page-wide `DragSelectableProvider` does not start a selection
+box over the grid's own cell-range drag. The provider's `shouldStartDrag`
+option can still allow such a press.
 
 ### Field types
 

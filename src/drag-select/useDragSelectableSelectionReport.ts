@@ -37,8 +37,9 @@ function defaultSelectionAnnouncement(count: number): string {
 /**
  * After each render, reports a change of the rendered selection once through
  * `onSelectionChange`, and announces the change when a proposal made it.
- * When a page hook starts to set `selectedIds`, its selection is the page's
- * starting selection: the report starts again from it and says nothing.
+ * When a page hook becomes the source of `selectedIds` and the previous
+ * source was not a newer hook, its selection is the page's starting
+ * selection: the report starts again from it and says nothing.
  */
 export function useDragSelectableSelectionReport({
   owner,

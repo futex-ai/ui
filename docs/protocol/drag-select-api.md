@@ -10,26 +10,26 @@ declarations give the exact types. The behavior behind them is in
 `DragSelectableProvider` and `useDragSelectableOptions` both take these
 options.
 
-| Option                       | Default                          | Meaning                                                                                    |
-| ---------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------ |
-| `disabled`                   | `false`                          | No press arms, an active drag cancels, and keyboard changes are ignored.                   |
-| `ignore`                     | none                             | CSS selectors, combined across layers. A press on or inside a match does not start a drag. |
-| `startFromControls`          | `true`                           | A press on a control inside an enabled target can start a drag.                            |
-| `minimumDragDistance`        | `4`                              | Pixels of movement before a drag starts.                                                   |
-| `minimumControlDragDistance` | `10`                             | Pixels for a press on a control. The larger of the two distances applies.                  |
-| `dragMode`                   | `dragSelectableDefaultDragMode`  | Maps the modifier keys to a mode, or to `null` for no drag.                                |
-| `shouldStartDrag`            | none                             | Gives the final answer for each press that passes the fixed rules.                         |
-| `preventTextSelection`       | `true`                           | Blocks text selection from the start of the drag to the release.                           |
-| `autoScroll`                 | `true`                           | Scrolls the press's scroll container while the pointer is near its edges.                  |
-| `selectedIds`                | none                             | Makes the selection controlled when it is defined.                                         |
-| `onSelectedIdsChange`        | none                             | Receives each proposed selection.                                                          |
-| `onSelectionChange`          | none                             | Receives each change of the rendered selection.                                            |
-| `selectionScope`             | none                             | Names the page or view of an uncontrolled selection. A change clears the selection.        |
-| `selectionAnnouncement`      | `"N items selected"`             | Live-region text for an applied proposal. An empty string announces nothing.               |
-| `overlayZIndex`              | `DRAG_SELECTABLE_LAYERS.overlay` | The z-index of the box layer.                                                              |
-| `marqueeLabel`               | `null`                           | Text in the top-left corner of the box. `null` shows no label.                             |
-| `selectionLabel`             | `"N item"` / `"N items"`         | Badge text. `null` hides the badge.                                                        |
-| `renderMarquee`              | none                             | Replaces the box, the label, and the badge.                                                |
+| Option                       | Default                          | Meaning                                                                                       |
+| ---------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------- |
+| `disabled`                   | `false`                          | No press arms, an active drag cancels, and keyboard changes are ignored.                      |
+| `ignore`                     | none                             | CSS selectors, combined across layers. The default rules refuse a press on or inside a match. |
+| `startFromControls`          | `true`                           | A press on a control inside an enabled target can start a drag.                               |
+| `minimumDragDistance`        | `4`                              | Pixels of movement before a drag starts.                                                      |
+| `minimumControlDragDistance` | `10`                             | Pixels for a press on a control. The larger of the two distances applies.                     |
+| `dragMode`                   | `dragSelectableDefaultDragMode`  | Maps the modifier keys to a mode, or to `null` to refuse the press.                           |
+| `shouldStartDrag`            | none                             | Gives the final answer for each press that passes the fixed rules.                            |
+| `preventTextSelection`       | `true`                           | Blocks text selection from the start of the drag to the release.                              |
+| `autoScroll`                 | `true`                           | Scrolls the press's scroll container while the pointer is near its edges.                     |
+| `selectedIds`                | none                             | Makes the selection controlled when it is defined.                                            |
+| `onSelectedIdsChange`        | none                             | Receives each proposed selection.                                                             |
+| `onSelectionChange`          | none                             | Receives each change of the rendered selection.                                               |
+| `selectionScope`             | none                             | Names the page or view of an uncontrolled selection. A change clears the selection.           |
+| `selectionAnnouncement`      | `"N items selected"`             | Live-region text for an applied proposal. An empty string announces nothing.                  |
+| `overlayZIndex`              | `DRAG_SELECTABLE_LAYERS.overlay` | The z-index of the box layer.                                                                 |
+| `marqueeLabel`               | `null`                           | Text in the top-left corner of the box. `null` shows no label.                                |
+| `selectionLabel`             | `"N item"` / `"N items"`         | Badge text. `null` hides the badge.                                                           |
+| `renderMarquee`              | none                             | Replaces the box, the label, and the badge.                                                   |
 
 The default announcement is `"Selection cleared"` for zero ids, else
 `"1 item selected"` or `"N items selected"`. Both distances use the same
@@ -85,8 +85,8 @@ the matching count, ids, and targets, and the drag mode.
   proposal of a drag, in the order that the protocol gives.
 - Spread `dragSelectableIgnoreProps` on a library primitive (`View`,
   `Pressable`, `Text`) and `dragSelectableIgnoreDomProps` on a raw DOM
-  element. Both write `data-drag-select-ignore="true"`, so a press inside the
-  element never starts a drag.
+  element. Both write `data-drag-select-ignore="true"`, so the default rules
+  refuse a press inside the element. `shouldStartDrag` can still allow it.
 - `dragSelectableIdsEqual` compares two id lists in order. The provider
   compares selections as sets instead.
 - `DRAG_SELECTABLE_LAYERS`, `dragSelectableOverlayClearsSurface`, and the
@@ -98,11 +98,12 @@ the matching count, ids, and targets, and the drag mode.
 ## Library Gesture Surfaces
 
 Library components that own a pointer gesture carry the ignore marker on
-their gesture root, so a page-wide provider never starts over them: the
-calendar time-grid day columns and the month grid, the data grid with its
-header, resize handles, and body, the kanban board, the sortable list, the
-timeline ruler and track lanes, and the video-editor `NumberScrubber`. The
-video-editor `Scrubber` and the timeline ruler are `slider`s on web, which
-the field rule refuses. `useChartScrub` from `@firna/ui/chart` has no web
-gesture, so it needs no marker. An app that uses its handlers on web adds
-the marker itself.
+their gesture root, so by default a page-wide provider does not start a drag
+over them: the calendar time-grid day columns and the month grid, the data
+grid with its header, resize handles, and body, the kanban board, the
+sortable list, the timeline ruler and track lanes, and the video-editor
+`NumberScrubber`. The video-editor `Scrubber` and the timeline ruler are
+`slider`s on web, which the field rule refuses. `shouldStartDrag` can still
+allow a press that the ignore rule or the field rule refuses. `useChartScrub`
+from `@firna/ui/chart` has no web gesture, so it needs no marker. An app that
+uses its handlers on web adds the marker itself.

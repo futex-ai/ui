@@ -1,16 +1,21 @@
 /**
- * Library gesture surfaces on the invoices page of the drag-select app shell:
- * a data grid and a sortable list. Both mark their gesture roots with the
- * drag-select ignore marker, so a drag inside them never draws a selection
- * box over the page.
+ * Library surfaces on the invoices page of the drag-select app shell, where a
+ * press must not start a page drag. The data grid and the sortable list mark
+ * their gesture roots with the drag-select ignore marker, so a drag inside
+ * them draws no selection box over the page. The note modal draws through a
+ * portal outside the provider element, so the provider ignores a press inside
+ * it, although React sends that press through the page to the provider.
  */
 import { useState } from "react";
 import { StyleSheet, Text, View } from "../primitives/reactNative";
 
 import {
   applySortableMove,
+  Button,
   DataGrid,
+  Input,
   SortableList,
+  WebModalFrame,
   useSharedUiTheme,
   type DataGridColumn,
   type DataGridRow,
@@ -38,6 +43,37 @@ const initialTemplates: Template[] = [
   { id: "tpl_retainer", name: "Monthly retainer" },
   { id: "tpl_deposit", name: "Deposit request" },
 ];
+
+/**
+ * The "Add a note" button and its modal. The page renders it, so the modal is
+ * in the page's React subtree, while its portal draws it under the document
+ * body, outside the provider element.
+ */
+export function InvoiceNote() {
+  const [open, setOpen] = useState(false);
+  const [note, setNote] = useState("");
+  const close = () => setOpen(false);
+  return (
+    <View style={styles.note}>
+      <Button hasPopup="dialog" onPress={() => setOpen(true)} size="sm">
+        Add a note
+      </Button>
+      <WebModalFrame
+        footer={
+          <Button onPress={close} tone="primary">
+            Done
+          </Button>
+        }
+        onClose={close}
+        size="sm"
+        title="Add a note"
+        visible={open}
+      >
+        <Input label="Note" onChangeText={setNote} value={note} />
+      </WebModalFrame>
+    </View>
+  );
+}
 
 export function InvoiceTools() {
   const theme = useSharedUiTheme();
@@ -103,6 +139,7 @@ export function InvoiceTools() {
 const styles = StyleSheet.create({
   grid: { height: 170 },
   heading: { fontSize: 14, fontWeight: "800", marginTop: 20 },
+  note: { alignItems: "flex-start", marginBottom: 16 },
   template: {
     borderRadius: 8,
     borderWidth: 1,

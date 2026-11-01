@@ -129,8 +129,9 @@ The consumer owns persistence — `onCreateEvent` hands you the range; you decid
 whether to open an editor, push to state, or POST it.
 
 The time-grid day columns and the month grid carry the drag-select ignore
-marker (`data-drag-select-ignore`), so a page-wide `DragSelectableProvider`
-never starts a selection box over drag-to-create.
+marker (`data-drag-select-ignore`), so by default a page-wide
+`DragSelectableProvider` does not start a selection box over drag-to-create.
+The provider's `shouldStartDrag` option can still allow such a press.
 
 ## Time-grid config
 

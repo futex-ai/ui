@@ -814,23 +814,27 @@ that the user chose on 2026-11-01. Each code fix starts with a failing test.
 
 Depends on: Milestone 9.
 
-- [ ] R13: a new owner of `selectedIds` starts a page selection only when
+- [x] R13: a new owner of `selectedIds` starts a page selection only when
       its layer is newer than the previous owner. Test: the reverse case in
       the unit test of the owner rule.
-- [ ] R12 fixture: on the Invoices page of the "Page shell" story, an "Add a
+- [x] R12 fixture: on the Invoices page of the "Page shell" story, an "Add a
       note" button opens a `WebModalFrame` with a note field. The modal
       renders inside the page, so React sends its presses to the provider.
-- [ ] R12: the provider refuses a press whose element is outside the
+- [x] R12: the provider refuses a press whose element is outside the
       provider element, before it claims the press. Test: a browser test
       drags from the note field to a row behind the modal, and no row is
       selected.
-- [ ] R14: the doc comments, the drag-select README, the option reference,
+- [x] Add a unit test that fails when the containment check moves after the
+      claim, so an outer provider can still take a press that an inner
+      provider refuses for this reason.
+- [x] R14: the doc comments, the drag-select README, the option reference,
       and the library READMEs say that the ignore marker and `ignore` refuse
       a press by default, and that `shouldStartDrag` can still allow it. The
       same applies to the Control and Alt refusal of the default `dragMode`.
-- [ ] Update the protocol doc and the drag-select README for R12 and R13.
-- [ ] Run each new browser test 10 times.
-- [ ] Run `cargo xtask check`.
+- [x] Update the protocol doc and the drag-select README for R12 and R13.
+- [x] Run each new browser test 10 times: 10 of 10 passed.
+- [x] Run `cargo xtask check`: passed
+      (`.context/drag-select-options/logs/gate-4.log`).
 - [ ] Run `git add -A`, commit with Conventional Commits, and push.
 - [ ] Review the branch with the `implementation-review` skill against
       `origin/main` after the push. Record each round in the findings file

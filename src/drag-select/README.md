@@ -104,7 +104,9 @@ function TransactionRow({ row }) {
 - Selection ids are a set. Their order carries no meaning, and an id listed
   twice in `selectedIds` or `defaultSelectedIds` counts once.
 - A page that passes a restored selection through the page hook starts with
-  it: the provider does not report that starting selection as a change.
+  it: the provider does not report that starting selection as a change. When
+  a newer hook that sets `selectedIds` leaves, the older hook's selection
+  comes back, and the provider reports it as a change.
 - Scope: when `selectionScope` changes, the uncontrolled selection clears,
   so each page in a shell starts empty, even when two pages show the same
   records.
@@ -122,11 +124,11 @@ function TransactionRow({ row }) {
 | Option                       | Default                  | Use                                                    |
 | ---------------------------- | ------------------------ | ------------------------------------------------------ |
 | `disabled`                   | `false`                  | Turn the provider off. An active drag cancels.         |
-| `ignore`                     | none                     | CSS selectors where a press never starts a drag.       |
+| `ignore`                     | none                     | CSS selectors where the default rules refuse a press.  |
 | `startFromControls`          | `true`                   | Let a press on a control inside a row start a drag.    |
 | `minimumDragDistance`        | `4`                      | Pixels of movement before the drag starts.             |
 | `minimumControlDragDistance` | `10`                     | Pixels for a press on a control.                       |
-| `dragMode`                   | Shift adds, Meta toggles | Map modifier keys to a mode, or to `null` for no drag. |
+| `dragMode`                   | Shift adds, Meta toggles | Map modifier keys to a mode. `null` refuses the press. |
 | `shouldStartDrag`            | none                     | Final answer for each press, with the default answer.  |
 | `preventTextSelection`       | `true`                   | Block text selection during a drag.                    |
 | `autoScroll`                 | `true`                   | Scroll the container near its edges during a drag.     |
@@ -145,6 +147,10 @@ Provider-only props: `accessibilityLabel`, `children`, `defaultSelectedIds`,
 
 ## Start Rules
 
+The provider ignores a press outside its element, such as a press in a
+modal that a page opens through a portal, although React sends that press
+to the provider.
+
 A press inside the provider starts nothing when the provider is disabled or
 has no enabled target, for touch and for every button but the main one, and
 on a scrollbar (classic, or a 16px overlay zone at the far edge of a
@@ -162,12 +168,13 @@ container whose scrollbar takes no space). Then the default rules refuse:
   without movement still activates it.
 
 `shouldStartDrag(start)` receives the default answer (`start.allowed`,
-`start.reason`) and returns the final one.
+`start.reason`) and returns the final one, so it can still allow a press that
+a default rule refused.
 
-Mark any region where a press must never start a drag with the ignore
-marker. The library's own gesture surfaces carry it already: the data grid,
-the calendar time grid and month grid, the kanban board, the sortable list,
-the timeline ruler and lanes, and `NumberScrubber`. The video-editor
+Mark a region with the ignore marker so that the default rules refuse a press
+there. The library's own gesture surfaces carry the marker already: the data
+grid, the calendar time grid and month grid, the kanban board, the sortable
+list, the timeline ruler and lanes, and `NumberScrubber`. The video-editor
 `Scrubber` is a `slider`, which the field rule refuses.
 
 ```tsx

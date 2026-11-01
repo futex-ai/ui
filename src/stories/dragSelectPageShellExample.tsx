@@ -32,7 +32,7 @@ import {
   ShellRowView,
   type ShellPageId,
 } from "./dragSelectShellRow";
-import { InvoiceTools } from "./dragSelectShellTools";
+import { InvoiceNote, InvoiceTools } from "./dragSelectShellTools";
 
 /** Counts the provider's `onSelectionChange` calls for the status line. */
 type SelectionLog = { calls: number; lastIds: string };
@@ -142,6 +142,7 @@ function ShellPage({
       <Text style={[styles.body, { color: theme.colors.muted }]}>
         {shellPages[page].body}
       </Text>
+      {page === "invoices" ? <InvoiceNote /> : null}
       <ShellStatus log={log} opened={opened} />
       <View
         style={[

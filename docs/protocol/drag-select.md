@@ -57,8 +57,11 @@ renders the same provider and selection state, but has no drag gesture.
 
 ## Start Rules
 
-The web provider checks each press inside its element in this order. A press
-that passes every rule arms the provider.
+The web provider ignores a press outside its element, such as a press in
+content that a portal draws elsewhere, and does not take it. Decision: the
+provider checks containment, rather than marking each portal with the ignore
+marker, because an app's own portals carry none. It checks each press inside
+its element in this order. A press that passes every rule arms the provider.
 
 Fixed rules. No option overrides them.
 
@@ -104,10 +107,9 @@ including the provider element.
    `button`, `checkbox`, `image`, `radio`, `reset`, or `submit`, and the roles
    `button`, `link`, `checkbox`, `radio`, `switch`, `tab`, `menuitem`,
    `menuitemcheckbox`, `menuitemradio`, and `option`. A target's root element
-   and the element that carries its `a11yProps` count as the target, not as
-   a control, even with the `checkbox` role. The control search stops at the
-   innermost target that contains the press, so a control that contains the
-   target root does not count.
+   and the element that carries its `a11yProps` count as the target, not as a
+   control, even with the `checkbox` role. The control search stops at the
+   press's target, so a control that contains the target root does not count.
 10. `shouldStartDrag(start)`, when set, gives the final answer. When it
     allows a press that `dragMode` refused, the mode is `replace`.
 
@@ -164,10 +166,9 @@ the document. Auto-scroll stops on release and on every cancel.
 ## Selection
 
 - Selection ids are a set. The order of ids carries no meaning. The provider
-  compares a proposal with the current selection as sets, and a controlled
-  app may keep its ids in any order. An id that `selectedIds` or
-  `defaultSelectedIds` lists more than once counts once, at its first
-  position.
+  compares a proposal with the current selection as sets, and a controlled app
+  may keep its ids in any order. An id listed more than once in `selectedIds`
+  or `defaultSelectedIds` counts once, at its first position.
 - `dragSelectableNextSelection` defines the order of its result: `replace`
   returns the hits. `add` returns the current ids, then the hits that are not
   current. `toggle` returns the current ids without the hits, then the hits
@@ -177,15 +178,15 @@ the document. Auto-scroll stops on release and on every cancel.
   `keyboard`. A disabled provider ignores keyboard changes.
 - The provider skips a proposal whose set equals the current set.
 - Controlled, when the merged options define `selectedIds`: the provider
-  stores nothing. It calls `onSelectedIdsChange(proposal, change)` and
-  renders `selectedIds`. A proposal that the app does not apply changes
-  nothing.
+  stores nothing. It calls `onSelectedIdsChange(proposal, change)` and renders
+  `selectedIds`. A proposal that the app does not apply changes nothing.
 - Uncontrolled: the provider starts from `defaultSelectedIds`, applies each
   proposal, and also calls `onSelectedIdsChange`.
-- Starting selection: when a page hook starts to set `selectedIds`, that
-  selection is the page's starting selection. The provider does not report
-  it through `onSelectionChange` and does not announce it. Later changes
-  report as usual.
+- Starting selection: when a page hook becomes the source of `selectedIds` and
+  the previous source was not a newer hook, that selection is the page's
+  starting selection, which the provider does not report through
+  `onSelectionChange` or announce. Later changes report as usual, also the
+  return of an older hook's selection when a newer hook stops setting it.
 - Scope: `selectionScope` names the page or view that an uncontrolled
   selection belongs to. When the merged value changes, the stored selection
   clears, and the new scope never shows the old selection. A scope that
@@ -195,15 +196,14 @@ the document. Auto-scroll stops on release and on every cancel.
   unique ids across pages, because two pages can show the same records.
 - Last target gone: when the last registered target unregisters and none of
   the selected ids registers again in the same task, the stored selection
-  clears. The rule applies with or without a scope. Without a scope, it is
-  the rule that clears the selection on a page change. A remount of the same
-  targets keeps the selection. In
-  uncontrolled mode the clear fires `onSelectionChange` with an empty
-  selection. The clear is not a proposal, so it is not announced and
-  `onSelectedIdsChange` does not fire. A filter or a reload that leaves zero
-  rows also clears the selection. Decision: the provider waits for the end
-  of the task, rather than clearing at once, because a development remount
-  of the same rows must keep the selection.
+  clears. The rule applies with or without a scope. Without a scope, it is the
+  rule that clears the selection on a page change. A remount of the same
+  targets keeps the selection. In uncontrolled mode the clear fires
+  `onSelectionChange` with an empty selection. The clear is not a proposal, so
+  it is not announced and `onSelectedIdsChange` does not fire. A filter or a
+  reload that leaves zero rows also clears the selection. Decision: the
+  provider waits for the end of the task, rather than clearing at once,
+  because a development remount of the same rows must keep the selection.
 - `onSelectionChange(selection)` fires when the rendered selection changes
   as a set, from any source, except for the initial selection and a page's
   starting selection.

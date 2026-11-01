@@ -64,3 +64,35 @@ export class FakeElement {
 export function asElement(element: FakeElement): Element {
   return element as unknown as Element;
 }
+
+const fakeDomGlobals = ["Element", "Node"] as const;
+
+/**
+ * Runs `run` while the `Element` and `Node` globals are `FakeElement`, so a
+ * fake element passes the `instanceof` checks of the code under test. The
+ * previous globals come back afterwards, also when `run` throws.
+ */
+export function withFakeDomGlobals(run: () => void): void {
+  const previous = fakeDomGlobals.map((name) =>
+    Object.getOwnPropertyDescriptor(globalThis, name),
+  );
+  for (const name of fakeDomGlobals) {
+    Object.defineProperty(globalThis, name, {
+      configurable: true,
+      value: FakeElement,
+      writable: true,
+    });
+  }
+  try {
+    run();
+  } finally {
+    fakeDomGlobals.forEach((name, index) => {
+      const descriptor = previous[index];
+      if (descriptor) {
+        Object.defineProperty(globalThis, name, descriptor);
+      } else {
+        Reflect.deleteProperty(globalThis, name);
+      }
+    });
+  }
+}
