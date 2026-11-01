@@ -6,9 +6,6 @@ Marks are painted in SVG; every piece of chrome (titles, axis labels, legend,
 tooltip, table view) is real `View`/`Text`, so font tokens, theming, assistive
 technology and RTL keep working.
 
-Design and the colour derivation live in
-[`plans/charts-design.md`](../../plans/charts-design.md).
-
 ## Responsibilities
 
 - Turn a measured container into a plot rect, with the axis and legend bands
@@ -39,8 +36,7 @@ Design and the colour derivation live in
 | Too many series for one plot | `ChartGrid` (small multiples)                                               |
 
 The specialist tail — candlestick, box plot, gantt, treemap, sankey, radar and
-shared-axis combo — is a documented backlog in
-[`plans/charts-component-family.md`](../../plans/charts-component-family.md).
+shared-axis combo — is not yet implemented.
 **Dual-axis charts are excluded by construction**: there is no `yAxis2` prop
 anywhere, because aligning two scales on one plot invents a correlation that is
 not in the data.

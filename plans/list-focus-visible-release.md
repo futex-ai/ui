@@ -1,5 +1,14 @@
 # List Focus-Visible Regression And 2.0.1 Release
 
+Status: Completed. [PR #157](https://github.com/futex-ai/ui/pull/157) merged on
+2026-08-22. Delivered: exact Chromium coverage proves 2.0.0 painted List rings
+after pointer focus while the PR #154 source passes; the full-row and
+title-column interaction contracts are documented, all 1,058 unit and 310
+browser tests pass, and `@firna/ui@2.0.1` is published. M5 adds the requested
+modal repository-picker Storybook fixture with rich title content and a
+decorative chevron. The required post-push AI review was attempted twice but
+could not authenticate in the sandbox, so it produced no findings.
+
 ## Goal
 
 Prove that the shared focus-visible fix from PR #154 resolves the List pointer

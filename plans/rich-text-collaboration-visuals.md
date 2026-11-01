@@ -1,5 +1,19 @@
 # Rich Text Collaboration Visuals
 
+Status: Completed. [PR #152](https://github.com/futex-ai/ui/pull/152) merged on
+2026-08-21. Delivered: the visual layer for a document worked on by more than
+one person. `RichTextEditor` gains an optional overlay (collaborators, tracked
+changes, comment threads, live presence) drawn from one pure projection — a
+per-block tiling of runs plus caret offsets — so web and native render the same
+resolution rules. Web draws semantic `ins` / `del` / `mark` plus zero-width
+non-editable caret markers inside the `contentEditable` tree, with the
+serializer seeing through `data-rt-deco` so a tracked deletion never comes back
+as `~~strikethrough~~`; native draws attributed runs and per-block presence
+discs. Two composable surfaces ship alongside: `RichTextPresenceBar` and
+`RichTextCollabRail`. M1–M5 complete and `npm run verify` green; range
+re-anchoring, a clean view, and the on-device native pass are the deferred
+items.
+
 Add the visual layer for a rich-text document worked on by more than one
 person: history tracking ("track changes"), comment threads, and live editing
 for two users.

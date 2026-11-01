@@ -1,5 +1,17 @@
 # Dark mode
 
+Status: Completed. [PR #141](https://github.com/futex-ai/ui/pull/141) merged on
+2026-08-05. Delivered: two dark presets (`darkSharedUiTheme`,
+`junoDarkSharedUiTheme`) built on WCAG-validated palettes, a `colors.onSolid`
+token replacing every hardcoded inverse white (23 audited sites across 12
+files), a `theme.scheme` flag for the four physical-metaphor branches (switch
+knob, skeleton sheen, toast wash, data-grid pills), a `base` parameter on
+`createSharedUiTheme` so branded overrides can extend a dark preset, and 14
+opt-in dark Storybook stories gated by the axe sweep plus pinned computed
+colors. Contrast unit tests pin every documented pair across all four themes.
+M1–M5 complete and `npm run verify` green; the manual on-device dark smoke of
+the native Storybook host is the one deferred item.
+
 Ship first-class dark mode as **two new shipped theme presets** —
 `darkSharedUiTheme` (dark counterpart of the accounting default) and
 `junoDarkSharedUiTheme` (dark Juno) — plus the two small primitives the

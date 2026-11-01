@@ -1,8 +1,6 @@
 # Easier Component Testing Without Test Ids
 
-## Status
-
-In progress — Milestones 1–3 complete and verified (`npm run verify` green); Milestones 4–8 remaining.
+Status: Active. Milestones 1–3 (dropdown, radio, segmented) complete and verified (`npm run verify` green); Milestones 4–8 remaining.
 
 ## Goal
 

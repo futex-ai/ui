@@ -169,6 +169,4 @@ npm run test:browser
 ### Related Docs
 
 - [Web overlays protocol](../../docs/protocol/web-overlays.md).
-- [Web modal stack plan](../../plans/web-modal-stack.md).
-- [Shared dropdown and modal library plan](../../plans/shared-dropdown-modal-library.md).
 - [Dropdown boundary](../dropdown/README.md).

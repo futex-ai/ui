@@ -1,5 +1,10 @@
 # Rich Text Editor component
 
+Status: Completed. [PR #115](https://github.com/futex-ai/ui/pull/115) merged on
+2026-07-22. Delivered: a cross-platform Notion/Linear-style block editor with
+web and native editing, mobile toolbar continuity, and single-submit native
+Return splitting. M1–M4 and M6–M8 are complete; M5 tracks the post-v1 backlog.
+
 A new `@firna/ui` primitive: a Notion / Linear–style **WYSIWYG block editor**
 (`RichTextEditor`, `src/rich-text/`, exported as `@firna/ui/rich-text`). It
 edits rich blocks in place and reports **markdown** on every change, with

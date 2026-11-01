@@ -1,5 +1,12 @@
 # Avatar rounded square
 
+Status: Completed. [PR #137](https://github.com/futex-ai/ui/pull/137) merged on
+2026-08-04. Delivered: `Avatar` gains `shape?: "circle" | "square"` (circle by
+default, so no call site changed). The square's corner radius comes from a pure
+`avatarRadius` module driven by a new themeable `radii.avatarRatio` token
+(default `0.25`, clamped to `[0, 0.5]`), so a rounded square reads identically
+at every size. M1–M2 complete and `npm run verify` green.
+
 Give [`Avatar`](../src/avatar/Avatar.tsx) a first-class `shape` prop so it can
 render a **rounded square** as well as the circular disc it renders today. The
 square's corner radius scales with `size` from a new themeable ratio token, so a
@@ -615,7 +622,7 @@ test, and brings the contract docs back into alignment.
       square)."
 
 - [x] **Step 7 — Update the plan index.** This plan is already listed under
-      **Active** in [`plans/README.md`](README.md). Move that line to the
+      **Active** in [`plans/README.md`](https://github.com/futex-ai/ui/blob/dffd647e32c4114c971b02f7a50e52d13f209124/plans/README.md?plain=1#L5). Move that line to the
       **Completed** section and rewrite its trailing summary to state what
       shipped and that `npm run verify` is green, matching the style of the other
       completed entries.

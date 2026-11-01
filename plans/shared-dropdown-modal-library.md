@@ -1,8 +1,7 @@
 # Shared Dropdown And Modal Library
 
-## Status
-
-Completed.
+Status: Completed. [PR #1](https://github.com/futex-ai/ui/pull/1) merged on
+2026-06-12.
 
 ## Goal
 
