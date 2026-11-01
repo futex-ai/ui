@@ -262,8 +262,7 @@ onMove={(move) => {
 Reordering by dragging is a pointer / physical-keyboard gesture, so on native the
 drag hook is an inert no-op today (mirroring the Kanban card drag). The list
 still renders — including a static grab handle — and order can be driven from a
-consumer's own controls. Native drag / touch reordering is a documented
-follow-up (see `plans/sortable-list-component.md`).
+consumer's own controls. Native drag / touch reordering is not implemented.
 
 ## Styling & theming
 
