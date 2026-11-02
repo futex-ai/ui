@@ -1,8 +1,8 @@
 # Web modal stack
 
-Status: Active. [PR #179](https://github.com/futex-ai/ui/pull/179) is open. Milestones 1 to 5 are
-done. Milestones 6 and 7 apply the user decisions of 2026-11-01: they reserve the scrollbar gutter,
-review the change, and delete this plan before the merge.
+Status: Active. [PR #179](https://github.com/futex-ai/ui/pull/179) is open. Milestones 1 to 5 and 7
+are done. Decision 16 moved the work of milestone 6 to follow-up items. The next commit deletes this
+plan.
 
 `WebModalFrame` is the library's dialog. On web, each open frame portals itself
 straight under `document.body`, marks every other body child `inert` and
@@ -114,6 +114,16 @@ Cal answered the two open items of 2026-10-20:
     unverified on iOS Safari. Chosen over a check on a device before the
     merge (option A), and over the fallback without device evidence
     (option B), which can make the page jump for every consumer.
+
+## User decisions (2026-11-02)
+
+16. **Items 5 and 6 stay as follow-up items.** Cal kept both open items as
+    follow-ups instead of answering them in this branch. The work of
+    decision 14 waits for them, so milestone 6 moves to
+    `plans/follow-ups/scroll-lock-moves-fixed-elements.md`, and this branch
+    merges with the padding lock of milestone 4. Item 5 is
+    `plans/follow-ups/scroll-lock-gutter-strip.md`, and item 6 is
+    `plans/follow-ups/scroll-lock-moves-sticky-headers.md`.
 
 ## Open decisions (2026-11-01)
 
@@ -506,30 +516,10 @@ hides the scrollbar, and each backdrop covers the reserved gutter. It fixes
 review finding 2. Items 5 and 6 block this milestone: Chromium cannot paint
 into a reserved gutter, and the lock moves stuck sticky headers.
 
-- [ ] Update `docs/protocol/web-overlays.md`: fixed-position elements stay
-      in place where the browser supports a stable scrollbar gutter, each
-      backdrop covers the whole window, and the decision in force with its
-      rejected options. Update the scroll-lock lines of `src/modal/README.md`.
-- [ ] Add a browser test with real scrollbars that fails first: a fixed
-      element pinned to the right edge keeps its position when a dialog
-      opens. Save the failing run under `.context/web-modal-stack/` and name
-      the file here.
-- [ ] Add a browser test: the backdrop covers the whole window, also the
-      reserved gutter, and the last close restores `scrollbar-gutter`
-      exactly.
-- [ ] Add the pure lock-strategy choice to `webModalStackModel.ts`, with unit
-      tests: reserve the gutter, pad the body, or change nothing, from the
-      gutter width, the browser support, and the page's own gutter setting.
-- [ ] Reserve the gutter in `webModalScrollLock.ts`, keep the padding
-      fallback, and extend each dialog backdrop over the reserved gutter.
-- [ ] Keep the scroll-lock, modal stack, Storybook, snapshot, and axe tests
-      green. Re-record only the baselines of a story that the change alters.
-- [ ] Smoke test with real scrollbars: a dialog over a page with a fixed
-      element. Save a screenshot under `.context/web-modal-stack/`.
-- [ ] Delete `plans/follow-ups/scroll-lock-moves-fixed-elements.md` in the
-      commit that applies decision 14, and record the answer in the findings
-      file of the branch.
-- [ ] Commit as `fix(modal): keep fixed elements still under the scroll lock`.
+Decision 16 moved this milestone to the follow-up items before it started. Its
+TODOs, the user answer of 2026-11-01, and the design calls are in
+`plans/follow-ups/scroll-lock-moves-fixed-elements.md`. No code of this
+milestone landed.
 
 ## Milestone 7: Verification, review, and plan deletion
 
@@ -538,20 +528,25 @@ Depends on: Milestone 6.
 The change gets its gate and its review. Then the last commit deletes this
 plan, and the pull request description keeps its dated record.
 
-- [ ] Run each new or changed browser test 10 times, and record the pass
-      counts under `.context/web-modal-stack/`.
-- [ ] Run `cargo xtask check`.
-- [ ] Commit with Conventional Commits and push the branch.
-- [ ] Review the complete local diff against `origin/main` with the
+- [x] Run each new or changed browser test 10 times, and record the pass
+      counts under `.context/web-modal-stack/`. No browser test changed
+      after the 10-run check of 2026-11-01: `repeat-10.txt`.
+- [x] Run `cargo xtask check`. CI ran it on `d6cc5b7` and passed. No code
+      changed after that commit.
+- [x] Commit with Conventional Commits and push the branch.
+- [x] Review the complete local diff against `origin/main` with the
       `implementation-review` skill after the push: a review by the
       `first-pass review agent`, then one finding check for each new
       finding. Apply the fix rule: fix the `fix now` findings, record a
       follow-up item for each other finding, re-review once, and report.
-- [ ] Delete this plan, as "Deleting the plan" in the `plans` skill says:
+      No code changed after review round 2 at `ede2202`, so no new round
+      ran.
+- [x] Delete this plan, as "Deleting the plan" in the `plans` skill says:
       turn each post-merge task into a follow-up item, check that the
       protocol docs hold each decision in force, replace links to the plan
-      with permalinks, and delete it in the last commit.
-- [ ] Update the description of PR #179: each user decision and design call
+      with permalinks, and delete it in the last commit. The commit after
+      this one deletes it.
+- [x] Update the description of PR #179: each user decision and design call
       with its date, a permalink to the plan at the commit before the
       deletion, and each follow-up item that the change adds or deletes.
       Push.
@@ -561,17 +556,22 @@ plan, and the pull request description keeps its dated record.
 - [ ] Smoke test on iOS Safari by hand, on an iPhone or the iOS Simulator,
       because the browser tests run in Chromium only: open the stacked story
       and try to scroll the page under the sheet with touch. Moved from
-      milestone 4 by decision 15.
+      milestone 4 by decision 15. Follow-up item:
+      `plans/follow-ups/ios-safari-scroll-lock-check.md`.
 - [ ] When iOS Safari still scrolls the page, fix the body in place instead:
       `position: fixed`, full width, and the saved scroll offset as a negative
       `top`, then restore the offset on the last pop. Keep the offset math in
       `webModalStackModel.ts` with a unit test. Moved from milestone 4 by
-      decision 15.
+      decision 15. Follow-up item:
+      `plans/follow-ups/ios-safari-scroll-lock-check.md`.
 - [ ] Release the package through release-please, expected `4.1.0`.
+      Follow-up item: `plans/follow-ups/release-web-modal-stack.md`.
 - [ ] In `futex-ai/accounting`: bump `@firna/ui`, remove the `Activity` hiding
       in `DeferredProductSettings.tsx` and the wait-for-acknowledgement
       sequencing, update `docs/protocol/settings-dialog.md` and
       `docs/protocol/command-palette.md`, and add a browser test for a palette
-      form over the Settings dialog.
+      form over the Settings dialog. Follow-up item:
+      `plans/follow-ups/adopt-web-modal-stack-in-accounting.md`.
 - [ ] Compare the stacked backdrop look with the app mockups that draw a
       form over the Accounts list, and revisit decision 3 if they differ.
+      Merged into `plans/follow-ups/adopt-web-modal-stack-in-accounting.md`.

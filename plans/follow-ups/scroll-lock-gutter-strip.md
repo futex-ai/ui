@@ -1,0 +1,46 @@
+# Chromium cannot dim the reserved scrollbar gutter
+
+- **Severity:** High. **Effort:** Medium. **Confidence:** High. **Harder later:** No.
+- **Kind:** Needs decision.
+- **Added:** 2026-11-02, from `calummoore/palette-forms-overlay-discussion`.
+- **Location:** `src/modal/webModalScrollLock.ts:26` and `src/modal/webModalFrameStyles.ts:68`.
+- **Reason:** On 2026-11-02 the user kept this decision as a follow-up item, so the branch that found it merged with the current padding lock.
+
+- **Terms:**
+  - **Scroll lock:** the code in `src/modal/webModalScrollLock.ts` that stops the page from scrolling while a web dialog is open.
+  - **Gutter:** the 15 px strip at the right edge of the window where a classic scrollbar sits. Overlay scrollbars, the default on macOS and phones, take no gutter.
+  - **Reserved gutter:** the gutter that stays empty after the lock hides the scrollbar, because the root element has `scrollbar-gutter: stable`.
+  - **Canvas colour:** the colour that the browser paints behind the whole page. It comes from the root element, or from the body when the root has none.
+  - **React Aria:** Adobe's accessibility-focused React library. Its scroll lock is a common reference.
+- **Background:**
+  - On 2026-11-01 the user chose to reserve the gutter while a dialog is open, so that fixed elements stay still, and to let each dialog backdrop cover the reserved gutter. `plans/follow-ups/scroll-lock-moves-fixed-elements.md` holds that work.
+  - Probes ran in Chromium 148 with real 15 px scrollbars and a 900 x 600 window, on the "Stacked web modals" story. With a reserved gutter, a fixed box at the right edge stayed at x = 845, and normal content stayed in place too.
+  - The dialog layer is `position: fixed` with `top`, `right`, `bottom`, and `left` at 0. With a reserved gutter, the layer and its backdrop end at x = 885.
+  - No element painted into the strip from x = 885 to x = 900. A layer that reached x = 900, a box shadow, an outline, a top-layer popover, and a native `<dialog>` backdrop all left the pixel at x = 893 at the page colour rgb(247, 247, 243), next to the dimmed rgb(165, 168, 163). A width of `100vw` measured 885 px.
+  - Only the canvas colour reached the strip: a red root background turned it red. A real click at x = 893 reached `html`, and `document.elementFromPoint` at x = 896 returned `null`.
+  - React Aria reserves the gutter in the same way, and it leaves the same strip. Before this library had a scroll lock, the live scrollbar also stayed undimmed beside the backdrop.
+- **Problem:** The two parts of the user's choice conflict in Chromium. The lock can keep fixed elements still, or the backdrop can cover the whole window, but not both.
+- **Impact if no action:** Fixed elements at the right edge keep moving by the scrollbar width, and the work in `plans/follow-ups/scroll-lock-moves-fixed-elements.md` waits.
+- **Root question:** While a dialog is open on a page with a classic scrollbar, what does the window edge show, and which page elements may move?
+- **Options:**
+  - **A.** Keep the current padding and reserve no gutter. The backdrop covers the whole window. Fixed elements at the right edge move by the scrollbar width, which the user rejected on 2026-11-01. Effort: Small.
+  - **B.** Reserve the gutter and leave the strip uncovered. Every page element stays still when the lock hides the root overflow alone, which `plans/follow-ups/scroll-lock-moves-sticky-headers.md` decides. The strip keeps the page colour, and a click there does nothing. Keep the layer at `right: 0`, because Chromium clips a layer that reaches into the strip. A centered dialog then sits 7.5 px left of the window center, and a bottom sheet ends at the strip. Effort: Medium.
+  - **F.** Drop the page scroll lock: remove `src/modal/webModalScrollLock.ts`, its calls in `src/modal/webModalStack.ts`, its model helper, its tests, and the section "Page Scroll" of `docs/protocol/web-overlays.md`. The page scrolls under the backdrop again, and the live scrollbar stays undimmed at the edge. Effort: Medium.
+  - **C.** Reserve the gutter and tint the strip through the canvas colour. At each open and close, the lock computes the dimmed page colour for the number of open dialogs. It also paints the page colour as a root background image, so only the strip gets the dim colour. It needs one plain page colour, and it relies on a Chromium paint rule that no spec states. Effort: Large.
+  - **D.** Keep the padding, and move each fixed element at the right edge by the scrollbar width. The lock writes inline styles on consumer elements, and it misses elements that appear later. Effort: Large.
+  - **E.** Keep the scrollbar visible but inert. Fix the body in place at its scroll offset, and force a scrollbar on the root element. Fixed and sticky elements stay still, and the edge shows a normal scrollbar track that cannot scroll. While the lock is on, the page scroll offset reads 0, and consumer scroll listeners see one scroll event. The unlock must restore the offset. E is also the iOS Safari fallback of `plans/follow-ups/ios-safari-scroll-lock-check.md`, before that check shows the need. Effort: Large.
+  - **G.** Do E, and set the track colour of the root scrollbar to the dimmed page colour for the number of open dialogs. In a probe, the strip matched the backdrop for one dialog and for two. It costs E plus the colour work of C. Effort: Large.
+- **Left out:**
+  - A layer that covers the strip: Chromium paints no element there, so it fails the goal.
+  - Publish the scrollbar width for consumers: the user rejected it on 2026-11-01, because it adds a public contract and work for each consumer.
+  - Keep the scrollbar and block wheel, touch, and key scrolling: a user can still drag the scrollbar, so the page scrolls.
+  - Snap the page back in a scroll listener: Chromium scrolls on its compositor thread, so the user sees the scrolled frame first.
+  - Reserve the gutter only on pages where a fixed element would move: a toast raised from the dialog then moves when the dialog closes.
+  - Move the fixed elements that consumers mark with a class, as MUI and Radix do: the user rejected a public contract and work for each consumer on 2026-11-01.
+- **Wider fix:** F. The lock has three side effects: fixed elements move, the strip shows, and sticky elements move. Only F removes that class, and it also removes the page scroll lock that the plan of 2026-10-19 added.
+- **Previous examples:** React Aria's `usePreventScroll` ships option B. `plans/follow-ups/scroll-lock-moves-fixed-elements.md` records the movement of fixed elements under option A.
+- **Related:**
+  - `plans/follow-ups/scroll-lock-moves-fixed-elements.md`: the parent item. Its work waits for this answer.
+  - `plans/follow-ups/scroll-lock-moves-sticky-headers.md`: the same code. Under option B, every page element stays still only with option A of that item. Under options E, F, or G, that item falls away.
+- **Recommendation:** B. It keeps every page element still, which is the aim of the user's choice of 2026-11-01, at Medium effort, and React Aria ships the same trade-off. F best protects the codebase, but it removes the page scroll lock.
+- **Action:** ask the user, because the options have real trade-offs. No option keeps fixed elements still and also covers the whole window in Chromium, and the user's choice of 2026-11-01 asked for both.
