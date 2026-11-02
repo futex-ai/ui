@@ -1,9 +1,9 @@
 # Drag select options
 
-Status: Active. Milestones 1 to 9 are delivered on branch
-`calummoore/dragselectableprovider-improvements`. Milestone 10 fixes the
-third review's findings, R12 to R14, with the options that the user chose on
-2026-11-01. Open before merge: the user's manual check of macOS overlay
+Status: Active. Milestones 1 to 10 are delivered on branch
+`calummoore/dragselectableprovider-improvements`, with review rounds 4 and 5
+done. Open before merge: the user's answer to review finding 18, the drag
+start point in a fixed panel, and the user's manual check of macOS overlay
 scrollbars, which needs the pull request's Storybook preview. No PR is open
 yet. The plan closes when its PR merges.
 
