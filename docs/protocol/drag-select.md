@@ -3,8 +3,10 @@
 ## Status
 
 Implemented requirements for `@firna/ui/drag-select` 5.0. The
-[option reference](drag-select-api.md) gives the option defaults, the state,
-the helpers, and the library surfaces that carry the ignore marker.
+[selection rules](drag-select-selection.md) say how a drag or a key changes
+the selection. The [option reference](drag-select-api.md) gives the option
+defaults, the state, the helpers, and the library surfaces that carry the
+ignore marker.
 
 ## Purpose
 
@@ -33,7 +35,8 @@ renders the same provider and selection state, but has no drag gesture.
 - `useDragSelectableSelection()` and `useDragSelectableChanges(listener)`
   expose the state that the option reference lists. A listener runs after
   each state change. The matching fields update while a drag runs, and the
-  selected fields change only through the selection rules below.
+  selected fields change only through the
+  [selection rules](drag-select-selection.md).
 
 ## Option Precedence
 
@@ -74,7 +77,13 @@ Fixed rules. No option overrides them.
    it scrolls, else its nearest scrolling ancestor, else the document. An
    element scrolls on an axis when its computed `overflow` on that axis is
    `auto`, `scroll`, or `overlay`, and its content overflows on that axis or
-   it reserves scrollbar space on that axis.
+   it reserves scrollbar space on that axis. `<body>` counts like any other
+   element, except when the viewport takes its overflow. The viewport takes
+   the overflow of `<body>` when the root element's computed `overflow` is
+   `visible` on both axes, and then the document scrolls. Decision: one rule
+   names the element whose overflow the viewport takes, rather than always
+   treating `<body>` as the document, because a page can scroll `<body>`
+   while the root hides its overflow.
    - Classic scrollbar: the point is inside the container's border box but
      outside its borders and outside its client area.
    - Overlay scrollbar: the content overflows on an axis that the container
@@ -130,7 +139,8 @@ decision) needs the larger of `minimumDragDistance` and
   removes any text highlight, and no text highlights until the release. A
   press without a start blocks no text selection. The start ends the library
   `Pressable` press that the same pointer started, so the control loses its
-  pressed look and does not fire `onPress` on release.
+  pressed look and does not fire `onPress` on release. The control's
+  `onPressOut` receives the pointer event that started the drag.
 - Anchor: the start point stays attached to the content of the press's
   scroll container. A scroll of that container, or of any ancestor that
   moves it, moves the start point with the content. The hit box runs from
@@ -163,62 +173,6 @@ viewport `overflow` is `hidden` or `clip`. The visible edge is the edge of
 the container's client area clipped to the viewport, or of the viewport for
 the document. Auto-scroll stops on release and on every cancel.
 
-## Selection
-
-- Selection ids are a set. The order of ids carries no meaning. The provider
-  compares a proposal with the current selection as sets, and a controlled app
-  may keep its ids in any order. An id listed more than once in `selectedIds`
-  or `defaultSelectedIds` counts once, at its first position.
-- `dragSelectableNextSelection` defines the order of its result: `replace`
-  returns the hits. `add` returns the current ids, then the hits that are not
-  current. `toggle` returns the current ids without the hits, then the hits
-  that were not current. Duplicate ids appear once.
-- Keyboard: Space or Enter proposes `toggle` with the focused target. Shift
-  with an arrow key proposes `replace` with the range. The source is
-  `keyboard`. A disabled provider ignores keyboard changes.
-- The provider skips a proposal whose set equals the current set.
-- Controlled, when the merged options define `selectedIds`: the provider
-  stores nothing. It calls `onSelectedIdsChange(proposal, change)` and renders
-  `selectedIds`. A proposal that the app does not apply changes nothing.
-- Uncontrolled: the provider starts from `defaultSelectedIds`, applies each
-  proposal, and also calls `onSelectedIdsChange`.
-- Starting selection: when a page hook becomes the source of `selectedIds` and
-  the previous source was not a newer hook, that selection is the page's
-  starting selection, which the provider does not report through
-  `onSelectionChange` or announce. Later changes report as usual, also the
-  return of an older hook's selection when a newer hook stops setting it.
-- Scope: `selectionScope` names the page or view that an uncontrolled
-  selection belongs to. When the merged value changes, the stored selection
-  clears, and the new scope never shows the old selection. A scope that
-  comes back later starts empty too. The clear fires `onSelectionChange`
-  when the rendered selection changes, and it is not announced. Decision:
-  the shell names each page with `selectionScope`, rather than requiring
-  unique ids across pages, because two pages can show the same records.
-- Last target gone: when the last registered target unregisters and none of
-  the selected ids registers again in the same task, the stored selection
-  clears. The rule applies with or without a scope. Without a scope, it is the
-  rule that clears the selection on a page change. A remount of the same
-  targets keeps the selection. In uncontrolled mode the clear fires
-  `onSelectionChange` with an empty selection. The clear is not a proposal, so
-  it is not announced and `onSelectedIdsChange` does not fire. A filter or a
-  reload that leaves zero rows also clears the selection. Decision: the
-  provider waits for the end of the task, rather than clearing at once,
-  because a development remount of the same rows must keep the selection.
-- `onSelectionChange(selection)` fires when the rendered selection changes
-  as a set, from any source, except for the initial selection and a page's
-  starting selection.
-- Announcement: a proposal waits for the next change of the rendered
-  selection. When that change makes the rendered selection equal to the
-  proposal, the provider announces it through `selectionAnnouncement` (WCAG
-  2.1 4.1.3). Otherwise it drops the proposal. A new proposal replaces a
-  waiting one. So a change that the app makes on its own, and a proposal
-  that the app changes or rejects, are not announced.
-- `selectedTargets` is a snapshot of the registrations of the selected ids.
-  The provider takes it when the rendered selection or the set of registered
-  targets changes, with the target data current at that moment. An id with
-  no registered target has `data: undefined`. Consumers that need live data
-  map `selectedIds` through their own source.
-
 ## Box And Wrapper
 
 - The box renders through a body-level portal as a fixed, non-interactive
@@ -250,6 +204,6 @@ the document. Auto-scroll stops on release and on every cancel.
 
 The native provider accepts every option and the page hook. It applies
 `selectedIds`, `defaultSelectedIds`, and `selectionScope` to
-`target.selected` and to the selection state, and it follows the selection
-rules. It has no drag gesture and no keyboard handler, so it ignores the
-gesture and box options.
+`target.selected` and to the selection state, and it follows the
+[selection rules](drag-select-selection.md). It has no drag gesture and no
+keyboard handler, so it ignores the gesture and box options.

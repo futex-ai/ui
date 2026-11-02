@@ -1,0 +1,35 @@
+# Press machine accepts hand-built stand-in events
+
+- **Severity:** Medium. **Effort:** Medium. **Confidence:** High. **Harder later:** No.
+- **Kind:** Fix after merge.
+- **Added:** 2026-11-02, from the branch `calummoore/dragselectableprovider-improvements`, finding 16.
+- **Location:** src/primitives/dom/pressMachine.ts:28, src/primitives/dom/pressMachine.ts:85, src/primitives/dom/pressMachine.ts:177, src/primitives/dom/pressMachine.ts:200, src/primitives/dom/pressMachine.ts:258, src/primitives/dom/usePress.ts, tests/unit/domPress.test.ts:87, tests/unit/domPressFakes.ts:66
+- **Reason:** The change reaches the press machine and each of its call sites, which the drag-select branch does not otherwise change, and it serves press paths that the branch does not touch.
+
+- **Terms:**
+  - **Press machine:** the state machine behind the web `Pressable`, in src/primitives/dom/pressMachine.ts. It ports the press responder of `react-native-web`.
+  - **`PressEvent`:** the event type that the press machine functions take, at src/primitives/dom/pressMachine.ts:28. Its `nativeEvent` is any record, and its `target` and `currentTarget` can be `null`.
+  - **`fromDomEvent`:** the function at src/primitives/dom/pressMachine.ts:98 that wraps a real DOM event as a `PressEvent`.
+  - **Stand-in event:** a `PressEvent` that code builds by hand, with no DOM or React event behind it.
+- **Background:**
+  - The web `Pressable` in src/primitives/dom/Pressable.tsx feeds the press machine through `usePress` in src/primitives/dom/usePress.ts.
+  - The machine calls `onPressIn`, `onPressOut`, `onPress`, and `onLongPress` with the event that it gets. `press()` casts that event to `GestureResponderEvent` at src/primitives/dom/pressMachine.ts:178.
+  - The normal paths pass the React event of the host element, or the DOM event of a document listener through `fromDomEvent`.
+  - The exported functions `start`, `receiveSignal`, `press`, and `isValidKeyPress` take `PressEvent`, so any object with its keys compiles.
+- **Problem:** Nothing stops a caller from passing a stand-in event, and the callbacks then get no pointer data. This happened when a drag-select drag started on a pressed `Pressable`: `endPointerPresses` in src/primitives/dom/usePress.ts ended the press with a stand-in event with `nativeEvent: {}` and `null` targets, and in Chromium `onPressOut` got `undefined` coordinates where a normal release gives numbers. That path is fixed: `endPointerPresses` now takes the pointer event that started the drag, and `onPressOut` gets that event.
+- **Impact if no action:** A later path that ends a press without a pointer event, such as another gesture that takes over the pointer, can build a stand-in event again. A callback that reads the coordinates or the targets of that event can then throw or compute wrong values.
+- **Root question:** How does the press machine make sure that every press callback gets an event that a real DOM or React event backs?
+- **Options:**
+  - **A.** Keep the `PressEvent` type, and add a unit test for each path that ends a press. Each test checks that the callback event has numeric coordinates and real targets. Cost: it guards only the paths that have a test, and each new path needs its own test. Effort: Small.
+  - **B.** Make the exported functions `start`, `receiveSignal`, `press`, and `isValidKeyPress` take a real DOM `Event` or a React `SyntheticEvent`, and convert the event inside the machine, so a stand-in event does not compile. Change each call site in src/primitives/dom/usePress.ts. Make the tests build real events in place of the hand-built ones: the `downEvent` at tests/unit/domPress.test.ts:87, and the `pointerDown` helper in tests/unit/domPressFakes.ts. Cost: it changes the press machine and each of its call sites. Effort: Medium.
+- **Left out:**
+  - Fill in the missing fields of a stand-in event: it repeats the event conversion and gives callbacks invented data, so B is better on every point.
+  - Skip `onPressOut` when a press ends without a pointer event: `onPressIn` then has no matching `onPressOut`, which fails the goal.
+  - No event, or an optional event, for `onPressOut`: the callback type is then narrower than the type of React Native. src/primitives/README.md:141 forbids a narrower type, and tests/unit/primitiveTypesCompat.test.ts enforces that rule.
+  - A branded `PressEvent` that only the converters can create: it needs the same call-site changes as B and keeps the conversion at each call site, so B is better on every point.
+  - Change nothing: the fixed path stays fixed, but nothing stops the next path, which fails the goal.
+- **Wider fix:** B. It removes the class: a stand-in event does not compile without a cast.
+- **Previous examples:** The drag-select path under **Problem**. In the tests, tests/unit/domPress.test.ts:87 builds a `downEvent` with `nativeEvent: {}` for the press delay tests, and the `pointerDown` helper in tests/unit/domPressFakes.ts builds a `pointerdown` by hand.
+- **Related:** plans/follow-ups/press-events-miss-responder-fields.md, the same code. Both items change the event that the press machine gives to callbacks, so do them in one branch, or one after the other.
+- **Recommendation:** B. It makes a stand-in event fail to compile, so no later path can give callbacks an empty event. B is also the option that best protects the codebase.
+- **Action:** fix after merge, apply B, because B changes the press machine and each of its call sites, which the drag-select branch does not otherwise change, and it serves press paths that the branch does not touch.

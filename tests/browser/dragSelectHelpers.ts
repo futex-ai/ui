@@ -59,6 +59,29 @@ export async function highlightedText(page: Page): Promise<string> {
   return page.evaluate(() => window.getSelection()?.toString() ?? "");
 }
 
+/** The number of rows that the page-shell status reports as matching. */
+export async function matchingRowCount(page: Page): Promise<number> {
+  const status = await page.getByTestId("page-shell-status").textContent();
+  return Number(/Matching (\d+)/.exec(status ?? "")?.[1] ?? 0);
+}
+
+/** The number of the page-shell transaction row under a point, or `0`. */
+export async function shellRowNumberAt(
+  page: Page,
+  point: Point,
+): Promise<number> {
+  const row = await page.evaluate(
+    ({ x, y }) =>
+      document
+        .elementFromPoint(x, y)
+        ?.closest('[data-testid^="shell-row-"]')
+        ?.getAttribute("data-testid")
+        ?.replace("shell-row-txn_", "") ?? "0",
+    point,
+  );
+  return Number(row);
+}
+
 /** The number of drawn marquee layers. */
 export async function marqueeCount(page: Page): Promise<number> {
   return page.locator("[data-drag-select-marquee]").count();

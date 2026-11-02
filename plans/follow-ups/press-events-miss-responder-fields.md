@@ -1,0 +1,37 @@
+# Press callbacks get events without responder fields
+
+- **Severity:** Medium. **Likelihood:** Rare. **Effort:** Medium. **Confidence:** High. **Harder later:** Yes.
+- **Kind:** Outside the scope.
+- **Added:** 2026-11-02, from the branch `calummoore/dragselectableprovider-improvements`.
+- **Location:** src/primitives/dom/pressMachine.ts:98, src/primitives/dom/pressMachine.ts:178, src/primitives/types/events.ts:25, src/primitives/types/events.ts:60, src/primitives/types/events.ts:105
+- **Reason:** The press machine gave these raw events before the drag-select branch, and that branch does not change how it builds them, so the fix needs a branch of its own.
+
+- **Terms:**
+  - **`GestureResponderEvent`:** the event type of the press callbacks `onPress`, `onPressIn`, `onPressOut`, and `onLongPress`. src/primitives/types/events.ts:105 vendors it from React Native.
+  - **Press machine:** the state machine behind the web `Pressable`, in src/primitives/dom/pressMachine.ts. It ports the press responder of `react-native-web`.
+  - **Host element:** the element type that a vendored event reports as its `target` and `currentTarget`: `HostElement` in src/primitives/types/hostElement.ts.
+- **Background:**
+  - `GestureResponderEvent` is a `NativeSyntheticEvent<NativeTouchEvent>`, at src/primitives/types/events.ts:25 and :60.
+  - Its `nativeEvent` requires `changedTouches`, `identifier`, `locationX`, `locationY`, `pageX`, `pageY`, `target`, `timestamp`, and `touches`. Its `currentTarget` and `target` are host elements.
+  - On web, the press machine gives each callback the raw React event of the host element, or the DOM event of a document listener that `fromDomEvent` wraps, at src/primitives/dom/pressMachine.ts:98. `press()` casts that event to `GestureResponderEvent` at line 178.
+  - `onPress` comes from the DOM `click`, as on the previous backend, `react-native-web` 0.21.2. src/primitives/README.md says so.
+  - src/primitives/README.md:141 says that the vendored types "may be wider than React Native's, never narrower". tests/unit/primitiveTypesCompat.test.ts enforces that rule.
+- **Problem:** Even a plain click gives the callbacks events whose `nativeEvent` has no `locationX`, `timestamp`, or `touches`, and whose `currentTarget` is not a host element, although `GestureResponderEvent` requires them. For example, `onPressOut` after a release gets the `pointerup` of a document listener, so its `currentTarget` is the document. The cast in `press()` hides the gap from the type checker.
+- **Impact if no action:** Code written for React Native that reads `locationX`, `timestamp`, or `touches` in a press callback gets `undefined` on web, and the types do not warn. Each new caller can come to rely on the raw DOM event, which makes the fix harder later.
+- **Root question:** How do web press callbacks get the event that their `GestureResponderEvent` type promises?
+- **Options:**
+  - **A.** Build a full `GestureResponderEvent` in the press machine for every callback:
+    - Fill `nativeEvent` from the DOM event: `locationX` and `locationY` relative to the host element, `pageX` and `pageY`, `timestamp` from the DOM `timeStamp`, `identifier` from the `pointerId`, and `touches` and `changedTouches` with one entry for the pointer.
+    - Set `currentTarget` and `target` to host elements.
+    - Choose the values for a key press, which has no pointer, and record the choice in src/primitives/README.md.
+    - Cost: one conversion for every press path, and a test for each path. Effort: Medium.
+- **Left out:**
+  - Only one approach meets the goal, because the type rule forbids a narrower type.
+  - A narrower event type for web: it breaks the rule in src/primitives/README.md:141, which tests/unit/primitiveTypesCompat.test.ts enforces.
+  - Document the gap and keep the raw events: the type still promises fields that are missing, which fails the goal.
+  - Change nothing: it fails the goal, and each new caller can come to rely on the raw event.
+- **Wider fix:** A. One conversion in the press machine gives every callback the full event, so no path can give a raw event.
+- **Previous examples:** None found.
+- **Related:** plans/follow-ups/press-machine-takes-real-events.md, the same code. Both items change the event that the press machine gives to callbacks, so do them in one branch, or one after the other.
+- **Recommendation:** A. It is the only option that makes the event match the type that callers compile against.
+- **Action:** fix after merge, apply A, because the press machine gave these events before the drag-select branch, and the fix belongs outside that branch.

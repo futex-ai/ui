@@ -201,6 +201,25 @@ test("a drag inside a data grid or a sortable list draws no box", async ({
   await expect(page.getByText("Selected 0 rows")).toBeVisible();
 });
 
+test("a drag that starts in a text field selects no rows", async ({ page }) => {
+  await page.getByRole("button", { name: "Invoices" }).click();
+  const field = await boxOfLocator(
+    page.getByRole("textbox", { name: "Filter invoices" }),
+  );
+  const row = await boxOf(page, "shell-row-inv_4");
+  await page.mouse.move(field.x + 20, field.y + field.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(row.x + 200, row.y + row.height / 2, { steps: 8 });
+  expect(await marqueeCount(page)).toBe(0);
+  await expect(page.getByTestId("page-shell-status")).not.toContainText(
+    "Matching",
+  );
+  await page.mouse.up();
+
+  await expect(page.getByText("Selected 0 rows")).toBeVisible();
+  expect(await checkedRowIds(page)).toEqual([]);
+});
+
 test("a drag from a modal field over the rows behind it selects no rows", async ({
   page,
 }) => {

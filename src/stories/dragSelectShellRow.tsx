@@ -31,14 +31,27 @@ export const shellTransactions: ShellRow[] = Array.from(
   }),
 );
 
-export const shellInvoices: ShellRow[] = Array.from(
+/** An invoice row, with the number that the invoice filter matches. */
+export type ShellInvoice = ShellRow & { number: string };
+
+export const shellInvoices: ShellInvoice[] = Array.from(
   { length: 20 },
-  (_, index) => ({
-    amount: `GBP ${(index * 125 + 240).toFixed(2)}`,
-    id: `inv_${index + 1}`,
-    label: `Invoice INV-${String(index + 1).padStart(4, "0")}`,
-  }),
+  (_, index) => {
+    const number = `INV-${String(index + 1).padStart(4, "0")}`;
+    return {
+      amount: `GBP ${(index * 125 + 240).toFixed(2)}`,
+      id: `inv_${index + 1}`,
+      label: `Invoice ${number}`,
+      number,
+    };
+  },
 );
+
+/** The invoices whose number contains `query`, in any letter case. */
+export function invoicesWithNumber(query: string): ShellInvoice[] {
+  const wanted = query.trim().toUpperCase();
+  return shellInvoices.filter((invoice) => invoice.number.includes(wanted));
+}
 
 /** The pages that the app-shell sidebar switches between. */
 export const shellPageIds = [

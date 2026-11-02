@@ -61,7 +61,10 @@ export type DragSelectableSessionEnv = {
   commit: (hitIds: string[]) => void;
   /** Runs once when the session ends, whatever the cause. */
   end: () => void;
-  /** Ends the library `Pressable` presses that the pointer started. */
+  /**
+   * Ends the library `Pressable` presses that the pointer started. The
+   * session calls it while it handles the move that starts the drag.
+   */
   endPresses: (pointerId: number | undefined) => void;
   /** Attaches the listeners that drive the session; returns the remover. */
   listen: (handlers: DragSelectableSessionHandlers) => () => void;

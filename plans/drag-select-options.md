@@ -98,6 +98,10 @@ Design calls (2026-11-01, the orchestrator's calls):
 - The merge of `origin/main` keeps its deletion of `plans/README.md`, because
   each plan now records its own status. Justification:
   `.context/drag-select-options/merge-decisions.md`.
+- (2026-11-02) The selection rules move unchanged from
+  `docs/protocol/drag-select.md` to a linked page,
+  `docs/protocol/drag-select-selection.md`, because the review fixes would
+  push the protocol doc past its 250-line target.
 
 The Storybook stories and the accounting app's transactions mockup are the
 visual spec. This repo gets no new HTML mockup, as in the
@@ -835,12 +839,27 @@ Depends on: Milestone 9.
 - [x] Run each new browser test 10 times: 10 of 10 passed.
 - [x] Run `cargo xtask check`: passed
       (`.context/drag-select-options/logs/gate-4.log`).
-- [ ] Run `git add -A`, commit with Conventional Commits, and push.
+- [x] Run `git add -A`, commit with Conventional Commits, and push:
+      `47e700c`.
 - [ ] Review the branch with the `implementation-review` skill against
       `origin/main` after the push. Record each round in the findings file
       of the branch. Run the finding checks, fix the `fix now` findings,
       record a follow-up item for each other finding, re-review once, and
       report.
+  - [x] Round 4 ran on `47e700c` and gave findings 15 to 17. The finding
+        checks confirmed all three.
+  - [x] Finding 15, body scrolling: fix now with C. One rule names the
+        element whose overflow the viewport takes, and the scroll-container
+        search checks `<body>` unless the viewport takes its overflow.
+  - [x] Finding 16, press cancellation: fix now with B. `onPressOut` gets the
+        pointer event that started the drag.
+  - [x] Finding 17, field tests: fix now with B. A browser test drags from a
+        real text field inside the provider.
+  - [x] Follow-up items for the wider fixes of findings 15, 16, and 17, and
+        for the two problems outside the scope: five files under
+        `plans/follow-ups/`.
+  - [ ] Run the gate, commit, push, and run review round 5 once, with the
+        three new problems of the checks in its focus.
 - [ ] Delete the plan, as the `plans` skill says, when every other
       milestone TODO is ticked.
 - [ ] Open the pull request.

@@ -7,9 +7,11 @@ import {
   dragBetween,
   highlightedText,
   marqueeCount,
+  matchingRowCount,
   openStory,
   pointIn,
   rowRange,
+  shellRowNumberAt,
 } from "./dragSelectHelpers";
 
 /**
@@ -82,19 +84,11 @@ test.describe("drag-select page shell", () => {
         page.getByTestId("page-shell-main").evaluate((main) => main.scrollTop),
       )
       .toBeGreaterThan(300);
-    await page.mouse.move(from.x + 20, from.y + 40, { steps: 4 });
-    const lastRow = await page.evaluate(
-      ({ x, y }) =>
-        document
-          .elementFromPoint(x, y)
-          ?.closest('[data-testid^="shell-row-"]')
-          ?.getAttribute("data-testid")
-          ?.replace("shell-row-txn_", "") ?? "0",
-      { x: from.x + 20, y: from.y + 40 },
-    );
+    const to = { x: from.x + 20, y: from.y + 40 };
+    await page.mouse.move(to.x, to.y, { steps: 4 });
+    const last = await shellRowNumberAt(page, to);
     await page.mouse.up();
 
-    const last = Number(lastRow);
     expect(last).toBeGreaterThan(8);
     expect(await checkedRowIds(page)).toEqual(rowRange("txn", 1, last));
   });
@@ -113,15 +107,7 @@ test.describe("drag-select page shell", () => {
     await expect
       .poll(() => main.evaluate((element) => element.scrollTop))
       .toBeGreaterThan(400);
-    await expect
-      .poll(async () =>
-        Number(
-          /Matching (\d+)/.exec(
-            (await page.getByTestId("page-shell-status").textContent()) ?? "",
-          )?.[1] ?? 0,
-        ),
-      )
-      .toBeGreaterThan(15);
+    await expect.poll(() => matchingRowCount(page)).toBeGreaterThan(15);
     await page.mouse.up();
 
     const checked = await checkedRowIds(page);

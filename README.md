@@ -667,8 +667,9 @@ The package export map intentionally separates runtime targets:
   [docs/protocol/shared-ui-components.md](docs/protocol/shared-ui-components.md)
 - Rich-text collaboration protocol:
   [docs/protocol/rich-text-collaboration.md](docs/protocol/rich-text-collaboration.md)
-- Drag select protocol: [docs/protocol/drag-select.md](docs/protocol/drag-select.md)
-  and its [option reference](docs/protocol/drag-select-api.md)
+- Drag select protocol: [docs/protocol/drag-select.md](docs/protocol/drag-select.md),
+  its [selection rules](docs/protocol/drag-select-selection.md), and its
+  [option reference](docs/protocol/drag-select-api.md)
 - Consumer migration handoff: [docs/consumer-migration.md](docs/consumer-migration.md)
 
 ## Related Repositories

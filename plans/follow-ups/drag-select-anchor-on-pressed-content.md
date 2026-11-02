@@ -1,0 +1,40 @@
+# Drag start point does not follow pressed content
+
+- **Severity:** High. **Likelihood:** Rare. **Effort:** Medium. **Confidence:** High. **Harder later:** No.
+- **Kind:** Needs decision.
+- **Added:** 2026-11-02, from the branch `calummoore/dragselectableprovider-improvements`, finding 15.
+- **Location:** src/drag-select/dragSelectableScrollAnchor.ts:49, src/drag-select/dragSelectableSessionDom.ts:70, docs/protocol/drag-select.md:144
+- **Reason:** The fix changes the anchor rule of the drag select protocol, a requirement in force, so it waits for the choice of the user.
+
+- **Terms:**
+  - **Start point:** the point where the user pressed. The hit box of a drag runs from the start point to the pointer, and the provider selects the rows that the hit box touches.
+  - **Scroll container:** the pressed element if it scrolls, else its nearest scrolling ancestor, else the document. The scrollbar rule of the start rules in docs/protocol/drag-select.md defines it.
+  - **Anchor:** the rule that moves the start point with the scrolled content while a drag runs. src/drag-select/dragSelectableScrollAnchor.ts computes it.
+  - **Fixed panel:** an element with `position: fixed`, such as a side panel, that stays in place when the window scrolls.
+- **Background:**
+  - `DragSelectableProvider` in src/drag-select lets a user drag a box across rows to select them on web.
+  - The page can scroll while a drag runs: by the mouse wheel, by the keyboard, or by the edge auto-scroll of the provider. The anchor keeps the start point on the scrolled content, so the hit box still starts at the pressed row.
+  - The Gesture section of docs/protocol/drag-select.md states the anchor rule: "the start point stays attached to the content of the press's scroll container. A scroll of that container, or of any ancestor that moves it, moves the start point with the content."
+  - The code reads the frame of the scroll container at the press and after each scroll: its position in the viewport and its scroll offsets. For the document, the frame is only the scroll offsets of the window, at src/drag-select/dragSelectableScrollAnchor.ts:49. src/drag-select/dragSelectableSessionDom.ts:70 gives the session that reader.
+  - Edge auto-scroll scrolls the scroll container of the press. In a fixed panel that container is the document, so a drag near the edge of the viewport scrolls the window too. Nobody reproduced this second path.
+- **Problem:** A press in a fixed panel that does not scroll has the document as its scroll container. A window scroll then moves the start point by the scroll distance, but the panel and its rows stay in place, so the start point leaves the pressed row. In Chromium, a drag from row 5 to row 3 in such a panel, during a 300px window scroll, selected rows 1 to 3 instead of rows 3 to 5.
+- **Impact if no action:** A drag in a fixed panel selects the wrong rows when the window scrolls during the drag. `@firna/ui` 4.0.0 had no anchor, and there the same drag selected rows 3 to 5, so apps meet this as a regression when they move to 5.0.
+- **Root question:** How does the start point of a drag stay on the content that the user pressed, under any layout, for example a fixed panel over a page that scrolls?
+- **Options:**
+  - **A.** Keep the anchor on the scroll container, and add one exception: a scroll does not move the start point when a `position: fixed` element lies between the pressed element and the scroll container. Change the anchor rule of the protocol to state the exception. Cost: it covers only fixed positioning. A sticky element, a CSS transform, or a layout change can still move the content apart from the start point. Effort: Small.
+  - **B.** Anchor the start point on the pressed element:
+    - The anchor reads the frame of the pressed element at the press and after each scroll: its position in the viewport and its own scroll offsets. So the start point moves as far as the pressed content moves, for any reason.
+    - When the pressed element leaves the DOM, for example when a virtualized list unmounts its row, the anchor reads the frame of the scroll container from that moment, without a jump.
+    - Change the anchor rule of the protocol, for example to: "the start point stays attached to the pressed element. When that element moves in the viewport, the start point moves with it. When it leaves the document, the start point follows the content of the press's scroll container."
+    - Add browser tests for the fixed panel, for a scroller inside a scroller, for a `<body>` that scrolls, and for a pressed row that unmounts. No story has a fixed panel. A test can arrange one with a style tag on a story page, as tests/browser/drag-select-body-scroll.spec.ts does for a `<body>` that scrolls. The present anchor test is "a scroll during a drag keeps the start row" in tests/browser/drag-select.spec.ts.
+    - Cost: the fallback for rows that unmount, and more browser tests. In Chromium, this anchor selected rows 3 to 5 for the drag under **Problem**. Effort: Medium.
+- **Left out:**
+  - Change nothing: the start point keeps leaving the pressed row in fixed panels, which fails the goal.
+  - No anchor, as in 4.0.0: a list that scrolls during a drag then moves its rows away from the start point, which fails the goal.
+  - A chain of every scrolling ancestor, with their scroll offsets added up to a fixed ancestor: B is better on every point, because B also follows transforms and layout changes.
+  - The registered target row as the anchor, in place of the pressed element: a press between two rows has no target, so it needs the same fallback, and the pressed element always exists at the press.
+  - A container or an anchor that the app supplies: as a required prop it breaks the automatic container search that the protocol requires, and as an optional prop it leaves the default wrong.
+- **Wider fix:** B. It prevents the class: the start point reads the content that the user pressed, so no scroller shape can move the two apart.
+- **Previous examples:** One earlier case of the class is fixed. With `html { overflow: hidden }` and a `<body>` that scrolls, the scroll container was the document, and in Chromium a drag from row 1 selected rows 6 to 8 after a 300px scroll of `<body>`. The fix counts `<body>` as a scroll container unless the viewport takes its overflow, as the scrollbar rule of the protocol now says.
+- **Recommendation:** B. It keeps the start point on the pressed content under any layout, so it closes the class and not only one shape of it. B is also the option that best protects the codebase.
+- **Action:** ask the user, because both options change the anchor rule of the drag select protocol, a requirement in force, and no user decision covers that change.

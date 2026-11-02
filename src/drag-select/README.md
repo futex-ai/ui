@@ -8,9 +8,9 @@ box run on web. Native renders the same provider and selection state without
 a gesture.
 
 The requirements are in
-[the drag select protocol](../../docs/protocol/drag-select.md), and the
-option defaults are in
-[the option reference](../../docs/protocol/drag-select-api.md).
+[the drag select protocol](../../docs/protocol/drag-select.md) and its
+[selection rules](../../docs/protocol/drag-select-selection.md). The option
+defaults are in [the option reference](../../docs/protocol/drag-select-api.md).
 
 ## Responsibilities
 
@@ -190,12 +190,15 @@ import {
 ## During And After A Drag
 
 - The box follows the scrolled content: a wheel or keyboard scroll during
-  the drag keeps the start point on the row where it started.
+  the drag keeps the start point on the row where it started. The content
+  scrolls in the press's scroll container: the pressed element or its nearest
+  ancestor that scrolls, `<body>` included, else the document.
 - Near the edge of the scroll container, the container scrolls by itself, on
   the axes where its overflow lets it scroll.
 - Text does not highlight during a drag. A double-click or a triple-click
   still selects text, because a press without movement blocks nothing.
-- A drag that started on a row `Button` ends that button's press, so it does
+- A drag that started on a row `Button` ends that button's press. Its
+  `onPressOut` receives the pointer event that started the drag, and it does
   not fire `onPress`.
 - After the release, the provider swallows the click, so a drag never opens
   a row. A plain click is not swallowed.
@@ -275,7 +278,9 @@ use `selectedIds` to read fresh row data from the app's own source.
 - `dragSelectableScrollContainer.ts`, `dragSelectableScrollAxes.ts`,
   `dragSelectableScrollbar.ts`, and `dragSelectableScrollAnchor.ts`: the
   press's scroll container, the axes it can scroll, the scrollbar rule, and
-  the anchored start point.
+  the anchored start point. `dragSelectableViewportOverflow.ts` names the
+  element whose overflow the viewport takes, for the container search and
+  the axes of the document.
 - `useDragSelectableSelectionState.ts` and `dragSelectableSelectionModel.ts`:
   the selection, its modes, and its scope. `useDragSelectableSelectionReport.ts`
   reports and announces its changes and spots a page's starting selection.

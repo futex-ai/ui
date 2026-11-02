@@ -735,10 +735,11 @@ shell, and a page sets the options of the nearest provider with
 `useDragSelectableOptions`. Native renders the same provider and selection
 state, but has no drag gesture. The requirements are in
 [drag-select.md](drag-select.md): targets and hooks, option precedence, the
-start rules, the gesture, auto-scroll, controlled and uncontrolled
-selection, the selection scope, the box and the wrapper, and native
-behavior. The option defaults, the state, the helpers, and the library
-gesture surfaces are in [drag-select-api.md](drag-select-api.md).
+start rules, the gesture, auto-scroll, the box and the wrapper, and native
+behavior. Controlled and uncontrolled selection and the selection scope are
+in [drag-select-selection.md](drag-select-selection.md). The option
+defaults, the state, the helpers, and the library gesture surfaces are in
+[drag-select-api.md](drag-select-api.md).
 
 ## Modal Contract
 

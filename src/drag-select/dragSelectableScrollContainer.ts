@@ -8,6 +8,7 @@ import type {
   DragSelectablePoint,
 } from "./dragSelectableModel";
 import { dragSelectableOverflowAxes } from "./dragSelectableScrollAxes";
+import { dragSelectableViewportOverflowElement } from "./dragSelectableViewportOverflow";
 
 /** The element that scrolls the content under a press. */
 export type DragSelectableScrollContainer = {
@@ -26,16 +27,20 @@ export type DragSelectableRect = {
 
 /**
  * The pressed element if it scrolls, else its nearest scrolling ancestor,
- * else the document scrolling element.
+ * else the document scrolling element. The search stops at the element whose
+ * overflow the viewport takes, because the document scrolls in its place:
+ * `<body>` counts like any other element unless the root element's overflow
+ * is `visible` on both axes.
  */
 export function dragSelectableScrollContainer(
   element: Element,
 ): DragSelectableScrollContainer {
   const ownerDocument = element.ownerDocument;
   const root = ownerDocument.scrollingElement ?? ownerDocument.documentElement;
+  const viewport = dragSelectableViewportOverflowElement(ownerDocument);
   for (
     let node: Element | null = element;
-    node && node !== root && node !== ownerDocument.body;
+    node && node !== root && node !== viewport;
     node = node.parentElement
   ) {
     if (dragSelectableElementScrolls(node)) {

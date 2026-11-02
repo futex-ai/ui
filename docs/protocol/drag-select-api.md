@@ -3,7 +3,8 @@
 The option defaults, the state, the callback arguments, the helpers, and the
 library gesture surfaces of `@firna/ui/drag-select` 5.0. The package's type
 declarations give the exact types. The behavior behind them is in
-[drag-select.md](drag-select.md).
+[drag-select.md](drag-select.md) and in
+[the selection rules](drag-select-selection.md).
 
 ## Option Defaults
 
@@ -82,7 +83,8 @@ the matching count, ids, and targets, and the drag mode.
   while its component is mounted.
 - `dragSelectableDefaultDragMode(keys)` is the default `dragMode`.
 - `dragSelectableNextSelection(currentIds, hitIds, mode)` returns the
-  proposal of a drag, in the order that the protocol gives.
+  proposal of a drag, in the order that
+  [the selection rules](drag-select-selection.md) give.
 - Spread `dragSelectableIgnoreProps` on a library primitive (`View`,
   `Pressable`, `Text`) and `dragSelectableIgnoreDomProps` on a raw DOM
   element. Both write `data-drag-select-ignore="true"`, so the default rules

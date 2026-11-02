@@ -26,13 +26,18 @@ import {
 } from "../index";
 import type { DragSelectableSelection } from "../index";
 import {
+  invoicesWithNumber,
   rowCountLabel,
   shellPageIds,
   shellPages,
   ShellRowView,
   type ShellPageId,
 } from "./dragSelectShellRow";
-import { InvoiceNote, InvoiceTools } from "./dragSelectShellTools";
+import {
+  InvoiceFilter,
+  InvoiceNote,
+  InvoiceTools,
+} from "./dragSelectShellTools";
 
 /** Counts the provider's `onSelectionChange` calls for the status line. */
 type SelectionLog = { calls: number; lastIds: string };
@@ -127,10 +132,15 @@ function ShellPage({
   page: ShellPageId;
 }) {
   const theme = useSharedUiTheme();
+  const [invoiceQuery, setInvoiceQuery] = useState("");
   useDragSelectableOptions({
     disabled: false,
     preventTextSelection: !keepTextSelection,
   });
+  const rows =
+    page === "invoices"
+      ? invoicesWithNumber(invoiceQuery)
+      : shellPages[page].rows;
   return (
     <View style={styles.content} testID="page-shell-content">
       <Text
@@ -144,6 +154,9 @@ function ShellPage({
       </Text>
       {page === "invoices" ? <InvoiceNote /> : null}
       <ShellStatus log={log} opened={opened} />
+      {page === "invoices" ? (
+        <InvoiceFilter onChange={setInvoiceQuery} value={invoiceQuery} />
+      ) : null}
       <View
         style={[
           styles.list,
@@ -153,9 +166,15 @@ function ShellPage({
           },
         ]}
       >
-        {shellPages[page].rows.map((row) => (
-          <ShellRowView key={row.id} onOpen={onOpen} row={row} />
-        ))}
+        {rows.length === 0 ? (
+          <Text style={[styles.empty, { color: theme.colors.muted }]}>
+            No invoices match “{invoiceQuery.trim()}”.
+          </Text>
+        ) : (
+          rows.map((row) => (
+            <ShellRowView key={row.id} onOpen={onOpen} row={row} />
+          ))
+        )}
       </View>
       {page === "invoices" ? <InvoiceTools /> : null}
     </View>
@@ -197,6 +216,7 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     width: "100%",
   },
+  empty: { fontSize: 13, padding: 16 },
   list: { borderRadius: 8, borderWidth: 1, overflow: "hidden" },
   main: { flex: 1 },
   sidebar: { borderRightWidth: 1, gap: 8, padding: 16, width: 200 },

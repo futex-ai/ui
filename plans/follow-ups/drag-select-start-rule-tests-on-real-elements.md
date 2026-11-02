@@ -1,0 +1,44 @@
+# Start-rule unit tests fake CSS selector matching
+
+- **Severity:** Medium. **Effort:** Medium. **Confidence:** High. **Harder later:** No.
+- **Kind:** Fix after merge.
+- **Added:** 2026-11-02, from the branch `calummoore/dragselectableprovider-improvements`, finding 17.
+- **Location:** tests/unit/dragSelectStartRules.test.ts:24, tests/unit/dragSelect.test.ts:135, tests/unit/dragSelectFakeDom.ts:38, src/drag-select/dragSelectableStartRules.ts:27, src/drag-select/dragSelectableStartRules.ts:44, package.json
+- **Reason:** The fix adds two devDependencies and a DOM engine for the unit tests, which reaches the package files, and the string-matching fake is older than the drag-select branch.
+
+- **Terms:**
+  - **Start rules:** the rules in src/drag-select/dragSelectableStartRules.ts that decide whether a press can start a drag. The field rule refuses a press inside an editable field, and the control rule refuses a press on a control.
+  - **`FakeElement`:** the test helper in tests/unit/dragSelectFakeDom.ts. It matches a selector when the selector contains one of the strings that the test built it with, not by CSS matching.
+  - **jsdom:** a DOM engine for Node. It parses HTML and matches CSS selectors against real elements.
+- **Background:**
+  - The unit tests run in Node with no DOM: `npm test` runs `node --import tsx --test tests/unit/*.test.ts`.
+  - The field rule matches `DRAG_SELECTABLE_FIELD_SELECTOR`, and the control rule matches `DRAG_SELECTABLE_CONTROL_SELECTOR`. Both are CSS selector lists in src/drag-select/dragSelectableStartRules.ts. The module exports them, but only a test imports one. The start rules in docs/protocol/drag-select.md list the fields and the controls.
+  - The 11 tests in tests/unit/dragSelectStartRules.test.ts build their elements as `FakeElement` trees. Line 24 builds the fake text input from the first part of `DRAG_SELECTABLE_FIELD_SELECTOR`, so the fixture changes with the code that it must check.
+  - The test at tests/unit/dragSelect.test.ts:135, "drag-select starts from controls inside targets but never from editable content", checks more start-rule cases through the same fake.
+  - The browser tests in `tests/browser/drag-select*.spec.ts` press real elements, but only a row button and one text field reach the field and control rules. The text field is "Filter invoices" on the Invoices page of the "Page shell" story, in the test "a drag that starts in a text field selects no rows" in tests/browser/drag-select-options.spec.ts.
+- **Problem:** In the unit tests, no part of the field selector or the control selector meets real CSS matching, because the fake compares strings. When the field selector was narrowed to password inputs on purpose, all 11 start-rule tests still passed, and in Chromium a drag that started in a text field then selected rows.
+- **Impact if no action:** A wrong change to either selector can pass every unit test. Only the browser tests can catch it, and they check only a row button and one text field.
+- **Root question:** How should the tests check that the field and control rules match real elements the way the protocol lists them?
+- **Options:**
+  - **A.** Keep the fake, and give the fake text input its own literal selector string. Cost: it catches the password-only change, but every other part of the two selectors still meets only string matching. Effort: Small.
+  - **B.** Move the element classification cases to a browser fixture in a story, and test them with Playwright. Cost: a new story with snapshot baselines, and slower tests. Effort: Medium.
+  - **C.** Run the start-rule unit tests on real elements from jsdom:
+    - Add `jsdom` and `@types/jsdom` as devDependencies.
+    - Build the fixture from HTML, with a real `<input type="text">`.
+    - Keep every case and every assertion.
+    - Add the two cases that a string fake cannot express: a checkbox input is a control, and `contenteditable="false"` is not a field.
+    - Port the start-rule test at tests/unit/dragSelect.test.ts:135, or merge it into the new fixture.
+    - Delete the selector matching of the fake: `matches` and `closest` in tests/unit/dragSelectFakeDom.ts. tests/unit/dragSelectSession.test.ts also builds `FakeElement`s, for the test "drag-select refuses a press outside the provider element without claiming it". That test needs only `contains` and the fake `Element` and `Node` globals, so it can keep a fake without selector matching.
+    - Make `DRAG_SELECTABLE_FIELD_SELECTOR` and `DRAG_SELECTABLE_CONTROL_SELECTOR` private to their module, because no test needs them then.
+    - Evidence: jsdom matched headless Chrome on all 23 probe elements, for both selectors. A quick jsdom port of the 11 tests passed on the current rules. The same port failed 2 tests when the field selector was narrowed to password inputs, with `expected 'field', actual null`.
+    - Cost: two devDependencies, and about one second of run time for each test file that loads jsdom. Risk: jsdom can differ from browsers on a future selector. Effort: Medium.
+- **Left out:**
+  - Change nothing: a wrong selector keeps passing the unit tests, which fails the goal.
+  - happy-dom in place of jsdom: happy-dom 21 called `type="CHECKBOX"` and `contenteditable="FALSE"` fields, and Chrome and jsdom did not, so it fails the goal.
+  - A mutation-testing gate alone: it reports tests that cannot fail, but it adds no test that can.
+  - Rules that read element properties in place of CSS selectors: they still need a real-DOM test, so the rewrite only adds risk. Also, `ignore` is a selector option, so the rules keep selectors.
+  - A lint, or a private selector export alone: a fixture that copies the selector by hand, as in A, passes both.
+- **Wider fix:** C. It removes the string fake from every start-rule test, also from the logic cases that a browser fixture leaves on the fake.
+- **Previous examples:** The class is older than 5.0: in `@firna/ui` 4.0.0, a fake element in tests/unit/dragSelect.test.ts matched selectors with `selector.includes`.
+- **Recommendation:** C. It gives the rule tests real selector matching at the unit level, where the logic and the decisions get their tests. C is also the option that best protects the codebase.
+- **Action:** fix after merge, apply C, because C adds two devDependencies and a DOM engine for the unit tests, which reaches the package files outside the drag-select branch, and the string-matching fake is older than the branch.

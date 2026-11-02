@@ -4,6 +4,7 @@
  * overflow is `hidden`, so the provider must check them first.
  */
 import type { DragSelectableScrollContainer } from "./dragSelectableScrollContainer";
+import { dragSelectableViewportOverflowElement } from "./dragSelectableViewportOverflow";
 
 /** The axes on which a scroll container's overflow lets it scroll. */
 export type DragSelectableScrollAxes = { x: boolean; y: boolean };
@@ -26,32 +27,21 @@ export function dragSelectableOverflowAxes(
   return { x: scrolls(overflowX), y: scrolls(overflowY) };
 }
 
-/** Reads the axes on which a scroll container's overflow lets it scroll. */
+/**
+ * Reads the axes on which a scroll container's overflow lets it scroll. The
+ * document reads the overflow that the viewport takes.
+ */
 export function dragSelectableScrollAxes(
   container: DragSelectableScrollContainer,
 ): DragSelectableScrollAxes {
-  const style = container.root
-    ? viewportOverflowStyle(container.element.ownerDocument)
-    : getComputedStyle(container.element);
+  const style = getComputedStyle(
+    container.root
+      ? dragSelectableViewportOverflowElement(container.element.ownerDocument)
+      : container.element,
+  );
   return dragSelectableOverflowAxes(
     style.overflowX,
     style.overflowY,
     container.root,
   );
-}
-
-/**
- * The style whose `overflow` the viewport uses: the root element's, or the
- * `body` element's when the root element's is `visible` on both axes.
- */
-function viewportOverflowStyle(document: Document): CSSStyleDeclaration {
-  const root = getComputedStyle(document.documentElement);
-  if (
-    root.overflowX !== "visible" ||
-    root.overflowY !== "visible" ||
-    !document.body
-  ) {
-    return root;
-  }
-  return getComputedStyle(document.body);
 }

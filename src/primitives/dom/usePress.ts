@@ -41,35 +41,28 @@ export type { PressConfig, PressHandlers } from "./pressMachine";
 const pointerPresses = new Map<Machine, unknown>();
 
 /**
- * Ends the pointer presses that `pointerId` started, or every pointer press
- * when it is `undefined`. Each press stops watching the pointer and
- * terminates: the pressed look clears and `onPressOut` fires, but `onPress`
- * does not. The click that the release still produces must be swallowed by
- * the caller, because `onPress` comes from that click.
+ * Ends the pointer presses of the pointer that `event` belongs to, and the
+ * presses whose pointer is unknown. `event` is the pointer event that takes
+ * the pointer over, such as the `pointermove` that starts a drag-select drag.
+ * Each press stops watching the pointer and terminates with `event`, which it
+ * converts as a release converts its own event: the pressed look clears and
+ * `onPressOut` gets `event`, but `onPress` does not fire. The click that the
+ * release still produces must be swallowed by the caller, because `onPress`
+ * comes from that click.
  */
-export function endPointerPresses(pointerId?: number): void {
+export function endPointerPresses(
+  event: Event & Pick<PointerEvent, "pointerId">,
+): void {
   for (const [machine, pressPointerId] of [...pointerPresses]) {
     if (
-      pointerId !== undefined &&
       typeof pressPointerId === "number" &&
-      pressPointerId !== pointerId
+      pressPointerId !== event.pointerId
     ) {
       continue;
     }
     machine.detachPointer?.();
-    receiveSignal(machine, "TERMINATE", terminationEvent());
+    receiveSignal(machine, "TERMINATE", fromDomEvent(event));
   }
-}
-
-/** A stand-in event for a press that ends without a DOM event of its own. */
-function terminationEvent(): PressEvent {
-  return {
-    currentTarget: null,
-    nativeEvent: {},
-    preventDefault: () => undefined,
-    stopPropagation: () => undefined,
-    target: null,
-  };
 }
 
 /** Wires the machine to a host element and returns the handlers it needs. */

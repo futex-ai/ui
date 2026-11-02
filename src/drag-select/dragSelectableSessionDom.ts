@@ -30,18 +30,31 @@ export type DragSelectableSessionDomOptions = {
   targets: () => Iterable<DragSelectableTargetRegistration>;
 };
 
-/** Builds the session environment for the browser. */
+/**
+ * Builds the session environment for the browser. The listeners record each
+ * `pointermove` before the session handles it. The session ends the presses
+ * while it handles the move that starts the drag, so the presses end with
+ * that move: the pointer event that took the pointer over.
+ */
 export function dragSelectableSessionDom(
   options: DragSelectableSessionDomOptions,
 ): DragSelectableSessionEnv {
+  let lastMove: PointerEvent | null = null;
   return {
     blockTextSelection: blockDragSelectableTextSelection,
     clipBox: (box) =>
       dragSelectableClipBox(box, dragSelectableVisibleRect(options.container)),
     commit: options.commit,
     end: options.end,
-    endPresses: endPointerPresses,
-    listen: listenToDragSelectableSession,
+    endPresses: () => {
+      if (lastMove) {
+        endPointerPresses(lastMove);
+      }
+    },
+    listen: (handlers) =>
+      listenToDragSelectableSession(handlers, (event) => {
+        lastMove = event;
+      }),
     measureTargets: () => measureDragSelectableTargets(options.targets()),
     measureTargetsInOrder: () =>
       measureDragSelectableTargets(
@@ -63,7 +76,8 @@ export function dragSelectableSessionDom(
 }
 
 /**
- * Attaches the document and window listeners of a session. From the
+ * Attaches the document and window listeners of a session. Each
+ * `pointermove` goes to `recordMove` before the session handles it. From the
  * accepted press to the release, native `dragstart` is blocked, so a link,
  * an image, or highlighted text cannot start a native drag. Only a `blur`
  * of the window itself interrupts: the capture phase would also deliver the
@@ -71,13 +85,16 @@ export function dragSelectableSessionDom(
  */
 export function listenToDragSelectableSession(
   handlers: DragSelectableSessionHandlers,
+  recordMove: (event: PointerEvent) => void,
 ): () => void {
   const point = (event: PointerEvent) => ({
     x: event.clientX,
     y: event.clientY,
   });
-  const move = (event: PointerEvent) =>
+  const move = (event: PointerEvent) => {
+    recordMove(event);
     handlers.move(point(event), event.pointerId);
+  };
   const release = (event: PointerEvent) =>
     handlers.release(point(event), event.pointerId);
   const cancel = () => handlers.cancel();

@@ -1,10 +1,12 @@
 /**
  * Library surfaces on the invoices page of the drag-select app shell, where a
- * press must not start a page drag. The data grid and the sortable list mark
- * their gesture roots with the drag-select ignore marker, so a drag inside
- * them draws no selection box over the page. The note modal draws through a
- * portal outside the provider element, so the provider ignores a press inside
- * it, although React sends that press through the page to the provider.
+ * press must not start a page drag. The invoice filter is a text field inside
+ * the provider element, so the provider refuses a press inside it as a press
+ * in a field. The data grid and the sortable list mark their gesture roots
+ * with the drag-select ignore marker, so a drag inside them draws no
+ * selection box over the page. The note modal draws through a portal outside
+ * the provider element, so the provider ignores a press inside it, although
+ * React sends that press through the page to the provider.
  */
 import { useState } from "react";
 import { StyleSheet, Text, View } from "../primitives/reactNative";
@@ -43,6 +45,30 @@ const initialTemplates: Template[] = [
   { id: "tpl_retainer", name: "Monthly retainer" },
   { id: "tpl_deposit", name: "Deposit request" },
 ];
+
+/**
+ * The "Filter invoices" field. The page lists the invoices whose number
+ * contains its text.
+ */
+export function InvoiceFilter({
+  onChange,
+  value,
+}: {
+  onChange: (value: string) => void;
+  value: string;
+}) {
+  return (
+    <View style={styles.filter}>
+      <Input
+        clearable
+        label="Filter invoices"
+        onChangeText={onChange}
+        placeholder="INV-0012"
+        value={value}
+      />
+    </View>
+  );
+}
 
 /**
  * The "Add a note" button and its modal. The page renders it, so the modal is
@@ -137,6 +163,7 @@ export function InvoiceTools() {
 }
 
 const styles = StyleSheet.create({
+  filter: { marginBottom: 12 },
   grid: { height: 170 },
   heading: { fontSize: 14, fontWeight: "800", marginTop: 20 },
   note: { alignItems: "flex-start", marginBottom: 16 },
