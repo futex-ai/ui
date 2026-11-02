@@ -3,9 +3,14 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
+  LIVE_OVERLAY_ATTRIBUTE,
+  LIVE_OVERLAY_VIEW_PROPS,
+} from "../../src/liveOverlay";
+import {
   COOKIE_CONSENT_LAYERS,
   WEB_MODAL_LAYERS,
 } from "../../src/modal/modalLayers";
+import { createDomProps } from "../../src/primitives/dom/domProps";
 import { TOAST_LAYERS, toastClearsLayer } from "../../src/toast/toastLayers";
 import {
   createToastItem,
@@ -243,6 +248,43 @@ test("the persistent live region announces toasts at tone politeness", () => {
   assert.match(source, /accessibilityLiveRegion="assertive"/);
   assert.match(source, /"aria-live": "polite"/);
   assert.match(source, /"aria-live": "assertive"/);
+});
+
+test("toast regions and the announcer stay live over web dialogs", () => {
+  const viewport = readSource("../../src/toast/ToastViewport.web.tsx");
+  const liveRegion = readSource("../../src/toast/ToastLiveRegion.tsx");
+  const announcer = readSource("../../src/announcer.ts");
+
+  // Each body-level node that must stay announced and operable under a web
+  // dialog carries the shared live-overlay marker, which the web modal stack
+  // never makes inert: the toast stack, the toast live region, and the
+  // announcer's regions. The toast views spread the owner module's props,
+  // which render the marker attribute, instead of keeping local copies.
+  const { props } = createDomProps(
+    { ...LIVE_OVERLAY_VIEW_PROPS },
+    { defaultElement: "div" },
+  );
+  assert.deepEqual(props, { [LIVE_OVERLAY_ATTRIBUTE]: "" });
+  for (const source of [viewport, liveRegion]) {
+    assert.match(
+      source,
+      /import \{ LIVE_OVERLAY_VIEW_PROPS \} from "\.\.\/liveOverlay"/,
+    );
+    assert.doesNotMatch(source, /const LIVE_OVERLAY_VIEW_PROPS/);
+  }
+  assert.match(
+    viewport,
+    /<View\s+\{\.\.\.LIVE_OVERLAY_VIEW_PROPS\}\s+aria-label="Notifications"/,
+  );
+  assert.match(
+    liveRegion,
+    /<View\s+\{\.\.\.LIVE_OVERLAY_VIEW_PROPS\}\s+pointerEvents="none"/,
+  );
+  assert.match(announcer, /region\.setAttribute\(LIVE_OVERLAY_ATTRIBUTE, ""\)/);
+  // The marker comes from its owner module, never a string literal.
+  for (const source of [viewport, liveRegion, announcer]) {
+    assert.doesNotMatch(source, /data-firna-live-overlay|firnaLiveOverlay/);
+  }
 });
 
 test("toast solid variant is prop-driven and owns filled styling", () => {

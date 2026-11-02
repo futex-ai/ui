@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { darkSharedUiTheme } from "../index";
+import { ToastProvider, darkSharedUiTheme } from "../index";
+import { ModalFromPopoverExample } from "./modalFromPopoverExample";
+import { ModalOverOverlaysExample } from "./modalOverOverlaysExample";
+import { ModalStackExample } from "./modalStackExample";
 import {
   ConfirmModalExample,
   ModalExample,
@@ -57,6 +60,46 @@ export const ResizableBottomSheet: Story = {
   render: () => (
     <StorySurface>
       <ResizableSheetExample />
+    </StorySurface>
+  ),
+};
+
+export const StackedWebModals: Story = {
+  name: "Stacked web modals",
+  render: () => (
+    <StorySurface>
+      <ToastProvider>
+        <ModalStackExample scrollablePage />
+      </ToastProvider>
+    </StorySurface>
+  ),
+};
+
+export const StackedAtMount: Story = {
+  name: "Stacked at mount",
+  render: () => (
+    <StorySurface>
+      <ToastProvider>
+        <ModalStackExample openAtMount />
+      </ToastProvider>
+    </StorySurface>
+  ),
+};
+
+export const DialogFromPopover: Story = {
+  name: "Dialog from a popover",
+  render: () => (
+    <StorySurface>
+      <ModalFromPopoverExample />
+    </StorySurface>
+  ),
+};
+
+export const DialogsOverOpenOverlays: Story = {
+  name: "Dialogs over open overlays",
+  render: () => (
+    <StorySurface>
+      <ModalOverOverlaysExample />
     </StorySurface>
   ),
 };

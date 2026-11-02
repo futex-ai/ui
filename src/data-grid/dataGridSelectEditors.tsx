@@ -13,6 +13,7 @@ import {
   DropdownMenu,
   type DropdownListEntry,
 } from "../dropdown";
+import { useOverlayInputOwner } from "../modal/useOverlayInputOwner";
 
 import { OptionPill, resolveOptionColor } from "./dataGridCellContent";
 import {
@@ -116,13 +117,18 @@ export function MultiSelectEditor({
   onCancel,
 }: CellEditorProps) {
   const rootRef = useRef<View>(null);
+  const ownsInput = useOverlayInputOwner();
   useEscapeKey(onCancel);
-  // End editing on a press outside the editor (live changes are already saved).
+  // End editing on a press outside the editor (live changes are already
+  // saved), but not on a press inside a web dialog above the grid.
   useEffect(() => {
     if (typeof document === "undefined") {
       return;
     }
     const handler = (event: Event) => {
+      if (!ownsInput()) {
+        return;
+      }
       const target = event.target as Element | null;
       // The combobox's option list is portaled outside the editor root, so a
       // press on an option must not be treated as "outside" (it would close
@@ -145,7 +151,7 @@ export function MultiSelectEditor({
       clearTimeout(id);
       document.removeEventListener("pointerdown", handler, true);
     };
-  }, [onCancel]);
+  }, [onCancel, ownsInput]);
 
   const options = (column.options ?? []).map((option) => ({
     color: resolveOptionColor(theme, option.color).backgroundColor,

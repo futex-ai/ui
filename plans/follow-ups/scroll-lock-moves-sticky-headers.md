@@ -1,0 +1,33 @@
+# The scroll lock moves stuck sticky headers
+
+- **Severity:** Medium. **Likelihood:** Common. **Effort:** Small. **Confidence:** High. **Harder later:** No.
+- **Kind:** Needs decision.
+- **Added:** 2026-11-02, from `calummoore/palette-forms-overlay-discussion`.
+- **Location:** `src/modal/webModalScrollLock.ts:40`.
+- **Reason:** On 2026-11-02 the user kept this problem as a follow-up item, and its recommended fix reverses a plan detail that the user approved.
+
+- **Terms:**
+  - **Scroll lock:** the code in `src/modal/webModalScrollLock.ts` that stops the page from scrolling while a web dialog is open.
+  - **Sticky element:** an element with `position: sticky`, such as a header that stays at the top of the window while the page scrolls.
+  - **React Aria:** Adobe's accessibility-focused React library. Its scroll lock is a common reference.
+- **Background:**
+  - The scroll lock sets `overflow: hidden` on the root element and on the body when the first web dialog opens, and restores both when the last one closes.
+  - The body part comes from an iOS Safari TODO that the user approved on 2026-10-19. Its reason was that iOS Safari ignores the lock on one element alone. Nobody has verified this. The iOS check waits in `plans/follow-ups/ios-safari-scroll-lock-check.md`.
+  - With `overflow: hidden` on both elements, the body becomes the scroll container of the page content. A sticky element then sticks to the body, which has not scrolled, instead of to the window.
+  - React Aria hides only the root overflow on desktop browsers, and it handles iOS Safari in a separate code path.
+- **Problem:** When a dialog opens on a scrolled page, a sticky header that is stuck at the top moves out of view, and it comes back when the dialog closes. In Chromium, on the "Stacked web modals" story with a sticky header and the page scrolled to y = 300, the lock moved the header from y = 0 to y = −284.
+- **Impact if no action:** In apps with a sticky header, the header disappears each time a dialog opens on a scrolled page.
+- **Root question:** How does the lock stop page scrolling without moving sticky page elements?
+- **Options:**
+  - **A.** Hide only the root overflow, as React Aria does. Sticky elements stay stuck. In a Chromium probe, the header stayed at y = 0, and a wheel over the backdrop did not scroll the page. The iOS Safari reason for the body overflow stays unverified until the iOS check runs. Effort: Small.
+  - **B.** Keep both elements, and let the protocol allow sticky page elements to move while a dialog is open. Effort: Small.
+  - **C.** Hide the body overflow only in iOS Safari, which the code finds from the user agent. User-agent detection is fragile. Effort: Medium.
+- **Left out:** Fix the body in place at its scroll offset: that is option E of `plans/follow-ups/scroll-lock-gutter-strip.md`.
+- **Wider fix:** None in this item. Option F of `plans/follow-ups/scroll-lock-gutter-strip.md` drops the lock, and with it this side effect.
+- **Previous examples:** `plans/follow-ups/scroll-lock-moves-fixed-elements.md` and `plans/follow-ups/scroll-lock-gutter-strip.md` record other side effects of the same lock.
+- **Related:**
+  - `plans/follow-ups/scroll-lock-gutter-strip.md`: the same code, and work that waits for its answer. Under its options E, F, or G, this item falls away. Under its option B, every page element stays still only with option A of this item.
+  - `plans/follow-ups/scroll-lock-moves-fixed-elements.md`: the same code.
+  - `plans/follow-ups/ios-safari-scroll-lock-check.md`: under option A, that check must cover the lock that hides only the root overflow.
+- **Recommendation:** A. The sticky defect shows in Chromium, the iOS benefit of the body overflow does not, and the iOS check already plans a proper fallback.
+- **Action:** ask the user, because option A reverses the iOS Safari TODO that the user approved on 2026-10-19, which hides the overflow of both the root element and the body.

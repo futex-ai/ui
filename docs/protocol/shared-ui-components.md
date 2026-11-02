@@ -14,7 +14,7 @@ This repository provides shared React Native and web UI primitives for Firna
 apps. The first consumers are the accounting app and the Juno app.
 The first shared component families are the dropdown components, drag-select
 provider, segmented control patterns, radio-option cards, switch primitive, data
-table, workflow-builder step graph, web modal components, transient notification
+table, workflow-builder step graph, modal components, transient notification
 toasts, and the circular user avatar currently implemented in the accounting
 app, plus labelled text inputs and textareas for shared forms.
 
@@ -724,7 +724,8 @@ Required behavior:
 - Offer selectable trigger gestures (press, hover, long-press, context menu) on
   the action-menu wrapper, resolving hover and context-menu behavior per
   platform and keeping press available where a gesture is unavailable.
-- Keep dropdown and combobox portal layers above modal surfaces.
+- Keep dropdown and combobox portal layers opened inside the top dialog above
+  its surface, subject to the [web overlay rules](web-overlays.md#background-content).
 - Preserve native-safe fallbacks for Expo platform resolution.
 
 ## Drag Select Contract
@@ -766,20 +767,8 @@ Required behavior:
 
 ## Modal Contract
 
-The modal family is a web modal frame, not a native modal replacement.
-
-Required behavior:
-
-- Render web dialogs through a `document.body` portal.
-- Provide backdrop, surface, title, optional subtitle, close control, scrollable
-  body, footer slot, size variants, and center or bottom-sheet placement.
-- Support close policy for Escape, backdrop press, close button, request close,
-  non-dismissible flows, and busy/disabled close states.
-- Move focus into the modal on open, trap Tab focus inside the modal while it is
-  open, and restore previous focus on close.
-- Use accessible dialog labeling and close labels.
-- Provide native-safe fallback files that return `null` rather than replacing
-  iOS or Android native sheets, action sheets, OS pickers, or platform modals.
+Dialog behavior, web stacking, focus, and native presentation follow the
+[modal contract](web-overlays.md#modal-contract).
 
 ## Toast Contract
 
@@ -822,8 +811,10 @@ Required behavior:
   toast, and an optional close control that dismisses only its own toast.
 - Use shared theme tokens for the surface, border, accent colors, text, fonts,
   and radii, with no consumer-local theme imports.
-- Float the toast viewport above modal surfaces, nested overlays, and the
-  consent banner, and export the layer token for consumers.
+- On web, float the toast viewport above modal surfaces, nested overlays, and
+  the consent banner, and export the layer token for consumers.
+- Keep the web toast region announced and operable under open dialogs, as
+  required by the [live-overlay contract](web-overlays.md#live-overlays).
 
 ## Workflow Builder Contract
 
@@ -870,16 +861,8 @@ Required behavior:
 
 ## Layering Contract
 
-- Ordinary content sits below dropdowns and modal portals.
-- Modal backdrop sits below modal surface.
-- Dropdowns and comboboxes opened inside modals sit above modal surfaces.
-- The toast viewport sits above modal surfaces, nested dropdown/combobox
-  overlays, and the cookie-consent banner.
-- Date calendar popovers, dropdown portals, and generic popovers use a high
-  default overlay floor and expose z-index props for consumer-owned stacking
-  contexts that sit above the shared defaults.
-- Layer tokens must be exported so consumers can align adjacent overlays
-  without hard-coded numeric z-index values.
+Overlay order, backdrops, and public layer tokens follow the
+[layering contract](web-overlays.md#layering-contract).
 
 ## Test And Build Contract
 
@@ -1002,7 +985,7 @@ Required behavior:
 ## Non-Goals
 
 - Migrating accounting or Juno imports in this package extraction change.
-- Replacing native iOS or Android modal/sheet/picker behavior.
+- Replacing platform modality or native OS pickers and action sheets.
 - Adding app-specific mutations, data fetching, routing, or screen state.
 - Adding a broad design system beyond the copied dropdown, segmented control,
   and modal families.
