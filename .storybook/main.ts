@@ -21,8 +21,8 @@ const config: StorybookConfig = {
   // `src/primitives`, whose `.web` files render through the library's own DOM
   // backend (`src/primitives/dom`), `lucide-react`, and DOM SVG. Storybook only
   // has to prefer those files.
-  viteFinal: async (baseConfig) =>
-    mergeConfig(baseConfig, {
+  viteFinal: async (baseConfig) => {
+    const finalConfig = mergeConfig(baseConfig, {
       resolve: {
         extensions: [
           ".web.tsx",
@@ -36,7 +36,18 @@ const config: StorybookConfig = {
           ".json",
         ],
       },
-    }),
+      server: {
+        watch: { ignored: ["**/.context/**"] },
+      },
+    });
+
+    if (process.env.STORYBOOK_DISABLE_WATCH === "1") {
+      // mergeConfig skips null values, so disable the watcher after merging.
+      finalConfig.server = { ...finalConfig.server, watch: null };
+    }
+
+    return finalConfig;
+  },
 };
 
 export default config;

@@ -1,0 +1,49 @@
+# Dev server reloads can still break browser tests
+
+- **Severity:** Medium. **Effort:** Medium. **Confidence:** Medium. **Harder later:** No.
+- **Kind:** Needs decision.
+- **Added:** 2026-11-02, from the branch `calummoore/dragselectableprovider-improvements`, the blocked wider fix of finding 21.
+- **Location:** playwright.config.ts, .storybook/main.ts, package.json, README.md
+- **Reason:** The fix replaces the dev-server test setup that the root README documents, so it waits for the choice of the user.
+
+- **Terms:**
+  - **Dev server:** the Storybook server that `npm run storybook` starts. It builds each story on request with Vite, and it can tell every open page to reload.
+  - **Built Storybook:** the static files that `npm run storybook:build` writes to `storybook-static/`. They include `iframe.html` and `index.json`, the two paths that the browser tests read.
+  - **`vite preview`:** the static file server of Vite, which is already a devDependency. It serves a build folder and sends no reloads.
+  - **Dependency-optimizer reload:** a reload that the dev server sends when it finds a dependency that it did not bundle at its start. Vite then logs "optimized dependencies changed. reloading".
+- **Background:**
+  - Playwright runs the browser tests in tests/browser against Storybook pages: `/iframe.html?id=<story id>` for each story, and `/index.json` for the story list of the snapshot and accessibility sweeps.
+  - `webServer` in playwright.config.ts starts the dev server with `npm run storybook -- --ci --host 127.0.0.1 -p <port>`. The port is `STORYBOOK_PORT`, else `CONDUCTOR_PORT`, else 6006. Outside CI, Playwright reuses a server that already answers on that port, because `reuseExistingServer` is `!process.env.CI`.
+  - `npm run verify`, which `cargo xtask check` and CI run, already runs `npm run storybook:build` right before `npm run test:browser`. .github/workflows/storybook.yml deploys the same `storybook-static/` build.
+  - The dev server reloads every open page when an `.html` file is created, changed, or deleted in a folder that it watches. A source edit during a run does the same. A reload replaces the page in the middle of a test.
+  - The gutter test "a click on a row button, then a drag from the gutter, selects rows" in tests/browser/drag-select.spec.ts failed this way once. "Selected 3 rows" did not appear within the 10-second timeout, and the trace held a new, empty preview document before the release. Playwright wrote its output under `.context/`, which the dev server watched. Playwright writes an `.html` trace file when a worker starts, and deletes it when the worker stops.
+  - The branch `calummoore/dragselectableprovider-improvements` removed that source in `viteFinal` of .storybook/main.ts, in two parts. Every dev server ignores `.context/`. When `STORYBOOK_DISABLE_WATCH` is `1`, which `webServer.env` sets, the dev server watches no files.
+  - Evidence from before that change:
+    - Seven browser test runs with Playwright output under `.context/` passed 301 of 301 tests, with 5 or 6 reloads in each run. A reload failed a test only when it fell inside a gesture.
+    - Four runs with the output in other folders, which the dev server does not watch, passed 172 of 172 tests with zero reloads.
+    - With one `.html` write under `.context/` during the gesture, the steps of the gutter test failed in 5 of 5 runs. "Selected 3 rows" did not appear, and the page ended with "Selected 0 rows" and "Opened: none". The same write under `test-results/`, which the dev server ignores, passed 5 of 5 runs.
+  - Evidence of that change: with the ignore of `.context/` alone, an `.html` write in `docs/` still reloaded the page. With the watcher off, the same write did not. The six drag-select specs, `tests/browser/drag-select*.spec.ts`, passed 43 of 43 in both setups.
+- **Problem:** Two sources can still reload a page during a run. A dev server that Playwright reuses outside CI watches every folder except `.context/`, and any dev server can send a dependency-optimizer reload.
+- **Impact if no action:** A browser test can still fail when a reload falls inside its gesture: when Playwright reuses the dev server of a developer while files change, or when Vite finds a new dependency during a run. The dev server is also slow: the six drag-select specs take 51 to 59 s on it, and 20.7 s on a built Storybook.
+- **Root question:** How do the browser tests run on pages that no server reloads during the run?
+- **Options:**
+  - **A.** Keep the dev server, and never reuse a running server: set `reuseExistingServer` to `false` in playwright.config.ts, so that every run starts its own dev server with no file watcher. Cost: a run fails at its start while another server answers on the port, with the error "http://127.0.0.1:<port> is already used, make sure that nothing is running on the port/url or set reuseExistingServer:true in config.webServer." The dependency-optimizer reload stays. When Vite logs a late dependency, an entry in `optimizeDeps.include` in `viteFinal` stops that one reload. Effort: Small.
+  - **B.** Run the browser tests against a built Storybook that `vite preview` serves:
+    - Point `webServer` at `vite preview --outDir storybook-static --host 127.0.0.1 --port <port> --strictPort`.
+    - Build before each run, so that a run never serves an old build: in the `webServer` command, or in `npm run test:browser`. `npm run verify` already builds right before the browser tests, so it must not build twice.
+    - Set `reuseExistingServer` to `false`, so that a dev server on the same port cannot serve the run in place of the build.
+    - Remove the `STORYBOOK_DISABLE_WATCH` switch, because no dev server serves a run then. Keep the ignore of `.context/` for the dev server of a developer.
+    - Run the story snapshot sweep, tests/browser/snapshots.spec.ts, and the axe sweep, tests/browser/a11y.spec.ts, against the build on Linux. Nobody has run them against a build, so their baselines are unchecked: the 699 files in tests/browser/snapshots.spec.ts-snapshots/ and axe-baseline.json. When a baseline differs, find the cause before any new recording.
+    - Update the browser-test paragraph of README.md. It now says that Playwright starts the dev server with `STORYBOOK_DISABLE_WATCH=1`, and that a reused dev server ignores `.context/`.
+    - Evidence: `storybook build` took 10.4 s. `vite preview` served the build with zero reloads, and the six drag-select specs passed 43 of 43 in 20.7 s, against 51 to 59 s on the dev server.
+    - Cost: each local run builds first, and a developer cannot run the tests against a dev server that shows an edit at once. It replaces the documented dev-server setup. Effort: Medium.
+- **Left out:**
+  - Change nothing: a dev server that Playwright reuses still reloads on a write outside `.context/`, which fails the goal.
+  - Retries, sleeps, or a longer timeout: they do not keep the page, so they only hide the failure, which fails the goal.
+  - A guard that fails a test when its page reloads: it reports the reload but does not keep the page, which fails the goal. It is also a new check.
+  - The deployed preview Storybook on Cloudflare Pages: it needs the network and a deploy, so a local run and the gate cannot use it.
+  - Another static server in place of `vite preview`: it adds a dependency, and `vite` is already a devDependency, so B is better on every point.
+- **Wider fix:** B. A built Storybook has no dev server, so no reload can reach a test page from a file change or from the dependency optimizer.
+- **Previous examples:** The failure of the gutter test under **Background**. No other test failure from a reload was found.
+- **Recommendation:** B. It removes every reload that a server can send, and it runs the six drag-select specs in 20.7 s in place of 51 to 59 s. B is also the option that best protects the codebase.
+- **Action:** ask the user, because B replaces the dev-server test setup that the root README documents and that `cargo xtask check` runs, and no user decision covers that change.

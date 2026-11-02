@@ -1,0 +1,56 @@
+# Fixed-panel drags use the wrong scroll container
+
+- **Severity:** Medium. **Likelihood:** Rare. **Effort:** Medium. **Confidence:** High. **Harder later:** No.
+- **Kind:** Needs decision.
+- **Added:** 2026-11-02, from the branch `calummoore/dragselectableprovider-improvements`, a new problem that the check of finding 18 found.
+- **Location:** src/drag-select/dragSelectableAutoScroll.ts:36, src/drag-select/dragSelectableScrollContainer.ts:106, src/drag-select/dragSelectableScrollContainer.ts:35, docs/protocol/drag-select.md:76, docs/protocol/drag-select.md:167, docs/protocol/drag-select.md:182
+- **Reason:** Any fix changes the scroll-container rule or the auto-scroll rule of the drag select protocol, requirements in force, so it waits for the choice of the user.
+
+- **Terms:**
+  - **Scroll container:** the pressed element if it scrolls, else its nearest scrolling ancestor, else the document. The scrollbar rule of the start rules in docs/protocol/drag-select.md defines it.
+  - **Fixed panel:** an element with `position: fixed`, such as a side panel, that the viewport positions, so it stays in place when the page under it scrolls.
+  - **Auto-scroll:** the scroll of the scroll container during a drag. It moves 16px each frame on each axis where the pointer is within 36px of the visible edge, or beyond it.
+  - **Visible rectangle:** the client area of the scroll container, clipped to the viewport. For the document, it is the viewport.
+  - **Drawn box:** the box that the user sees during a drag. It is the hit box of the drag, cut to the visible rectangle of the scroll container.
+- **Background:**
+  - `DragSelectableProvider` in src/drag-select lets a user drag a box across rows to select them on web. The hit box runs from the point where the user pressed to the pointer, and the provider selects the rows that it touches.
+  - `dragSelectableScrollContainer` at src/drag-select/dragSelectableScrollContainer.ts:35 finds the scroll container once, at the press. It walks up the DOM from the pressed element. Four rules read its result. The scrollbar rule ignores a press on a scrollbar. The anchor moves the start point with the scrolled content. Auto-scroll and the cut of the drawn box are the other two.
+  - `startDragSelectableAutoScroll` at src/drag-select/dragSelectableAutoScroll.ts:36 scrolls that container. `dragSelectableVisibleRect` at src/drag-select/dragSelectableScrollContainer.ts:106 gives its visible rectangle. That rectangle sets the edges of auto-scroll and the cut of the drawn box, which `clipBox` applies in src/drag-select/dragSelectableSessionDom.ts:45.
+  - docs/protocol/drag-select.md states the three rules. The scrollbar rule of the start rules, at line 76, defines the scroll container. The Auto-Scroll section, at line 167, says that the scroll container of the press scrolls. The Box And Wrapper section, at line 182, cuts the drawn box to its visible rectangle.
+  - A fixed panel that scrolls is its own scroll container, so the search is right for it. A fixed panel that does not scroll gets its nearest scrolling DOM ancestor, or the document. A scroll of either does not move the panel.
+  - The "Page shell" story in src/stories/dragSelectPageShellExample.tsx has a 200px sidebar and a main column that scrolls, so the column starts at x 200. The column is the provider element. No story has a fixed panel. A browser test can arrange one with a style tag on a story page, as tests/browser/drag-select-body-scroll.spec.ts does for a `<body>` that scrolls.
+  - The evidence, from probes in Chromium with a fixed panel inside the scrolling column of the "Page shell" story:
+    - Auto-scroll scrolled the column, the page behind the panel, by 240px.
+    - A box that started at x 137, inside the panel, was drawn only from x 200, the left edge of the column.
+    - An element with `position: fixed` inside a column with a `transform` moved 200px with a 200px column scroll, because the column positions that element. There the column is the right scroll container, and the current code selected the right rows, 8 to 13.
+- **Problem:** For a press in a fixed panel that does not scroll, auto-scroll scrolls an ancestor that does not move the panel. The drawn box is also cut to the visible rectangle of that ancestor, so the user sees only a part of the hit box.
+- **Impact if no action:** A drag from a fixed panel scrolls the page behind the panel at an edge, and the box hides a part of the hit box. With the anchor defect of the related item, that scroll also moves the start point, so the drag selects the wrong rows.
+- **Root question:** For a press in content that its nearest scrolling ancestor does not move, such as a fixed panel, what should auto-scroll scroll, and to what should the drawn box be cut?
+- **Options:**
+  - **A.** Make the scroll-container search follow what positions the pressed content:
+    - The viewport positions a `position: fixed` element, unless an ancestor sets a property such as `transform`, `filter`, `will-change`, `contain`, or `container-type`. Then that ancestor positions the element. The comment at src/dragGhostPortal.web.tsx:9 already records this rule for drag ghosts.
+    - At a fixed element that the viewport positions, the search stops, and the press has no scroll container. Auto-scroll then does not run, the drawn box is cut to the viewport, and the start point stays in place.
+    - Under an ancestor that positions the fixed element, the search goes on, so the transformed column under **Background** keeps its scroll container.
+    - Change the definition of the scroll container in the scrollbar rule, and the anchor, auto-scroll, and box rules of the protocol.
+    - Add browser cases for a fixed panel inside the scrolling column of the "Page shell" story and for a fixed element inside a transformed column. Each case holds a drag at an edge, and draws a box across the left edge of the column.
+    - Keep the tests of the auto-scroll axes passing, because the axes read the result of the search: "drag-select reads the scroll axes from the overflow values" in tests/unit/dragSelectGeometry.test.ts, and "auto-scroll leaves an axis with hidden overflow alone" in tests/browser/drag-select.spec.ts.
+    - Cost: the search copies a browser layout rule. A drag from a fixed panel into page rows gets no auto-scroll. Effort: Medium.
+  - **B.** Make the search follow the containing block of each positioned element, in place of its DOM parent:
+    - From an element with `position: absolute`, the search goes on at the nearest ancestor that positions it. That ancestor has a `position` other than `static`, or one of the properties that A names. The search skips each scroller in between, because such a scroller does not move the element.
+    - From an element with `position: fixed`, the search goes on at the ancestor that positions it, or stops with no scroll container, as in A.
+    - A press with no scroll container gets no auto-scroll, and its drawn box is cut to the viewport.
+    - Change the same protocol rules as A. Add the browser cases of A, and a case for an absolutely positioned panel inside a scroller that does not position it.
+    - Cost: the search copies more browser layout rules than A. Nobody has reproduced a defect with absolute positioning. Effort: Medium.
+- **Left out:**
+  - Change nothing: auto-scroll keeps scrolling the page behind the panel, and the box stays cut, which fails the goal.
+  - A check of `position: fixed` alone: under a transformed ancestor it stops auto-scroll for content that the column does scroll. A is better on every point, because A also handles that ancestor.
+  - Auto-scroll of the scroller under the pointer, in place of the scroller of the press: near an edge over the page, it still scrolls the page behind the panel, which fails the goal.
+  - A cut of every drawn box to the viewport: it breaks the box rule of the protocol for every other press, and the browser test "the drawn box stays inside the visible column" in tests/browser/drag-select-box.spec.ts.
+  - A stop of auto-scroll after a step that does not move the pressed element: it scrolls the page behind once before it stops, and it leaves the box cut, which fails the goal.
+  - A container or a marker that the app supplies: as a required prop it breaks the automatic container search that the protocol requires, and as an optional prop it leaves the default wrong.
+  - A protocol note that fixed panels are not supported: it fails the goal.
+- **Wider fix:** B. It follows the element that positions the pressed content, for fixed and absolute positioning, so the search cannot pick a scroller that does not move that content. A covers fixed positioning only.
+- **Previous examples:** One earlier case of the class is fixed. With `html { overflow: hidden }` and a `<body>` that scrolls, the search picked the document, and in Chromium the pointer at the bottom edge never auto-scrolled `<body>`. The fix counts `<body>` as a scroll container unless the viewport takes its overflow. The drag ghosts of `Kanban` and `SortableList` meet the same layout rule: src/dragGhostPortal.web.tsx renders them in `document.body`, because a transformed ancestor would position them.
+- **Related:** plans/follow-ups/drag-select-anchor-on-pressed-content.md, the same code and one design for both. That item asks how the start point of a drag stays on the pressed content, for the same presses. Both items read the scroll container of the press. One design can answer both: the pressed-element anchor that the other item recommends, with the search of A here. A here is the same search as option D of the other item, which answers both items alone, but a sticky element and content that moves for other reasons then still drift. Decide the two items together, and do them in one branch.
+- **Recommendation:** A. It fixes both reproduced defects with the one layout rule that the code already records. A probe in Chromium backs each case that it covers. B best protects the codebase, because it also covers absolute positioning, but nobody has reproduced that case.
+- **Action:** ask the user, because every option changes the scroll-container, auto-scroll, and box rules of the drag select protocol, requirements in force, and no user decision covers that change.

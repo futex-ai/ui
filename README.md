@@ -472,7 +472,9 @@ Run the same read-only AI review wrapper used by the accounting repo with:
 cargo xtask review
 ```
 
-Browser interaction tests start Storybook automatically through Playwright.
+Browser interaction tests start Storybook through Playwright with file watching
+disabled by `STORYBOOK_DISABLE_WATCH=1`, so workspace writes cannot reload test
+pages. A reused development server keeps live reload but ignores `.context/`.
 Storybook is built to `storybook-static`. `npm run test:package` builds a
 packed tarball, installs it into temporary consumers, imports every public
 package subpath with Node's native ESM resolver, typechecks those subpaths with

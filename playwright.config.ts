@@ -42,6 +42,7 @@ export default defineConfig({
   },
   webServer: {
     command: `npm run storybook -- --ci --host 127.0.0.1 -p ${storybookPort}`,
+    env: { STORYBOOK_DISABLE_WATCH: "1" },
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     url: storybookUrl,

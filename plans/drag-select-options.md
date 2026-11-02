@@ -841,7 +841,7 @@ Depends on: Milestone 9.
       (`.context/drag-select-options/logs/gate-4.log`).
 - [x] Run `git add -A`, commit with Conventional Commits, and push:
       `47e700c`.
-- [ ] Review the branch with the `implementation-review` skill against
+- [x] Review the branch with the `implementation-review` skill against
       `origin/main` after the push. Record each round in the findings file
       of the branch. Run the finding checks, fix the `fix now` findings,
       record a follow-up item for each other finding, re-review once, and
@@ -858,8 +858,17 @@ Depends on: Milestone 9.
   - [x] Follow-up items for the wider fixes of findings 15, 16, and 17, and
         for the two problems outside the scope: five files under
         `plans/follow-ups/`.
-  - [ ] Run the gate, commit, push, and run review round 5 once, with the
-        three new problems of the checks in its focus.
+  - [x] Run the gate, commit, push, and run review round 5 once, with the
+        three new problems of the checks in its focus: `59cc361`.
+  - [x] Round 5 gave findings 18 to 21. The finding checks confirmed all
+        four. Finding 18 waits for the user, and findings 19 and 20 wait
+        until after the merge.
+  - [x] Finding 21, the flaky gutter test: fix now with E. The dev server
+        ignores `.context/`, and the server that Playwright starts watches no
+        files.
+  - [x] Follow-up items for findings 18, 19, and 20, for the wider fix of
+        finding 21, and for the fixed-panel container question.
+  - [x] Run the gate, commit, and push. No third review round runs.
 - [ ] Delete the plan, as the `plans` skill says, when every other
       milestone TODO is ticked.
 - [ ] Open the pull request.
