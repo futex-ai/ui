@@ -1,0 +1,47 @@
+# The package has no ESLint
+
+- **Severity:** Low. **Effort:** Medium. **Confidence:** High. **Harder later:** Yes.
+- **Kind:** Needs decision.
+- **Added:** 2026-11-04, from `conductor/agents-md-ui`, the `agents-md` migration.
+- **Location:** `package.json:214` for the scripts, `package.json:264` for the devDependencies, and `AGENTS.md:59` for the Early check line.
+- **Reason:** A new lint needs the user's approval under the always-on rules, and the `typescript` skill puts it in its own change.
+
+- **Terms:**
+  - **Shared skills:** the agent rules in `futex-ai/skills`, such as the `typescript` skill and the always-on rules in `global/AGENTS.md`, which apply to every task.
+  - **`agents-md` migration:** a change that aligns the `AGENTS.md` of a repository with the shared skills, as the `agents-md` skill says.
+  - **`typescript-eslint`:** the tool set that lets ESLint check TypeScript, with a standard rule set called the `recommended` configuration.
+  - **`eslint-plugin-jsx-a11y`:** an ESLint plugin whose accessibility rules check raw DOM elements in JSX, such as `<div>`, but not React Native components.
+  - **Baseline that only shrinks:** a committed list of the findings that exist when a check starts, so the check fails only on new findings, and fixes remove entries.
+- **Background:**
+  - The `typescript` skill says: "Every package has ESLint with the `typescript-eslint` recommended configuration and Prettier."
+  - It also says: "A package that lacks ESLint or Prettier gets them in their own change. Fix the existing findings, or list them in a baseline that only shrinks, as the repository does for its other lints."
+  - The always-on rules say: "Do not add a new build error, rejection, gate, lint, or stricter validation without asking the user."
+  - This package has Prettier, with `npm run format` and `npm run format:check`.
+  - `tsconfig.json` sets `"strict": true`. It does not set `noUnusedLocals`, so the typecheck does not report unused local variables.
+  - The package has no ESLint package, no ESLint configuration, and no lint script. The Early check line of `AGENTS.md` says that the repository has no lint yet.
+  - Git tracks 743 TypeScript files outside `storybook-native/`.
+  - The axe accessibility sweep in `tests/browser/a11y.spec.ts` keeps its known violations in `axe-baseline.json`, which is empty today.
+  - Commit `3e15cb6` of 2026-10-20 says: "Adding ESLint is approved for a separate branch (decision 7B, the recommended default)." In that sentence, decision 7B names the recommended option of the earlier `agents-md` migration: add ESLint in a separate branch.
+  - Only the branch `calummoore/agentsmd-file` on GitHub holds commit `3e15cb6`. The squash commit `e601a86` of pull request #177 on `main` repeats its sentence.
+  - The description of pull request #177, merged on 2026-10-21, says: "Adding ESLint is still an open decision, although commit `3e15cb6` calls it approved."
+  - No other record holds that decision.
+  - Line 64 of `plans/wcag-2-1-accessibility.md` defers ESLint with `jsx-a11y` as low value against the React Native `accessibility*` props. It leaves the enforcement to the axe gate and the manual checklist.
+  - Line 129 of that plan lists "ESLint absent" with the severity Med. It suggests `typescript-eslint` plus `eslint-plugin-jsx-a11y` "with low expectations", because `jsx-a11y` understands only raw DOM JSX.
+  - The same line rates a small custom rule or grep test higher. That check would assert that each interactive React Native primitive carries an `accessibilityRole` and a name.
+  - Among the 17 `.web.tsx` files, a search finds raw DOM JSX only in `src/themeRoot.web.tsx`. No `.storybook` file has any.
+- **Problem:** The package has no ESLint, but the `typescript` skill requires it in every package. The two records of the earlier answer conflict, so agents cannot tell if the user approved ESLint.
+- **Impact if no action:** No check reports the problems that the recommended rules find, such as unused variables. Each new file can add findings that the later change must fix or list.
+- **Root question:** Which lint should check the TypeScript code of the package?
+- **Options:**
+  - **A.** Keep no ESLint, and record the exception as a repository rule in `AGENTS.md`. This conflicts with the `typescript` skill, and no lint checks the code. Effort: Small.
+  - **B.** Add ESLint with the `typescript-eslint` recommended configuration, and run it in `npm run verify`. Fix the findings, or list them in a baseline that only shrinks. The gate gets a new step, and nobody has counted the findings of a first run. Effort: Medium.
+  - **C.** Option B, plus `eslint-plugin-jsx-a11y` for the `.web.tsx` files and `.storybook`. Its rules find little, because those files hold almost no raw DOM JSX. Effort: Medium.
+- **Left out:**
+  - Change nothing: it fails the goal, because the conflict with the `typescript` skill stays open, and each agent must raise it again.
+  - Another linter, such as Biome: it breaks a requirement that stays, because the `typescript` skill names ESLint with `typescript-eslint`.
+  - The custom rule or grep test from line 129 of `plans/wcag-2-1-accessibility.md`: it fails the goal, because it does not give the `typescript-eslint` rules.
+- **Wider fix:** None. Options B and C add a lint, which is itself the detection fix for each class of problem that its rules cover.
+- **Previous examples:** Line 129 of `plans/wcag-2-1-accessibility.md` found the same gap. Commit `3e15cb6` of the earlier `agents-md` migration raised it as a decision.
+- **Related:** `plans/follow-ups/source-files-pass-line-cap.md`: work that waits for this answer. Its recommended option adds the ESLint rule `max-lines` to the configuration of option B here.
+- **Recommendation:** B. It meets the `typescript` skill rule, and a baseline that only shrinks keeps the first change at Medium effort. C protects the code a little more, but its rules have almost no raw DOM JSX to check.
+- **Action:** ask the user, because the recommended option adds a new lint, and the always-on rules reserve that choice for the user.

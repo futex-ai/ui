@@ -23,5 +23,6 @@
 - **Left out:** Change nothing: it fails the goal on installs whose provider does not serve the model.
 - **Wider fix:** None, because the problem is one fixed argument, not a class of defects.
 - **Previous examples:** None found.
+- **Related:** `plans/follow-ups/consumer-migration-runs-xtask-review.md`: the consumer guide still names this command as the review step. That item fixes the guide, and this item fixes the command.
 - **Recommendation:** B. It keeps the current default for installs that serve the model and lets other installs choose.
 - **Action:** fix after merge, apply B, because the command is outside the files of the change that found the problem.

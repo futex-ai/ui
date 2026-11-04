@@ -1,0 +1,94 @@
+# Hand-written mockups break the mockups skill
+
+- **Severity:** Medium. **Effort:** Small. **Confidence:** High. **Harder later:** Yes.
+- **Kind:** Needs decision.
+- **Added:** 2026-11-04, from `conductor/agents-md-ui`.
+- **Location:** `docs/mockups/rich-text-editor.html`, `docs/mockups/rich-text-collaboration.html`, and `docs/mockups/video-editor.html`.
+- **Reason:** The work waits for two open decision items, `plans/follow-ups/mockups-choose-how-to-meet-rules.md` and `plans/follow-ups/mockups-choose-side-of-mismatch.md`.
+
+- **Terms:**
+  - **Editor, Collab, and Video:** short names for `docs/mockups/rich-text-editor.html`, `docs/mockups/rich-text-collaboration.html`, and `docs/mockups/video-editor.html`, with 339, 545, and 995 lines.
+  - **`mockups` skill:** the shared agent rules for mockups, in `skills/mockups/SKILL.md` of `futex-ai/skills`.
+  - **Mokly:** a TypeScript command-line tool and viewer that builds a mockup catalogue from `*.mockup.tsx` entry modules and shared TSX components.
+  - **Screen component:** one component that draws one app screen in its mobile and its desktop variant, as the `mockups` skill requires.
+  - **`agents-md` migration:** a change that aligns the `AGENTS.md` of a repository with the shared skills, as the `agents-md` skill says.
+- **Background:**
+  - On 2026-11-04 the user chose the shared rule over the old exemption in `AGENTS.md`. The old bullet said: "This library has no mockup requirement. The `mockups` skill and the mockup milestones of the `plans` skill do not apply here, and the library has no Mokly catalogue. The Storybook story of a component is its visual spec. The three hand-written HTML files under `docs/mockups/` are older design references."
+  - So the `mockups` skill now applies to component work here, and the three files count as mockups. This answer of the user is the requirement of this work.
+  - The `agents-md` migration on `conductor/agents-md-ui` deletes that bullet. It did not change the mockups, because they are outside its scope.
+  - The `mockups` skill says: "Mockups are part of the spec and stay aligned with the implementation at all times."
+  - Rule check of the three files against the `mockups` skill:
+    - Design before implementation fails for all three. Each file landed in the squash commit of its code. Editor came in `26d907c` of pull request #115, Collab in `7ccba8e` of #152, and Video in `d998e0b` of #153.
+    - Each plan put the mockup after the code: `plans/rich-text-editor-component.md:199-200` in its fourth milestone, `plans/rich-text-collaboration-visuals.md:87-89` in its last milestone, and `plans/video-editor-components.md:43` after 16 code tasks.
+    - Alignment fails for all three. `git log -- docs/mockups/` shows one commit for each file, and about 60 differences from the product exist.
+    - Reachability fails for all three. No index page exists, and no page links another. Only the five Markdown links below reach them.
+    - The screen component rule fails for all three. Each file is raw HTML that repeats the screen markup for each variant.
+    - The Mokly rules fail for all three. `git ls-files | grep -iE 'mokly|\.mockup\.tsx?$'` prints nothing.
+    - The mockup check fails for all three. `AGENTS.md` and `package.json` name no mockup check command, and `npm run format:check` skips `*.html`. Only `tests/unit/noAccentBar.test.ts` reads the files, for left borders.
+    - Consistency with the existing screens fails for Video. It draws the status glyphs `▮▮▮` at `:902`, against `● ● ▰` in Editor at `:240` and in Collab at `:399`. It shows the desktop screen first. It uses three colours outside the theme tokens, at `:278`, `:306`, and `:386`.
+    - All three pass the rules on two variants, on at most five screens on a page, and on notes outside the screens. They also pass the bans on a left-edge accent border and on environment labels, and the copy rules.
+    - The Video phone screen renders broken, as defect 2 below says.
+    - For Collab, the edge-strip rule waits for `plans/follow-ups/comment-anchor-underline-edge-rule.md`.
+  - Six defects are wrong in any reading. A headless Chrome render gave the measurements.
+    1. Video desktop: the timeline covers the transport bar. The grid rows at `:65` leave the middle row 404px. The monitor needs 379px and the transport 52px. The transport spans y 596 to 648, and the timeline starts at y 621, so 27px of the bar is hidden.
+    2. Video phone: the grid template at `:72` lists five row sizes for the six children at `:902-973`. The tab bar takes the flexible row of 346px. The timeline gets 62px and shows one of its three lanes. The transport falls into an extra 44px row. The rows measure 42, 46, 218, 346, 62, and 44px.
+    3. Video phone: the rule `.ruler .lbl` at `:457-463` sets 10px labels. The phone ruler at `:922-931` uses the class `m-ruler`, so its labels render at 16px.
+    4. Collab desktop: the rail count says 4 at `:494`, but the rail shows three cards at `:496-533`. The comment on "Tracked changes" at `:484` has no card. The product shows a card for each counted entry, `src/rich-text/RichTextCollabRail.tsx:105-137`.
+    5. Collab: Robin's insertion is green at `:60-64`, `:420`, `:479`, and `:528`. Robin's colour is rose at `:100`, `:108`, `:127-129`, and `:310`. The comment at `:59`, `docs/protocol/rich-text-collaboration.md:90`, and `src/rich-text/domDecoration.web.ts:86-89` use the colour of the author.
+    6. Collab phone: the presence row shows the viewer "CM" at `:407`. The desktop row at `:463` and `src/rich-text/RichTextPresenceBar.tsx:20-24` and `:57-66` leave the viewer out.
+  - Main differences between Editor and the product:
+    - The phone toolbar has 8 buttons at `:268-275`. The native toolbar has 18 buttons and 3 dividers, `src/rich-text/NativeRichTextToolbar.tsx:114-261`.
+    - The phone editor is full-bleed at `:86-90` and `:245`. The native editor has a bordered frame, `src/rich-text/NativeRichTextEditorSurface.tsx:137-139`.
+    - The label "NOTES" is uppercase at 12px, `:91-96` and `:246`. The product label is 14px in sentence case, `src/typography/typographyStyles.ts:110-116`.
+    - The title sits outside the document at `:97-102`. The product draws the title as a heading 1 block.
+    - Body text is 16/24 and the heading 21/28 at `:103-113`. The product uses 15/22 and 24/30, `src/typography/typographyStyles.ts:102-106` and `:70-74`.
+    - The checked item is plain at `:254`. Native draws it muted and struck through, `src/rich-text/NativeRichTextBlock.tsx:201-204`.
+    - The desktop checklist uses bare glyphs at `:320` and `:323`. Web draws a checkbox, `src/rich-text/domRender.web.ts:157-170`.
+    - The desktop editor has 28/32px padding at `:205-210`. Web uses 10/12px, `src/rich-text/richTextStyles.ts:15-27`.
+    - No screen shows the slash menu or a dark variant.
+  - Main differences between Collab and the product, besides defects 4 to 6:
+    - The phone anchor has an amber underline and an active ring at `:71-81`. Native draws a tint only, and the active anchor adds a plain underline, `src/rich-text/nativeRichTextStyles.ts:106-112`.
+    - The phone deletion has a 2px rose strike at `:66-69`. Native draws a muted strike in the text colour, `src/rich-text/nativeRichTextStyles.ts:113-116`.
+    - The phone rail is a bottom sheet at `:316-329`. The protocol asks for a stacked list on a phone, `docs/protocol/rich-text-collaboration.md:151-153`.
+    - The card buttons are text only. The product buttons have icons, `src/rich-text/RichTextCollabCard.tsx:110-160`.
+    - Each thread has one comment. The story thread also has a reply by the viewer, `src/stories/richTextCollab.stories.tsx:66-85`.
+    - No screen shows a dark variant.
+  - Main differences between Video and the product:
+    - The desktop screen has a top bar with a title, tools, a timecode, Share, and Export at `:659-668`. The library has no such bar.
+    - The desktop screen is one shell with three columns. The story draws rows of separate panels, with effects and keyframes in their own row, `src/stories/videoEditor.stories.tsx:606-620`.
+    - The media bin has two columns without groups at `:166-171`. The product groups the assets in one column of 104px cards, with view toggles.
+    - The selected asset has an outer ring at `:178-181`. The product draws a 2px border.
+    - The transport has 3 buttons at `:703-705`. The product has 5, plus mark in, mark out, loop, and rate.
+    - The meter zones change at 62% and 84% at `:311`. The product changes at about 84% and 95%, from -18 and -6 dBFS on a square-root curve, `src/video-editor/levelMeterScale.ts:15-16` and `:29-41`.
+    - The keyframes show one curve at `:751-765`. The full editor shows lanes with diamonds.
+    - The selected clip has an inset ring at `:497-501`. The product draws a 2px border and no ring, `src/timeline/TimelineClip.tsx:166` and `src/timeline/timelineStyles.ts:233`.
+    - The music bed is amber with a track lock at `:487-491`, `:795`, and `:871`. The sample data makes it green with a clip lock, `src/stories/timelineSampleData.ts:124-130`.
+    - The ruler scale, the playhead time at `:665`, and the lane heights differ from the story.
+    - The phone top bar, monitor, tabs, track gutter, and transport differ from the compact story.
+    - The captions at `:650-651`, `:892-893`, and `:976-978` promise effects and keyframes in the inspector, a clip ring, an in-lane track label, and touch-size transport targets. The code draws none of them.
+    - No screen shows a dark variant.
+  - Five live links name the files as the captured design: `docs/protocol/rich-text-editor.md:16`, `docs/protocol/rich-text-collaboration.md:23`, `src/timeline/README.md:206`, `src/video-editor/README.md:185`, and `plans/rich-text-collaboration-visuals.md:28`.
+  - A port to Mokly changes those links. It also needs a mockup check command in `AGENTS.md`, and it changes the allowlist path `docs/mockups/rich-text-editor.html` at `tests/unit/noAccentBar.test.ts:68`.
+  - No repository that the migration could read has a Mokly configuration, so the setup cost is an estimate.
+  - The `plans` skill says: "When the repository has no mockup catalogue tooling yet, the mockup milestone also sets up that tooling."
+- **Problem:** The three files break most rules of the `mockups` skill. They came after the code, they are hand-written HTML without screen components or Mokly, and no mockup check runs on them. They also differ from the product in about 60 places, and six differences are defects in any reading.
+- **Impact if no action:** Agents that now follow the `mockups` skill start from mockups that show a different product. Each component change widens the drift, and each new plan with UI work now needs a mockup milestone.
+- **Root question:** How does the library get mockups that follow the `mockups` skill and show what the product draws?
+- **Options:**
+  - **A.** Change nothing now. Port the set to Mokly in the next plan that has a mockup milestone. The defects and the drift stay until that plan. Effort: Small.
+  - **B.** Fix the six defects now, and port the set to Mokly later. The files keep the other differences and still break the Mokly rules. Effort: Small.
+  - **C.** Align the hand-written files fully with the product. About 60 differences change in raw HTML that no mockup check guards, and the Mokly rules still fail. Effort: Medium.
+  - **D.** Port the set to a Mokly catalogue in its own plan, and align it during the port. That plan first sets up Mokly, a mockup check command, and the new links. Effort: Large.
+  - **E.** Option D, with the real `@firna/ui` components inside the screen components. The mockups then match the components, but a new design must exist in code before a mockup can show it. Effort: Large.
+- **Left out:**
+  - Restore the exemption in `AGENTS.md`: the user chose the shared rule on 2026-11-04.
+  - Delete the three files: it fails the goal, because design work needs mockups, and five live links name the files as the captured design.
+- **Wider fix:** D. A Mokly catalogue with screen components and a mockup check meets each rule of the `mockups` skill, so new mockups start inside the rules.
+- **Previous examples:** `tests/unit/noAccentBar.test.ts:10-12` records one. A protocol doc kept a toast accent bar after pull request #99 removed it from the code, so the spec kept inviting it back.
+- **Related:**
+  - `plans/follow-ups/mockups-choose-how-to-meet-rules.md`: the decision item for the options of this item. The work waits for its answer.
+  - `plans/follow-ups/mockups-choose-side-of-mismatch.md`: the decision item for the side that wins a difference. The alignment in options C, D, and E waits for its answer.
+  - `plans/follow-ups/comment-anchor-underline-edge-rule.md`: the Collab comment anchor. A change to the anchor waits for its answer.
+  - `plans/follow-ups/noaccentbar-comments-call-mockups-references.md`: two test comments that still call the files design references. The same test holds the allowlist path that a port changes.
+- **Recommendation:** B. It removes the six defects at Small effort and leaves the port to a plan that can set up Mokly, as the decision item recommends. D best protects the codebase.
+- **Action:** ask the user, because the work depends on the two open decision items `plans/follow-ups/mockups-choose-how-to-meet-rules.md` and `plans/follow-ups/mockups-choose-side-of-mismatch.md`.

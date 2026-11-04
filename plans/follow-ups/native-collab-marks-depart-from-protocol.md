@@ -1,0 +1,58 @@
+# Native collaboration marks depart from the protocol
+
+- **Severity:** Medium. **Likelihood:** Common. **Effort:** Medium. **Confidence:** High. **Harder later:** No.
+- **Kind:** Outside the scope.
+- **Added:** 2026-11-04, from `conductor/agents-md-ui`, the investigation of the hand-written mockups.
+- **Location:** `src/rich-text/nativeRichTextStyles.ts:106-119`, `src/rich-text/nativeRichTextInline.tsx:107-146`, `docs/protocol/rich-text-collaboration.md:88-96`, and `docs/protocol/rich-text-collaboration.md:137-147`.
+- **Reason:** The native rich-text files and the collaboration protocol are outside the files of `conductor/agents-md-ui`, a change that edits only `AGENTS.md` and follow-up items.
+
+- **Terms:**
+  - **Collaboration overlay:** the optional props of `RichTextEditor` that draw tracked changes, comment threads, and live presence. `docs/protocol/rich-text-collaboration.md` holds its requirements.
+  - **Comment anchor:** the words that a comment thread discusses. The active anchor belongs to the selected thread.
+  - **Accent and deep colour:** the two colours of the theme family that each collaborator gets, for example `rose` and `roseDeep`.
+  - **`textDecorationColor`:** the React Native text style that sets the colour of an underline or a strikethrough.
+  - **Run:** a slice of the text of a block that carries one set of overlay marks.
+- **Background:**
+  - The protocol says that the overlay runs on web, iOS, and Android, at `docs/protocol/rich-text-collaboration.md:5`. Its "Visual Language" table at lines 88-96 gives one look for each mark. The table names no platform exception.
+  - The table rows for tracked changes and anchors say:
+    - Line 90, insertion: "Underline in the author's accent, text in their `*Deep` colour".
+    - Line 91, deletion: "Strikethrough in the author's accent, text in `muted`".
+    - Line 92, comment anchor: "Amber `soft` tint with a 2px amber underline".
+    - Line 93, active comment anchor: "The same, plus a 1px inset amber ring".
+  - The web renderer draws these rows with line colours, 2px lines, and the ring. See `src/rich-text/domDecoration.web.ts:42-66` for anchors and `:69-92` for insertions and deletions.
+  - The native renderer draws each run as a nested `Text` inside the `TextInput` of the block, at `src/rich-text/nativeRichTextInline.tsx:54-65`. `runTextProps` at `:107-146` takes its styles from `src/rich-text/nativeRichTextStyles.ts:106-119`.
+  - Native draws the four marks like this:
+    - Comment anchor: the `amberSoft` tint only, with no underline.
+    - Active comment anchor: the tint and a plain underline in the text colour, with no ring.
+    - Deletion: `muted` text with a strikethrough in the text colour, so the line is not in the accent of the author.
+    - Insertion: text and underline in the deep colour of the author, so the line is not in the accent.
+  - No native file sets `textDecorationColor`. Only the web renderer sets a line colour and a line thickness.
+  - The source of React Native 0.85.3 under `node_modules/react-native/` shows these limits. That version is the one in `devDependencies`. The peer range is `>=0.83 <0.86`.
+    - iOS honours `textDecorationColor` for underlines and strikethroughs, at `Libraries/Text/RCTTextAttributes.mm:200-202`.
+    - Android ignores it, so a line takes the text colour. `ReactAndroid/src/main/java/com/facebook/react/views/text/TextAttributeProps.kt:418` maps the key to an empty branch.
+    - `TextStyle` has no thickness and no offset for a text line, at `Libraries/StyleSheet/StyleSheetTypes.d.ts:633-640`.
+    - A text run carries only text attributes, such as colours, font, lines, and shadow, at `ReactCommon/react/renderer/attributedstring/TextAttributes.h:42-87`. It has no border, so it cannot draw a ring.
+  - So native text cannot draw a 2px line or a ring on either platform, or a line colour on Android. iOS can draw the accent and amber line colours. The code does not set them.
+  - No commit, plan, or comment records why native departs from the table. The comment at `nativeRichTextStyles.ts:103-105` explains only why every anchor uses one amber tone.
+  - Nobody checked these styles on a device. No native screenshot exists. The protocol calls the on-device pass manual, at lines 193-194. Pull request #152 merged on 2026-08-21. Its plan deferred that pass.
+  - The protocol already records two native exceptions. Remote carets are initials discs beside the text, at lines 141-143. On Android the innermost `textDecorationLine` wins, at lines 146-147.
+  - Each change also has words. The native run label says "Insertion suggested by" or "Deletion suggested by" and the name, at `nativeRichTextInline.tsx:126-128`. The rail card names the author too, as lines 164-167 require.
+- **Problem:** The native editor draws four marks differently from the protocol table. No doc records the native look or its reason. On native, no line shows the accent of its author. A native anchor has no underline.
+- **Impact if no action:** Native users see marks that the protocol does not describe. Reviewers cannot tell a defect from a platform limit. A later change can chase a look that React Native cannot draw.
+- **Root question:** How does the native editor draw the collaboration marks, within what React Native text can draw?
+- **Options:**
+  - **A.** Keep the native code. Record the native look in the protocol as the fallback of each mark. Give the React Native limits as the reason. iOS then keeps plain lines that it could draw in the accent of the author. Effort: Small.
+  - **B.** Draw each mark as close to the table as each platform allows. Record the rest in the protocol. Put the look of each run in one shared pure function that both renderers apply. Native then sets `textDecorationColor` to the accent of the author on insertions and deletions, and to amber on an anchor underline. iOS shows these colours. Android shows the text colour. A deeper amber tint marks the active anchor, because a text run cannot draw a ring. Check both platforms on a device. Effort: Medium.
+  - **C.** Change the table on every platform to marks that native text can draw. Lines take the text colour and the default thickness. A deeper tint replaces the ring. The web renderer changes to match, so web loses the accent of the author on lines. Effort: Medium.
+  - **D.** Build a native text component that draws thick coloured lines and rings. Use it for overlay runs. It needs iOS and Android code, which the library does not ship today. Effort: Large.
+- **Left out:**
+  - Draw the marks as views over the text: a `TextInput` gives no position for a text range, so it fails the goal.
+  - Draw the overlay in a web view on native: it breaks the requirement of no HTML bridge at `docs/protocol/rich-text-editor.md:51`.
+  - Change nothing: the protocol keeps contradicting the code, so it fails the goal.
+- **Wider fix:** B, because one shared function gives the look of each run to both renderers. A later change of a colour or a line then reaches both platforms.
+- **Previous examples:** None found.
+- **Related:**
+  - `plans/follow-ups/comment-anchor-underline-edge-rule.md`: work that waits for the answer. That item asks whether the underline on a tinted anchor is a banned edge strip under the new edge rule of the `product-ui` skill. Its answer decides whether option B adds an anchor underline on native.
+  - `plans/follow-ups/comment-anchor-hides-selection-tint.md`: the same code and a shared wider fix. Both items change the anchor styles of `runTextProps`. The shared function of option B can also compose the fill that item needs.
+- **Recommendation:** B. It brings each platform as close to the table as React Native allows, with the real limits in the protocol.
+- **Action:** ask the user, because the recommended option changes the protocol table, a requirement in force, and no user decision covers that change.
