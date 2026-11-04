@@ -1,6 +1,6 @@
 # Hand-written mockups break the mockups skill
 
-- **Severity:** Medium. **Effort:** Large. **Confidence:** High. **Harder later:** Yes.
+- **Severity:** Medium. **Effort:** Small. **Confidence:** High. **Harder later:** Yes.
 - **Kind:** Needs decision.
 - **Added:** 2026-11-04, from `conductor/agents-md-ui`.
 - **Location:** `docs/mockups/rich-text-editor.html`, `docs/mockups/rich-text-collaboration.html`, and `docs/mockups/video-editor.html`.
