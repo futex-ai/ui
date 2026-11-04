@@ -42,5 +42,6 @@
 - **Related:**
   - `plans/follow-ups/scroll-lock-moves-fixed-elements.md`: the parent item. Its work waits for this answer.
   - `plans/follow-ups/scroll-lock-moves-sticky-headers.md`: the same code. Under option B, every page element stays still only with option A of that item. Under options E, F, or G, that item falls away.
+  - `plans/follow-ups/ios-safari-scroll-lock-check.md`: the iOS Safari check of the scroll lock. Option E here is the same `position: fixed` body that its fallback would add.
 - **Recommendation:** B. It keeps every page element still, which is the aim of the user's choice of 2026-11-01, at Medium effort, and React Aria ships the same trade-off. F best protects the codebase, but it removes the page scroll lock.
 - **Action:** ask the user, because the options have real trade-offs. No option keeps fixed elements still and also covers the whole window in Chromium, and the user's choice of 2026-11-01 asked for both.

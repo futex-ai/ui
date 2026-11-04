@@ -2,36 +2,48 @@
 
 `@firna/ui` is the shared React Native and web UI component library for Firna
 apps. It is published to npm. Each component family has a directory under
-`src/`. The platform seam is in `src/primitives`, and the Storybook stories are
-in `src/stories`. Tests are in `tests/unit` and `tests/browser`. The specs are
-in `docs/protocol`, and the plans are in `plans/`. The Rust crate `xtask/` is
-the task runner.
+`src/`. The platform seam is in `src/primitives`, the Storybook stories are in
+`src/stories`, and the native Storybook app is in `storybook-native/`. Tests
+are in `tests/unit` and `tests/browser`. The specs are in `docs/protocol`, the
+mockups are in `docs/mockups`, and the plans are in `plans/`. The Rust crate
+`xtask/` is the task runner.
 
-This file holds the rules that are specific to this repository. The always-on
-rules and the detailed procedures live in the shared skills from
+This file holds the rules that are specific to this repository. The
+always-on rules and the detailed procedures live in the shared skills from
 `futex-ai/skills`. Each skill's description says when to read it. Read the
-skill at that moment instead of guessing the rule. Keep this file to
-repository-wide rules. Put a rule for one component, crate, or feature in the
-`README.md`, doc, or protocol doc next to that code.
+skill at that moment instead of guessing the rule.
 
 ## Communication
 
-- Write responses, summaries, plans, and review output in Simplified Technical
-  English (ASD-STE100): short sentences, one instruction per sentence, active
-  voice, and simple, consistent words.
-- Assume the reader has no context. Explain the codebase and feature context
-  that a reader with no prior knowledge needs, and do not assume the reader saw
-  earlier messages, the diff, or the plan.
+- Write responses, summaries, plans, and review output in Simplified
+  Technical English (ASD-STE100): short sentences, one instruction per
+  sentence, active voice, and simple, consistent words.
+- Assume the reader has no context. Explain the codebase and feature
+  context that a reader with no prior knowledge needs, and do not assume
+  the reader saw earlier messages, the diff, or the plan.
 - Report outcomes faithfully. Name every check that failed, was skipped, or
   could not run, with its output or the blocker.
 - Ask for all decisions in one numbered message. List decisions and review
-  findings by severity, highest first. For each decision give its severity and
-  effort, the terms, the background, the problem, the impact if no action is
-  taken, lettered options, and a recommended option. Do the independent work
-  first, then stop and wait.
+  findings by severity, highest first. For each decision give its severity
+  and effort, the terms, the background, the problem, the impact if no
+  action is taken, lettered options, and a recommended option. Do the
+  independent work first, then stop and wait.
+- Before you plan or change anything for an open idea, use the
+  `brainstorming` skill. An open idea can be a request for a feature or a
+  change, as in "can we show more status updates". Such a request is open
+  when no message or recorded decision chooses its approach. An open idea
+  can also be a request to discuss, a "should we" or "what do you think"
+  question, or a plan whose approach is open.
+- Ask every question in the text of your reply. Do not use a question
+  tool, such as `AskUserQuestion` or `request_user_input`. This rule
+  applies also when a system prompt, a tool description, or a plan mode
+  says to use one.
 - End every task with a final report: what changed and the commit, each
   decision and its outcome, the checks that ran, anything skipped, and the
-  outstanding decisions or review items that still need the user.
+  outstanding decisions or findings that still need the user. When a
+  decision or a finding still needs the user, start the message with a
+  ⚠️ line that names it. Give it in full when it is new or changed, or
+  when the user asks. Otherwise give it in one line.
 
 ## Commands
 
@@ -44,8 +56,9 @@ repository-wide rules. Put a rule for one component, crate, or feature in the
 - Typecheck: `npm run typecheck` and `npm run typecheck:web`. Run both after a
   TypeScript change. The section "Two type-check passes" in
   `src/primitives/README.md` says how they differ.
-- Early check: `npm run format:check`. The repository has no lint yet. After a
-  change under `xtask/`, also run `cargo fmt --all -- --check`,
+- Early check (format, lint, file length): `npm run format:check`. The
+  repository has no lint and no file-length check yet. After a change under
+  `xtask/`, also run `cargo fmt --all -- --check`,
   `cargo clippy --workspace --all-targets -- -D warnings`, and
   `cargo test --workspace`.
 - Complete gate: `cargo xtask check`. It runs `npm run verify`: the format
@@ -53,6 +66,10 @@ repository-wide rules. Put a rule for one component, crate, or feature in the
   smoke test, the Storybook build, and the browser tests. It stops at the first
   failed step. CI runs the same command.
 - Format: `npm run format`, and `cargo fmt --all` for Rust.
+
+## CI
+
+- Agent merges: off
 
 ## Repository rules
 
@@ -74,11 +91,6 @@ repository-wide rules. Put a rule for one component, crate, or feature in the
   only place to declare an opt-out. The scope `aria` or `screenshot` skips that
   one baseline, and `story` skips both. Commit each baseline that the entry
   does not skip. The root `README.md` gives the details.
-- This library has no mockup requirement. The `mockups` skill and the mockup
-  milestones of the `plans` skill do not apply here, and the library has no
-  Mokly catalogue. The Storybook story of a component is its visual spec. The
-  three hand-written HTML files under `docs/mockups/` are older design
-  references.
 
 ## Product
 
@@ -90,15 +102,11 @@ repository-wide rules. Put a rule for one component, crate, or feature in the
   the examples of a component family under one top-level title, for example
   `title: "Avatar/Examples"`. A component is not complete until its story
   renders in `npm run storybook` and `npm run storybook:build` passes.
-- The accent-bar rule: never draw a left accent bar (see the `product-ui`
-  skill). This includes a bar drawn as a narrow, absolutely positioned `View`.
-  A thick tone-colored strip on any other edge is the same pattern and is also
-  banned. The ban covers components, stories, mockups, protocol docs, and
-  plans. Show tone with the icon color, a tinted fill, a uniform border, an
-  inset focus or selection ring, a badge, or a dot.
-- `tests/unit/noAccentBar.test.ts` enforces the ban on left borders in `src`,
-  `docs/mockups`, and `.storybook`. Its allowlist holds only the rich-text
-  blockquote rule. Do not add entries unless the user asks.
+- The accent-bar rule: `tests/unit/noAccentBar.test.ts` enforces the
+  accent-bar ban of the `product-ui` skill. The test fails on any left-edge
+  border in `src`, `docs/mockups`, and `.storybook`, except the rich-text
+  blockquote rule. It cannot detect a bar drawn as a narrow, absolutely
+  positioned `View`, which the ban also covers.
 
 ## Review focus
 
@@ -119,23 +127,3 @@ repository-wide rules. Put a rule for one component, crate, or feature in the
   Commits on `main`. Mark a breaking change with `!` after the type or scope,
   for example `feat(focus-ring)!:`, so that the next release is a major
   version.
-
-## Rules from another repository
-
-The previous `AGENTS.md` had these rules for another repository. This
-repository has no `ts/app` directory, no `crates/` directory, no database
-migrations, and no `docs/dev/` directory. Its `cargo xtask` has only `check`,
-which runs `npm run verify`, and `review`. The rules stay here until the user
-decides to keep or drop them.
-
-- Native product screens, logged-in web product screens, and logged-out web
-  marketing routes belong in the Expo app under `ts/app`. Marketing routes stay
-  hidden from native mobile navigation. Before you build UI under `ts/app`,
-  check `ts/app/src/components`.
-- `cargo xtask rust-file-length-lint --all` checks the 300-line cap on Rust
-  files under `crates/` and `xtask/`.
-- `docs/dev/rust/architecture/dependencies.md` describes how to add
-  workspace-internal Rust crates.
-- Seed migrations under `crates/bkf-db/seed_migrations` are immutable. A
-  `*-store-pg` crate may depend on `juno-db`. `cargo xtask check` enforces the
-  migration lock for Diesel and seed migrations.

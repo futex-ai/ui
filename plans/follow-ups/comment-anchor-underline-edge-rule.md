@@ -1,0 +1,44 @@
+# Comment anchor underline may be a banned strip
+
+- **Severity:** Low. **Effort:** Small. **Confidence:** Medium. **Harder later:** No.
+- **Kind:** Needs decision.
+- **Added:** 2026-11-04, from `conductor/agents-md-ui`.
+- **Location:** `docs/mockups/rich-text-collaboration.html:71-81`, `docs/protocol/rich-text-collaboration.md:92-93`, and `src/rich-text/domDecoration.web.ts:42-66`.
+- **Reason:** The edge-strip rule does not settle this case, and the anchor is outside the files of the `agents-md` migration.
+
+- **Terms:**
+  - **Comment anchor:** the highlight on the words that a comment thread is about, in the rich-text editor.
+  - **`product-ui` skill:** the shared agent rules for screens, components, and mockups, in `skills/product-ui/SKILL.md` of `futex-ai/skills`.
+  - **Collab:** short name for `docs/mockups/rich-text-collaboration.html`, the mockup of the collaboration visuals.
+  - **`agents-md` migration:** a change that aligns the `AGENTS.md` of a repository with the shared skills, as the `agents-md` skill says.
+- **Background:**
+  - The `product-ui` skill bans a left-edge accent border on a box. It says: "A box is an element with its own fill, a border on its other sides, rounded corners, or a shadow."
+  - Since pull request #177, `AGENTS.md` said: "A thick tone-colored strip on any other edge is the same pattern and is also banned."
+  - On 2026-11-04 the user moved that rule and its scope to the `product-ui` skill, with this text: "A thick strip in an accent or status colour on the top, right, or bottom edge of a box is the same pattern. Do not use it either." and "This applies to product code, Storybook stories, mockups, protocol docs, and plans. A protocol doc or a plan must not ask for the pattern."
+  - The protocol table at `docs/protocol/rich-text-collaboration.md:92-93` asks for the comment anchor as "Amber `soft` tint with a 2px amber underline". It asks for the active anchor as "The same, plus a 1px inset amber ring".
+  - The web code at `src/rich-text/domDecoration.web.ts:42-66` draws an `amberSoft` fill with a 3px radius and a 2px amber underline 2px below the text. The active anchor adds an inset ring.
+  - The comment at `src/rich-text/domDecoration.web.ts:36-41` says that the one fixed amber tone marks "there is a discussion here", and the rail card carries who.
+  - Collab draws the same anchor at `:71-81`.
+  - The fill and the radius make the anchor a box under the definition above.
+  - A headless Chrome render of Collab put the fill of the anchor "every workspace" at y 1137 to 1154. Its underline runs from y 1153 to 1155, so the underline sits on the bottom edge of the fill.
+  - The rules do not say whether a text underline is a strip, or whether 2px is thick.
+  - Native draws a tint only, and the active anchor adds a plain underline and no ring, `src/rich-text/nativeRichTextStyles.ts:106-112`.
+  - The browser tests check the text of the anchors, not their look. The story snapshot sweep pins a screenshot of each collaboration story.
+- **Problem:** The anchor draws a 2px amber line on the bottom edge of a tinted, rounded fill. A strict reading of the new rule bans it, but a reading of the underline as typography allows it.
+- **Impact if no action:** Each review of the rich-text code or of Collab can raise the same question again. The native styles of the same protocol table have no settled target.
+- **Root question:** How does a comment anchor show that a discussion exists without the banned edge pattern?
+- **Options:**
+  - **A.** Decide that a text underline is typography and not an edge strip. Record the ruling next to the protocol table, and change no code. A strict reader of the new rule can still see a strip. Effort: Small.
+  - **B.** Remove the tint, and keep the underline. The anchor is then no box, so the edge rule does not apply. The protocol table, the web code, the mockup, and the screenshot baselines of the collaboration stories change. Effort: Medium.
+  - **C.** Remove the underline, and keep the tint and the active ring. The protocol table, the web code, the mockup, and the screenshot baselines change. The resting anchor then matches native. Effort: Medium.
+- **Left out:**
+  - Replace the underline with a full amber border: it fails the goal, because a full border looks like the inset ring of the active anchor.
+  - Change nothing and record no ruling: it fails the goal, because the question stays open.
+- **Wider fix:** None in this repository. A sentence on text underlines in the `product-ui` skill would settle the class, and only the skills repository can add it.
+- **Previous examples:** The timeline trim grips raise a similar question. They are 2 by 14px bars in the accent colour of the clip, with fully rounded ends, at both clip edges, `src/timeline/TimelineClip.tsx:243-258` and `src/timeline/timelineStyles.ts:256-262`.
+- **Related:**
+  - `plans/follow-ups/mockups-meet-mockups-skill.md`: the parent item of the mockup work. A change to the Collab anchor waits for this answer.
+  - `plans/follow-ups/native-collab-marks-depart-from-protocol.md`: the native styles of the same protocol table. Its target follows the anchor that this item picks.
+  - `plans/follow-ups/comment-anchor-hides-selection-tint.md`: the fill of the same anchor hides a live selection. A change of the anchor fill changes that fix.
+- **Recommendation:** A. The underline marks words as a link underline does, and the tint, the ring, and the protocol table stay as reviewed.
+- **Action:** ask the user, because the new rule does not settle this case, and options B and C change a requirement in a protocol doc.
