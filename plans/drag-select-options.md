@@ -103,6 +103,11 @@ Design calls (2026-11-01, the orchestrator's calls):
   `docs/protocol/drag-select-selection.md`, because the review fixes would
   push the protocol doc past its 250-line target.
 
+Answers of 2026-11-05. The user confirmed review finding 19 as a follow-up
+item. The user asked for the pull request before the macOS check, so the pull
+request opens now, and the plan stays until the check passes. Review finding
+18 has no answer yet.
+
 The Storybook stories and the accounting app's transactions mockup are the
 visual spec. This repo gets no new HTML mockup, as in the
 [sortable group coordinator](sortable-group-coordinator.md) plan.
