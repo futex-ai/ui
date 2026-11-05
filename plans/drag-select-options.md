@@ -4,8 +4,9 @@ Status: Active. Milestones 1 to 10 are delivered on branch
 `calummoore/dragselectableprovider-improvements`, with review rounds 4 and 5
 done. Open before merge: the user's answer to review finding 18, the drag
 start point in a fixed panel, and the user's manual check of macOS overlay
-scrollbars, which needs the pull request's Storybook preview. No PR is open
-yet. The plan closes when its PR merges.
+scrollbars, which needs the pull request's Storybook preview.
+[PR #182](https://github.com/futex-ai/ui/pull/182) is open. The plan closes
+when its PR merges.
 
 [`DragSelectableProvider`](../src/drag-select/README.md) was built to wrap one
 list. The accounting app wants one provider around every page, so that a drag
@@ -876,7 +877,8 @@ Depends on: Milestone 9.
   - [x] Run the gate, commit, and push. No third review round runs.
 - [ ] Delete the plan, as the `plans` skill says, when every other
       milestone TODO is ticked.
-- [ ] Open the pull request.
+- [x] Open the pull request: [#182](https://github.com/futex-ai/ui/pull/182),
+      at the user's request, before the macOS check.
 
 Evidence: `.context/drag-select-options/m10-evidence.md`.
 
