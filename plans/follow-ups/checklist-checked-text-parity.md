@@ -1,0 +1,42 @@
+# Checked checklist text differs on web and native
+
+- **Severity:** Low. **Likelihood:** Common. **Effort:** Small. **Confidence:** High. **Harder later:** No.
+- **Kind:** Outside the scope.
+- **Added:** 2026-11-04, from `conductor/agents-md-ui`, the investigation of the hand-written mockups.
+- **Location:** `src/rich-text/NativeRichTextBlock.tsx:201-204`, `src/rich-text/nativeRichTextStyles.ts:43-46`, `src/rich-text/domRender.web.ts:150-178`, `src/rich-text/domStyle.web.ts:63-91`, and `docs/protocol/rich-text-editor.md`.
+- **Reason:** The rich-text renderers and the editor protocol are outside the files of `conductor/agents-md-ui`, a change that edits only `AGENTS.md` and follow-up items.
+
+- **Terms:**
+  - **Checklist item:** a block of `RichTextEditor` with a checkbox and text. Markdown stores it as `- [ ]` or `- [x]`.
+  - **Web and native renderers:** the editor draws through `src/rich-text/domRender.web.ts` and its siblings on web, and through the `NativeRichText*` files on iOS and Android.
+  - **Tracked deletion:** a change of the collaboration overlay that proposes to remove words.
+  - **Strike mark:** the inline strikethrough mark of the editor, stored in markdown as `~~text~~`.
+- **Background:**
+  - The native editor gives the text of a checked item the `muted` colour and a strikethrough. `blockTextStyle` at `src/rich-text/NativeRichTextBlock.tsx:201-204` adds `checkedText`, which `src/rich-text/nativeRichTextStyles.ts:43-46` defines.
+  - The web editor styles only the checkbox of a checked item. `src/rich-text/domRender.web.ts:150-178` builds the checkbox and a plain text span. `applyCheckboxStyle` at `src/rich-text/domStyle.web.ts:63-91` fills the box with `primary` and an "x".
+  - `docs/protocol/rich-text-editor.md` does not say how checked text looks. It names checklists in these places:
+    - Lines 44-49 list checklists as a block type, with the state stored as GFM.
+    - Lines 77-78 say that a tap on the checklist control toggles its state.
+    - Lines 119-121 keep the state visible in a read-only document.
+    - Lines 129-130 give the control the `checkbox` role, its states, and a 44-point target.
+  - The `## Review focus` section of `AGENTS.md` asks that a `.web` file and its native sibling keep the same behaviour and the same public props.
+  - The hand-written mockup `docs/mockups/rich-text-editor.html` draws checked text plain, at line 254 for the phone and line 320 for the desktop.
+  - The old `AGENTS.md` said that the `mockups` skill did not apply here. It called the files under `docs/mockups/` older design references. On 2026-11-04 the user chose the shared mockup rules instead. The change `conductor/agents-md-ui` removed the old bullet, so these files now count as mockups.
+  - The native look equals the native tracked deletion: `muted` text with a strikethrough in the text colour, at `nativeRichTextStyles.ts:113-116`.
+  - On native, a strike mark inside a checked item disappears into the line, because the strike mark also draws a strikethrough, at `nativeRichTextStyles.ts:100-102`.
+  - `muted` is `#69706a` in the default theme, at `src/theme.tsx:155`. That gives about 5.1:1 on white, so muted text meets the WCAG 1.4.3 floor of 4.5:1.
+  - No commit or plan records why native strikes checked text. The style came with the native editor in pull request #115, commit `26d907c`, on 2026-07-22.
+- **Problem:** A checked item looks different on web and native. No requirement says which look is right.
+- **Impact if no action:** The same document reads differently on the two platforms, against the parity rule of `AGENTS.md`. On native, a checked item looks like a tracked deletion.
+- **Root question:** How does the text of a checked checklist item look, the same on web and native?
+- **Options:**
+  - **A.** Keep checked text plain on both platforms, as web and the mockup do. The checkbox alone carries the state. Remove the native style. Add the rule to the protocol. Effort: Small.
+  - **B.** Show checked text in `muted` without a strikethrough on both platforms. Add the rule to the protocol. Done items stay easy to scan. The strikethrough stays free for the strike mark and tracked deletions. Effort: Small.
+  - **C.** Show checked text in `muted` with a strikethrough on both platforms, as native does. Add the rule to the protocol. A checked item then looks like a tracked deletion on native. Effort: Small.
+  - **D.** Add a prop that lets the consumer choose the look of checked text. It adds a public prop. Its default still needs one of the looks above. Effort: Medium.
+- **Left out:** Change nothing: the two renderers keep different looks, against the parity rule of `AGENTS.md`, so it fails the goal.
+- **Wider fix:** None, because the `documentation` skill already asks for a protocol rule for each behaviour at the boundary.
+- **Previous examples:** None found.
+- **Related:** `plans/follow-ups/mockups-choose-side-of-mismatch.md`: work that waits for the answer. That item asks which side wins when a mockup and the product differ. Its answer settles how much the plain look of the mockup counts here.
+- **Recommendation:** B. It marks done items on both platforms without the strikethrough that the strike mark and tracked deletions use.
+- **Action:** ask the user, because no requirement says how checked text looks, so each option adds a requirement for the user to review.

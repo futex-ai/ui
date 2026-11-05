@@ -1,0 +1,41 @@
+# Choose which side wins a mockup mismatch
+
+- **Severity:** Medium. **Effort:** Small. **Confidence:** High. **Harder later:** No.
+- **Kind:** Needs decision.
+- **Added:** 2026-11-04, from `conductor/agents-md-ui`.
+- **Location:** `docs/mockups/rich-text-editor.html`, `docs/mockups/rich-text-collaboration.html`, and `docs/mockups/video-editor.html`.
+- **Reason:** Each option decides which side of a mockup and product mismatch is right, and only the user decides that.
+
+- **Terms:**
+  - **Editor, Collab, and Video:** short names for `docs/mockups/rich-text-editor.html`, `docs/mockups/rich-text-collaboration.html`, and `docs/mockups/video-editor.html`.
+  - **Product gap:** a place where the product departs from its protocol doc or its `README.md`, or where web and native differ.
+  - **`mockups` skill:** the shared agent rules for mockups, in `skills/mockups/SKILL.md` of `futex-ai/skills`.
+- **Background:**
+  - On 2026-11-04 the user chose the shared rule over the old exemption in `AGENTS.md`. So the `mockups` skill now applies to component work here, and the three hand-written HTML files count as mockups.
+  - The `mockups` skill says: "Mockups are part of the spec and stay aligned with the implementation at all times." It does not say which side changes when a mockup and the product differ.
+  - The `decisions-and-findings` skill blocks an option that "decides which side of a mockup and product mismatch is right". Such an option waits for the user.
+  - The three mockups differ from the product in about 60 places. `plans/follow-ups/mockups-meet-mockups-skill.md` lists the main differences with their lines.
+  - Each mockup landed in the same squash commit as its code. Most differences existed from that commit, so they are not drift.
+  - These differences show why the side matters:
+    - The Video desktop screen has a top bar with a title, tools, Share, and Export at `:659-668`. The library has no such bar.
+    - The Video phone caption at `:976-978` promises an in-lane track label and touch-size transport targets. The timeline always draws its track gutter, `src/timeline/Timeline.tsx:442-463`. The compact story uses the small transport with 26px buttons, `src/video-editor/videoEditorSizing.ts:47`.
+    - The Video mockup gives the selected clip an inset ring at `:497-501`, and its caption at `:892-893` promises it. The code draws a 2px border and no ring, `src/timeline/TimelineClip.tsx:166` and `src/timeline/timelineStyles.ts:233`. `src/timeline/README.md:162-164` still describes the ring.
+    - The Collab phone anchor has an amber underline and an active ring at `:71-81`, as `docs/protocol/rich-text-collaboration.md:92-93` asks. Native draws a tint only, `src/rich-text/nativeRichTextStyles.ts:106-112`. Here the mockup and the protocol agree, and native departs from both.
+    - The Editor phone screen draws a checked item as plain text at `:254`. Native draws it muted and struck through, `src/rich-text/NativeRichTextBlock.tsx:201-204`. Web draws it plain, `src/rich-text/domRender.web.ts:150-178`.
+    - The Video music bed is amber with a track lock. The sample data makes it green with a clip lock, `src/stories/timelineSampleData.ts:124-130`.
+- **Problem:** No rule says which side shows the intended design when a mockup and the product differ. So each of the about 60 differences is a question of its own.
+- **Impact if no action:** Nobody can align the mockups. An agent may also change the product to match a mockup detail that nobody chose.
+- **Root question:** When a mockup and the product differ, which one shows the intended design?
+- **Options:**
+  - **A.** The product and the protocol docs win by default, and each product gap becomes its own follow-up item. The mockups then follow the product, and they lose each design that only they show. Effort: Small.
+  - **B.** Decide each mismatch with the user. The user answers about 60 questions, and each answer keeps its own reason. Effort: Medium.
+  - **C.** The mockups win, and the product changes. The components, stories, tests, and protocol docs change in many places, and consumers see the changes. Effort: Large.
+- **Left out:** The newer side wins: it fails the goal, because each mockup landed in the same commit as its code, so the dates decide nothing.
+- **Wider fix:** A. One default rule settles each later mismatch without a new question.
+- **Previous examples:** `tests/unit/noAccentBar.test.ts:10-12` records a toast accent bar that a protocol doc kept after pull request #99 removed it from the code. The product was right, and the doc was the side that had to change.
+- **Related:**
+  - `plans/follow-ups/mockups-meet-mockups-skill.md`: the parent item. Its work waits for this answer.
+  - `plans/follow-ups/mockups-choose-how-to-meet-rules.md`: the other decision item of the same work. Its options C, D, and E align the mockups by this answer.
+  - `plans/follow-ups/clip-selection-ring-never-drawn.md` and `plans/follow-ups/checklist-checked-text-parity.md`: product gaps that the mockups show. Under option A, each stays its own follow-up item.
+- **Recommendation:** A. The product is tested and the protocol docs are reviewed, but nobody checked the mockups against the code.
+- **Action:** ask the user, because each option decides which side of a mockup and product mismatch is right, and only the user decides that.

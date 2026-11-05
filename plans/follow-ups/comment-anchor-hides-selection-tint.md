@@ -1,0 +1,46 @@
+# Comment anchor fill hides other overlay tints
+
+- **Severity:** Medium. **Likelihood:** Common. **Effort:** Medium. **Confidence:** High. **Harder later:** No.
+- **Kind:** Outside the scope.
+- **Added:** 2026-11-04, from `conductor/agents-md-ui`, the investigation of the hand-written mockups.
+- **Location:** `src/rich-text/domInline.web.ts:119-149`, `src/rich-text/domDecoration.web.ts:50`, `src/rich-text/nativeRichTextInline.tsx:120-144`, and `src/rich-text/nativeRichTextStyles.ts:106-112`.
+- **Reason:** The rich-text renderers are outside the files of `conductor/agents-md-ui`, a change that edits only `AGENTS.md` and follow-up items.
+
+- **Terms:**
+  - **Collaboration overlay:** the optional props of `RichTextEditor` that draw tracked changes, comment threads, and live presence. `docs/protocol/rich-text-collaboration.md` holds its requirements.
+  - **Comment anchor:** the words that a comment thread discusses, drawn with the `amberSoft` tint.
+  - **Live selection:** the text that another collaborator has selected, drawn as a tint in the accent colour of that collaborator.
+  - **Run:** a slice of the text of a block that carries one set of overlay marks. `src/rich-text/richTextCollabModel.ts` cuts each block into runs.
+- **Background:**
+  - The protocol table draws a live selection as "The collaborator's accent at 22% alpha", at `docs/protocol/rich-text-collaboration.md:94`. It draws a comment anchor as an "Amber `soft` tint with a 2px amber underline", at line 92.
+  - Lines 81-82 say that overlapping comment threads "nest outermost-first so the tint deepens where discussions overlap".
+  - `withAlpha` builds the selection colour from the accent at 22% alpha, at `src/rich-text/richTextCollabPalette.ts:169`.
+  - `amberSoft` is opaque in all four theme presets: `#f4ecd8`, `#FBF1DC`, `#322a19`, and `#322913`. See `src/theme.tsx:146`, `:242`, `:288`, and `:323`.
+  - On web, `runHost` at `src/rich-text/domInline.web.ts:119-149` wraps each run. The selection span is outermost, then one `<mark>` for each thread, then the `ins` or `del`.
+  - The comment of `runHost` says that the selection sits outermost "so its tint reads behind everything". But each `<mark>` paints the opaque `amberSoft` fill, at `src/rich-text/domDecoration.web.ts:50`. So the mark covers the selection tint. A second mark covers the first with the same colour.
+  - On native, `runTextProps` at `src/rich-text/nativeRichTextInline.tsx:133-139` lists the selection colour first and the anchor style after it. The later `backgroundColor` wins, so `amberSoft` replaces the selection colour.
+  - Native also styles one anchor for each run. It reads only the innermost thread, at `nativeRichTextInline.tsx:124`. Both anchor styles at `src/rich-text/nativeRichTextStyles.ts:106-112` use the same `amberSoft`.
+  - So on both platforms, a live selection does not show on commented words. Two overlapping threads also look like one.
+  - The story "Two-user session" of `RichText/Collaboration` shows the selection case. The sample collaborator Robin starts with a selection of block 1 from offset 44 to 59. That range is the thread on "every workspace". See `src/stories/richTextCollab.stories.tsx:84` and `:107`.
+  - Its committed baseline `tests/browser/snapshots.spec.ts-snapshots/richtext-collaboration--two-user-session-linux.png` shows "every workspace" with the amber tint, the underline, and the ring. The caret and name flag of Robin show at the end of the range. No rose selection tint shows.
+  - No story has two overlapping threads, so the second case rests on the code above.
+  - The browser tests at `tests/browser/rich-text-collab.spec.ts:43-54` and `:112-123` read the text and the ring of each `mark`, not the nesting order.
+  - No helper blends two colours yet. `withAlpha` at `src/rich-text/richTextCollabPalette.ts:118-137` only turns a hex colour into `rgba()`. It returns a fallback colour for any other colour string.
+- **Problem:** The opaque anchor fill hides each tint that overlaps it. The selection of a collaborator on commented words does not show. Overlapping threads do not deepen.
+- **Impact if no action:** A reader cannot see what a collaborator selects inside a discussed passage. Overlapping discussions look like one. Both break the protocol.
+- **Root question:** How do a live selection and a second thread show on words that already carry a comment anchor?
+- **Options:**
+  - **A.** Fix the selection only. On web, move the selection span inside the anchors in `runHost`, so the 22% tint lies over `amberSoft`. On native, blend the 22% accent over `amberSoft` into one colour. Put that colour last in the style array. Overlapping threads stay flat. Effort: Small.
+  - **B.** Compute the fill of each run in one shared pure function, from its layers. The first thread gives `amberSoft`. Each further thread adds a deeper amber. The selection adds its 22% tint on top. Both renderers paint that one colour once for each run. The web marks keep only their underline and ring. The function needs a small colour blend helper with the fallback rule of `withAlpha`. Effort: Medium.
+- **Left out:**
+  - Make the anchor fill translucent on web, so that the browser composes the layers: it breaks the amber `soft` tint of line 92. No single alpha of `amber` over the surface gives `amberSoft`.
+  - Let the selection replace the anchor tint on a selected run: the anchor then loses its tint, so it breaks line 92.
+  - Mark a selection on commented words with another sign, such as a ring: it breaks the selection look of line 94. Option B meets that look, and a native text run cannot draw a ring.
+  - Change nothing: the protocol asks for a visible selection and for deeper tints, so it fails the goal.
+- **Wider fix:** B, because one function then composes every fill of a run for both renderers. A layer then cannot hide another on one platform only.
+- **Previous examples:** None found.
+- **Related:**
+  - `plans/follow-ups/comment-anchor-underline-edge-rule.md`: the same code. That item may remove the anchor tint or its underline. Without the tint, the selection already shows and the deepening rule needs a new look. So a change of the anchor fill changes this fix.
+  - `plans/follow-ups/native-collab-marks-depart-from-protocol.md`: the same code and a shared wider fix. Its option B puts the look of each run in one shared function. That function can also hold the fill of option B here.
+- **Recommendation:** B. It meets both protocol rules on both platforms from one function.
+- **Action:** fix after merge, apply B, because the renderers are outside the files of the change that found the problem.

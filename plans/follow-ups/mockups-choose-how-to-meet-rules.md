@@ -1,0 +1,55 @@
+# Choose how the mockups meet the mockups skill
+
+- **Severity:** Medium. **Effort:** Small. **Confidence:** High. **Harder later:** Yes.
+- **Kind:** Needs decision.
+- **Added:** 2026-11-04, from `conductor/agents-md-ui`.
+- **Location:** `docs/mockups/rich-text-editor.html`, `docs/mockups/rich-text-collaboration.html`, and `docs/mockups/video-editor.html`.
+- **Reason:** The options trade work now against drift, which the user decides, and the `agents-md` migration left the mockups as they are.
+
+- **Terms:**
+  - **Editor, Collab, and Video:** short names for `docs/mockups/rich-text-editor.html`, `docs/mockups/rich-text-collaboration.html`, and `docs/mockups/video-editor.html`.
+  - **`mockups` skill:** the shared agent rules for mockups, in `skills/mockups/SKILL.md` of `futex-ai/skills`.
+  - **Mokly:** a TypeScript command-line tool and viewer that builds a mockup catalogue from `*.mockup.tsx` entry modules and shared TSX components.
+  - **Screen component:** one component that draws one app screen in its mobile and its desktop variant, as the `mockups` skill requires.
+  - **`agents-md` migration:** a change that aligns the `AGENTS.md` of a repository with the shared skills, as the `agents-md` skill says.
+- **Background:**
+  - On 2026-11-04 the user chose the shared rule over the old exemption in `AGENTS.md`. So the `mockups` skill now applies to component work here, and the three hand-written HTML files count as mockups.
+  - The `mockups` skill says: "Mockups are part of the spec and stay aligned with the implementation at all times."
+  - The three files fail six rules of that skill:
+    - design before implementation
+    - alignment with the implementation
+    - reachability from another screen
+    - one screen component for each screen
+    - generation by Mokly
+    - the mockup check
+  - They differ from the product in about 60 places. Six differences are defects in any reading:
+    - Video desktop: the timeline hides 27px of the 52px transport bar.
+    - Video phone: the grid lists five rows for six children, so the timeline shows one of its three lanes.
+    - Video phone: the ruler labels render at 16px, against 10px on desktop.
+    - Collab desktop: the rail count says 4, but the rail shows three cards.
+    - Collab: Robin's insertion is green, but Robin's colour is rose.
+    - Collab phone: the presence row shows the viewer, whom the product leaves out.
+  - `plans/follow-ups/mockups-meet-mockups-skill.md` gives the rule check and the lines and measurements of each defect and difference.
+  - Five live links name the files as the captured design: `docs/protocol/rich-text-editor.md:16`, `docs/protocol/rich-text-collaboration.md:23`, `src/timeline/README.md:206`, `src/video-editor/README.md:185`, and `plans/rich-text-collaboration-visuals.md:28`.
+  - A port to Mokly changes those links. It also needs a mockup check command in `AGENTS.md`, and it changes the allowlist path `docs/mockups/rich-text-editor.html` at `tests/unit/noAccentBar.test.ts:68`.
+  - No repository that the migration could read has a Mokly configuration, so the setup cost of a port is an estimate.
+  - The `plans` skill makes the mockup milestone the first milestone of each plan with UI work. It also says: "When the repository has no mockup catalogue tooling yet, the mockup milestone also sets up that tooling."
+- **Problem:** The three mockups break the `mockups` skill and show a product that differs from the code. A full fix needs a Mokly setup that this repository does not have.
+- **Impact if no action:** The next plan with UI work must first repair or port mockups that show a different product. Each component change widens the drift.
+- **Root question:** How do the three mockups come to meet the shared mockup rules and show what the product draws?
+- **Options:**
+  - **A.** Change nothing now. Port the set to Mokly in the next plan that has a mockup milestone. The six defects and the drift stay until that plan, and that plan grows by the port. Effort: Small.
+  - **B.** Fix the six defects now in the hand-written files, and port the set to Mokly later. The files keep the other differences and still break the Mokly rules. Effort: Small.
+  - **C.** Align the hand-written files fully with the product. About 60 differences change in raw HTML that no mockup check guards, and the Mokly rules still fail. Effort: Medium.
+  - **D.** Port the set to a Mokly catalogue in its own plan, and align it during the port. That plan first sets up Mokly, a mockup check command, and the new links. Effort: Large.
+  - **E.** Option D, with the real `@firna/ui` components inside the screen components. The mockups then match the components, but a new design must exist in code before a mockup can show it. Effort: Large.
+- **Left out:**
+  - Restore the exemption in `AGENTS.md`: the user chose the shared rule on 2026-11-04.
+  - Delete the three files: it fails the goal, because design work needs mockups, and five live links name the files as the captured design.
+- **Wider fix:** D. A Mokly catalogue with screen components and a mockup check meets each rule of the `mockups` skill, so new mockups start inside the rules.
+- **Previous examples:** `tests/unit/noAccentBar.test.ts:10-12` records one. A protocol doc kept a toast accent bar after pull request #99 removed it from the code, so the spec kept inviting it back.
+- **Related:**
+  - `plans/follow-ups/mockups-meet-mockups-skill.md`: the parent item. Its work waits for this answer.
+  - `plans/follow-ups/mockups-choose-side-of-mismatch.md`: the other decision item of the same work. The alignment in options C, D, and E also waits for its answer.
+- **Recommendation:** B. It removes the six defects at Small effort, and it leaves the port to a plan that can set up Mokly. D best protects the codebase.
+- **Action:** ask the user, because the options trade work now against drift, and the port needs a Mokly setup that does not exist here.

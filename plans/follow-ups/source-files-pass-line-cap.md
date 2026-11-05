@@ -1,0 +1,52 @@
+# 100 TypeScript files pass the 300-line cap
+
+- **Severity:** Low. **Effort:** Small. **Confidence:** High. **Harder later:** Yes.
+- **Kind:** Outside the scope.
+- **Added:** 2026-11-04, from `conductor/agents-md-ui`.
+- **Location:** `AGENTS.md:59-60`, and the 100 files over 300 lines that `git ls-files '*.ts' '*.tsx' | grep -v '^storybook-native/' | xargs wc -l` reports.
+- **Reason:** The long files are outside the files of `conductor/agents-md-ui`, a change that edits only `AGENTS.md` and follow-up items.
+
+- **Terms:**
+  - **Always-on rules:** the shared agent rules in `global/AGENTS.md` of `futex-ai/skills`, which apply in every repository and session.
+  - **`typescript` skill:** the shared agent procedure for TypeScript and JavaScript work, in `futex-ai/skills`.
+  - **Baseline that only shrinks:** a committed list of the cases that break a check when it starts. The check fails only on new cases. Each fix removes an entry.
+  - **`max-lines`:** an ESLint rule that fails a file with more lines than its maximum. Its default maximum is 300. By default it counts blank lines and comments.
+- **Background:**
+  - The always-on rules say: "Keep files short. Target about 200 lines and split a file that passes 300. Do not remove blank lines or compact code to stay under a limit."
+  - The `typescript` skill says: "Target 200 lines per file. The hard limit is 300 lines. Split a larger file by responsibility."
+  - The Early check line of `AGENTS.md`, at lines 59-60, says that the repository has no lint and no file-length check yet.
+  - `git ls-files '*.ts' '*.tsx' | grep -v '^storybook-native/' | xargs wc -l` counts 743 files at commit `b141ed2`. Of these, 100 files pass 300 lines. In total, 233 files pass 200 lines. `wc -l` counts every line, blank lines too, as the rules mean.
+  - Of the 100 files, 22 are tests under `tests/`. Another 20 are stories or story helpers under `src/stories/`. The other 58 are product code under `src/`.
+  - The ten longest files are:
+    - `tests/browser/storybook.spec.ts`: 3,886 lines.
+    - `tests/browser/data-grid.spec.ts`: 1,747 lines.
+    - `src/stories/sharedExamples.tsx`: 1,694 lines.
+    - `src/rich-text/RichTextEditor.web.tsx`: 1,267 lines.
+    - `src/stories/data-grid.stories.tsx`: 956 lines.
+    - `tests/browser/rich-text.spec.ts`: 819 lines.
+    - `src/rich-text/richTextModel.ts`: 815 lines.
+    - `tests/unit/sortableGroupDrag.test.ts`: 733 lines.
+    - `src/stories/videoEditor.stories.tsx`: 696 lines.
+    - `src/heatmap/Heatmap.tsx`: 679 lines.
+  - The longest product files after those are `src/date/CalendarMonth.tsx` with 668 lines, `src/dropdown/ComboboxMultiSelect.tsx` with 604 lines, and `src/segmented/SegmentedControl.tsx` with 582 lines.
+  - The rules alone do not keep a file short. Commit `b4e61b8`, from pull request #73 on 2026-07-01, split the data grid "keeping every file under the ~300-line target". `src/data-grid/DataGrid.tsx` had 299 lines after that commit. Twelve later changes grew it to 491 lines.
+  - A new check needs the user. The always-on rules say: "Do not add a new build error, rejection, gate, lint, or stricter validation without asking the user." The `testing` skill treats a test that catches a whole class of defects like a lint, so it needs the user too.
+  - `tests/unit/noAccentBar.test.ts` already scans source files for a banned pattern, with an allowlist. `npm run test` runs it inside `npm run verify`. It is a precedent for a check as a unit test.
+  - `plans/follow-ups/add-eslint.md` asks the user whether to add ESLint with the `typescript-eslint` recommended configuration. Its recommended option lists the first findings in a baseline that only shrinks. That configuration does not turn on `max-lines`.
+  - Open pull request #175 changes 34 of the 100 files. Open pull request #174 changes 5 of them. A change that splits files must merge them first, or expect conflicts.
+- **Problem:** 100 TypeScript files pass the hard limit of 300 lines. No check stops a file from passing it, so files that a change splits can grow back.
+- **Impact if no action:** Long files stay hard to read, review, and change. Each change can add lines, so the later split costs more.
+- **Root question:** How do the TypeScript files of the repository get under the 300-line limit and stay there?
+- **Options:**
+  - **A.** Split each long file by responsibility when a change touches it. Add no check. The rules already ask for this. The data grid shows that a split file can grow back. Effort: Small.
+  - **B.** Add a unit test under `tests/unit/` that fails when a TypeScript file passes 300 lines. A committed baseline lists the 100 current files with their line counts. The baseline only shrinks. A listed file may not grow. A split removes its entry. The repository must keep this custom check. Effort: Small.
+  - **C.** Add `max-lines` with a maximum of 300 to the ESLint configuration of `plans/follow-ups/add-eslint.md`. List the 100 current files in the baseline of that item, which only shrinks. It waits for the ESLint item. It adds no custom code. Effort: Small, on top of the ESLint item.
+  - **D.** Split all 100 files now, by responsibility, in a series of changes that keep the behaviour. It takes many reviews and conflicts with open branches. Without a check, new long files can follow. Effort: Large.
+- **Left out:**
+  - Raise the limit, or exempt tests and stories: it breaks a rule of the shared skills, which a repository cannot change.
+  - Remove blank lines or compact code: it breaks the rule "Do not remove blank lines or compact code to stay under a limit."
+- **Wider fix:** C, a detection fix. No structural fix stops a file from growing, so a check is the strongest fix for this class.
+- **Previous examples:** Commit `b4e61b8`, from pull request #73, split the data grid under the limit on 2026-07-01. Twelve later changes grew `src/data-grid/DataGrid.tsx` from 299 to 491 lines.
+- **Related:** `plans/follow-ups/add-eslint.md`: work that waits for the answer. `max-lines` is an ESLint rule, so option C needs the ESLint configuration of that item. When the user keeps the package without ESLint, option B is the check that stays possible.
+- **Recommendation:** C. It puts the limit in the lint that the `typescript` skill already asks for, so no custom check needs care.
+- **Action:** ask the user, because the recommended option adds a lint rule, and the always-on rules reserve each new lint for the user.

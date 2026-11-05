@@ -1,0 +1,58 @@
+# Docs still name react-native-web after its removal
+
+- **Severity:** Low. **Effort:** Medium. **Confidence:** High. **Harder later:** No.
+- **Kind:** Outside the scope.
+- **Added:** 2026-11-04, from `conductor/agents-md-ui`.
+- **Location:** `docs/accessibility-manual-checklist.md:9` and `:89`, `docs/protocol/rich-text-collaboration.md:5`, `docs/protocol/rich-text-editor.md:5`, line 3 of 26 component `README.md` files under `src/`, `src/video-editor/README.md:5-6`, `src/button/README.md:424-427`, `src/dropdown/README.md:307` and `:413`, `src/input/README.md:257` and `:273`, `src/kanban/README.md:153` and `:236`, `src/switch/README.md:54-56`, `src/toast/README.md:45`, and `src/typography/README.md:114`.
+- **Reason:** The docs are outside the files of `conductor/agents-md-ui`, a change that edits only `AGENTS.md` and follow-up items.
+
+- **Terms:**
+  - **`react-native-web`:** the npm package that renders React Native components in a browser. The library rendered web through it until pull request #168.
+  - **Web backend:** the own DOM renderer of the library under `src/primitives/dom`. It renders plain React DOM elements.
+  - **Opening line:** the first sentence of a component `README.md`, which names the platforms of the component.
+  - **Mechanics note:** a sentence in a `README.md` that explains how a web behaviour works inside the library.
+- **Background:**
+  - Pull request #168, commit `cfd68e3`, merged on 2026-09-17. It made web render through the hand-written web backend. It dropped `react-native-web`.
+  - The root `README.md` says that `react-native-web` "is not a peer dependency at all", at lines 545-546. A web-only consumer installs only `react`, `react-dom`, and `lucide-react`, at lines 152-158.
+  - The web backend copies the output of `react-native-web` 0.21.2 on purpose, as `src/primitives/README.md:33-37` says. So most behaviour that the docs credit to `react-native-web` still holds:
+    - Enter presses any role. Space presses only a button, at `src/primitives/dom/pressMachine.ts:84-92`.
+    - `accessibilityRole="header"` becomes `role="heading"`, at `src/primitives/dom/domPropTables.ts:16`.
+    - The backend drops React Native-only props such as `accessibilityHint`. `tests/unit/domProps.test.ts:99-116` pins that.
+    - Each view sets `position: relative` and `z-index: 0`, at `src/primitives/dom/css.ts:79-81`. So each view starts a stacking context.
+    - The DOM `Modal` is a fixed container over the whole viewport, at `src/primitives/dom/Modal.tsx:1-28`.
+  - Pull request #168 also swept the docs and the code comments. It credited each unchanged behaviour to "the web backend". It left the notes that say "transcribed from `react-native-web` 0.21.2", and the completed plans.
+  - The sweep caught the package name, but not the spaced name "React Native Web". Today no component `README.md` except `src/primitives/README.md` holds the package name. The spaced name is in 27 of them.
+  - Other docs already use the wording "the web backend", for example `docs/protocol/shared-ui-components.md:666` and `src/loader/README.md:99`.
+  - `git grep -l -i -E "react-native-web|react native web" -- '*.md' ':!CHANGELOG.md'` lists 42 files. 34 of them are outside `plans/`, with 50 matching lines:
+    - In the root: `README.md`.
+    - Under `docs/`: `docs/accessibility-manual-checklist.md`, `docs/protocol/rich-text-collaboration.md`, `docs/protocol/rich-text-editor.md`, `docs/protocol/shared-ui-components.md`, and `docs/superpowers/specs/2026-08-12-video-editor-ui-design.md`.
+    - The `README.md` of 28 folders under `src/`: `animated-border`, `avatar`, `badge`, `button`, `chart`, `date`, `dropdown`, `heatmap`, `kanban`, `list`, `loader`, `popover`, `primitives`, `radio`, `rich-text`, `segmented`, `sheet`, `skeleton`, `sortable-list`, `spinner`, `status-dot`, `switch`, `table`, `timeline`, `toast`, `typography`, `video-editor`, and `workflow`.
+  - The 50 lines fall into these groups:
+    - 12 lines are correct, because they say that the library does not use the package or that the backend copies it. They are `README.md:154`, `:163`, `:523`, `:526`, `:544`, and `:545`, `docs/protocol/shared-ui-components.md:36`, and `src/primitives/README.md:5`, `:27`, `:33`, `:34`, and `:55`.
+    - 27 opening lines name the web platform "React Native Web". Line 3 of each listed component `README.md` except `primitives` and `video-editor` says "for React Native and React Native Web". `src/video-editor/README.md:5-6` says the same.
+    - 3 more lines name the web platform that way. `docs/protocol/rich-text-collaboration.md:5` and `docs/protocol/rich-text-editor.md:5` say "Implemented on React Native Web, iOS, and Android". `docs/accessibility-manual-checklist.md:9` says that the library "ships to **React Native Web**".
+    - 7 lines are mechanics notes that credit `react-native-web` with a behaviour that the web backend now gives. They are `src/button/README.md:424` and `:426`, `src/dropdown/README.md:413`, `src/kanban/README.md:153` and `:236`, `src/switch/README.md:54`, and `src/toast/README.md:45`.
+    - 1 line is in the video-editor spec, at line 113. `plans/follow-ups/video-editor-design-spec-stale.md` covers it.
+  - The search misses the abbreviation "RNW". It adds 5 more stale lines: `docs/accessibility-manual-checklist.md:89`, `src/dropdown/README.md:307`, `src/input/README.md:257` and `:273`, and `src/typography/README.md:114`. `src/input/README.md` is a 35th file.
+  - The other 8 files are plans. Six are completed plans, which are history. `plans/follow-ups/delete-completed-plans.md` deletes them. The live parts of the two active plans, `plans/sortable-list-component.md` and `plans/wcag-2-1-accessibility.md`, need the same check.
+  - The `decisions-and-findings` skill has a rule for docs or spec drift, in `references/outcomes.md`. It lets the doc side change without the user when a doc names internal mechanics. The renderer is an internal mechanism. The plan of pull request #168 also records the decision to replace it.
+  - Two open pull requests change some of these files:
+    - Pull request #174, "feat(dropdown): add grouped tag picker props to ComboboxMultiSelect", changes `README.md`, `src/dropdown/README.md`, `src/sheet/README.md`, and `src/toast/README.md`.
+    - Pull request #175, "feat: modal initial-focus skip marker and dataSet on every component", changes `README.md`, `docs/protocol/shared-ui-components.md`, `src/dropdown/README.md`, `src/input/README.md`, and `src/rich-text/README.md`.
+    - So the fix branch must merge them first, or expect conflicts.
+- **Problem:** 38 of the 50 lines and 5 lines with "RNW" still name `react-native-web` as the web renderer or as the source of a web behaviour. The library has not used that package since 2026-09-17.
+- **Impact if no action:** Readers and agents think that the library still renders web through `react-native-web`. An agent can install the package, search it for a behaviour, or debug the wrong layer.
+- **Root question:** How do the docs name the web renderer and the web behaviour, now that the web backend replaced `react-native-web`?
+- **Options:**
+  - **A.** Fix only the platform name in the opening lines, the two protocol docs, and the checklist. Leave the mechanics notes, because the web backend still behaves as they say. They keep crediting a package that the library does not use. Effort: Small.
+  - **B.** Fix each stale line in one pass, by kind. Write "web" for "React Native Web" in the opening lines, the two protocol docs, and the checklist. Credit each mechanics note to "the web backend" after a check of that behaviour in `src/primitives/dom`. Keep the 12 correct lines. Effort: Medium.
+  - **C.** Do option B. Also move each note that only explains internal mechanics into a doc comment beside the code that does it. Keep each rule for consumers in its `README.md`. This follows the home that the `documentation` skill gives mechanics, but it changes code files and splits sentences that mix a rule and its mechanics. Effort: Medium.
+- **Left out:**
+  - Add one note that "React Native Web" in the docs means the web backend: it keeps each stale line, so it fails the goal.
+  - Add a test that rejects the name in the docs: it tests doc prose, which the `testing` skill says never gets a test.
+  - Change nothing: the docs keep naming a removed package, so it fails the goal.
+- **Wider fix:** None, because the `documentation` skill already tells a change that removes a name to search the docs for it.
+- **Previous examples:** Pull request #168 edited `src/button/README.md`, `src/loader/README.md`, `src/timeline/README.md`, and `src/video-editor/README.md`. It kept their opening lines and the mechanics note of the button at lines 424-427.
+- **Related:** `plans/follow-ups/video-editor-design-spec-stale.md`: the same cause. That item fixes line 113 of the video-editor spec with six other stale passages, so this item leaves that line to it.
+- **Recommendation:** B. It fixes each stale line in one pass and keeps each note where readers look for it.
+- **Action:** fix after merge, apply B, because the docs are outside the files of the change that found the problem.

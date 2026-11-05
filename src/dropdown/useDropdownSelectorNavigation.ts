@@ -1,6 +1,8 @@
 /** Keyboard state for button-backed dropdown selectors. */
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { useOverlayInputOwner } from "../modal/useOverlayInputOwner";
+
 import type { DropdownListEntry } from "./DropdownList";
 import {
   dropdownListNavigationItems,
@@ -115,11 +117,17 @@ export function useDropdownSelectorNavigation({
     ],
   );
 
+  // The document listener sees keys typed into a web dialog above the open
+  // menu too, so it handles a key only while the menu owns input.
+  const ownsInput = useOverlayInputOwner();
   useEffect(() => {
     if (!open || !interactive || typeof document === "undefined") {
       return;
     }
     const handleDocumentKeyDown = (event: KeyboardEvent) => {
+      if (!ownsInput()) {
+        return;
+      }
       if (handleKeyDown(event)) {
         event.stopPropagation();
       }
@@ -127,7 +135,7 @@ export function useDropdownSelectorNavigation({
     document.addEventListener("keydown", handleDocumentKeyDown, true);
     return () =>
       document.removeEventListener("keydown", handleDocumentKeyDown, true);
-  }, [handleKeyDown, interactive, open]);
+  }, [handleKeyDown, interactive, open, ownsInput]);
 
   return {
     activeId,

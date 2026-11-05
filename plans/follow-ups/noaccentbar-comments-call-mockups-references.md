@@ -1,0 +1,31 @@
+# Accent-bar test comments call mockups design references
+
+- **Severity:** Low. **Effort:** Small. **Confidence:** High. **Harder later:** No.
+- **Kind:** Outside the scope.
+- **Added:** 2026-11-04, from `conductor/agents-md-ui`.
+- **Location:** `tests/unit/noAccentBar.test.ts:25` and `tests/unit/noAccentBar.test.ts:67`.
+- **Reason:** The test file is outside the files of the `agents-md` migration.
+
+- **Terms:**
+  - **`agents-md` migration:** a change that aligns the `AGENTS.md` of a repository with the shared skills, as the `agents-md` skill says.
+  - **`mockups` skill:** the shared agent rules for mockups, in `skills/mockups/SKILL.md` of `futex-ai/skills`.
+- **Background:**
+  - `tests/unit/noAccentBar.test.ts` fails on a left-edge border in `src`, `docs/mockups`, and `.storybook`. Its allowlist holds the rich-text blockquote rule in three files, and one of them is `docs/mockups/rich-text-editor.html`.
+  - On 2026-11-04 the user chose the shared rule over the old exemption in `AGENTS.md`. The old bullet called the three HTML files under `docs/mockups/` "older design references". Now the `mockups` skill applies, and the files count as mockups.
+  - The `mockups` skill says: "Mockups are part of the spec and stay aligned with the implementation at all times."
+  - Line 25 says: "Directories whose source ships visuals or keeps design references."
+  - Line 67 says: "The same rule in the rich-text-editor mockup, a design reference."
+  - Before pull request #177, the two comments said "Directories whose source ships visuals or specifies them." and "The same rule in the rich-text-editor mockup, which is part of the spec."
+  - The squash commit `e601a86` of pull request #177, merged on 2026-10-21, changed them to match the exemption.
+- **Problem:** The two comments keep the words of the deleted exemption. They call the mockups design references, but the mockups are part of the spec again.
+- **Impact if no action:** A reader of the test can think that the mockups need not match the product.
+- **Root question:** How do the test comments describe the files under `docs/mockups/`?
+- **Options:**
+  - **A.** Change the two comments to say mockups, for example with their words from before pull request #177. Only two comment lines change. Effort: Small.
+  - **B.** Leave the two comments as they are. They keep the words of a deleted rule. Effort: Small.
+- **Left out:** Delete the two comments: it fails the goal, because line 67 explains the only mockup entry of the allowlist.
+- **Wider fix:** None. The problem is two comments, not a class of defects.
+- **Previous examples:** `plans/follow-ups/consumer-migration-runs-xtask-review.md` records a guide that keeps a review step that an earlier `agents-md` migration replaced.
+- **Related:** `plans/follow-ups/mockups-meet-mockups-skill.md`: the parent item of the mockup work. A port to Mokly also edits this test, because it changes the allowlist path at line 68.
+- **Recommendation:** A. Two comment edits make the test agree with the rule in force.
+- **Action:** fix after merge, apply A, because the test file is outside the files of this change.

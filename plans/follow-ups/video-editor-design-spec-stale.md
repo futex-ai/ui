@@ -1,0 +1,45 @@
+# Video-editor design spec contradicts the code
+
+- **Severity:** Low. **Effort:** Small. **Confidence:** High. **Harder later:** No.
+- **Kind:** Outside the scope.
+- **Added:** 2026-11-04, from `conductor/agents-md-ui`, the investigation of the hand-written mockups.
+- **Location:** `docs/superpowers/specs/2026-08-12-video-editor-ui-design.md`, lines 45, 49-50, 102-103, and 110-119, `src/timeline/README.md:205`, `src/video-editor/README.md:184`, and `src/timeline/timelineScrubValue.ts:54-59`.
+- **Reason:** The spec and the two READMEs that link it are outside the files of `conductor/agents-md-ui`, a change that edits only `AGENTS.md` and follow-up items.
+
+- **Terms:**
+  - **Video-editor spec:** `docs/superpowers/specs/2026-08-12-video-editor-ui-design.md`, the design spec of the `@firna/ui/timeline` and `@firna/ui/video-editor` families. It is the only file under `docs/superpowers/`.
+  - **DOM backend:** the own web renderer of the library, under `src/primitives/dom`. It replaced `react-native-web` in pull request #168, merged on 2026-09-17.
+  - **Package smoke test:** `npm run test:package`. It packs the library and imports each entry point in a stub consumer that `scripts/package-smoke-stubs.mjs` writes.
+- **Background:**
+  - The spec starts with "Status: approved 2026-08-12". Pull request #153, commit `d998e0b`, added it with the two families on 2026-08-21.
+  - `src/timeline/README.md:205` and `src/video-editor/README.md:184` link it as "Design spec".
+  - Seven passages contradict the code:
+    - Line 45 gives `TimelinePlayhead` a "Draggable head with a hairline through all tracks". The playhead takes no pointer events, at `src/timeline/TimelinePlayhead.tsx:1-7`. The ruler is the scrub surface, at `src/timeline/TimelineRuler.tsx:1-9` and `:183-186`. A drag on the ruler moves the playhead, so a user can still drag at the head.
+    - Lines 49-50 put `applyTimelineEdits` in `timelineEditModel`. It lives in `src/timeline/timelineEditApply.ts:39`, as `src/timeline/README.md:185-187` says.
+    - Lines 102-103 say that colours come from the theme and that "nothing is hardcoded". The letterbox, guides, safe area, and badge of the monitor use fixed colours on purpose, at `src/video-editor/videoEditorStyles.ts:42-88`. The comment at `:43-45` gives the reason.
+    - Lines 110-112 sync the ruler, the lanes, and the gutter with "a scroll listener on web, an `Animated.ScrollView` on native". The ruler, the lanes, and the playhead share one horizontal `ScrollView` with no scroll-sync code, at `src/timeline/Timeline.tsx:11-13`.
+    - Lines 113-115 say "react-native-web drops `accessibilityValue`". The DOM backend replaced `react-native-web`. It also drops `accessibilityValue` on purpose. `tests/unit/domProps.test.ts:99-116` pins that. `src/timeline/timelineScrubValue.ts:5-10` and `docs/protocol/shared-ui-components.md:242-247` state the rule in current words.
+    - Lines 116-117 say that `role="slider"` and `role="gridcell"` are missing from the `Role` type of React Native. React Native 0.85.3 lists `slider`, at `node_modules/react-native/Libraries/Components/View/ViewAccessibility.d.ts:404`. It does not list `gridcell`. The doc comment of `sliderRoleProps` at `src/timeline/timelineScrubValue.ts:54-59` repeats the `slider` claim.
+    - Lines 118-119 say that new Lucide icons and new React Native APIs need stubs in `scripts/package-smoke-stubs.mjs`. The icon list is still there, at `:4-8`. The package smoke test no longer stubs React Native, at `:104-111` and `:220-227`. A new React Native name now needs a type in `src/primitives/types` and an implementation in `src/primitives/dom`, as `src/primitives/README.md:172-175` says.
+  - Two more lines belong to other follow-up items. Line 3 links the completed plan `plans/video-editor-components.md`. Line 44 names a clip selection ring that the code does not draw.
+  - The rest of the spec repeats other sources. `src/timeline/README.md` covers the responsibilities, the time model, the edits, the interaction, the layout, and the pure helpers. `src/video-editor/README.md` covers the panels, their boundary, and their pure helpers. `AGENTS.md` and the tests hold the house rules. The stories show the Storybook demo.
+  - Pull request #168 updated both READMEs and `docs/protocol/shared-ui-components.md` for the DOM backend, but not this spec.
+- **Problem:** The spec contradicts the code in seven passages. The rest of it repeats content that the READMEs and the code comments keep current.
+- **Impact if no action:** Readers who follow the "Design spec" links meet a design that the code does not have. An agent can, for example, add drag handling to the playhead.
+- **Root question:** How do the docs describe the timeline and video-editor design without contradicting the code?
+- **Options:**
+  - **A.** Correct each stale passage in place. Correct the `slider` claim in the comment of `sliderRoleProps` too. The spec still repeats the READMEs, so later changes can make it stale again. Effort: Small.
+  - **B.** Remove the content that the READMEs and the code comments already hold. That content is the module lists at lines 47-53 and 94, and the "Known traps" section at lines 108-119. Correct lines 45 and 102-103 and the comment of `sliderRoleProps`. The rest still repeats the READMEs. Effort: Small.
+  - **C.** Delete the spec. Correct the comment of `sliderRoleProps`. Replace the two "Design spec" links with a permalink to the spec at its last commit. This deletes a doc on `main`, so it needs the approval of the user. Effort: Small.
+  - **D.** Move the requirements of both families into a new protocol doc under `docs/protocol/`. Then delete the spec. Correct the comment of `sliderRoleProps`. Point the two links at the new doc. The user reviews each requirement of the new doc. The deletion needs the approval of the user. Effort: Medium.
+- **Left out:**
+  - Mark the spec as a dated record and keep its body: it still contradicts the code, so it fails the goal. The READMEs also link it as the current design.
+  - Change nothing: the spec keeps contradicting the code, so it fails the goal.
+- **Wider fix:** None, because the wider fix for docs drift is already in force: the `documentation` skill keeps docs aligned with the code.
+- **Previous examples:** Pull request #168, commit `cfd68e3`, removed `react-native-web` on 2026-09-17. It updated the READMEs and one protocol doc. This spec kept the old name.
+- **Related:**
+  - `plans/follow-ups/clip-selection-ring-never-drawn.md`: the same doc. That item decides line 44, the clip selection ring. Option C or D here removes that line with the spec.
+  - `plans/follow-ups/delete-completed-plans.md`: the same doc. That item replaces the link at line 3 when it deletes the completed plan `plans/video-editor-components.md`. Option C or D here removes that link with the spec.
+  - `plans/follow-ups/docs-name-react-native-web.md`: the same cause in other docs. That item leaves line 113 of the spec to this item.
+- **Recommendation:** C. Everything current in the spec already lives in the READMEs and the code comments, so the spec only adds drift.
+- **Action:** ask the user, because option C deletes a doc on `main`, and only the user approves that.

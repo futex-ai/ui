@@ -63,8 +63,9 @@ Recommended path:
    `@firna/ui/radio`, segmented controls from `@firna/ui/segmented`, switches
    from `@firna/ui/switch`, buttons from `@firna/ui/button`, avatars from
    `@firna/ui/avatar`, and web modals from `@firna/ui/modal`.
-4. Keep native iOS/Android sheets, action sheets, and OS pickers in Juno app
-   code; this package's `WebModalFrame` remains web-only.
+4. Keep native iOS/Android action sheets and OS pickers in Juno app code.
+   This package's `WebModalFrame` renders a React Native `Modal` on native,
+   as a centered dialog or a gorhom bottom sheet.
 5. Replace app-owned pressables that only existed because `Button` hardcoded its
    role — nav rail rows, tabs, checkbox rows, toggle buttons, colour swatches —
    with `@firna/ui/button` plus `role` and the matching state prop (`selected`

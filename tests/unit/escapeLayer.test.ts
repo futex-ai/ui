@@ -83,9 +83,20 @@ test("modal and dropdown route Escape through the shared layer stack", () => {
   const dismissSource = readSource("../../src/dropdown/useDropdownDismiss.ts");
 
   // The modal no longer closes itself from its own Escape keydown handler; it
-  // registers a layer instead, and its keydown listener only traps Tab focus.
-  assert.match(modalSource, /pushEscapeLayer\(layer\)/);
-  assert.match(modalSource, /onEscape: \(\) => requestClose\("escape"\)/);
+  // registers a layer instead. The layer closes the web modal stack's top
+  // dialog, so two frames that pushed their layers in reverse order in one
+  // render commit still close the top dialog first. It registers in a passive
+  // effect, in the same effect phase as the frame's stack layer.
+  assert.match(
+    modalSource,
+    /useEffect\(\(\) => \{\s*if \(!visible\) \{\s*return;\s*\}\s*const escapeLayer = \{/,
+  );
+  assert.doesNotMatch(modalSource, /useLayoutEffect/);
+  assert.match(modalSource, /pushEscapeLayer\(escapeLayer\)/);
+  assert.match(
+    modalSource,
+    /onEscape: \(\) => topWebModalLayer\(\)\?\.requestClose\("escape"\)/,
+  );
   assert.doesNotMatch(modalSource, /event\.key === "Escape"/);
 
   // Dropdown surfaces register a layer that closes on Escape and no longer own

@@ -1,0 +1,45 @@
+# Docs describe a selection ring no code draws
+
+- **Severity:** Low. **Effort:** Small. **Confidence:** High. **Harder later:** No.
+- **Kind:** Outside the scope.
+- **Added:** 2026-11-04, from `conductor/agents-md-ui`, the investigation of the hand-written mockups.
+- **Location:** `src/timeline/README.md:162-164`, `src/timeline/TimelineClip.tsx:62`, `src/video-editor/MediaBinItem.tsx:4`, `docs/superpowers/specs/2026-08-12-video-editor-ui-design.md:44`, `src/timeline/timelineStyles.ts:233`, and `src/video-editor/mediaBinStyles.ts:64`.
+- **Reason:** The timeline and media bin files are outside the files of `conductor/agents-md-ui`, a change that edits only `AGENTS.md` and follow-up items.
+
+- **Terms:**
+  - **`TimelineClip`:** one clip block in a lane of the `@firna/ui/timeline` component, in `src/timeline/TimelineClip.tsx`.
+  - **`MediaBinItem`:** one asset card or row in the media bin of `@firna/ui/video-editor`, in `src/video-editor/MediaBinItem.tsx`.
+  - **Inset ring:** a second outline just inside the border of a box.
+  - **Video-editor spec:** `docs/superpowers/specs/2026-08-12-video-editor-ui-design.md`, the design spec of the timeline and video-editor families, approved on 2026-08-12.
+  - **Video-editor mockup:** `docs/mockups/video-editor.html`, a hand-written HTML page that draws the editor on a phone and on a desktop.
+- **Background:**
+  - `TimelineClip` shows selection with a 2px border in the accent colour of the clip. `TimelineClip.tsx:166` sets the colour. `clipSelected: { borderWidth: 2 }` at `src/timeline/timelineStyles.ts:233` sets the width.
+  - `MediaBinItem` shows selection with a 2px border in the `primary` colour, at `MediaBinItem.tsx:110` and `:112` and at `src/video-editor/mediaBinStyles.ts:64`.
+  - Neither component draws a ring. Under `tests/browser/snapshots.spec.ts-snapshots/`, the baselines `timeline-examples--editing-linux.png` and `video-editor-examples--full-editor-light-linux.png` show the thick border and no ring.
+  - Both components add "selected" to the accessible name, at `TimelineClip.tsx:136-146` and `MediaBinItem.tsx:71-73`. So the state does not depend on colour alone.
+  - Four docs name a ring:
+    - `src/timeline/README.md:162-164` says: "Selection thickens that same uniform border and adds an inset ring."
+    - The doc comment of the `selected` prop at `src/timeline/TimelineClip.tsx:62` says: "Draw the selection border and ring."
+    - The header comment at `src/video-editor/MediaBinItem.tsx:4` says: "Selection is carried by a uniform border plus an inset ring".
+    - Line 44 of the video-editor spec lists a "selection ring" for `TimelineClip`.
+  - No version of the code drew a ring. Both components have had the same selection styles since pull request #153, commit `d998e0b`, merged on 2026-08-21.
+  - The video-editor mockup draws rings of its own:
+    - A selected clip at `docs/mockups/video-editor.html:497-501` has a 2px border and an inset 2px ring at 30% alpha.
+    - A selected asset at `docs/mockups/video-editor.html:178-181` has a 1px border and an outer 3px ring at 28% alpha. So the mockup and the comment of `MediaBinItem` disagree as well.
+  - The old `AGENTS.md` said that the `mockups` skill did not apply here. It called the files under `docs/mockups/` older design references. On 2026-11-04 the user chose the shared mockup rules instead. The change `conductor/agents-md-ui` removed the old bullet, so these files now count as mockups.
+  - A focused clip already draws an inset focus ring, from `useFocusRing({ offset: -2 })` at `TimelineClip.tsx:111`. An inset selection ring sits in the same place.
+- **Problem:** The README, two code comments, and the spec say that selection adds an inset ring. Neither component draws one. The mockup draws a different ring on each.
+- **Impact if no action:** Readers and agents trust docs that contradict the code. A later change can add or drop a ring by accident, because nobody knows which look is intended.
+- **Root question:** How does selection look on a timeline clip and on a media bin asset, so that the code, the docs, and the mockup agree?
+- **Options:**
+  - **A.** Keep the 2px border. Remove the ring from the README sentence, the two comments, and the spec line. The mockup keeps its rings until the mockup work aligns it. Effort: Small.
+  - **B.** Add an inset ring to both components, as the docs say. Re-record the baselines of each story with a selected clip or asset. On a focused clip, the selection ring and the focus ring overlap. Effort: Medium.
+  - **C.** Choose a new selection look for both components, for example a stronger fill with the 2px border. Change the code, the four docs, and the mockup to match. Effort: Medium.
+- **Left out:** Change nothing: the docs keep contradicting the code, so it fails the goal.
+- **Wider fix:** None, because the wider fix for docs drift is already in force: the `documentation` skill keeps docs aligned with the code.
+- **Previous examples:** None found.
+- **Related:**
+  - `plans/follow-ups/video-editor-design-spec-stale.md`: the same doc. That item corrects or deletes the other stale passages of the video-editor spec. When it deletes the spec, option A here needs no spec change.
+  - `plans/follow-ups/mockups-choose-side-of-mismatch.md`: work that waits for the answer. That item asks which side wins when a mockup and the product differ. Its answer settles the mockup side of this item.
+- **Recommendation:** A. The 2px border and the accessible name already carry selection, so a ring adds only a clash with the inset focus ring.
+- **Action:** ask the user, because the README and the mockup show a ring that the code lacks, and only the user decides which side is right.
