@@ -7,20 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.0.0](https://github.com/futex-ai/ui/compare/v4.0.0...v5.0.0) (2026-11-06)
 
-
 ### ⚠ BREAKING CHANGES
 
-* **drag-select:** several drag-select defaults change. A drag no longer highlights text, a drag can start from a control inside a row, Control and Alt start no drag, the box shows no "Select" label, and a provider without an accessible name has no role. docs/consumer-migration.md lists each change and the option that restores the 4.x behavior.
+- **drag-select:** several drag-select defaults change. A drag no longer highlights text, a drag can start from a control inside a row, Control and Alt start no drag, the box shows no "Select" label, and a provider without an accessible name has no role. docs/consumer-migration.md lists each change and the option that restores the 4.x behavior.
 
 ### Features
 
-* **drag-select:** page-wide options and app-owned selection ([#182](https://github.com/futex-ai/ui/issues/182)) ([747b2b5](https://github.com/futex-ai/ui/commit/747b2b578ad429f1688b26aaec3efe10d05763fb))
-* **modal:** stack web dialogs so only the top dialog is live ([#179](https://github.com/futex-ai/ui/issues/179)) ([b141ed2](https://github.com/futex-ai/ui/commit/b141ed2b57d1c020c6de35250092372f6774f2a1))
-
+- **drag-select:** page-wide options and app-owned selection ([#182](https://github.com/futex-ai/ui/issues/182)) ([747b2b5](https://github.com/futex-ai/ui/commit/747b2b578ad429f1688b26aaec3efe10d05763fb))
+- **modal:** stack web dialogs so only the top dialog is live ([#179](https://github.com/futex-ai/ui/issues/179)) ([b141ed2](https://github.com/futex-ai/ui/commit/b141ed2b57d1c020c6de35250092372f6774f2a1))
 
 ### Bug Fixes
 
-* **modal:** keep stacked web dialogs usable ([b141ed2](https://github.com/futex-ai/ui/commit/b141ed2b57d1c020c6de35250092372f6774f2a1))
+- **modal:** keep stacked web dialogs usable ([b141ed2](https://github.com/futex-ai/ui/commit/b141ed2b57d1c020c6de35250092372f6774f2a1))
 
 ## [4.0.0](https://github.com/futex-ai/ui/compare/v3.1.1...v4.0.0) (2026-09-30)
 
