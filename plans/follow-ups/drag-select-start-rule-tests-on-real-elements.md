@@ -1,0 +1,60 @@
+# Start-rule unit tests fake CSS selector matching
+
+- **Severity:** Medium. **Effort:** Medium. **Confidence:** High. **Harder later:** No.
+- **Kind:** Fix after merge.
+- **Added:** 2026-11-02, from the branch `calummoore/dragselectableprovider-improvements`, findings 17 and 20.
+- **Location:** tests/unit/dragSelectStartRules.test.ts:24, tests/unit/dragSelect.test.ts:135, tests/unit/dragSelectFakeDom.ts:38, src/drag-select/dragSelectableStartRules.ts:17, src/drag-select/dragSelectableStartRules.ts:27, src/drag-select/dragSelectableStartRules.ts:44, package.json
+- **Reason:** The fix adds two devDependencies and a DOM engine for the unit tests, which reaches the package files, and the string-matching fake is older than the drag-select branch.
+
+- **Terms:**
+  - **Start rules:** the rules in src/drag-select/dragSelectableStartRules.ts that decide whether a press can start a drag. The field rule refuses a press inside an editable field, and the control rule refuses a press on a control.
+  - **`FakeElement`:** the test helper in tests/unit/dragSelectFakeDom.ts. It matches a selector when the selector contains one of the strings that the test built it with, not by CSS matching.
+  - **jsdom:** a DOM engine for Node. It parses HTML and matches CSS selectors against real elements.
+  - **Press types:** the input types `button`, `checkbox`, `image`, `radio`, `reset`, and `submit`, in `PRESS_INPUT_TYPES` at src/drag-select/dragSelectableStartRules.ts:17. The control rule takes inputs of these types, and the field rule takes all other inputs.
+- **Background:**
+  - The unit tests run in Node with no DOM: `npm test` runs `node --import tsx --test tests/unit/*.test.ts`.
+  - The field rule matches `DRAG_SELECTABLE_FIELD_SELECTOR`, and the control rule matches `DRAG_SELECTABLE_CONTROL_SELECTOR`. Both are CSS selector lists in src/drag-select/dragSelectableStartRules.ts. The module exports them, but only a test imports one. The start rules in docs/protocol/drag-select.md list the fields and the controls.
+  - The 11 tests in tests/unit/dragSelectStartRules.test.ts build their elements as `FakeElement` trees. Line 24 builds the fake text input from the first part of `DRAG_SELECTABLE_FIELD_SELECTOR`, so the fixture changes with the code that it must check.
+  - The test at tests/unit/dragSelect.test.ts:135, "drag-select starts from controls inside targets but never from editable content", checks more start-rule cases through the same fake. That file has 12 tests, so the two files have 23 tests.
+  - The browser tests in `tests/browser/drag-select*.spec.ts` press real elements, but only a row button and one text field reach the field and control rules. The text field is "Filter invoices" on the Invoices page of the "Page shell" story, in the test "a drag that starts in a text field selects no rows" in tests/browser/drag-select-options.spec.ts. That input has no `type` attribute. No story or browser test has a checkbox input.
+  - The evidence, from changes that were made on purpose and then reverted:
+    - The field selector narrowed to password inputs: all 11 start-rule tests passed, and in Chromium a drag that started in a text field then selected rows.
+    - The first part of the field selector, which matches inputs, narrowed to `input[type='text']`: all 23 tests of the two files passed, and in Chromium the rules let a press in a password input start a drag. The browser test of "Filter invoices" failed: it counted 1 drawn box, not 0, because that input has no `type`.
+    - The same part narrowed to `input:not([type]), input[type='text' i]`: all 23 unit tests and the browser test of "Filter invoices" passed. This change removes the field rule from password, email, number, search, tel, and url inputs.
+    - `checkbox` dropped from the press types: all 53 tests in six drag-select unit files passed. A checkbox input then counts as a field, not as a control.
+- **Problem:** In the unit tests, no part of the field rule or the control rule meets real element matching, because the fake compares strings. A change that drops an input type from either rule passes every unit test, and the one browser test of a field checks only an input with no `type`.
+- **Impact if no action:** A wrong change to either rule can pass every unit test and the browser test of the only text field. A drag can then start in a password or an email input, which the protocol forbids, or a checkbox input can count as a field.
+- **Root question:** How do the tests fail when a change makes the field rule or the control rule classify an element differently from the lists of the protocol?
+- **Options:**
+  - **A.** Keep the fake, and give the fake text input its own literal selector string. Cost: it catches the password-only change, but every other part of the two selectors still meets only string matching. Effort: Small.
+  - **B.** Move the element classification cases to a browser fixture in a story, and test them with Playwright. A blank page that Playwright fills with `setContent` and a bundled rules module is another way to build the fixture, with no story. Cost: a new story with snapshot baselines, or a bundle step, and slower tests. Effort: Medium.
+  - **C.** Run the start-rule unit tests on real elements from jsdom:
+    - Add `jsdom` and `@types/jsdom` as devDependencies.
+    - Build the fixture from HTML, with a real `<input type="text">`.
+    - Keep every case and every assertion.
+    - Add the cases that a string fake cannot express: an input with no `type` and a password input are fields, a checkbox input is a control, and `contenteditable="false"` is not a field.
+    - Port the start-rule test at tests/unit/dragSelect.test.ts:135, or merge it into the new fixture.
+    - Delete the selector matching of the fake: `matches` and `closest` in tests/unit/dragSelectFakeDom.ts. tests/unit/dragSelectSession.test.ts also builds `FakeElement`s, for the test "drag-select refuses a press outside the provider element without claiming it". That test needs only `contains` and the fake `Element` and `Node` globals, so it can keep a fake without selector matching.
+    - Make `DRAG_SELECTABLE_FIELD_SELECTOR` and `DRAG_SELECTABLE_CONTROL_SELECTOR` private to their module, so that no test can build a fixture from them.
+    - Evidence: jsdom matched headless Chrome on all 23 probe elements, for both selectors. A quick jsdom port of the 11 tests passed on the current rules. The same port failed 2 tests when the field selector was narrowed to password inputs, with `expected 'field', actual null`.
+    - Cost: two devDependencies, and about one second of run time for each test file that loads jsdom. Risk: jsdom can differ from browsers on a future selector. Effort: Medium.
+  - **D.** Classify fields and controls in TypeScript, with no new dependency:
+    - Replace the two selector strings with checks of the `localName` and the attributes of each element.
+    - Search the pressed element and its ancestors up to the provider, as now.
+    - Keep the `ignore` rule on `closest`, because the app gives its selectors.
+    - Give the fake a tag name in place of its selector parts. Build each case from literal tags and attributes from the protocol, including an input with no `type`, a password input, and a checkbox input.
+    - Prove once in Chromium that the new checks and the current selectors classify the same probe elements the same way. Cover each entry of the field and control lists of the protocol. That proof is a one-time run, not a test.
+    - No protocol or README change.
+    - Evidence: in Chromium, attribute checks matched the current selectors on all 55 probe elements, of which 24 were fields and 22 were controls.
+    - Cost: it rewrites the product module src/drag-select/dragSelectableStartRules.ts to fix a test defect. The tests of the `ignore` rule keep the string fake. Effort: Medium.
+- **Left out:**
+  - Change nothing: a wrong rule keeps passing the unit tests, which fails the goal.
+  - happy-dom in place of jsdom: happy-dom 21 called `type="CHECKBOX"` and `contenteditable="FALSE"` fields, and Chrome and jsdom did not, so it fails the goal.
+  - A mutation-testing gate alone: it reports tests that cannot fail, but it adds no test that can, so it fails the goal. It is also a new gate.
+  - Rules that read element properties such as `type` and `isContentEditable`: their fakes must copy the reflection rules of the browser. `localName` and `getAttribute` return the authored markup, so that approach comes back as D.
+  - A hand-written CSS matcher in the fake: the tests then trust a second copy of CSS matching, which fails the goal.
+  - A lint, or a private selector export alone: a fixture that copies the selector by hand, as in A, passes both. A lint is also a new check.
+- **Wider fix:** C. It removes the string fake from every start-rule test, also from the logic cases that a browser fixture leaves on the fake. Its private selector constants stop a test from building a fixture from the product code.
+- **Previous examples:** The class is older than 5.0: in `@firna/ui` 4.0.0, a fake element in tests/unit/dragSelect.test.ts matched selectors with `selector.includes`.
+- **Recommendation:** C. It fixes the defect in the tests with no product change, and it gives the `ignore`, field, and control rules real matching at the unit level, where the logic and the decisions get their tests. C is also the option that best protects the codebase. D is the choice if the user rejects a new dependency.
+- **Action:** fix after merge, apply C, because C adds two devDependencies and a DOM engine for the unit tests, which reaches the package files outside the drag-select branch, and the string-matching fake is older than the branch. Apply D in place of C if the user rejects a new dependency.

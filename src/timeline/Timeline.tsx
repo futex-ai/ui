@@ -23,6 +23,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { dragSelectableIgnoreProps } from "../drag-select/dragSelectableIgnore";
 import type { FocusIndicator } from "../focusRing";
 import type { FocusableRef } from "../keyboardNavigation";
 import { useSharedUiTheme } from "../theme";
@@ -405,7 +406,7 @@ export function Timeline({
       scrollEventThrottle={16}
       showsHorizontalScrollIndicator={Platform.OS === "web"}
     >
-      <View style={{ width }}>
+      <View {...dragSelectableIgnoreProps} style={{ width }}>
         <TimelineRuler
           duration={duration}
           focusIndicator={focusIndicator}

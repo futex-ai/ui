@@ -26,6 +26,7 @@ import type { StyleProp, ViewStyle } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
+import { dragSelectableIgnoreProps } from "../drag-select/dragSelectableIgnore";
 import { DragGhostPortal } from "../dragGhostPortal";
 import type { FocusIndicator } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
@@ -376,6 +377,7 @@ export function SortableList<Item>({
 
   return (
     <View
+      {...dragSelectableIgnoreProps}
       accessibilityLabel={accessibilityLabel}
       ref={drag.bindList.ref}
       role="list"

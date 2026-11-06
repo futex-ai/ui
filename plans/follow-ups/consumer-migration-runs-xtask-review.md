@@ -20,7 +20,7 @@
   - A user decision of the earlier `agents-md` migration chose the shared rule: the review uses the `implementation-review` skill instead of `cargo xtask review`. Commit `e601a86` records that decision, and pull request #177 merged it on 2026-10-21.
   - The `finish-work` skill runs the review with the `implementation-review` skill after the push.
   - The command `cargo xtask review` stays for manual use. The root `README.md` lists it as the read-only AI review wrapper that the accounting repository also uses.
-  - `plans/follow-ups/xtask-review-pins-codex-model.md` records another problem of that command.
+  - The command takes its model from the Codex configuration of the reviewer, so it runs with any Codex provider.
 - **Problem:** Both steps end with `cargo xtask review`, but the user chose the review of the `implementation-review` skill instead. So the guide gives each consumer repository a replaced step.
 - **Impact if no action:** Agents in the consumer repositories follow a review step that the shared rules replaced. The guide also disagrees with the `finish-work` skill.
 - **Root question:** How does the guide tell a consumer repository to review its migration?
@@ -32,6 +32,5 @@
   - Replace each whole step with a pointer to the `finish-work` skill: it breaks a requirement that stays, the smoke tests of each step.
 - **Wider fix:** None. The `documentation` skill already tells a change that removes something to search `docs/` for its name. The earlier migration removed the step from `AGENTS.md`, but it did not update this guide.
 - **Previous examples:** Commit `e601a86` replaced the `cargo xtask review` steps of the old `AGENTS.md` with the `implementation-review` skill.
-- **Related:** `plans/follow-ups/xtask-review-pins-codex-model.md`: the same command. That item fixes the command, and this item fixes the guide that names it.
 - **Recommendation:** A. It keeps each step complete and names the review that the user chose.
 - **Action:** fix after merge, apply A, because the guide is outside the files of this change.

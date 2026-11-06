@@ -26,8 +26,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { announce } from "../announcer";
+import { suppressNextClick } from "../dragGesture";
 
-import { suppressNextClick, useSortableFocusNodes } from "./sortableDragFocus";
+import { useSortableFocusNodes } from "./sortableDragFocus";
 import {
   acceptableGroupTarget,
   describeGroupTarget,

@@ -1,0 +1,56 @@
+# A control's `onPressOut` leaves drag effects wrong
+
+- **Severity:** Medium. **Likelihood:** Rare. **Effort:** Medium. **Confidence:** High. **Harder later:** No.
+- **Kind:** Fix after merge.
+- **Added:** 2026-11-02, from the branch `calummoore/dragselectableprovider-improvements`, finding 19.
+- **Location:** src/drag-select/dragSelectableSession.ts:199, src/drag-select/dragSelectableSession.ts:205, src/drag-select/dragSelectableSession.ts:131, src/drag-select/dragSelectableSessionDom.ts:49, src/drag-select/useDragSelectableGesture.ts:102, tests/unit/dragSelectSessionDom.test.ts, tests/unit/dragSelectSessionFakes.ts
+- **Reason:** The defect needs a rare `onPressOut` that unmounts the provider, turns it off, or throws during the drag start, and the fix costs the same after the merge.
+
+- **Terms:**
+  - **Session:** one accepted press, its drag, and its cleanup. `startDragSelectableSession` in src/drag-select/dragSelectableSession.ts runs it, and reaches the DOM only through its environment object `env`.
+  - **Drag start:** the moment when the pointer has moved the threshold distance from the press. The function `start()` of the session then begins the drag.
+  - **`onPressOut`:** the callback of a library `Pressable`, such as a row `Button`, that runs when its press ends.
+  - **Escape layer:** an entry on the shared stack of src/escapeLayer.ts. While the stack holds a layer, each Escape key press goes only to the top layer.
+  - **Auto-scroll:** a loop that scrolls the scroll container of the press once per animation frame while the pointer is near its edge. src/drag-select/dragSelectableAutoScroll.ts runs it.
+- **Background:**
+  - `DragSelectableProvider` in src/drag-select lets a user drag a box across rows to select them on web. A drag can start on a control inside a row, such as a row `Button`.
+  - The Gesture section of docs/protocol/drag-select.md, at line 145, says that the drag start ends the `Pressable` press of the same pointer. It also says that `onPressOut` of the control receives the pointer event that started the drag. Every option must keep that behavior.
+  - `start()` at src/drag-select/dragSelectableSession.ts:199 runs its steps in this order. It measures the targets, blocks text selection, and ends the presses with `env.endPresses` at line 205. Then it pushes the Escape layer, starts auto-scroll, and draws the box.
+  - In the browser, `env.endPresses` at src/drag-select/dragSelectableSessionDom.ts:49 calls `endPointerPresses` in src/primitives/dom/usePress.ts with the `pointermove` that started the drag. The press machine of the web `Pressable`, in src/primitives/dom/pressMachine.ts, then runs `onPressOut` at once, inside `start()`.
+  - The session keeps four nullable removers at line 131: `removeEscape`, `removeListeners`, `restoreTextSelection`, and `stopAutoScroll`. `end()` runs once and calls all four. `cancel()` calls only the Escape and auto-scroll removers.
+  - src/drag-select/useDragSelectableGesture.ts calls `cancel()` when the `disabled` option becomes `true`, at line 102. It calls `stop()`, which is `end()`, when the provider unmounts, at line 108.
+  - docs/protocol/drag-select.md already requires the right behavior. At line 160, an unmount stops the drag at once and restores the page. At line 163, Escape cancels a started drag. At line 179, auto-scroll stops on every cancel. So no fix changes the protocol.
+  - The evidence:
+    - Unmount, in Chromium: an `onPressOut` that unmounted the provider at once left the Escape layer and the auto-scroll loop active after the unmount and the release. That probe gave the `Pressable` `delayPressIn: 0`, so that its press was active when the drag started. A first probe with the default press delay timed out before the press became active.
+    - `disabled`, on the session fakes: a cancel from inside `env.endPresses`, as when `onPressOut` sets `disabled` to `true` at once, left Escape and auto-scroll active until the release.
+    - Throw, on the session fakes: the drag ran on with no Escape layer, so Escape could not cancel it, and the release committed rows 1 to 3. An earlier probe in Chromium showed the same: Escape failed, and the release committed two rows.
+  - Each option needs the three cases above as unit tests. The defect is in the logic of the session, so the session fakes in tests/unit/dragSelectSessionFakes.ts can drive each case.
+  - The follow-up item plans/follow-ups/press-machine-takes-real-events.md changes the type of the events that the press machine takes, not when `onPressOut` runs, so it conflicts with no option here.
+- **Problem:** `start()` runs the `onPressOut` of the app before it pushes the Escape layer and starts auto-scroll. When the callback unmounts the provider or turns it off, `start()` adds those two effects after the cleanup, so nothing removes them in time. When the callback throws, `start()` stops before it adds them, and the drag runs on with no Escape layer.
+- **Impact if no action:** A leaked Escape layer takes each Escape key press from the page, and a leaked auto-scroll loop keeps running after its drag ended. After a throw, Escape cannot cancel the drag, so the release selects rows that the user tried to cancel.
+- **Root question:** How do the Escape layer and the auto-scroll of a drag exist from its start to its release or cancel, whatever the `onPressOut` of the control does at the start?
+- **Options:**
+  - **A.** Check whether the session ended right after `env.endPresses`, and skip the rest of the start then. Add the reproduced callback case. Cost: a guard around a start that is only part done. It passes the unmount case, but it fails the `disabled` and throw cases. Effort: Small.
+  - **B.** Finish the start before app code runs: make `env.endPresses` the last step of `start()`, after the Escape layer, auto-scroll, and the first draw. Add the regression cases. Cost: a small reorder of the start. It fixes the unmount, `disabled`, and throw cases. A later reorder of `start()`, or a new callback in it, brings the leak back. Effort: Small.
+  - **C.** Give all effects of the session one disposable owner. Cost: a broader lifecycle abstraction. It leaves the order of `start()` open, and the order decides the throw case: on the session fakes, the owner of C with the current order still committed rows 1 to 3 after a throw. Effort: Medium.
+  - **D.** End the presses when the move handler of the session returns:
+    - The DOM side records that the session asked for the end. After `handlers.move` returns, its `pointermove` listener calls `endPointerPresses` with the same event.
+    - Add the unmount, `disabled`, and throw cases to tests/unit/dragSelectSessionDom.test.ts.
+    - Cost: `start()` no longer shows when `onPressOut` runs. The session stays unsafe with an environment that calls back at once, such as the unit fakes. On the session fakes, this order fixed all three cases. Effort: Small.
+  - **E.** Apply B, and give the effects of the session two owners:
+    - One owner holds the listeners and the text block, and `end()` disposes it. The other owner holds Escape and auto-scroll, and `cancel()` and `end()` dispose it.
+    - A disposed owner removes a new effect at once. The owners replace the four nullable removers.
+    - Put the three cases on the session fakes in a new test file, because tests/unit/dragSelectSession.test.ts has 299 lines.
+    - Cost: one small helper and a refactor of the cleanup of the session. On the session fakes, E fixed all three cases. Effort: Medium.
+- **Left out:**
+  - A deferral of `onPressOut` to the end of the move handler comes back as D, which still ends the press at once, with the same event.
+  - A deferral of `onPressOut` to a microtask: D is better on every point.
+  - A regression test alone: it fails the goal.
+  - A guard that skips the effects after the provider unmounts: B is better on every point.
+  - A fix in the gesture hook, src/drag-select/useDragSelectableGesture.ts: a React effect takes Escape only after the start renders, so the drag starts with no Escape layer, which fails the goal.
+  - A fix in the shared Escape stack, src/escapeLayer.ts: it leaves the auto-scroll loop running, which fails the goal.
+  - An error catch in `endPointerPresses` in src/primitives/dom/usePress.ts: it fixes only the throw, which fails the goal.
+- **Wider fix:** E, in place of B. A later reorder of `start()`, or a new callback in it, brings the leak of B back. The owners of E remove a late effect whatever the order.
+- **Previous examples:** None found for a callback that interrupts the start of a session.
+- **Recommendation:** E. It keeps the order of B, which fixes all three cases. Its owners also remove any later effect that would outlive the drag, so a later change to `start()` cannot bring the leak back. E is also the option that best protects the codebase.
+- **Action:** fix after merge, apply E, because the defect needs a rare callback, the severity is Medium, and the fix does not get harder after the merge.

@@ -128,6 +128,11 @@ too (the cell keeps its own press); only the cross-cell drag is web-only.
 The consumer owns persistence — `onCreateEvent` hands you the range; you decide
 whether to open an editor, push to state, or POST it.
 
+The time-grid day columns and the month grid carry the drag-select ignore
+marker (`data-drag-select-ignore`), so by default a page-wide
+`DragSelectableProvider` does not start a selection box over drag-to-create.
+The provider's `shouldStartDrag` option can still allow such a press.
+
 ## Time-grid config
 
 `minHour` (default 0), `maxHour` (default 24), `slotMinutes` (snap granularity,

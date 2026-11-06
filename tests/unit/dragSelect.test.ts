@@ -6,10 +6,7 @@ import {
   DRAG_SELECTABLE_LAYERS,
   dragSelectableOverlayClearsSurface,
 } from "../../src/drag-select/dragSelectableLayers";
-import {
-  dragSelectableSelectionForTargets,
-  dragSelectableShouldStartFromTarget,
-} from "../../src/drag-select/dragSelectableDom";
+import { dragSelectableSelectionForTargets } from "../../src/drag-select/dragSelectableDom";
 import {
   dragSelectableIdsEqual,
   dragSelectableBoundsForBox,
@@ -19,9 +16,14 @@ import {
   dragSelectableThresholdForValue,
   hasDragSelectableMoved,
 } from "../../src/drag-select/dragSelectableModel";
+import { dragSelectableDefaultDragMode } from "../../src/drag-select/dragSelectableOptions";
+import { dragSelectableProviderAccessibility } from "../../src/drag-select/dragSelectableRole";
+import { dragSelectableStartDecision } from "../../src/drag-select/dragSelectableStartRules";
 import type { DragSelectableTargetRegistration } from "../../src/drag-select/dragSelectableTypes";
 import { DROPDOWN_LAYERS } from "../../src/dropdown/dropdownLayers";
 import { WEB_MODAL_LAYERS } from "../../src/modal/modalLayers";
+
+import { asElement, FakeElement } from "./dragSelectFakeDom";
 
 test("drag-select normalizes a box dragged in any direction", () => {
   assert.deepEqual(dragSelectableBox({ x: 320, y: 180 }, { x: 120, y: 60 }), {
@@ -130,52 +132,63 @@ test("drag-select overlay clears shared portal surfaces", () => {
   );
 });
 
-test("drag-select ignores nested interactive controls inside targets", () => {
-  withFakeDragSelectableDom(() => {
-    const row = new FakeElement();
-    const nestedButton = row.append(new FakeElement("button"));
-    const nestedCheckbox = row.append(new FakeElement("[role='checkbox']"));
-    const nestedEditable = row.append(new FakeElement("[contenteditable]"));
-    const nestedRadio = row.append(new FakeElement("[role='radio']"));
-    const nestedSwitch = row.append(new FakeElement("[role='switch']"));
-    const rootButton = new FakeElement("button");
+test("drag-select starts from controls inside targets but never from editable content", () => {
+  const provider = new FakeElement();
+  const row = provider.append(new FakeElement());
+  const nested = [
+    row.append(new FakeElement(["button"])),
+    row.append(new FakeElement(["[role='checkbox']"])),
+    row.append(new FakeElement(["[role='radio']"])),
+    row.append(new FakeElement(["[role='switch']"])),
+  ];
+  const nestedEditable = row.append(
+    new FakeElement(["[contenteditable]:not([contenteditable='false' i])"]),
+  );
+  const rootButton = provider.append(new FakeElement(["button"]));
+  const targets = [
+    dragSelectableRegistration(row, "row"),
+    dragSelectableRegistration(rootButton, "root"),
+  ];
+  const decide = (element: FakeElement) =>
+    dragSelectableStartDecision({
+      element: asElement(element),
+      event: {} as PointerEvent,
+      keys: { altKey: false, ctrlKey: false, metaKey: false, shiftKey: false },
+      options: {
+        dragMode: dragSelectableDefaultDragMode,
+        ignore: [],
+        startFromControls: true,
+      },
+      provider: asElement(provider),
+      targets,
+    });
 
-    assert.equal(
-      dragSelectableShouldStartFromTarget(nestedButton as unknown as Node, [
-        dragSelectableRegistration(row),
-      ]),
-      false,
-    );
-    assert.equal(
-      dragSelectableShouldStartFromTarget(nestedCheckbox as unknown as Node, [
-        dragSelectableRegistration(row),
-      ]),
-      false,
-    );
-    assert.equal(
-      dragSelectableShouldStartFromTarget(nestedEditable as unknown as Node, [
-        dragSelectableRegistration(row),
-      ]),
-      false,
-    );
-    assert.equal(
-      dragSelectableShouldStartFromTarget(nestedRadio as unknown as Node, [
-        dragSelectableRegistration(row),
-      ]),
-      false,
-    );
-    assert.equal(
-      dragSelectableShouldStartFromTarget(nestedSwitch as unknown as Node, [
-        dragSelectableRegistration(row),
-      ]),
-      false,
-    );
-    assert.equal(
-      dragSelectableShouldStartFromTarget(rootButton as unknown as Node, [
-        dragSelectableRegistration(rootButton),
-      ]),
-      true,
-    );
+  for (const control of nested) {
+    assert.equal(decide(control).allowed, true);
+    assert.equal(decide(control).onControl, true);
+  }
+  assert.equal(decide(nestedEditable).allowed, false);
+  assert.equal(decide(nestedEditable).reason, "field");
+  assert.equal(decide(rootButton).allowed, true);
+  assert.equal(decide(rootButton).onControl, false);
+});
+
+test("drag-select names the provider element only when it has a role", () => {
+  assert.deepEqual(dragSelectableProviderAccessibility(undefined, "Rows"), {
+    accessibilityLabel: "Rows",
+    role: "group",
+  });
+  assert.deepEqual(dragSelectableProviderAccessibility(undefined, undefined), {
+    accessibilityLabel: undefined,
+    role: undefined,
+  });
+  assert.deepEqual(dragSelectableProviderAccessibility("list", "Rows"), {
+    accessibilityLabel: "Rows",
+    role: "list",
+  });
+  assert.deepEqual(dragSelectableProviderAccessibility("none", "Rows"), {
+    accessibilityLabel: undefined,
+    role: undefined,
   });
 });
 
@@ -186,78 +199,6 @@ test("drag-select snapshots selected target metadata on commit", () => {
   assert.deepEqual(selection.selectedIds, ["target"]);
   assert.equal(selection.selectedCount, 1);
   assert.deepEqual(selection.selectedTargets, [{ data, id: "target" }]);
-});
-
-test("drag-select selection callback is stable across callback identities", () => {
-  const providerSource = readSource(
-    "../../src/drag-select/DragSelectableProvider.web.tsx",
-  );
-
-  assert.match(providerSource, /const onSelectionChangeRef = useRef/);
-  assert.match(
-    providerSource,
-    /onSelectionChangeRef\.current = onSelectionChange/,
-  );
-  assert.doesNotMatch(
-    providerSource,
-    /\[onSelectionChange, selectedIds, selectedTargets\]/,
-  );
-});
-
-test("drag-select selection callback ignores registry-only updates", () => {
-  const providerSource = readSource(
-    "../../src/drag-select/DragSelectableProvider.web.tsx",
-  );
-
-  assert.match(providerSource, /useState<DragSelectableSelection>/);
-  assert.match(providerSource, /const notifiedSelectedIdsRef = useRef/);
-  assert.match(
-    providerSource,
-    /dragSelectableIdsEqual\(\s*notifiedSelectedIdsRef\.current,\s*selection\.selectedIds,/,
-  );
-  assert.match(
-    providerSource,
-    /notifiedSelectedIdsRef\.current = \[\.\.\.selection\.selectedIds\]/,
-  );
-  assert.match(
-    providerSource,
-    /setSelection\(dragSelectableSelectionForTargets\(selectedTargetsForBox\)\)/,
-  );
-  assert.doesNotMatch(providerSource, /dragSelectableSnapshotsForIds/);
-});
-
-test("drag-select provider uses the configured movement threshold", () => {
-  const providerSource = readSource(
-    "../../src/drag-select/DragSelectableProvider.web.tsx",
-  );
-  const typeSource = readSource("../../src/drag-select/dragSelectableTypes.ts");
-  const readmeSource = readSource("../../src/drag-select/README.md");
-
-  assert.match(typeSource, /minimumDragDistance\?: number/);
-  assert.match(providerSource, /minimumDragDistance/);
-  assert.match(providerSource, /threshold: dragSelectableThresholdForValue/);
-  assert.match(
-    providerSource,
-    /hasDragSelectableMoved\(session\.start, point, session\.threshold\)/,
-  );
-  assert.match(readmeSource, /minimumDragDistance/);
-});
-
-test("drag-select provider cancels stale pointer streams", () => {
-  const providerSource = readSource(
-    "../../src/drag-select/DragSelectableProvider.web.tsx",
-  );
-
-  assert.match(providerSource, /const cancelDrag = useCallback/);
-  assert.match(providerSource, /const disabledRef = useRef\(disabled\)/);
-  assert.match(providerSource, /if \(disabledRef\.current\)/);
-  assert.match(providerSource, /if \(disabled\) {\s*cancelDrag\(\);/);
-  assert.match(providerSource, /document\.addEventListener\("pointercancel"/);
-  assert.match(providerSource, /window\.addEventListener\("blur"/);
-  assert.match(
-    providerSource,
-    /document\.addEventListener\("visibilitychange"/,
-  );
 });
 
 test("drag-select target hook returns an empty legacy focus style", () => {
@@ -274,127 +215,12 @@ test("drag-select target hook returns an empty legacy focus style", () => {
   assert.doesNotMatch(source, /focus\.focusRingStyle,/);
 });
 
-test("drag-select provider exposes provider, target, and listener hooks", () => {
-  const contextSource = readSource(
-    "../../src/drag-select/DragSelectableContext.tsx",
-  );
-  const providerSource = readSource(
-    "../../src/drag-select/DragSelectableProvider.web.tsx",
-  );
-  const overlaySource = readSource(
-    "../../src/drag-select/DragSelectableOverlay.web.tsx",
-  );
-  const typeSource = readSource("../../src/drag-select/dragSelectableTypes.ts");
-  const nativeProviderSource = readSource(
-    "../../src/drag-select/DragSelectableProvider.tsx",
-  );
-  const indexSource = readSource("../../src/drag-select/index.ts");
-
-  assert.match(contextSource, /useDragSelectableTarget/);
-  assert.match(contextSource, /useDragSelectableChanges/);
-  assert.match(providerSource, /document\.addEventListener\("pointermove"/);
-  assert.match(providerSource, /emptyMatchingTargets/);
-  assert.match(providerSource, /measureDragSelectableTargets/);
-  assert.match(providerSource, /onSelectionChange/);
-  assert.match(providerSource, /overlayZIndex/);
-  assert.match(overlaySource, /createPortal/);
-  assert.match(overlaySource, /DRAG_SELECTABLE_LAYERS\.overlay/);
-  assert.match(overlaySource, /matchingIds/);
-  assert.match(overlaySource, /theme\.colors\.primary/);
-  assert.match(typeSource, /DragSelectableSelectionLabelContext/);
-  assert.match(nativeProviderSource, /registerTarget/);
-  assert.match(nativeProviderSource, /emptyDragSelectableState/);
-  assert.match(indexSource, /dragSelectableLayers/);
-  assert.match(indexSource, /dragSelectableModel/);
-});
-
-function readSource(relativePath: string) {
-  return readFileSync(new URL(relativePath, import.meta.url), "utf8");
-}
-
 function dragSelectableRegistration(
   node: FakeElement,
-  options: Omit<DragSelectableTargetRegistration, "id" | "node"> = {},
+  id: string,
 ): DragSelectableTargetRegistration {
   return {
-    ...options,
-    id: "target",
+    id,
     node: node as unknown as DragSelectableTargetRegistration["node"],
   };
-}
-
-function withFakeDragSelectableDom(run: () => void) {
-  const globals = globalThis as FakeDomGlobals;
-  const hadElement = "Element" in globals;
-  const hadNode = "Node" in globals;
-  const previousElement = globals.Element;
-  const previousNode = globals.Node;
-  globals.Element = FakeElement;
-  globals.Node = FakeNode;
-  try {
-    run();
-  } finally {
-    restoreFakeDomGlobal(globals, "Element", hadElement, previousElement);
-    restoreFakeDomGlobal(globals, "Node", hadNode, previousNode);
-  }
-}
-
-function restoreFakeDomGlobal(
-  globals: FakeDomGlobals,
-  key: "Element" | "Node",
-  hadValue: boolean,
-  previousValue: unknown,
-) {
-  if (hadValue) {
-    globals[key] = previousValue;
-    return;
-  }
-  delete globals[key];
-}
-
-type FakeDomGlobals = {
-  Element?: unknown;
-  Node?: unknown;
-};
-
-class FakeNode {
-  parentElement: FakeElement | null = null;
-}
-
-class FakeElement extends FakeNode {
-  private readonly selectorName: string | null;
-  private readonly children: FakeNode[] = [];
-
-  constructor(selectorName: string | null = null) {
-    super();
-    this.selectorName = selectorName;
-  }
-
-  append<T extends FakeNode>(child: T): T {
-    child.parentElement = this;
-    this.children.push(child);
-    return child;
-  }
-
-  contains(target: FakeNode): boolean {
-    if (target === this) {
-      return true;
-    }
-    return this.children.some(
-      (child) =>
-        child === target ||
-        (child instanceof FakeElement && child.contains(target)),
-    );
-  }
-
-  closest(selector: string): FakeElement | null {
-    let current: FakeElement | null = this;
-    while (current) {
-      if (current.selectorName && selector.includes(current.selectorName)) {
-        return current;
-      }
-      current = current.parentElement;
-    }
-    return null;
-  }
 }

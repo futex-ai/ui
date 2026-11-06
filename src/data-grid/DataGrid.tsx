@@ -20,6 +20,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { dragSelectableIgnoreProps } from "../drag-select/dragSelectableIgnore";
 import type { FocusIndicator } from "../focusRing";
 import { ContextMenu } from "../popover";
 import { useSharedUiTheme } from "../theme";
@@ -396,6 +397,7 @@ export function DataGrid({
           showsHorizontalScrollIndicator
         >
           <View
+            {...dragSelectableIgnoreProps}
             accessibilityLabel={accessibilityLabel}
             role="grid"
             style={styles.gridContent}

@@ -1,0 +1,10 @@
+- group "Invoices":
+  - text: "Selected invoices: none"
+  - checkbox /INV-\d+/: /INV-\d+ Unpaid/
+  - button /Mark INV-\d+ paid/: Mark paid
+  - checkbox /INV-\d+/: /INV-\d+ Unpaid/
+  - button /Mark INV-\d+ paid/: Mark paid
+  - checkbox /INV-\d+/: /INV-\d+ Paid/
+  - button /Mark INV-\d+ unpaid/: Mark unpaid
+  - checkbox /INV-\d+/: /INV-\d+ Unpaid/
+  - button /Mark INV-\d+ paid/: Mark paid

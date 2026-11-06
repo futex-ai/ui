@@ -75,8 +75,13 @@ The package name is `@firna/ui`. Public exports are available from:
   (cell-range selection, keyboard nav, virtualized infinite scroll, typed
   editable cells, column menus, and a responsive card stack).
 - `@firna/ui/date` for single-date and date-range fields.
-- `@firna/ui/drag-select` for web drag-selection providers, target hooks, and
-  geometry helpers.
+- `@firna/ui/drag-select` for rubber-band selection of rows and tiles: a
+  provider that can wrap one list or every page of an app shell, the
+  `useDragSelectableOptions` page hook, target and state hooks, controlled
+  (`selectedIds`) or uncontrolled selection, a selection scope per page,
+  configurable start rules and an ignore marker, edge auto-scroll, a custom
+  box through `renderMarquee`, and geometry helpers. The gesture runs on
+  web; native keeps the selection state.
 - `@firna/ui/dropdown` for dropdown menu, selector, combobox, layer helpers, and
   selector trigger refs for imperative focus after async form hydration.
 - `@firna/ui/heatmap` for the calendar contribution heatmap and its pure layout
@@ -471,7 +476,9 @@ Run the same read-only AI review wrapper used by the accounting repo with:
 cargo xtask review
 ```
 
-Browser interaction tests start Storybook automatically through Playwright.
+Browser interaction tests start Storybook through Playwright with file watching
+disabled by `STORYBOOK_DISABLE_WATCH=1`, so workspace writes cannot reload test
+pages. A reused development server keeps live reload but ignores `.context/`.
 Storybook is built to `storybook-static`. `npm run test:package` builds a
 packed tarball, installs it into temporary consumers, imports every public
 package subpath with Node's native ESM resolver, typechecks those subpaths with
@@ -668,6 +675,9 @@ The package export map intentionally separates runtime targets:
   [docs/protocol/web-overlays.md](docs/protocol/web-overlays.md)
 - Rich-text collaboration protocol:
   [docs/protocol/rich-text-collaboration.md](docs/protocol/rich-text-collaboration.md)
+- Drag select protocol: [docs/protocol/drag-select.md](docs/protocol/drag-select.md),
+  its [selection rules](docs/protocol/drag-select-selection.md), and its
+  [option reference](docs/protocol/drag-select-api.md)
 - Consumer migration handoff: [docs/consumer-migration.md](docs/consumer-migration.md)
 
 ## Related Repositories

@@ -29,6 +29,8 @@
     - `src/stories/videoEditor.stories.tsx`: 696 lines.
     - `src/heatmap/Heatmap.tsx`: 679 lines.
   - The longest product files after those are `src/date/CalendarMonth.tsx` with 668 lines, `src/dropdown/ComboboxMultiSelect.tsx` with 604 lines, and `src/segmented/SegmentedControl.tsx` with 582 lines.
+  - One split is known in detail. `src/kanban/Kanban.tsx` has 314 lines. It holds the public `KanbanProps<Card>` type at lines 43 to 122, the board model, and the render of the board.
+  - Moving `KanbanProps<Card>` with its doc comments into a new `src/kanban/kanbanTypes.ts`, exported from `src/kanban/index.ts`, leaves about 235 lines in `Kanban.tsx`. The test "kanban threads a per-column header accessory through to the column" in `tests/unit/kanban.test.ts` reads the declaration order from `Kanban.tsx`, so it must then read the new file, with the same assertions.
   - The rules alone do not keep a file short. Commit `b4e61b8`, from pull request #73 on 2026-07-01, split the data grid "keeping every file under the ~300-line target". `src/data-grid/DataGrid.tsx` had 299 lines after that commit. Twelve later changes grew it to 491 lines.
   - A new check needs the user. The always-on rules say: "Do not add a new build error, rejection, gate, lint, or stricter validation without asking the user." The `testing` skill treats a test that catches a whole class of defects like a lint, so it needs the user too.
   - `tests/unit/noAccentBar.test.ts` already scans source files for a banned pattern, with an allowlist. `npm run test` runs it inside `npm run verify`. It is a precedent for a check as a unit test.

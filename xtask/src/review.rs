@@ -1,5 +1,6 @@
 //! Read-only AI review command.
 
+use std::ffi::OsString;
 use std::fs;
 use std::io::Write;
 use std::path::Path;
@@ -14,23 +15,7 @@ pub(crate) fn run_review(workspace_root: &Path) -> Result<()> {
     fs::create_dir_all(&review_dir)?;
 
     let mut child = Command::new("codex")
-        .args([
-            "--ask-for-approval",
-            "never",
-            "exec",
-            "--ephemeral",
-            "--ignore-rules",
-            "--model",
-            "gpt-5.5",
-            "--config",
-            "model_reasoning_effort=\"xhigh\"",
-            "--sandbox",
-            "read-only",
-            "--skip-git-repo-check",
-            "--cd",
-        ])
-        .arg(&review_dir)
-        .arg("-")
+        .args(codex_review_args(&review_dir))
         .stdin(Stdio::piped())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
@@ -52,6 +37,32 @@ pub(crate) fn run_review(workspace_root: &Path) -> Result<()> {
         });
     }
     Ok(())
+}
+
+/// The `codex` arguments for a read-only, non-interactive review that runs in
+/// `review_dir` and reads its prompt from stdin. The model comes from the
+/// reviewer's Codex config, so a provider that does not offer a given model
+/// needs no code change.
+fn codex_review_args(review_dir: &Path) -> Vec<OsString> {
+    let mut args: Vec<OsString> = [
+        "--ask-for-approval",
+        "never",
+        "exec",
+        "--ephemeral",
+        "--ignore-rules",
+        "--config",
+        "model_reasoning_effort=\"xhigh\"",
+        "--sandbox",
+        "read-only",
+        "--skip-git-repo-check",
+        "--cd",
+    ]
+    .into_iter()
+    .map(OsString::from)
+    .collect();
+    args.push(review_dir.as_os_str().to_owned());
+    args.push(OsString::from("-"));
+    args
 }
 
 fn review_prompt(workspace_root: &Path) -> Result<String> {
