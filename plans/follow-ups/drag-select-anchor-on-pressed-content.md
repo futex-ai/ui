@@ -3,8 +3,8 @@
 - **Severity:** High. **Likelihood:** Rare. **Effort:** Medium. **Confidence:** High. **Harder later:** No.
 - **Kind:** Needs decision.
 - **Added:** 2026-11-02, from the branch `calummoore/dragselectableprovider-improvements`, findings 15 and 18.
-- **Location:** src/drag-select/dragSelectableScrollAnchor.ts:49, src/drag-select/dragSelectableScrollAnchor.ts:58, src/drag-select/dragSelectableSessionDom.ts:70, src/drag-select/dragSelectableScrollContainer.ts:35, docs/protocol/drag-select.md:144
-- **Reason:** The fix changes the anchor rule of the drag select protocol, a requirement in force, so it waits for the choice of the user.
+- **Location:** src/drag-select/dragSelectableScrollAnchor.ts:49, src/drag-select/dragSelectableScrollAnchor.ts:58, src/drag-select/dragSelectableSessionDom.ts:70, src/drag-select/dragSelectableScrollContainer.ts:35, docs/protocol/drag-select.md:149
+- **Reason:** The fix changes the anchor rule of the drag select protocol, a requirement in force, so it waits for the choice of the user. On 2026-11-06 the user moved it to after the merge of the drag select branch.
 
 - **Terms:**
   - **Start point:** the point where the user pressed. The hit box of a drag runs from the start point to the pointer, and the provider selects the rows that the hit box touches.

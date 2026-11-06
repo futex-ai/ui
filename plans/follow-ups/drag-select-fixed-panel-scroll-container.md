@@ -3,7 +3,7 @@
 - **Severity:** Medium. **Likelihood:** Rare. **Effort:** Medium. **Confidence:** High. **Harder later:** No.
 - **Kind:** Needs decision.
 - **Added:** 2026-11-02, from the branch `calummoore/dragselectableprovider-improvements`, a new problem that the check of finding 18 found.
-- **Location:** src/drag-select/dragSelectableAutoScroll.ts:36, src/drag-select/dragSelectableScrollContainer.ts:106, src/drag-select/dragSelectableScrollContainer.ts:35, docs/protocol/drag-select.md:76, docs/protocol/drag-select.md:167, docs/protocol/drag-select.md:182
+- **Location:** src/drag-select/dragSelectableAutoScroll.ts:36, src/drag-select/dragSelectableScrollContainer.ts:106, src/drag-select/dragSelectableScrollContainer.ts:35, docs/protocol/drag-select.md:81, docs/protocol/drag-select.md:172, docs/protocol/drag-select.md:187
 - **Reason:** Any fix changes the scroll-container rule or the auto-scroll rule of the drag select protocol, requirements in force, so it waits for the choice of the user.
 
 - **Terms:**
@@ -16,7 +16,7 @@
   - `DragSelectableProvider` in src/drag-select lets a user drag a box across rows to select them on web. The hit box runs from the point where the user pressed to the pointer, and the provider selects the rows that it touches.
   - `dragSelectableScrollContainer` at src/drag-select/dragSelectableScrollContainer.ts:35 finds the scroll container once, at the press. It walks up the DOM from the pressed element. Four rules read its result. The scrollbar rule ignores a press on a scrollbar. The anchor moves the start point with the scrolled content. Auto-scroll and the cut of the drawn box are the other two.
   - `startDragSelectableAutoScroll` at src/drag-select/dragSelectableAutoScroll.ts:36 scrolls that container. `dragSelectableVisibleRect` at src/drag-select/dragSelectableScrollContainer.ts:106 gives its visible rectangle. That rectangle sets the edges of auto-scroll and the cut of the drawn box, which `clipBox` applies in src/drag-select/dragSelectableSessionDom.ts:45.
-  - docs/protocol/drag-select.md states the three rules. The scrollbar rule of the start rules, at line 76, defines the scroll container. The Auto-Scroll section, at line 167, says that the scroll container of the press scrolls. The Box And Wrapper section, at line 182, cuts the drawn box to its visible rectangle.
+  - docs/protocol/drag-select.md states the three rules. The scrollbar rule of the start rules, at line 81, defines the scroll container. The Auto-Scroll section, at line 172, says that the scroll container of the press scrolls. The Box And Wrapper section, at line 187, cuts the drawn box to its visible rectangle.
   - A fixed panel that scrolls is its own scroll container, so the search is right for it. A fixed panel that does not scroll gets its nearest scrolling DOM ancestor, or the document. A scroll of either does not move the panel.
   - The "Page shell" story in src/stories/dragSelectPageShellExample.tsx has a 200px sidebar and a main column that scrolls, so the column starts at x 200. The column is the provider element. No story has a fixed panel. A browser test can arrange one with a style tag on a story page, as tests/browser/drag-select-body-scroll.spec.ts does for a `<body>` that scrolls.
   - The evidence, from probes in Chromium with a fixed panel inside the scrolling column of the "Page shell" story:

@@ -109,6 +109,11 @@ item. The user asked for the pull request before the macOS check, so the pull
 request opens now, and the plan stays until the check passes. Review finding
 18 has no answer yet.
 
+Answers of 2026-11-06. The user moved review finding 18 to after the merge,
+as a follow-up item, and asked to merge the pull request. The manual macOS
+check of Milestone 7 becomes a post-merge follow-up item, and this plan is
+deleted before the merge.
+
 The Storybook stories and the accounting app's transactions mockup are the
 visual spec. This repo gets no new HTML mockup, as in the
 [sortable group coordinator](sortable-group-coordinator.md) plan.

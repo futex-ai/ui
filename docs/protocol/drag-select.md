@@ -54,6 +54,11 @@ renders the same provider and selection state, but has no drag gesture.
   apply before the browser paints, so a changed `selectedIds` never shows a
   stale frame. The hook configures the nearest provider and does nothing
   outside a provider.
+- Server-rendered HTML uses only the library defaults and the provider
+  props, so a selection that a page hook sets appears after hydration.
+  Decision: page-hook options apply only in the browser, rather than also in
+  server-rendered HTML, because drag select runs in the browser and its apps
+  need no server-rendered selection.
 - The provider always uses the newest value of every option. That includes
   callbacks and render functions whose identity changes on each render.
 - `defaultSelectedIds` is read once, when the provider mounts.

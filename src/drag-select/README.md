@@ -87,7 +87,7 @@ function TransactionRow({ row }) {
 - Hook layers override provider props, and a later layer wins. A key set to
   `undefined` does not override. `ignore` selectors combine across layers.
 - The hook publishes before paint, so a changed `selectedIds` never shows a
-  stale frame.
+  stale frame. Server-rendered HTML uses only the provider props.
 - A page may pass new callbacks on every render. The provider calls the
   current ones, and the box uses the current `renderMarquee` and
   `selectionLabel`, without a provider render.
