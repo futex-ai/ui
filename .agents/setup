@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+# Prepare an Amp orb for this repository. Amp runs this script once for a fresh
+# orb and again when it restores a stale snapshot, so every step is idempotent.
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
+step() {
+  local name="$1" start
+  shift
+  start=$SECONDS
+  echo "==> $name"
+  "$@"
+  echo "<== $name ($((SECONDS - start))s)"
+}
+
+npm_version="$(jq -r '.packageManager | sub("^npm@"; "")' package.json)"
+skills_home="$HOME/.futex/skills"
+
+# Amp and supervised services start in non-interactive login shells, which
+# read only ~/.bash_profile in this orb image. Setup rewrites the environment
+# file on every run and adds one line that sources it.
+environment_file="$HOME/.config/firna-ui-orb/environment.sh"
+persist_environment() {
+  mkdir -p "$(dirname "$environment_file")"
+  cat > "$environment_file" <<EOF
+case ":\$PATH:" in
+  *":$HOME/.cargo/bin:"*) ;;
+  *) export PATH="$HOME/.cargo/bin:\$PATH" ;;
+esac
+EOF
+  local line=". \"$environment_file\""
+  if ! grep -Fqx "$line" "$HOME/.bash_profile" 2>/dev/null; then
+    printf '\n# firna-ui orb toolchain\n%s\n' "$line" >> "$HOME/.bash_profile"
+  fi
+}
+
+# xtask review diffs against origin/main, which a shallow clone may lack.
+fetch_history() {
+  if [[ "$(git rev-parse --is-shallow-repository)" == "true" ]]; then
+    git fetch --quiet --unshallow origin
+  else
+    git fetch --quiet origin
+  fi
+}
+
+# package.json pins npm in packageManager. The orb image ships an older npm.
+install_npm() {
+  if [[ "$(npm --version)" == "$npm_version" ]]; then
+    echo "npm $npm_version is installed."
+  else
+    npm install --global --no-audit --no-fund "npm@$npm_version"
+  fi
+}
+
+# CI uses the stable toolchain. AGENTS.md asks for rustfmt and clippy after a
+# change under xtask/.
+install_rust() {
+  if [[ ! -x "$HOME/.cargo/bin/rustup" ]]; then
+    curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs |
+      sh -s -- -y --no-modify-path --profile minimal --default-toolchain none
+  fi
+  rustup toolchain install stable --profile minimal --component rustfmt,clippy
+  rustup default stable
+}
+
+install_chromium() {
+  npx playwright install chromium
+  # Check for missing shared libraries first, so a warm run skips apt-get.
+  local shell
+  shell="$(find "$HOME/.cache/ms-playwright" -name chrome-headless-shell -type f | head -n 1)"
+  if [[ -n "$shell" ]] && ! ldd "$shell" | grep -q 'not found'; then
+    echo "Chromium system libraries are installed."
+  else
+    npx playwright install-deps chromium
+  fi
+}
+
+# The futex-ai/skills checkout holds the shared skills that AGENTS.md names.
+# install.sh links them into ~/.claude/skills, which Amp reads. Amp reads the
+# always-on rules from ~/.config/AGENTS.md, so link them there too.
+install_shared_skills() {
+  if [[ -d "$skills_home/.git" ]]; then
+    git -C "$skills_home" pull --ff-only --quiet
+  else
+    mkdir -p "$(dirname "$skills_home")"
+    git clone --quiet https://github.com/futex-ai/skills.git "$skills_home"
+  fi
+  "$skills_home/scripts/install.sh" --quiet
+  ln -sfn "$skills_home/global/AGENTS.md" "$HOME/.config/AGENTS.md"
+}
+
+step "Persist the toolchain in the login profile" persist_environment
+# shellcheck disable=SC1090
+. "$environment_file"
+step "Fetch the full Git history" fetch_history
+step "Install npm $npm_version" install_npm
+step "Install the Rust toolchain" install_rust
+step "Install npm dependencies" npm ci --no-audit --no-fund
+step "Install Playwright Chromium" install_chromium
+step "Install the shared skills" install_shared_skills
+step "Build the xtask runner" cargo build --quiet --package xtask
