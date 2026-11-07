@@ -10,6 +10,7 @@ import {
   darkSharedUiTheme,
   useSharedUiTheme,
 } from "../index";
+import { ListDenseRowsExample } from "./listDenseRowsExample";
 import { ListRepositoryPickerExample } from "./listRepositoryPickerExample";
 import { StorySurface } from "./sharedExamples";
 
@@ -261,6 +262,16 @@ function PressableLabelExample() {
     </View>
   );
 }
+
+/** Dense `xs` rows: 26px for one line, taller for longer content. */
+export const DenseRows: Story = {
+  name: "Dense rows",
+  render: () => (
+    <StorySurface>
+      <ListDenseRowsExample />
+    </StorySurface>
+  ),
+};
 
 export const Sizes: Story = {
   name: "Sizes",

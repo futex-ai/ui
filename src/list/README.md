@@ -20,7 +20,8 @@ convenience — all driven by shared theme tokens.
 - Expose `list` / `listitem` semantics so assistive tech reads "list, N items",
   with the divider removed from the accessibility tree.
 - Provide `ListItem`, the default leading / title / description / trailing row.
-- Size with the shared `ControlSize` scale (`sm` / `md` / `lg`).
+- Size with the shared `ControlSize` scale (`xs` / `sm` / `md` / `lg`), and
+  give single-line rows at least 44px inside a `TouchSurface`.
 - Use shared theme colours, fonts, and radii instead of consumer-local theme.
 
 ## Usage
@@ -111,7 +112,9 @@ the `ListItem` anatomy — a leading avatar circle, title and description bars, 
 a trailing chip — and the items breathe in unison off one pulse. The list
 announces `aria-busy`, the placeholders are non-interactive and hidden from
 assistive technology, and the separator rule still holds between them.
-`loadingItemCount` sets how many to show (defaults to 6).
+`loadingItemCount` sets how many to show (defaults to 6). At `xs`, each
+placeholder is a single-line row instead: a title bar and a short trailing bar,
+as high as a dense row.
 
 ```tsx
 <List<Person>
@@ -144,9 +147,32 @@ For a pressable `ListItem`, `testID` is forwarded to the title `Pressable`, so
 
 ### Sizes
 
-`size` takes the shared `ControlSize` (`sm` / `md` / `lg`); `md` is the default.
-It scales the item padding, the in-row gaps, and the title / description type
-scale, so a list reads at the same density as the controls beside it.
+`size` takes the shared `ControlSize` (`xs` / `sm` / `md` / `lg`); `md` is the
+default. It scales the item padding, the in-row gaps, and the title /
+description type scale, so a list reads at the same density as the controls
+beside it. Give `ListItem` the same `size` as its `List`.
+
+`xs` is the dense size for desktop sidebars: a single-line row is at least 26px
+high, with a 13px title on an 18px line at weight 400 and a 12px description. A
+longer row grows with its content. A pressable `ListItem` title spans the full
+row height, padding included, so its target is at least the row height.
+
+Inside a `TouchSurface`, the rows take the touch metrics, whatever the `size`:
+a single-line row is at least 44px high, the title is 15px on a 20px line, the
+description is 13px on an 18px line, and a pressable title spans the row. The
+title keeps the weight of the size. A trailing control keeps its own target, so
+a row with a 44px switch beside its title is 68px high.
+`createTouchListStyles(theme, size)` builds these styles.
+
+## Key Code
+
+- [`List.tsx`](List.tsx): the list, its static and pressable items, and the
+  separators.
+- [`ListItem.tsx`](ListItem.tsx): the default row and its pressable title.
+- [`ListSkeleton.tsx`](ListSkeleton.tsx): the placeholder items of a loading
+  list.
+- [`listStyles.ts`](listStyles.ts): the size table, the touch row metrics, and
+  the styles.
 
 ## Styling
 

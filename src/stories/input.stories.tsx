@@ -355,11 +355,23 @@ function BareExample() {
 }
 
 function FieldSizesExample() {
+  const [extraSmall, setExtraSmall] = useState("Invoices");
   const [small, setSmall] = useState("");
   const [medium, setMedium] = useState("");
   const [large, setLarge] = useState("");
   return (
     <>
+      {/* The dense size: a 26px frame around a 24px input, with a 24px Clear
+          action. */}
+      <Input
+        clearable
+        label="Extra small field"
+        onChangeText={setExtraSmall}
+        placeholder="Search"
+        prefixIcon={Search}
+        size="xs"
+        value={extraSmall}
+      />
       <Input
         label="Small field"
         onChangeText={setSmall}

@@ -59,18 +59,27 @@ shared `CalendarMonth` itself and the wheel variant renders our own
 
 ## Sizes
 
-`size` (`sm` / `md` / `lg`, default `md`) sizes the **trigger** from the shared
-`ControlSize` scale on `DateField`, `DateInput`, and `DateRangeField`. The web
-trigger is an `InputFrame`, so it scales exactly like the text input; the native
-trigger mirrors the same box height, padding, value text, and icon diameter — so
-a date field and a text input stay the same height in a form. The opened picker
-(calendar popover or wheel sheet) keeps its natural size. In particular, the web
-calendar stays at its compact `280px` width even when its field stretches across
-a wide form; it only shrinks when the viewport cannot fit that width.
+`size` (`xs` / `sm` / `md` / `lg`, default `md`) sizes the **trigger** from the
+shared `ControlSize` scale on `DateField`, `DateInput`, and `DateRangeField`.
+The web trigger is an `InputFrame`, so it scales exactly like the text input;
+the native trigger mirrors the same box height, padding, value text, and icon
+diameter — so a date field and a text input stay the same height in a form. The
+opened picker (calendar popover or wheel sheet) keeps its natural size. In
+particular, the web calendar stays at its compact `280px` width even when its
+field stretches across a wide form; it only shrinks when the viewport cannot fit
+that width.
 
 ```tsx
 <DateField label="Year ends" onChange={setIso} size="sm" value={iso} />
 ```
+
+At `xs` the trigger is a 26px frame around a 24px input with 13px text, like the
+`xs` text field. Inside a `TouchSurface`, the trigger takes the touch metrics,
+whatever its `size`: the web trigger is the touch text field (a 44px input in a
+46px frame), and the native trigger is a 46px box with 16px text and 18px icons
+whose open button fills the row height and whose Clear action is a 44 by 44px
+box with no hit slop. `createTouchDateFieldStyles(theme)` builds the native
+trigger styles.
 
 ## Clearing
 

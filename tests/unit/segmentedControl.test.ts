@@ -149,7 +149,10 @@ test("segmented options accept a leading lucide icon or a caller node", () => {
   // The lucide glyph is tinted to the resolved segment text colour and sized to
   // the control via the shared helper.
   assert.match(source, /<OptionIcon color=\{iconTint\} size=\{iconSize\} \/>/);
-  assert.match(source, /const iconSize = segmentIconSize\(size\)/);
+  assert.match(
+    source,
+    /const iconSize = touch \? touchControlMetrics\.iconSize : segmentIconSize\(size\)/,
+  );
   assert.match(stylesSource, /export function segmentIconSize\(/);
   // The icon wrapper is hidden from assistive tech on web (the label names it).
   assert.match(

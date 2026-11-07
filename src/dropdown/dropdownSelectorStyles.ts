@@ -2,7 +2,9 @@ import { StyleSheet } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { inputSizeTokens } from "../input";
+import { touchInputSizeTokens } from "../input/inputSizing";
 import type { SharedUiTheme } from "../theme";
+import { touchControlMetrics } from "../touchMetrics";
 
 import type { SelectorVariant } from "./DropdownSelector";
 
@@ -14,8 +16,27 @@ export function createDropdownSelectorStyles(
   theme: SharedUiTheme,
   size: ControlSize = "md",
 ) {
-  const baseText = { fontFamily: theme.fonts.sans } as const;
   const sizing = inputSizeTokens(size);
+  return selectorStylesFor(theme, sizing, false);
+}
+
+/**
+ * The selector styles on a touch surface, whatever the size: the `field`
+ * trigger is the 46px touch field with 16px text, the bespoke triggers keep
+ * their drawing and grow to the 44px target, and the search input of the
+ * list is itself a 44px target.
+ */
+export function createTouchDropdownSelectorStyles(theme: SharedUiTheme) {
+  return selectorStylesFor(theme, touchInputSizeTokens(), true);
+}
+
+function selectorStylesFor(
+  theme: SharedUiTheme,
+  sizing: ReturnType<typeof inputSizeTokens>,
+  touch: boolean,
+) {
+  const baseText = { fontFamily: theme.fonts.sans } as const;
+  const target = touchControlMetrics.target;
   return StyleSheet.create({
     error: {
       ...baseText,
@@ -73,6 +94,7 @@ export function createDropdownSelectorStyles(
       flexDirection: "row",
       gap: 6,
       justifyContent: "space-between",
+      minHeight: touch ? target : undefined,
       minWidth: 130,
       paddingHorizontal: 9,
       paddingVertical: 5,
@@ -98,6 +120,7 @@ export function createDropdownSelectorStyles(
       borderWidth: 1,
       flexDirection: "row",
       justifyContent: "space-between",
+      minHeight: touch ? target : undefined,
       paddingHorizontal: 14,
       paddingVertical: 10,
     },
@@ -118,7 +141,7 @@ export function createDropdownSelectorStyles(
       borderWidth: 1,
       flexDirection: "row",
       gap: 8,
-      height: 38,
+      height: touch ? target : 38,
       paddingHorizontal: 10,
     },
     pillValue: {
@@ -139,15 +162,16 @@ export function createDropdownSelectorStyles(
       borderWidth: 1,
       flexDirection: "row",
       gap: 8,
-      height: 36,
+      height: touch ? sizing.boxHeight : 36,
       paddingHorizontal: 10,
     },
     searchInput: {
       ...baseText,
       color: theme.colors.ink,
       flex: 1,
-      fontSize: 13,
-      lineHeight: 18,
+      fontSize: touch ? sizing.inputFontSize : 13,
+      lineHeight: touch ? touchControlMetrics.labelLineHeight : 18,
+      minHeight: touch ? sizing.inputHeight : undefined,
       padding: 0,
     },
   });

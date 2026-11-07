@@ -82,13 +82,11 @@ Required behavior:
 - Accept the state that role carries — `checked` for a checkbox / radio /
   switch, `selected` for a tab, `pressed` for a toggle button, and `expanded`
   for a control that reveals a menu, panel, or section — and emit it on both the
-  React Native state channel and the literal ARIA attributes web needs, since
-  the web backend drops `accessibilityState` rather than translating it.
+  React Native state channel and the literal ARIA attributes that web needs.
 - Warn in development when a state is paired with a role ARIA does not allow it
   on, or when a role that requires a state is left without one.
-- Bind Spacebar for every role other than `button`, which is the only role React
-  Native Web's press responder binds it on, and leave Enter to that responder so
-  no press fires twice.
+- Activate on Enter and on Space under every role. Each key press fires one
+  press, never two.
 - Remain a single control: group semantics — the `tablist` / `radiogroup` /
   `menu` container, roving focus, and arrow-key navigation — stay with the
   caller or with the segmented control.
@@ -177,7 +175,7 @@ Required behavior:
   value is set, resets the value to the unset sentinel without clamping and closes
   the picker; range endpoints clear independently. The clear control is a
   labelled, focusable button, distinct from the decorative calendar icon.
-- Lift the open field root (and the range row) above following form content so
-  the calendar escapes sibling stacking contexts.
+- While a date field is open, show it, its range row, and its calendar above
+  the form content that follows.
 - Keep day cells, navigation buttons, and the clear button labelled for
   assistive technology, and include the field label in those accessible names.

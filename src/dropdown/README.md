@@ -23,8 +23,11 @@ input-backed comboboxes in Firna apps.
 - Provide a concise `DropdownMenu` wrapper for the common trigger + action list
   case, while leaving `DropdownPortal` and `DropdownList` available for custom
   pickers.
-- Size the default `field` selector with the shared `ControlSize` scale (`sm` /
-  `md` / `lg`) so a select matches the height of the text inputs beside it.
+- Size the default `field` selector with the shared `ControlSize` scale (`xs` /
+  `sm` / `md` / `lg`) so a select matches the height of the text inputs beside
+  it.
+- Give the triggers, the search input, and the chip multi-select targets of at
+  least 44 by 44px inside a `TouchSurface`.
 - Keep button-backed selectors/action menus separate from input-backed
   comboboxes so autocomplete inputs keep focus while results are open.
 
@@ -119,11 +122,11 @@ on close, and arrow keys / Enter / Escape keep working while typing:
 />
 ```
 
-Pass `size` (`sm` / `md` / `lg`, default `md`) to size the default `field`
-selector from the shared `ControlSize` scale. It reuses the input's per-size box
-geometry — height, padding, value text, and chevron — so a select and a text
-input stay the same height in a form. `size` applies to the `field` variant
-only; the `map` / `pill` / `mobilePeriod` variants keep their bespoke
+Pass `size` (`xs` / `sm` / `md` / `lg`, default `md`) to size the default
+`field` selector from the shared `ControlSize` scale. It reuses the input's
+per-size box geometry — height, padding, value text, and chevron — so a select
+and a text input stay the same height in a form. `size` applies to the `field`
+variant only; the `map` / `pill` / `mobilePeriod` variants keep their bespoke
 dimensions. `ReadOnlySelector` takes the same `size`:
 
 ```tsx
@@ -135,6 +138,14 @@ dimensions. `ReadOnlySelector` takes the same `size`:
   value={currency}
 />
 ```
+
+At `xs`, the `field` selector is 26px high with 13px value text, like the `xs`
+text field. Inside a `TouchSurface`, every selector takes the touch metrics,
+whatever its `size`: the `field` trigger is the 46px touch field with 16px value
+text and an 18px chevron, the `map` / `pill` / `mobilePeriod` triggers keep
+their drawing and grow to at least 44px high, and the search input of a
+`searchable` selector is itself 44px high with 16px text. The option rows of the
+popup keep their size.
 
 Selector popups use the trigger width as their minimum, grow to fit wider option
 content, and stop at a default maximum of `360` pixels or the viewport edge,
@@ -369,14 +380,18 @@ import { ComboboxMultiSelect } from "@firna/ui/dropdown";
 />;
 ```
 
-Pass `size="sm" | "md" | "lg"` to align the control with the shared input
-size scale. In a fixed-height table or data-grid cell, combine `size="sm"` with
-`singleLine`: the first selected chip stays visible, further selections collapse
-into a `+N` summary, and the control keeps the same 32px height as a compact text
-input instead of growing across adjacent rows. Selected option rows are enabled
-toggles, so pressing a checked row removes that value even when its chip is
-summarized. Pass `autoFocus` when the control mounts as an active embedded
-editor; its border and shared focus glow then match the text-input family.
+Pass `size="sm" | "md" | "lg"` to align the control with the shared input size
+scale. The chip field has no dense design, so `size="xs"` draws the `sm` chips
+and box. Inside a `TouchSurface`, the search input is itself 44px high, each
+chip has a 44 by 44px removal action, and the control grows to hold them. A
+`singleLine` control stays on one line in a 46px frame. In a fixed-height table
+or data-grid cell, combine `size="sm"` with `singleLine`: the first selected
+chip stays visible, further selections collapse into a `+N` summary, and the
+control keeps the same 32px height as a compact text input instead of growing
+across adjacent rows. Selected option rows are enabled toggles, so pressing a
+checked row removes that value even when its chip is summarized. Pass
+`autoFocus` when the control mounts as an active embedded editor; its border and
+shared focus glow then match the text-input family.
 
 Set `autoFocus` when the multi-select mounts as an in-place editor. Focus opens
 the option list immediately and gives the control the same primary active border

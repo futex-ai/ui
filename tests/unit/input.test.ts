@@ -76,7 +76,7 @@ test("input frame renders prefix and suffix icons", () => {
 
 test("input frame supports the shared size scale", () => {
   const source = readSource("../../src/input/InputFrame.tsx");
-  const stylesSource = readSource("../../src/input/inputStyles.ts");
+  const stylesSource = readSource("../../src/input/inputSizing.ts");
 
   assert.match(source, /size = "md"/);
   assert.match(source, /createInputStyles\(theme, size\)/);
@@ -214,7 +214,7 @@ test("auto-grow hooks omit maxHeight when uncapped so a seamless field never scr
 });
 
 test("auto-grow bounds derive min/max pixel heights from the row counts", () => {
-  const source = readSource("../../src/input/inputStyles.ts");
+  const source = readSource("../../src/input/inputSizing.ts");
 
   assert.match(source, /textareaLineHeight: 18/);
   assert.match(source, /textareaLineHeight: 20/);

@@ -1,26 +1,28 @@
 import { StyleSheet } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { withDenseAsSmall } from "../controlSizeTables";
 import type { SharedUiTheme } from "../theme";
+import { touchControlMetrics } from "../touchMetrics";
+
+/** The geometry of the switch at one size. */
+type SwitchSizing = {
+  inset: number;
+  knobOn: number;
+  knobSize: number;
+  touchTarget: number;
+  trackHeight: number;
+  trackWidth: number;
+};
 
 /**
  * Per-size geometry for the switch: the track width/height, the knob diameter,
  * its inset from the track edge, the on-position offset (track − knob − inset),
  * and the surrounding touch-target diameter. `md` matches the original 40×24
  * track with an 18px knob; `sm` is the compact density and `lg` the roomier,
- * touch-first density.
+ * touch-first density. The switch has no dense design, so `xs` draws `sm`.
  */
-const SWITCH_SIZES: Record<
-  ControlSize,
-  {
-    inset: number;
-    knobOn: number;
-    knobSize: number;
-    touchTarget: number;
-    trackHeight: number;
-    trackWidth: number;
-  }
-> = {
+const SWITCH_SIZES: Record<ControlSize, SwitchSizing> = withDenseAsSmall({
   sm: {
     inset: 3,
     knobOn: 15,
@@ -45,7 +47,7 @@ const SWITCH_SIZES: Record<
     trackHeight: 28,
     trackWidth: 48,
   },
-};
+});
 
 /** Hairline border width applied to the track and knob edges. */
 const BORDER = 1;
@@ -84,7 +86,25 @@ export function createSwitchStyles(
   theme: SharedUiTheme,
   size: ControlSize = "md",
 ) {
+  return switchStylesFor(theme, SWITCH_SIZES[size]);
+}
+
+/**
+ * Build the switch's styles for a touch surface: the switch keeps the drawing
+ * of its size, and its target grows to at least 44 by 44px.
+ */
+export function createTouchSwitchStyles(
+  theme: SharedUiTheme,
+  size: ControlSize = "md",
+) {
   const sizing = SWITCH_SIZES[size];
+  return switchStylesFor(theme, {
+    ...sizing,
+    touchTarget: Math.max(sizing.touchTarget, touchControlMetrics.target),
+  });
+}
+
+function switchStylesFor(theme: SharedUiTheme, sizing: SwitchSizing) {
   // The track and knob use border-box sizing, so a 1px border eats into the
   // content box. Pull the knob in by the border so it stays centered in the
   // track and the on-position offset still lands flush against the far edge.

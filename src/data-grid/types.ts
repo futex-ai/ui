@@ -159,8 +159,11 @@ export type DataGridContextMenuTarget =
   | { region: "column"; columnId: string }
   | { region: "row"; rowId: string };
 
-/** Row heights (px) per control size — fixed so windowing math stays exact. */
-export const DATA_GRID_ROW_HEIGHT = { sm: 32, md: 40, lg: 48 } as const;
+/**
+ * Row heights (px) per control size — fixed so windowing math stays exact. The
+ * grid has no dense design, so `xs` uses the `sm` row.
+ */
+export const DATA_GRID_ROW_HEIGHT = { xs: 32, sm: 32, md: 40, lg: 48 } as const;
 
 /**
  * How much of the grid reveals its full text on hover when a label or value is

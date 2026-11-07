@@ -5,9 +5,9 @@ ring whose accent arc rotates continuously over a fainter track.
 
 ## Responsibilities
 
-- Render a circular ring sized by the shared `ControlSize` scale (`sm` / `md` /
-  `lg`, `md` is the 24px default) or by an explicit pixel diameter, with the
-  stroke thickness scaled from the diameter.
+- Render a circular ring sized by the shared `ControlSize` scale (`xs` / `sm` /
+  `md` / `lg`, `md` is the 24px default) or by an explicit pixel diameter, with
+  the stroke thickness scaled from the diameter.
 - Spin the ring continuously through React Native's `Animated` API so the same
   component animates on native and web, and stop the loop on unmount.
 - Expose `progressbar` semantics with a busy accessibility state and an
@@ -32,9 +32,10 @@ import { Spinner } from "@firna/ui/spinner";
 
 ### Sizes
 
-`size` takes the shared `ControlSize` (`sm` / `md` / `lg`; `md` is the default
-24px ring) or an explicit pixel diameter for arbitrary placements such as inside
-a button. The ring thickness scales with the diameter.
+`size` takes the shared `ControlSize` (`xs` / `sm` / `md` / `lg`; `md` is the
+default 24px ring, and `xs` draws the `sm` ring) or an explicit pixel diameter
+for arbitrary placements such as inside a button. The ring thickness scales with
+the diameter.
 
 ```tsx
 <Spinner size="sm" />

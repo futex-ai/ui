@@ -12,8 +12,10 @@ theme tokens.
   `secondary` (the default surface + border), `ghost` (no fill/border, brand
   label), `plain` (no fill/border, neutral `ink` label — a flush icon button),
   and `danger` (rose border + label).
-- Size the control with the shared `ControlSize` scale (`sm` / `md` / `lg`),
-  scaling height, padding, the label type scale, and the icon.
+- Size the control with the shared `ControlSize` scale (`xs` / `sm` / `md` /
+  `lg`), scaling height, padding, the label type scale, and the icon.
+- Give every button a target of at least 44 by 44px inside a `TouchSurface`,
+  whatever its size, with each target in its own layout space.
 - Show an optional leading `icon` (a lucide glyph, tinted to the label colour) or
   a caller-supplied `iconNode` (any node — e.g. an `@expo/vector-icons` glyph —
   rendered as-is, never wrapped in `<Text>`).
@@ -131,11 +133,13 @@ a separate named control instead.
 
 ### Sizes
 
-`size` takes the shared `ControlSize` (`sm` / `md` / `lg`); `md` is the default
-and matches the accounting button (38px tall). Buttons and inputs share this
-scale, so a form can size a field and its submit button consistently. `sm`
+`size` takes the shared `ControlSize` (`xs` / `sm` / `md` / `lg`); `md` is the
+default and matches the accounting button (38px tall). Buttons and inputs share
+this scale, so a form can size a field and its submit button consistently. `sm`
 (30px) suits dense, non-touch-first contexts such as table rows and toolbars;
-prefer `md` or `lg` for primary, touch-first actions.
+prefer `md` or `lg` for primary, touch-first actions. `xs` (26px) is the dense
+desktop size: a 12px label on a 16px line at weight 500, with 14px icons. The
+other sizes keep their bold labels.
 
 ### Inline
 
@@ -336,6 +340,22 @@ what it cannot:
   tone="plain"
 />
 ```
+
+### Touch surfaces
+
+Inside a `TouchSurface`, every button takes the touch metrics, whatever its
+`size`: a 44px track, a 15px label on a 20px line at weight 500, 18px icons,
+and a target of at least 44 by 44px. A `square` or `circle` button is a 44 by
+44px box, or its `minTouchTarget` when that is larger. Each target occupies its
+own layout space, so a touch surface ignores `hitSlop`, and `inline` is a
+no-op there.
+
+A `boxSize` below 44px keeps its drawing at its size, and the pressable
+reserves a 44 by 44px target around it instead. The focus ring stays on the
+drawn face, and the caller `style` applies to the face. A 44px or larger
+`boxSize` sets the box as it does elsewhere. The
+[app shell parts protocol](../../docs/protocol/app-shell-parts.md#touch-surfaces)
+holds the requirements.
 
 ### Label, slots, and cards
 

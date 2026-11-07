@@ -11,11 +11,17 @@ import {
 
 import { announce } from "../announcer";
 import type { ControlSize } from "../controlSize";
+import {
+  standardControlSize,
+  type StandardControlSize,
+} from "../controlSizeTables";
 import { devWarn } from "../devWarn";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
-import { inputSizeTokens, LabelInfo } from "../input";
+import { inputSizeTokens, LabelInfo, touchInputSizeTokens } from "../input";
 import { useSharedUiTheme } from "../theme";
 import type { SharedUiTheme } from "../theme";
+import { touchControlMetrics } from "../touchMetrics";
+import { useTouchSurface } from "../touchSurface";
 
 import { ComboboxPopover } from "./ComboboxPopover";
 import {
@@ -128,10 +134,17 @@ export function ComboboxMultiSelect({
     indicator: focusIndicator,
     target: "descendant",
   });
+  const touch = useTouchSurface();
   const styles = useMemo(
     () =>
-      createComboboxMultiSelectStyles(theme, borderRadius, size, singleLine),
-    [theme, borderRadius, singleLine, size],
+      createComboboxMultiSelectStyles(
+        theme,
+        borderRadius,
+        size,
+        singleLine,
+        touch,
+      ),
+    [theme, borderRadius, singleLine, size, touch],
   );
   const anchorRef = useRef<View>(null);
   const inputRef = useRef<TextInput>(null);
@@ -448,10 +461,17 @@ function createComboboxMultiSelectStyles(
   borderRadius = theme.radii.md,
   size: ControlSize = "md",
   singleLine = false,
+  touch = false,
 ) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
-  const inputSize = inputSizeTokens(size);
-  const sizing = MULTI_SELECT_SIZES[size];
+  // The chip field has no dense design, so `xs` draws its `sm` chips and box.
+  // A touch surface uses the touch metrics whatever the size.
+  const inputSize = touch
+    ? touchInputSizeTokens()
+    : inputSizeTokens(standardControlSize(size));
+  const sizing = touch
+    ? MULTI_SELECT_TOUCH
+    : MULTI_SELECT_SIZES[standardControlSize(size)];
   return StyleSheet.create({
     chip: {
       alignItems: "center",
@@ -465,11 +485,15 @@ function createComboboxMultiSelectStyles(
       maxWidth: "100%",
       paddingHorizontal: sizing.chipPaddingHorizontal,
       paddingVertical: sizing.chipPaddingVertical,
+      // A touch chip ends with its 44px removal box, which supplies the space.
+      ...(touch && !singleLine ? { paddingEnd: 0 } : null),
     },
     chipRemove: {
       alignItems: "center",
       height: sizing.removeSize,
       justifyContent: "center",
+      // The touch box absorbs the chip border, so the chip stays 44px high.
+      marginVertical: touch ? -1 : 0,
       width: sizing.removeSize,
     },
     chipRemoveText: {
@@ -535,6 +559,8 @@ function createComboboxMultiSelectStyles(
       flexGrow: singleLine ? undefined : 1,
       flexShrink: 1,
       fontSize: inputSize.inputFontSize,
+      // On a touch surface the input itself is a 44px target.
+      minHeight: touch ? inputSize.inputHeight : undefined,
       minWidth: singleLine ? 28 : 130,
       padding: 0,
     },
@@ -597,7 +623,23 @@ const MULTI_SELECT_SIZES = {
     gap: 8,
     removeSize: 20,
   },
-} as const satisfies Record<ControlSize, object>;
+} as const satisfies Record<StandardControlSize, object>;
+
+/**
+ * The chip field on a touch surface: 15px chips around 44px removal boxes, and
+ * no vertical padding, so a line of chips or the 44px input fills the 46px
+ * frame without clipping a removal action.
+ */
+const MULTI_SELECT_TOUCH = {
+  chipFontSize: touchControlMetrics.labelFontSize,
+  chipLineHeight: touchControlMetrics.labelLineHeight,
+  chipPaddingHorizontal: 12,
+  chipPaddingVertical: 0,
+  controlPaddingHorizontal: 8,
+  controlPaddingVertical: 0,
+  gap: 6,
+  removeSize: touchControlMetrics.target,
+} as const;
 
 type ComboboxMultiSelectStyles = ReturnType<
   typeof createComboboxMultiSelectStyles

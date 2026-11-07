@@ -1,6 +1,7 @@
 import { StyleSheet } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { withDenseAsSmall } from "../controlSizeTables";
 
 /**
  * Preset diameters for the shared `sm` / `md` / `lg` size scale. An explicit
@@ -8,11 +9,11 @@ import type { ControlSize } from "../controlSize";
  * density for dense rows and inline-with-text spinners, and `lg` the roomier
  * density for prominent loading states.
  */
-const SPINNER_DIAMETERS: Record<ControlSize, number> = {
+const SPINNER_DIAMETERS: Record<ControlSize, number> = withDenseAsSmall({
   lg: 32,
   md: 24,
   sm: 16,
-};
+});
 
 /**
  * Resolve a {@link ControlSize} token or an explicit pixel diameter into the

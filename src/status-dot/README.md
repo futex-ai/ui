@@ -5,8 +5,8 @@ signals state beside a label, optionally pulsing to show that state is live.
 
 ## Responsibilities
 
-- Render a circle sized on the shared `ControlSize` scale (`sm` / `md` / `lg` —
-  7 / 9 / 11px), filled from a semantic `tone`.
+- Render a circle sized on the shared `ControlSize` scale (`xs` / `sm` / `md` /
+  `lg` — 7 / 9 / 11px), filled from a semantic `tone`.
 - Carry the same four-tone vocabulary as the `Badge` (`neutral`, `primary`,
   `warning`, `danger`), so a dot and the pill beside it describe a status in one
   language.
@@ -66,8 +66,9 @@ row, a table cell, a header beside a title.
 
 ### Sizes
 
-`size` takes the shared `ControlSize` (`sm` / `md` / `lg`); `md` is the default
-at 9px, so a dot reads at the same density as the control beside it:
+`size` takes the shared `ControlSize` (`xs` / `sm` / `md` / `lg`); `md` is the
+default at 9px, and `xs` draws the `sm` dot, so a dot reads at the same density
+as the control beside it:
 
 ```tsx
 <StatusDot size="sm" tone="primary" />

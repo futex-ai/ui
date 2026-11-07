@@ -22,13 +22,13 @@
     - The DOM `Modal` is a fixed container over the whole viewport, at `src/primitives/dom/Modal.tsx:1-28`.
   - Pull request #168 also swept the docs and the code comments. It credited each unchanged behaviour to "the web backend". It left the notes that say "transcribed from `react-native-web` 0.21.2", and the completed plans.
   - The sweep caught the package name, but not the spaced name "React Native Web". Today no component `README.md` except `src/primitives/README.md` holds the package name. The spaced name is in 27 of them.
-  - Other docs already use the wording "the web backend", for example the Kanban contract in `docs/protocol/shared-ui-data-views.md` and `src/loader/README.md:99`.
+  - Other docs already use the wording "the web backend", for example `src/loader/README.md`.
   - `git grep -l -i -E "react-native-web|react native web" -- '*.md' ':!CHANGELOG.md'` lists 42 files. 34 of them are outside `plans/`, with 50 matching lines:
     - In the root: `README.md`.
     - Under `docs/`: `docs/accessibility-manual-checklist.md`, `docs/protocol/rich-text-collaboration.md`, `docs/protocol/rich-text-editor.md`, `docs/protocol/shared-ui-components.md`, and `docs/superpowers/specs/2026-08-12-video-editor-ui-design.md`.
     - The `README.md` of 28 folders under `src/`: `animated-border`, `avatar`, `badge`, `button`, `chart`, `date`, `dropdown`, `heatmap`, `kanban`, `list`, `loader`, `popover`, `primitives`, `radio`, `rich-text`, `segmented`, `sheet`, `skeleton`, `sortable-list`, `spinner`, `status-dot`, `switch`, `table`, `timeline`, `toast`, `typography`, `video-editor`, and `workflow`.
   - The 50 lines fall into these groups:
-    - 12 lines are correct, because they say that the library does not use the package or that the backend copies it. They are `README.md:154`, `:163`, `:523`, `:526`, `:544`, and `:545`, `docs/protocol/shared-ui-components.md:36`, and `src/primitives/README.md:5`, `:27`, `:33`, `:34`, and `:55`.
+    - 12 lines are correct, because they say that the library does not use the package or that the backend copies it. They are `README.md:154`, `:163`, `:523`, `:526`, `:544`, and `:545`, `docs/protocol/shared-ui-components.md:32-34`, and `src/primitives/README.md:5`, `:27`, `:33`, `:34`, and `:55`.
     - 27 opening lines name the web platform "React Native Web". Line 3 of each listed component `README.md` except `primitives` and `video-editor` says "for React Native and React Native Web". `src/video-editor/README.md:5-6` says the same.
     - 3 more lines name the web platform that way. `docs/protocol/rich-text-collaboration.md:5` and `docs/protocol/rich-text-editor.md:5` say "Implemented on React Native Web, iOS, and Android". `docs/accessibility-manual-checklist.md:9` says that the library "ships to **React Native Web**".
     - 7 lines are mechanics notes that credit `react-native-web` with a behaviour that the web backend now gives. They are `src/button/README.md:424` and `:426`, `src/dropdown/README.md:413`, `src/kanban/README.md:153` and `:236`, `src/switch/README.md:54`, and `src/toast/README.md:45`.

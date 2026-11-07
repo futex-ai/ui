@@ -13,8 +13,12 @@ import { Platform, Text, View } from "../primitives/reactNative";
 import type { ControlSize } from "../controlSize";
 import { LabelInfo } from "../input";
 import { useSharedUiTheme } from "../theme";
+import { useTouchSurface } from "../touchSurface";
 
-import { createDateFieldStyles } from "./dateFieldStyles";
+import {
+  createDateFieldStyles,
+  createTouchDateFieldStyles,
+} from "./dateFieldStyles";
 import { DatePickerOverlay } from "./DatePickerOverlay";
 import { dateFieldZIndex } from "./dateFieldLayers";
 import { todayIso } from "./dateMath";
@@ -253,9 +257,14 @@ export function DateInput({
   testID,
 }: DateInputProps) {
   const theme = useSharedUiTheme();
+  const touch = useTouchSurface();
+  // The trigger geometry: the touch field on a touch surface, whatever the size.
   const styles = useMemo(
-    () => createDateFieldStyles(theme, size, borderRadius),
-    [theme, size, borderRadius],
+    () =>
+      touch
+        ? createTouchDateFieldStyles(theme, borderRadius)
+        : createDateFieldStyles(theme, size, borderRadius),
+    [theme, size, borderRadius, touch],
   );
   const field = useDateField({ value, onChange, min, max });
   const today = useMemo(() => todayIso(new Date()), []);

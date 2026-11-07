@@ -8,7 +8,8 @@ indeterminate indicator with six interchangeable shapes, plus `ProgressBar` and
 
 - Draw an indeterminate loading indicator in any of six shapes — `ring`,
   `dot-grid`, `dots`, `bars`, `blades`, `pulse` — all sized off the shared
-  `ControlSize` scale (`sm` / `md` / `lg`, `md` is the 24px default) or an
+  `ControlSize` scale (`xs` / `sm` / `md` / `lg`, `md` is the 24px default, and
+  `xs` draws the `sm` loader) or an
   explicit pixel size, so one can be swapped for another without the layout
   moving.
 - Delegate `variant="ring"` to the existing [`Spinner`](../spinner/README.md)

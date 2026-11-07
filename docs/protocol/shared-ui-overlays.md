@@ -41,8 +41,8 @@ Required behavior:
 - Include the field label in selector accessible names when a visual label is
   supplied, so repeated selectors remain distinguishable to assistive
   technology.
-- Expose a selector's pressable trigger through an optional caller ref without
-  giving up the internal anchor ref used for popup placement. Async modal forms
+- Expose a selector's pressable trigger through an optional caller ref, and
+  keep the popup placement working when a caller passes one. Async modal forms
   own their hydration timing and must use that handle to focus the first real
   field after replacing a loading placeholder.
 - Preserve no-match empty rows even when combobox footers are present.
@@ -87,9 +87,9 @@ Required behavior:
 - Cap simultaneously visible toasts at a provider-configurable `max` (default 4)
   by dropping the oldest entries.
 - Render toasts in a viewport pinned to one of six placements (top/bottom ×
-  left/center/right), with the newest toast nearest the pinned edge, through a
-  `document.body` portal with `position: fixed` on web and an
-  absolutely-positioned, `pointerEvents="box-none"` overlay on native.
+  left/center/right), with the newest toast nearest the pinned edge. On web the
+  viewport stays fixed to the window, outside page stacking contexts. On native
+  it overlays the provider's area, and only the toasts catch touches.
 - Auto-dismiss each toast after its resolved duration and pause the countdown
   while the pointer or keyboard focus is over the toast.
 - Carry tone (`info`, `success`, `warning`, `error`) as the leading icon color

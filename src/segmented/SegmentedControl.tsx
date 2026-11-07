@@ -30,10 +30,13 @@ import {
 } from "../keyboardNavigation";
 import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
+import { touchControlMetrics } from "../touchMetrics";
+import { useTouchSurface } from "../touchSurface";
 import { useReducedMotion } from "../useReducedMotion";
 
 import {
   createSegmentedControlStyles,
+  createTouchSegmentedControlStyles,
   segmentIconSize,
   type SegmentedControlStyles,
 } from "./segmentedControlStyles";
@@ -168,14 +171,19 @@ export function SegmentedControl<T extends string>({
   wrap = false,
 }: SegmentedControlProps<T>) {
   const theme = useSharedUiTheme();
+  // On a touch surface every segment is a 44px target, whatever the size.
+  const touch = useTouchSurface();
   const styles = useMemo(
-    () => createSegmentedControlStyles(theme, size),
-    [theme, size],
+    () =>
+      touch
+        ? createTouchSegmentedControlStyles(theme)
+        : createSegmentedControlStyles(theme, size),
+    [theme, size, touch],
   );
   const pill = variant === "pill";
   const invalid = Boolean(error);
   const reducedMotion = useReducedMotion();
-  const iconSize = segmentIconSize(size);
+  const iconSize = touch ? touchControlMetrics.iconSize : segmentIconSize(size);
 
   // The ⓘ button anchors to the label row, so it needs a label to sit beside.
   // Guard on truthiness to match the label row's own `{label ? ...}` gate — an

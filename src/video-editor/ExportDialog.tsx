@@ -16,6 +16,7 @@ import { Text, View } from "../primitives/reactNative";
 
 import { Button } from "../button";
 import type { ControlSize } from "../controlSize";
+import { standardControlSize } from "../controlSizeTables";
 import type { FocusIndicator } from "../focusRing";
 import { ProgressBar } from "../loader";
 import { WebModalFrame } from "../modal";
@@ -248,7 +249,7 @@ export function ExportDialog({
             <Button
               focusIndicator={focusIndicator}
               onPress={onCancel}
-              size={size}
+              size={standardControlSize(size)}
               tone="secondary"
             >
               Cancel export
@@ -257,7 +258,7 @@ export function ExportDialog({
             <Button
               focusIndicator={focusIndicator}
               onPress={onClose}
-              size={size}
+              size={standardControlSize(size)}
               tone="secondary"
             >
               Close
@@ -267,7 +268,7 @@ export function ExportDialog({
             busy={exporting}
             focusIndicator={focusIndicator}
             onPress={exporting ? undefined : onStart}
-            size={size}
+            size={standardControlSize(size)}
             testID={testID ? `${testID}-start` : undefined}
             tone="primary"
           >

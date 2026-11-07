@@ -14,12 +14,14 @@ import {
 import type { ControlSize } from "../controlSize";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
+import { useTouchSurface } from "../touchSurface";
 
 import {
   autoGrowTextareaBounds,
-  createInputStyles,
   inputIconSize,
-} from "./inputStyles";
+  touchInputSizeTokens,
+} from "./inputSizing";
+import { createInputStyles, createTouchInputStyles } from "./inputStyles";
 import { useAutoGrowTextarea } from "./useAutoGrowTextarea";
 
 export type InputFrameProps = Omit<TextInputProps, "style"> & {
@@ -156,8 +158,18 @@ export function InputFrame({
   ...props
 }: InputFrameProps) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(() => createInputStyles(theme, size), [theme, size]);
-  const iconSize = inputIconSize(size);
+  // A touch surface draws every size with the touch metrics: a 44px input in a
+  // 46px frame, 16px text, and 44px actions.
+  const touch = useTouchSurface();
+  const styles = useMemo(
+    () =>
+      touch ? createTouchInputStyles(theme) : createInputStyles(theme, size),
+    [theme, size, touch],
+  );
+  const iconSize = touch
+    ? touchInputSizeTokens().iconSize
+    : inputIconSize(size);
+  const actionHitSlop = touch ? undefined : 8;
   // An inset ring survives an `overflow: hidden` ancestor that would clip the
   // default outset glow — the pattern the date wheel and data-grid resize handle
   // already use for controls nested inside clipping containers.
@@ -201,7 +213,10 @@ export function InputFrame({
   const autoGrowEnabled =
     seamlessMultiline || (multiline && maxLines != null && maxLines > minRows);
   const maxRows = maxLines ?? (seamlessMultiline ? Infinity : minRows);
-  const bounds = autoGrowTextareaBounds(size, minRows, maxRows);
+  // Touch textareas keep the `lg` lines, which the touch metrics share.
+  const bounds = touch
+    ? autoGrowTextareaBounds("lg", minRows, maxRows)
+    : autoGrowTextareaBounds(size, minRows, maxRows);
   const autoGrow = useAutoGrowTextarea({
     enabled: autoGrowEnabled,
     lineHeight: bounds.lineHeight,
@@ -281,6 +296,9 @@ export function InputFrame({
           // The auto-grow bounds (min/max/height + line height) override the
           // fixed textarea min-height; a caller `inputStyle` still wins.
           autoGrow.style,
+          // On a touch surface the input itself keeps the 44px target, also
+          // when its variant sizes it to one line of text.
+          seamless ? styles.seamlessFloor : null,
           inputStyle,
         ]}
       />
@@ -294,7 +312,9 @@ export function InputFrame({
         <Pressable
           accessibilityLabel={clearLabel}
           accessibilityRole="button"
-          hitSlop={8}
+          // On a touch surface the 44px box is the whole target: no hit slop
+          // overlaps the input beside it.
+          hitSlop={actionHitSlop}
           onPress={handleClear}
           style={styles.iconButton}
         >
@@ -305,6 +325,7 @@ export function InputFrame({
         <SuffixAdornment
           Icon={SuffixIcon}
           color={theme.colors.muted}
+          hitSlop={actionHitSlop}
           label={suffixIconLabel}
           onPress={onSuffixIconPress}
           size={iconSize}
@@ -324,6 +345,7 @@ export function InputFrame({
 function SuffixAdornment({
   Icon,
   color,
+  hitSlop,
   label,
   onPress,
   size,
@@ -331,6 +353,7 @@ function SuffixAdornment({
 }: {
   Icon: IconComponent;
   color: string;
+  hitSlop: number | undefined;
   label?: string;
   onPress?: () => void;
   size: number;
@@ -349,7 +372,7 @@ function SuffixAdornment({
       <Pressable
         accessibilityLabel={label}
         accessibilityRole="button"
-        hitSlop={8}
+        hitSlop={hitSlop}
         onPress={onPress}
         style={style}
       >

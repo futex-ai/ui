@@ -86,6 +86,9 @@ export const Sizes: Story = {
   render: () =>
     row(
       <>
+        <Button onPress={noop} size="xs" tone="primary">
+          Extra small
+        </Button>
         <Button onPress={noop} size="sm" tone="primary">
           Small
         </Button>

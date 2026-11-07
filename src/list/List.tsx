@@ -26,20 +26,15 @@ import {
   PressableHoverState,
   useFocusRing,
 } from "../focusRing";
-import {
-  SkeletonBar,
-  SkeletonCircle,
-  SkeletonPulseProvider,
-} from "../skeleton";
 import { useSharedUiTheme } from "../theme";
+import { useTouchSurface } from "../touchSurface";
 
-import { createListStyles, type ListStyles } from "./listStyles";
-
-/** Leading-circle diameter for a skeleton item, matching a typical list avatar. */
-const SKELETON_AVATAR_DIAMETER = 40;
-/** Title / description placeholder widths cycled by item index for natural variety. */
-const SKELETON_TITLE_WIDTHS = ["48%", "62%", "40%"] as const;
-const SKELETON_DESCRIPTION_WIDTHS = ["82%", "70%", "90%"] as const;
+import { ListSkeletonItems } from "./ListSkeleton";
+import {
+  createListStyles,
+  createTouchListStyles,
+  type ListStyles,
+} from "./listStyles";
 
 export type ListProps<Item> = {
   /** Accessible label for the whole list. */
@@ -117,7 +112,15 @@ export function List<Item>({
   testID,
 }: ListProps<Item>) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(() => createListStyles(theme, size), [theme, size]);
+  // On a touch surface the rows take the touch metrics, whatever the size.
+  const touch = useTouchSurface();
+  const styles = useMemo(
+    () =>
+      touch
+        ? createTouchListStyles(theme, size)
+        : createListStyles(theme, size),
+    [theme, size, touch],
+  );
 
   if (loading) {
     return (
@@ -131,46 +134,16 @@ export function List<Item>({
         style={[styles.list, style]}
         testID={testID}
       >
-        <SkeletonPulseProvider>
-          {Array.from({ length: loadingItemCount }).map((_, index) => {
-            const last = index === loadingItemCount - 1;
-            return (
-              <Fragment key={`skeleton-${index}`}>
-                <View aria-hidden style={styles.item}>
-                  <View style={styles.itemRow}>
-                    <View style={styles.itemLeading}>
-                      <SkeletonCircle diameter={SKELETON_AVATAR_DIAMETER} />
-                    </View>
-                    <View style={styles.itemMain}>
-                      <SkeletonBar
-                        height={14}
-                        width={
-                          SKELETON_TITLE_WIDTHS[
-                            index % SKELETON_TITLE_WIDTHS.length
-                          ]
-                        }
-                      />
-                      <SkeletonBar
-                        height={11}
-                        width={
-                          SKELETON_DESCRIPTION_WIDTHS[
-                            index % SKELETON_DESCRIPTION_WIDTHS.length
-                          ]
-                        }
-                      />
-                    </View>
-                    <View style={styles.itemTrailing}>
-                      <SkeletonBar height={12} radius="pill" width={56} />
-                    </View>
-                  </View>
-                </View>
-                {separators && !last ? (
-                  <Separator inset={separatorInset} styles={styles} />
-                ) : null}
-              </Fragment>
-            );
-          })}
-        </SkeletonPulseProvider>
+        <ListSkeletonItems
+          dense={size === "xs"}
+          loadingItemCount={loadingItemCount}
+          separator={
+            separators ? (
+              <Separator inset={separatorInset} styles={styles} />
+            ) : null
+          }
+          styles={styles}
+        />
       </View>
     );
   }

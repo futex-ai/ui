@@ -80,17 +80,14 @@ Required behavior:
 - A row with a destination is a link, as the
   [navigation row rules](app-shell-parts.md#navigation-rows) say. Rows that use
   `List.onItemPress` or `ListItem.onPress` stay buttons.
-- On web, visual focus rings are `domBackendCss` `:focus-visible` rules, not
-  render-time raw-focus styles. Pointer focus remains real for behavior while
-  the browser owns modality; keyboard input can reveal the ring without a React
-  render. Native keeps its platform focus behavior.
+- On web, visual focus rings are `domBackendCss` `:focus-visible` rules.
+  Pointer focus remains real for behavior while the browser owns modality;
+  keyboard input reveals the ring on the row that already holds focus. Native
+  keeps its platform focus behavior.
 - `focusIndicator` is an explicit customization and must not be required to
   suppress rings after ordinary pointer interaction. `outline` restores the
   browser's default keyboard-focus outline; `none` removes it for a list whose
   container shows focus itself.
-- `useFocusRing` still owns actual/visible-focus state for non-painting behavior.
-  List and ListItem must spread its CSS marker and variables rather than
-  implement local pointer/keyboard painting.
 
 ## Table Contract
 
@@ -166,10 +163,8 @@ Required behavior:
 toColumnId, toIndex }`, `toIndex` in dragged-removed semantics) for the consumer
   to apply; it never mutates the cards. Dragging is a web gesture, so the native
   drag is an inert no-op.
-- Render the web pointer-drag clone through a `document.body` portal. Its fixed
-  position consumes viewport `clientX` / `clientY` coordinates and must remain in
-  that coordinate system even when the board is inside a transformed or scrolling
-  ancestor such as the web backend's `ScrollView`.
+- Keep the web pointer-drag clone under the pointer, also when the board sits
+  inside a transformed or scrolling ancestor.
 - Scroll the columns horizontally on both web and phone, and size with the
   shared control-size scale.
 
@@ -184,7 +179,7 @@ Required behavior:
 - Render a typed graph model (`WorkflowGraph`) of steps along a spine, where each
   step is either a node (`trigger`, `code`, `agent`, `branch`, `app`, `outcome`)
   or a fork that splits into parallel branches, each branch carrying its own
-  condition label and sub-spine (rendered recursively).
+  condition label and sub-spine, which can fork again.
 - Link steps with 2px connectors and route transitions through tinted edge-label
   pills whose tone (`success`, `failure`, `condition`, `always`, `neutral`) maps
   onto the theme's accent families — the same philosophy as the badge, with no

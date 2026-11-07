@@ -435,8 +435,8 @@ wide-viewport experience.
 
 ## Known limitations
 
-- **Fixed row height** per `size` (`sm 32 / md 40 / lg 48`) — required for the
-  windowing math; no variable / multi-line rows yet.
+- **Fixed row height** per `size` (`xs 32 / sm 32 / md 40 / lg 48`) — required
+  for the windowing math; no variable / multi-line rows yet.
 - **Dropdown text-inversion gotcha.** Column menus and select editors use
   `highlightVariant="ring"`; the solid fill would invert library-owned row text
   to white. Use `rightText` (string) for trailing text, not custom `right` nodes.
@@ -456,10 +456,11 @@ wide-viewport experience.
 
 ## Styling & theming
 
-`size` takes the shared `ControlSize` (`sm` / `md` / `lg`). The grid reads
-`colors`, `fonts`, and `radii` from `SharedUiThemeProvider`: the gutter/header use
-`bg`, separators use `border`, the selection wash uses `primarySoft`, the active
-cell uses an inset `primary` ring, and pills resolve to AA-contrast token pairs.
+`size` takes the shared `ControlSize` (`xs` / `sm` / `md` / `lg`). The grid has
+no dense design, so `xs` draws the `sm` grid. The grid reads `colors`, `fonts`,
+and `radii` from `SharedUiThemeProvider`: the gutter/header use `bg`, separators
+use `border`, the selection wash uses `primarySoft`, the active cell uses an
+inset `primary` ring, and pills resolve to AA-contrast token pairs.
 
 The grid frame and the mobile card stack default to **square corners**
 (`borderRadius: 0`) with a `1px` outer border. Pass `borderRadius` (e.g.

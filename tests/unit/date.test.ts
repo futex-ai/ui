@@ -47,7 +47,10 @@ test("date trigger styles size the box from the shared input scale", () => {
 test("native date trigger scales its icons with the size", () => {
   const source = readSource("../../src/date/DateTrigger.tsx");
 
-  assert.match(source, /const iconSize = inputIconSize\(size\)/);
+  assert.match(
+    source,
+    /const iconSize = touch \? touchControlMetrics\.iconSize : inputIconSize\(size\)/,
+  );
   // Both the clear (✕) and the calendar glyph use the per-size diameter.
   assert.match(
     source,

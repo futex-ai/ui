@@ -11,8 +11,9 @@ used around Profit & loss reporting.
 - Expose `radiogroup` and `radio` semantics with checked and disabled state.
 - Default to pill-track tabs for report-style segmented controls, with an
   opt-in `variant="outline"` for rows of separate filter-pill cells.
-- Size the control with the shared `ControlSize` scale (`sm` / `md` / `lg`),
-  scaling the segment padding, the label type scale, and the track gaps.
+- Size the control with the shared `ControlSize` scale (`xs` / `sm` / `md` /
+  `lg`), scaling the segment padding, the label type scale, and the track gaps.
+- Give each segment a target of at least 44 by 44px inside a `TouchSurface`.
 - Show an optional leading glyph per option — a lucide `icon` (tinted to the
   segment's text colour) or a caller-supplied `iconNode` — and optionally hide
   every label with `iconOnly` for a compact toolbar.
@@ -64,10 +65,19 @@ full-width two-up toggle.
 
 ### Sizes
 
-`size` takes the shared `ControlSize` (`sm` / `md` / `lg`); `md` is the default
-and matches the original accounting control. It scales the segment padding, the
-label type scale, and the gaps between segments, so a segmented control reads at
-the same density as the inputs and buttons beside it.
+`size` takes the shared `ControlSize` (`xs` / `sm` / `md` / `lg`); `md` is the
+default and matches the original accounting control. It scales the segment
+padding, the label type scale, and the gaps between segments, so a segmented
+control reads at the same density as the inputs and buttons beside it.
+
+`xs` is the dense size: a 26px pill track around 24px pills, or 26px outline
+cells, with 12px labels on a 16px line at weight 500 and 14px icons. The other
+sizes keep their bold labels.
+
+Inside a `TouchSurface`, every segment takes the touch metrics, whatever the
+`size`: each pill or cell is a target of at least 44 by 44px, a pill track is
+48px high, labels are 15px on a 20px line at weight 500, and icons are 18px.
+`createTouchSegmentedControlStyles(theme)` builds these styles.
 
 ```tsx
 <SegmentedControl

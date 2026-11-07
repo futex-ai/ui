@@ -2,34 +2,49 @@ import { StyleSheet } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import type { SharedUiTheme } from "../theme";
+import { touchControlMetrics } from "../touchMetrics";
+
+/** The geometry and label type of the button at one size, or on a touch surface. */
+type ButtonSizing = {
+  fontSize: number;
+  fontWeight: "500" | "700";
+  gap: number;
+  height: number;
+  iconSize: number;
+  inlinePaddingHorizontal: number;
+  inlinePaddingVertical: number;
+  lineHeight: number;
+  paddingHorizontal: number;
+};
 
 /**
  * Per-size geometry for the button: track height, horizontal padding, the gap
  * between an optional leading icon and the label, the label type scale, and the
  * matching icon diameter. `md` matches the accounting button this was adapted
  * from (38px tall); `sm` is the compact toolbar density and `lg` the roomier
- * call-to-action density.
+ * call-to-action density. `xs` is the dense size: a 26px track with a 12px
+ * label at weight 500.
  *
  * The `inline*` padding is used only by the {@link ButtonProps.inline} variant:
  * a compact, line-height-neutral in-text chip that drops the fixed track height
  * and instead hugs the label, so its vertical footprint collapses to the label
  * line height (see {@link createButtonStyles}).
  */
-const BUTTON_SIZES: Record<
-  ControlSize,
-  {
-    fontSize: number;
-    gap: number;
-    height: number;
-    iconSize: number;
-    inlinePaddingHorizontal: number;
-    inlinePaddingVertical: number;
-    lineHeight: number;
-    paddingHorizontal: number;
-  }
-> = {
+const BUTTON_SIZES: Record<ControlSize, ButtonSizing> = {
+  xs: {
+    fontSize: 12,
+    fontWeight: "500",
+    gap: 6,
+    height: 26,
+    iconSize: 14,
+    inlinePaddingHorizontal: 6,
+    inlinePaddingVertical: 1,
+    lineHeight: 16,
+    paddingHorizontal: 10,
+  },
   sm: {
     fontSize: 12,
+    fontWeight: "700",
     gap: 6,
     height: 30,
     iconSize: 14,
@@ -40,6 +55,7 @@ const BUTTON_SIZES: Record<
   },
   md: {
     fontSize: 13,
+    fontWeight: "700",
     gap: 6,
     height: 38,
     iconSize: 16,
@@ -50,6 +66,7 @@ const BUTTON_SIZES: Record<
   },
   lg: {
     fontSize: 15,
+    fontWeight: "700",
     gap: 8,
     height: 46,
     iconSize: 18,
@@ -58,6 +75,23 @@ const BUTTON_SIZES: Record<
     lineHeight: 18,
     paddingHorizontal: 20,
   },
+};
+
+/**
+ * The button on a touch surface, whatever its size: a 44px track with a 15px
+ * label on a 20px line at weight 500, and 18px icons. The inline chip does not
+ * apply there, so its padding only completes the row.
+ */
+const BUTTON_TOUCH_SIZE: ButtonSizing = {
+  fontSize: touchControlMetrics.labelFontSize,
+  fontWeight: touchControlMetrics.labelFontWeight,
+  gap: 8,
+  height: touchControlMetrics.target,
+  iconSize: touchControlMetrics.iconSize,
+  inlinePaddingHorizontal: BUTTON_SIZES.lg.inlinePaddingHorizontal,
+  inlinePaddingVertical: BUTTON_SIZES.lg.inlinePaddingVertical,
+  lineHeight: touchControlMetrics.labelLineHeight,
+  paddingHorizontal: 16,
 };
 
 /**
@@ -106,8 +140,19 @@ export function buttonHeight(size: ControlSize) {
  * inline by the component because it depends on the tone.
  */
 export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
+  return buttonStylesFor(theme, BUTTON_SIZES[size]);
+}
+
+/**
+ * Build the button's themed styles for a touch surface, whatever the size: the
+ * touch counterpart of {@link createButtonStyles}.
+ */
+export function createTouchButtonStyles(theme: SharedUiTheme) {
+  return buttonStylesFor(theme, BUTTON_TOUCH_SIZE);
+}
+
+function buttonStylesFor(theme: SharedUiTheme, sizing: ButtonSizing) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
-  const sizing = BUTTON_SIZES[size];
   return StyleSheet.create({
     block: { alignSelf: "stretch", width: "100%" },
     button: {
@@ -172,7 +217,7 @@ export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
     label: {
       ...baseText,
       fontSize: sizing.fontSize,
-      fontWeight: "700",
+      fontWeight: sizing.fontWeight,
       lineHeight: sizing.lineHeight,
     },
     // The `onMedia` tone: a translucent white control for photography or video.
@@ -190,6 +235,14 @@ export function createButtonStyles(theme: SharedUiTheme, size: ControlSize) {
     // icon on no resting fill or border) for chrome-less header / composer icon
     // buttons. Distinct from `ghost`, whose label carries the brand accent.
     plain: { backgroundColor: "transparent", borderColor: "transparent" },
+    // On a touch surface, the 44px target around a face that the caller draws
+    // smaller with `boxSize`. It carries no paint: the face inside it does.
+    reservedTarget: {
+      alignItems: "center",
+      height: touchControlMetrics.target,
+      justifyContent: "center",
+      width: touchControlMetrics.target,
+    },
     // The neutral hover / pressed washes, reused from the list row so a flush
     // icon button tints in step with the rest of the library's neutral surfaces.
     plainHover: { backgroundColor: theme.colors.soft },

@@ -1,6 +1,7 @@
 import { StyleSheet } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { withDenseAsSmall } from "../controlSizeTables";
 import type { SharedUiTheme } from "../theme";
 
 /**
@@ -25,7 +26,7 @@ const WORKFLOW_SIZES: Record<
     typeFontSize: number;
     nodeWidth: number;
   }
-> = {
+> = withDenseAsSmall({
   sm: {
     chip: 28,
     chipIcon: 14,
@@ -65,7 +66,7 @@ const WORKFLOW_SIZES: Record<
     typeFontSize: 10,
     nodeWidth: 320,
   },
-};
+});
 
 /** Geometry read by {@link WorkflowNode} that lives outside the stylesheet. */
 export function workflowSizing(size: ControlSize = "md") {

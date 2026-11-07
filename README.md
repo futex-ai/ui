@@ -21,9 +21,12 @@ Shared UI component library for Firna React Native and web surfaces. The first c
   video-editor panels that surround it (program monitor, transport, level
   meter, media bin, property inspector, effects rack, keyframe editor, export
   dialog).
-- A shared `sm` / `md` / `lg` size scale (`ControlSize`) across the interactive
-  controls — buttons, inputs, dropdown selectors, date fields, segmented
-  controls, and switches.
+- A shared `xs` / `sm` / `md` / `lg` size scale (`ControlSize`) across the
+  interactive controls — buttons, inputs, dropdown selectors, date fields,
+  segmented controls, switches, and list rows. `xs` is the dense 26px size.
+- Touch surfaces: inside a `TouchSurface`, the controls and list rows give each
+  target at least 44 by 44px, whatever their size. An optional compact text
+  scale serves dense surfaces.
 - Themeable visual tokens so consumers can use their own brand primary color,
   with four shipped presets — the accounting default and Juno, each in a light
   and a dark variant. Every component reads its colors from the tokens, so dark
@@ -649,6 +652,9 @@ The package export map intentionally separates runtime targets:
 - Avatar component: [src/avatar/README.md](src/avatar/README.md)
 - Badge component: [src/badge/README.md](src/badge/README.md)
 - Shared control-size scale: [src/controlSize.ts](src/controlSize.ts)
+- Touch surface marker and its 44px target size:
+  [src/touchSurface.tsx](src/touchSurface.tsx), and the touch metrics in
+  [src/touchMetrics.ts](src/touchMetrics.ts)
 - Shared focus-glow primitive: [src/focusRing.ts](src/focusRing.ts), its
   marker spellings in [src/focusRingHost.ts](src/focusRingHost.ts), and the
   CSS rules in [src/primitives/dom/css.ts](src/primitives/dom/css.ts)

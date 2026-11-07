@@ -18,8 +18,13 @@ import {
   useFocusRing,
 } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
+import { useTouchSurface } from "../touchSurface";
 
-import { createListStyles, type ListStyles } from "./listStyles";
+import {
+  createListStyles,
+  createTouchListStyles,
+  type ListStyles,
+} from "./listStyles";
 
 export type ListItemProps = {
   /**
@@ -48,7 +53,10 @@ export type ListItemProps = {
    * `List.onItemPress` instead makes the whole row the target.
    */
   onPress?: () => void;
-  /** Match the type scale to the list's `size`. Defaults to `md`. */
+  /**
+   * Match the type scale to the list's `size`. Defaults to `md`. At `xs` and
+   * on a touch surface, a pressable title spans the full row height.
+   */
   size?: ControlSize;
   /**
    * Test identifier for the title press target when `onPress` is set, or the
@@ -81,7 +89,15 @@ export function ListItem({
   trailing,
 }: ListItemProps) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(() => createListStyles(theme, size), [theme, size]);
+  // On a touch surface the rows take the touch metrics, whatever the size.
+  const touch = useTouchSurface();
+  const styles = useMemo(
+    () =>
+      touch
+        ? createTouchListStyles(theme, size)
+        : createListStyles(theme, size),
+    [theme, size, touch],
+  );
   // The pressable-title column needs an accessible name: an explicit
   // `accessibilityLabel`, or a string/number `title`. A rich-node title with no
   // label leaves the button nameless (WCAG 4.1.2), so warn.
@@ -170,6 +186,7 @@ function PressableTitle({
       style={({ pressed }: PressableHoverState) => [
         styles.itemMain,
         styles.itemMainPressable,
+        styles.itemMainTarget,
         pressed && !disabled ? styles.itemMainPressed : null,
         disabled ? styles.itemDisabled : null,
         focus.focusRingVariables,

@@ -39,9 +39,19 @@ export type TypographyColor =
   | "danger"
   | "inverse";
 
-type TypographyMetrics = Required<
+/**
+ * The type scale that the text roles draw from. `default` is the scale of the
+ * library. `compact` is the optional smaller scale for dense surfaces: its
+ * body is 13px on a 20px line, and no role is larger than in `default`.
+ */
+export type TextScale = "default" | "compact";
+
+/** The numbers of a text role. The role keeps its color and casing. */
+type TypographyNumbers = Required<
   Pick<TextStyle, "fontSize" | "fontWeight" | "lineHeight" | "letterSpacing">
-> & {
+>;
+
+type TypographyMetrics = TypographyNumbers & {
   /** The variant's default semantic color token. */
   color: TypographyColor;
   /** Render the text uppercased (the overline eyebrow). */
@@ -133,6 +143,34 @@ const TYPOGRAPHY_SCALE: Record<TypographyVariant, TypographyMetrics> = {
   },
 };
 
+/**
+ * The compact scale: the numbers of each role on a dense surface. A role keeps
+ * its color, its casing, and its heading level, and no role is larger than in
+ * the default scale. Headings and labels are a step lighter, to suit the
+ * smaller sizes.
+ */
+const COMPACT_TYPOGRAPHY_SCALE: Record<TypographyVariant, TypographyNumbers> = {
+  h1: { fontSize: 20, fontWeight: "700", lineHeight: 26, letterSpacing: -0.2 },
+  h2: { fontSize: 16, fontWeight: "600", lineHeight: 22, letterSpacing: -0.1 },
+  h3: { fontSize: 14, fontWeight: "600", lineHeight: 20, letterSpacing: 0 },
+  h4: { fontSize: 13, fontWeight: "600", lineHeight: 18, letterSpacing: 0 },
+  h5: { fontSize: 12, fontWeight: "600", lineHeight: 16, letterSpacing: 0 },
+  body: { fontSize: 13, fontWeight: "400", lineHeight: 20, letterSpacing: 0 },
+  label: { fontSize: 12, fontWeight: "500", lineHeight: 16, letterSpacing: 0 },
+  caption: {
+    fontSize: 12,
+    fontWeight: "400",
+    lineHeight: 16,
+    letterSpacing: 0,
+  },
+  overline: {
+    fontSize: 11,
+    fontWeight: "600",
+    lineHeight: 14,
+    letterSpacing: 0.6,
+  },
+};
+
 /** Heading variants carry a 1–5 level; the non-heading roles carry none. */
 const HEADING_LEVELS: Partial<Record<TypographyVariant, 1 | 2 | 3 | 4 | 5>> = {
   h1: 1,
@@ -186,16 +224,23 @@ export function resolveTypographyColor(
 
 /**
  * Resolve every variant into a flat text style. The font family comes from the
- * theme (`fonts.sans`); size, weight, leading, tracking, and casing come from
- * the local scale; and the default color is the variant's token resolved
- * through {@link resolveTypographyColor}. A per-instance `color` (token or raw
- * string) composes cleanly on top of these in the component.
+ * theme (`fonts.sans`); size, weight, leading, and tracking come from the
+ * local `scale` (the default scale unless the caller asks for `compact`);
+ * casing comes from the role; and the default color is the variant's token
+ * resolved through {@link resolveTypographyColor}. A per-instance `color`
+ * (token or raw string) composes cleanly on top of these in the component.
  */
-export function createTypographyStyles(theme: SharedUiTheme) {
+export function createTypographyStyles(
+  theme: SharedUiTheme,
+  scale: TextScale = "default",
+) {
   const base = { fontFamily: theme.fonts.sans } as const;
   const styles = {} as Record<TypographyVariant, TextStyle>;
   for (const variant of Object.keys(TYPOGRAPHY_SCALE) as TypographyVariant[]) {
-    const metrics = TYPOGRAPHY_SCALE[variant];
+    const metrics = {
+      ...TYPOGRAPHY_SCALE[variant],
+      ...(scale === "compact" ? COMPACT_TYPOGRAPHY_SCALE[variant] : null),
+    };
     styles[variant] = {
       ...base,
       color: resolveTypographyColor(theme.colors, metrics.color),

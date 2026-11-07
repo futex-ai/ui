@@ -1,6 +1,7 @@
 import { StyleSheet, type ViewStyle } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { withDenseAsSmall } from "../controlSizeTables";
 import type { SharedUiTheme } from "../theme";
 
 /**
@@ -14,11 +15,11 @@ import type { SharedUiTheme } from "../theme";
 const SORTABLE_SIZES: Record<
   ControlSize,
   { gap: number; handleIcon: number; handlePadding: number }
-> = {
+> = withDenseAsSmall({
   sm: { gap: 6, handleIcon: 14, handlePadding: 4 },
   md: { gap: 8, handleIcon: 16, handlePadding: 6 },
   lg: { gap: 10, handleIcon: 18, handlePadding: 8 },
-};
+});
 
 /** The default row gap for a given size — the fallback when no `gap` prop is set. */
 export function sortableGap(size: ControlSize = "md"): number {

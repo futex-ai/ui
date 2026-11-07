@@ -15,8 +15,8 @@ Required behavior:
 - Render a circular ring sized by the shared `ControlSize` scale (`sm` / `md` /
   `lg`, with `md` as the default) or by an explicit pixel diameter, deriving the
   ring stroke thickness from the diameter.
-- Animate a continuous rotation through React Native's `Animated` API so the
-  same component spins on native and web, and stop the loop on unmount.
+- Animate a continuous rotation with the same component on native and web, and
+  stop the loop on unmount.
 - Expose `progressbar` accessibility semantics with a busy state and an
   accessible name that defaults to a loading label.
 - Use shared theme tokens for the accent arc (`primary`) and the ring track
@@ -41,15 +41,12 @@ Required behavior:
   `md` / `lg`, `md` default, or an explicit pixel size) so a shape can be
   swapped for another without moving the surrounding layout. `dots` and `bars`
   may be wider than they are tall; the rest are square.
-- Delegate `variant="ring"` to the spinner rather than reimplementing the arc,
-  so the library holds exactly one ring.
+- Make `variant="ring"` identical to the spinner.
 - Give each shape a default cycle length suited to its motion, overridable per
   instance with `duration`.
-- Drive every shape from a single `Animated` loop that stops on unmount and
-  animates only opacity and transform, so the loader stays on the native driver
-  on iOS and Android and renders identically on web. Stagger elements by
-  interpolating that one driver at a phase offset rather than by running one
-  loop per element.
+- Animate every shape identically on native and web, and stop its loop on
+  unmount. On iOS and Android the animation keeps running while the JavaScript
+  thread is busy. The staggered elements of a shape never drift apart.
 - Honour "reduce motion" by slowing the loop and animating brightness alone —
   no translation, scale, or rotation — rather than freezing.
 - Expose `progressbar` accessibility semantics with a busy state and an
@@ -69,11 +66,9 @@ Required behavior:
 - Both publish the percentage through `aria-valuenow` on ARIA's default 0–100
   range, so screen readers announce a percentage rather than a fraction. An
   indeterminate bar publishes a busy state and no value, per ARIA.
-- Emit both React Native's `accessibilityValue` and the literal `aria-value*`
-  DOM props. The web backend does not translate the former into the latter — it
-  drops the React Native-only accessibility props by design — so setting only
-  `accessibilityValue` leaves a web screen reader with a `progressbar` that
-  carries no value. This applies to any determinate control, not only these
+- Expose the value on both platforms: through React Native's
+  `accessibilityValue` on native, and through the literal `aria-value*`
+  attributes on web. This applies to any determinate control, not only these
   two.
 
 ## Animated Border Contract
@@ -89,14 +84,11 @@ Required behavior:
   same corner radius as the element it frames. `shape="circle"` fully rounds the
   box instead — a true circle when square, an elongated stadium ("pill") when
   not — and ignores `borderRadius`.
-- Draw the trail as stacked `react-native-svg` rects with an animated
-  `strokeDashoffset`: a short, bright head leading progressively fainter, longer
-  tail segments. Real path geometry is required because a CSS gradient border
-  cannot bend around a corner and a single rotated dash only reads as motion on
-  a circle.
-- Run the loop through React Native's `Animated` API and stop it on unmount. The
-  loop is JS-driven (`useNativeDriver: false`) because an SVG attribute cannot
-  run on the native driver.
+- Draw the trail as a short, bright head leading progressively fainter, longer
+  tail segments. Decision: the trail follows the real path, rather than a CSS
+  gradient border, which cannot bend around a corner, or a single rotated dash,
+  which only reads as motion on a circle.
+- Animate the trail on native and web, and stop the loop on unmount.
 - Accept `color` as either a single color or a `[from, to]` pair, defaulting to
   the theme `primary`. A pair strokes the trail with an SVG gradient sweeping
   `from → to → from` across the box, so a border can carry a consumer's brand
@@ -105,8 +97,8 @@ Required behavior:
   same rather than ramping one way across it.
 - Treat a pair of identical colors as the single-color case — solid, with no
   gradient defined — so a caller holding one brand color can repeat it instead
-  of branching. Gradient ids must be per-instance and free of any characters
-  that would break a `url(#…)` reference on web.
+  of branching. On web, each border paints its own gradient, also when several
+  borders share a page.
 - Keep the border out of the accessibility tree on every platform and let
   pointer events pass through to the content it overlays. It is decoration; the
   surrounding control owns the announced state.
@@ -180,17 +172,16 @@ Required behavior:
   (default) / `lg`), where `md` matches the workflow graph's run-status dot so
   the two families cannot diverge.
 - Carry the `Badge` tone vocabulary (`neutral` (default), `primary`, `warning`,
-  `danger`) as a type alias rather than a restated union, so a dot and the pill
-  beside it describe a status in one language. A dot has no text of its own, so
-  it takes the mid accent rather than a soft-fill/deep-text pair.
+  `danger`), so a dot and the pill beside it describe a status in one language.
+  A dot has no text of its own, so it takes the mid accent rather than a
+  soft-fill/deep-text pair.
 - Accept a custom color for a caller-owned palette the semantic tones do not
   cover — the route by which the workflow graph keeps its own status palette.
 - Offer an optional `pulse` that swells a translucent halo out of the dot and
   fades it — the design system's live-state ping — while the dot itself stays
-  solid. The halo is drawn out of flow so it overflows the dot (and any pill
-  around it) without affecting layout, it is shared with the badge dot so no
-  surface hand-rolls a heartbeat, it is decorative, and under reduced motion it
-  is not drawn at all (2.3.3). Its loop stops on unmount.
+  solid. The halo overflows the dot (and any pill around it) without affecting
+  layout, the badge dot pulses with the same halo, it is decorative, and under
+  reduced motion it is not drawn at all (2.3.3). Its loop stops on unmount.
 - Stay decorative unless given a label, on the assumption the adjacent text
   states the status; a labelled dot reports as an `image` with that name, so the
   status is never carried by color alone (WCAG 1.4.1).

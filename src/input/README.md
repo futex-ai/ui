@@ -18,9 +18,11 @@ web trigger) build on it.
   the label, in a portaled tooltip that stays out of the always-read messages.
 - Own the sage CSS focus ring on the whole visible box, including static web
   rendering, using shared theme colors and radii.
-- Size the field with the shared `ControlSize` scale (`sm` / `md` / `lg`),
-  scaling the box height, textarea minimum height, padding, text, and icons
-  together.
+- Size the field with the shared `ControlSize` scale (`xs` / `sm` / `md` /
+  `lg`), scaling the box height, textarea minimum height, padding, text, and
+  icons together.
+- Make the input itself and each action inside the field a target of at least
+  44 by 44px inside a `TouchSurface`.
 - Expose a textarea ({@link Textarea}) and a bare box ({@link InputFrame}) so
   callers can choose a multiline field or embed just the framed input when they
   own their own label/messages or popover.
@@ -142,12 +144,29 @@ date field does this).
 
 ### Sizes
 
-`size` takes the shared `ControlSize` (`sm` / `md` / `lg`); `md` is the default
-and matches the original 40px single-line box. The size scales the box height,
-padding, input text, textarea minimum height, and prefix/suffix/clear icons
-together. The label, hint, and error messages keep a constant scale so dense and
-roomy fields read the same. Buttons share this scale, so a field and its submit
-button can be sized to match.
+`size` takes the shared `ControlSize` (`xs` / `sm` / `md` / `lg`); `md` is the
+default and matches the original 40px single-line box. The size scales the box
+height, padding, input text, textarea minimum height, and prefix/suffix/clear
+icons together. The label, hint, and error messages keep a constant scale so
+dense and roomy fields read the same. Buttons share this scale, so a field and
+its submit button can be sized to match.
+
+`xs` is the dense size: a 26px frame around a 24px input with 13px text, and a
+Clear or suffix action in a 24 by 24px box. Outside `xs` and touch surfaces, an
+action is as large as its icon.
+
+### Touch surfaces
+
+Inside a `TouchSurface`, the field takes the touch metrics, whatever its `size`:
+the input itself is 44px high in a 46px frame, its text is 16px so that phone
+browsers do not zoom into the focused field, and icons are 18px. The Clear and
+suffix actions are 44 by 44px boxes of their own, with no hit slop over the
+input. A `seamless` input is at least 44px high, and a textarea keeps the `lg`
+lines. `touchInputSizeTokens()` and `createTouchInputStyles(theme)` are the
+touch counterparts of `inputSizeTokens(size)` and `createInputStyles(theme,
+size)`. The
+[app shell parts protocol](../../docs/protocol/app-shell-parts.md#touch-surfaces)
+holds the requirements.
 
 ## Styling
 
@@ -294,6 +313,15 @@ control-boundary token), the focus ring and active border use `colors.primary`,
 the invalid border and required `*` use `colors.rose`, the placeholder and hint
 text use `colors.placeholder` (≥4.5:1 — 1.4.3, AA), and the box radius uses
 `radii.md`.
+
+## Key Code
+
+- [`InputFrame.tsx`](InputFrame.tsx): the bordered box, its actions, and its
+  focus ring.
+- [`inputSizing.ts`](inputSizing.ts): the per-size and touch geometry, the icon
+  sizes, and the auto-grow textarea bounds.
+- [`inputStyles.ts`](inputStyles.ts): the shared field chrome and the style
+  factories.
 
 ## Used by
 

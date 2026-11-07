@@ -38,9 +38,9 @@ package boundary and links every other page.
   `data-firna-focus-none="<target>"` (and a split control's target keeps
   `data-firna-focus-target`), with no `data-firna-focus-ring` or
   `data-firna-focus-host` marker. `domBackendCss` strips the outline from that
-  focus target with a zero-specificity `:where()` rule, so any focus style the
-  caller supplies wins, and only under `forced-colors: none`, so forced-colors
-  mode keeps the system outline. A separately focusable action inside the
+  focus target with zero specificity, so any focus style the caller supplies
+  wins, and only under `forced-colors: none`, so forced-colors mode keeps the
+  system outline. A separately focusable action inside the
   control — a clear, suffix, or chip-remove button — keeps its browser outline.
   Native keeps its platform focus behavior; `none` drops only the focus-only
   decoration there.
@@ -53,16 +53,16 @@ package boundary and links every other page.
   `focusTargetDomProps`) for raw DOM elements, so a web-only consumer with no
   primitive to spread onto gets the same glow. Both spellings must serialize in
   static markup, and a `self` host must never emit an `undefined` marker.
-- The web theme provider must inject `domBackendCss` on the client, exactly as
-  `View`, `Text`, and `TextInput` do (once per document, first in `<head>`),
-  so a page that renders only the provider and raw DOM hosts still paints the
-  glow. Static and server-rendered HTML keeps emitting `domBackendCss` in
-  `<head>` itself; the injection is a client effect and never serializes.
-- Only `View` rewrites an inline `boxShadow` into
-  `--firna-focus-ring-base-shadow`. A raw DOM host must set that variable for
-  a resting shadow instead of `box-shadow`; the docs must say so, because an
-  inline `box-shadow` outranks the glow rule while the rule still removes the
-  browser outline, leaving no focus indicator at all.
+- The web theme provider must inject `domBackendCss` on the client, once per
+  document and first in `<head>`, so a page that renders only the provider and
+  raw DOM hosts still paints the glow. Static and server-rendered HTML keeps
+  emitting `domBackendCss` in `<head>` itself; the injection is a client effect
+  and never serializes.
+- On web, a library control keeps both an inline resting shadow and its focus
+  glow. A raw DOM host must set `--firna-focus-ring-base-shadow` for a resting
+  shadow instead of `box-shadow`; the docs must say so, because an inline
+  `box-shadow` outranks the glow rule while the rule still removes the browser
+  outline, leaving no focus indicator at all.
 - A `descendant` host's glow and outline reset must follow only its marked
   focus target. Any other focusable element inside the host — an input's clear
   button, a chip-remove button, the wheel date trigger's clear button — keeps

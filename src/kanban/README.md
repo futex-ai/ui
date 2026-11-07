@@ -26,8 +26,8 @@ render callbacks, and sized on the shared `ControlSize` scale.
 - Show a busy skeleton state while `loading`, and an optional placeholder for an
   empty column.
 - Scroll the columns horizontally, sharing the same board on web and phone.
-- Size on the shared `ControlSize` scale (`sm` / `md` / `lg`), scaling the card,
-  chip, and footer density.
+- Size on the shared `ControlSize` scale (`xs` / `sm` / `md` / `lg`), scaling
+  the card, chip, and footer density.
 - Use shared theme colours, fonts, and radii instead of consumer-local theme.
 
 ## Usage
@@ -183,8 +183,9 @@ placeholders to show per column (defaults to 3).
 
 ### Sizes
 
-`size` takes the shared `ControlSize` (`sm` / `md` / `lg`); `md` is the default
-and matches the mockup. It scales the card, chip, and footer density. Set
+`size` takes the shared `ControlSize` (`xs` / `sm` / `md` / `lg`); `md` is the
+default and matches the mockup. The board has no dense design, so `xs` draws
+the `sm` board. It scales the card, chip, and footer density. Set
 `columnWidth` to change the fixed column width (defaults to `286`); on a narrow
 phone, size it to the viewport (e.g. `Dimensions.get("window").width - 32`).
 

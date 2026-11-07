@@ -20,13 +20,17 @@ import {
   useFocusRing,
 } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
+import { touchControlMetrics } from "../touchMetrics";
+import { useTouchSurface } from "../touchSurface";
 
 import {
   buttonHeight,
   buttonIconSize,
   createButtonStyles,
+  createTouchButtonStyles,
   onMediaLabelColor,
 } from "./buttonStyles";
+import { reservesTouchTarget, touchButtonShapeStyle } from "./buttonTouch";
 import {
   buttonSemantics,
   buttonSemanticsWarnings,
@@ -100,6 +104,8 @@ type ButtonBaseProps = ButtonRoleState & {
    * that can only grow the box — this also goes *below* the smallest size's
    * 30px track, for a glyph a design specs smaller than any control density.
    * Pair it with `hitSlop` so a small visible box keeps a comfortable target.
+   * On a touch surface, a box below 44px keeps its drawing, and the button
+   * reserves a 44px target around it in the layout instead.
    */
   boxSize?: number;
   /**
@@ -150,6 +156,8 @@ type ButtonBaseProps = ButtonRoleState & {
    * web — where the web backend's `Pressable` ignores it — the equivalent area
    * is drawn by {@link HitSlopExpander}. The expanded area overlaps whatever
    * sits beside the control, so reach for it on a control with room around it.
+   * A touch surface ignores it: there each target occupies its own 44px of
+   * layout space instead.
    */
   hitSlop?: number | Insets;
   /** Leading lucide icon shown before the label, tinted to match the label colour. */
@@ -184,7 +192,8 @@ type ButtonBaseProps = ButtonRoleState & {
    * vertical padding — a touch more than the pill, for the ring. On web this
    * matters only under an `overflow: "hidden"` ancestor; on native (notably
    * Android) a parent can clip children to its own bounds, so the padding keeps
-   * the pill from being sheared there.
+   * the pill from being sheared there. On a touch surface `inline` is a no-op
+   * too: the button keeps its 44px target there.
    */
   inline?: boolean;
   /** Extra style merged over the label, after the tone's colour. */
@@ -317,7 +326,7 @@ export function Button({
   expanded,
   focusIndicator,
   hasPopup,
-  hitSlop,
+  hitSlop: requestedHitSlop,
   icon: Icon,
   iconNode,
   inline = false,
@@ -339,8 +348,27 @@ export function Button({
   trailing,
 }: ButtonProps) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(() => createButtonStyles(theme, size), [theme, size]);
-  const focus = useFocusRing({ indicator: focusIndicator });
+  // On a touch surface the button draws the touch metrics, whatever its size.
+  // A face that `boxSize` draws below the 44px target keeps the drawing of its
+  // size instead, and the pressable reserves the target around it.
+  const touch = useTouchSurface();
+  const reserve = touch && reservesTouchTarget(shape, boxSize);
+  const touchFace = touch && !reserve;
+  const styles = useMemo(
+    () =>
+      touchFace
+        ? createTouchButtonStyles(theme)
+        : createButtonStyles(theme, size),
+    [theme, size, touchFace],
+  );
+  // A reserved target owns the focus, and the face inside it paints the ring.
+  const focus = useFocusRing({
+    indicator: focusIndicator,
+    target: reserve ? "parent" : "self",
+  });
+  // A touch target occupies its own layout space, so it takes no hit slop
+  // that would overlap its neighbours.
+  const hitSlop = touch ? undefined : requestedHitSlop;
   const disabledState = disabled || !onPress;
   const isWeb = Platform.OS === "web";
   const semanticsInput = {
@@ -376,6 +404,14 @@ export function Button({
   // `rounded` shape a bare `minTouchTarget` still enforces a min tap target
   // without forcing the aspect ratio.
   const shapeStyle = useMemo<ViewStyle | null>(() => {
+    if (touchFace) {
+      return touchButtonShapeStyle({
+        boxSize,
+        minTouchTarget,
+        pillRadius: theme.radii.pill,
+        shape,
+      });
+    }
     if (shape === "square" || shape === "circle") {
       const dimension =
         boxSize ?? Math.max(buttonHeight(size), minTouchTarget ?? 0);
@@ -390,7 +426,7 @@ export function Button({
       return { minHeight: minTouchTarget, minWidth: minTouchTarget };
     }
     return null;
-  }, [boxSize, minTouchTarget, shape, size, theme.radii.pill]);
+  }, [boxSize, minTouchTarget, shape, size, theme.radii.pill, touchFace]);
 
   const hasVisibleLabel = children != null && children !== "";
 
@@ -399,9 +435,9 @@ export function Button({
   // icon-only `square` / `circle` boxes each set a size that contradicts the
   // line-height collapse, so they take precedence and `inline` is a no-op — this
   // keeps the negative margin from leaking through those layouts and pulling
-  // their neighbours out of place.
+  // their neighbours out of place. A touch target is such a fixed size too.
   const inlineChip =
-    inline && !block && shape === "rounded" && minTouchTarget == null;
+    inline && !block && shape === "rounded" && minTouchTarget == null && !touch;
 
   if (!hasVisibleLabel && !accessibilityLabel) {
     // A button with no visible text — icon-only, or a `content` card — has no
@@ -447,6 +483,103 @@ export function Button({
     web: isWeb,
   });
 
+  // The paint of the button in one interaction state. It styles the pressable,
+  // or the face inside a reserved touch target.
+  const paintStyle = ({ hovered = false, pressed }: PressableHoverState) => [
+    styles.button,
+    tone === "primary" ? styles.primary : null,
+    tone === "ghost" ? styles.ghost : null,
+    tone === "plain" ? styles.plain : null,
+    tone === "danger" ? styles.danger : null,
+    tone === "onMedia" ? styles.onMedia : null,
+    block ? styles.block : null,
+    // The inline chip drops the fixed track height and collapses to the label
+    // line height, layering after the tone styles so the tone fill/border
+    // still show. It is gated (see `inlineChip`) to the plain rounded shape
+    // with no competing size intent, so it never fights `block` / `shapeStyle`.
+    inlineChip ? styles.inline : null,
+    // The shape override (1:1 box / min tap target) sits after `block` so a
+    // fixed square size wins over `block`'s full-width stretch.
+    shapeStyle,
+    // Hover layers over the tone fill but never while disabled or busy. It
+    // sits before the focus ring (a box-shadow on a different paint
+    // channel), so a focused + hovered button shows the deeper fill inside
+    // its ring.
+    hovered && !disabledState && !busy && tone === "primary"
+      ? styles.primaryHover
+      : null,
+    hovered && !disabledState && !busy && tone === "secondary"
+      ? styles.secondaryHover
+      : null,
+    hovered && !disabledState && !busy && tone === "ghost"
+      ? styles.ghostHover
+      : null,
+    hovered && !disabledState && !busy && tone === "plain"
+      ? styles.plainHover
+      : null,
+    hovered && !disabledState && !busy && tone === "danger"
+      ? styles.dangerHover
+      : null,
+    hovered && !disabledState && !busy && tone === "onMedia"
+      ? styles.onMediaHover
+      : null,
+    // Every tone takes a pressed treatment, deeper than its hover, so an
+    // active press reads on a filled control as well as a borderless one.
+    // It layers after hover so a pressed + hovered button shows the pressed
+    // depth.
+    pressed && !disabledState && !busy && tone === "primary"
+      ? styles.primaryPressed
+      : null,
+    pressed && !disabledState && !busy && tone === "secondary"
+      ? styles.secondaryPressed
+      : null,
+    pressed && !disabledState && !busy && tone === "ghost"
+      ? styles.ghostPressed
+      : null,
+    pressed && !disabledState && !busy && tone === "plain"
+      ? styles.plainPressed
+      : null,
+    pressed && !disabledState && !busy && tone === "danger"
+      ? styles.dangerPressed
+      : null,
+    pressed && !disabledState && !busy && tone === "onMedia"
+      ? styles.onMediaPressed
+      : null,
+    disabledState ? styles.disabled : null,
+    // The caller's style layers last so it wins over the tone — which is
+    // also why a caller-supplied fill erases the tone's washes. The
+    // functional form exists so that caller can re-add press feedback.
+    typeof style === "function"
+      ? style({
+          busy,
+          disabled: disabledState,
+          focused: focus.focused,
+          hovered,
+          pressed,
+        })
+      : style,
+    // Carry the CSS glow variables on every marked host. The stylesheet
+    // suppresses the UA outline only while its `:focus-visible` rule paints.
+    focus.focusRingVariables,
+  ];
+
+  const buttonContent = (
+    <ButtonContent
+      color={labelColor}
+      content={content}
+      icon={Icon}
+      iconNode={iconNode}
+      iconSize={touchFace ? touchControlMetrics.iconSize : buttonIconSize(size)}
+      labelStyle={labelStyle}
+      numberOfLines={numberOfLines}
+      showSpinner={busy}
+      styles={styles}
+      trailing={trailing}
+    >
+      {children}
+    </ButtonContent>
+  );
+
   return (
     <Pressable
       accessibilityHint={accessibilityHint}
@@ -461,7 +594,7 @@ export function Button({
       delayLongPress={delayLongPress}
       disabled={disabledState}
       hitSlop={hitSlop}
-      {...focus.focusRingProps}
+      {...(reserve ? focus.focusTargetProps : focus.focusRingProps)}
       onBlur={focus.onBlur}
       onFocus={focus.onFocus}
       // Block activation while busy without unfocusing/hiding the control. The
@@ -472,102 +605,28 @@ export function Button({
       onPressIn={busy ? undefined : onPressIn}
       onPressOut={busy ? undefined : onPressOut}
       ref={buttonRef}
-      style={({ hovered = false, pressed }: PressableHoverState) => [
-        styles.button,
-        tone === "primary" ? styles.primary : null,
-        tone === "ghost" ? styles.ghost : null,
-        tone === "plain" ? styles.plain : null,
-        tone === "danger" ? styles.danger : null,
-        tone === "onMedia" ? styles.onMedia : null,
-        block ? styles.block : null,
-        // The inline chip drops the fixed track height and collapses to the label
-        // line height, layering after the tone styles so the tone fill/border
-        // still show. It is gated (see `inlineChip`) to the plain rounded shape
-        // with no competing size intent, so it never fights `block` / `shapeStyle`.
-        inlineChip ? styles.inline : null,
-        // The shape override (1:1 box / min tap target) sits after `block` so a
-        // fixed square size wins over `block`'s full-width stretch.
-        shapeStyle,
-        // Hover layers over the tone fill but never while disabled or busy. It
-        // sits before the focus ring (a box-shadow on a different paint
-        // channel), so a focused + hovered button shows the deeper fill inside
-        // its ring.
-        hovered && !disabledState && !busy && tone === "primary"
-          ? styles.primaryHover
-          : null,
-        hovered && !disabledState && !busy && tone === "secondary"
-          ? styles.secondaryHover
-          : null,
-        hovered && !disabledState && !busy && tone === "ghost"
-          ? styles.ghostHover
-          : null,
-        hovered && !disabledState && !busy && tone === "plain"
-          ? styles.plainHover
-          : null,
-        hovered && !disabledState && !busy && tone === "danger"
-          ? styles.dangerHover
-          : null,
-        hovered && !disabledState && !busy && tone === "onMedia"
-          ? styles.onMediaHover
-          : null,
-        // Every tone takes a pressed treatment, deeper than its hover, so an
-        // active press reads on a filled control as well as a borderless one.
-        // It layers after hover so a pressed + hovered button shows the pressed
-        // depth.
-        pressed && !disabledState && !busy && tone === "primary"
-          ? styles.primaryPressed
-          : null,
-        pressed && !disabledState && !busy && tone === "secondary"
-          ? styles.secondaryPressed
-          : null,
-        pressed && !disabledState && !busy && tone === "ghost"
-          ? styles.ghostPressed
-          : null,
-        pressed && !disabledState && !busy && tone === "plain"
-          ? styles.plainPressed
-          : null,
-        pressed && !disabledState && !busy && tone === "danger"
-          ? styles.dangerPressed
-          : null,
-        pressed && !disabledState && !busy && tone === "onMedia"
-          ? styles.onMediaPressed
-          : null,
-        disabledState ? styles.disabled : null,
-        // The caller's style layers last so it wins over the tone — which is
-        // also why a caller-supplied fill erases the tone's washes. The
-        // functional form exists so that caller can re-add press feedback.
-        typeof style === "function"
-          ? style({
-              busy,
-              disabled: disabledState,
-              focused: focus.focused,
-              hovered,
-              pressed,
-            })
-          : style,
-        // Carry the CSS glow variables on every marked host. The stylesheet
-        // suppresses the UA outline only while its `:focus-visible` rule paints.
-        focus.focusRingVariables,
-      ]}
+      style={({ hovered = false, pressed }: PressableHoverState) =>
+        reserve ? styles.reservedTarget : paintStyle({ hovered, pressed })
+      }
       testID={testID}
       {...semantics.ariaProps}
       {...keyProps}
     >
-      <HitSlopExpander hitSlop={hitSlop} />
-      <ButtonContent
-        color={labelColor}
-        content={content}
-        icon={Icon}
-        iconNode={iconNode}
-        iconSize={buttonIconSize(size)}
-        labelStyle={labelStyle}
-        numberOfLines={numberOfLines}
-        showSpinner={busy}
-        styles={styles}
-        trailing={trailing}
-      >
-        {children}
-      </ButtonContent>
+      {reserve ? (
+        (state: PressableHoverState) => (
+          <>
+            <HitSlopExpander hitSlop={hitSlop} />
+            <View {...focus.focusRingProps} style={paintStyle(state)}>
+              {buttonContent}
+            </View>
+          </>
+        )
+      ) : (
+        <>
+          <HitSlopExpander hitSlop={hitSlop} />
+          {buttonContent}
+        </>
+      )}
     </Pressable>
   );
 }

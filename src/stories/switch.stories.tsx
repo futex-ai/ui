@@ -41,11 +41,19 @@ export const Dark: Story = {
 };
 
 function SizesExample() {
+  const [extraSmall, setExtraSmall] = useState(true);
   const [small, setSmall] = useState(true);
   const [medium, setMedium] = useState(true);
   const [large, setLarge] = useState(true);
   return (
     <View style={styles.sizes}>
+      {/* The switch has no dense design, so `xs` draws the `sm` switch. */}
+      <Switch
+        accessibilityLabel="Extra small switch"
+        onValueChange={setExtraSmall}
+        size="xs"
+        value={extraSmall}
+      />
       <Switch
         accessibilityLabel="Small switch"
         onValueChange={setSmall}

@@ -29,12 +29,9 @@ app, plus labelled text inputs and textareas for shared forms.
   `lucide-react-native`, and `lucide-react` are external peer/runtime
   dependencies, not copied app code. A web-only consumer needs just `react`,
   `react-dom`, and `lucide-react`.
-- Components never import `react-native`, `react-native-svg`, or a Lucide
-  package directly. They import from `src/primitives`, whose native and `.web`
-  files pick the backend: native delegates to `react-native`, and web renders
-  through the library's own DOM backend, so the web build depends on neither
-  `react-native` nor `react-native-web` at runtime. A unit test enforces the
-  rule and keeps the two export lists in sync.
+- Native renders through `react-native`, and web renders through the library's
+  own DOM backend, so the web build depends on neither `react-native` nor
+  `react-native-web` at runtime.
 
 ## Contract Pages
 

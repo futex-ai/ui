@@ -2,6 +2,7 @@ import { StyleSheet } from "../primitives/reactNative";
 
 import type { BadgeTone } from "../badge/badgeStyles";
 import type { ControlSize } from "../controlSize";
+import { withDenseAsSmall } from "../controlSizeTables";
 import type { SharedUiTheme } from "../theme";
 
 /**
@@ -17,11 +18,11 @@ export type StatusDotTone = BadgeTone;
  * because that was the workflow graph's hard-coded status dot, so promoting the
  * component out of `workflow/` left the graph pixel-identical.
  */
-const STATUS_DOT_SIZES: Record<ControlSize, number> = {
+const STATUS_DOT_SIZES: Record<ControlSize, number> = withDenseAsSmall({
   sm: 7,
   md: 9,
   lg: 11,
-};
+});
 
 /**
  * Resolve a tone to its solid dot fill.

@@ -70,7 +70,7 @@ test("button renders an optional leading icon tinted and sized with the button",
   assert.match(source, /<Icon color=\{color\} size=\{iconSize\} \/>/);
   assert.match(
     readSource("../../src/button/Button.tsx"),
-    /iconSize=\{buttonIconSize\(size\)\}/,
+    /iconSize=\{\s*touchFace \? touchControlMetrics\.iconSize : buttonIconSize\(size\)\s*\}/,
   );
 });
 

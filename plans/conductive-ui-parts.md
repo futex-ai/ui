@@ -85,9 +85,11 @@ Depends on: 2
 
 The split exposed existing implementation notes inside protocol requirements. Move those notes to their proper homes while keeping every observable requirement. This work does not change the app-shell contract or block the independent density implementation.
 
-- [ ] Rehome internal mechanics from the split protocol without losing requirements or old heading anchors.
-- [ ] Keep public API semantics, CSS/ARIA interoperability names, and consumer obligations in the protocol.
-- [ ] Validate the moved content and its links. Record the changes under `.context/conductive-ui-parts/`.
+- [x] Rehome internal mechanics from the split protocol without losing requirements or old heading anchors.
+- [x] Keep public API semantics, CSS/ARIA interoperability names, and consumer obligations in the protocol.
+- [x] Validate the moved content and its links. Record the changes under `.context/conductive-ui-parts/`.
+
+The movement ledger is `.context/conductive-ui-parts/documentation-homes-ledger.md`. Each implementation fact already had a code or README home. No product source changed for this milestone.
 
 ## Milestone 3: Dense sizes, typography, rows, and touch targets
 
@@ -97,11 +99,13 @@ Depends on: 2
 
 Delegate to the `ui implementor` action. This domain owns size tables, existing controls, typography, list rows, and the new touch-size helper.
 
-- [ ] Add the dense control size and complete every shared size table.
-- [ ] Add compact text while retaining the default scale.
-- [ ] Add dense list rows and apply the touch-size helper to the relevant controls. Size the input itself and its clear/suffix actions, as well as the outer frame.
-- [ ] Add stories and meaningful tests for the new behavior and unchanged defaults.
-- [ ] Update affected area READMEs. Run targeted checks and both typechecks.
+- [x] Add the dense control size and complete every shared size table.
+- [x] Add compact text while retaining the default scale.
+- [x] Add dense list rows and apply the touch-size helper to the relevant controls. Size the input itself and its clear/suffix actions, as well as the outer frame.
+- [x] Add stories and meaningful tests for the new behavior and unchanged defaults.
+- [x] Update affected area READMEs. Run targeted checks and both typechecks.
+
+The implementation and test evidence are in `.context/conductive-ui-parts/reports/density.md`. The source split keeps input styles and the list below 300 lines. The public additions are `xs`, `TouchSurface`, `useTouchSurface`, `TextScaleProvider`, `useTextScale`, and a per-text `scale` override. Small explicit button faces reserve real touch-target space. Dense loading rows keep the dense row height.
 
 ## Milestone 4: Link navigation and feedback
 
@@ -113,6 +117,7 @@ Delegate to the `ui implementor` action. This domain owns the new navigation and
 
 - [ ] Add link buttons and link tabs with web and native behavior. Add a web anchor and native link opening through the primitive seam. Keep platform export lists equal.
 - [ ] Add link destinations and current-page state to dense navigation rows without changing existing button rows.
+- [ ] Share the button tone/content styling and split its touched responsibilities into short files, with unchanged public exports and defaults.
 - [ ] Add notices and empty states with theme tokens and accessible content.
 - [ ] Add main-variant stories, focused tests, and area READMEs.
 - [ ] Run targeted checks and both typechecks.
@@ -126,6 +131,7 @@ Depends on: 4
 Delegate to the `ui implementor` action. Reuse existing overlay, focus, and responder behavior.
 
 - [ ] Add a dense menu that renders open in static HTML.
+- [ ] Apply the shared 44 px touch row metrics to selector and chip multi-select popup options as well as menu rows. Their shared list currently keeps 34 px rows. This completes the touch-target requirement before merge.
 - [ ] Add a phone menu sheet using the shared sheet behavior and 44 px rows.
 - [ ] Add a controlled resize handle with drag, keyboard, bounds, and accessible value behavior.
 - [ ] Add main-variant stories, focused tests, and area READMEs.

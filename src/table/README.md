@@ -19,8 +19,8 @@ flexible per-cell rendering, optionally pressable rows, and the shared
   activation — or render plain static rows when no handler is given.
 - Shade individual rows via `rowStyle`, for grouped tables such as a balance
   sheet's section-header and subtotal bands.
-- Size the table with the shared `ControlSize` scale (`sm` / `md` / `lg`),
-  scaling the row padding and the header / cell type scale.
+- Size the table with the shared `ControlSize` scale (`xs` / `sm` / `md` /
+  `lg`), scaling the row padding and the header / cell type scale.
 - Use shared theme colours, fonts, and radii instead of consumer-local theme.
 
 ## Usage
@@ -136,9 +136,10 @@ pressable rows the hover, pressed, and focus treatments still layer on top of
 ### Sizes
 
 `size` takes the shared `ControlSize` (`sm` / `md` / `lg`); `md` is the default
-and matches the accounting data table. It scales the row padding and the header /
-cell type scale, so a table reads at the same density as the controls beside it.
-`sm` suits dense rows; `lg` suits roomier, touch-first layouts.
+and matches the accounting data table. It scales the row padding and the header
+/ cell type scale, so a table reads at the same density as the controls beside
+it. `sm` suits dense rows; `lg` suits roomier, touch-first layouts. The table
+has no dense design, so `xs` draws the `sm` table.
 
 ## Styling
 

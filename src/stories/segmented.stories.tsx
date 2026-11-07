@@ -308,11 +308,29 @@ function SizingExample() {
 }
 
 function SizesExample() {
+  const [extraSmall, setExtraSmall] = useState("pl");
+  const [extraSmallOutline, setExtraSmallOutline] = useState("pl");
   const [small, setSmall] = useState("pl");
   const [medium, setMedium] = useState("pl");
   const [large, setLarge] = useState("pl");
   return (
     <View style={{ gap: 14, minWidth: 320 }}>
+      {/* The dense size: a 26px pill track, or 26px outline cells. */}
+      <SegmentedControl
+        accessibilityLabel="Extra small report"
+        onChange={setExtraSmall}
+        options={reportOptions}
+        size="xs"
+        value={extraSmall}
+      />
+      <SegmentedControl
+        accessibilityLabel="Extra small outline report"
+        onChange={setExtraSmallOutline}
+        options={reportOptions}
+        size="xs"
+        value={extraSmallOutline}
+        variant="outline"
+      />
       <SegmentedControl
         accessibilityLabel="Small report"
         onChange={setSmall}

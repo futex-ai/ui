@@ -28,6 +28,8 @@ import {
 } from "../focusRing";
 import { inputIconSize, LabelInfo } from "../input";
 import { useSharedUiTheme } from "../theme";
+import { touchControlMetrics } from "../touchMetrics";
+import { useTouchSurface } from "../touchSurface";
 
 import {
   DropdownList,
@@ -40,6 +42,7 @@ import { comboboxInputA11y, filterComboboxSections } from "./comboboxModel";
 import { DEFAULT_DROPDOWN_MAX_WIDTH } from "./dropdownGeometry";
 import {
   createDropdownSelectorStyles,
+  createTouchDropdownSelectorStyles,
   dropdownMinWidth,
   invalidValueStyle,
   triggerStyle,
@@ -139,12 +142,23 @@ type DropdownSelectorProps = {
 
 export function DropdownSelector(props: DropdownSelectorProps) {
   const theme = useSharedUiTheme();
+  const touch = useTouchSurface();
   const styles = useMemo(
-    () => createDropdownSelectorStyles(theme, props.size ?? "md"),
-    [theme, props.size],
+    () =>
+      touch
+        ? createTouchDropdownSelectorStyles(theme)
+        : createDropdownSelectorStyles(theme, props.size ?? "md"),
+    [theme, props.size, touch],
   );
   const focus = useFocusRing({ indicator: props.focusIndicator });
-  return <DropdownSelectorView {...props} focus={focus} styles={styles} />;
+  return (
+    <DropdownSelectorView
+      {...props}
+      focus={focus}
+      styles={styles}
+      touch={touch}
+    />
+  );
 }
 
 function DropdownSelectorView({
@@ -172,6 +186,7 @@ function DropdownSelectorView({
   size = "md",
   styles,
   testID,
+  touch,
   triggerLabel,
   triggerRef,
   value,
@@ -179,6 +194,8 @@ function DropdownSelectorView({
 }: DropdownSelectorProps & {
   focus: ReturnType<typeof useFocusRing>;
   styles: DropdownSelectorStyles;
+  /** Whether a touch surface marks the selector. */
+  touch: boolean;
 }) {
   const theme = useSharedUiTheme();
   const anchorRef = useRef<View>(null);
@@ -283,7 +300,10 @@ function DropdownSelectorView({
   }, [matchCount, open, query, searchable]);
   const searchField = searchable ? (
     <View style={styles.searchField}>
-      <Search color={theme.colors.muted} size={15} />
+      <Search
+        color={theme.colors.muted}
+        size={touch ? touchControlMetrics.iconSize : 15}
+      />
       <TextInput
         accessibilityLabel={searchPlaceholder}
         autoFocus
@@ -361,7 +381,7 @@ function DropdownSelectorView({
         </Text>
         <ChevronDown
           color={invalid ? theme.colors.rose : theme.colors.muted}
-          size={variant === "field" ? inputIconSize(size) : 13}
+          size={selectorChevronSize(variant, size, touch)}
         />
       </Pressable>
       {error ? (
@@ -425,9 +445,13 @@ export function ReadOnlySelector({
   variant?: SelectorVariant;
 }) {
   const theme = useSharedUiTheme();
+  const touch = useTouchSurface();
   const styles = useMemo(
-    () => createDropdownSelectorStyles(theme, size),
-    [theme, size],
+    () =>
+      touch
+        ? createTouchDropdownSelectorStyles(theme)
+        : createDropdownSelectorStyles(theme, size),
+    [theme, size, touch],
   );
   const accessibleLabel = selectorAccessibleLabel(label, value);
   return (
@@ -444,11 +468,24 @@ export function ReadOnlySelector({
         </Text>
         <ChevronDown
           color={theme.colors.muted}
-          size={variant === "field" ? inputIconSize(size) : 13}
+          size={selectorChevronSize(variant, size, touch)}
         />
       </View>
     </View>
   );
+}
+
+/**
+ * The chevron of a trigger: the icon of the `field` size, the touch icon of a
+ * `field` on a touch surface, or the 13px glyph of the bespoke variants.
+ */
+function selectorChevronSize(
+  variant: SelectorVariant,
+  size: ControlSize,
+  touch: boolean,
+) {
+  if (touch && variant === "field") return touchControlMetrics.iconSize;
+  return variant === "field" ? inputIconSize(size) : 13;
 }
 
 /**

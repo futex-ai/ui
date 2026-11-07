@@ -149,3 +149,43 @@ test("a modal repository picker preserves pointer modality on its rich title", a
   await expect(nextTitle).toHaveCSS("box-shadow", "none");
   await expect(title).toHaveCSS("box-shadow", "none");
 });
+
+test("dense list rows are 26 px for one line and grow with longer content", async ({
+  page,
+}) => {
+  await gotoListStory(page, "dense-rows");
+  const single = page.getByRole("listitem").filter({ hasText: "Billing" });
+  const long = page
+    .getByRole("listitem")
+    .filter({ hasText: "A project with a name long enough" });
+  const title = page.getByRole("button", { name: "Deploys", exact: true });
+  const row = page.getByRole("listitem").filter({ has: title });
+  const pin = page.getByRole("button", { name: "Pin Deploys" });
+
+  await expect
+    .poll(async () => (await single.boundingBox())?.height)
+    .toBeCloseTo(26, 0);
+  // A longer row grows past the floor by at least one more 18px line.
+  const longBox = await long.boundingBox();
+  expect(longBox?.height ?? 0).toBeGreaterThanOrEqual(26 + 18);
+  // The pressable title is as high as its row, padding included, so the xs
+  // target is at least 24px.
+  const titleBox = await title.boundingBox();
+  const rowBox = await row.boundingBox();
+  expect(titleBox?.height ?? 0).toBeCloseTo(rowBox?.height ?? -1, 0);
+  expect(titleBox?.height ?? 0).toBeGreaterThanOrEqual(24);
+
+  // The trailing action stays its own control: it does not open the row.
+  await pin.click();
+  await expect(page.getByText("Pinned: yes")).toBeVisible();
+  await expect(page.getByText("Opened: none")).toBeVisible();
+  await title.click();
+  await expect(page.getByText("Opened: Deploys")).toBeVisible();
+
+  // A loading dense list keeps the height of its rows: three placeholders are
+  // three 26px rows, so the list does not jump when the rows arrive.
+  const loading = page.getByRole("list", { name: "Loading projects" });
+  await expect
+    .poll(async () => (await loading.boundingBox())?.height)
+    .toBeCloseTo(3 * 26, 0);
+});

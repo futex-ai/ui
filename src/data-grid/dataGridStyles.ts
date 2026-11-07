@@ -2,6 +2,7 @@
 import { StyleSheet } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { withDenseAsSmall } from "../controlSizeTables";
 import type { SharedUiTheme } from "../theme";
 
 import { DATA_GRID_ROW_HEIGHT } from "./types";
@@ -18,11 +19,11 @@ export type DataGridMetrics = {
 const DATA_GRID_SIZES: Record<
   ControlSize,
   Omit<DataGridMetrics, "rowHeight">
-> = {
+> = withDenseAsSmall({
   sm: { gutterWidth: 40, paddingHorizontal: 8, fontSize: 12, iconSize: 13 },
   md: { gutterWidth: 48, paddingHorizontal: 10, fontSize: 13, iconSize: 15 },
   lg: { gutterWidth: 56, paddingHorizontal: 12, fontSize: 14, iconSize: 16 },
-};
+});
 
 /** The fixed metrics for a size, shared by layout, windowing, and hit-testing. */
 export function dataGridMetrics(size: ControlSize = "md"): DataGridMetrics {

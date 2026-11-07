@@ -9,6 +9,7 @@
 import { StyleSheet } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { withDenseAsSmall } from "../controlSizeTables";
 import type { SharedUiTheme } from "../theme";
 
 import type { TimelineClipTone, TimelineTrackKind } from "./timelineTypes";
@@ -35,41 +36,42 @@ export type TimelineSizing = {
   iconSize: number;
 };
 
-export const timelineSizing: Record<ControlSize, TimelineSizing> = {
-  sm: {
-    clipPadding: 4,
-    clipRadius: 5,
-    fontSize: 10,
-    handleWidth: 8,
-    headerWidth: 132,
-    iconSize: 12,
-    rulerHeight: 22,
-    trackGap: 2,
-    trackHeight: 40,
-  },
-  md: {
-    clipPadding: 6,
-    clipRadius: 6,
-    fontSize: 11,
-    handleWidth: 10,
-    headerWidth: 164,
-    iconSize: 14,
-    rulerHeight: 26,
-    trackGap: 3,
-    trackHeight: 58,
-  },
-  lg: {
-    clipPadding: 8,
-    clipRadius: 7,
-    fontSize: 12,
-    handleWidth: 12,
-    headerWidth: 188,
-    iconSize: 16,
-    rulerHeight: 30,
-    trackGap: 4,
-    trackHeight: 74,
-  },
-};
+export const timelineSizing: Record<ControlSize, TimelineSizing> =
+  withDenseAsSmall({
+    sm: {
+      clipPadding: 4,
+      clipRadius: 5,
+      fontSize: 10,
+      handleWidth: 8,
+      headerWidth: 132,
+      iconSize: 12,
+      rulerHeight: 22,
+      trackGap: 2,
+      trackHeight: 40,
+    },
+    md: {
+      clipPadding: 6,
+      clipRadius: 6,
+      fontSize: 11,
+      handleWidth: 10,
+      headerWidth: 164,
+      iconSize: 14,
+      rulerHeight: 26,
+      trackGap: 3,
+      trackHeight: 58,
+    },
+    lg: {
+      clipPadding: 8,
+      clipRadius: 7,
+      fontSize: 12,
+      handleWidth: 12,
+      headerWidth: 188,
+      iconSize: 16,
+      rulerHeight: 30,
+      trackGap: 4,
+      trackHeight: 74,
+    },
+  });
 
 /** The colors one clip paints with. */
 export type TimelineClipColors = {

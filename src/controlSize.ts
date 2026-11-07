@@ -7,6 +7,8 @@
  * control from a single vocabulary.
  * `md` is the default everywhere; `sm` is the compact density used in dense rows
  * and toolbars, and `lg` is the roomier density for primary calls to action and
- * touch-first layouts.
+ * touch-first layouts. `xs` is the dense desktop density: 26px buttons, fields,
+ * selectors, segmented controls, and single-line rows. A family without a dense
+ * design draws `xs` with its `sm` metrics.
  */
-export type ControlSize = "sm" | "md" | "lg";
+export type ControlSize = "xs" | "sm" | "md" | "lg";

@@ -1,6 +1,7 @@
 import { StyleSheet } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { withDenseAsSmall } from "../controlSizeTables";
 import type { SharedUiTheme } from "../theme";
 
 /**
@@ -28,7 +29,7 @@ const KANBAN_SIZES: Record<
     titleFontSize: number;
     titleLineHeight: number;
   }
-> = {
+> = withDenseAsSmall({
   sm: {
     addFontSize: 15,
     avatarDiameter: 20,
@@ -71,7 +72,7 @@ const KANBAN_SIZES: Record<
     titleFontSize: 14,
     titleLineHeight: 20,
   },
-};
+});
 
 /** The chip label's single line box, and the padding stacked above and below it. */
 const CHIP_LABEL_LINE_HEIGHT = 16;

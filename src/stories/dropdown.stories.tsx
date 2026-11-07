@@ -416,11 +416,19 @@ function HighlightVariantSelector({
 }
 
 function SelectorSizesExample() {
+  const [extraSmall, setExtraSmall] = useState("standard");
   const [small, setSmall] = useState("standard");
   const [medium, setMedium] = useState("standard");
   const [large, setLarge] = useState("standard");
   return (
     <View style={{ gap: 14, minWidth: 320 }}>
+      <DropdownSelector
+        label="Extra small selector"
+        onValueChange={setExtraSmall}
+        options={sizeOptions}
+        size="xs"
+        value={extraSmall}
+      />
       <DropdownSelector
         label="Small selector"
         onValueChange={setSmall}
