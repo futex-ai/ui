@@ -68,11 +68,14 @@ const FORWARDING_FILES = [
   "dropdown/DropdownPortal.web.tsx",
   "dropdown/DropdownSelector.tsx",
   "dropdown/DropdownWebLayer.tsx",
+  "empty-state/EmptyState.tsx",
   "heatmap/Heatmap.tsx",
   "input/LabelInfo.tsx",
   "kanban/Kanban.tsx",
   "kanban/KanbanCard.tsx",
   "kanban/KanbanChip.tsx",
+  "link/LinkButton.tsx",
+  "link/LinkTabs.tsx",
   "list/List.tsx",
   "list/ListItem.tsx",
   "loader/Loader.tsx",
@@ -80,6 +83,7 @@ const FORWARDING_FILES = [
   "loader/ProgressRing.tsx",
   "modal/WebModalFrame.tsx",
   "modal/WebModalFrame.web.tsx",
+  "notice/Notice.tsx",
   "popover/ContextMenu.tsx",
   "popover/ContextMenu.web.tsx",
   "popover/Popover.tsx",
@@ -146,6 +150,8 @@ test("forwarding components declare an optional testID prop", () => {
   // The prop is declared in the component file itself unless it lives in a
   // shared props type in the same directory (platform-split components).
   const sharedTypeFiles: Record<string, string> = {
+    // The button's props contract lives beside it in its own module.
+    "button/Button.tsx": "button/buttonProps.ts",
     // Every chart shares one props contract, so `testID` is declared once.
     "chart/AreaChart.tsx": "chart/types.ts",
     "chart/BarChart.tsx": "chart/types.ts",

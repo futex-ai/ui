@@ -231,8 +231,9 @@ Pairing a state with a role ARIA does not allow — or leaving a `checkbox` /
 the wrong thing rather than failing loudly.
 
 `link` is deliberately not a member: a re-roled button has no `href`, so it
-cannot be opened in a new tab, middle-clicked, or copied as a URL. Use an anchor
-for a real link.
+cannot be opened in a new tab, middle-clicked, or copied as a URL. Use
+[`LinkButton`](../link/README.md) for a real link: it has the look of the button
+of the same tone and size, and it is an anchor on web.
 
 **`Button` is a single control, not a group.** It does not own roving focus or
 arrow-key navigation, so the `tablist` / `radiogroup` / `menu` container and any
@@ -487,3 +488,19 @@ use `colors.bg2` (secondary) and `colors.roseDeep` (danger); `primary` dims
 instead, because `primaryDeep` is already the darkest accent the theme contract
 defines. The `onMedia` tone is the one exception to all of this — see
 [On media](#on-media).
+
+## Key Code
+
+- [`Button.tsx`](Button.tsx): the component, which wires its props to the
+  pressable, the focus ring, the semantics, and the touch target.
+- [`buttonProps.ts`](buttonProps.ts): the props, tones, shapes, and the
+  interaction state of a functional `style`.
+- [`buttonPaint.ts`](buttonPaint.ts): the label colour, the shape, and the tone
+  and state layers. `LinkButton` paints with the same functions.
+- [`buttonStyles.ts`](buttonStyles.ts): the size table, the touch metrics, and
+  the styles of each tone.
+- [`ButtonContent.tsx`](ButtonContent.tsx): the spinner, the icon, the label,
+  and the trailing slot.
+- [`buttonSemantics.ts`](buttonSemantics.ts) and
+  [`buttonTouch.ts`](buttonTouch.ts): the role and state mapping, and the touch
+  geometry.

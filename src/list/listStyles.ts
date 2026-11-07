@@ -127,6 +127,14 @@ export function createTouchListStyles(
   });
 }
 
+/**
+ * The title weight of the current navigation row: at least 600, so a dense
+ * row stands out, and never lighter than the title weight of its size.
+ */
+function currentTitleWeight(weight: ListSizing["titleFontWeight"]) {
+  return Number(weight) > 600 ? weight : "600";
+}
+
 function listStylesFor(theme: SharedUiTheme, sizing: ListSizing) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
   const floor = sizing.minHeight;
@@ -143,9 +151,21 @@ function listStylesFor(theme: SharedUiTheme, sizing: ListSizing) {
       fontSize: sizing.descriptionFontSize,
       lineHeight: sizing.descriptionLineHeight,
     },
+    // On the tint of the current navigation row, muted text falls below 4.5:1
+    // in the default theme, so the description takes the secondary ink.
+    itemDescriptionCurrent: { color: theme.colors.ink2 },
+    // A navigation row of the current page: the accent tint.
+    itemCurrent: { backgroundColor: theme.colors.primarySoft },
     itemDisabled: { opacity: 0.55 },
     itemHover: { backgroundColor: theme.colors.soft },
     itemLeading: { flexShrink: 0 },
+    // A new-tab navigation row puts its arrow after the content of the row.
+    itemLinkContent: { flex: 1, minWidth: 0 },
+    itemLinkRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: sizing.gap,
+    },
     itemMain: { flex: 1, gap: sizing.textGap, minWidth: 0 },
     // The title column as a pressable button (ListItem `onPress`): a pointer
     // cursor to signal the affordance, and a pressed dim, layered over the base
@@ -178,6 +198,12 @@ function listStylesFor(theme: SharedUiTheme, sizing: ListSizing) {
       fontSize: sizing.titleFontSize,
       fontWeight: sizing.titleFontWeight,
       lineHeight: sizing.titleLineHeight,
+    },
+    // The `ListItem` title of the current navigation row: the deep accent at
+    // weight 600, or the heavier title weight of the size.
+    itemTitleCurrent: {
+      color: theme.colors.primaryDeep,
+      fontWeight: currentTitleWeight(sizing.titleFontWeight),
     },
     itemTrailing: { flexShrink: 0 },
     list: { width: "100%" },

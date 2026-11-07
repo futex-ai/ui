@@ -3,7 +3,7 @@ import type { ViewStyle } from "../primitives/reactNative";
 
 import { TOUCH_TARGET_SIZE } from "../touchSurface";
 
-import type { ButtonShape } from "./Button";
+import type { ButtonShape } from "./buttonProps";
 
 /**
  * Whether a button on a touch surface reserves its target around a smaller

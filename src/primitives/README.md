@@ -5,13 +5,14 @@ never import `react-native`, `react-native-svg`, `lucide-react-native`,
 `react-native-web`, or `lucide-react` directly; they import from here, and a
 unit test (`tests/unit/primitives.test.ts`) fails the build if one does.
 
-| Module             | Native resolves to    | Web (`.web`) resolves to  |
-| ------------------ | --------------------- | ------------------------- |
-| `reactNative.ts`   | `react-native`        | `dom/`                    |
-| `svg.tsx`          | `react-native-svg`    | DOM `<svg>` elements      |
-| `icons.ts`         | `lucide-react-native` | `lucide-react`            |
-| `domBackendCss.ts` | `""`                  | `dom/css.ts`'s stylesheet |
-| `types/` (web)     | —                     | the seam's own types      |
+| Module             | Native resolves to      | Web (`.web`) resolves to  |
+| ------------------ | ----------------------- | ------------------------- |
+| `reactNative.ts`   | `react-native`          | `dom/`                    |
+| `svg.tsx`          | `react-native-svg`      | DOM `<svg>` elements      |
+| `icons.ts`         | `lucide-react-native`   | `lucide-react`            |
+| `link.tsx`         | `Pressable` + `Linking` | `dom/Link.tsx`, an `<a>`  |
+| `domBackendCss.ts` | `""`                    | `dom/css.ts`'s stylesheet |
+| `types/` (web)     | —                       | the seam's own types      |
 
 Every primitive comes from `dom/` on web — `View`, `Text`, `Pressable`,
 `Image`, `Modal`, `ScrollView`, `TextInput`, `FlatList`, `Animated`, `Easing`,
@@ -42,7 +43,10 @@ were recorded on that backend and are what prove the swap changed nothing.
   transcribed. Pure, and pinned by `tests/unit/domResolveStyle.test.ts`.
 - `domProps.ts` + `domPropTables.ts` pick the element for a role and map the
   accessibility props, `testID`, `tabIndex`, `disabled` and `pointerEvents`.
-  Pure, and pinned by `tests/unit/domProps.test.ts`.
+  Pure, and pinned by `tests/unit/domProps.test.ts`. As on that backend, an
+  `href` makes the element an anchor unless a role names another one, and
+  `hrefAttrs` adds its `rel` and `target`; `tests/unit/link.test.ts` pins them
+  through the link host.
 - `css.ts` holds the few rules an inline style cannot express, injected once
   per document under a stable id by `useDomBackendCss` (called from `View`,
   `Text`, `TextInput`, and the web `SharedUiThemeRoot`) and published as
@@ -89,6 +93,11 @@ were recorded on that backend and are what prove the swap changed nothing.
   capture-then-bubble negotiation (`negotiation.ts`, over the shared lock in
   `responderState.ts`) and the touch history a gesture's `dx` / `dy` is computed
   from. `View`, `Text`, `TextInput` and `ScrollView` all register with it.
+- `Link.tsx` is the web link host: a `View` with an `href`, so the anchor keeps
+  the element reset, the layout and `ref` methods, and the focus markers. It
+  tracks the pressed, hovered and focused states for a function `style` and
+  `children`, as `Pressable` does, but takes no `onPress` and never stops its
+  click. The click rule is `linkActivation.ts`, which the native host shares.
 - `FlatList.tsx` windows a `ScrollView` with `VirtualizedList`'s arithmetic:
   `flatListWindow.ts` is the pure maths, `useFlatListWindow.ts` the scroll
   metrics and the batcher that grows the window one batch per render, and
@@ -159,6 +168,22 @@ of React Native's: an RN-typed style still flows into a component prop typed
 here, but not the other way round — `sheet/BottomSheetShell.tsx` re-types its
 style on the way into `@gorhom/bottom-sheet`, which is declared with React
 Native's own.
+
+## The link host
+
+`link.tsx` and `link.web.tsx` export `Link`, `LinkProps` and
+`LinkInteractionState`: the host of the library's links. `linkTypes.ts` holds
+their props once, over the style, focus-event and layout-event types of each
+platform, so each file types them in its own world, as `reactNative.ts` and
+`reactNative.web.ts` do. The web host is an anchor with its `href` in static
+HTML. Only a primary click or Enter without a modifier on a same-tab link runs
+`onNavigate`, and it then prevents the page load; every other click keeps the
+browser default. `newTab` adds `target="_blank"` and `rel="noopener
+noreferrer"`. The native host is a `Pressable` with the link role and the
+selected state for `current`. An activation runs `onNavigate`, a new-tab link
+included, or `Linking.openURL` without one. The
+[app shell parts protocol](../../docs/protocol/app-shell-parts.md#links) holds
+the requirements.
 
 ## Two type-check passes
 

@@ -131,15 +131,16 @@ each app, so that the apps keep one look and one accessibility model.
   the labels, such as a monospace font in capitals, without a change to that
   height.
 - A tab row wider than its container scrolls sideways, and each focus
-  indicator stays fully visible inside it. A tab bar can share its width
-  equally between its tabs, as on a phone.
+  indicator stays fully visible inside it. A filled tab bar shares its free
+  width between tabs after their content, while keeping each target at its
+  minimum size.
 
 ## Navigation Rows
 
 - A list row can be a link. The list keeps its list semantics, and each link
   is the content of its list item.
 - The row of the current page has a tinted fill and a deep accent title at
-  weight 600.
+  least weight 600. It keeps a heavier title weight when its size uses one.
 - A row that needs another control keeps that control outside the link. Rows
   with a press action stay buttons, as the
   [list contract](shared-ui-data-views.md#list-contract) says.

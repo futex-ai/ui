@@ -36,8 +36,10 @@ Mockup refinements, recorded on 2026-11-07:
 - **Orchestrator call:** Keep unrelated switch geometry. Rows with larger controls can grow above 26 px. The phone helper still enforces the 44 px target floor.
 - **Orchestrator call:** Offer the compact text scale through a provider and a per-text override. It remains available on web and native. The phone mockups show the existing default scale as one consumer choice.
 - **Orchestrator call:** Give link tabs a label style for Graphite's font and letter case. Keep room for the shared focus glow inside a scrolling tab row.
+- **Orchestrator call:** Filled tabs start from their content width and share remaining width. This keeps labels readable in the phone view, as the mockups showed. Each tab keeps its target floor when space is short.
 - **Orchestrator call:** Let the caller choose a link target. Use a new-context indicator and announcement when the caller chooses a new tab. Do not infer routing or a new tab from the URL.
 - **Orchestrator call:** Extend dense navigation rows with link destinations and current-page state. Reuse the list layout and link primitive, rather than turn navigation into buttons.
+- **Orchestrator call:** A current navigation title uses at least weight 600. Larger row sizes keep their existing 700 title weight. Dense rows still change from 400 to 600, as drawn.
 - **Orchestrator call:** Let empty-state titles use the caller's heading level. Urgent notices announce their message. Neutral notices remain ordinary content.
 - **Orchestrator call:** Let a static menu's caller choose the side and alignment. Provide an in-place phone sheet for static drawing alongside the interactive sheet behavior.
 - **Orchestrator call:** Let resize callers supply effective bounds that leave room for their main content. Arrow keys adjust the width. Home and End select the minimum and maximum. Use the short focus grip from the mockups.
@@ -115,12 +117,14 @@ Depends on: 3
 
 Delegate to the `ui implementor` action. This domain owns the new navigation and feedback component folders and the link primitive at the platform seam.
 
-- [ ] Add link buttons and link tabs with web and native behavior. Add a web anchor and native link opening through the primitive seam. Keep platform export lists equal.
-- [ ] Add link destinations and current-page state to dense navigation rows without changing existing button rows.
-- [ ] Share the button tone/content styling and split its touched responsibilities into short files, with unchanged public exports and defaults.
-- [ ] Add notices and empty states with theme tokens and accessible content.
-- [ ] Add main-variant stories, focused tests, and area READMEs.
-- [ ] Run targeted checks and both typechecks.
+- [x] Add link buttons and link tabs with web and native behavior. Add a web anchor and native link opening through the primitive seam. Keep platform export lists equal.
+- [x] Add link destinations and current-page state to dense navigation rows without changing existing button rows.
+- [x] Share the button tone/content styling and split its touched responsibilities into short files, with unchanged public exports and defaults.
+- [x] Add notices and empty states with theme tokens and accessible content.
+- [x] Add main-variant stories, focused tests, and area READMEs.
+- [x] Run targeted checks and both typechecks.
+
+The implementation report is `.context/conductive-ui-parts/reports/navigation-feedback.md`. The orchestrator check is `reports/navigation-feedback-orchestrator-check.md` in the same folder. Concurrent urgent-notice delivery is recorded in [its follow-up item](follow-ups/concurrent-urgent-notice-announcements.md).
 
 ## Milestone 5: Menus and panel resizing
 

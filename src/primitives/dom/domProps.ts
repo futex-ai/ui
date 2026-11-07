@@ -1,6 +1,6 @@
 /**
  * React Native props to DOM props: element, role, `aria-*`, `tabIndex`,
- * `data-testid` and the forwarded-handler allowlist.
+ * `data-testid`, the link attributes, and the forwarded-handler allowlist.
  *
  * A transcription of `react-native-web` 0.21.2's `createElement` +
  * `createDOMProps` pair, so `getByRole`, `toBeDisabled`, the axe sweep and the
@@ -101,6 +101,25 @@ function applyAriaProps(props: PropBag, domProps: PropBag) {
   }
 }
 
+/**
+ * `href` and `hrefAttrs`, which make a `View` or a `Text` a link, as on
+ * `react-native-web`: the address, then the `rel` and `target` that the link
+ * host sets for a new tab.
+ */
+function applyLinkProps(props: PropBag, domProps: PropBag) {
+  if (props.href == null) {
+    return;
+  }
+  domProps.href = props.href;
+  const attrs = props.hrefAttrs as PropBag | null | undefined;
+  if (attrs?.rel != null) {
+    domProps.rel = attrs.rel;
+  }
+  if (attrs?.target != null) {
+    domProps.target = attrs.target;
+  }
+}
+
 /** `aria-readonly` / `aria-required` also set the native attribute on inputs. */
 function applyFormSemantics(
   props: PropBag,
@@ -187,7 +206,11 @@ export function createDomProps(
   props: PropBag,
   options: DomPropsOptions,
 ): DomProps {
-  const element = elementFor(props, options.defaultElement);
+  // An `href` makes the element an anchor, unless a role names another one.
+  const element = elementFor(
+    props,
+    props.href != null ? "a" : options.defaultElement,
+  );
   const role = webRoleFor(props);
   const domProps: PropBag = {};
 
@@ -205,6 +228,7 @@ export function createDomProps(
 
   applyAriaProps(props, domProps);
   applyFormSemantics(props, domProps, element);
+  applyLinkProps(props, domProps);
 
   // `aria-disabled={false}` is not an attribute: only a real "disabled" is.
   if ((props["aria-disabled"] || props.accessibilityDisabled) === true) {

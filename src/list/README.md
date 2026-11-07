@@ -17,6 +17,8 @@ convenience — all driven by shared theme tokens.
 - Make items pressable via `onItemPress`, with the shared hover wash, sage focus
   ring, pressed and disabled states, `button` semantics, and keyboard
   activation — or render plain static rows when no handler is given.
+- Make rows navigation rows via `itemLink`: links inside their list items, with
+  the current page tinted and the app's own navigation.
 - Expose `list` / `listitem` semantics so assistive tech reads "list, N items",
   with the divider removed from the accessibility tree.
 - Provide `ListItem`, the default leading / title / description / trailing row.
@@ -78,6 +80,54 @@ and `itemTestID` identifies the row view instead.
   renderItem={(person) => <ListItem title={person.name} />}
 />
 ```
+
+### Navigation rows
+
+Pass `itemLink` to make a row a navigation row. It returns the row's link,
+`{ href, current?, newTab? }`, or `undefined` for a row without one. The row is
+then a link inside its list item, so the list keeps its list semantics, and on
+web the link is an anchor with its address. A row with a link wins over
+`onItemPress` for that row; the other rows keep the press or stay static.
+
+```tsx
+<List<Project>
+  accessibilityLabel="Projects"
+  itemKey={(project) => project.id}
+  itemLink={(project) => ({
+    current: project.id === currentId,
+    href: `/projects/${project.id}`,
+  })}
+  items={projects}
+  onItemNavigate={(project) => router.push(`/projects/${project.id}`)}
+  renderItem={(project) => <ListItem size="xs" title={project.name} />}
+  size="xs"
+/>
+```
+
+- `onItemNavigate` is the app's own navigation. On web, a primary click or Enter
+  without a modifier on a same-tab row runs it instead of loading the row's
+  `href`; a modified or middle click, and each click of a new-tab row, keep the
+  browser's link behaviour. On native every activation runs it. Without it, the
+  browser or the platform opens the `href`.
+- `current` marks the row of the page that shows now: `aria-current="page"` on
+  web and the selected state on native. The row takes the `primarySoft` tint,
+  and its `ListItem` title takes `primaryDeep` at weight 600, or at the heavier
+  title weight of its size, such as 700 at `md`. Its `ListItem`
+  description takes `ink2`, because `muted` text falls below 4.5:1 on the tint
+  in the default theme. Give trailing text in the current row the same care,
+  for example the `secondary` text colour.
+- `newTab` opens the destination in a new tab on web. The row shows an arrow
+  after its content, and its name ends with `newTabLabel`, "(opens in a new
+  tab)" by default. With `itemLabel`, the note goes at the end of that label.
+- `itemLabel` names a navigation row as it names a pressable row. Links have no
+  disabled state, so `itemDisabled` does not apply to them.
+- A navigation row has the hover wash, the pressed fill, and the inset focus
+  ring of a pressable row.
+
+A link holds no other control. A row that needs a control, such as a switch,
+keeps it outside the link: it stays a static or pressable row, with the control
+in its trailing slot. A `ListItem` inside a navigation row ignores `onPress` and
+warns in development, so it never nests a button inside the link.
 
 ### Focus behavior
 
@@ -171,6 +221,10 @@ a row with a 44px switch beside its title is 68px high.
 - [`ListItem.tsx`](ListItem.tsx): the default row and its pressable title.
 - [`ListSkeleton.tsx`](ListSkeleton.tsx): the placeholder items of a loading
   list.
+- [`LinkListItem.tsx`](LinkListItem.tsx): a navigation row, on the link host of
+  the platform seam.
+- [`listRowLink.ts`](listRowLink.ts): the row link type and the context that
+  gives a `ListItem` the current state of its row.
 - [`listStyles.ts`](listStyles.ts): the size table, the touch row metrics, and
   the styles.
 
@@ -186,4 +240,11 @@ the component.
 Lists read colours and fonts from `SharedUiThemeProvider`: separators use
 `colors.border`, the title uses `colors.ink` and the description `colors.muted`,
 the item hover uses `colors.soft`, the pressed state uses `colors.bg2`, and the
-focus ring uses `colors.primary`.
+focus ring uses `colors.primary`. The current navigation row uses
+`colors.primarySoft`, with a `colors.primaryDeep` title and a `colors.ink2`
+description.
+
+## Related Docs
+
+- [App shell parts protocol](../../docs/protocol/app-shell-parts.md#navigation-rows):
+  the requirements of navigation rows.

@@ -36,6 +36,7 @@ test("web and native primitive modules export the same names", () => {
     ["reactNative.ts", "reactNative.web.ts"],
     ["svg.tsx", "svg.web.tsx"],
     ["icons.ts", "icons.web.ts"],
+    ["link.tsx", "link.web.tsx"],
   ]) {
     assert.deepEqual(
       exportedNames(webFile),

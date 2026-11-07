@@ -106,9 +106,11 @@ test("list item lays out leading, title, description, and trailing slots", () =>
   assert.match(source, /leading != null \?/);
   assert.match(source, /trailing != null \?/);
   // A string/number title or description gets the themed text; nodes render raw.
+  // `titleStyle` is `styles.itemTitle`, plus the accent in a current
+  // navigation row.
   assert.match(
     source,
-    /isText\(title\) \? <Text style=\{styles\.itemTitle\}>\{title\}<\/Text> : title/,
+    /isText\(title\) \? <Text style=\{titleStyle\}>\{title\}<\/Text> : title/,
   );
   assert.match(source, /isText\(description\) \?/);
   assert.match(

@@ -20,6 +20,7 @@ import {
 import { useSharedUiTheme } from "../theme";
 import { useTouchSurface } from "../touchSurface";
 
+import { useListRowLink } from "./listRowLink";
 import {
   createListStyles,
   createTouchListStyles,
@@ -50,7 +51,8 @@ export type ListItemProps = {
    * `leading` and `trailing` slots independently interactive (e.g. a pressable
    * label beside a live toggle in the same row). Use this on a static
    * {@link List} (no `onItemPress`) so the two press targets do not nest —
-   * `List.onItemPress` instead makes the whole row the target.
+   * `List.onItemPress` instead makes the whole row the target. A navigation
+   * row (`List.itemLink`) is a link already, so it ignores `onPress`.
    */
   onPress?: () => void;
   /**
@@ -82,7 +84,7 @@ export function ListItem({
   disabled = false,
   focusIndicator,
   leading,
-  onPress,
+  onPress: requestedOnPress,
   size = "md",
   testID,
   title,
@@ -98,6 +100,22 @@ export function ListItem({
         : createListStyles(theme, size),
     [theme, size, touch],
   );
+  // A navigation row is a link, and a link holds no other control, so its
+  // title cannot be a button. The current row takes the accent title.
+  const rowLink = useListRowLink();
+  const onPress = rowLink == null ? requestedOnPress : undefined;
+  if (rowLink != null && requestedOnPress) {
+    devWarn(
+      "ListItem: a navigation row is a link already, so `onPress` is " +
+        "ignored. Keep a control that a row needs outside its link.",
+    );
+  }
+  const titleStyle = rowLink?.current
+    ? [styles.itemTitle, styles.itemTitleCurrent]
+    : styles.itemTitle;
+  const descriptionStyle = rowLink?.current
+    ? [styles.itemDescription, styles.itemDescriptionCurrent]
+    : styles.itemDescription;
   // The pressable-title column needs an accessible name: an explicit
   // `accessibilityLabel`, or a string/number `title`. A rich-node title with no
   // label leaves the button nameless (WCAG 4.1.2), so warn.
@@ -111,9 +129,9 @@ export function ListItem({
   }
   const mainContent = (
     <>
-      {isText(title) ? <Text style={styles.itemTitle}>{title}</Text> : title}
+      {isText(title) ? <Text style={titleStyle}>{title}</Text> : title}
       {isText(description) ? (
-        <Text style={styles.itemDescription}>{description}</Text>
+        <Text style={descriptionStyle}>{description}</Text>
       ) : (
         (description ?? null)
       )}
