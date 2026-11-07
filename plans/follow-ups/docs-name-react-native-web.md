@@ -22,7 +22,7 @@
     - The DOM `Modal` is a fixed container over the whole viewport, at `src/primitives/dom/Modal.tsx:1-28`.
   - Pull request #168 also swept the docs and the code comments. It credited each unchanged behaviour to "the web backend". It left the notes that say "transcribed from `react-native-web` 0.21.2", and the completed plans.
   - The sweep caught the package name, but not the spaced name "React Native Web". Today no component `README.md` except `src/primitives/README.md` holds the package name. The spaced name is in 27 of them.
-  - Other docs already use the wording "the web backend", for example `docs/protocol/shared-ui-components.md:666` and `src/loader/README.md:99`.
+  - Other docs already use the wording "the web backend", for example the Kanban contract in `docs/protocol/shared-ui-data-views.md` and `src/loader/README.md:99`.
   - `git grep -l -i -E "react-native-web|react native web" -- '*.md' ':!CHANGELOG.md'` lists 42 files. 34 of them are outside `plans/`, with 50 matching lines:
     - In the root: `README.md`.
     - Under `docs/`: `docs/accessibility-manual-checklist.md`, `docs/protocol/rich-text-collaboration.md`, `docs/protocol/rich-text-editor.md`, `docs/protocol/shared-ui-components.md`, and `docs/superpowers/specs/2026-08-12-video-editor-ui-design.md`.

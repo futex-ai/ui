@@ -476,6 +476,17 @@ Run the same read-only AI review wrapper used by the accounting repo with:
 cargo xtask review
 ```
 
+The [mockup catalogue](docs/mockups/README.md) draws the library parts in use,
+at phone and desktop sizes. Run it locally with:
+
+```bash
+npm run mockups:serve   # serve the catalogue and watch edits
+npm run mockups:check   # type-check, then build in strict mode
+```
+
+`npm run mockups:check` writes the build to `.context/mockups/static/`.
+`npm run verify` and CI do not run the mockup commands.
+
 Browser interaction tests start Storybook through Playwright with file watching
 disabled by `STORYBOOK_DISABLE_WATCH=1`, so workspace writes cannot reload test
 pages. A reused development server keeps live reload but ignores `.context/`.
@@ -669,8 +680,12 @@ The package export map intentionally separates runtime targets:
 - Story visual/ARIA snapshot sweep:
   [tests/browser/snapshots.spec.ts](tests/browser/snapshots.spec.ts)
 - Repository automation: [xtask/README.md](xtask/README.md)
-- Shared component protocol:
+- Shared component protocol and its linked pages:
   [docs/protocol/shared-ui-components.md](docs/protocol/shared-ui-components.md)
+- App shell parts protocol, for the `xs` size, compact text, touch surfaces,
+  links, notices, empty states, menus, and panel resizing:
+  [docs/protocol/app-shell-parts.md](docs/protocol/app-shell-parts.md)
+- Mockup catalogue: [docs/mockups/README.md](docs/mockups/README.md)
 - Web overlays protocol:
   [docs/protocol/web-overlays.md](docs/protocol/web-overlays.md)
 - Rich-text collaboration protocol:

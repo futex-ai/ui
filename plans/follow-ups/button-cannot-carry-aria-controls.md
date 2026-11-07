@@ -12,7 +12,7 @@
 - **Background:**
   - `Popover` gives its trigger render function four `triggerProps`: `aria-controls` with the surface id while the popover is open, `aria-expanded`, `aria-haspopup`, and `onPress`. `src/popover/README.md` says to spread them onto a `Pressable`.
   - `Button`, the shared button of the library, has the props `expanded` and `hasPopup` for the second and third values. Its prop types have no way to pass `aria-controls`.
-  - The Button contract in `docs/protocol/shared-ui-components.md` lists the states that the button emits. It does not list `aria-controls`.
+  - The Button contract in `docs/protocol/shared-ui-controls.md` lists the states that the button emits. It does not list `aria-controls`.
   - The story `src/stories/modalFromPopoverExample.tsx` uses `Button` as a popover trigger, so its trigger has no `aria-controls`.
 - **Problem:** A consumer who builds a popover trigger with `Button` cannot pass `aria-controls`. Assistive technology then cannot follow the link from the trigger to the popover surface. The only way out is a raw `Pressable`, which loses the shared button styles and focus treatment.
 - **Impact if no action:** Popover triggers built with the shared button lose the relation to their surface that the popover gives them (WCAG 1.3.1). Screen readers that use `aria-controls`, such as JAWS, cannot move to the surface.

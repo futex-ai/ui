@@ -72,10 +72,22 @@ Depends on: 1
 
 State the additional behavior before product implementation. Preserve the existing contract.
 
-- [ ] Add a focused protocol document for the new parts, density, link semantics, phone targets, menu keyboard behavior, and panel resizing.
-- [ ] Align the existing control-size contract, component coverage, and Storybook family list. Link the focused contract. Split the long shared protocol into linked requirement pages if it needs changes. Preserve requirements and existing link anchors.
-- [ ] Add the new catalogue commands and documentation links to the root README.
-- [ ] Confirm that the requirements implement the task and the reference without changing current defaults.
+- [x] Add a focused protocol document for the new parts, density, link semantics, phone targets, menu keyboard behavior, and panel resizing.
+- [x] Align the existing control-size contract, component coverage, and Storybook family list. Link the focused contract. Split the long shared protocol into linked requirement pages if it needs changes. Preserve requirements and existing link anchors.
+- [x] Add the new catalogue commands and documentation links to the root README.
+- [x] Confirm that the requirements implement the task and the reference without changing current defaults.
+
+The requirements report is `.context/conductive-ui-parts/reports/requirements.md`. The split preserves the prior requirements and heading anchors. The contract keeps all phone targets in real layout space and applies the same completion callback to native accessibility resizing.
+
+## Milestone 2a: Documentation homes
+
+Depends on: 2
+
+The split exposed existing implementation notes inside protocol requirements. Move those notes to their proper homes while keeping every observable requirement. This work does not change the app-shell contract or block the independent density implementation.
+
+- [ ] Rehome internal mechanics from the split protocol without losing requirements or old heading anchors.
+- [ ] Keep public API semantics, CSS/ARIA interoperability names, and consumer obligations in the protocol.
+- [ ] Validate the moved content and its links. Record the changes under `.context/conductive-ui-parts/`.
 
 ## Milestone 3: Dense sizes, typography, rows, and touch targets
 
@@ -121,17 +133,21 @@ Delegate to the `ui implementor` action. Reuse existing overlay, focus, and resp
 
 ## Milestone 6: Package and visual integration
 
+Tags: ui
+
 Depends on: 5
 
 Delegate package work to the `non-ui implementor` and UI integration to the `ui implementor`.
 
 - [ ] Export the parts from the root and appropriate subpath entry points on both platforms.
 - [ ] Register the stories in the native Storybook host.
+- [ ] Build the native Storybook JavaScript for iOS and Android in the cloud host. Record any device-only check that cannot run here.
 - [ ] Replace drawn new parts in the Mokly catalogue with the actual components. Keep the same appearances, valid links, and static menu/sheet views. Link the new protocol from the entries.
 - [ ] Check the built declarations and package smoke test for the new entry points.
 - [ ] Record and inspect Linux screenshot and ARIA baselines for every new story.
 - [ ] Prove the new tests fail on a behavior change. Run each new asynchronous or browser test ten times.
 - [ ] Smoke-test the new stories and compare them with the mockups. Save test costs and evidence under `.context/`.
+- [ ] Sync the final Storybook family coverage and implemented status in the docs after all parts exist.
 
 ## Milestone 7: Checks, pull request, and review
 
