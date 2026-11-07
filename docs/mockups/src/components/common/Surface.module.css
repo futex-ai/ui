@@ -1,0 +1,19 @@
+.desktop {
+  display: flex;
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--ui-bg);
+  color: var(--ui-ink);
+}
+
+.phone {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--ui-surface);
+  color: var(--ui-ink);
+}

@@ -1,0 +1,57 @@
+.empty {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.panel {
+  flex: 0 0 auto;
+  justify-content: flex-start;
+  padding: 28px 16px;
+}
+
+.mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 6px;
+  border-radius: var(--ui-radius-pill);
+  background: var(--ui-soft);
+  color: var(--ui-muted);
+}
+
+.panel .mark {
+  width: 36px;
+  height: 36px;
+}
+
+.title {
+  margin: 0;
+  color: var(--ui-ink);
+  font-size: var(--text-h4-size);
+  font-weight: var(--text-h4-weight);
+  line-height: var(--text-h4-line);
+}
+
+.body {
+  max-width: 320px;
+  margin: 0;
+  color: var(--ui-muted);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}

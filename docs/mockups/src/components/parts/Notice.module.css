@@ -1,0 +1,71 @@
+/* A full outline and a tint carry the tone. No edge has an accent strip. */
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--ui-border2);
+  border-radius: var(--ui-radius-lg);
+  background: var(--ui-bg);
+}
+
+.urgent {
+  border-color: var(--ui-rose-line);
+  background: var(--ui-rose-soft);
+}
+
+.icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  height: var(--text-body-line);
+  color: var(--ui-muted);
+}
+
+.urgent .icon {
+  color: var(--ui-rose);
+}
+
+/*
+ * The text and the actions share a column beside the icon. A narrow notice
+ * moves its actions under the text, at the start of the column.
+ */
+.content {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  min-width: 0;
+}
+
+.text {
+  display: flex;
+  flex: 1 1 240px;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.title,
+.body {
+  margin: 0;
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line);
+}
+
+.title {
+  color: var(--ui-ink);
+  font-weight: 600;
+}
+
+.body {
+  color: var(--ui-ink2);
+}
+
+.actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+}

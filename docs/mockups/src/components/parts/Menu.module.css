@@ -1,0 +1,118 @@
+.anchor {
+  position: relative;
+  display: inline-flex;
+}
+
+/* The dropdown surface of the library, with a denser inset. */
+.menu {
+  display: flex;
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-lg);
+  background: var(--ui-surface);
+  box-shadow: 0 14px 40px rgba(20, 28, 22, 0.16);
+  text-align: start;
+}
+
+.start {
+  left: 0;
+}
+
+.end {
+  right: 0;
+}
+
+.item {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--row-gap);
+  min-height: var(--row-min-height);
+  padding: var(--row-padding-y) var(--row-padding-x);
+  border-radius: var(--ui-radius-sm);
+  color: var(--ui-ink);
+  font-size: var(--row-title);
+  line-height: var(--row-title-line);
+  white-space: nowrap;
+  cursor: default;
+  outline: none;
+}
+
+.icon {
+  flex-shrink: 0;
+  color: var(--ui-muted);
+}
+
+.label {
+  flex: 1;
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+
+.detail {
+  flex-shrink: 0;
+  color: var(--ui-muted);
+  font-size: var(--row-detail);
+  font-variant-numeric: tabular-nums;
+}
+
+.check {
+  flex-shrink: 0;
+  color: var(--ui-primary);
+}
+
+.danger,
+.danger .icon {
+  color: var(--ui-rose);
+}
+
+/*
+ * The active row uses the solid highlight of the library menus, so it keeps
+ * a perceivable state against the surface. A danger row fills deep rose.
+ */
+.active,
+.active .icon,
+.active .detail,
+.active .check {
+  color: var(--ui-on-solid);
+}
+
+.active {
+  background: var(--ui-primary);
+}
+
+.active.danger {
+  background: var(--ui-rose-deep);
+}
+
+.group {
+  padding: 8px var(--row-padding-x) 2px;
+  color: var(--ui-muted);
+  font-size: var(--text-overline-size);
+  font-weight: var(--text-overline-weight);
+  letter-spacing: var(--text-overline-tracking);
+  line-height: var(--text-overline-line);
+  text-transform: uppercase;
+}
+
+.note {
+  margin: 0;
+  padding: 4px var(--row-padding-x) 6px;
+  color: var(--ui-muted);
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-line);
+  white-space: normal;
+}
+
+.divider {
+  flex-shrink: 0;
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--ui-border);
+}

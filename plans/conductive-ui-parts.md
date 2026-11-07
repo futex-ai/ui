@@ -29,6 +29,20 @@ These are implementation calls within the selected scope, recorded on 2026-11-07
 - **Orchestrator call:** Start a Mokly catalogue for the new parts. Keep the older mockups and their open migration decisions unchanged. Use authored TSX screen components with desktop and mobile variants. Generated output stays ignored.
 - **Orchestrator call:** Keep related implementation in this workspace. Run disjoint implementation domains in parallel only after their prerequisites finish. Only the orchestrator commits and runs the complete gate.
 
+Mockup refinements, recorded on 2026-11-07:
+
+- **Orchestrator call:** Use 12/16 labels at weight 500 for dense buttons and tabs. Use 13/18 row titles at weight 400. These metrics fit the reference and the existing token system.
+- **Orchestrator call:** A dense field has a 26 px frame and a 24 px input. New dense field actions have 24 px targets. Phone inputs and separate actions have 44 px targets. The bordered phone frame can grow to 46 px. A frame without its own handler is not the input target.
+- **Orchestrator call:** Keep unrelated switch geometry. Rows with larger controls can grow above 26 px. The phone helper still enforces the 44 px target floor.
+- **Orchestrator call:** Offer the compact text scale through a provider and a per-text override. It remains available on web and native. The phone mockups show the existing default scale as one consumer choice.
+- **Orchestrator call:** Give link tabs a label style for Graphite's font and letter case. Keep room for the shared focus glow inside a scrolling tab row.
+- **Orchestrator call:** Let the caller choose a link target. Use a new-context indicator and announcement when the caller chooses a new tab. Do not infer routing or a new tab from the URL.
+- **Orchestrator call:** Extend dense navigation rows with link destinations and current-page state. Reuse the list layout and link primitive, rather than turn navigation into buttons.
+- **Orchestrator call:** Let empty-state titles use the caller's heading level. Urgent notices announce their message. Neutral notices remain ordinary content.
+- **Orchestrator call:** Let a static menu's caller choose the side and alignment. Provide an in-place phone sheet for static drawing alongside the interactive sheet behavior.
+- **Orchestrator call:** Let resize callers supply effective bounds that leave room for their main content. Arrow keys adjust the width. Home and End select the minimum and maximum. Use the short focus grip from the mockups.
+- **Orchestrator call:** Replace the drawn new parts with real library components during integration. Keep the mockup layouts and links as consumer examples.
+
 No existing mechanism is replaced. Conductive's consumer migration belongs to its own repository.
 
 ## Milestone 1: Mockups
@@ -39,14 +53,16 @@ Depends on: none
 
 Draw the parts together in desktop and phone compositions before product code changes.
 
-- [ ] Set up the new Mokly catalogue and local build/check commands without adding a CI gate. Name the local command in `AGENTS.md`. Generate output under `.context/`, outside the authored mockup tree.
-- [ ] Draw dense controls, small text, dense rows, link buttons, and link tabs.
-- [ ] Draw neutral and urgent notices, empty content, an open dense menu, a phone menu sheet, and a panel resize handle.
-- [ ] Keep at most five screens on each page. Link child pages from the catalogue.
-- [ ] Build and visually inspect the desktop and phone variants. Save screenshots under `.context/conductive-ui-parts/`.
-- [ ] Update this design and the remaining TODOs for problems found in the mockups.
+- [x] Set up the new Mokly catalogue and local build/check commands without adding a CI gate. Name the local command in `AGENTS.md`. Generate output under `.context/`, outside the authored mockup tree.
+- [x] Draw dense controls, small text, dense rows, link buttons, and link tabs.
+- [x] Draw neutral and urgent notices, empty content, an open dense menu, a phone menu sheet, and a panel resize handle.
+- [x] Keep at most five screens on each page. Link child pages from the catalogue.
+- [x] Build and visually inspect the desktop and phone variants. Save screenshots under `.context/conductive-ui-parts/`.
+- [x] Update this design and the remaining TODOs for problems found in the mockups.
 
 Evidence belongs under `.context/conductive-ui-parts/`.
+
+The mockup report is `.context/conductive-ui-parts/reports/mockups.md`. The orchestrator's independent checks are in the same folder's logs.
 
 The options check is `.context/conductive-ui-parts/reports/plan-options.md`. The decision date follows the user's task and the Conductive follow-up record. Calls in this workspace use its UTC date.
 
@@ -71,7 +87,7 @@ Delegate to the `ui implementor` action. This domain owns size tables, existing 
 
 - [ ] Add the dense control size and complete every shared size table.
 - [ ] Add compact text while retaining the default scale.
-- [ ] Add dense list rows and apply the touch-size helper to the relevant controls.
+- [ ] Add dense list rows and apply the touch-size helper to the relevant controls. Size the input itself and its clear/suffix actions, as well as the outer frame.
 - [ ] Add stories and meaningful tests for the new behavior and unchanged defaults.
 - [ ] Update affected area READMEs. Run targeted checks and both typechecks.
 
@@ -84,6 +100,7 @@ Depends on: 3
 Delegate to the `ui implementor` action. This domain owns the new navigation and feedback component folders and the link primitive at the platform seam.
 
 - [ ] Add link buttons and link tabs with web and native behavior. Add a web anchor and native link opening through the primitive seam. Keep platform export lists equal.
+- [ ] Add link destinations and current-page state to dense navigation rows without changing existing button rows.
 - [ ] Add notices and empty states with theme tokens and accessible content.
 - [ ] Add main-variant stories, focused tests, and area READMEs.
 - [ ] Run targeted checks and both typechecks.
@@ -110,6 +127,7 @@ Delegate package work to the `non-ui implementor` and UI integration to the `ui 
 
 - [ ] Export the parts from the root and appropriate subpath entry points on both platforms.
 - [ ] Register the stories in the native Storybook host.
+- [ ] Replace drawn new parts in the Mokly catalogue with the actual components. Keep the same appearances, valid links, and static menu/sheet views. Link the new protocol from the entries.
 - [ ] Check the built declarations and package smoke test for the new entry points.
 - [ ] Record and inspect Linux screenshot and ARIA baselines for every new story.
 - [ ] Prove the new tests fail on a behavior change. Run each new asynchronous or browser test ten times.
@@ -130,6 +148,10 @@ The orchestrator owns these steps. The task requests a pull request before its r
 - [ ] Delete this plan after the other required TODOs finish. Keep its dated decisions and design calls in the pull request description.
 - [ ] Finalize the pull request description with the API summary, checks, review outcome, follow-ups, and release handoff.
 
+## Release handoff
+
+The Conductive orchestrator reported the 5.0.0 baseline published on 2026-11-07. The additions therefore target 5.1.0 through additive `feat:` commits. The owner asked this workspace to report the pull request when the parts, checks, CI, and implementation review are ready. The owner will then review and merge the implementation and release pull requests.
+
 ## Post-merge follow-up (non-blocking)
 
-- [ ] The Conductive orchestrator merges PR #180 and confirms 5.0.0 on npm before this implementation pull request merges. The [existing release task](follow-ups/publish-firna-ui-5-0-0.md) owns that baseline. Then the orchestrator merges this implementation and its minor release pull request. Confirm the new published version and package exports through npm. Do not merge or publish from this workspace.
+- [ ] The owner merges this implementation and its 5.1.0 release pull request. Confirm the new published version and package exports through npm. Do not merge or publish from this workspace.

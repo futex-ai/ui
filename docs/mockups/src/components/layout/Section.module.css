@@ -1,0 +1,37 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: var(--control-height);
+}
+
+.title {
+  margin: 0;
+  color: var(--ui-ink);
+  font-size: var(--text-h4-size);
+  font-weight: var(--text-h4-weight);
+  line-height: var(--text-h4-line);
+}
+
+/* A phone keeps its larger h4 for the page title, so sections step down. */
+:global([data-surface="phone"]) .title {
+  font-size: var(--text-h5-size);
+  font-weight: var(--text-h5-weight);
+  line-height: var(--text-h5-line);
+}
+
+.paragraph {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--ui-ink2);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line);
+}

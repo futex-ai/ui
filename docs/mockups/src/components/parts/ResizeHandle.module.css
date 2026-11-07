@@ -1,0 +1,60 @@
+/*
+ * A 9 px target over the hairline between two columns. The primary colour
+ * shows only on a short grip in the middle, so no panel gets an accent edge.
+ */
+.handle {
+  position: absolute;
+  z-index: 15;
+  top: 0;
+  bottom: 0;
+  width: 9px;
+  cursor: col-resize;
+  outline: none;
+}
+
+.end {
+  right: -5px;
+}
+
+.start {
+  left: -5px;
+}
+
+.line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 4px;
+  width: 1px;
+}
+
+.grip {
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  width: 5px;
+  height: 36px;
+  border-radius: var(--ui-radius-pill);
+  background: var(--ui-primary);
+  opacity: 0;
+  transform: translateY(-50%);
+}
+
+.handle:hover .line,
+.handle:focus-visible .line,
+.shown .line {
+  background: var(--ui-border2);
+}
+
+.handle:hover .grip,
+.handle:focus-visible .grip,
+.shown .grip {
+  opacity: 1;
+}
+
+/* Keyboard focus adds the library glow around the grip. */
+.handle:focus-visible .grip,
+.focused .grip {
+  box-shadow: 0 0 0 var(--firna-focus-ring-width, 4px)
+    var(--firna-focus-ring-color);
+}

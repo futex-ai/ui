@@ -1,0 +1,78 @@
+/*
+ * A scrolling row clips what overflows it, so the row keeps 4 px of room
+ * for the focus glow inside its edges and gives the room back outside.
+ */
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  margin: -4px;
+  padding: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+/* Every tab shows, and the tabs share the width of the bar by content. */
+.fill {
+  gap: 4px;
+  overflow: visible;
+}
+
+.fill .tab {
+  flex: 1 1 auto;
+  padding: 0 8px;
+}
+
+.tab {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: var(--control-height);
+  min-width: 0;
+  padding: 0 var(--control-padding-x);
+  border: 1px solid transparent;
+  border-radius: var(--ui-radius-md);
+  color: var(--ui-muted);
+  font-family: var(--ui-font-sans);
+  font-size: var(--control-label);
+  font-weight: var(--control-label-weight);
+  line-height: var(--control-label-line);
+  text-decoration: none;
+  white-space: nowrap;
+  outline: none;
+}
+
+.label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab:hover {
+  background: var(--ui-soft);
+  color: var(--ui-ink);
+}
+
+/*
+ * The current tab: a control edge, a soft fill, and ink text. The edge makes
+ * the state perceivable, as on the selected segment of a segmented control.
+ */
+.current,
+.current:hover {
+  border-color: var(--ui-control-border);
+  background: var(--ui-soft);
+  color: var(--ui-ink);
+}
+
+.tab:focus-visible,
+.focused {
+  box-shadow: 0 0 0 var(--firna-focus-ring-width, 4px)
+    var(--firna-focus-ring-color);
+}
+
+.count {
+  color: var(--ui-muted);
+  font-variant-numeric: tabular-nums;
+}

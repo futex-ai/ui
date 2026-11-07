@@ -1,0 +1,19 @@
+.title {
+  flex: 1;
+  margin: 0;
+  color: var(--ui-ink);
+  font-size: var(--text-h4-size);
+  font-weight: var(--text-h4-weight);
+  line-height: var(--text-h4-line);
+}
+
+.search {
+  flex-shrink: 0;
+  padding: 10px 10px 2px;
+}
+
+.foot {
+  flex-shrink: 0;
+  padding: 8px;
+  border-top: 1px solid var(--ui-border);
+}
