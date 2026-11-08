@@ -6,7 +6,7 @@ import { touchInputSizeTokens } from "../input/inputSizing";
 import type { SharedUiTheme } from "../theme";
 import { touchControlMetrics } from "../touchMetrics";
 
-import type { SelectorVariant } from "./DropdownSelector";
+import type { SelectorVariant } from "./dropdownSelectorTypes";
 
 // The default `field` selector is the input's twin — same bordered box — so it
 // sizes from the shared input scale, keeping a select and a text input the same

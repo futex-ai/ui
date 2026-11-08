@@ -1,7 +1,7 @@
 # Accessibility manual test checklist
 
 The automated gate (`tests/browser/a11y.spec.ts` axe sweep + the interaction
-tests in `tests/browser/storybook.spec.ts`) catches static and scripted
+tests in the component specs under `tests/browser/`) catches static and scripted
 regressions, but some WCAG 2.1 AA criteria can only be confirmed by hand. Run
 this checklist before a release and whenever a component's interaction model
 changes.
@@ -84,7 +84,7 @@ on Windows).
 ## When adding or changing a component
 
 - [ ] Add/extend a story so the axe sweep covers the new states.
-- [ ] Add interaction-test coverage for the keyboard model in
-      `storybook.spec.ts`.
+- [ ] Add interaction-test coverage for the keyboard model in the
+      component's spec under `tests/browser/`.
 - [ ] If a new axe finding is intentional and unavoidable on RNW, record it in
       `axe-baseline.json` with a comment in the PR explaining why.

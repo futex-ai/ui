@@ -8,7 +8,8 @@ import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
 
 import { createDateFieldStyles } from "./dateFieldStyles";
-import { DateInput, FieldLabel } from "./DateField";
+import { FieldLabel } from "./DateField";
+import { DateInput } from "./DateInput";
 import { dateFieldZIndex } from "./dateFieldLayers";
 import { compareIso, DateRange } from "./dateMath";
 import { DatePickerVariant } from "./types";

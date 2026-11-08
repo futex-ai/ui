@@ -24,7 +24,8 @@ import { accessibilitySweepShards, storiesForShard } from "./a11ySharding";
  *
  * axe is a static scanner: it sees only the currently-rendered DOM. Dynamic
  * behaviour (keyboard nav, focus trap/restore, live-region announcements) is
- * asserted by the interaction tests in `storybook.spec.ts`, not here.
+ * asserted by the interaction tests in the component specs beside this file,
+ * not here.
  */
 
 type StoryEntry = { id: string; type: string; name: string; title: string };

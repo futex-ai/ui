@@ -1,5 +1,6 @@
 export * from "./CalendarMonth";
 export * from "./DateField";
+export * from "./DateInput";
 export * from "./DatePickerOverlay";
 export * from "./DateRangeField";
 export * from "./DateWheel";

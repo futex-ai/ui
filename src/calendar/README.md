@@ -203,4 +203,4 @@ repo's Node test runner (datetime math; daily/weekly/monthly/yearly recurrence
 with interval / count / until / exceptions and duration preservation; column and
 spanning-bar layout). The views, view switching, recurrence expansion, and the
 web drag-to-create gesture are exercised by the Storybook Playwright spec
-(`tests/browser/storybook.spec.ts`) against the `Calendar/Examples` stories.
+(`tests/browser/calendar.spec.ts`) against the `Calendar/Examples` stories.

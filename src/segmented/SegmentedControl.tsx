@@ -1,45 +1,32 @@
 /** Single-select segmented controls for compact one-of-N choices. */
-import { IconComponent } from "../primitives/icons";
+import { useCallback, useId, useMemo, useState } from "react";
 import {
-  type ReactNode,
-  useCallback,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import {
-  type LayoutChangeEvent,
   Platform,
-  Pressable,
   Text,
   type TextStyle,
   View,
   type ViewStyle,
 } from "../primitives/reactNative";
 
-import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
-import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { LabelInfo } from "../input";
-import {
-  type FocusableRef,
-  focusItemAt,
-  nextNavIndex,
-  rovingTabIndex,
-} from "../keyboardNavigation";
-import type { SharedUiTheme } from "../theme";
+import { rovingTabIndex } from "../keyboardNavigation";
 import { useSharedUiTheme } from "../theme";
 import { touchControlMetrics } from "../touchMetrics";
 import { useTouchSurface } from "../touchSurface";
 import { useReducedMotion } from "../useReducedMotion";
 
 import {
+  type PillRect,
+  SegmentedControlButton,
+} from "./SegmentedControlButton";
+import {
   createSegmentedControlStyles,
   createTouchSegmentedControlStyles,
   segmentIconSize,
-  type SegmentedControlStyles,
 } from "./segmentedControlStyles";
+import type { SegmentedControlProps } from "./segmentedControlTypes";
+import { useSegmentedRovingFocus } from "./useSegmentedRovingFocus";
 
 // A brisk Material-style decelerate for the sliding pill thumb. Like the Switch
 // knob, this is a web-only CSS transition (native snaps) and is dropped under
@@ -48,105 +35,6 @@ import {
 const THUMB_SLIDE = "0.2s cubic-bezier(0.4, 0, 0.2, 1)";
 const THUMB_TRANSITION = `left ${THUMB_SLIDE}, top ${THUMB_SLIDE}, width ${THUMB_SLIDE}, height ${THUMB_SLIDE}`;
 const TEXT_TRANSITION = "color 0.2s ease";
-
-export type SegmentOption<T extends string> = {
-  /**
-   * Overridable accessible name for the segment. Defaults to `label`. Set it to
-   * disambiguate duplicate visible labels across controls or pin a
-   * locale-stable name for `getByRole("radio", { name })`. Required in effect
-   * when the control is `iconOnly` (the hidden label is the accessible name).
-   */
-  accessibilityLabel?: string;
-  disabled?: boolean;
-  /**
-   * Leading lucide glyph shown before the label, tinted to match the segment's
-   * text colour and sized to the control. Use {@link iconNode} for a non-lucide
-   * glyph.
-   */
-  icon?: IconComponent;
-  /**
-   * A caller-supplied leading icon node (e.g. an `@expo/vector-icons` glyph),
-   * rendered as-is — the caller owns its colour and size. Takes precedence over
-   * {@link icon} and is hidden from assistive tech on web.
-   */
-  iconNode?: ReactNode;
-  label: string;
-  value: T;
-};
-
-export type SegmentedControlSizing = "content" | "equal";
-
-export type SegmentedControlVariant = "outline" | "pill";
-
-export type SegmentedControlProps<T extends string> = {
-  accessibilityLabel?: string;
-  /**
-   * Whether the `pill` variant's selection thumb slides between options.
-   * Defaults to `true`; pass `false` to snap it into place with no transition
-   * (also forced off when the OS "reduce motion" setting is on). No effect on
-   * the `outline` variant, which has no thumb.
-   */
-  animated?: boolean;
-  disabled?: boolean;
-  error?: string | null;
-  /**
-   * How the option buttons show keyboard focus: the shared `ring` glow, the
-   * browser's `outline`, or `none` for no focus styling at all, which leaves
-   * the caller to show focus some other way (WCAG 2.1 — 2.4.7 Focus Visible,
-   * AA). Defaults to the theme's `focusIndicator`.
-   */
-  focusIndicator?: FocusIndicator;
-  hint?: string;
-  /**
-   * Hide every option's visible label, rendering the leading icon alone for a
-   * compact toolbar. Each option's (hidden) label — or its `accessibilityLabel`
-   * — remains the accessible name (WCAG 1.1.1 / 4.1.2), so every option must
-   * supply an `icon` or `iconNode`. Defaults to `false`.
-   */
-  iconOnly?: boolean;
-  label?: string;
-  /**
-   * Supplementary help text revealed by an ⓘ button after the label. Pressing
-   * the button opens a small bubble with this text (built on `Popover`);
-   * screen-reader users get it from the button's description. Unlike `hint` it
-   * is not shown until requested. Requires a `label` to anchor the button.
-   */
-  labelInfo?: string;
-  /** Icon for the {@link labelInfo} button. Defaults to the lucide `Info` glyph. */
-  labelInfoIcon?: IconComponent;
-  /**
-   * Accessible name for the {@link labelInfo} button. Defaults to
-   * `More information about {label}`.
-   */
-  labelInfoLabel?: string;
-  onChange: (value: T) => void;
-  options: readonly SegmentOption<T>[];
-  required?: boolean;
-  /** Control density: `sm`, `md` (default), or `lg`. */
-  size?: ControlSize;
-  /** Width strategy: `content` (default) hugs each label; `equal` shares width evenly. */
-  sizing?: SegmentedControlSizing;
-  /** Test identifier forwarded to the root element (`data-testid` on web). */
-  testID?: string;
-  value: T;
-  /**
-   * Visual style: `pill` (default) renders a tab-like track with the selected
-   * option as a raised surface; `outline` renders separate bordered cells, the
-   * right fit for rows of filter pills.
-   */
-  variant?: SegmentedControlVariant;
-  wrap?: boolean;
-};
-
-type SegmentKeyEvent = {
-  key?: string;
-  nativeEvent?: { key?: string };
-  preventDefault?: () => void;
-  stopPropagation?: () => void;
-};
-
-/** A pill's measured box within the track, used to place the sliding thumb. */
-type PillRect = { height: number; width: number; x: number; y: number };
 
 export function SegmentedControl<T extends string>({
   accessibilityLabel,
@@ -214,25 +102,8 @@ export function SegmentedControl<T extends string>({
   // visible error/hint Text by id (WCAG 3.3.1 / 1.3.1). Errors take precedence.
   const describedBy = error ? errorId : hint ? hintId : undefined;
 
-  // Each segment needs a focusable ref so arrow keys can move a roving focus
-  // between options (WCAG 2.1.1 Keyboard / 4.1.2). The whole group is a single
-  // Tab stop: only the active option carries `tabIndex 0`.
-  const itemRefs = useRef<{ current: FocusableRef }[]>([]);
-  itemRefs.current = options.map(
-    (_, index) => itemRefs.current[index] ?? { current: null },
-  );
-
-  // The roving tab stop is the selected option, falling back to the first
-  // enabled option when the selected value is itself disabled/absent.
-  const selectedIndex = options.findIndex((option) => option.value === value);
-  const firstEnabledIndex = options.findIndex(
-    (option) => !(disabled || option.disabled === true),
-  );
-  const activeIndex =
-    selectedIndex >= 0 &&
-    !(disabled || options[selectedIndex]?.disabled === true)
-      ? selectedIndex
-      : firstEnabledIndex;
+  const { activeIndex, itemRefs, moveFocus, selectedIndex } =
+    useSegmentedRovingFocus({ disabled, onChange, options, value });
 
   // The measured box of each pill, keyed by its option value (not array index,
   // which would point at a different pill after a reorder), so the sliding thumb
@@ -280,53 +151,6 @@ export function SegmentedControl<T extends string>({
     pill && slide
       ? ({ transition: TEXT_TRANSITION } as unknown as TextStyle)
       : null;
-
-  const moveFocus = useCallback(
-    (key: string, fromIndex: number) => {
-      const count = options.length;
-      if (count === 0) {
-        return;
-      }
-      let nextIndex = nextNavIndex({
-        key,
-        index: fromIndex,
-        count,
-        orientation: "horizontal",
-      });
-      if (nextIndex === null) {
-        return;
-      }
-      // Skip disabled options in the arrow direction, wrapping with the helper.
-      const forward = key === "ArrowRight" || key === "Home";
-      let guard = 0;
-      while (
-        (disabled || options[nextIndex]?.disabled === true) &&
-        guard < count
-      ) {
-        const step = nextNavIndex({
-          key: forward ? "ArrowRight" : "ArrowLeft",
-          index: nextIndex,
-          count,
-          orientation: "horizontal",
-        });
-        if (step === null) {
-          return;
-        }
-        nextIndex = step;
-        guard += 1;
-      }
-      if (disabled || options[nextIndex]?.disabled === true) {
-        return;
-      }
-      focusItemAt(itemRefs.current, nextIndex);
-      // Follow the APG radio pattern: moving focus selects the option.
-      const nextValue = options[nextIndex]?.value;
-      if (nextValue !== undefined && nextValue !== value) {
-        onChange(nextValue);
-      }
-    },
-    [disabled, onChange, options, value],
-  );
 
   return (
     <View style={styles.field} testID={testID}>
@@ -413,178 +237,5 @@ export function SegmentedControl<T extends string>({
         </Text>
       ) : null}
     </View>
-  );
-}
-
-function SegmentedControlButton<T extends string>({
-  disabled,
-  focusIndicator,
-  iconOnly,
-  iconSize,
-  index,
-  itemRef,
-  onChange,
-  onMeasure,
-  onMoveFocus,
-  option,
-  rovingTabIndex: tabIndex,
-  selected,
-  sizing,
-  styles,
-  textTransition,
-  theme,
-  thumbActive,
-  variant,
-}: {
-  disabled: boolean;
-  focusIndicator: FocusIndicator | undefined;
-  iconOnly: boolean;
-  iconSize: number;
-  index: number;
-  itemRef: { current: FocusableRef };
-  onChange: (value: T) => void;
-  onMeasure?: (key: string, rect: PillRect) => void;
-  onMoveFocus: (key: string, fromIndex: number) => void;
-  option: SegmentOption<T>;
-  rovingTabIndex: 0 | -1;
-  selected: boolean;
-  sizing: SegmentedControlSizing;
-  styles: SegmentedControlStyles;
-  textTransition: TextStyle | null;
-  theme: SharedUiTheme;
-  thumbActive: boolean;
-  variant: SegmentedControlVariant;
-}) {
-  const pill = variant === "pill";
-  // The leading glyph (a caller node wins over a tinted lucide icon). Its tint
-  // matches the segment's resolved text colour so the icon and label read as
-  // one unit and shift together on selection.
-  const OptionIcon = option.icon;
-  const iconTint = pill
-    ? selected
-      ? theme.colors.ink
-      : theme.colors.ink2
-    : selected
-      ? theme.colors.primaryDeep
-      : theme.colors.ink2;
-  const leadingIcon =
-    option.iconNode != null ? (
-      option.iconNode
-    ) : OptionIcon ? (
-      <OptionIcon color={iconTint} size={iconSize} />
-    ) : null;
-  // The visible label is dropped in `iconOnly` mode, but only when the segment
-  // actually has an icon to show — otherwise it falls back to the label so the
-  // segment is never an empty box (a dev warning fired above).
-  const showLabel = !iconOnly || leadingIcon == null;
-  // Keep the CSS ring inside the segment so it remains visible in compact,
-  // clipped segmented-control hosts.
-  const focus = useFocusRing({ offset: -2, indicator: focusIndicator });
-
-  const handleKeyDown = (event: SegmentKeyEvent) => {
-    const key = event.nativeEvent?.key ?? event.key;
-    // Space checks the focused segment, as the radio-group pattern requires.
-    // React Native Web's press responder binds Spacebar to `button` roles only,
-    // so on a `radio` it neither presses nor is swallowed — Space would scroll
-    // the page. Enter is left to the responder: it presses on every role, so
-    // claiming it here too would fire `onChange` twice.
-    if (key === " " || key === "Spacebar") {
-      event.preventDefault?.(); // and do not scroll the page
-      event.stopPropagation?.();
-      if (!disabled && !selected) {
-        onChange(option.value);
-      }
-      return;
-    }
-    if (
-      key !== "ArrowLeft" &&
-      key !== "ArrowRight" &&
-      key !== "Home" &&
-      key !== "End"
-    ) {
-      return;
-    }
-    event.preventDefault?.();
-    event.stopPropagation?.();
-    onMoveFocus(key, index);
-  };
-  const keyProps = Platform.OS === "web" ? { onKeyDown: handleKeyDown } : {};
-
-  // When the sliding thumb is covering the selected pill, drop the pill's own
-  // fill so the raised surface is drawn once, by the thumb. Until the first
-  // measurement lands (or under the outline variant), the pill keeps painting
-  // its own selected fill, so the selection never flickers off on load.
-  const selectedStyle = selected
-    ? pill
-      ? thumbActive
-        ? null
-        : styles.pillActive
-      : styles.cellSelected
-    : null;
-
-  return (
-    <Pressable
-      accessibilityLabel={option.accessibilityLabel ?? option.label}
-      accessibilityRole="radio"
-      accessibilityState={{ checked: selected, disabled }}
-      aria-checked={selected}
-      disabled={disabled}
-      {...focus.focusRingProps}
-      onBlur={focus.onBlur}
-      onFocus={focus.onFocus}
-      onLayout={
-        onMeasure
-          ? (event: LayoutChangeEvent) => {
-              const { height, width, x, y } = event.nativeEvent.layout;
-              onMeasure(option.value, { height, width, x, y });
-            }
-          : undefined
-      }
-      onPress={() => {
-        if (!selected) {
-          onChange(option.value);
-        }
-      }}
-      ref={(node) => {
-        itemRef.current = node as unknown as FocusableRef;
-      }}
-      tabIndex={tabIndex}
-      {...keyProps}
-      style={[
-        pill ? styles.pill : styles.cell,
-        sizing === "equal" ? styles.equalSegment : styles.contentSegment,
-        selectedStyle,
-        disabled ? styles.disabled : null,
-        focus.focusRingVariables,
-      ]}
-    >
-      {leadingIcon != null ? (
-        // The glyph is decorative: the Pressable's `accessibilityLabel` (the
-        // label / its override) is the accessible name, so hide the icon from
-        // assistive tech on web to avoid a duplicate/raw-name announcement.
-        <View
-          aria-hidden={Platform.OS === "web" ? true : undefined}
-          style={styles.segmentIcon}
-        >
-          {leadingIcon}
-        </View>
-      ) : null}
-      {showLabel ? (
-        <Text
-          numberOfLines={1}
-          style={[
-            pill ? styles.pillText : styles.cellText,
-            selected
-              ? pill
-                ? styles.pillTextActive
-                : styles.cellTextSelected
-              : null,
-            textTransition,
-          ]}
-        >
-          {option.label}
-        </Text>
-      ) : null}
-    </Pressable>
   );
 }

@@ -1,45 +1,20 @@
-/** Single-value selector and read-only selector input surfaces. */
-import { ChevronDown, IconComponent, Search } from "../primitives/icons";
-import {
-  ReactNode,
-  Ref,
-  useCallback,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import {
-  Platform,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from "../primitives/reactNative";
+/** The single-value selector: its trigger, messages, and option popup. */
+import { ChevronDown, Search } from "../primitives/icons";
+import { useMemo } from "react";
+import { Pressable, Text, TextInput, View } from "../primitives/reactNative";
 
-import { announce } from "../announcer";
-import type { ControlSize } from "../controlSize";
-import { devWarn } from "../devWarn";
-import {
-  type FocusIndicator,
-  hideWebOutline,
-  useFocusRing,
-} from "../focusRing";
-import { inputIconSize, LabelInfo } from "../input";
+import { hideWebOutline, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 import { touchControlMetrics } from "../touchMetrics";
 import { useTouchSurface } from "../touchSurface";
 
-import {
-  DropdownList,
-  DropdownListEntry,
-  dropdownRowDomId,
-} from "./DropdownList";
-import type { DropdownHighlightVariant, DropdownRowSlot } from "./DropdownList";
+import { DropdownList } from "./DropdownList";
 import { DropdownPortal } from "./DropdownPortal";
-import { comboboxInputA11y, filterComboboxSections } from "./comboboxModel";
+import { comboboxInputA11y } from "./comboboxModel";
 import { DEFAULT_DROPDOWN_MAX_WIDTH } from "./dropdownGeometry";
+import { selectorTriggerA11y } from "./dropdownSelectorModel";
+import { selectorChevronSize, SelectorLabel } from "./dropdownSelectorParts";
+import type { DropdownSelectorProps } from "./dropdownSelectorProps";
 import {
   createDropdownSelectorStyles,
   createTouchDropdownSelectorStyles,
@@ -49,96 +24,7 @@ import {
   valueStyle,
 } from "./dropdownSelectorStyles";
 import type { DropdownSelectorStyles } from "./dropdownSelectorStyles";
-import { useDropdownSelectorNavigation } from "./useDropdownSelectorNavigation";
-
-export type DropdownSelectorOption = {
-  /**
-   * Overridable accessible name for the option row. Defaults to `label`. Set it
-   * to disambiguate duplicate visible labels or pin a locale-stable name for
-   * `getByRole("option", { name })`.
-   */
-  accessibilityLabel?: string;
-  disabled?: boolean;
-  label: string;
-  /** Trailing slot; see {@link DropdownRowSlot}. */
-  right?: DropdownRowSlot;
-  /** Trailing text (e.g. an account code); see {@link DropdownListEntry}. */
-  rightText?: string;
-  secondary?: string;
-  /** Test identifier forwarded to this option's row (`data-testid` on web). */
-  testID?: string;
-  value: string;
-};
-
-export type DropdownSelectorSection = {
-  options: DropdownSelectorOption[];
-  title?: string;
-};
-
-export type SelectorVariant = "field" | "map" | "mobilePeriod" | "pill";
-
-type DropdownSelectorProps = {
-  error?: string | null;
-  /**
-   * How the trigger shows keyboard focus: the shared `ring` glow, the browser's
-   * `outline`, or `none` for no focus styling at all, which leaves the caller
-   * to show focus some other way (WCAG 2.1 — 2.4.7 Focus Visible, AA). Defaults
-   * to the theme's `focusIndicator`.
-   */
-  focusIndicator?: FocusIndicator;
-  footer?: ReactNode;
-  header?: ReactNode;
-  /** How focused/selected option rows are highlighted. Defaults to `"solid"`. */
-  highlightVariant?: DropdownHighlightVariant;
-  hint?: string;
-  invalid?: boolean;
-  label?: string;
-  /**
-   * Supplementary help text revealed by an ⓘ button after the label. Pressing
-   * the button opens a small bubble with this text (built on `Popover`);
-   * screen-reader users get it from the button's description. Unlike `hint` it
-   * is not shown until requested. Requires a `label` to anchor the button.
-   */
-  labelInfo?: string;
-  /** Icon for the {@link labelInfo} button. Defaults to the lucide `Info` glyph. */
-  labelInfoIcon?: IconComponent;
-  /**
-   * Accessible name for the {@link labelInfo} button. Defaults to
-   * `More information about {label}`.
-   */
-  labelInfoLabel?: string;
-  /** Maximum popup width. Defaults to 360; the trigger remains the minimum. */
-  menuMaxWidth?: number;
-  /** Optional popup minimum above the trigger width or variant default. */
-  menuMinWidth?: number;
-  onValueChange?: (value: string) => void;
-  options: DropdownSelectorOption[];
-  placeholder?: string;
-  readOnly?: boolean;
-  required?: boolean;
-  searchPlaceholder?: string;
-  searchable?: boolean;
-  sections?: DropdownSelectorSection[];
-  /** Control density of the default `field` variant: `sm`, `md` (default), or `lg`. */
-  size?: ControlSize;
-  /** Test identifier forwarded to the root element (`data-testid` on web). */
-  testID?: string;
-  /**
-   * Handle on the underlying pressable trigger for callers that must move
-   * focus imperatively, such as a modal form whose first field mounts after
-   * async hydration. The selector keeps the same node as its popup anchor.
-   */
-  triggerRef?: Ref<View>;
-  /**
-   * Stable, value-independent accessible name for the trigger. When set, the
-   * trigger name stays constant as the selected value changes (the value stays
-   * visible in the trigger text), so `getByRole("button", { name })` keeps
-   * resolving. Defaults to the composed `"{label}, {value}"` name.
-   */
-  triggerLabel?: string;
-  value: string;
-  variant?: SelectorVariant;
-};
+import { useDropdownSelectorState } from "./useDropdownSelectorState";
 
 export function DropdownSelector(props: DropdownSelectorProps) {
   const theme = useSharedUiTheme();
@@ -198,106 +84,41 @@ function DropdownSelectorView({
   touch: boolean;
 }) {
   const theme = useSharedUiTheme();
-  const anchorRef = useRef<View>(null);
-  const setTriggerRef = useCallback(
-    (node: View | null) => {
-      anchorRef.current = node;
-      if (typeof triggerRef === "function") {
-        triggerRef(node);
-      } else if (triggerRef) {
-        (triggerRef as { current: View | null }).current = node;
-      }
-    },
-    [triggerRef],
-  );
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const grouped = sections ?? [{ options }];
-  const flat = grouped.flatMap((section) => section.options);
-  const selected = flat.find((option) => option.value === value);
-  const display = selected?.label ?? value;
-  const interactive = !readOnly && Boolean(onValueChange) && flat.length > 0;
-
-  // Reset the search query whenever the menu closes so the next open starts
-  // from the full option list.
-  useEffect(() => {
-    if (!open) {
-      setQuery("");
-    }
-  }, [open]);
-
-  const visibleSections = searchable
-    ? filterComboboxSections(grouped, query)
-    : grouped;
-  const optionEntries = selectorEntries(visibleSections, value, (next) => {
-    onValueChange?.(next);
-    setOpen(false);
-  });
-  const entries: DropdownListEntry[] =
-    searchable && optionEntries.length === 0
-      ? [{ id: "empty", label: "No matching options", type: "section" }]
-      : optionEntries;
-
-  // Keyboard navigation runs through a document-level key listener (set up by
-  // the hook) rather than the input's own `onKeyDown`, because a key event does
-  // not escape the field: the web backend's `TextInput` stops its propagation.
-  // The `typeahead` flag keeps the space bar typing into the search query
-  // instead of activating the highlighted row.
-  const navigation = useDropdownSelectorNavigation({
+  const {
+    accessibleLabel,
+    activeDescendant,
+    anchorRef,
+    describedBy,
+    display,
     entries,
+    errorId,
+    hintId,
     interactive,
-    onClose: () => setOpen(false),
-    onOpen: () => setOpen(true),
+    invalid,
+    listId,
+    navigation,
     open,
-    typeahead: searchable,
-  });
-
-  const invalid = invalidProp || Boolean(error);
-  // The ⓘ button anchors to the label row, so it needs a label to sit beside.
-  if (labelInfo && !label) {
-    devWarn(
-      "DropdownSelector: `labelInfo` needs a `label` to anchor the ⓘ button; " +
-        "it is ignored without one.",
-    );
-  }
-  const accessibleLabel = selectorAccessibleLabel(
+    query,
+    setOpen,
+    setQuery,
+    setTriggerRef,
+    triggerName,
+  } = useDropdownSelectorState({
+    error,
+    hint,
+    invalidProp,
     label,
-    display || placeholder,
-  );
-  const triggerName = selectorTriggerName(triggerLabel, accessibleLabel);
-
-  // Stable ids tie the trigger to its option list, its active option, and its
-  // error/hint text. RNW does not map `accessibilityHint` to `aria-describedby`
-  // (WCAG 3.3.1 / 1.3.1), so the visible Text nodes are referenced by id below.
-  const reactId = useId();
-  const listId = `${reactId}-list`;
-  const errorId = `${reactId}-error`;
-  const hintId = `${reactId}-hint`;
-  const describedBy =
-    [error ? errorId : null, hint ? hintId : null].filter(Boolean).join(" ") ||
-    undefined;
-  const activeDescendant =
-    open && navigation.activeId
-      ? dropdownRowDomId(listId, navigation.activeId)
-      : undefined;
-
-  // Announce the searchable result count so screen readers hear matches change
-  // without focus moving off the search input (WCAG 4.1.3 Status Messages).
-  const matchCount = searchable
-    ? optionEntries.filter(
-        (entry) => entry.type === "item" || entry.type === "footer",
-      ).length
-    : null;
-  useEffect(() => {
-    if (!open || !searchable || matchCount === null || !query.trim()) {
-      return;
-    }
-    announce(
-      matchCount === 0
-        ? "No matching options"
-        : `${matchCount} ${matchCount === 1 ? "option" : "options"} available`,
-    );
-  }, [matchCount, open, query, searchable]);
+    labelInfo,
+    onValueChange,
+    options,
+    placeholder,
+    readOnly,
+    searchable,
+    sections,
+    triggerLabel,
+    triggerRef,
+    value,
+  });
   const searchField = searchable ? (
     <View style={styles.searchField}>
       <Search
@@ -423,180 +244,6 @@ function DropdownSelectorView({
           />
         )}
       </DropdownPortal>
-    </View>
-  );
-}
-
-export function ReadOnlySelector({
-  label,
-  required = false,
-  size = "md",
-  testID,
-  value,
-  variant = "field",
-}: {
-  label?: string;
-  required?: boolean;
-  /** Control density of the default `field` variant: `sm`, `md` (default), or `lg`. */
-  size?: ControlSize;
-  /** Test identifier forwarded to the root element (`data-testid` on web). */
-  testID?: string;
-  value: string;
-  variant?: SelectorVariant;
-}) {
-  const theme = useSharedUiTheme();
-  const touch = useTouchSurface();
-  const styles = useMemo(
-    () =>
-      touch
-        ? createTouchDropdownSelectorStyles(theme)
-        : createDropdownSelectorStyles(theme, size),
-    [theme, size, touch],
-  );
-  const accessibleLabel = selectorAccessibleLabel(label, value);
-  return (
-    <View style={label ? styles.field : null} testID={testID}>
-      {label ? (
-        <SelectorLabel label={label} required={required} styles={styles} />
-      ) : null}
-      <View
-        accessibilityLabel={accessibleLabel}
-        style={[triggerStyle(styles, variant), styles.readOnly]}
-      >
-        <Text numberOfLines={1} style={valueStyle(styles, variant)}>
-          {value}
-        </Text>
-        <ChevronDown
-          color={theme.colors.muted}
-          size={selectorChevronSize(variant, size, touch)}
-        />
-      </View>
-    </View>
-  );
-}
-
-/**
- * The chevron of a trigger: the icon of the `field` size, the touch icon of a
- * `field` on a touch surface, or the 13px glyph of the bespoke variants.
- */
-function selectorChevronSize(
-  variant: SelectorVariant,
-  size: ControlSize,
-  touch: boolean,
-) {
-  if (touch && variant === "field") return touchControlMetrics.iconSize;
-  return variant === "field" ? inputIconSize(size) : 13;
-}
-
-/**
- * Web-only ARIA props for the select-only `button` trigger: it advertises the
- * popup listbox (`aria-haspopup`) and, while open, links to the list container
- * (`aria-controls`). `aria-activedescendant` is deliberately omitted — it is not
- * an allowed attribute on `role=button` (the active option is still conveyed
- * visually and via the option's `aria-selected`). RNW's bundled types omit these
- * literal attributes, so they are built as a cast object (RNW forwards them at
- * runtime; native keeps the RN `accessibilityRole`/`accessibilityState` above).
- */
-function selectorTriggerA11y({
-  controls,
-  describedBy,
-  interactive,
-  open,
-}: {
-  controls: string;
-  describedBy?: string;
-  interactive: boolean;
-  open: boolean;
-}): object {
-  if (Platform.OS !== "web" || !interactive) {
-    return describedBy
-      ? ({ "aria-describedby": describedBy } as unknown as object)
-      : {};
-  }
-  return {
-    "aria-controls": open ? controls : undefined,
-    "aria-describedby": describedBy,
-    "aria-haspopup": "listbox",
-  } as unknown as object;
-}
-
-function selectorAccessibleLabel(label: string | undefined, value: string) {
-  return label ? `${label}, ${value}` : value;
-}
-
-// Prefer an explicit, value-independent `triggerLabel` when the caller wants a
-// stable test/automation handle; otherwise fall back to the composed
-// `"{label}, {value}"` name so existing selectors keep resolving.
-function selectorTriggerName(
-  triggerLabel: string | undefined,
-  fallback: string,
-) {
-  return triggerLabel ?? fallback;
-}
-
-function selectorEntries(
-  sections: DropdownSelectorSection[],
-  value: string,
-  onSelect: (value: string) => void,
-): DropdownListEntry[] {
-  return sections.flatMap((section, sectionIndex) => {
-    const sectionRows: DropdownListEntry[] = section.title
-      ? [
-          {
-            id: `section-${sectionIndex}`,
-            label: section.title,
-            type: "section",
-          },
-        ]
-      : [];
-    return [
-      ...sectionRows,
-      ...section.options.map((option) => ({
-        accessibilityLabel: option.accessibilityLabel,
-        disabled: option.disabled,
-        id: option.value,
-        label: option.label,
-        onPress: () => onSelect(option.value),
-        right: option.right,
-        rightText: option.rightText,
-        secondary: option.secondary,
-        selected: option.value === value,
-        testID: option.testID,
-        type: "item" as const,
-      })),
-    ];
-  });
-}
-
-function SelectorLabel({
-  label,
-  labelInfo,
-  labelInfoIcon,
-  labelInfoLabel,
-  required,
-  styles,
-}: {
-  label: string;
-  labelInfo?: string;
-  labelInfoIcon?: IconComponent;
-  labelInfoLabel?: string;
-  required: boolean;
-  styles: DropdownSelectorStyles;
-}) {
-  const labelInfoName = labelInfoLabel ?? `More information about ${label}`;
-  return (
-    <View style={styles.labelRow}>
-      <Text style={styles.label}>
-        {label}
-        {required ? <Text style={styles.required}> *</Text> : null}
-      </Text>
-      {labelInfo ? (
-        <LabelInfo
-          accessibilityLabel={labelInfoName}
-          icon={labelInfoIcon}
-          info={labelInfo}
-        />
-      ) : null}
     </View>
   );
 }

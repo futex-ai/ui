@@ -63,6 +63,13 @@ Menu and resize calls, recorded on 2026-11-08:
 - **Orchestrator call:** Draw resize states through `lineStyle` and `gripStyle`. The static catalogue then needs no private DOM access or extra state API.
 - **Orchestrator call:** Supply English pixel text with the accessible resize value. This prevents a percentage fallback, and no current caller needs a text formatter.
 
+Source organization calls, recorded on 2026-11-08:
+
+- **Orchestrator call:** Move public declarations through their family entries and keep internal helpers private. This keeps the existing export surface.
+- **Orchestrator call:** Extract selector state into hooks and keep its render text unchanged. Split story examples from their metadata and keep every story ID.
+- **Orchestrator call:** Keep cross-family theme checks in the generic browser spec and group the other cases by component. Keep their titles and assertion bodies.
+- **Orchestrator call:** Check negative source assertions across every new owner file. An absence assertion must still cover all moved code.
+
 No existing mechanism is replaced. Conductive's consumer migration belongs to its own repository.
 
 ## Milestone 1: Mockups
@@ -169,12 +176,12 @@ Depends on: 5
 
 The final size audit found existing long files that the density work changes. Split those files by responsibility under the shared 300-line rule. Keep their public APIs, rendering, tests, and behavior.
 
-- [ ] Split the touched long component and style files into focused internal modules. Keep every existing export.
-- [ ] Split the touched long story and test files. Keep every test name, assertion, story ID, and runner discovery path working.
-- [ ] Update live references to moved responsibilities and tests. Keep old documentation destinations available.
-- [ ] Prove output and test-inventory equivalence. Run targeted checks and both typechecks.
+- [x] Split the touched long component and style files into focused internal modules. Keep every existing export.
+- [x] Split the touched long story and test files. Keep every test name, assertion, story ID, and runner discovery path working.
+- [x] Update live references to moved responsibilities and tests. Keep old documentation destinations available.
+- [x] Prove output and test-inventory equivalence. Run targeted checks and both typechecks.
 
-The source inventory and delegation prompt are under `.context/conductive-ui-parts/`. This changes structure only and needs no new mockup or requirement.
+The source report is `.context/conductive-ui-parts/reports/source-homes.md`. The independent check is `reports/source-homes-orchestrator-check.md` in that folder. This changes structure only and needs no new mockup or requirement. The package smoke fixture still needs its planned integration update.
 
 ## Milestone 6: Package and visual integration
 

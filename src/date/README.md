@@ -140,7 +140,8 @@ with `labelInfoIcon` and the button's accessible name with `labelInfoLabel`
 - `types.ts` — shared overlay prop contract (`DatePickerOverlayProps`).
 - `dateFieldLayers.ts` — the default web calendar portal layer and optional
   z-index override.
-- `DateField.tsx` — `DateField`, `DateInput`, and the shared `FieldLabel`.
+- `DateField.tsx` — `DateField` and the shared `FieldLabel`.
+- `DateInput.tsx` — `DateInput`, the trigger with its own single-date picker.
 - `DateTrigger.tsx` — the platform triggers (`WebTrigger`, `NativeTrigger` tap
   target) and the `triggerBorder` helper. `WebTrigger` renders the shared
   `InputFrame` (`@firna/ui/input`) for the editable box — the same chrome, focus
@@ -269,8 +270,9 @@ locales.
 `dateMath.ts` (including the wheel's `clampDay` / `wheelYearRange` helpers),
 `monthGrid.ts`, and `dateFieldLayers.ts` are unit-tested with the repo's Node
 test runner. Both the calendar and wheel variants are exercised by the Storybook
-Playwright spec (`tests/browser/storybook.spec.ts`) against the `Date/Examples`
-stories — covering the calendar's compact width below a wider trigger, month
+Playwright specs (`tests/browser/date-calendar.spec.ts`,
+`tests/browser/date-clear.spec.ts`, and `tests/browser/date-wheel.spec.ts`)
+against the `Date/Examples` stories — covering the calendar's compact width below a wider trigger, month
 navigation, and day picking, plus draft staging/commit, day-and-bounds
 clamping, Cancel, clearing, and the range field for the wheel. The editable
 data-grid story additionally verifies that web date cells open the inline

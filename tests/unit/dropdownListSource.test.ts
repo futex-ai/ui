@@ -59,7 +59,10 @@ test("dropdown row inverts its subtext on the solid active fill", () => {
 test("dropdown item rows forward a per-entry testID to the row pressable", () => {
   const types = readSource("../../src/dropdown/dropdownListTypes.ts");
   const row = readSource("../../src/dropdown/DropdownRow.tsx");
-  const selector = readSource("../../src/dropdown/DropdownSelector.tsx");
+  const selector = readSource("../../src/dropdown/dropdownSelectorTypes.ts");
+  const selectorModel = readSource(
+    "../../src/dropdown/dropdownSelectorModel.ts",
+  );
 
   // The item/footer entry carries an optional testID, forwarded to its row.
   assert.match(
@@ -69,7 +72,7 @@ test("dropdown item rows forward a per-entry testID to the row pressable", () =>
   assert.match(row, /testID=\{entry\.testID\}/);
   // The selector option exposes the same testID and threads it into the entry.
   assert.match(selector, /testID\?: string;/);
-  assert.match(selector, /testID: option\.testID,/);
+  assert.match(selectorModel, /testID: option\.testID,/);
 });
 
 test("dropdown danger row uses a red solid highlight with inverted text", () => {
@@ -100,7 +103,10 @@ test("dropdown danger row uses a red solid highlight with inverted text", () => 
 test("dropdown row renders trailing rightText that inverts on the solid fill", () => {
   const list = readSource("../../src/dropdown/DropdownRow.tsx");
   const stylesSource = readSource("../../src/dropdown/dropdownListStyles.ts");
-  const selector = readSource("../../src/dropdown/DropdownSelector.tsx");
+  const selector = readSource("../../src/dropdown/dropdownSelectorTypes.ts");
+  const selectorModel = readSource(
+    "../../src/dropdown/dropdownSelectorModel.ts",
+  );
 
   // The trailing text is library-rendered (like `secondary`) over the base muted
   // style, so it reuses the active-row inversion instead of staying muted grey
@@ -115,14 +121,14 @@ test("dropdown row renders trailing rightText that inverts on the solid fill", (
   assert.match(list, /!entry\.right\s*&&\s*!entry\.rightText/);
   // The selector forwards an option's `rightText` straight through to the row.
   assert.match(selector, /rightText\?: string;/);
-  assert.match(selector, /rightText: option\.rightText/);
+  assert.match(selectorModel, /rightText: option\.rightText/);
 });
 
 test("dropdown row slots can render against the active row's content color", () => {
   const types = readSource("../../src/dropdown/dropdownListTypes.ts");
   const list = readSource("../../src/dropdown/DropdownRow.tsx");
   const stylesSource = readSource("../../src/dropdown/dropdownListStyles.ts");
-  const selector = readSource("../../src/dropdown/DropdownSelector.tsx");
+  const selector = readSource("../../src/dropdown/dropdownSelectorTypes.ts");
 
   // A caller node is opaque to the library, so an icon hard-coded to `ink`
   // stayed near-black on the `primary` fill while the label beside it inverted

@@ -26,6 +26,12 @@ test("DataGrid exposes optional borderRadius / borderWidth props with square def
 
 test("border props drive the grid frame + mobile card, square by default", () => {
   const styles = readSource("../../src/data-grid/dataGridStyles.ts");
+  // The size table moved out of the styles file; the absence checks below
+  // still cover it.
+  const stylesAndSizes = [
+    styles,
+    readSource("../../src/data-grid/dataGridSizes.ts"),
+  ].join("\n");
 
   // Square corners + a hairline frame are the defaults.
   assert.match(styles, /borderRadius = 0,/);
@@ -33,8 +39,8 @@ test("border props drive the grid frame + mobile card, square by default", () =>
 
   // Both the frame and the card read the shared border radius + width, and the
   // old `frameRadius` (square-toggle) indirection is gone.
-  assert.doesNotMatch(styles, /frameRadius/);
-  assert.doesNotMatch(styles, /square = false/);
+  assert.doesNotMatch(stylesAndSizes, /frameRadius/);
+  assert.doesNotMatch(stylesAndSizes, /square = false/);
   const radiusUses = styles.match(/^\s*borderRadius,$/gm) ?? [];
   const widthUses = styles.match(/^\s*borderWidth,$/gm) ?? [];
   assert.equal(radiusUses.length, 2, "grid + card both use borderRadius");

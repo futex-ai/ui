@@ -682,7 +682,8 @@ The package export map intentionally separates runtime targets:
 - Toast component: [src/toast/README.md](src/toast/README.md)
 - Video-editor panels: [src/video-editor/README.md](src/video-editor/README.md)
 - Workflow builder component: [src/workflow/README.md](src/workflow/README.md)
-- Browser tests: [tests/browser/storybook.spec.ts](tests/browser/storybook.spec.ts)
+- Browser tests: [tests/browser/](tests/browser/), one Playwright spec for each
+  component family
 - Story visual/ARIA snapshot sweep:
   [tests/browser/snapshots.spec.ts](tests/browser/snapshots.spec.ts)
 - Repository automation: [xtask/README.md](xtask/README.md)

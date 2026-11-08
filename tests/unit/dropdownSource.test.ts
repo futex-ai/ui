@@ -4,11 +4,14 @@ import test from "node:test";
 
 test("selector dropdown keeps keyboard navigation active while open", () => {
   const selectorSource = readSource("../../src/dropdown/DropdownSelector.tsx");
+  const stateSource = readSource(
+    "../../src/dropdown/useDropdownSelectorState.ts",
+  );
   const navigationSource = readSource(
     "../../src/dropdown/useDropdownSelectorNavigation.ts",
   );
 
-  assert.match(selectorSource, /useDropdownSelectorNavigation/);
+  assert.match(stateSource, /useDropdownSelectorNavigation/);
   assert.match(selectorSource, /activeId=\{navigation\.activeId\}/);
   assert.match(selectorSource, /onActiveIdChange=\{navigation\.setActiveId\}/);
   assert.match(navigationSource, /document\.addEventListener\("keydown"/);
@@ -30,21 +33,28 @@ test("selector map variant supports invalid styling without error copy", () => {
 });
 
 test("selector labels are part of the accessible trigger name", () => {
-  const selectorSource = readSource("../../src/dropdown/DropdownSelector.tsx");
+  const selectorSource = readSource("../../src/dropdown/ReadOnlySelector.tsx");
+  const stateSource = readSource(
+    "../../src/dropdown/useDropdownSelectorState.ts",
+  );
 
-  assert.match(selectorSource, /selectorAccessibleLabel/);
+  assert.match(stateSource, /selectorAccessibleLabel/);
   assert.match(selectorSource, /accessibilityLabel=\{accessibleLabel\}/);
 });
 
 test("selector exposes its trigger for imperative focus", () => {
   const selectorSource = readSource("../../src/dropdown/DropdownSelector.tsx");
+  const propsSource = readSource("../../src/dropdown/dropdownSelectorProps.ts");
+  const stateSource = readSource(
+    "../../src/dropdown/useDropdownSelectorState.ts",
+  );
 
   // Async forms need to move focus to the first field after their loading
   // placeholder is replaced. The selector keeps its own anchor ref for portal
   // placement while forwarding the same pressable to the caller.
-  assert.match(selectorSource, /triggerRef\?: Ref<View>;/);
-  assert.match(selectorSource, /const setTriggerRef = useCallback\(/);
-  assert.match(selectorSource, /anchorRef\.current = node;/);
+  assert.match(propsSource, /triggerRef\?: Ref<View>;/);
+  assert.match(stateSource, /const setTriggerRef = useCallback\(/);
+  assert.match(stateSource, /anchorRef\.current = node;/);
   assert.match(selectorSource, /ref=\{setTriggerRef\}/);
 });
 
@@ -154,42 +164,54 @@ test("public dropdown entrypoint exports selector and layer helpers", () => {
 
 test("dropdown selector forwards header and footer content to the list", () => {
   const source = readSource("../../src/dropdown/DropdownSelector.tsx");
+  const propsSource = readSource("../../src/dropdown/dropdownSelectorProps.ts");
 
-  assert.match(source, /header\?: ReactNode;/);
-  assert.match(source, /footer\?: ReactNode;/);
+  assert.match(propsSource, /header\?: ReactNode;/);
+  assert.match(propsSource, /footer\?: ReactNode;/);
   assert.match(source, /<DropdownList[\s\S]*footer=\{footer\}/);
   assert.match(source, /<DropdownList[\s\S]*header=\{header\}/);
 });
 
 test("dropdown selector filters options through a searchable input", () => {
   const source = readSource("../../src/dropdown/DropdownSelector.tsx");
+  const propsSource = readSource("../../src/dropdown/dropdownSelectorProps.ts");
+  const stateSource = readSource(
+    "../../src/dropdown/useDropdownSelectorState.ts",
+  );
 
   // Opt-in prop that filters options as the query changes.
-  assert.match(source, /searchable\?: boolean;/);
-  assert.match(source, /filterComboboxSections/);
+  assert.match(propsSource, /searchable\?: boolean;/);
+  assert.match(stateSource, /filterComboboxSections/);
   // The search input drives navigation through the document-level key listener
   // with the typeahead flag so the space bar keeps typing into the query.
-  assert.match(source, /typeahead: searchable/);
+  assert.match(stateSource, /typeahead: searchable/);
   // A searchable selector renders a search field into the list search slot...
   assert.match(source, /<DropdownList[\s\S]*search=\{searchField\}/);
   // ...and shows an empty state when no options match the query.
-  assert.match(source, /No matching options/);
+  assert.match(stateSource, /No matching options/);
 });
 
 test("dropdown selector sizes the field variant from the shared input scale", () => {
   const source = readSource("../../src/dropdown/DropdownSelector.tsx");
+  const propsSource = readSource("../../src/dropdown/dropdownSelectorProps.ts");
+  const partsSource = readSource(
+    "../../src/dropdown/dropdownSelectorParts.tsx",
+  );
   const stylesSource = readSource(
     "../../src/dropdown/dropdownSelectorStyles.ts",
   );
 
   // Opt-in size prop, default md, threaded into the styles and the chevron.
-  assert.match(source, /size\?: ControlSize;/);
+  assert.match(propsSource, /size\?: ControlSize;/);
   assert.match(
     source,
     /createDropdownSelectorStyles\(theme, props\.size \?\? "md"\)/,
   );
   assert.match(source, /size = "md"/);
-  assert.match(source, /variant === "field" \? inputIconSize\(size\) : 13/);
+  assert.match(
+    partsSource,
+    /variant === "field" \? inputIconSize\(size\) : 13/,
+  );
   // The field box reuses the input's per-size geometry (single source of truth)
   // so a select and a text input stay the same height.
   assert.match(stylesSource, /import \{ inputSizeTokens \} from "\.\.\/input"/);
@@ -200,9 +222,10 @@ test("dropdown selector sizes the field variant from the shared input scale", ()
 
 test("dropdown selector fits wider content up to an overridable default cap", () => {
   const source = readSource("../../src/dropdown/DropdownSelector.tsx");
+  const propsSource = readSource("../../src/dropdown/dropdownSelectorProps.ts");
 
-  assert.match(source, /menuMaxWidth\?: number;/);
-  assert.match(source, /menuMinWidth\?: number;/);
+  assert.match(propsSource, /menuMaxWidth\?: number;/);
+  assert.match(propsSource, /menuMinWidth\?: number;/);
   assert.match(source, /menuMaxWidth = DEFAULT_DROPDOWN_MAX_WIDTH/);
   assert.match(source, /<DropdownPortal[\s\S]*fitContentWidth/);
   assert.match(source, /maxWidth=\{menuMaxWidth\}/);

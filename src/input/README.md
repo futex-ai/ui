@@ -316,8 +316,11 @@ text use `colors.placeholder` (≥4.5:1 — 1.4.3, AA), and the box radius uses
 
 ## Key Code
 
-- [`InputFrame.tsx`](InputFrame.tsx): the bordered box, its actions, and its
-  focus ring.
+- [`InputFrame.tsx`](InputFrame.tsx): the bordered box, its clear action, and
+  its focus ring.
+- [`inputFrameProps.ts`](inputFrameProps.ts): the props of the bordered box.
+- [`SuffixAdornment.tsx`](SuffixAdornment.tsx): the trailing icon, as a
+  labelled button, a mouse-only target, or decoration.
 - [`inputSizing.ts`](inputSizing.ts): the per-size and touch geometry, the icon
   sizes, and the auto-grow textarea bounds.
 - [`inputStyles.ts`](inputStyles.ts): the shared field chrome and the style
