@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.0](https://github.com/futex-ai/ui/compare/v5.0.0...v5.1.0) (2026-11-08)
+
+
+### Features
+
+* add shared Conductive UI parts ([#183](https://github.com/futex-ai/ui/issues/183)) ([f83e105](https://github.com/futex-ai/ui/commit/f83e1054586f5bde71750041ad6e123660c255bc))
+
 ## [5.0.0](https://github.com/futex-ai/ui/compare/v4.0.0...v5.0.0) (2026-11-06)
 
 ### ⚠ BREAKING CHANGES
