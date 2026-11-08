@@ -84,7 +84,7 @@ consumes Escape first and only the top-most overlay closes.
 
 Inside a `TouchSurface`, the dismiss control is a 44 by 44px target on both
 platforms, with no hit slop. Outside a touch surface it keeps its size. The
-phone menu sheet of [`InlineMenu` and `ResponsiveMenu`](../popover/README.md)
+phone menu sheet of [`InlineMenu` and `ResponsiveMenu`](../popover/menus.md)
 is a `Sheet` that marks its own touch surface.
 
 ## Development

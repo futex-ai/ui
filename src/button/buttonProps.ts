@@ -221,7 +221,7 @@ type ButtonBaseProps = ButtonRoleState & {
   role?: ButtonRole;
   /** Container geometry. Defaults to `rounded`. */
   shape?: ButtonShape;
-  /** Control density: `sm`, `md` (default), or `lg`. */
+  /** Control density. Defaults to `md`. */
   size?: ControlSize;
   /**
    * Extra style for the pressable container, layered last so it wins over the

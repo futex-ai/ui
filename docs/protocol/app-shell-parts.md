@@ -2,7 +2,7 @@
 
 ## Status
 
-Required behavior. It extends the
+Implemented requirements. They extend the
 [shared UI component protocol](shared-ui-components.md).
 
 ## Purpose

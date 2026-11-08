@@ -9,7 +9,7 @@ export const choose = defineScreen({
     "No project is open. Desktop shows the project list beside an empty state that asks for a choice. A phone shows the project list as its home screen.",
   rationale:
     "The phone list uses the same rows as the desktop list. The touch surface makes them 44 px high, with a hairline between rows.",
-  relatedDocs: [],
+  relatedDocs: ["docs/protocol/app-shell-parts.md"],
   propSchema: projectListStateSchema,
   props: { list: "projects", menu: "none" },
   render: (props, context) => (

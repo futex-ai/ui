@@ -1,0 +1,4 @@
+- heading "No files yet" [level=2]
+- text: Connect a repository to see its files here.
+- link "Connect a repository":
+  - /url: /atlas/settings

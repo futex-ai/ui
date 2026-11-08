@@ -20,6 +20,29 @@ the `*.web.tsx` code path.
   `.storybook/`). `metro.config.js` forces a single copy of `react`/
   `react-native` so the linked library doesn't pull a duplicate.
 
+## Stories
+
+Each file in `stories/` renders one family of the built native package
+through its public subpath:
+
+| File                         | Title                             | What it shows                                                                   |
+| ---------------------------- | --------------------------------- | ------------------------------------------------------------------------------- |
+| `SheetModal.stories.tsx`     | `Modal/Native sheet`              | The native bottom sheet and centred dialog                                      |
+| `RichTextEditor.stories.tsx` | `RichText/Native editor`          | Editable, prefilled, and read-only rich text                                    |
+| `Link.stories.tsx`           | `Link/Native links`               | Link buttons and tabs, app navigation, platform link opening, a touch surface   |
+| `Notice.stories.tsx`         | `Notice/Native notices`           | Both notice tones, an urgent announcement on request, and the compact scale     |
+| `EmptyState.stories.tsx`     | `Empty state/Native empty states` | Page and panel empty states                                                     |
+| `List.stories.tsx`           | `List/Native rows`                | Dense rows, navigation rows with the current page, and touch rows               |
+| `Popover.stories.tsx`        | `Popover/Native menus`            | The menu sheet of `InlineMenu`, `InlineMenuSheet`, and a touch `ResponsiveMenu` |
+| `PanelResize.stories.tsx`    | `Panel resize/Native handle`      | Resize handles with drag, adjustable actions, bounds, and drawn states          |
+| `TouchSurface.stories.tsx`   | `Touch surface/Native controls`   | The same `xs` controls outside and inside a touch surface                       |
+| `Typography.stories.tsx`     | `Typography/Native text scale`    | The default and compact text scales and a per-text override                     |
+
+`storyParts.tsx` and `menuNativeExamples.tsx` are helper modules. The story
+glob takes only `*.stories.tsx` files, so they add no stories. A story that
+needs a touch surface or the compact scale wraps its example in
+`TouchSurface` or `TextScaleProvider`, as an app does.
+
 ## Why this is a separate package
 
 The repo-root `package.json` is the published library: its `main` points at
@@ -73,6 +96,24 @@ The **Modal / Native sheet** stories exercise native overlays. The **RichText /
 Native editor** stories exercise editable, prefilled, and read-only attributed
 blocks; focus a block to inspect the iOS input accessory or Android in-frame
 formatting toolbar.
+
+## Check the bundle without a device
+
+A JavaScript export bundles every story for iOS and Android without a
+simulator. It shows that Metro resolves each story import to the native files
+of the built package. Build the library first, then run this in this folder:
+
+```bash
+STORYBOOK_ENABLED=true STORYBOOK_SERVER=false \
+  npx expo export --dev --platform ios --platform android \
+  --output-dir ../.context/native-export
+```
+
+`STORYBOOK_ENABLED=true` loads the Storybook entry and regenerates
+`.rnstorybook/storybook.requires.ts`. `STORYBOOK_SERVER=false` keeps the
+command from starting the Storybook channel server, so the command ends. The
+export mounts no story. Check visuals, gestures, link opening, and screen
+reader output on a device or a simulator.
 
 ## Versions
 

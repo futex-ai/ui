@@ -5,8 +5,9 @@
 Implemented contract for the dropdown, drag-select, segmented control, radio
 card, switch, spinner, loader, animated border, button, list, data table,
 workflow builder, modal, toast,
-avatar, status badge, rich-text editor, and event-calendar extraction,
-including the shared control-size scale for buttons, inputs, and textareas.
+avatar, status badge, rich-text editor, event-calendar extraction, and
+[app shell parts](app-shell-parts.md), including the shared control-size scale
+for buttons, inputs, and textareas.
 
 ## Purpose
 

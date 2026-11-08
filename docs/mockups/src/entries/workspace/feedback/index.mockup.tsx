@@ -12,7 +12,7 @@ export const feedback = defineScreen({
     "A deploy runs. A neutral notice says so above the overview, with a link to the log, and Deploy shows its progress.",
   rationale:
     "Both notice tones have a full outline and a tinted fill. No edge has an accent strip. A neutral notice is not a live region. Its icon slot takes any node, here a spinner. On a phone the actions move under the text.",
-  relatedDocs: [],
+  relatedDocs: ["docs/protocol/app-shell-parts.md"],
   propSchema: projectStateSchema,
   props: { ...projectAtRest, deploy: "running" },
   render: (props, context) => (

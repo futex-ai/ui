@@ -77,7 +77,7 @@ export type WorkflowBuilderProps = {
   onNodePress?: (node: WorkflowNodeData) => void;
   /** The id of the actively-edited node, shown with the selected ring. */
   selectedNodeId?: string;
-  /** Control density: `sm`, `md` (default), or `lg`. */
+  /** Control density. Defaults to `md`. */
   size?: ControlSize;
   /** Extra style for the canvas container. */
   style?: StyleProp<ViewStyle>;

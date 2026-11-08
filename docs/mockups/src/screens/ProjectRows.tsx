@@ -1,8 +1,10 @@
-import { StatusDot, type StatusDotTone } from "@firna/ui/status-dot";
+import { mockLink } from "@mokly/mokly";
 import { ChevronRight } from "lucide-react";
+import { ListItem } from "@firna/ui/list";
+import { StatusDot, type StatusDotTone } from "@firna/ui/status-dot";
 
 import { useSurface } from "../components/common/Surface";
-import { Row, RowSection } from "../components/parts/Rows";
+import { RowDetail, RowSection } from "../components/parts/Rows";
 import {
   projects,
   type Project,
@@ -30,7 +32,7 @@ function Trailing(props: { project: Project; chevron: boolean }) {
   const { project } = props;
   const word = STATUS_WORD[project.status];
   return (
-    <>
+    <RowDetail>
       {word ? (
         <span className={project.status === "failed" ? styles.failed : ""}>
           {word}
@@ -39,14 +41,15 @@ function Trailing(props: { project: Project; chevron: boolean }) {
         project.updated
       )}
       {props.chevron ? <ChevronRight aria-hidden size={16} /> : null}
-    </>
+    </RowDetail>
   );
 }
 
 /**
- * The pinned projects and all the others, as rows that open the project.
- * The status dot speaks only for a live project, because the row states
- * every other status in words.
+ * The pinned projects and all the others, as navigation rows that open the
+ * project. The row of the current project carries the current page. The
+ * status dot speaks only for a live project, because the row states every
+ * other status in words.
  */
 export function ProjectSections(props: {
   current?: string;
@@ -59,30 +62,39 @@ export function ProjectSections(props: {
       ? { ...project, status: props.currentStatus }
       : project,
   );
-  const row = (project: Project) => (
-    <Row
-      current={project.id === props.current}
-      key={project.id}
-      leading={
-        <StatusDot
-          label={project.status === "live" ? "Live" : undefined}
-          size={phone ? "md" : "sm"}
-          tone={STATUS_TONE[project.status]}
-        />
-      }
-      title={project.name}
-      to={paths.overview}
-      trailing={<Trailing chevron={phone} project={project} />}
-    />
-  );
+  const rows = {
+    itemKey: (project: Project) => project.id,
+    itemLink: (project: Project) => ({
+      current: project.id === props.current,
+      href: mockLink(paths.overview),
+    }),
+    renderItem: (project: Project) => (
+      <ListItem
+        leading={
+          <StatusDot
+            label={project.status === "live" ? "Live" : undefined}
+            size={phone ? "md" : "sm"}
+            tone={STATUS_TONE[project.status]}
+          />
+        }
+        size="xs"
+        title={project.name}
+        trailing={<Trailing chevron={phone} project={project} />}
+      />
+    ),
+  };
   return (
     <>
-      <RowSection divided={phone} title="Pinned">
-        {list.filter((project) => project.pinned).map(row)}
-      </RowSection>
-      <RowSection divided={phone} title="All projects">
-        {list.filter((project) => !project.pinned).map(row)}
-      </RowSection>
+      <RowSection
+        {...rows}
+        items={list.filter((project) => project.pinned)}
+        title="Pinned"
+      />
+      <RowSection
+        {...rows}
+        items={list.filter((project) => !project.pinned)}
+        title="All projects"
+      />
     </>
   );
 }

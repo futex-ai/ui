@@ -46,5 +46,5 @@ cargo test --workspace
 
 ### Related Docs
 
-- Root developer guide: `../README.md`
+- Root developer guide: `../README.md` and `../docs/development.md`
 - Shared UI protocol: `../docs/protocol/shared-ui-components.md`

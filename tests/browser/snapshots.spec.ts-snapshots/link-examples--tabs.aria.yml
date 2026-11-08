@@ -1,0 +1,28 @@
+- navigation "Project":
+  - link "Overview":
+    - /url: /atlas
+  - link /Files \d+/:
+    - /url: /atlas/files
+  - link "Activity":
+    - /url: /atlas/activity
+  - link "Deployments":
+    - /url: /atlas/deployments
+  - link "Settings":
+    - /url: /atlas/settings
+- navigation "Workspace":
+  - link "Runs":
+    - /url: /runs
+  - link "Agents":
+    - /url: /agents
+  - link "Status (opens in a new tab)":
+    - /url: https://status.example.com
+    - text: ""
+    - img "(opens in a new tab)"
+- navigation "Sections":
+  - link "Overview":
+    - /url: /atlas
+  - link /Files \d+/:
+    - /url: /atlas/files
+  - link "Activity":
+    - /url: /atlas/activity
+- text: "Navigations: none"

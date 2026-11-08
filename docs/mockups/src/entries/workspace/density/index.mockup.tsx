@@ -12,7 +12,7 @@ export const density = defineScreen({
     "The project settings: a dense form on desktop and a touch form on a phone, with text fields, selectors, a segmented control, a switch, and buttons.",
   rationale:
     "Fields, selectors, and the segmented track are 26 px, as high as the xs buttons, so a form row or a toolbar keeps one line. The switch has no xs size and uses its sm size. Field text is 13 px on desktop. On a phone it is 16 px, which stops a phone browser from zooming into a focused field. Labels, hints, and errors use the compact type scale on desktop.",
-  relatedDocs: [],
+  relatedDocs: ["docs/protocol/app-shell-parts.md"],
   propSchema: projectStateSchema,
   props: { ...projectAtRest, tab: "settings" },
   render: (props, context) => (

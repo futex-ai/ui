@@ -1,4 +1,4 @@
-export * from "./PanelResizeHandle";
+export { PanelResizeHandle } from "./PanelResizeHandle";
 export type {
   PanelResizeEdge,
   PanelResizeHandleProps,

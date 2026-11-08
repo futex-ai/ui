@@ -1,0 +1,9 @@
+- list "Projects":
+  - listitem: Billing
+  - listitem: Mobile app Updated 2 hours ago
+  - listitem: A project with a name long enough to wrap onto a second line
+- list "Pinned projects":
+  - listitem:
+    - button "Deploys"
+    - switch "Pin Deploys"
+- text: "Opened: none Pinned: no"

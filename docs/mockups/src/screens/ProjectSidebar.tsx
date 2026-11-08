@@ -1,14 +1,16 @@
+import { mockLink } from "@mokly/mokly";
 import { ArrowDownUp, LifeBuoy, Plus, Search, SearchX } from "lucide-react";
+import { EmptyState } from "@firna/ui/empty-state";
+import { LinkButton } from "@firna/ui/link";
+import { InlineMenu } from "@firna/ui/popover";
 
 import { Bar, Scroll } from "../components/layout/Desktop";
 import { IconAction } from "../components/parts/Action";
-import { EmptyState } from "../components/parts/EmptyState";
 import { TextField } from "../components/parts/Fields";
-import { LinkButton } from "../components/parts/LinkButton";
-import { Menu, MenuAnchor } from "../components/parts/Menu";
 import type { ProjectStatus } from "../fixtures/projects";
+import { noop } from "../noop";
 import { outsidePages, paths } from "../paths";
-import { sortChoices } from "./menus";
+import { currentSortChoice, sortChoices } from "./menus";
 import { ProjectSections } from "./ProjectRows";
 import styles from "./ProjectSidebar.module.css";
 
@@ -17,12 +19,12 @@ export function NoMatch(props: { search: string; level: 2 | 3 }) {
   return (
     <EmptyState
       actions={
-        <LinkButton tone="ghost" to={paths.chooseProject}>
+        <LinkButton href={mockLink(paths.chooseProject)} size="xs" tone="ghost">
           Clear search
         </LinkButton>
       }
+      headingLevel={props.level}
       icon={SearchX}
-      level={props.level}
       size="panel"
       title={`No projects match “${props.search}”`}
     >
@@ -30,6 +32,10 @@ export function NoMatch(props: { search: string; level: 2 | 3 }) {
     </EmptyState>
   );
 }
+
+/** The help link fills the foot, with its label at the start. */
+const startAligned = { justifyContent: "flex-start" } as const;
+const fillLabel = { flex: 1 } as const;
 
 /**
  * The project list column of the desktop layout: its title and actions, a
@@ -45,7 +51,17 @@ export function ProjectSidebar(props: {
     <>
       <Bar>
         <h2 className={styles.title}>Projects</h2>
-        <MenuAnchor>
+        <InlineMenu
+          activeId={currentSortChoice}
+          align="start"
+          entries={sortChoices}
+          label="Sort projects"
+          onClose={noop}
+          open={props.sortOpen ?? false}
+          size="xs"
+          style={{ alignSelf: "center" }}
+          width={208}
+        >
           <IconAction
             icon={ArrowDownUp}
             label="Sort projects"
@@ -54,15 +70,7 @@ export function ProjectSidebar(props: {
             state={props.sortOpen ? "open" : "rest"}
             to={paths.sortMenu}
           />
-          {props.sortOpen ? (
-            <Menu
-              align="start"
-              entries={sortChoices(true)}
-              label="Sort projects"
-              width={208}
-            />
-          ) : null}
-        </MenuAnchor>
+        </InlineMenu>
         <IconAction
           icon={Plus}
           label="New project"
@@ -91,10 +99,13 @@ export function ProjectSidebar(props: {
       </Scroll>
       <div className={styles.foot}>
         <LinkButton
-          alignStart
           block
           href={outsidePages.help}
           icon={LifeBuoy}
+          labelStyle={fillLabel}
+          newTab
+          size="xs"
+          style={startAligned}
           tone="plain"
         >
           Help center

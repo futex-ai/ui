@@ -2,6 +2,7 @@
 import {
   ReactNode,
   RefObject,
+  useCallback,
   useEffect,
   useId,
   useMemo,
@@ -31,7 +32,11 @@ import {
 } from "./dropdownNavigation";
 import type { DropdownNavigationItem } from "./dropdownNavigation";
 import { createDropdownRowStyles } from "./dropdownRowSizing";
-import type { DropdownListEntry, DropdownListRole } from "./dropdownListTypes";
+import type {
+  DropdownListEntry,
+  DropdownListRole,
+  DropdownListScrollHandle,
+} from "./dropdownListTypes";
 import { scrollDropdownActiveRowIntoView } from "./dropdownScroll";
 
 export {
@@ -71,8 +76,11 @@ type DropdownListProps = {
    * `aria-activedescendant`.
    */
   listId?: string;
-  /** The scrolling list node, for example to focus it in `list` focus mode. */
-  listRef?: RefObject<ScrollView | null>;
+  /**
+   * Receives the scrolling list node, for example to focus it in `list` focus
+   * mode. A ref typed with React Native's `ScrollView` fits.
+   */
+  listRef?: RefObject<DropdownListScrollHandle | null>;
   /** Container/row roles: `listbox`/`option` (default) or `menu`/`menuitem`. */
   listRole?: DropdownListRole;
   maxHeight: number;
@@ -128,8 +136,18 @@ export function DropdownList({
   );
   const styles = rowStyles.styles;
   const rowRefs = useRef(new Map<string, View>());
-  const ownScrollRef = useRef<ScrollView>(null);
-  const scrollRef = listRef ?? ownScrollRef;
+  // The list scrolls its active row through its own ref. A caller's `listRef`
+  // gets the same node, so the caller can focus the list that scrolls.
+  const scrollRef = useRef<ScrollView>(null);
+  const setScrollRef = useCallback(
+    (node: ScrollView | null) => {
+      scrollRef.current = node;
+      if (listRef) {
+        listRef.current = node;
+      }
+    },
+    [listRef],
+  );
   const navItems = useMemo<DropdownNavigationItem[]>(
     () => dropdownListNavigationItems(entries),
     [entries],
@@ -211,7 +229,7 @@ export function DropdownList({
   const scroll = (
     <ScrollView
       keyboardShouldPersistTaps="handled"
-      ref={scrollRef}
+      ref={setScrollRef}
       style={[hasChrome ? styles.scroll : { maxHeight }, focus.containerStyle]}
       testID={hasChrome ? undefined : testID}
       {...containerA11y}

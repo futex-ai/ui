@@ -1,0 +1,9 @@
+- text: Billing portal acme/billing-portal
+- dialog "Project actions":
+  - heading "Billing portal" [level=1]
+  - button "Close Billing portal"
+  - menu "Project actions":
+    - menuitem "Rename"
+    - menuitem "Duplicate"
+    - menuitem "Pin" [disabled]
+    - menuitem "Archive project"

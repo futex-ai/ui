@@ -70,6 +70,16 @@ Source organization calls, recorded on 2026-11-08:
 - **Orchestrator call:** Keep cross-family theme checks in the generic browser spec and group the other cases by component. Keep their titles and assertion bodies.
 - **Orchestrator call:** Check negative source assertions across every new owner file. An absence assertion must still cover all moved code.
 
+Integration calls, recorded on 2026-11-08:
+
+- **Orchestrator call:** Give the new list ref the common scroll methods and optional focus. Forward the actual instance, so native and web refs fit.
+- **Orchestrator call:** Keep root guides under `docs/` and use canonical repository links from the published README. Preserve every old heading destination.
+- **Orchestrator call:** Merge the duplicate root family lists without losing descriptions or links. The entry list becomes the single family index.
+- **Orchestrator call:** Describe control density and its default without repeating the size union in each comment. Keep the type as the source of values.
+- **Orchestrator call:** Read mockup layout metrics from public style factories. Keep the library's permitted wrapping, row spacing, and phone control geometry.
+- **Orchestrator call:** Draw phone menus with `InlineMenuSheet` in place. A static catalogue cannot open an interactive sheet.
+- **Orchestrator call:** Record both baselines of the six existing Sizes stories. The ARIA baselines must also include the new `xs` controls.
+
 No existing mechanism is replaced. Conductive's consumer migration belongs to its own repository.
 
 ## Milestone 1: Mockups
@@ -191,16 +201,21 @@ Depends on: 5a
 
 Delegate package work to the `non-ui implementor` and UI integration to the `ui implementor`. Delegate the long README splits to the `docs implementor` after the public exports are final.
 
-- [ ] Export the parts from the root and appropriate subpath entry points on both platforms.
-- [ ] Register the stories in the native Storybook host.
-- [ ] Build the native Storybook JavaScript for iOS and Android in the cloud host. Record any device-only check that cannot run here.
-- [ ] Replace drawn new parts in the Mokly catalogue with the actual components. Keep the same appearances, valid links, and static menu/sheet views. Link the new protocol from the entries.
-- [ ] Check the built declarations and package smoke test for the new entry points.
-- [ ] Record and inspect Linux screenshot and ARIA baselines for every new story.
-- [ ] Prove the new tests fail on a behavior change. Run each new asynchronous or browser test ten times.
-- [ ] Smoke-test the new stories and compare them with the mockups. Save test costs and evidence under `.context/`.
-- [ ] Sync the final Storybook family coverage and implemented status in the docs after all parts exist.
-- [ ] Split touched READMEs above 300 lines into focused guides. Preserve their content, examples, links, and heading destinations.
+- [x] Export the parts from the root and appropriate subpath entry points on both platforms.
+- [x] Register the stories in the native Storybook host.
+- [x] Build the native Storybook JavaScript for iOS and Android in the cloud host. Record any device-only check that cannot run here.
+- [x] Replace drawn new parts in the Mokly catalogue with the actual components. Keep the same appearances, valid links, and static menu/sheet views. Link the new protocol from the entries.
+- [x] Check the built declarations and package smoke test for the new entry points.
+- [x] Make the new list ref accept a real native scrolling instance and rerun the unchanged native consumer proof.
+- [x] Record and inspect Linux screenshot and ARIA baselines for every new story.
+- [x] Prove the new tests fail on a behavior change. Run each new asynchronous or browser test ten times.
+- [x] Smoke-test the new stories and compare them with the mockups. Save test costs and evidence under `.context/`.
+- [x] Sync the final Storybook family coverage and implemented status in the docs after all parts exist.
+- [x] Split touched READMEs above 300 lines into focused guides. Preserve their content, examples, links, and heading destinations.
+
+This milestone updates the size comments in the changed controls. Four untouched legacy comments are recorded in [their follow-up item](follow-ups/legacy-control-size-comments.md), because their source files need larger structural splits.
+
+The integration reports are `.context/conductive-ui-parts/reports/package-integration.md`, `native-list-ref-fix.md`, `readme-homes.md`, and `visual-integration.md`. Native device checks could not run in this cloud host.
 
 ## Milestone 7: Checks, pull request, and review
 
@@ -208,7 +223,7 @@ Depends on: 6
 
 The orchestrator owns these steps. The task requests a pull request before its review, so keep the plan until the review finishes.
 
-- [ ] Run the early check and the complete `cargo xtask check` gate.
+- [ ] Run the early check and the complete `cargo xtask check` gate. Run Cargo format, Clippy, and workspace tests for the changed `xtask/` documentation.
 - [ ] Commit the additions with `feat:` and push the current branch.
 - [ ] Open a draft pull request into `main`. Wait for CI and fix failures caused by this change.
 - [ ] Run the `implementation-review` skill on the pushed pull request against `origin/main`.

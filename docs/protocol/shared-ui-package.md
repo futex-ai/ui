@@ -118,13 +118,21 @@ package boundary and links every other page.
   page and panel empty states, a menu open in place and its phone sheet, and
   the panel resize handle.
 - Storybook navigation must keep each example family in its own top-level
-  folder, currently `Avatar/Examples`, `Badge/Examples`, `Button/Examples`,
-  `Calendar/Examples`,
-  `Date/Examples`, `Dropdown/Examples`, `Heatmap/Examples`, `Input/Examples`,
-  `Loader/Examples`,
-  `Modal/Examples`, `Popover/Examples`, `Radio/Examples`, `Segmented/Examples`,
-  `Spinner/Examples`, `Status dot/Examples`, `Switch/Examples`,
-  `Table/Examples`,
-  `Theme/Examples`, and `Toast/Examples`.
+  folder, currently `AnimatedBorder/Examples`, `Avatar/Examples`,
+  `Badge/Examples`, `Button/Examples`, `Calendar/Examples`, `Chart/BarChart`,
+  `Chart/Comparison`, `Chart/Foundations`, `Chart/LineChart`, `Chart/Palette`,
+  `Chart/PartToWhole`, `Chart/SmallMultiples`, `Chart/StatTile`,
+  `DataGrid/Examples`, `Date/Examples`, `Drag Select/Examples`,
+  `Dropdown/Examples`, `Empty state/Examples`, `Focus ring/Examples`,
+  `Heatmap/Examples`, `Input/Examples`, `Kanban/Examples`, `Link/Examples`,
+  `List/Examples`, `Loader/Examples`, `Modal/Examples`, `Notice/Examples`,
+  `Panel resize/Examples`, `Popover/Examples`, `Primitives/Examples`,
+  `Primitives/Interaction`, `Primitives/Layout`, `Primitives/Scrolling`,
+  `Radio/Examples`, `RichText/Examples`, `RichText/Collaboration`,
+  `Segmented/Examples`, `Sheet/Examples`, `Skeleton/Examples`,
+  `SortableList/Examples`, `Spinner/Examples`, `Status dot/Examples`,
+  `Switch/Examples`, `Table/Examples`, `Theme/Examples`, `Timeline/Examples`,
+  `Toast/Examples`, `Touch surface/Examples`, `Typography/Examples`,
+  `Video editor/Examples`, and `Workflow/Examples`.
 - Each new family of the app shell parts keeps its own top-level folder by the
   same rule.

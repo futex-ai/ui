@@ -26,7 +26,7 @@ export type InputFrameProps = Omit<TextInputProps, "style"> & {
   "aria-errormessage"?: string;
   /** Renders the rose invalid border (independent of any message). */
   invalid?: boolean;
-  /** Control density: `sm`, `md` (default), or `lg`. */
+  /** Control density. Defaults to `md`. */
   size?: ControlSize;
   /**
    * Box treatment. `framed` (default) draws the bordered surface box; `plain`

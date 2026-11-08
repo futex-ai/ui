@@ -1,35 +1,65 @@
 import { Archive, Copy, Link2, Pencil, PinOff } from "lucide-react";
+import type { DropdownListEntry } from "@firna/ui/dropdown";
 
-import type { MenuEntry } from "../components/parts/Menu";
+import { noop } from "../noop";
+
+/** The actions of a project: icons, a divider, and a danger row. */
+export const projectActions: DropdownListEntry[] = [
+  { icon: Pencil, id: "rename", label: "Rename", onPress: noop, type: "item" },
+  {
+    icon: Copy,
+    id: "duplicate",
+    label: "Duplicate",
+    onPress: noop,
+    type: "item",
+  },
+  {
+    icon: Link2,
+    id: "copy-link",
+    label: "Copy link",
+    onPress: noop,
+    type: "item",
+  },
+  { icon: PinOff, id: "unpin", label: "Unpin", onPress: noop, type: "item" },
+  { id: "actions-divider", label: "", type: "divider" },
+  {
+    icon: Archive,
+    id: "archive",
+    label: "Archive project",
+    onPress: noop,
+    tone: "danger",
+    type: "item",
+  },
+];
 
 /**
- * The actions of a project. A desktop menu opens with its first row active,
- * as the library menus do. A phone sheet has no active row.
+ * The row that a desktop menu draws active: its first row, as the library
+ * menus open. A phone sheet opens with no active row.
  */
-export function projectActions(firstActive: boolean): readonly MenuEntry[] {
-  return [
-    { kind: "item", label: "Rename", icon: Pencil, active: firstActive },
-    { kind: "item", label: "Duplicate", icon: Copy },
-    { kind: "item", label: "Copy link", icon: Link2 },
-    { kind: "item", label: "Unpin", icon: PinOff },
-    { kind: "divider" },
-    { kind: "item", label: "Archive project", icon: Archive, danger: true },
-  ];
-}
+export const firstProjectAction = "rename";
 
-/** The sort order of the project list: one choice in a group. */
-export function sortChoices(currentActive: boolean): readonly MenuEntry[] {
-  return [
-    { kind: "label", label: "Sort by" },
-    {
-      kind: "item",
-      label: "Recent activity",
-      checked: true,
-      active: currentActive,
-    },
-    { kind: "item", label: "Name", checked: false },
-    { kind: "item", label: "Status", detail: "Failed first", checked: false },
-    { kind: "divider" },
-    { kind: "note", text: "Pinned projects stay at the top." },
-  ];
-}
+/** The sort order of the project list: one checked choice in a group. */
+export const sortChoices: DropdownListEntry[] = [
+  { id: "sort-by", label: "Sort by", type: "section" },
+  {
+    checked: true,
+    id: "recent",
+    label: "Recent activity",
+    onPress: noop,
+    type: "item",
+  },
+  { checked: false, id: "name", label: "Name", onPress: noop, type: "item" },
+  {
+    checked: false,
+    id: "status",
+    label: "Status",
+    onPress: noop,
+    rightText: "Failed first",
+    type: "item",
+  },
+  { id: "sort-divider", label: "", type: "divider" },
+  { id: "sort-note", label: "Pinned projects stay at the top.", type: "note" },
+];
+
+/** The current choice, which the desktop menu opens on. */
+export const currentSortChoice = "recent";

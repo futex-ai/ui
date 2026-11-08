@@ -1,13 +1,23 @@
+import { mockLink } from "@mokly/mokly";
+import { OctagonAlert } from "lucide-react";
+import { LinkButton } from "@firna/ui/link";
+import { Notice } from "@firna/ui/notice";
 import { Spinner } from "@firna/ui/spinner";
 import { useSharedUiTheme } from "@firna/ui/theme";
-import { OctagonAlert } from "lucide-react";
+import { useTextScale } from "@firna/ui/typography";
 
-import { useRowMetrics } from "../components/common/Surface";
 import { ActionButton } from "../components/parts/Action";
-import { LinkButton } from "../components/parts/LinkButton";
-import { Notice } from "../components/parts/Notice";
 import { paths } from "../paths";
 import type { DeployState } from "./projectState";
+
+/** View log, an app link to the activity of the project. */
+function ViewLog() {
+  return (
+    <LinkButton href={mockLink(paths.activity)} size="xs" tone="plain">
+      View log
+    </LinkButton>
+  );
+}
 
 /**
  * The notice of the last deploy: a neutral notice while it runs, and an
@@ -15,19 +25,16 @@ import type { DeployState } from "./projectState";
  */
 export function DeployNotice(props: { deploy: DeployState }) {
   const theme = useSharedUiTheme();
-  const metrics = useRowMetrics();
+  // The spinner takes the size of the notice glyphs of the text scale.
+  const glyph = useTextScale() === "compact" ? 16 : 18;
   switch (props.deploy) {
     case "live":
       return null;
     case "running":
       return (
         <Notice
-          actions={
-            <LinkButton tone="plain" to={paths.activity}>
-              View log
-            </LinkButton>
-          }
-          icon={<Spinner color={theme.colors.muted} size={metrics.iconSize} />}
+          actions={<ViewLog />}
+          iconNode={<Spinner color={theme.colors.muted} size={glyph} />}
           title="Deploying to production"
         >
           The live site updates when the deploy finishes.
@@ -38,13 +45,11 @@ export function DeployNotice(props: { deploy: DeployState }) {
         <Notice
           actions={
             <>
-              <LinkButton tone="plain" to={paths.activity}>
-                View log
-              </LinkButton>
+              <ViewLog />
               <ActionButton to={paths.deployRunning}>Try again</ActionButton>
             </>
           }
-          icon={<OctagonAlert size={metrics.iconSize + 2} />}
+          icon={OctagonAlert}
           title="The deploy failed"
           tone="urgent"
         >

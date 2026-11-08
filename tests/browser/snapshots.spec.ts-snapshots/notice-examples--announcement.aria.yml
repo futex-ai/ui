@@ -1,0 +1,8 @@
+- button "Start a deploy"
+- button "Fail the deploy"
+- button "Change the failed step"
+- button "Fail the checks"
+- button "Change the failed check"
+- button "Refresh"
+- button "Clear"
+- text: "Refreshes: 0"

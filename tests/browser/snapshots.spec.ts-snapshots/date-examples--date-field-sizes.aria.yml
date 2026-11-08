@@ -1,3 +1,7 @@
+- text: Extra small
+- textbox "Extra small":
+  - /placeholder: Select a date
+  - text: /\d+ Mar \d+/
 - text: Small
 - textbox "Small":
   - /placeholder: Select a date

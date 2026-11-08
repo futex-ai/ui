@@ -1,8 +1,11 @@
 import type { ReactNode } from "react";
+import { PanelResizeHandle } from "@firna/ui/panel-resize";
+import { useSharedUiTheme } from "@firna/ui/theme";
 
-import { detailWidth, sidebarWidth } from "../../design/density";
+import { detailWidth, sidebarWidth } from "../../design/panelWidths";
+import { noop } from "../../noop";
 import { classes } from "../common/classes";
-import { ResizeHandle, type HandleState } from "../parts/ResizeHandle";
+import { drawnHandleStyles, type HandleState } from "../common/drawnState";
 import styles from "./Desktop.module.css";
 
 /** The widths of the two side columns and the drawn state of each handle. */
@@ -19,7 +22,9 @@ export const defaultColumns: ColumnState = {
 
 /**
  * The desktop layout: the project list, the main column, and an optional
- * changes panel. Each side column has a resize handle on its inner edge.
+ * changes panel. Each side column has a library resize handle on its inner
+ * edge. The layout owns the widths. A static view draws each handle state
+ * through the handle's line and grip styles.
  */
 export function DesktopColumns(props: {
   columns: ColumnState;
@@ -27,6 +32,7 @@ export function DesktopColumns(props: {
   main: ReactNode;
   detail?: ReactNode;
 }) {
+  const theme = useSharedUiTheme();
   const { sidebar, detail } = props.columns;
   return (
     <div className={styles.columns}>
@@ -36,12 +42,14 @@ export function DesktopColumns(props: {
         style={{ width: sidebar.width }}
       >
         {props.sidebar}
-        <ResizeHandle
-          bounds={sidebarWidth}
+        <PanelResizeHandle
+          {...drawnHandleStyles(theme, sidebar.handle)}
+          accessibilityLabel="Resize the project list"
           edge="end"
-          label="Resize the project list"
-          state={sidebar.handle}
-          width={sidebar.width}
+          max={sidebarWidth.max}
+          min={sidebarWidth.min}
+          onChange={noop}
+          value={sidebar.width}
         />
       </aside>
       <main
@@ -55,12 +63,14 @@ export function DesktopColumns(props: {
           className={styles.detail}
           style={{ width: detail.width }}
         >
-          <ResizeHandle
-            bounds={detailWidth}
+          <PanelResizeHandle
+            {...drawnHandleStyles(theme, detail.handle)}
+            accessibilityLabel="Resize the changes panel"
             edge="start"
-            label="Resize the changes panel"
-            state={detail.handle}
-            width={detail.width}
+            max={detailWidth.max}
+            min={detailWidth.min}
+            onChange={noop}
+            value={detail.width}
           />
           {props.detail}
         </aside>

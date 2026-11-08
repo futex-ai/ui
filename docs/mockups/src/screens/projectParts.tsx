@@ -1,7 +1,10 @@
+import { mockLink } from "@mokly/mokly";
 import { Ellipsis, Rocket } from "lucide-react";
+import { LinkTabs, type LinkTab } from "@firna/ui/link";
+import { useSharedUiTheme } from "@firna/ui/theme";
 
+import { focusGlow, type ButtonStyle } from "../components/common/drawnState";
 import { ActionButton, IconAction } from "../components/parts/Action";
-import type { LinkTab } from "../components/parts/LinkTabs";
 import type { ProjectStatus } from "../fixtures/projects";
 import { paths } from "../paths";
 import type { DeployState, ProjectState } from "./projectState";
@@ -10,32 +13,48 @@ import { FilesTab } from "./tabs/FilesTab";
 import { OverviewTab } from "./tabs/OverviewTab";
 import { SettingsTab } from "./tabs/SettingsTab";
 
-/** The tabs of a project. Each tab links to the screen that shows it. */
-export function tabsFor(state: ProjectState): LinkTab[] {
+/**
+ * The tabs of a project. Each tab links to the screen that shows it. A tab
+ * with drawn keyboard focus takes the focus glow through its `style`.
+ */
+function tabsFor(state: ProjectState, focusStyle: ButtonStyle): LinkTab[] {
   return [
     {
-      label: "Overview",
-      to: paths.overview,
       current: state.tab === "overview",
+      href: mockLink(paths.overview),
+      label: "Overview",
     },
     {
-      label: "Files",
-      to: paths.files,
       count: state.content === "new" ? undefined : 43,
       current: state.tab === "files",
-      focused: state.focus === "files-tab",
+      href: mockLink(paths.files),
+      label: "Files",
+      style: state.focus === "files-tab" ? focusStyle : undefined,
     },
     {
-      label: "Activity",
-      to: paths.activity,
       current: state.tab === "activity",
+      href: mockLink(paths.activity),
+      label: "Activity",
     },
     {
-      label: "Settings",
-      to: paths.settings,
       current: state.tab === "settings",
+      href: mockLink(paths.settings),
+      label: "Settings",
     },
   ];
+}
+
+/** The library `LinkTabs` of a project. A phone fills the bar with them. */
+export function ProjectTabs(props: { state: ProjectState; fill?: boolean }) {
+  const theme = useSharedUiTheme();
+  return (
+    <LinkTabs
+      accessibilityLabel="Project"
+      fill={props.fill}
+      size="xs"
+      tabs={tabsFor(props.state, focusGlow(theme))}
+    />
+  );
 }
 
 /** The status of the project, which follows its last deploy. */

@@ -1,0 +1,37 @@
+- list "Projects":
+  - listitem:
+    - link /Atlas [\d,.]+[bkmBKM]+/:
+      - /url: /projects/atlas
+  - listitem:
+    - link /Billing \d+[hmsp]+/:
+      - /url: /projects/billing
+  - listitem:
+    - link "Mobile app 3d":
+      - /url: /projects/mobile
+- list "Resources":
+  - listitem:
+    - link "Help center (opens in a new tab)":
+      - /url: https://help.example.com
+      - text: ""
+      - img "(opens in a new tab)"
+- list "Recent projects":
+  - listitem:
+    - link /Atlas [\d,.]+[bkmBKM]+/:
+      - /url: /projects/atlas
+  - listitem:
+    - link /Billing \d+[hmsp]+/:
+      - /url: /projects/billing
+  - listitem:
+    - link "Mobile app 3d":
+      - /url: /projects/mobile
+- list "All projects":
+  - listitem:
+    - link /Atlas Updated [\d,.]+[bkmBKM]+ ago/:
+      - /url: /projects/atlas
+  - listitem:
+    - link /Billing Updated \d+[hmsp]+ ago/:
+      - /url: /projects/billing
+  - listitem:
+    - link "Mobile app Updated 3d ago":
+      - /url: /projects/mobile
+- text: "Opened: none"

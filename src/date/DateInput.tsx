@@ -50,7 +50,7 @@ export type DateInputProps = {
   clearable?: boolean;
   /** Calendar grid (default) or spinning day/month/year wheel bottom sheet. */
   variant?: DatePickerVariant;
-  /** Control density: `sm`, `md` (default), or `lg`. */
+  /** Control density. Defaults to `md`. */
   size?: ControlSize;
   /**
    * Corner radius (px) of the trigger box. Defaults to `theme.radii.md`; pass

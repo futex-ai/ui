@@ -94,7 +94,7 @@ skill at that moment instead of guessing the rule.
   reason and a `scope` to `tests/browser/snapshotOptOuts.ts`. That file is the
   only place to declare an opt-out. The scope `aria` or `screenshot` skips that
   one baseline, and `story` skips both. Commit each baseline that the entry
-  does not skip. The root `README.md` gives the details.
+  does not skip. `docs/development.md` gives the details.
 
 ## Product
 

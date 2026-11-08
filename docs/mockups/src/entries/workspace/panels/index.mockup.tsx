@@ -12,7 +12,7 @@ export const panels = defineScreen({
     "The pointer is over the inner edge of the project list. The hairline darkens and a grip shows in its middle. A phone has no columns to resize.",
   rationale:
     "Each handle is a window splitter: a focusable separator with a name, the current width, and its bounds. The project list starts at 232 px and resizes from 200 to 360 px. The changes panel starts at 340 px and resizes from 280 to 520 px. An arrow key changes a width by 16 px. The primary colour shows only on the short grip, so no panel gets an accent edge. The caller owns the widths and stores them.",
-  relatedDocs: [],
+  relatedDocs: ["docs/protocol/app-shell-parts.md"],
   propSchema: projectStateSchema,
   props: { ...projectAtRest, resize: "sidebar-hover" },
   render: (props, context) => (

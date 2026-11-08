@@ -90,6 +90,11 @@
       "react-native": "./dist/dropdown/index.js",
       "import": "./dist/node/dropdown/index.js"
     },
+    "./empty-state": {
+      "types": "./dist/node/empty-state/index.d.ts",
+      "react-native": "./dist/empty-state/index.js",
+      "import": "./dist/node/empty-state/index.js"
+    },
     "./focusRing": {
       "types": "./dist/node/focusRing.d.ts",
       "react-native": "./dist/focusRing.js",
@@ -110,6 +115,11 @@
       "react-native": "./dist/kanban/index.js",
       "import": "./dist/node/kanban/index.js"
     },
+    "./link": {
+      "types": "./dist/node/link/index.d.ts",
+      "react-native": "./dist/link/index.js",
+      "import": "./dist/node/link/index.js"
+    },
     "./list": {
       "types": "./dist/node/list/index.d.ts",
       "react-native": "./dist/list/index.js",
@@ -124,6 +134,16 @@
       "types": "./dist/node/modal/index.d.ts",
       "react-native": "./dist/modal/index.js",
       "import": "./dist/node/modal/index.js"
+    },
+    "./notice": {
+      "types": "./dist/node/notice/index.d.ts",
+      "react-native": "./dist/notice/index.js",
+      "import": "./dist/node/notice/index.js"
+    },
+    "./panel-resize": {
+      "types": "./dist/node/panel-resize/index.d.ts",
+      "react-native": "./dist/panel-resize/index.js",
+      "import": "./dist/node/panel-resize/index.js"
     },
     "./popover": {
       "types": "./dist/node/popover/index.d.ts",
@@ -194,6 +214,11 @@
       "types": "./dist/node/toast/index.d.ts",
       "react-native": "./dist/toast/index.js",
       "import": "./dist/node/toast/index.js"
+    },
+    "./touch-surface": {
+      "types": "./dist/node/touch-surface/index.d.ts",
+      "react-native": "./dist/touch-surface/index.js",
+      "import": "./dist/node/touch-surface/index.js"
     },
     "./typography": {
       "types": "./dist/node/typography/index.d.ts",

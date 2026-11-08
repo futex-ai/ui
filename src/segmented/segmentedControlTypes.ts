@@ -78,7 +78,7 @@ export type SegmentedControlProps<T extends string> = {
   onChange: (value: T) => void;
   options: readonly SegmentOption<T>[];
   required?: boolean;
-  /** Control density: `sm`, `md` (default), or `lg`. */
+  /** Control density. Defaults to `md`. */
   size?: ControlSize;
   /** Width strategy: `content` (default) hugs each label; `equal` shares width evenly. */
   sizing?: SegmentedControlSizing;

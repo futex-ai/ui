@@ -1,0 +1,14 @@
+- group "Default scale":
+  - heading "Heading 1" [level=1]
+  - heading "Heading 2" [level=2]
+  - heading "Heading 3" [level=3]
+  - heading "Heading 4" [level=4]
+  - heading "Heading 5" [level=5]
+  - text: Body text Label text Caption text Overline text
+- group "Compact scale":
+  - heading "Heading 1" [level=1]
+  - heading "Heading 2" [level=2]
+  - heading "Heading 3" [level=3]
+  - heading "Heading 4" [level=4]
+  - heading "Heading 5" [level=5]
+  - text: Body text Label text Caption text Overline text This text keeps the default scale.

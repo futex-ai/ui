@@ -1,0 +1,31 @@
+- button "Save"
+- button "Settings"
+- button "Remove filter"
+- button "Close panel"
+- text: "Presses: 0 Search projects"
+- textbox "Search projects": Invoices
+- button "Clear Search projects"
+- button "Filter by tag"
+- text: Environment
+- button "Environment, Production"
+- text: Due date
+- textbox "Due date":
+  - /placeholder: Select a date
+  - text: /\d+ Mar \d+/
+- text: Start date
+- 'button /Start date: 1 Apr \d+/'
+- button "Clear Start date"
+- radiogroup "View":
+  - radio "Board" [checked]
+  - radio "List"
+- radiogroup "Range":
+  - radio "Day"
+  - radio "Week" [checked]
+- switch "Notifications" [checked]
+- text: Notifications Labels Design
+- button "Remove Design"
+- text: Billing
+- button "Remove Billing"
+- combobox "Labels"
+- text: Reviewers Design +2
+- combobox "Reviewers"

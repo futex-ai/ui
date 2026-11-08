@@ -30,7 +30,7 @@ export function ReadOnlySelector({
 }: {
   label?: string;
   required?: boolean;
-  /** Control density of the default `field` variant: `sm`, `md` (default), or `lg`. */
+  /** Control density of the default `field` variant. Defaults to `md`. */
   size?: ControlSize;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;

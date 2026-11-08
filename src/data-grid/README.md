@@ -12,6 +12,10 @@ composes the existing library primitives (`Input`, `DateField`,
 `DropdownMenu`, `ComboboxMultiSelect`, `Badge`/pills) and lets them own their
 portals; the grid contributes the selection model, keyboard model, and chrome.
 
+Longer topics have their own guides:
+[selection and editing](selection-and-editing.md), [layout](layout.md), and
+[menus](menus.md).
+
 ## Responsibilities
 
 - Render typed cells from `columns` + `rows`: text, number, date, single-select,
@@ -101,337 +105,55 @@ option can still allow such a press.
 
 ### Exact decimal numbers
 
-A `number` column holds a JavaScript number by default, which silently rounds
-anything past a float's precision — `Number("0.1000000000000000055")` is `0.1`.
-For money, ledger amounts, or any value a backend stores as an exact decimal,
-set `numberValueMode: "decimalString"`:
-
-```tsx
-{ id: "amount", label: "Amount", fieldType: "number", numberValueMode: "decimalString" }
-```
-
-The cell value is then the decimal **string**. The field type is unchanged, so
-the column keeps its `#` header icon, its right alignment, and the same typed
-editor — but neither the editor nor the paste path ever calls `Number`, so a
-30-digit value round-trips digit-for-digit.
-
-Accepted syntax is canonical dot-decimal only: an optional sign, digits, an
-optional `.` fraction (`007`, `-12.50`, `+5`, `.5`, `1.`). Grouping separators,
-currency symbols, internal whitespace and exponents are rejected — `1,234` and
-`0,001` would need a locale to read, and `1e999999999` would expand into a
-gigabyte-scale allocation. Invalid text shows the inline editor error, or aborts
-a paste (below).
-
-Valid input is normalized but never rounded: a leading `+` is dropped, redundant
-leading zeros go, a missing integer digit is supplied, a trailing bare `.` is
-dropped, and a zero value loses its sign — so `007.500` becomes `7.500` and
-`-0.00` becomes `0.00`. **Trailing zeros are preserved**, because the library
-returns the representation you entered rather than imposing a canonical form.
-Deciding that `7.500` should be stored as `7.5` is the consumer's policy; do
-that in the adapter that persists the value. `parseDecimalString` is exported so
-a consumer can validate with exactly the rules the grid uses.
+See the [selection and editing guide](selection-and-editing.md#exact-decimal-numbers).
 
 ### Selection & keyboard
 
-The grid is one Tab stop (roving tabindex). With a cell focused:
-
-| Keys                        | Action                                                                   |
-| --------------------------- | ------------------------------------------------------------------------ |
-| Arrows                      | Move the active cell (clamps at edges)                                   |
-| `Shift`+Arrows              | Extend the rectangular selection from the anchor                         |
-| `Home` / `End`              | First / last column of the row (`Ctrl`+ = grid corners)                  |
-| `Tab` / `Shift+Tab`         | Walk cells in reading order                                              |
-| `Ctrl/Cmd-A`                | Select all cells                                                         |
-| `Ctrl/Cmd-C`                | Copy the selection (TSV — pastes into spreadsheets)                      |
-| `Ctrl/Cmd-X`                | Cut the selection (source clears on the next paste)                      |
-| `Ctrl/Cmd-V`                | Paste into the selection (coerced to each field type)                    |
-| `Delete` / `Backspace`      | Clear the selected cells                                                 |
-| `Enter`                     | Edit the active cell                                                     |
-| `Shift+F10` / `ContextMenu` | Open the cell context menu (needs `contextMenu`)                         |
-| `Escape`                    | Cancel the edit, dismiss the copy/cut marquee, or close the context menu |
-
-On web, a pointer drag selects: from a **cell** it paints a rectangle with a
-marquee box; from the **row-number gutter** it selects whole rows; from a
-**column header** it selects whole columns. Dragging into a top/bottom/side edge
-auto-scrolls the body and keeps extending. Pass `selection` + `onSelectionChange`
-to control the selection, or let the grid manage it internally. Selection and
-navigation are announced to a polite live region.
-Copy (`Ctrl/Cmd-C`) and cut (`Ctrl/Cmd-X`) serialize the selection to TSV and
-outline it with a dashed "marching-ants" marquee. Paste (`Ctrl/Cmd-V`) coerces
-each value to its column's field type (numbers parsed, select options matched by
-label or id) and follows spreadsheet fill semantics: it grows the target to at
-least the copied block and tiles the source across it, so a single copied cell
-fills the whole selection, a copied row or column repeats across it, and a block
-pasted onto one cell drops in at full size. A cut clears its source cells once
-pasted; `Delete` / `Backspace` clear the selection in place. All of this needs an
-`onCellChange` handler and is web-only (it reads the OS clipboard). Copy/cut/paste
-respect `editable: false` columns and clamp writes to the grid's edges.
-
-Paste is validated as a unit. A value that cannot be read for its column —
-unparseable text in a number column, a date that is not a real ISO `YYYY-MM-DD`
-calendar day, a select label matching no option, a multi-select with any unknown
-token — aborts the **whole** paste: nothing is written, a pending cut keeps its
-source and its marquee, and the grid announces "Paste cancelled, _n_ invalid
-values" to the polite live region (_n_ counts the unreadable **clipboard**
-values, not the cells they tiled onto). This keeps unreadable input distinct from
-an intentional clear, so a stray column of text can never blank the cells it
-lands on. A blank source cell is still a deliberate clear, and text landing past
-the grid's edge or on a non-editable column is dropped as before without blocking
-the paste.
-
-What counts as parseable in a number column depends on the mode. A default
-`number` column uses JavaScript number semantics, so it still accepts forms like
-`1e5` and `0x1f`; a `decimalString` column accepts only the canonical
-dot-decimal syntax above. A multi-select cell of pure punctuation (`,`) is
-refused rather than treated as empty — only genuinely blank text clears a cell.
+See the [selection and editing guide](selection-and-editing.md#selection--keyboard).
 
 ### Layout
 
-Columns size with a fixed `width` or a `flex` share (clamped to `minWidth`); the
-grid resolves them to pixel widths from its measured container so the header and
-every body row stay aligned. A flex column's automatic width is capped at a
-default max (≈480px) so a lone flexible column in a sparse grid (e.g. two
-columns) can't stretch across the whole viewport — raise or lower it with
-`maxWidth`, or drag the column wider by hand (manual resizes aren't bound by the
-default cap). When the resolved columns are narrower than the container the
-leftover reads as a clean empty grid area; when they are wider it scrolls
-horizontally, and the row-number gutter stays pinned to the left (frozen column,
-web only).
+See the [layout guide](layout.md#layout).
 
 ### Resizing
 
-On web, each column header carries a resize handle on its right edge (a focusable
-`separator`): drag it to set the column's width — clamped to `minWidth` /
-`maxWidth` — or focus it and use the Left/Right arrow keys. The grid owns the
-widths internally; `columns[].width` / `flex` seed the initial size. Starting a
-resize freezes the other flexible columns at their current pixel widths, so only
-the dragged column's edge moves (the rest stay put and the grid scrolls if the
-total outgrows the container). Pass `onColumnResize(columnId, width)` to persist a
-width (e.g. to storage); opt a column out with `resizable: false`. Native renders
-no handle.
+See the [layout guide](layout.md#resizing).
 
 ### Clipped text
 
-A column narrower than its heading or values clips them with an ellipsis.
-Resting the pointer on clipped text reveals the whole string in a small popover
-anchored to it:
-
-```tsx
-<DataGrid columns={columns} overflowTooltip="headers" rows={rows} />
-```
-
-`overflowTooltip` takes `"all"` (headings **and** text cells — the default),
-`"headers"`, or `"none"`. The popover only opens for text that is genuinely cut
-off, measured at hover time, so it never repeats a label already fully on screen
-and stays correct after a column resize. Select-option pills are not covered.
-
-It is web only: hover has no touch equivalent, so the hook is inert on native.
-The card stack below `cardBreakpoint` is still a web presentation with a real
-pointer, so a clipped card field value reveals the same way. Nothing is hidden
-from assistive tech either way — the
-clipping is purely visual (CSS `text-overflow`), so the full string remains the
-element's accessible name, and the popover itself is `aria-hidden` to avoid
-announcing it twice.
-
-The reveal waits for the pointer to rest (~400ms) and never opens while a
-pointer button is held, so sweeping across a row and dragging a range, column,
-or resize handle are all unaffected. It dismisses on pointer-out, on any press,
-and on **Escape**. Moving the pointer off the text onto the popover itself keeps
-it up — a short grace period covers the gap — so a magnified reader can travel
-to a long name instead of watching it vanish (WCAG 2.1 — 1.4.13 Content on Hover
-or Focus, AA: dismissible, hoverable, persistent). A press dismisses it until
-the pointer leaves and re-enters the text.
+See the [layout guide](layout.md#clipped-text).
 
 ### Editing
 
-Open an editor with **Enter**, a **double-press**, or a single click/tap on the
-already-active cell (select cells open their menu on that click, matching a
-normal dropdown). Dragging from the active cell still paints a range, so only a
-click that never dragged edits. **Enter** commits and moves down; **Escape** reverts;
-blur commits. `onCellChange(ref, value)` may return a promise — a rejection
-keeps the editor open so you can surface an error. Number cells reject
-non-numeric input with an inline error — under `numberValueMode: "decimalString"`
-they reject anything outside canonical dot-decimal syntax and commit the string
-itself.
-
-Date editing adapts by platform. Web renders the editable date trigger and an
-anchored calendar through `DropdownPortal`, so it stays beside the cell while
-escaping the grid's scroll clipping; entering edit mode focuses the input and
-opens that calendar immediately. Native opens the day/month/year wheel in the
-shared bottom sheet on edit entry; Cancel discards its draft and Done commits it.
+See the [selection and editing guide](selection-and-editing.md#editing).
 
 ### Fixed height
 
-`maxHeight` gives the body a fixed height rather than a cap: the rows scroll once
-they overflow it, and when there are fewer rows than fit, they stack at the top
-and the area below the last row reads as a muted grey empty zone (Airtable /
-Notion style) instead of collapsing to the rows or leaving a blank white gap.
-Omit `maxHeight` for an unbounded body that's exactly as tall as its rows.
+See the [layout guide](layout.md#fixed-height).
 
 ### Infinite scroll
 
-Set a `maxHeight` to virtualize the body, then handle `onEndReached` (fired near
-the bottom) by fetching and appending rows; show the loading row with
-`loadingMore`. The grid is stateless about data — you own `rows`.
+See the [layout guide](layout.md#infinite-scroll).
 
 ### Column menus, add column / row
 
-Pass `onColumnMenuAction(columnId, action)` to show each header's caret menu
-(`sortAsc` / `sortDesc` / `clearSort` / `insertLeft` / `insertRight` / `hide` /
-`delete`); reflect the result by updating your `columns` (`sortDirection`,
-`hidden`) and `rows`. `onAddColumn(type)` adds the (+) header picker; `onAddRow`
-adds the trailing "+ New record" row; `onRowExpand(rowId)` wires the gutter
-expand icon.
-
-`insertLeft` / `insertRight` report only the position, not a field type — pick
-one the way you already do for `onAddColumn`, and splice the new column beside
-`columnId`. The sort rows are hidden for a column with `sortable: false`, and
-`clearSort` only appears once `sortDirection` is set.
-
-The caret menu renders from the same descriptors as the header context menu
-(see [Context menus](#context-menus)), so there is one column action vocabulary
-rather than two.
+See the [menus guide](menus.md#column-menus-add-column--row).
 
 ### Context menus
 
-Pass `contextMenu` to open a menu on a secondary gesture — right-click on web,
-long-press on native. Opting in also suppresses the browser's own menu over the
-grid, so it is off by default.
-
-There are three menus, one per region:
-
-| Region            | Rows                                                                                                  |
-| ----------------- | ----------------------------------------------------------------------------------------------------- |
-| Column header     | Sort ascending / descending / Clear sort · Insert left · Insert right · Hide field · **Delete field** |
-| Row-number gutter | Insert row above / below · Duplicate · Copy · **Delete row**                                          |
-| Cell              | Edit · Copy · Cut · Paste · Clear                                                                     |
-
-The header menu shows exactly what the caret menu shows — both render from the
-same descriptors, so `onColumnMenuAction` services both. Row rows need
-`onRowMenuAction(rowIds, action)`; without it the gutter opens nothing. The cell
-menu needs no callback at all: the grid already owns the clipboard and the
-editor. Rows are gated the way you would expect — no sort rows on a
-`sortable: false` column, no Edit or Clear on `editable: false`, and no
-clipboard rows on native, where the OS clipboard is out of reach.
-
-**Opening a menu on the gutter or a header never changes the selection.**
-Reaching for a menu is not the same gesture as selecting, so a right-click there
-leaves whatever you had selected exactly as it was. The menu still knows its
-target: a row menu acts on the row under the pointer, and a header menu on the
-column it was opened from.
-
-Cells are the one exception, because the cell menu's Copy / Cut / Clear act on
-the selection — a menu opened on a cell outside it would otherwise operate on
-something else entirely, possibly off screen. So a cell press **inside** the
-current selection keeps it, and a press **outside** collapses to that cell.
-
-Where a row action spans more than one row, the selection still decides: a
-gutter menu opened inside a five-row selection reads "Delete 5 rows" and reports
-all five ids in one call. A row counts as inside only when the selection spans
-it at full width, so a small cell range that merely overlaps a row yields just
-that row.
-
-`onContextMenuEntries(entries, context)` is the extension point: add, reorder, or
-replace the default rows, or return `[]` to suppress the menu for that target.
-`context` is discriminated by `region`, carrying the `column`, the `rowIds`, or
-the cell `ref` plus the current selection `rect`.
-
-```tsx
-<DataGrid
-  columns={columns}
-  contextMenu
-  onColumnMenuAction={(columnId, action) => {
-    /* sort / hide / delete / insert beside columnId */
-  }}
-  onContextMenuEntries={(entries, context) =>
-    context.region === "cell"
-      ? [
-          ...entries,
-          { id: "ask", label: "Ask an agent", onPress: ask, type: "item" },
-        ]
-      : entries
-  }
-  onRowMenuAction={(rowIds, action) => {
-    /* one call for the whole selected span */
-  }}
-  rows={rows}
-/>
-```
-
-`Shift+F10` (or the dedicated `ContextMenu` key) opens the cell menu from the
-keyboard, positioned under the focused cell — the menu is never mouse-only
-(WCAG 2.1.1). While it is open the menu owns the keyboard: the grid's own
-shortcuts stand down, so `Delete` cannot clear cells underneath it and the
-arrows cannot walk the selection away from it. On web the menu opens at the
-pointer and closes on Escape, an outside press, or a scroll; on native it is the
-house bottom sheet, titled with the field or row it acts on.
+See the [menus guide](menus.md#context-menus).
 
 ### Loading columns
 
-Set `loading: true` on a column to show a spinner in place of its field-type
-icon in the header — for a just-added column still being provisioned, a
-computed / AI column being (re)generated, or any async header state. It is
-purely presentational (the column stays sortable, resizable, and editable) and
-swaps in place with no layout shift; flip it back to `false` when the column is
-ready. The spinner is decorative (hidden from assistive tech, like the field
-icon it replaces); the loading state is conveyed by marking the header busy
-(`accessibilityState={{ busy }}` / `aria-busy`), so the header's spoken name
-stays just the column label.
+See the [selection and editing guide](selection-and-editing.md#loading-columns).
 
 ### Loading cells
 
-Pass `cellLoading(ref)` to mark individual body cells busy — for example while
-an edited value is being saved. A busy cell keeps its current, optimistic value
-visible with a compact spinner inline beside it, exposes
-`accessibilityState={{ busy: true }}` / `aria-busy`, and stays available for
-selection and keyboard navigation without opening another editor. The
-responsive card presentation reflects the same state. The callback is
-controlled by the consumer, so it can resolve one cell or many cells at once:
-
-```tsx
-import type { DataGridCellRef } from "@firna/ui/data-grid";
-
-const [saving, setSaving] = useState<Set<string>>(new Set());
-const keyFor = (ref: DataGridCellRef) => `${ref.rowId}:${ref.columnId}`;
-
-<DataGrid
-  cellLoading={(ref) => saving.has(keyFor(ref))}
-  columns={columns}
-  rows={rows}
-  onCellChange={async (ref, value) => {
-    const key = keyFor(ref);
-    setRows((current) =>
-      current.map((row) =>
-        row.id === ref.rowId
-          ? { ...row, cells: { ...row.cells, [ref.columnId]: value } }
-          : row,
-      ),
-    );
-    setSaving((current) => new Set(current).add(key));
-    try {
-      await saveCell(ref, value);
-    } finally {
-      setSaving((current) => {
-        const next = new Set(current);
-        next.delete(key);
-        return next;
-      });
-    }
-  }}
-/>;
-```
-
-If `onCellChange` returns the save promise, the grid keeps the active editor
-mounted behind the inline value and spinner until the promise settles. A
-rejected save therefore restores the draft editor, preserving the existing
-rejected-save behavior.
+See the [selection and editing guide](selection-and-editing.md#loading-cells).
 
 ### Responsive
 
-Set `cardBreakpoint` (px) to render a read-only card stack below that viewport
-width — one card per record (title + label/value rows), tapping a card calls
-`onRowExpand`. This is the mobile presentation; the full interactive grid is the
-wide-viewport experience.
+See the [layout guide](layout.md#responsive).
 
 ## Known limitations
 

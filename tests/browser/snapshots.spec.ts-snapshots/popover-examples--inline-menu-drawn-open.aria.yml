@@ -1,0 +1,13 @@
+- button "Project actions" [expanded]
+- menu "Project actions":
+  - menuitem "Rename"
+  - menuitem "Duplicate"
+  - menuitem "Pin" [disabled]
+  - menuitem "Archive project"
+- button "Sort projects" [expanded]
+- menu "Sort projects":
+  - text: Sort by
+  - menuitemradio "Recent activity" [checked]
+  - menuitemradio "Name"
+  - menuitemradio "Status": Status Failed first
+  - text: Pinned projects stay at the top.

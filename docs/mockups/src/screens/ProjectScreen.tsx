@@ -1,5 +1,7 @@
-import type { Viewport } from "@mokly/mokly";
+import { mockLink, type Viewport } from "@mokly/mokly";
 import { ChevronLeft, Globe, UserPlus } from "lucide-react";
+import { LinkButton } from "@firna/ui/link";
+import { InlineMenu, InlineMenuSheet } from "@firna/ui/popover";
 
 import { DesktopSurface, PhoneSurface } from "../components/common/Surface";
 import { Bar, DesktopColumns, Scroll } from "../components/layout/Desktop";
@@ -10,29 +12,28 @@ import {
   PhoneTabs,
 } from "../components/layout/Phone";
 import { ActionButton } from "../components/parts/Action";
-import { IconLinkButton, LinkButton } from "../components/parts/LinkButton";
-import { LinkTabs } from "../components/parts/LinkTabs";
-import { Menu, MenuAnchor } from "../components/parts/Menu";
-import { MenuSheet } from "../components/parts/MenuSheet";
 import { currentProject } from "../fixtures/projects";
+import { noop } from "../noop";
 import { outsidePages, paths } from "../paths";
 import { ChangesPanel } from "./ChangesPanel";
-import { projectActions } from "./menus";
+import { firstProjectAction, projectActions } from "./menus";
 import {
   DeployButton,
   ProjectMenuButton,
+  ProjectTabs,
   statusFor,
   TabBody,
-  tabsFor,
 } from "./projectParts";
 import { ProjectSidebar } from "./ProjectSidebar";
 import { columnsFor, type ProjectState } from "./projectState";
 import { SettingsActions } from "./tabs/SettingsTab";
 import styles from "./ProjectScreen.module.css";
 
+/** The menu wrapper sits in a bar that centres its controls. */
+const barAnchor = { alignSelf: "center" } as const;
+
 function DesktopProject(props: { state: ProjectState }) {
   const { state } = props;
-  const menuOpen = state.menu === "actions";
   const main = (
     <>
       <Bar>
@@ -41,26 +42,28 @@ function DesktopProject(props: { state: ProjectState }) {
           <span className={styles.repository}>{currentProject.repository}</span>
         </div>
         <div className={styles.secondary}>
-          <LinkButton href={outsidePages.preview} icon={Globe}>
+          <LinkButton href={outsidePages.preview} icon={Globe} newTab size="xs">
             Open preview
           </LinkButton>
           <ActionButton icon={UserPlus}>Share</ActionButton>
         </div>
         <DeployButton deploy={state.deploy} />
-        <MenuAnchor>
-          <ProjectMenuButton open={menuOpen} />
-          {menuOpen ? (
-            <Menu
-              align="end"
-              entries={projectActions(true)}
-              label="Project actions"
-              width={200}
-            />
-          ) : null}
-        </MenuAnchor>
+        <InlineMenu
+          activeId={firstProjectAction}
+          align="end"
+          entries={projectActions}
+          label="Project actions"
+          onClose={noop}
+          open={state.menu === "actions"}
+          size="xs"
+          style={barAnchor}
+          width={200}
+        >
+          <ProjectMenuButton open={state.menu === "actions"} />
+        </InlineMenu>
       </Bar>
       <Bar slim>
-        <LinkTabs label="Project" tabs={tabsFor(state)} />
+        <ProjectTabs state={state} />
       </Bar>
       <Scroll>
         <div className={styles.page}>
@@ -115,25 +118,31 @@ function PhoneProject(props: { state: ProjectState }) {
       <PhoneHeader
         actions={<ProjectMenuButton open={menuOpen} />}
         back={
-          <IconLinkButton
+          <LinkButton
+            accessibilityLabel="Projects"
+            href={mockLink(paths.chooseProject)}
             icon={ChevronLeft}
-            label="Projects"
-            to={paths.chooseProject}
+            shape="square"
+            size="xs"
+            tone="plain"
           />
         }
         subtitle={currentProject.repository}
         title={currentProject.name}
       />
       <PhoneTabs>
-        <LinkTabs fill label="Project" tabs={tabsFor(state)} />
+        <ProjectTabs fill state={state} />
       </PhoneTabs>
       <PhoneBody>
         <TabBody state={state} />
       </PhoneBody>
       <PhoneFoot state={state} />
       {menuOpen ? (
-        <MenuSheet
-          entries={projectActions(false)}
+        <InlineMenuSheet
+          entries={projectActions}
+          label="Project actions"
+          onClose={noop}
+          size="xs"
           title={currentProject.name}
         />
       ) : null}

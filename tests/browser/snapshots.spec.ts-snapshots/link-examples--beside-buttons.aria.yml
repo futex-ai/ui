@@ -1,0 +1,24 @@
+- button "Button primary xs"
+- link "Link primary xs":
+  - /url: /primary
+- button "Button secondary xs"
+- link "Link secondary xs":
+  - /url: /secondary
+- button "Button ghost xs"
+- link "Link ghost xs":
+  - /url: /ghost
+- button "Button plain xs"
+- link "Link plain xs":
+  - /url: /plain
+- button "Button primary md"
+- link "Link primary md":
+  - /url: /primary
+- button "Button secondary md"
+- link "Link secondary md":
+  - /url: /secondary
+- button "Button ghost md"
+- link "Link ghost md":
+  - /url: /ghost
+- button "Button plain md"
+- link "Link plain md":
+  - /url: /plain

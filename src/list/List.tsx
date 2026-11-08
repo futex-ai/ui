@@ -94,7 +94,7 @@ export type ListProps<Item> = {
    * with the text past a leading avatar. Defaults to full-bleed (`0`).
    */
   separatorInset?: number;
-  /** Control density: `sm`, `md` (default), or `lg`. */
+  /** Control density. Defaults to `md`. */
   size?: ControlSize;
   /** Extra style for the list container (e.g. a card border + radius). */
   style?: StyleProp<ViewStyle>;

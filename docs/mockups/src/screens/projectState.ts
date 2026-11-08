@@ -1,4 +1,4 @@
-import { detailWidth, sidebarWidth } from "../design/density";
+import { detailWidth, sidebarWidth } from "../design/panelWidths";
 import { defaultColumns, type ColumnState } from "../components/layout/Desktop";
 
 export const projectTabs = [

@@ -1,8 +1,8 @@
-import { Switch } from "@firna/ui/switch";
 import { Archive } from "lucide-react";
+import { Switch } from "@firna/ui/switch";
+import { Text } from "@firna/ui/typography";
 
 import { useSurface } from "../../components/common/Surface";
-import { Txt } from "../../components/common/Txt";
 import { Section } from "../../components/layout/Section";
 import { ActionButton } from "../../components/parts/Action";
 import {
@@ -16,7 +16,11 @@ import { noop } from "../../noop";
 import { paths } from "../../paths";
 import styles from "./SettingsTab.module.css";
 
-/** A switch beside its label. The `xs` size maps the switch to `sm`. */
+/**
+ * A switch beside its label. Desktop draws `xs` with the `sm` metrics. A
+ * phone shows the larger `md` switch, and the touch surface gives it a 44 px
+ * target.
+ */
 function SwitchLine(props: { label: string }) {
   const phone = useSurface() === "phone";
   return (
@@ -24,7 +28,7 @@ function SwitchLine(props: { label: string }) {
       <Switch
         accessibilityLabel={props.label}
         onValueChange={noop}
-        size={phone ? "md" : "sm"}
+        size={phone ? "md" : "xs"}
         value
       />
       <span className={styles.switchLabel}>{props.label}</span>
@@ -91,15 +95,15 @@ export function SettingsTab(props: { invalid: boolean }) {
         )}
       </Section>
       <Section title="Archive">
-        <Txt color="secondary">
+        <Text color="secondary">
           Archived projects keep their history and stop deploying.
-        </Txt>
+        </Text>
         <div className={styles.archive}>
           <ActionButton disabled={props.invalid} icon={Archive} tone="danger">
             Archive project
           </ActionButton>
           {props.invalid ? (
-            <Txt variant="caption">Ask an admin to archive this project.</Txt>
+            <Text variant="caption">Ask an admin to archive this project.</Text>
           ) : null}
         </div>
       </Section>

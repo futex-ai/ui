@@ -1,13 +1,14 @@
 import type { Viewport } from "@mokly/mokly";
 import { ArrowDownUp, LayoutList, Plus, Search } from "lucide-react";
+import { EmptyState } from "@firna/ui/empty-state";
+import { InlineMenuSheet } from "@firna/ui/popover";
 
 import { DesktopSurface, PhoneSurface } from "../components/common/Surface";
 import { DesktopColumns, defaultColumns } from "../components/layout/Desktop";
 import { PhoneBody, PhoneHeader } from "../components/layout/Phone";
 import { ActionButton, IconAction } from "../components/parts/Action";
-import { EmptyState } from "../components/parts/EmptyState";
 import { TextField } from "../components/parts/Fields";
-import { MenuSheet } from "../components/parts/MenuSheet";
+import { noop } from "../noop";
 import { paths } from "../paths";
 import { sortChoices } from "./menus";
 import { ProjectSections } from "./ProjectRows";
@@ -27,8 +28,8 @@ function DesktopList(props: { state: ProjectListState; search?: string }) {
                 New project
               </ActionButton>
             }
+            headingLevel={1}
             icon={LayoutList}
-            level={1}
             title="Choose a project"
           >
             Its files, activity, and settings open here.
@@ -87,7 +88,12 @@ function PhoneList(props: { state: ProjectListState; search?: string }) {
         )}
       </PhoneBody>
       {sortOpen ? (
-        <MenuSheet entries={sortChoices(false)} title="Sort projects" />
+        <InlineMenuSheet
+          entries={sortChoices}
+          label="Sort projects"
+          onClose={noop}
+          size="xs"
+        />
       ) : null}
     </PhoneSurface>
   );

@@ -1,9 +1,26 @@
-/** The entry and slot types of a dropdown list. */
+/** The entry, slot, and list handle types of a dropdown list. */
 import type { ReactNode } from "react";
 import type { IconComponent } from "../primitives/icons";
+import type { ScrollView } from "../primitives/reactNative";
 
 /** How the option list and its rows are exposed to assistive tech. */
 export type DropdownListRole = "listbox" | "menu";
+
+/**
+ * What a caller's `listRef` receives: the scrolling list itself. It names the
+ * scroll methods that a React Native `ScrollView` and the web scroll view both
+ * declare, so a ref typed with either platform's scroll view fits.
+ */
+export type DropdownListScrollHandle = Pick<
+  ScrollView,
+  "getScrollableNode" | "scrollTo" | "scrollToEnd" | "setNativeProps"
+> & {
+  /**
+   * Moves keyboard focus to the list, as `list` focus mode needs on web.
+   * Optional, because React Native's `ScrollView` type does not declare it.
+   */
+  focus?: () => void;
+};
 
 /**
  * Content for a row's `leading`/`right` slot: either a plain node the caller

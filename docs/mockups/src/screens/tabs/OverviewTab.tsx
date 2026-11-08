@@ -1,11 +1,13 @@
-import { Avatar } from "@firna/ui/avatar";
+import { mockLink } from "@mokly/mokly";
 import { Globe } from "lucide-react";
+import { Avatar } from "@firna/ui/avatar";
+import { LinkButton } from "@firna/ui/link";
+import { ListItem } from "@firna/ui/list";
+import { Text } from "@firna/ui/typography";
 
-import { Txt } from "../../components/common/Txt";
 import { useSurface } from "../../components/common/Surface";
 import { Section } from "../../components/layout/Section";
-import { LinkButton } from "../../components/parts/LinkButton";
-import { Row, RowList } from "../../components/parts/Rows";
+import { RowDetail, RowList } from "../../components/parts/Rows";
 import { currentProject } from "../../fixtures/projects";
 import { activity, type Activity } from "../../fixtures/work";
 import { outsidePages, paths } from "../../paths";
@@ -17,13 +19,14 @@ import type { DeployState } from "../projectState";
 export function ActivityRow(props: { item: Activity }) {
   const phone = useSurface() === "phone";
   return (
-    <Row
-      detail={props.item.detail}
+    <ListItem
+      description={props.item.detail}
       leading={
         <Avatar decorative label={props.item.initials} size={phone ? 32 : 22} />
       }
+      size="xs"
       title={props.item.title}
-      trailing={props.item.when}
+      trailing={<RowDetail>{props.item.when}</RowDetail>}
     />
   );
 }
@@ -38,16 +41,22 @@ export function OverviewTab(props: { deploy: DeployState }) {
     <>
       <DeployNotice deploy={props.deploy} />
       <Section title="About">
-        <Txt color="secondary">{currentProject.description}</Txt>
+        <Text color="secondary">{currentProject.description}</Text>
         {phone ? (
-          <LinkButton block href={outsidePages.preview} icon={Globe}>
+          <LinkButton
+            block
+            href={outsidePages.preview}
+            icon={Globe}
+            newTab
+            size="xs"
+          >
             Open preview
           </LinkButton>
         ) : null}
       </Section>
       {phone ? (
         <Section
-          action={<Txt variant="caption">{changeSummary}</Txt>}
+          action={<Text variant="caption">{changeSummary}</Text>}
           title="Changes"
         >
           <ChangeRows bleed />
@@ -55,17 +64,19 @@ export function OverviewTab(props: { deploy: DeployState }) {
       ) : null}
       <Section
         action={
-          <LinkButton tone="ghost" to={paths.activity}>
+          <LinkButton href={mockLink(paths.activity)} size="xs" tone="ghost">
             All activity
           </LinkButton>
         }
         title="Recent activity"
       >
-        <RowList bleed divided={phone} label="Recent activity">
-          {activity.slice(0, 3).map((item) => (
-            <ActivityRow item={item} key={item.title} />
-          ))}
-        </RowList>
+        <RowList
+          bleed
+          itemKey={(item) => item.title}
+          items={activity.slice(0, 3)}
+          label="Recent activity"
+          renderItem={(item) => <ActivityRow item={item} />}
+        />
       </Section>
     </>
   );

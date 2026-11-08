@@ -6,6 +6,10 @@ library: tones, sizes, an optional leading icon (lucide or a caller-supplied
 node), icon-only shapes, and a full-width block variant, all driven by shared
 theme tokens.
 
+Longer topics have their own guides: [layout and touch targets](layout.md),
+[roles, triggers, and accessibility](roles-and-accessibility.md), and
+[content, events, and styling](customization.md).
+
 ## Responsibilities
 
 - Render a labelled button with one of five tones: `primary` (filled),
@@ -143,30 +147,7 @@ other sizes keep their bold labels.
 
 ### Inline
 
-`inline` renders a compact chip that flows inside a line of text — an inline
-"Restore" / "Undo" action beside a label — without changing the row's line
-height. It drops the fixed track height and hugs the label with a tight padding,
-then pulls that padding (and the 1px border) back off with a negative vertical
-margin, so the button's outer (margin-box) height collapses to exactly its label
-line height. Dropped into a row it takes the same vertical space as a run of text
-at its `size`, so the row's height tracks the text beside it, not the button; the
-pill's fill/border overflow the text line above and below without affecting
-layout.
-
-It composes with `tone` (`secondary` (default) is a bordered chip; `ghost` and
-`plain` are borderless), `size`, and a leading `icon`. It is a small,
-non-touch-first target — it relies on WCAG 2.5.8's inline / line-height
-target-size exception rather than the 24px minimum — so reach for it in
-pointer/text contexts, not for primary touch actions. It is a text-flow chip: the
-icon-only `square` / `circle` shapes and an explicit `minTouchTarget` are
-fixed-size intents that contradict the collapse, so `inline` is ignored (a no-op)
-when either is set, and it should not be paired with `block`.
-
-Because the chip **and its focus ring** overflow the text line, give the row a
-little vertical padding — slightly more than the pill, for the ring. On web that
-only matters under an `overflow: "hidden"` ancestor; on native (notably Android)
-a parent can clip children to its own bounds, so the padding keeps the pill from
-being sheared. The example rows in the story set `paddingVertical` for this.
+See the [layout guide](layout.md#inline).
 
 ### Block
 
@@ -175,307 +156,43 @@ form actions and bottom sheets.
 
 ### Roles and states
 
-`role` re-points the button at another single-activation role, so a rail row,
-tab, checkbox, radio, switch, or menu item is a themed `Button` rather than a
-hand-rolled `Pressable` that has to re-derive the tones, sizes, focus glow, and
-disabled/busy handling. Each role carries exactly one state prop:
-
-| `role`     | state prop | announced as    |
-| ---------- | ---------- | --------------- |
-| `button`   | `pressed`  | `aria-pressed`  |
-| `checkbox` | `checked`  | `aria-checked`  |
-| `radio`    | `checked`  | `aria-checked`  |
-| `switch`   | `checked`  | `aria-checked`  |
-| `tab`      | `selected` | `aria-selected` |
-| `menuitem` | —          |                 |
-
-`expanded` is separate and composes with `button`, `checkbox`, `menuitem`, and
-`tab` for a control that reveals a menu, panel, or section.
-
-```tsx
-{
-  /* A settings rail. The `tablist` is the caller's — see the note below. */
-}
-<View accessibilityLabel="Settings sections" accessibilityRole="tablist">
-  {sections.map((item) => (
-    <Button
-      key={item.id}
-      onPress={() => setSection(item.id)}
-      role="tab"
-      selected={section === item.id}
-      tone={section === item.id ? "primary" : "plain"}
-    >
-      {item.label}
-    </Button>
-  ))}
-</View>;
-
-{
-  /* A toggle button. */
-}
-<Button onPress={() => setPinned(!pinned)} pressed={pinned}>
-  {pinned ? "Pinned" : "Pin"}
-</Button>;
-
-{
-  /* A checkbox. */
-}
-<Button checked={notify} onPress={() => setNotify(!notify)} role="checkbox">
-  Email notifications
-</Button>;
-```
-
-Pairing a state with a role ARIA does not allow — or leaving a `checkbox` /
-`radio` / `switch` without `checked`, or a `tab` without `selected` — fires a
-`__DEV__` warning naming the mismatch, because the resulting control announces
-the wrong thing rather than failing loudly.
-
-`link` is deliberately not a member: a re-roled button has no `href`, so it
-cannot be opened in a new tab, middle-clicked, or copied as a URL. Use
-[`LinkButton`](../link/README.md) for a real link: it has the look of the button
-of the same tone and size, and it is an anchor on web.
-
-**`Button` is a single control, not a group.** It does not own roving focus or
-arrow-key navigation, so the `tablist` / `radiogroup` / `menu` container and any
-group keyboard model belong to the caller. `SegmentedControl` already implements
-the radiogroup pattern end to end if that is what you need.
+See the [roles and accessibility guide](roles-and-accessibility.md#roles-and-states).
 
 ### Imperative focus
 
-`buttonRef` exposes the underlying pressable for callers that must drive focus
-themselves. The usual reason is a modal's `initialFocusRef`: `WebModalFrame`
-opens focus on the first control the caller rendered, so a destructive
-confirmation should point it at the safe action instead.
-
-```tsx
-const cancelRef = useRef<View | null>(null);
-
-<WebModalFrame initialFocusRef={cancelRef} /* … */>
-  <Button buttonRef={cancelRef} onPress={onClose}>
-    Cancel
-  </Button>
-</WebModalFrame>;
-```
-
-The prop is named rather than a forwarded `ref`, matching `InputFrame`'s
-`inputRef`.
+See the [customization guide](customization.md#imperative-focus).
 
 ### Press lifecycle
 
-`onPress` is joined by `onPressIn`, `onPressOut`, `onLongPress`, and
-`delayLongPress`, so a control whose meaning is the _hold_ — push-to-talk, a
-press-and-hold confirm — is a `Button` rather than a hand-rolled `Pressable`.
-`busy` gates the whole lifecycle together, so a control can never start on
-press-in and then never be released.
-
-```tsx
-<Button
-  delayLongPress={400}
-  icon={Mic}
-  onPress={sendTapMessage}
-  onPressIn={startRecording}
-  onPressOut={stopRecording}
-  tone="primary"
->
-  Hold to talk
-</Button>
-```
-
-The gesture event is forwarded to `onPress`, so a menu trigger can open at the
-pointer instead of wrapping the button in a `<View>` and measuring it. It is
-**optional** — a keyboard activation has no pointer, and both Enter and Space
-call the handler with no event — so anchor to the control itself when it is
-absent:
-
-```tsx
-<Button onPress={(event) => openMenu(event ? pointOf(event) : anchorRef)}>
-  Actions
-</Button>
-```
+See the [customization guide](customization.md#press-lifecycle).
 
 ### On media
 
-Every other tone composites against a theme surface, so all of them disappear on
-a photograph. `onMedia` is a translucent white veil that thickens on hover and
-press, with a fixed white label:
-
-```tsx
-<Button
-  accessibilityLabel="Close preview"
-  icon={X}
-  onPress={close}
-  shape="circle"
-  tone="onMedia"
-/>
-```
-
-Its fills and label are deliberately **not** theme tokens. Imagery is dark
-whichever scheme is mounted, so a scheme-aware `onSolid` would invert to dark
-text on dark media in the dark presets.
+See the [customization guide](customization.md#on-media).
 
 ### Tap target and box size
 
-`minTouchTarget` is a floor: it can only grow the visible box, and one below the
-size's own track is inert (a `__DEV__` warning says so). Two other props cover
-what it cannot:
-
-- `boxSize` sets a `square` / `circle` button's visible dimension outright,
-  including below the smallest density's 26px track, for a glyph a design specs
-  smaller than any control size.
-- `hitSlop` extends the pressable area beyond the visible box, so a compact
-  control still meets a comfortable target (WCAG 2.1 — 2.5.5 AAA / 2.5.8 AA)
-  without growing. React Native reads it off the pressable; on web —
-  where the web backend's `Pressable` ignores the prop by design — the same
-  area is drawn as an inset, transparent child whose events bubble to the
-  button. Either way the expanded area overlaps whatever sits beside the
-  control, so reach for it on a control with room around it.
-
-```tsx
-<Button
-  accessibilityLabel="Remove tag"
-  boxSize={16}
-  hitSlop={14}
-  icon={X}
-  onPress={remove}
-  shape="circle"
-  tone="plain"
-/>
-```
+See the [layout guide](layout.md#tap-target-and-box-size).
 
 ### Touch surfaces
 
-Inside a `TouchSurface`, every button takes the touch metrics, whatever its
-`size`: a 44px track, a 15px label on a 20px line at weight 500, 18px icons,
-and a target of at least 44 by 44px. A `square` or `circle` button is a 44 by
-44px box, or its `minTouchTarget` when that is larger. Each target occupies its
-own layout space, so a touch surface ignores `hitSlop`, and `inline` is a
-no-op there.
-
-A `boxSize` below 44px keeps its drawing at its size, and the pressable
-reserves a 44 by 44px target around it instead. The focus ring stays on the
-drawn face, and the caller `style` applies to the face. A 44px or larger
-`boxSize` sets the box as it does elsewhere. The
-[app shell parts protocol](../../docs/protocol/app-shell-parts.md#touch-surfaces)
-holds the requirements.
+See the [layout guide](layout.md#touch-surfaces).
 
 ### Label, slots, and cards
 
-`labelStyle` merges over the label after the tone's colour, and `numberOfLines`
-truncates it — which has to be set here, because React Native ignores
-`numberOfLines` on a nested `<Text>`. `trailing` renders after the label under
-the same decorative contract as the leading icon, so a selector can pin a
-chevron to its far edge:
-
-```tsx
-<Button
-  block
-  labelStyle={{ flex: 1, textAlign: "left" }}
-  numberOfLines={1}
-  onPress={openSwitcher}
-  trailing={<ChevronDown color={theme.colors.ink} size={16} />}
->
-  {workspaceName}
-</Button>
-```
-
-`content` replaces the icon + label row entirely, for a pressable card that
-performs an action. The button keeps its role, focus ring, press handling, and
-disabled treatment and stops imposing a label layout; pair it with `style` to
-drop the row direction and the fixed track height. There is no visible text for
-the library to read a name from, so `accessibilityLabel` is required.
+See the [customization guide](customization.md#label-slots-and-cards).
 
 ### Menu triggers
 
-`hasPopup` announces what a trigger opens (`aria-haspopup`) before the user
-commits to opening it; pair it with `expanded` when the surface opens in place:
-
-```tsx
-<Button expanded={open} hasPopup="menu" icon={MoreHorizontal} onPress={toggle}>
-  Actions
-</Button>
-```
-
-It is web-only — the mobile accessibility APIs model no "has popup" relationship
-— and ARIA supports it on the `button`, `menuitem`, and `tab` roles only; a
-`checkbox` / `radio` / `switch` is a value control rather than a trigger, and a
-`__DEV__` warning says so.
+See the [roles and accessibility guide](roles-and-accessibility.md#menu-triggers).
 
 ## Styling
 
-`style` extends the pressable container (`ViewStyle`). Tone, size, the focus
-ring, and the disabled treatment are applied by the component; `style` layers on
-top for one-off layout tweaks (e.g. margins).
-
-Because it layers last, a caller-supplied fill also overrides the tone's own
-hover and pressed washes — which is why `style` accepts a function of the
-interaction state, so that caller can put press feedback back:
-
-```tsx
-<Button
-  onPress={archive}
-  style={({ pressed }) => [
-    { backgroundColor: theme.colors.amberSoft },
-    pressed ? { opacity: 0.82 } : null,
-  ]}
->
-  Archive
-</Button>
-```
-
-The state is `{ busy, disabled, focused, hovered, pressed }`; `hovered` is
-web-only and stays `false` on native.
+See the [customization guide](customization.md#styling).
 
 ## Accessibility
 
-- **Accessible name (WCAG 1.1.1 / 4.1.2, A).** A button with visible text uses
-  that text as its name; pass `accessibilityLabel` only to override it (keep the
-  visible text a substring so it still satisfies 2.5.3 Label in Name). An
-  **icon-only** button (no children) **requires** `accessibilityLabel` — this is
-  type-enforced, and a `__DEV__` warning fires if a name can't be resolved.
-- **Decorative icon (1.1.1, A).** The leading icon is hidden from assistive
-  technology (`aria-hidden` on web), so the button is announced once by its name
-  rather than by the raw glyph. Caller-supplied icon nodes also ignore pointer
-  events, preventing a focusable descendant from stealing click focus and
-  showing a second browser focus outline inside the button.
-- **Busy state (4.1.2, A).** `busy` sets `aria-busy`, blocks the press handler,
-  and swaps the icon for a spinner while keeping the button focusable and
-  announced. It is distinct from `disabled` (which removes the control from the
-  tab order). The spinner stops animating under `prefers-reduced-motion`.
-- **Keyboard (2.1.1, A).** On the default `button` role, Enter/Space activation
-  is delegated to React Native Web's `role="button"` synthesis (no explicit
-  `onKeyDown` is wired); a Playwright test asserts both keys still activate to
-  catch RNW regressions. React Native Web presses Enter on _every_ role but
-  binds Spacebar to `button` roles alone, so the other `role` values wire Space
-  themselves — swallowing it (rather than scrolling the page) even while
-  disabled or busy, and leaving Enter to the press responder so a press never
-  fires twice.
-- **Role and state (4.1.2, A).** The role state travels on two channels because
-  the renderers disagree: React Native reads `accessibilityState`, while React
-  Native Web honours it only on `TouchableWithoutFeedback` and so needs the
-  literal `aria-*` props. `Button` emits both. `pressed` is the exception — React
-  Native models no pressed toggle and `aria-pressed` is the only toggle state
-  ARIA allows on `role="button"`, so on web it stays `aria-pressed` and on native
-  it degrades to the announced `selected` state.
-- **Popup triggers (4.1.2, A).** `hasPopup` emits `aria-haspopup` on web so a
-  screen reader can say which kind of surface Enter will open; `expanded`
-  reports whether it is open. ARIA supports the attribute on `button`,
-  `menuitem`, and `tab` only, and a `__DEV__` warning fires on the rest.
-- **Target size (2.5.5 AAA / 2.5.8 AA).** `hitSlop` grows the pressable area
-  without growing the control, so shrinking a glyph with `boxSize` never
-  shrinks its tap target with it.
-- **Focus visible (2.4.7, AA).** The library's shared soft focus glow is painted
-  by `domBackendCss` for `:focus-visible` focus on web, including static HTML
-  before hydration. It covers every tone — including `primary`, where a
-  border-colour ring would be invisible — and suppresses the browser outline
-  only while the glow is active. Native keeps its platform focus affordance.
-  The hook still listens for native web blur as well as React `onBlur`, so
-  disabling and later re-enabling a focused button cannot restore stale
-  interaction state.
-- **Resting border.** The secondary button's resting edge uses the
-  `controlBorder` token — a soft, translucent-ink line (intentionally below the
-  1.4.11 ≥3:1 non-text-contrast floor, for a calmer edge). The `ghost` tone
-  intentionally has no resting border or fill: its `primaryDeep` label is the
-  affordance.
+See the [roles and accessibility guide](roles-and-accessibility.md#accessibility).
 
 ## Theming
 
@@ -487,7 +204,7 @@ border/label uses `colors.roseSoft` / `colors.rose`, the secondary fill uses
 use `colors.bg2` (secondary) and `colors.roseDeep` (danger); `primary` dims
 instead, because `primaryDeep` is already the darkest accent the theme contract
 defines. The `onMedia` tone is the one exception to all of this — see
-[On media](#on-media).
+[On media](customization.md#on-media).
 
 ## Key Code
 

@@ -6,7 +6,7 @@ import { useSharedUiTheme } from "@firna/ui/theme";
 
 import { noop } from "../../noop";
 import { drawnButtonStyle, type DrawnState } from "../common/drawnState";
-import { useControlMetrics, useSurface } from "../common/Surface";
+import { useGlyphSize } from "../common/Surface";
 
 /** Makes a control the link to another screen when it has a destination. */
 function linked(control: ReactElement, to: string | undefined) {
@@ -25,8 +25,8 @@ function menuProps(menu: boolean | undefined, state: DrawnState) {
 }
 
 /**
- * A library `Button` at the size of its surface: the proposed `xs` metrics
- * on desktop, with the lighter label, and the 44 px touch size on a phone.
+ * A library `Button` at the dense `xs` size. On a phone the touch surface
+ * gives it the touch metrics: a 44 px target with a 15 px label.
  */
 export function ActionButton(props: {
   children: string;
@@ -42,8 +42,6 @@ export function ActionButton(props: {
   to?: string;
 }) {
   const theme = useSharedUiTheme();
-  const metrics = useControlMetrics();
-  const phone = useSurface() === "phone";
   const tone = props.tone ?? "secondary";
   const state = props.state ?? "rest";
   return linked(
@@ -53,22 +51,10 @@ export function ActionButton(props: {
       busy={props.busy}
       disabled={props.disabled}
       icon={props.icon}
-      labelStyle={{
-        fontSize: metrics.labelSize,
-        fontWeight: metrics.labelWeight,
-        lineHeight: metrics.labelLine,
-      }}
       numberOfLines={1}
       onPress={noop}
-      size={phone ? "lg" : "sm"}
-      style={[
-        {
-          gap: metrics.gap,
-          height: metrics.height,
-          paddingHorizontal: metrics.paddingX,
-        },
-        drawnButtonStyle(theme, tone, state),
-      ]}
+      size="xs"
+      style={drawnButtonStyle(theme, tone, state)}
       tone={tone}
     >
       {props.children}
@@ -78,9 +64,8 @@ export function ActionButton(props: {
 }
 
 /**
- * An icon-only library `Button` whose box is the control height of its
- * surface: 26 px on desktop and 44 px on a phone. A quiet button draws a
- * muted glyph, for toolbars.
+ * An icon-only library `Button` at the `xs` size: 26 px on desktop and a
+ * 44 px target on a phone. A quiet button draws a muted glyph, for toolbars.
  */
 export function IconAction(props: {
   label: string;
@@ -92,32 +77,26 @@ export function IconAction(props: {
   to?: string;
 }) {
   const theme = useSharedUiTheme();
-  const metrics = useControlMetrics();
-  const phone = useSurface() === "phone";
+  const glyphSize = useGlyphSize();
   const tone = props.tone ?? "plain";
   const state = props.state ?? "rest";
   const Icon = props.icon;
-  const glyph = (
-    <Icon
-      color={props.quiet ? theme.colors.muted : theme.colors.ink}
-      size={metrics.iconSize + 1}
-    />
-  );
   const shared = {
     ...menuProps(props.menu, state),
     accessibilityLabel: props.label,
-    boxSize: metrics.height,
     onPress: noop,
     shape: "square" as const,
-    size: phone ? ("lg" as const) : ("sm" as const),
+    size: "xs" as const,
     style: drawnButtonStyle(theme, tone, state),
     tone,
   };
-  const button =
-    tone === "plain" ? (
-      <Button {...shared} iconNode={glyph} />
-    ) : (
-      <Button {...shared} icon={props.icon} />
-    );
+  const button = props.quiet ? (
+    <Button
+      {...shared}
+      iconNode={<Icon color={theme.colors.muted} size={glyphSize} />}
+    />
+  ) : (
+    <Button {...shared} icon={props.icon} />
+  );
   return linked(button, props.to);
 }

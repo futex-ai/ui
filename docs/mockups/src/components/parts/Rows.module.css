@@ -1,101 +1,6 @@
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.divided {
-  gap: 0;
-}
-
+/* Moves the rows out by their padding, so their content lines up. */
 .bleed {
   margin: 0 calc(-1 * var(--row-padding-x));
-}
-
-/* A hairline between rows, and never after the last one. */
-.divided > .item + .item {
-  border-top: 1px solid var(--ui-border);
-}
-
-.row {
-  display: flex;
-  align-items: center;
-  gap: var(--row-gap);
-  min-height: var(--row-min-height);
-  padding: var(--row-padding-y) var(--row-padding-x);
-  border-radius: var(--ui-radius-sm);
-  color: var(--ui-ink);
-  font-family: var(--ui-font-sans);
-  text-decoration: none;
-  outline: none;
-}
-
-a.row:hover,
-.hovered {
-  background: var(--ui-soft);
-}
-
-/* The inset glow of the library list rows. */
-a.row:focus-visible {
-  box-shadow: inset 0 0 0 var(--firna-focus-ring-width, 4px)
-    var(--firna-focus-ring-color);
-}
-
-/* The row of the page that shows now: a tint, the deep accent, and weight. */
-.current,
-a.current:hover {
-  background: var(--ui-primary-soft);
-  color: var(--ui-primary-deep);
-}
-
-.current .title {
-  font-weight: 600;
-}
-
-.leading {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  color: var(--ui-muted);
-}
-
-.main {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.title,
-.detail {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.title {
-  font-size: var(--row-title);
-  line-height: var(--row-title-line);
-}
-
-.detail {
-  color: var(--ui-muted);
-  font-size: var(--row-detail);
-  line-height: var(--row-detail-line);
-}
-
-.trailing {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 6px;
-  color: var(--ui-muted);
-  font-size: var(--row-detail);
-  font-variant-numeric: tabular-nums;
-  line-height: var(--row-detail-line);
 }
 
 .section {
@@ -112,4 +17,26 @@ a.current:hover {
   letter-spacing: var(--text-overline-tracking);
   line-height: var(--text-overline-line);
   text-transform: uppercase;
+}
+
+.title {
+  display: block;
+  overflow: hidden;
+  color: var(--ui-ink);
+  font-family: var(--ui-font-sans);
+  font-size: var(--row-title);
+  line-height: var(--row-title-line);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ui-muted);
+  font-family: var(--ui-font-sans);
+  font-size: var(--row-detail);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--row-detail-line);
 }
