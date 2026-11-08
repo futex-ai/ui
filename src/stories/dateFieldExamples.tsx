@@ -21,6 +21,7 @@ export function SingleDateExample() {
 
 export function DateFieldSizesExample() {
   const [extraSmall, setExtraSmall] = useState("2026-03-31");
+  const [denseWheel, setDenseWheel] = useState("2026-03-31");
   const [small, setSmall] = useState("2026-03-31");
   const [medium, setMedium] = useState("2026-03-31");
   const [large, setLarge] = useState("2026-03-31");
@@ -31,6 +32,15 @@ export function DateFieldSizesExample() {
         onChange={setExtraSmall}
         size="xs"
         value={extraSmall}
+      />
+      {/* The dense tap trigger of the wheel: its Clear is a 24 by 24px box. */}
+      <DateField
+        clearable
+        label="Dense wheel"
+        onChange={setDenseWheel}
+        size="xs"
+        value={denseWheel}
+        variant="wheel"
       />
       <DateField label="Small" onChange={setSmall} size="sm" value={small} />
       <DateField label="Medium" onChange={setMedium} size="md" value={medium} />

@@ -3,9 +3,9 @@ import { StyleSheet } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
 import { fieldChromeTokens, inputSizeTokens } from "../input";
+import { fieldActionBoxStyle } from "../input/fieldActionBox";
 import { touchInputSizeTokens } from "../input/inputSizing";
 import type { SharedUiTheme } from "../theme";
-import { touchControlMetrics } from "../touchMetrics";
 
 import { dateFieldZIndex } from "./dateFieldLayers";
 
@@ -44,7 +44,6 @@ function dateFieldStylesFor(
   // the two stay in lockstep. `fieldError` keeps its name (the date trigger uses
   // it) but is the same token as the input's error message.
   const chrome = fieldChromeTokens(theme);
-  const target = touchControlMetrics.target;
   return StyleSheet.create({
     anchor: { position: "relative" },
     field: chrome.field,
@@ -71,16 +70,10 @@ function dateFieldStylesFor(
       paddingHorizontal: sizing.paddingHorizontal,
     },
     triggerActive: { borderColor: theme.colors.primary },
-    // The Clear action of the native trigger. On a touch surface it is a 44px
-    // box of its own; elsewhere it is as large as its icon.
-    triggerClear: touch
-      ? {
-          alignItems: "center",
-          height: target,
-          justifyContent: "center",
-          width: target,
-        }
-      : {},
+    // The Clear action of the tap trigger, which native and the web wheel
+    // variant use. It is the text field's action box: 24px at `xs`, 44px on a
+    // touch surface, and as large as its icon at the other sizes.
+    triggerClear: fieldActionBoxStyle(sizing.actionSize),
     triggerFlex: { flex: 1 },
     // The lucide calendar glyph is optically bottom-heavy (thin hanger tabs pad
     // its box upward), so it reads ~1px low beside the symmetric clear circle and

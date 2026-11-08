@@ -2,6 +2,9 @@
 - textbox "Extra small":
   - /placeholder: Select a date
   - text: /\d+ Mar \d+/
+- text: Dense wheel
+- 'button /Dense wheel: \d+ Mar \d+/'
+- button "Clear Dense wheel"
 - text: Small
 - textbox "Small":
   - /placeholder: Select a date

@@ -4,6 +4,7 @@ import { StyleSheet } from "../primitives/reactNative";
 import type { ControlSize } from "../controlSize";
 import type { SharedUiTheme } from "../theme";
 
+import { fieldActionBoxStyle } from "./fieldActionBox";
 import { inputSizeTokens, touchInputSizeTokens } from "./inputSizing";
 
 /** The geometry of the framed input at one size, or on a touch surface. */
@@ -64,7 +65,6 @@ export function createTouchInputStyles(theme: SharedUiTheme) {
 function inputStylesFor(theme: SharedUiTheme, sizing: InputSizing) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
   const chrome = fieldChromeTokens(theme);
-  const action = sizing.actionSize;
   return StyleSheet.create({
     field: chrome.field,
     fieldLabel: chrome.fieldLabel,
@@ -208,15 +208,7 @@ function inputStylesFor(theme: SharedUiTheme, sizing: InputSizing) {
     // Pressable adornment (clear button / interactive suffix icon). The dense
     // size and a touch surface give it its own square target box: 24px and
     // 44px. The other sizes keep it as large as its icon.
-    iconButton:
-      action === undefined
-        ? { alignItems: "center", justifyContent: "center" }
-        : {
-            alignItems: "center",
-            height: action,
-            justifyContent: "center",
-            width: action,
-          },
+    iconButton: fieldActionBoxStyle(sizing.actionSize),
   });
 }
 

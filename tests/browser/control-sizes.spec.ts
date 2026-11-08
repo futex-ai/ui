@@ -143,6 +143,24 @@ test("date field sizes step the trigger height across the shared scale", async (
   expect(Math.abs((small?.height ?? 0) - 30)).toBeLessThanOrEqual(1);
   expect(Math.abs((medium?.height ?? 0) - 38)).toBeLessThanOrEqual(1);
   expect(Math.abs((large?.height ?? 0) - 46)).toBeLessThanOrEqual(1);
+
+  // The dense tap trigger, which the wheel variant uses on web, keeps its
+  // Clear in a 24 by 24px box: never below the 24px target, and at most 1px
+  // over it. A press in the box's padding, outside the 14px icon, clears the
+  // date and does not open the picker.
+  const wheelClear = page.getByRole("button", { name: "Clear Dense wheel" });
+  const wheelClearBox = await wheelClear.boundingBox();
+  expect(wheelClearBox).not.toBeNull();
+  expect(wheelClearBox?.width ?? 0).toBeGreaterThanOrEqual(24);
+  expect(wheelClearBox?.width ?? 0).toBeLessThanOrEqual(25);
+  expect(wheelClearBox?.height ?? 0).toBeGreaterThanOrEqual(24);
+  expect(wheelClearBox?.height ?? 0).toBeLessThanOrEqual(25);
+  await wheelClear.click({ position: { x: 2, y: 2 } });
+  await expect(
+    page.getByRole("button", { name: "Dense wheel: Select a date" }),
+  ).toBeVisible();
+  await expect(wheelClear).toHaveCount(0);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
 test("segmented control sizes step the control height across the shared scale", async ({
@@ -181,4 +199,33 @@ test("segmented control sizes step the control height across the shared scale", 
   expect(small?.height ?? 0).toBeGreaterThan(extraSmall?.height ?? 0);
   expect(medium?.height ?? 0).toBeGreaterThan(small?.height ?? 0);
   expect(large?.height ?? 0).toBeGreaterThan(medium?.height ?? 0);
+
+  // Icon-only dense segments keep the same lines, whatever they show: pills
+  // never below the 24px target in a 26px track, and 26px outline cells
+  // around a small custom node. Each target is checked before its group, so a
+  // target that is too small fails its own check.
+  const iconTrack = await page
+    .getByRole("radiogroup", { name: "Extra small icon layout" })
+    .boundingBox();
+  const iconPill = await page
+    .getByRole("radio", { name: "Board", exact: true })
+    .boundingBox();
+  const iconCells = await page
+    .getByRole("radiogroup", { name: "Extra small icon status" })
+    .boundingBox();
+  const iconCell = await page
+    .getByRole("radio", { name: "Live", exact: true })
+    .boundingBox();
+
+  expect(iconTrack).not.toBeNull();
+  expect(iconPill).not.toBeNull();
+  expect(iconCells).not.toBeNull();
+  expect(iconCell).not.toBeNull();
+  expect(iconPill?.height ?? 0).toBeGreaterThanOrEqual(24);
+  expect(iconPill?.height ?? 0).toBeLessThanOrEqual(25);
+  expect(iconPill?.width ?? 0).toBeGreaterThanOrEqual(24);
+  expect(iconTrack?.height ?? 0).toBe(26);
+  expect(iconCell?.height ?? 0).toBe(26);
+  expect(iconCell?.width ?? 0).toBeGreaterThanOrEqual(24);
+  expect(iconCells?.height ?? 0).toBe(26);
 });

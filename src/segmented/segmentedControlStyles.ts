@@ -9,11 +9,19 @@ type SegmentedSizing = {
   cellFontSize: number;
   /** The line of an outline cell label. Without it, the font sets the line. */
   cellLineHeight?: number;
+  /**
+   * The least height of an outline cell, where it is taller than
+   * `minTarget`: a dense cell keeps the 26px control height.
+   */
+  cellMinHeight?: number;
   cellPaddingHorizontal: number;
   iconGap: number;
   iconSize: number;
   labelFontWeight: "500" | "700";
-  /** The least width and height of each segment, where the size sets one. */
+  /**
+   * The least width and height of each segment, where the size sets one: the
+   * 24px dense target and the 44px touch target.
+   */
   minTarget?: number;
   paddingVertical: number;
   pillFontSize: number;
@@ -32,16 +40,19 @@ type SegmentedSizing = {
  * scale, and the gaps that separate the segments. `md` matches the original
  * accounting control; `sm` is the compact density and `lg` the roomier one.
  * `xs` is the dense size: 26px cells, or a 26px track around 24px pills, with
- * 12px labels on a 16px line at weight 500.
+ * 12px labels on a 16px line at weight 500. Its floors hold that geometry
+ * whatever a segment shows, an icon alone or a caller's smaller node.
  */
 const SEGMENTED_SIZES: Record<ControlSize, SegmentedSizing> = {
   xs: {
     cellFontSize: 12,
     cellLineHeight: 16,
+    cellMinHeight: 26,
     cellPaddingHorizontal: 10,
     iconGap: 6,
     iconSize: 14,
     labelFontWeight: "500",
+    minTarget: 24,
     paddingVertical: 4,
     pillFontSize: 12,
     pillLineHeight: 16,
@@ -150,7 +161,7 @@ function segmentedStylesFor(theme: SharedUiTheme, sizing: SegmentedSizing) {
       flexDirection: "row",
       gap: sizing.iconGap,
       justifyContent: "center",
-      minHeight: sizing.minTarget,
+      minHeight: sizing.cellMinHeight ?? sizing.minTarget,
       minWidth: sizing.minTarget ?? 0,
       paddingHorizontal: sizing.cellPaddingHorizontal,
       paddingVertical: sizing.paddingVertical,

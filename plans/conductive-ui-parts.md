@@ -220,19 +220,26 @@ The integration reports are `.context/conductive-ui-parts/reports/package-integr
 
 ## Milestone 7: Checks, pull request, and review
 
+Tags: ui
+
 Depends on: 6
 
-The orchestrator owns these steps. The task requests a pull request before its review, so keep the plan until the review finishes.
+The orchestrator owns the checks, pull request, and review. Delegate confirmed UI corrections to the `ui implementor`. The task requests a pull request before its review, so keep the plan until the review finishes.
 
 - [x] Split the full accessibility workload into smaller batches without changing its coverage, assertions, timeouts, or server. Check the partition and update its documentation.
 - [ ] Run the early check and the complete `cargo xtask check` gate. Run Cargo format, Clippy, and workspace tests for the changed `xtask/` documentation.
 - [x] Commit the additions with `feat:` and push the current branch.
 - [ ] Open a draft pull request into `main`. Wait for CI and fix failures caused by this change.
-- [ ] Run the `implementation-review` skill on the pushed pull request against `origin/main`.
+- [x] Run the `implementation-review` skill on the pushed pull request against `origin/main`.
+- [x] Apply checked finding 1, option B. Give the dense wheel date Clear action the shared 24 px field-action box. Keep older sizes and touch metrics.
+- [x] Apply checked finding 2, option B. Give dense segmented pills a 24 px minimum and outline cells a 26 px minimum, independent of their content.
+- [x] Extend the existing variant stories and size tests for the two gaps. Prove their assertions fail before the fixes. Run the changed browser cases ten times. Inspect only the affected Linux baselines and check native type compatibility.
 - [ ] Check every new finding. Apply its `fix now` option, record the rest under `plans/follow-ups/`, and re-review once.
 - [ ] Run the required checks after fixes. Commit, push, and wait for the final CI result.
 - [ ] Delete this plan after the other required TODOs finish. Keep its dated decisions and design calls in the pull request description.
 - [ ] Finalize the pull request description with the API summary, checks, review outcome, follow-ups, and release handoff. Mark it ready after review and final CI.
+
+The first review and its finding checks are in `.context/reviews/conductor/firna-ui-parts-for-conductive/`. Both confirmed fixes restore the approved dense dimensions. They add no part or requirement. The fresh re-review also checks the two new problems recorded by the finding checks.
 
 ## Release handoff
 

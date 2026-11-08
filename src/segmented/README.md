@@ -71,8 +71,9 @@ padding, the label type scale, and the gaps between segments, so a segmented
 control reads at the same density as the inputs and buttons beside it.
 
 `xs` is the dense size: a 26px pill track around 24px pills, or 26px outline
-cells, with 12px labels on a 16px line at weight 500 and 14px icons. The other
-sizes keep their bold labels.
+cells, with 12px labels on a 16px line at weight 500 and 14px icons. The pills
+and cells keep these heights whatever they show, an icon alone or a smaller
+`iconNode`. The other sizes keep their bold labels.
 
 Inside a `TouchSurface`, every segment takes the touch metrics, whatever the
 `size`: each pill or cell is a target of at least 44 by 44px, a pill track is

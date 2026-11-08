@@ -74,12 +74,13 @@ that width.
 ```
 
 At `xs` the trigger is a 26px frame around a 24px input with 13px text, like the
-`xs` text field. Inside a `TouchSurface`, the trigger takes the touch metrics,
-whatever its `size`: the web trigger is the touch text field (a 44px input in a
-46px frame), and the native trigger is a 46px box with 16px text and 18px icons
-whose open button fills the row height and whose Clear action is a 44 by 44px
-box with no hit slop. `createTouchDateFieldStyles(theme)` builds the native
-trigger styles.
+`xs` text field. The tap trigger, which native and the web wheel variant use,
+keeps its Clear action in the text field's 24 by 24px action box. Inside a
+`TouchSurface`, the trigger takes the touch metrics, whatever its `size`: the
+web trigger is the touch text field (a 44px input in a 46px frame), and the
+native trigger is a 46px box with 16px text and 18px icons whose open button
+fills the row height and whose Clear action is a 44 by 44px box with no hit
+slop. `createTouchDateFieldStyles(theme)` builds the native trigger styles.
 
 ## Clearing
 

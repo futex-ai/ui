@@ -1,12 +1,32 @@
 /** Layout, motion, size, and state examples for the Segmented stories. */
+import { Columns2, Table } from "../primitives/icons";
 import { useState } from "react";
 import { View } from "../primitives/reactNative";
 
-import { SegmentedControl } from "../index";
+import { SegmentedControl, StatusDot } from "../index";
 
 const reportOptions = [
   { label: "Profit & loss", value: "pl" },
   { label: "Balance sheet", value: "bs" },
+];
+
+// Icon-only options: lucide icons, and a custom node smaller than an icon.
+const layoutOptions = [
+  { icon: Columns2, label: "Board", value: "board" },
+  { icon: Table, label: "Table", value: "table" },
+];
+
+const statusOptions = [
+  {
+    iconNode: <StatusDot size="xs" tone="primary" />,
+    label: "Live",
+    value: "live",
+  },
+  {
+    iconNode: <StatusDot size="xs" tone="neutral" />,
+    label: "Paused",
+    value: "paused",
+  },
 ];
 
 const sourceOptions = [
@@ -112,6 +132,8 @@ export function SizingExample() {
 export function SizesExample() {
   const [extraSmall, setExtraSmall] = useState("pl");
   const [extraSmallOutline, setExtraSmallOutline] = useState("pl");
+  const [denseLayout, setDenseLayout] = useState("board");
+  const [denseStatus, setDenseStatus] = useState("live");
   const [small, setSmall] = useState("pl");
   const [medium, setMedium] = useState("pl");
   const [large, setLarge] = useState("pl");
@@ -131,6 +153,24 @@ export function SizesExample() {
         options={reportOptions}
         size="xs"
         value={extraSmallOutline}
+        variant="outline"
+      />
+      {/* Icon-only dense segments keep the same lines, whatever they show. */}
+      <SegmentedControl
+        accessibilityLabel="Extra small icon layout"
+        iconOnly
+        onChange={setDenseLayout}
+        options={layoutOptions}
+        size="xs"
+        value={denseLayout}
+      />
+      <SegmentedControl
+        accessibilityLabel="Extra small icon status"
+        iconOnly
+        onChange={setDenseStatus}
+        options={statusOptions}
+        size="xs"
+        value={denseStatus}
         variant="outline"
       />
       <SegmentedControl

@@ -252,6 +252,8 @@ text use `colors.placeholder` (≥4.5:1 — 1.4.3, AA), and the box radius uses
   labelled button, a mouse-only target, or decoration.
 - [`inputSizing.ts`](inputSizing.ts): the per-size and touch geometry, the icon
   sizes, and the auto-grow textarea bounds.
+- [`fieldActionBox.ts`](fieldActionBox.ts): the private action box shared by
+  text fields and tap date triggers.
 - [`inputStyles.ts`](inputStyles.ts): the shared field chrome and the style
   factories.
 
