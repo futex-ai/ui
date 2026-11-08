@@ -80,6 +80,7 @@ Integration calls, recorded on 2026-11-08:
 - **Orchestrator call:** Draw phone menus with `InlineMenuSheet` in place. A static catalogue cannot open an interactive sheet.
 - **Orchestrator call:** Record both baselines of the six existing Sizes stories. The ARIA baselines must also include the new `xs` controls.
 - **Orchestrator call:** Divide the full accessibility sweep into sixteen deterministic batches. The added stories exceed the existing four-batch runtime margin on this host. Keep every story, assertion, and timeout.
+- **Orchestrator call:** Keep documented touch counterparts of existing public token and style factories public. Consumer controls need the same touch metrics. Internal component box builders stay private.
 
 No existing mechanism is replaced. Conductive's consumer migration belongs to its own repository.
 
@@ -227,14 +228,17 @@ Depends on: 6
 The orchestrator owns the checks, pull request, and review. Delegate confirmed UI corrections to the `ui implementor`. The task requests a pull request before its review, so keep the plan until the review finishes.
 
 - [x] Split the full accessibility workload into smaller batches without changing its coverage, assertions, timeouts, or server. Check the partition and update its documentation.
-- [ ] Run the early check and the complete `cargo xtask check` gate. Run Cargo format, Clippy, and workspace tests for the changed `xtask/` documentation.
+- [x] Run the early check and the complete `cargo xtask check` gate. Run Cargo format, Clippy, and workspace tests for the changed `xtask/` documentation.
 - [x] Commit the additions with `feat:` and push the current branch.
-- [ ] Open a draft pull request into `main`. Wait for CI and fix failures caused by this change.
+- [x] Open a draft pull request into `main`. Wait for CI and fix failures caused by this change.
 - [x] Run the `implementation-review` skill on the pushed pull request against `origin/main`.
 - [x] Apply checked finding 1, option B. Give the dense wheel date Clear action the shared 24 px field-action box. Keep older sizes and touch metrics.
 - [x] Apply checked finding 2, option B. Give dense segmented pills a 24 px minimum and outline cells a 26 px minimum, independent of their content.
 - [x] Extend the existing variant stories and size tests for the two gaps. Prove their assertions fail before the fixes. Run the changed browser cases ten times. Inspect only the affected Linux baselines and check native type compatibility.
-- [ ] Check every new finding. Apply its `fix now` option, record the rest under `plans/follow-ups/`, and re-review once.
+- [x] Apply checked finding 4, option D, through the `ui implementor`. Resolve the 24 px chip removal target from the original size. Preserve its 20 px chip and 32 px field with the established negative-space pattern. Keep older sizes and touch metrics.
+- [x] Apply checked finding 3, option A, through the `non-ui implementor`. Import the layer constant from its owner. Add the focused cold dropdown import regression to the existing package smoke. Keep all other checks.
+- [x] Check the second-round regressions, negative proofs, ten-run results, affected Linux baseline, native compatibility, and all forty isolated entries. Record the wider cycle cleanup and remaining noncritical observations as follow-ups.
+- [x] Check every new finding. Apply its `fix now` option, record the rest under `plans/follow-ups/`, and re-review once.
 - [ ] Run the required checks after fixes. Commit, push, and wait for the final CI result.
 - [ ] Delete this plan after the other required TODOs finish. Keep its dated decisions and design calls in the pull request description.
 - [ ] Finalize the pull request description with the API summary, checks, review outcome, follow-ups, and release handoff. Mark it ready after review and final CI.

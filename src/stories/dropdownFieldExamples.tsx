@@ -49,6 +49,31 @@ export function ChipMultiSelectValidationExample() {
   );
 }
 
+export function DenseChipMultiSelectExample() {
+  // `xs` draws the `sm` chips and box, so the two fields look the same. Each
+  // `xs` removal still keeps the 24 by 24px target of a dense field action.
+  const [extraSmall, setExtraSmall] = useState(["book_2"]);
+  const [small, setSmall] = useState(["book_2"]);
+  return (
+    <View style={{ gap: 18 }}>
+      <ComboboxMultiSelect
+        label="Extra small books"
+        onChange={setExtraSmall}
+        options={bookOptions}
+        size="xs"
+        values={extraSmall}
+      />
+      <ComboboxMultiSelect
+        label="Small books"
+        onChange={setSmall}
+        options={bookOptions}
+        size="sm"
+        values={small}
+      />
+    </View>
+  );
+}
+
 export function SelectorLabelInfoExample() {
   const [scheme, setScheme] = useState("standard");
   const [basis, setBasis] = useState("cash");

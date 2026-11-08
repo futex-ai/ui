@@ -7,6 +7,7 @@ import {
   type StandardControlSize,
 } from "../controlSizeTables";
 import { inputSizeTokens, touchInputSizeTokens } from "../input";
+import { fieldActionSize } from "../input/fieldActionBox";
 import type { SharedUiTheme } from "../theme";
 import { touchControlMetrics } from "../touchMetrics";
 
@@ -18,6 +19,9 @@ export function createComboboxMultiSelectStyles(
   touch = false,
 ) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
+  // A chip removal is a field action, so its target comes from the size that
+  // the caller asked for, before `xs` falls back to the `sm` drawing below.
+  const actionSize = fieldActionSize(size, touch);
   // The chip field has no dense design, so `xs` draws its `sm` chips and box.
   // A touch surface uses the touch metrics whatever the size.
   const inputSize = touch
@@ -26,6 +30,12 @@ export function createComboboxMultiSelectStyles(
   const sizing = touch
     ? MULTI_SELECT_TOUCH
     : MULTI_SELECT_SIZES[standardControlSize(size)];
+  // The removal box is the action target, or the glyph box at a size without
+  // one. Its negative margins give back the space beyond the drawn footprint:
+  // at `xs` the 24px box keeps the 16px `sm` footprint, so the chip stays 20px
+  // and the field 32px, and the box reaches 2px into the field padding.
+  const removeSize = actionSize ?? sizing.removeSize;
+  const removeInset = (sizing.removeSize - removeSize) / 2;
   return StyleSheet.create({
     chip: {
       alignItems: "center",
@@ -44,11 +54,12 @@ export function createComboboxMultiSelectStyles(
     },
     chipRemove: {
       alignItems: "center",
-      height: sizing.removeSize,
+      height: removeSize,
       justifyContent: "center",
+      marginHorizontal: removeInset,
       // The touch box absorbs the chip border, so the chip stays 44px high.
-      marginVertical: touch ? -1 : 0,
-      width: sizing.removeSize,
+      marginVertical: touch ? -1 : removeInset,
+      width: removeSize,
     },
     chipRemoveText: {
       ...baseText,

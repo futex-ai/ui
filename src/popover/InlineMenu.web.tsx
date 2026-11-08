@@ -15,12 +15,12 @@ import { StyleSheet, View } from "../primitives/reactNative";
 import type { ScrollView } from "../primitives/reactNative";
 
 import {
-  DROPDOWN_LAYERS,
   DropdownList,
   useDropdownDismiss,
   useDropdownSurfaceStyles,
 } from "../dropdown";
 import type { DropdownListEntry } from "../dropdown";
+import { DROPDOWN_LAYERS } from "../dropdown/dropdownLayers";
 import { useTouchSurface } from "../touchSurface";
 
 import { MenuSheet } from "./MenuSheet";

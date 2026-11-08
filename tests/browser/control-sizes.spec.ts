@@ -1,6 +1,6 @@
 /**
  * Browser coverage for the shared size scale across buttons, inputs, switches,
- * selectors, date fields, and segmented controls.
+ * selectors, chip fields, date fields, and segmented controls.
  */
 import { expect, test } from "@playwright/test";
 
@@ -229,3 +229,69 @@ test("segmented control sizes step the control height across the shared scale", 
   expect(iconCell?.width ?? 0).toBeGreaterThanOrEqual(24);
   expect(iconCells?.height ?? 0).toBe(26);
 });
+
+test("a dense chip field keeps its small chips and 24px removal targets", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=dropdown-examples--chip-multi-select");
+
+  // The chip field has no dense design, so `xs` draws the `sm` 20px chips in
+  // the 32px field, as the same chip in the `sm` reference field shows. Each
+  // `xs` removal still keeps the 24 by 24px dense target. A chip has no role
+  // of its own, so the test finds it as the parent of its removal.
+  const fieldOf = (name: string) =>
+    page
+      .locator('[data-firna-focus-host="descendant"]')
+      .filter({ has: page.getByRole("combobox", { exact: true, name }) });
+  const field = fieldOf("Extra small books");
+  const smallField = fieldOf("Small books");
+  const remove = field.getByRole("button", { name: "Remove Payroll Reserve" });
+  const smallRemove = smallField.getByRole("button", {
+    name: "Remove Payroll Reserve",
+  });
+  const removeBox = await remove.boundingBox();
+  const chipBox = await remove.locator("xpath=..").boundingBox();
+  const fieldBox = await field.boundingBox();
+  const smallChipBox = await smallRemove.locator("xpath=..").boundingBox();
+  const smallFieldBox = await smallField.boundingBox();
+
+  expect(removeBox).not.toBeNull();
+  expect(chipBox).not.toBeNull();
+  expect(fieldBox).not.toBeNull();
+  expect(removeBox?.width ?? 0).toBeGreaterThanOrEqual(24);
+  expect(removeBox?.height ?? 0).toBeGreaterThanOrEqual(24);
+  expect(chipBox?.height ?? 0).toBe(20);
+  expect(fieldBox?.height ?? 0).toBe(32);
+  // The painted chip and field differ from the `sm` reference by zero.
+  expect(chipDrawing(chipBox, fieldBox)).toEqual(
+    chipDrawing(smallChipBox, smallFieldBox),
+  );
+
+  // A press 1px inside the corner of the target, above the painted chip,
+  // removes that chip only. Like a press on the glyph, it does not focus the
+  // search input or open the option list.
+  const pressX = (removeBox?.x ?? 0) + 1;
+  const pressY = (removeBox?.y ?? 0) + 1;
+  expect(pressY).toBeLessThan(chipBox?.y ?? 0);
+  await page.mouse.click(pressX, pressY);
+  await expect(remove).toHaveCount(0);
+  await expect(
+    page.getByRole("combobox", { exact: true, name: "Extra small books" }),
+  ).not.toBeFocused();
+  await expect(page.getByRole("listbox")).toHaveCount(0);
+  await expect(smallRemove).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Remove Greenhouse Studio" }),
+  ).toBeVisible();
+});
+
+type Box = { height: number; width: number; x: number; y: number } | null;
+
+/** The painted size of a chip and its field, and the chip's place in it. */
+function chipDrawing(chip: Box, field: Box) {
+  return {
+    chip: [chip?.width, chip?.height],
+    field: [field?.width, field?.height],
+    place: [(chip?.x ?? 0) - (field?.x ?? 0), (chip?.y ?? 0) - (field?.y ?? 0)],
+  };
+}

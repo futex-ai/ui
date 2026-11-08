@@ -34,7 +34,9 @@ import { ComboboxMultiSelect } from "@firna/ui/dropdown";
 
 Pass `size="sm" | "md" | "lg"` to align the control with the shared input size
 scale. The chip field has no dense design, so `size="xs"` draws the `sm` chips
-and box. Inside a `TouchSurface`, the search input is itself 44px high, each
+and box. Each removal action there still has a 24 by 24px target. The target
+reaches into the padding around its chip, so the chips stay 20px high in the
+32px box. Inside a `TouchSurface`, the search input is itself 44px high, each
 chip has a 44 by 44px removal action, and the control grows to hold them. A
 `singleLine` control stays on one line in a 46px frame. In a fixed-height table
 or data-grid cell, combine `size="sm"` with `singleLine`: the first selected

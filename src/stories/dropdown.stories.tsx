@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { darkSharedUiTheme } from "../index";
+import { View } from "../primitives/reactNative";
 
 import { DropdownAsyncFocusExample } from "./dropdownAsyncFocusExample";
 import {
   ChipMultiSelectValidationExample,
+  DenseChipMultiSelectExample,
   SelectorHighlightVariantsExample,
   SelectorLabelInfoExample,
   SelectorSizesExample,
@@ -233,7 +235,10 @@ export const ChipMultiSelect: Story = {
   name: "Chip multi-select",
   render: () => (
     <StorySurface>
-      <ChipMultiSelectExample />
+      <View style={{ gap: 18 }}>
+        <ChipMultiSelectExample />
+        <DenseChipMultiSelectExample />
+      </View>
     </StorySurface>
   ),
 };
