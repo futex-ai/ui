@@ -239,9 +239,9 @@ The orchestrator owns the checks, pull request, and review. Delegate confirmed U
 - [x] Apply checked finding 3, option A, through the `non-ui implementor`. Import the layer constant from its owner. Add the focused cold dropdown import regression to the existing package smoke. Keep all other checks.
 - [x] Check the second-round regressions, negative proofs, ten-run results, affected Linux baseline, native compatibility, and all forty isolated entries. Record the wider cycle cleanup and remaining noncritical observations as follow-ups.
 - [x] Check every new finding. Apply its `fix now` option, record the rest under `plans/follow-ups/`, and re-review once.
-- [ ] Run the required checks after fixes. Commit, push, and wait for the final CI result.
+- [x] Run the required checks after fixes. Commit and push the checked corrections. The last pull request step waits for the complete CI result of the final metadata commit.
 - [ ] Delete this plan after the other required TODOs finish. Keep its dated decisions and design calls in the pull request description.
-- [ ] Finalize the pull request description with the API summary, checks, review outcome, follow-ups, and release handoff. Mark it ready after review and final CI.
+- [ ] Finalize the pull request description with the API summary, checks, review outcome, follow-ups, and release handoff. Wait for the complete CI result of the last commit, then mark it ready and watch any readiness-triggered CI.
 
 The first review and its finding checks are in `.context/reviews/conductor/firna-ui-parts-for-conductive/`. Both confirmed fixes restore the approved dense dimensions. They add no part or requirement. The fresh re-review also checks the two new problems recorded by the finding checks.
 
