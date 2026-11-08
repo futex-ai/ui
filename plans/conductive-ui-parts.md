@@ -1,6 +1,6 @@
 # Shared UI parts for Conductive
 
-Status: Active. On branch `conductor/firna-ui-parts-for-conductive`, no pull request yet. The completion pull request deletes this plan.
+Status: Active. [PR #183](https://github.com/futex-ai/ui/pull/183) is open. The completion pull request deletes this plan.
 
 Conductive needs dense controls and shared navigation, feedback, menu, and panel-resize parts. Add them to `@firna/ui` for web and React Native. Keep every existing API and default working.
 
@@ -79,6 +79,7 @@ Integration calls, recorded on 2026-11-08:
 - **Orchestrator call:** Read mockup layout metrics from public style factories. Keep the library's permitted wrapping, row spacing, and phone control geometry.
 - **Orchestrator call:** Draw phone menus with `InlineMenuSheet` in place. A static catalogue cannot open an interactive sheet.
 - **Orchestrator call:** Record both baselines of the six existing Sizes stories. The ARIA baselines must also include the new `xs` controls.
+- **Orchestrator call:** Divide the full accessibility sweep into sixteen deterministic batches. The added stories exceed the existing four-batch runtime margin on this host. Keep every story, assertion, and timeout.
 
 No existing mechanism is replaced. Conductive's consumer migration belongs to its own repository.
 
@@ -223,8 +224,9 @@ Depends on: 6
 
 The orchestrator owns these steps. The task requests a pull request before its review, so keep the plan until the review finishes.
 
+- [x] Split the full accessibility workload into smaller batches without changing its coverage, assertions, timeouts, or server. Check the partition and update its documentation.
 - [ ] Run the early check and the complete `cargo xtask check` gate. Run Cargo format, Clippy, and workspace tests for the changed `xtask/` documentation.
-- [ ] Commit the additions with `feat:` and push the current branch.
+- [x] Commit the additions with `feat:` and push the current branch.
 - [ ] Open a draft pull request into `main`. Wait for CI and fix failures caused by this change.
 - [ ] Run the `implementation-review` skill on the pushed pull request against `origin/main`.
 - [ ] Check every new finding. Apply its `fix now` option, record the rest under `plans/follow-ups/`, and re-review once.

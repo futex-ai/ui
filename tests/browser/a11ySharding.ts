@@ -3,7 +3,7 @@ export type AccessibilitySweepShard = Readonly<{
   total: number;
 }>;
 
-const ACCESSIBILITY_SWEEP_SHARD_COUNT = 4;
+const ACCESSIBILITY_SWEEP_SHARD_COUNT = 16;
 
 export function accessibilitySweepShards(
   updateBaseline: boolean,

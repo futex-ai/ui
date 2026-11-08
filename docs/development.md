@@ -60,7 +60,7 @@ Vite build.
 ## Accessibility sweep
 
 The axe accessibility gate discovers every Storybook story at runtime and
-splits the sorted story list into four deterministic shards. Playwright runs
+splits the sorted story list into sixteen deterministic shards. Playwright runs
 those shards across its workers so the complete sweep does not depend on one
 long-running test. `UPDATE_A11Y_BASELINE=1 npm run test:browser -- a11y.spec.ts`
 uses one serial sweep instead, ensuring `axe-baseline.json` has a single writer.
@@ -72,7 +72,7 @@ ARIA regression gate. It discovers the same story list at runtime, renders every
 story alone in a fresh 900x600 context (`deviceScaleFactor: 1`, reduced motion,
 forced light scheme, `en-US`, UTC), and pins two baselines per story: a
 full-viewport PNG and an ARIA snapshot of the rendered document. It runs in four
-shards like the axe sweep. Re-record after an intentional visual change with
+shards. Re-record after an intentional visual change with
 either of:
 
 ```bash

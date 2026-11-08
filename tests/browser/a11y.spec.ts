@@ -9,7 +9,7 @@ import { accessibilitySweepShards, storiesForShard } from "./a11ySharding";
  *
  * The story list is discovered at run time from Storybook's `/index.json`, so new
  * stories are scanned automatically with no list to maintain. Normal checks split
- * the sorted list into four deterministic shards that Playwright can schedule in
+ * the sorted list into sixteen deterministic shards that Playwright can schedule in
  * parallel. Each story is rendered in isolation (`/iframe.html?id=…`) in its own
  * page and scanned with axe-core against the WCAG 2.0/2.1 A and AA rule tags. A
  * fresh page per story keeps memory flat and isolates a crash to a single story.
