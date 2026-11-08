@@ -21,17 +21,21 @@ import test from "node:test";
  *
  * The probe is written under `node_modules` so the bare `react-native`
  * specifier and the relative `src` one both resolve the way they do in the
- * repo, and is removed afterwards.
+ * repo, and is removed afterwards. It resolves `.web` files first, as the
+ * published declarations do, because every consumer, a native one included,
+ * reads those declarations.
  */
 const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
 const probeRoot = join(repoRoot, "node_modules", ".firna-type-probe");
 const tsc = join(repoRoot, "node_modules", "typescript", "bin", "tsc");
 
-const PROBE = `import type {
+const PROBE = `import type { ComponentProps, RefObject } from "react";
+import type {
   GestureResponderEvent as RNGestureResponderEvent,
   LayoutChangeEvent as RNLayoutChangeEvent,
   NativeScrollEvent as RNNativeScrollEvent,
   NativeSyntheticEvent as RNNativeSyntheticEvent,
+  ScrollView as RNScrollView,
   StyleProp as RNStyleProp,
   TextInputContentSizeChangeEventData as RNTextInputContentSizeChangeEventData,
   TextInputProps as RNTextInputProps,
@@ -53,6 +57,7 @@ import type {
   ViewProps,
   ViewStyle,
 } from "../../src/primitives/types";
+import type { DropdownList } from "../../src/dropdown/DropdownList";
 
 // A React Native style, prop bag, or event flows into one of ours.
 declare const rnViewStyle: RNViewStyle;
@@ -69,6 +74,12 @@ export const viewProps: ViewProps = rnViewProps;
 export const textProps: TextProps = rnTextProps;
 export const textInputProps: TextInputProps = rnTextInputProps;
 export const layoutEvent: LayoutChangeEvent = rnLayoutEvent;
+
+// A ref that a native consumer types with React Native's scroll view fits the
+// list ref of a dropdown list.
+declare const rnScrollViewRef: RefObject<RNScrollView | null>;
+export const listRef: ComponentProps<typeof DropdownList>["listRef"] =
+  rnScrollViewRef;
 
 // One of our events flows back into a React Native typed slot.
 declare const ourLayoutEvent: LayoutChangeEvent;
@@ -104,6 +115,7 @@ const PROBE_TSCONFIG = {
     lib: ["DOM", "ES2024"],
     module: "ESNext",
     moduleResolution: "Bundler",
+    moduleSuffixes: [".web", ""],
     noEmit: true,
     skipLibCheck: true,
     strict: true,

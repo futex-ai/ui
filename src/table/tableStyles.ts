@@ -1,6 +1,7 @@
 import { StyleSheet } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { withDenseAsSmall } from "../controlSizeTables";
 import type { SharedUiTheme } from "../theme";
 
 /**
@@ -20,7 +21,7 @@ const TABLE_SIZES: Record<
     paddingHorizontal: number;
     rowPaddingVertical: number;
   }
-> = {
+> = withDenseAsSmall({
   sm: {
     cellFontSize: 12,
     cellLineHeight: 16,
@@ -45,7 +46,7 @@ const TABLE_SIZES: Record<
     paddingHorizontal: 14,
     rowPaddingVertical: 14,
   },
-};
+});
 
 /**
  * Build the table's themed styles for a given size. Header and body rows are

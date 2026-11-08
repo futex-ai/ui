@@ -106,9 +106,11 @@ test("list item lays out leading, title, description, and trailing slots", () =>
   assert.match(source, /leading != null \?/);
   assert.match(source, /trailing != null \?/);
   // A string/number title or description gets the themed text; nodes render raw.
+  // `titleStyle` is `styles.itemTitle`, plus the accent in a current
+  // navigation row.
   assert.match(
     source,
-    /isText\(title\) \? <Text style=\{styles\.itemTitle\}>\{title\}<\/Text> : title/,
+    /isText\(title\) \? <Text style=\{titleStyle\}>\{title\}<\/Text> : title/,
   );
   assert.match(source, /isText\(description\) \?/);
   assert.match(
@@ -197,6 +199,7 @@ test("list styles are driven by shared theme tokens", () => {
 
 test("list renders busy skeleton items while loading", () => {
   const source = readSource("../../src/list/List.tsx");
+  const skeletonSource = readSource("../../src/list/ListSkeleton.tsx");
 
   assert.match(source, /loading = false/);
   assert.match(source, /loadingItemCount = 6/);
@@ -206,12 +209,12 @@ test("list renders busy skeleton items while loading", () => {
   assert.match(source, /accessibilityState=\{\{ busy: true \}\}/);
   // Each placeholder item mirrors the ListItem anatomy (leading circle, title /
   // description bars, trailing chip) and shares one pulse.
-  assert.match(source, /<SkeletonPulseProvider>/);
+  assert.match(skeletonSource, /<SkeletonPulseProvider>/);
   assert.match(
-    source,
+    skeletonSource,
     /<SkeletonCircle diameter=\{SKELETON_AVATAR_DIAMETER\} \/>/,
   );
-  assert.match(source, /Array\.from\(\{ length: loadingItemCount \}\)/);
+  assert.match(skeletonSource, /Array\.from\(\{ length: loadingItemCount \}\)/);
   // The separator rule still holds between placeholder items.
   assert.match(source, /separators && !last \?/);
 });

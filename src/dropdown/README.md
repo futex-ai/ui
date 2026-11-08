@@ -4,6 +4,9 @@ Reusable React Native and React Native Web dropdown primitives. They provide a
 shared surface for form selects, compact filter pills, action menus, and
 input-backed comboboxes in Firna apps.
 
+Longer topics have their own guides: [selectors](selectors.md),
+[menus and lists](menus.md), and [comboboxes](comboboxes.md).
+
 ## Responsibilities
 
 - Anchor dropdowns to a measured trigger and render through the correct portal
@@ -23,8 +26,11 @@ input-backed comboboxes in Firna apps.
 - Provide a concise `DropdownMenu` wrapper for the common trigger + action list
   case, while leaving `DropdownPortal` and `DropdownList` available for custom
   pickers.
-- Size the default `field` selector with the shared `ControlSize` scale (`sm` /
-  `md` / `lg`) so a select matches the height of the text inputs beside it.
+- Size the default `field` selector with the shared `ControlSize` scale (`xs` /
+  `sm` / `md` / `lg`) so a select matches the height of the text inputs beside
+  it.
+- Give the triggers, the search input, and the chip multi-select targets of at
+  least 44 by 44px inside a `TouchSurface`.
 - Keep button-backed selectors/action menus separate from input-backed
   comboboxes so autocomplete inputs keep focus while results are open.
 
@@ -45,241 +51,15 @@ import { DropdownSelector } from "@firna/ui/dropdown";
 
 ### Imperative focus after async hydration
 
-`triggerRef` exposes the selector's underlying pressable when a caller must
-move focus itself. The selector still keeps that same node internally for popup
-measurement and placement. A common case is a modal form that initially renders
-a skeleton: the modal's one-time focus pass runs before the field exists, so the
-form must focus its first real field when hydration completes.
-
-```tsx
-import { useEffect, useRef } from "react";
-import { View } from "react-native";
-import { DropdownSelector } from "@firna/ui/dropdown";
-import { WebModalFrame } from "@firna/ui/modal";
-
-const firstFieldRef = useRef<View | null>(null);
-
-useEffect(() => {
-  if (hydrated) firstFieldRef.current?.focus();
-}, [hydrated]);
-
-<WebModalFrame initialFocusRef={firstFieldRef} /* … */>
-  {hydrated ? (
-    <DropdownSelector
-      label="Holiday year starts"
-      onValueChange={setMonth}
-      options={monthOptions}
-      triggerRef={firstFieldRef}
-      value={month}
-    />
-  ) : (
-    <FormSkeleton />
-  )}
-</WebModalFrame>;
-```
-
-Keep `initialFocusRef` as well as the hydration effect: it handles a form whose
-field already exists when the modal opens (including later reopens), while the
-effect handles the initial skeleton-to-form transition.
-
-Pass `header` and/or `footer` to pin custom content above and below the option
-list. Both accept any node (a title, a hint, an action button), and they stay
-fixed while the options scroll between them. The same props are available on the
-underlying `DropdownList` for custom pickers and action menus:
-
-```tsx
-<DropdownSelector
-  label="Scheme"
-  header={<Text>Choose a scheme</Text>}
-  footer={
-    <Pressable onPress={addScheme}>
-      <Text>Add scheme</Text>
-    </Pressable>
-  }
-  onValueChange={setScheme}
-  options={options}
-  value={scheme}
-/>
-```
-
-Pass `searchable` to add a search input pinned at the top of the menu that
-filters the options (and section groups) as the user types. Filtering is
-case-insensitive, empty section groups drop out, and a "No matching options"
-row shows when nothing matches. The input is focused on open, the query resets
-on close, and arrow keys / Enter / Escape keep working while typing:
-
-```tsx
-<DropdownSelector
-  label="Currency"
-  onValueChange={setCurrency}
-  options={currencyOptions}
-  searchable
-  searchPlaceholder="Search currencies"
-  value={currency}
-/>
-```
-
-Pass `size` (`sm` / `md` / `lg`, default `md`) to size the default `field`
-selector from the shared `ControlSize` scale. It reuses the input's per-size box
-geometry — height, padding, value text, and chevron — so a select and a text
-input stay the same height in a form. `size` applies to the `field` variant
-only; the `map` / `pill` / `mobilePeriod` variants keep their bespoke
-dimensions. `ReadOnlySelector` takes the same `size`:
-
-```tsx
-<DropdownSelector
-  label="Currency"
-  onValueChange={setCurrency}
-  options={currencyOptions}
-  size="sm"
-  value={currency}
-/>
-```
-
-Selector popups use the trigger width as their minimum, grow to fit wider option
-content, and stop at a default maximum of `360` pixels or the viewport edge,
-whichever comes first. This keeps short selects compact while labels, secondary
-text, and trailing codes have room before they wrap. Pass `menuMinWidth` or
-`menuMaxWidth` to override those bounds for a specific selector; a wider trigger
-still remains the minimum until the viewport itself is narrower:
-
-```tsx
-<DropdownSelector
-  menuMaxWidth={440}
-  menuMinWidth={280}
-  onValueChange={setRunId}
-  options={runOptions}
-  value={runId}
-/>
-```
-
-Pass `labelInfo` to add an ⓘ button after the selector's label that reveals
-supplementary help text in a small tooltip on press. It reuses the shared
-`LabelInfo` affordance (built on `Popover`, so the bubble is portaled and escapes
-overflow clipping and dismisses on outside-press/Escape). Screen-reader users get
-the text from the button's own description, so it is a sighted-user reveal that
-stays out of the always-read `hint`. Override the glyph with `labelInfoIcon` and
-the button's accessible name with `labelInfoLabel` (defaults to
-`More information about {label}`); `labelInfo` needs a `label` to anchor the
-button (a dev-warned no-op otherwise):
-
-```tsx
-<DropdownSelector
-  hint="This determines how VAT is calculated on invoices."
-  label="VAT scheme"
-  labelInfo="The standard scheme reclaims VAT on purchases; the flat-rate scheme pays a fixed percentage of turnover instead."
-  onValueChange={setScheme}
-  options={schemeOptions}
-  value={scheme}
-/>
-```
-
-Use `ReadOnlySelector` when the UI is selector-shaped but has no scoped data
-behavior yet:
-
-```tsx
-import { ReadOnlySelector } from "@firna/ui/dropdown";
-
-<ReadOnlySelector label="Date format" value="DD/MM/YYYY" />;
-```
-
-Use `DropdownMenu` for the common action-menu case. It owns the anchor ref,
-open state, portal/list composition, and closes after selectable row presses by
-default. When the menu opens, the first selectable row is active immediately;
-ArrowUp / ArrowDown move that active row, mouse hover keeps the active row in
-sync with the pointer, and Enter / Space activates the active row:
-
-```tsx
-import { DropdownMenu } from "@firna/ui/dropdown";
-
-<DropdownMenu align="end" entries={entries} minWidth={220}>
-  <Pressable
-    accessibilityLabel={`Actions for ${name}`}
-    accessibilityRole="button"
-    style={styles.memberMenuButton}
-  >
-    <MoreHorizontal color={colors.ink2} size={17} />
-  </Pressable>
-</DropdownMenu>;
-```
-
-Each `item` / `footer` entry accepts an optional `testID`, forwarded to that
-row's pressable (`data-testid` on web) so an end-to-end test can target a
-specific row; `DropdownSelectorOption` exposes the same `testID` for the
-select-only picker.
+See the [selectors guide](selectors.md#imperative-focus-after-async-hydration).
 
 ### Row slots and the active-row color
 
-The default `solid` highlight fills the active row with `primary` and inverts
-everything the library renders itself — `label`, `secondary`, `rightText`, and
-the selection check — to white. It cannot recolor a node it was merely handed,
-so a `leading`/`right` node with a hard-coded color (`<Icon color={ink} />`)
-stays near-black on that fill while the label beside it turns white.
+See the [menus guide](menus.md#row-slots-and-the-active-row-color).
 
-Both slots therefore accept either a plain node or a render function receiving
-the row's resolved content color, so a caller can tint its own glyph from any
-icon set:
+### Row sizes, choices, and notes
 
-```tsx
-const entries: DropdownListEntry[] = [
-  {
-    id: "settings",
-    label: "Settings",
-    leading: ({ color }) => (
-      <Ionicons color={color} name="settings-outline" size={18} />
-    ),
-    onPress: openSettings,
-    type: "item",
-  },
-];
-```
-
-The color tracks the label for the same row state: `surface` (white) on the
-solid active fill, `primaryDeep` on the other active/selected variants, `ink` at
-rest, and the tone accent (`rose` / `amber`) on a `danger` / `amber` row off the
-inverted fill. A plain node still passes through untouched, which is the right
-choice for content that owns its color regardless of row state (an avatar, a
-category swatch). For trailing _text_, prefer the library-styled `rightText`
-string over a hand-colored `right` node.
-
-Pass `open` and `onOpenChange` for controlled state, `defaultOpen` for
-uncontrolled initial state, and `closeOnSelect={false}` when a row should keep
-the menu open. `entries` may also be a function that receives
-`{ close, open, toggle }` for uncommon rows that need direct control. When the
-trigger needs open-state styling, pass a function child that receives
-`{ open, triggerProps }` and spread `triggerProps` onto the pressable so the
-standard press and keyboard handlers stay attached.
-
-By default the menu opens on press. Pass `trigger` to change how the child opens
-it:
-
-- `"press"` (default) — tap or click opens the menu, on every platform.
-- `"hover"` — pointer hover opens it on web. The menu auto-wires
-  `useDropdownHover` and bridges the trigger-to-surface gap, so no manual hook is
-  needed. Press stays wired as the touch/keyboard fallback. On native, where
-  hover does not exist, only press opens it.
-- `"longPress"` — a press-and-hold opens it on web and native. A plain tap is
-  left to the trigger's own `onPress`, so a tappable row stays tappable.
-- `"contextMenu"` — right-click opens it on web (the browser's native menu is
-  suppressed) and a long-press opens it on native. A plain tap is again left to
-  the trigger.
-
-```tsx
-<DropdownMenu entries={entries} trigger="hover">
-  <Pressable accessibilityLabel="Account" accessibilityRole="button">
-    <Text>Account</Text>
-  </Pressable>
-</DropdownMenu>
-```
-
-In every mode the trigger advertises its menu to assistive tech with
-`aria-haspopup="menu"` and reflects the open state with `aria-expanded`.
-`longPress` and `contextMenu` are secondary-gesture triggers, so they never
-hijack a tap; Enter/Space and ArrowDown open the menu from the keyboard in every
-mode, so keyboard-only users can always reach it (right-click is also
-keyboard-reachable on web via the context-menu key). For per-platform behavior,
-drive the prop yourself, for example
-`trigger={Platform.OS === "web" ? "hover" : "longPress"}`.
+See the [menus guide](menus.md#row-sizes-choices-and-notes).
 
 ## Accessibility
 
@@ -313,86 +93,6 @@ On web the option surface is a real ARIA composite (WCAG 4.1.2 Name/Role/Value):
 These ARIA roles/attributes are emitted on web only; native keeps the tappable
 `button` row role and `accessibilityState` so OS screen readers are unaffected.
 
-Use `DropdownPortal` plus `DropdownList` directly for custom pickers that need
-to own the anchor ref, surface body, or list wiring. The portal treats the
-anchor width as its minimum by default, matching menus and selectors. A compact
-fixed-width surface that may be narrower than a wide anchor can pass
-`anchorWidthAsMinimum={false}` with explicit `minWidth` / `maxWidth` bounds; the
-web date calendar uses this policy to remain `280px` wide below a full-width
-field. `DropdownMenu`, `Popover`, and `ComboboxPopover` forward the option with
-their other shared placement props.
-
-Vertically, the web portal places a surface by its own size: it lays the
-surface out once at its natural height (up to `maxHeight`), measures it, and
-places it before the browser paints — below the anchor when the whole surface
-fits there, otherwise on whichever side is roomier, clamped to that side's
-room. Nothing needs to declare its height, so a fixed-layout surface such as
-the date calendar flips instead of being clipped, and a short menu stays below
-a trigger near the viewport edge. The height is measured once per open, so a
-list that filters or grows while open keeps its side and scrolls within the
-clamp. `minHeight` raises the room a surface needs below on top of its measured
-height, for content expected to grow after opening. The combobox and rich-text
-slash-menu portals share this through `useDropdownSurfacePlacement`. Native
-does not measure: the Modal-backed portal opens below while `minHeight`
-(default `140px`) fits there.
-
-`trigger="hover"` covers the common hover menu. For custom hover timing, keep
-`trigger="press"` and wire `useDropdownHover` on the trigger yourself, passing
-`surfaceHoverProps` into `DropdownMenu` or `DropdownPortal`. The hook keeps the
-menu open across the small pointer gap between the trigger and the portal
-surface, and a consumer-supplied `surfaceHoverProps` still composes with the
-built-in bridge when `trigger="hover"`.
-
-Use `ComboboxPopover` plus `DropdownList` when the user keeps typing in an
-existing input while results are open. This path uses a non-modal web portal so
-focus stays in the input.
-
-Use `ComboboxMultiSelect` for removable-chip autocomplete controls. It is a full
-labelled field: pass `label` / `hint` / `error` / `required` (and the shared
-`labelInfo` ⓘ affordance) the same way as `DropdownSelector`, or omit `label` for
-a bare control. The visible `label` names the combobox input via `aria-labelledby`,
-`error` turns the control's border rose and is announced through an assertive live
-region, and `required` wires `aria-required` plus the `*`:
-
-```tsx
-import { ComboboxMultiSelect } from "@firna/ui/dropdown";
-
-<ComboboxMultiSelect
-  error={bookIds.length === 0 ? "Select at least one book." : undefined}
-  hint="Start typing to link the books this report should cover."
-  label="Linked books"
-  labelInfo="Linked books scope the report to specific ledgers. Leave it empty to include every active book."
-  onChange={setBookIds}
-  options={[{ label: "Greenhouse Studio", value: "book_123" }]}
-  required
-  values={bookIds}
-/>;
-```
-
-Pass `size="sm" | "md" | "lg"` to align the control with the shared input
-size scale. In a fixed-height table or data-grid cell, combine `size="sm"` with
-`singleLine`: the first selected chip stays visible, further selections collapse
-into a `+N` summary, and the control keeps the same 32px height as a compact text
-input instead of growing across adjacent rows. Selected option rows are enabled
-toggles, so pressing a checked row removes that value even when its chip is
-summarized. Pass `autoFocus` when the control mounts as an active embedded
-editor; its border and shared focus glow then match the text-input family.
-
-Set `autoFocus` when the multi-select mounts as an in-place editor. Focus opens
-the option list immediately and gives the control the same primary active border
-and shared focus glow as `InputFrame`; pressing anywhere inside the control also
-returns focus to its search input. Use `focusIndicator="outline"` to keep the
-active border while falling back to the browser's default focus outline, or
-`focusIndicator="none"` to drop the glow, the outline, and the active border
-when the surrounding surface shows focus itself.
-
-Override the ⓘ glyph with `labelInfoIcon` and its accessible name with
-`labelInfoLabel` (defaults to `More information about {label}`); `labelInfo` needs
-a `label` to anchor the button (a dev-warned no-op otherwise). For the bare,
-label-less variant pass `accessibilityLabel` to name the search input (it also
-overrides the `label`-derived name where `aria-labelledby` is not honoured, e.g.
-iOS) — mirroring `Input`.
-
 ## Theming
 
 Dropdowns read colors, fonts, and radii from `SharedUiThemeProvider`. The
@@ -422,3 +122,30 @@ the modal surface. Keep `DROPDOWN_LAYERS.portal` above
 (`1_000_000`) so anchored menus and popovers clear consumer content stacks.
 `DropdownPortal` accepts `zIndex` for the rare screen that owns an even higher
 custom layer.
+
+## Key Code
+
+- [`DropdownSelector.tsx`](DropdownSelector.tsx): the single-value selector,
+  with its trigger, messages, and option popup. Its state is in
+  [`useDropdownSelectorState.ts`](useDropdownSelectorState.ts), and its option
+  and section types are in [`dropdownSelectorTypes.ts`](dropdownSelectorTypes.ts).
+- [`ReadOnlySelector.tsx`](ReadOnlySelector.tsx): a selector's trigger as static
+  text, for values that cannot change.
+- [`DropdownMenu.tsx`](DropdownMenu.tsx): the trigger-backed action menu.
+  [`useDropdownHover.ts`](useDropdownHover.ts) holds its hover-open state.
+- [`DropdownList.tsx`](DropdownList.tsx) and [`DropdownRow.tsx`](DropdownRow.tsx):
+  the shared option list and its rows. [`dropdownListTypes.ts`](dropdownListTypes.ts)
+  holds the entry types.
+- [`DropdownPortal.tsx`](DropdownPortal.tsx) and
+  [`DropdownPortal.web.tsx`](DropdownPortal.web.tsx): the modal native surface
+  and the non-modal web surface. [`DropdownWebLayer.tsx`](DropdownWebLayer.tsx)
+  is the web portal layer, and
+  [`useDropdownSurfacePlacement.ts`](useDropdownSurfacePlacement.ts) places a
+  web surface from its measured height.
+- [`ComboboxPopover.web.tsx`](ComboboxPopover.web.tsx) and
+  [`ComboboxPopover.tsx`](ComboboxPopover.tsx): the non-modal web result popover
+  of an input-backed combobox, and its native fallback.
+- [`ComboboxMultiSelect.tsx`](ComboboxMultiSelect.tsx): the chip multi-select.
+  Its state is in
+  [`useComboboxMultiSelectState.ts`](useComboboxMultiSelectState.ts).
+- [`dropdownLayers.ts`](dropdownLayers.ts): the shared web stacking layers.

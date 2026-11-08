@@ -11,6 +11,9 @@ flipping it above the trigger when it does not fit below, and clamping height),
 the non-modal `pointer-events: box-none` web portal layer, native
 modal-backing, and outside-click / Escape dismissal. `Popover` adds only the open-state controller and the trigger props.
 
+The [menus guide](menus.md) covers `ResponsiveMenu`, `InlineMenu`, the phone
+menu sheet, and `ContextMenu`.
+
 ## Responsibilities
 
 - Anchor a content surface to a measured trigger and keep it on screen.
@@ -27,6 +30,14 @@ modal-backing, and outside-click / Escape dismissal. `Popover` adds only the ope
 - Serve the trigger-less case too: `ContextMenu` opens at a gesture's point
   rather than against a measured element, so a right-click or long-press menu
   lands under the pointer instead of at the edge of whatever was pressed.
+- Draw a menu open in place beside its trigger, with no portal or measurement,
+  so static HTML shows it open (`InlineMenu`), and draw the phone menu sheet in
+  place (`InlineMenuSheet`).
+- On a touch surface, open menus as the phone menu sheet, with touch rows and
+  a close control that keeps the keyboard.
+
+The [app shell parts protocol](../../docs/protocol/app-shell-parts.md#menus)
+holds the requirements of the in-place menu and the menu sheet.
 
 ## Usage
 
@@ -187,115 +198,29 @@ gains center support.
 
 ## ResponsiveMenu
 
-`ResponsiveMenu` is a menu over the `ResponsivePopover` surface — an anchored
-dialog on web, a bottom sheet on native — that gives the responsive surface the
-same keyboard behaviour as [`DropdownMenu`](../dropdown/README.md): opening moves
-focus into the dialog surface, yet ↑/↓ still move the active row and Enter
-selects. Reach for it instead of dropping a bare `DropdownList` into a
-`ResponsivePopover`: that list's key handler is bound to its inner `ScrollView`,
-so it only fires while focus sits inside the scroll node — but the surface takes
-focus on open, so the keydowns bubble past it and nothing navigates.
-`ResponsiveMenu` fixes this by owning the same `useDropdownSelectorNavigation`
-document-level listener `DropdownMenu` uses and driving the list through a
-controlled active row, so navigation is independent of where focus lands. On
-native there is no keyboard — the rows are tapped directly.
+See the [menus guide](menus.md#responsivemenu).
 
-You supply `entries` (the same [`DropdownListEntry`](../dropdown/README.md) rows)
-plus the `ResponsivePopover` surface props; the caller still owns the trigger and
-`open` state. Rows close the surface after selection unless `closeOnSelect` is
-`false`.
+## InlineMenu
 
-```tsx
-import { ResponsiveMenu } from "@firna/ui/popover";
+See the [menus guide](menus.md#inlinemenu).
 
-const anchorRef = useRef<View>(null);
-const [open, setOpen] = useState(false);
+## Phone menu sheet
 
-<Pressable ref={anchorRef} aria-expanded={open} onPress={() => setOpen((o) => !o)}>
-  <Text>Row actions</Text>
-</Pressable>
-<ResponsiveMenu
-  anchorRef={anchorRef}
-  label="Row actions"
-  maxHeight={320}
-  minWidth={220}
-  onClose={() => setOpen(false)}
-  open={open}
-  entries={[
-    { id: "rename", label: "Rename", onPress: rename, type: "item" },
-    { id: "delete", label: "Delete", onPress: remove, tone: "danger", type: "item" },
-  ]}
-/>;
-```
+See the [menus guide](menus.md#phone-menu-sheet).
 
 ## ContextMenu
 
-`ContextMenu` is the menu a secondary gesture opens — right-click on web,
-long-press on native. It differs from every other surface here in one way that
-drives its whole design: **it has no trigger element.** It is positioned at the
-_point_ of the gesture through the portal's virtual `anchorRect`, not measured
-against a box. On native there is no cursor to anchor to, so it renders as a
-bottom sheet via `ResponsiveMenu`.
+See the [menus guide](menus.md#contextmenu).
 
-The gesture itself comes from `contextMenuTriggerProps`, which returns
-`onContextMenu` on web (suppressing the browser's own menu) and `onLongPress` on
-native. Neither branch wires `onPress`, so a plain tap or click is always left to
-the host — the same contract `DropdownMenu`'s `contextMenu` trigger mode keeps.
-`contextMenuPoint` reads the viewport coordinates back out of the event.
+## Key Code
 
-```tsx
-import { ContextMenu, contextMenuTriggerProps } from "@firna/ui/popover";
-import { Platform } from "react-native";
-
-const [point, setPoint] = useState<DropdownPoint | null>(null);
-
-<View
-  {...contextMenuTriggerProps({
-    isWeb: Platform.OS === "web",
-    onOpen: setPoint,
-  })}
->
-  <Text>Right-click me</Text>
-</View>
-<ContextMenu
-  accessibilityLabel="Row actions"
-  entries={[
-    { id: "rename", label: "Rename", onPress: rename, type: "item" },
-    { id: "sep", label: "", type: "divider" },
-    { id: "delete", label: "Delete", onPress: remove, tone: "danger", type: "item" },
-  ]}
-  onClose={() => setPoint(null)}
-  open={point !== null}
-  point={point}
-  title="Row 4"
-/>;
-```
-
-`point` doubles as the open guard: the menu stays closed while it is `null`, so
-a gesture that yields no coordinates (a handler invoked with no event) is a
-no-op rather than a menu in the corner. Set `title` for native — a sheet slides
-up detached from whatever was pressed, so without it there is nothing to say
-which row or column the actions apply to.
-
-Two defaults are deliberately not left to callers. `minWidth` (220) is required
-arithmetic, not taste: a point anchor is zero-width, `dropdownPlacement`'s
-preferred width falls back to the anchor's width, and `dropdownWidthBounds`
-treats that width as a minimum — so without it the surface resolves to 0px wide
-and disappears. And `highlightVariant` is pinned to `"ring"` because the solid
-active fill inverts row text to white, which a caller's `leading` icons cannot
-opt out of.
-
-Keyboard navigation runs on the same `useDropdownSelectorNavigation`
-document-level listener as `ResponsiveMenu`, for the same reason: with nothing
-focusing the surface, `DropdownList`'s own key handler — bound to its inner
-`ScrollView` — never fires. Dismissal adds one rule the anchored surfaces do not
-need: **the menu closes on scroll.** `useDropdownDismiss` closes on an outside
-`pointerdown`, which a wheel is not, so a scroll would otherwise leave the menu
-pinned to a point whose content had moved out from under it. Scrolls originating
-inside the menu's own list are ignored, so a long menu still scrolls.
-
-[`DataGrid`](../data-grid/README.md) is the reference consumer: it drives one
-`ContextMenu` for header, row-gutter, and cell regions.
+- `ResponsiveMenu.tsx` — the anchored web menu, the native sheet menu, and the
+  touch-surface switch to the menu sheet.
+- `InlineMenu.web.tsx` / `InlineMenu.tsx` — the menu drawn in place on web, and
+  the menu sheet on a touch surface and on native; `inlineMenuModel.ts` holds
+  their props and placement.
+- `MenuSheet.tsx` — the phone menu sheet that both menus open.
+- `InlineMenuSheet.tsx` — the phone menu sheet drawn in place.
 
 ## Theming
 

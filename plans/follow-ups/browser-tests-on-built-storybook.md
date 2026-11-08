@@ -3,8 +3,8 @@
 - **Severity:** Medium. **Effort:** Medium. **Confidence:** Medium. **Harder later:** No.
 - **Kind:** Needs decision.
 - **Added:** 2026-11-02, from the branch `calummoore/dragselectableprovider-improvements`, the blocked wider fix of finding 21.
-- **Location:** playwright.config.ts, .storybook/main.ts, package.json, README.md
-- **Reason:** The fix replaces the dev-server test setup that the root README documents, so it waits for the choice of the user.
+- **Location:** playwright.config.ts, .storybook/main.ts, package.json, docs/development.md
+- **Reason:** The fix replaces the dev-server test setup that `docs/development.md` documents, so it waits for the choice of the user.
 
 - **Terms:**
   - **Dev server:** the Storybook server that `npm run storybook` starts. It builds each story on request with Vite, and it can tell every open page to reload.
@@ -34,7 +34,7 @@
     - Set `reuseExistingServer` to `false`, so that a dev server on the same port cannot serve the run in place of the build.
     - Remove the `STORYBOOK_DISABLE_WATCH` switch, because no dev server serves a run then. Keep the ignore of `.context/` for the dev server of a developer.
     - Run the story snapshot sweep, tests/browser/snapshots.spec.ts, and the axe sweep, tests/browser/a11y.spec.ts, against the build on Linux. Nobody has run them against a build, so their baselines are unchecked: the 699 files in tests/browser/snapshots.spec.ts-snapshots/ and axe-baseline.json. When a baseline differs, find the cause before any new recording.
-    - Update the browser-test paragraph of README.md. It now says that Playwright starts the dev server with `STORYBOOK_DISABLE_WATCH=1`, and that a reused dev server ignores `.context/`.
+    - Update the browser-test paragraph of docs/development.md. It now says that Playwright starts the dev server with `STORYBOOK_DISABLE_WATCH=1`, and that a reused dev server ignores `.context/`.
     - Evidence: `storybook build` took 10.4 s. `vite preview` served the build with zero reloads, and the six drag-select specs passed 43 of 43 in 20.7 s, against 51 to 59 s on the dev server.
     - Cost: each local run builds first, and a developer cannot run the tests against a dev server that shows an edit at once. It replaces the documented dev-server setup. Effort: Medium.
 - **Left out:**
@@ -46,4 +46,4 @@
 - **Wider fix:** B. A built Storybook has no dev server, so no reload can reach a test page from a file change or from the dependency optimizer.
 - **Previous examples:** The failure of the gutter test under **Background**. No other test failure from a reload was found.
 - **Recommendation:** B. It removes every reload that a server can send, and it runs the six drag-select specs in 20.7 s in place of 51 to 59 s. B is also the option that best protects the codebase.
-- **Action:** ask the user, because B replaces the dev-server test setup that the root README documents and that `cargo xtask check` runs, and no user decision covers that change.
+- **Action:** ask the user, because B replaces the dev-server test setup that `docs/development.md` documents and that `cargo xtask check` runs, and no user decision covers that change.

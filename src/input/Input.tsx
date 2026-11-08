@@ -6,7 +6,8 @@ import { Text, View } from "../primitives/reactNative";
 import { devWarn } from "../devWarn";
 import { useSharedUiTheme } from "../theme";
 
-import { InputFrame, InputFrameProps } from "./InputFrame";
+import { InputFrame } from "./InputFrame";
+import type { InputFrameProps } from "./inputFrameProps";
 import { createInputStyles } from "./inputStyles";
 import { LabelInfo } from "./LabelInfo";
 

@@ -1,0 +1,42 @@
+/* Moves the rows out by their padding, so their content lines up. */
+.bleed {
+  margin: 0 calc(-1 * var(--row-padding-x));
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionTitle {
+  margin: 0;
+  padding: 12px var(--row-padding-x) 4px;
+  color: var(--ui-muted);
+  font-size: var(--text-overline-size);
+  font-weight: var(--text-overline-weight);
+  letter-spacing: var(--text-overline-tracking);
+  line-height: var(--text-overline-line);
+  text-transform: uppercase;
+}
+
+.title {
+  display: block;
+  overflow: hidden;
+  color: var(--ui-ink);
+  font-family: var(--ui-font-sans);
+  font-size: var(--row-title);
+  line-height: var(--row-title-line);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ui-muted);
+  font-family: var(--ui-font-sans);
+  font-size: var(--row-detail);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--row-detail-line);
+}

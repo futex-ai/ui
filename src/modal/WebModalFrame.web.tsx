@@ -1,5 +1,4 @@
 /** Modal frame for Expo web surfaces, portalled into the shared modal root. */
-import { X } from "../primitives/icons";
 import {
   useCallback,
   useEffect,
@@ -9,15 +8,15 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { Pressable, ScrollView, Text, View } from "../primitives/reactNative";
+import { Pressable, ScrollView, View } from "../primitives/reactNative";
 import type { ViewStyle } from "../primitives/reactNative";
 
 import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
-import { useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 import { useReducedMotion } from "../useReducedMotion";
 
 import { useWebModalLayer, WebModalLayerContext } from "./useWebModalLayer";
+import { WebModalHeader } from "./WebModalHeader";
 import { createWebModalFrameStyles } from "./webModalFrameStyles";
 import { webModalCanClose, webModalMaxWidth } from "./webModalModel";
 import type { WebModalCloseSource } from "./webModalModel";
@@ -40,6 +39,7 @@ const SHEET_HEIGHT_TRANSITION = {
 } as unknown as ViewStyle;
 
 export function WebModalFrame({
+  accessibilityLabel,
   body,
   children,
   closeDisabled = false,
@@ -68,7 +68,6 @@ export function WebModalFrame({
   const styles = useMemo(() => createWebModalFrameStyles(theme), [theme]);
   const reducedMotion = useReducedMotion();
   const titleId = useId();
-  const closeRing = useFocusRing({ indicator: focusIndicator });
   // Measured natural height of the sheet's content, driven from the scroll
   // view's `onContentSizeChange`. Applying it as an explicit `height` (with the
   // transition above) is what makes the sheet animate as content changes; the
@@ -141,41 +140,21 @@ export function WebModalFrame({
   const content = body ?? children;
   const sheet = placement === "bottom-sheet";
   const header = (
-    <View style={[styles.header, headerStyle]}>
-      <View style={styles.titleBlock}>
-        <Text
-          accessibilityRole="header"
-          aria-level={1}
-          nativeID={titleId}
-          style={[styles.title, titleStyle]}
-        >
-          {title}
-        </Text>
-        {subtitle ? (
-          <Text style={[styles.subtitle, subtitleStyle]}>{subtitle}</Text>
-        ) : null}
-      </View>
-      {showCloseButton ? (
-        <Pressable
-          accessibilityLabel={closeLabel ?? `Close ${title}`}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: closeDisabled }}
-          disabled={closeDisabled}
-          {...closeRing.focusRingProps}
-          onBlur={closeRing.onBlur}
-          onFocus={closeRing.onFocus}
-          onPress={() => requestClose("closeButton")}
-          ref={closeButtonRef}
-          style={[
-            styles.closeButton,
-            closeDisabled ? styles.disabled : null,
-            closeRing.focusRingVariables,
-          ]}
-        >
-          <X aria-hidden color={theme.colors.ink2} size={18} />
-        </Pressable>
-      ) : null}
-    </View>
+    <WebModalHeader
+      closeButtonRef={closeButtonRef}
+      closeDisabled={closeDisabled}
+      closeLabel={closeLabel}
+      focusIndicator={focusIndicator}
+      headerStyle={headerStyle}
+      onClose={() => requestClose("closeButton")}
+      showCloseButton={showCloseButton}
+      styles={styles}
+      subtitle={subtitle}
+      subtitleStyle={subtitleStyle}
+      title={title}
+      titleId={titleId}
+      titleStyle={titleStyle}
+    />
   );
   const footerBlock = footer ? (
     <View style={[styles.footer, footerStyle]}>{footer}</View>
@@ -207,7 +186,11 @@ export function WebModalFrame({
       >
         <View
           accessibilityViewIsModal
-          aria-labelledby={titleId}
+          aria-label={accessibilityLabel}
+          // An explicit name wins; otherwise the visible title names the dialog.
+          aria-labelledby={
+            accessibilityLabel === undefined ? titleId : undefined
+          }
           aria-modal
           ref={surfaceRef}
           role="dialog"

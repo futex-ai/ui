@@ -16,6 +16,7 @@ export {
   ArrowLeftToLine,
   ArrowRightToLine,
   ArrowUpAZ,
+  ArrowUpRight,
   ArrowUpToLine,
   Bell,
   Bold,

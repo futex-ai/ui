@@ -3,11 +3,10 @@
  *
  * The sweep opens every Storybook story in its own browser context, so its cost
  * is linear in the story count and has to be spread across Playwright's workers
- * to stay inside the existing browser-test budget. Checking runs splits the
- * sorted story list into four deterministic shards — matching the axe sweep, and
- * matching Playwright's default worker count on an 8-CPU machine — while a
- * recording run uses one serial sweep so baselines are written by a single
- * worker with the machine to itself.
+ * to stay inside the existing browser-test budget. Checking runs split the
+ * sorted story list into four deterministic shards, matching Playwright's default
+ * worker count on an 8-CPU machine. A recording run uses one serial sweep so
+ * baselines are written by a single worker with the machine to itself.
  *
  * Only the shard layout lives here. Splitting a sorted story list across shards
  * is the same operation both sweeps need, so `snapshots.spec.ts` reuses

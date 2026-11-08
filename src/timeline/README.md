@@ -25,7 +25,8 @@ It is the reusable half of the video-editor family; the panels that surround it
 - Stay **controlled**: the component owns no clip state. Selections, seeks,
   header toggles, and edits are all reported for the consumer to apply, with
   `applyTimelineEdits` shipped as the canonical reducer.
-- Size on the shared `ControlSize` scale (`sm` / `md` / `lg`).
+- Size on the shared `ControlSize` scale (`xs` / `sm` / `md` / `lg`). The
+  timeline has no dense design, so `xs` draws the `sm` timeline.
 - Use shared theme colours, fonts, and radii rather than consumer-local theme.
 
 ## Usage

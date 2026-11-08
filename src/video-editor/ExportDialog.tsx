@@ -16,12 +16,14 @@ import { Text, View } from "../primitives/reactNative";
 
 import { Button } from "../button";
 import type { ControlSize } from "../controlSize";
+import { standardControlSize } from "../controlSizeTables";
 import type { FocusIndicator } from "../focusRing";
 import { ProgressBar } from "../loader";
 import { WebModalFrame } from "../modal";
 import { useSharedUiTheme } from "../theme";
 
 import { Inspector } from "./Inspector";
+import { exportDialogSections } from "./exportDialogSections";
 import type { InspectorSection, InspectorValue } from "./inspectorModel";
 import {
   describeExport,
@@ -67,20 +69,6 @@ export type ExportDialogProps = {
   testID?: string;
 };
 
-const FORMAT_OPTIONS = [
-  { label: "MP4 (H.264)", value: "mp4" },
-  { label: "MOV (ProRes)", value: "mov" },
-  { label: "WebM (VP9)", value: "webm" },
-  { label: "GIF", value: "gif" },
-];
-
-const RESOLUTION_OPTIONS = [
-  { label: "3840 × 2160", value: "3840x2160" },
-  { label: "1920 × 1080", value: "1920x1080" },
-  { label: "1280 × 720", value: "1280x720" },
-  { label: "854 × 480", value: "854x480" },
-];
-
 export function ExportDialog({
   duration,
   errorMessage,
@@ -109,105 +97,17 @@ export function ExportDialog({
   const exporting = status === "exporting";
   const hasRange = inPoint !== undefined && outPoint !== undefined;
 
-  const sections = useMemo<InspectorSection[]>(() => {
-    const rows: InspectorSection[] = [];
-    if (presets && presets.length > 0) {
-      rows.push({
-        id: "preset",
-        properties: [
-          {
-            disabled: exporting,
-            id: "preset",
-            label: "Preset",
-            options: presets.map((preset) => ({
-              label: preset.detail
-                ? `${preset.label} — ${preset.detail}`
-                : preset.label,
-              value: preset.id,
-            })),
-            type: "select",
-            value: presetId ?? presets[0].id,
-          },
-        ],
-        title: "Preset",
-      });
-    }
-    rows.push({
-      id: "format",
-      properties: [
-        {
-          disabled: exporting,
-          id: "format",
-          label: "Format",
-          options: FORMAT_OPTIONS,
-          type: "select",
-          value: settings.format,
-        },
-        {
-          disabled: exporting,
-          id: "resolution",
-          label: "Size",
-          options: RESOLUTION_OPTIONS,
-          type: "select",
-          value: `${settings.width}x${settings.height}`,
-        },
-        {
-          disabled: exporting,
-          id: "fps",
-          label: "Frame rate",
-          max: 120,
-          min: 1,
-          step: 1,
-          type: "number",
-          unit: "fps",
-          value: settings.fps,
-        },
-        {
-          disabled: exporting,
-          id: "videoBitrateKbps",
-          label: "Video",
-          max: 200_000,
-          min: 100,
-          step: 100,
-          type: "number",
-          unit: "kbps",
-          value: settings.videoBitrateKbps,
-        },
-        {
-          disabled: exporting,
-          id: "audioBitrateKbps",
-          label: "Audio",
-          max: 512,
-          min: 0,
-          step: 16,
-          type: "number",
-          unit: "kbps",
-          value: settings.audioBitrateKbps,
-        },
-      ],
-      title: "Format",
-    });
-    if (hasRange) {
-      rows.push({
-        id: "range",
-        properties: [
-          {
-            disabled: exporting,
-            id: "range",
-            label: "Range",
-            options: [
-              { label: "Whole sequence", value: "whole" },
-              { label: "In to out", value: "in-out" },
-            ],
-            type: "select",
-            value: settings.range,
-          },
-        ],
-        title: "Range",
-      });
-    }
-    return rows;
-  }, [exporting, hasRange, presetId, presets, settings]);
+  const sections = useMemo<InspectorSection[]>(
+    () =>
+      exportDialogSections({
+        exporting,
+        hasRange,
+        presetId,
+        presets,
+        settings,
+      }),
+    [exporting, hasRange, presetId, presets, settings],
+  );
 
   const handleChange = (propertyId: string, value: InspectorValue) => {
     if (propertyId === "preset") {
@@ -248,7 +148,7 @@ export function ExportDialog({
             <Button
               focusIndicator={focusIndicator}
               onPress={onCancel}
-              size={size}
+              size={standardControlSize(size)}
               tone="secondary"
             >
               Cancel export
@@ -257,7 +157,7 @@ export function ExportDialog({
             <Button
               focusIndicator={focusIndicator}
               onPress={onClose}
-              size={size}
+              size={standardControlSize(size)}
               tone="secondary"
             >
               Close
@@ -267,7 +167,7 @@ export function ExportDialog({
             busy={exporting}
             focusIndicator={focusIndicator}
             onPress={exporting ? undefined : onStart}
-            size={size}
+            size={standardControlSize(size)}
             testID={testID ? `${testID}-start` : undefined}
             tone="primary"
           >

@@ -3,7 +3,7 @@
  * view and the anchor date are controlled-or-uncontrolled via a tiny local
  * `useControllable` helper (no extra dependency). Defaults for `today`/`now` are
  * derived once from a current-instant `Date` inside `useMemo`, exactly like
- * `src/date/DateField.tsx` — the pure modules never read the clock, so the
+ * `src/date/DateInput.tsx` — the pure modules never read the clock, so the
  * orchestrator injects it. The renderer is picked by `view`; each view expands
  * its own occurrences over its window.
  */

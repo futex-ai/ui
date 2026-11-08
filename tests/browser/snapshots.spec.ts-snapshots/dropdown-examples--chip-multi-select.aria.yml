@@ -3,4 +3,9 @@
 - text: Greenhouse Studio
 - button "Remove Greenhouse Studio"
 - combobox "Linked books"
-- text: Start typing to link the books this report should cover.
+- text: Start typing to link the books this report should cover. Extra small books Payroll Reserve
+- button "Remove Payroll Reserve"
+- combobox "Extra small books"
+- text: Small books Payroll Reserve
+- button "Remove Payroll Reserve"
+- combobox "Small books"

@@ -4,107 +4,11 @@ import { StyleSheet } from "../primitives/reactNative";
 import type { ControlSize } from "../controlSize";
 import type { SharedUiTheme } from "../theme";
 
-/**
- * Per-size geometry for the framed input: the bordered box height, the gap
- * between the input and its adornments, the horizontal padding, the inner
- * `TextInput` height and type scale, and the matching icon diameter. `md`
- * matches the original 40px box; `sm` is the compact density and `lg` the
- * roomier, touch-first density.
- */
-const INPUT_SIZES: Record<
-  ControlSize,
-  {
-    boxHeight: number;
-    gap: number;
-    iconSize: number;
-    inputFontSize: number;
-    inputHeight: number;
-    paddingHorizontal: number;
-    textareaInputMinHeight: number;
-    textareaLineHeight: number;
-    textareaPaddingVertical: number;
-  }
-> = {
-  sm: {
-    boxHeight: 32,
-    gap: 6,
-    iconSize: 14,
-    inputFontSize: 13,
-    inputHeight: 30,
-    paddingHorizontal: 10,
-    textareaInputMinHeight: 72,
-    // Explicit per-line height so an auto-growing textarea can convert a row
-    // count into an exact pixel height on both platforms (native reads it from
-    // the rendered text; web multiplies it against the measured `scrollHeight`).
-    textareaLineHeight: 18,
-    textareaPaddingVertical: 8,
-  },
-  md: {
-    boxHeight: 40,
-    gap: 8,
-    iconSize: 16,
-    inputFontSize: 14,
-    inputHeight: 38,
-    paddingHorizontal: 12,
-    textareaInputMinHeight: 88,
-    textareaLineHeight: 20,
-    textareaPaddingVertical: 10,
-  },
-  lg: {
-    boxHeight: 48,
-    gap: 10,
-    iconSize: 18,
-    inputFontSize: 16,
-    inputHeight: 46,
-    paddingHorizontal: 14,
-    textareaInputMinHeight: 104,
-    textareaLineHeight: 22,
-    textareaPaddingVertical: 12,
-  },
-};
+import { fieldActionBoxStyle } from "./fieldActionBox";
+import { inputSizeTokens, touchInputSizeTokens } from "./inputSizing";
 
-/** Diameter of the prefix / suffix / clear icons for a given input size, in px. */
-export function inputIconSize(size: ControlSize) {
-  return INPUT_SIZES[size].iconSize;
-}
-
-/**
- * The framed-field geometry for a given size — box height, gap, icon diameter,
- * text scale, and horizontal padding. Exported so the other controls that share
- * the input's bordered-box look (the {@link DropdownSelector} field and the date
- * triggers) size from the same scale and stay in lockstep with the text input.
- */
-export function inputSizeTokens(size: ControlSize) {
-  return INPUT_SIZES[size];
-}
-
-/**
- * The pixel geometry for an auto-growing textarea at a given size: the resolved
- * per-line height plus the min/max box-content heights derived from the row
- * bounds. A textarea starts at `minRows` and grows one line at a time up to
- * `maxRows`, after which it scrolls. Shared by the {@link InputFrame} and the
- * `useAutoGrowTextarea` hook so the row→pixel conversion has a single source.
- *
- * Pass `maxRows: Infinity` for an uncapped field that grows to fit ALL its
- * content (the `seamless` variant, which reads as body text): the `maxHeight`
- * stays `Infinity`, and the hook drops it from the applied style so the field
- * never scrolls.
- */
-export function autoGrowTextareaBounds(
-  size: ControlSize,
-  minRows: number,
-  maxRows: number,
-) {
-  const lineHeight = INPUT_SIZES[size].textareaLineHeight;
-  const lowRows = Math.max(1, minRows);
-  const highRows = Math.max(lowRows, maxRows);
-  return {
-    lineHeight,
-    minHeight: lowRows * lineHeight,
-    // `Infinity * lineHeight` stays `Infinity` (an uncapped, grow-to-fit field).
-    maxHeight: highRows * lineHeight,
-  };
-}
+/** The geometry of the framed input at one size, or on a touch surface. */
+type InputSizing = ReturnType<typeof inputSizeTokens>;
 
 /**
  * The label / message tokens shared by every labelled field — the `Input` field
@@ -147,9 +51,20 @@ export function createInputStyles(
   theme: SharedUiTheme,
   size: ControlSize = "md",
 ) {
+  return inputStylesFor(theme, inputSizeTokens(size));
+}
+
+/**
+ * The input styles of a touch surface: the touch counterpart of
+ * {@link createInputStyles}, with the same keys at the touch metrics.
+ */
+export function createTouchInputStyles(theme: SharedUiTheme) {
+  return inputStylesFor(theme, touchInputSizeTokens());
+}
+
+function inputStylesFor(theme: SharedUiTheme, sizing: InputSizing) {
   const baseText = { fontFamily: theme.fonts.sans } as const;
   const chrome = fieldChromeTokens(theme);
-  const sizing = INPUT_SIZES[size];
   return StyleSheet.create({
     field: chrome.field,
     fieldLabel: chrome.fieldLabel,
@@ -282,10 +197,18 @@ export function createInputStyles(
       paddingTop: 0,
       textAlignVertical: "top",
     },
+    // A floor for the seamless input, which otherwise sizes to its text line.
+    // Only a touch surface sets one, so the input itself stays a 44px target.
+    seamlessFloor:
+      sizing.seamlessMinHeight === undefined
+        ? {}
+        : { minHeight: sizing.seamlessMinHeight },
     // Decorative icon wrapper (centred so it lines up with the input baseline).
     icon: { alignItems: "center", justifyContent: "center" },
-    // Pressable adornment (clear button / interactive suffix icon).
-    iconButton: { alignItems: "center", justifyContent: "center" },
+    // Pressable adornment (clear button / interactive suffix icon). The dense
+    // size and a touch surface give it its own square target box: 24px and
+    // 44px. The other sizes keep it as large as its icon.
+    iconButton: fieldActionBoxStyle(sizing.actionSize),
   });
 }
 

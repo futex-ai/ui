@@ -6,6 +6,9 @@ with the icon/clear chrome that the date field already used. This is the single
 text-entry family for the library — other framed inputs (e.g. the date field's
 web trigger) build on it.
 
+The [variants guide](variants.md) covers the plain and seamless frame
+variants.
+
 ## Responsibilities
 
 - Render labelled text fields and textareas: label (+ required `*`), a bordered
@@ -18,9 +21,11 @@ web trigger) build on it.
   the label, in a portaled tooltip that stays out of the always-read messages.
 - Own the sage CSS focus ring on the whole visible box, including static web
   rendering, using shared theme colors and radii.
-- Size the field with the shared `ControlSize` scale (`sm` / `md` / `lg`),
-  scaling the box height, textarea minimum height, padding, text, and icons
-  together.
+- Size the field with the shared `ControlSize` scale (`xs` / `sm` / `md` /
+  `lg`), scaling the box height, textarea minimum height, padding, text, and
+  icons together.
+- Make the input itself and each action inside the field a target of at least
+  44 by 44px inside a `TouchSurface`.
 - Expose a textarea ({@link Textarea}) and a bare box ({@link InputFrame}) so
   callers can choose a multiline field or embed just the framed input when they
   own their own label/messages or popover.
@@ -142,12 +147,29 @@ date field does this).
 
 ### Sizes
 
-`size` takes the shared `ControlSize` (`sm` / `md` / `lg`); `md` is the default
-and matches the original 40px single-line box. The size scales the box height,
-padding, input text, textarea minimum height, and prefix/suffix/clear icons
-together. The label, hint, and error messages keep a constant scale so dense and
-roomy fields read the same. Buttons share this scale, so a field and its submit
-button can be sized to match.
+`size` takes the shared `ControlSize` (`xs` / `sm` / `md` / `lg`); `md` is the
+default and matches the original 40px single-line box. The size scales the box
+height, padding, input text, textarea minimum height, and prefix/suffix/clear
+icons together. The label, hint, and error messages keep a constant scale so
+dense and roomy fields read the same. Buttons share this scale, so a field and
+its submit button can be sized to match.
+
+`xs` is the dense size: a 26px frame around a 24px input with 13px text, and a
+Clear or suffix action in a 24 by 24px box. Outside `xs` and touch surfaces, an
+action is as large as its icon.
+
+### Touch surfaces
+
+Inside a `TouchSurface`, the field takes the touch metrics, whatever its `size`:
+the input itself is 44px high in a 46px frame, its text is 16px so that phone
+browsers do not zoom into the focused field, and icons are 18px. The Clear and
+suffix actions are 44 by 44px boxes of their own, with no hit slop over the
+input. A `seamless` input is at least 44px high, and a textarea keeps the `lg`
+lines. `touchInputSizeTokens()` and `createTouchInputStyles(theme)` are the
+touch counterparts of `inputSizeTokens(size)` and `createInputStyles(theme,
+size)`. The
+[app shell parts protocol](../../docs/protocol/app-shell-parts.md#touch-surfaces)
+holds the requirements.
 
 ## Styling
 
@@ -165,85 +187,11 @@ is open).
 
 ### Plain (borderless) variant
 
-`InputFrame` takes a `variant`: `framed` (default) draws the bordered surface
-box; `variant="plain"` drops the border, background, and horizontal padding for a
-**chrome-less inline editor** embedded in a row — an inline title / label editor
-that reads as plain text until focused. The focus ring, the `clearable` ✕ button,
-and the invalid / required a11y wiring stay owned by the frame, so the field is
-still keyboard-accessible and announces its state. Because a plain field has no
-border, the invalid state has nothing to recolor — surface the error through the
-surrounding row or a separate message.
-
-```tsx
-import { InputFrame } from "@firna/ui/input";
-
-<InputFrame
-  accessibilityLabel="List title"
-  onChangeText={setTitle}
-  size="sm"
-  value={title}
-  variant="plain"
-/>;
-```
+See the [variants guide](variants.md#plain-borderless-variant).
 
 ### Seamless (invisible) variant
 
-`variant="seamless"` goes a step further than `plain`: on top of dropping the
-border, background, and padding it also drops the **reserved control height**, so
-the field collapses onto its text and reads as ordinary copy that happens to be
-editable — an inline-editable title, table cell, or paragraph. It only reveals
-the shared focus ring when edited. Style the text through `inputStyle` to match
-the surrounding copy (size, weight, colour, line height); the field inherits the
-`size` scale otherwise.
-
-It works on both a single-line field **and** a `multiline` one. A seamless
-multiline field auto-grows to fit **all** its content (no scrollbar) so it stays
-exactly as tall as the text — pass `maxLines` to cap it, and drive a controlled
-`value` on web (auto-grow measures on `value` change). Reach for the bare
-`Input` / `InputFrame` (or `Textarea` with `numberOfLines={1}`) so a seamless
-multiline field can start as a single line.
-
-```tsx
-import { Input, Textarea } from "@firna/ui/input";
-
-// An inline-editable heading that reads as a heading until you click into it.
-// A seamless field has no fixed height or padding, so pair a raised `fontSize`
-// with a matching `lineHeight` to keep the larger glyphs from clipping.
-<Input
-  accessibilityLabel="Document title"
-  inputStyle={{ fontSize: 22, fontWeight: "700", lineHeight: 28 }}
-  onChangeText={setTitle}
-  value={title}
-  variant="seamless"
-/>
-
-// A paragraph you edit in place; it grows to fit as you type.
-<Textarea
-  accessibilityLabel="Document body"
-  inputStyle={{ fontSize: 15, lineHeight: 22 }}
-  numberOfLines={1}
-  onChangeText={setBody}
-  value={body}
-  variant="seamless"
-/>;
-```
-
-Like `plain`, a seamless field has no border to recolor, so surface any
-validation error through the surrounding layout rather than the box. Its only
-focus indicator is the shared ring (there is no border to recolor and the native
-platform affordance remains), which by default is an **outset** glow. An `overflow: hidden`
-ancestor — the very containers this variant targets, such as a table cell or a
-truncating card — clips that glow, so pass `focusRingInset` to draw the ring
-inside the box instead and keep a visible focus indicator (WCAG 2.1 2.4.7). On a
-zero-padding seamless field the inset ring paints over the text edges, so where
-you can, prefer reserving a little padding on the clipping ancestor.
-
-When the field sits inside a surface that already shows focus — a search bar
-that highlights itself, a grid cell with its own selection ring — pass
-`focusIndicator="none"` instead. The frame then paints no glow, no outline, and
-no active border, so the surface must show focus itself (WCAG 2.1 2.4.7); track
-it with the field's `onFocus` / `onBlur`. The "Caller-owned indicator" story
-under Focus ring/Examples shows the pattern.
+See the [variants guide](variants.md#seamless-invisible-variant).
 
 ## Accessibility
 
@@ -294,6 +242,20 @@ control-boundary token), the focus ring and active border use `colors.primary`,
 the invalid border and required `*` use `colors.rose`, the placeholder and hint
 text use `colors.placeholder` (≥4.5:1 — 1.4.3, AA), and the box radius uses
 `radii.md`.
+
+## Key Code
+
+- [`InputFrame.tsx`](InputFrame.tsx): the bordered box, its clear action, and
+  its focus ring.
+- [`inputFrameProps.ts`](inputFrameProps.ts): the props of the bordered box.
+- [`SuffixAdornment.tsx`](SuffixAdornment.tsx): the trailing icon, as a
+  labelled button, a mouse-only target, or decoration.
+- [`inputSizing.ts`](inputSizing.ts): the per-size and touch geometry, the icon
+  sizes, and the auto-grow textarea bounds.
+- [`fieldActionBox.ts`](fieldActionBox.ts): the private action box shared by
+  text fields and tap date triggers.
+- [`inputStyles.ts`](inputStyles.ts): the shared field chrome and the style
+  factories.
 
 ## Used by
 

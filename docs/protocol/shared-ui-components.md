@@ -5,8 +5,9 @@
 Implemented contract for the dropdown, drag-select, segmented control, radio
 card, switch, spinner, loader, animated border, button, list, data table,
 workflow builder, modal, toast,
-avatar, status badge, rich-text editor, and event-calendar extraction,
-including the shared control-size scale for buttons, inputs, and textareas.
+avatar, status badge, rich-text editor, event-calendar extraction, and
+[app shell parts](app-shell-parts.md), including the shared control-size scale
+for buttons, inputs, and textareas.
 
 ## Purpose
 
@@ -29,12 +30,30 @@ app, plus labelled text inputs and textareas for shared forms.
   `lucide-react-native`, and `lucide-react` are external peer/runtime
   dependencies, not copied app code. A web-only consumer needs just `react`,
   `react-dom`, and `lucide-react`.
-- Components never import `react-native`, `react-native-svg`, or a Lucide
-  package directly. They import from `src/primitives`, whose native and `.web`
-  files pick the backend: native delegates to `react-native`, and web renders
-  through the library's own DOM backend, so the web build depends on neither
-  `react-native` nor `react-native-web` at runtime. A unit test enforces the
-  rule and keeps the two export lists in sync.
+- Native renders through `react-native`, and web renders through the library's
+  own DOM backend, so the web build depends on neither `react-native` nor
+  `react-native-web` at runtime.
+
+## Contract Pages
+
+The requirements of each component family are on these pages. Each heading
+below links to the page that holds its requirements.
+
+- [Theming](shared-ui-theming.md): tokens, presets, contrast, and focus
+  indicators.
+- [Controls](shared-ui-controls.md): segmented controls, switches, radio
+  cards, buttons, control sizes, inputs, and date fields.
+- [Indicators](shared-ui-indicators.md): spinners, loaders, animated borders,
+  avatars, badges, and status dots.
+- [Data views](shared-ui-data-views.md): calendars, heatmaps, lists, tables,
+  kanban boards, and workflow builders.
+- [Overlays](shared-ui-overlays.md): dropdowns and toasts.
+- [Package](shared-ui-package.md): tests, builds, releases, CI, and Storybook
+  previews.
+- [App shell parts](app-shell-parts.md): the `xs` size, compact text, touch
+  surfaces, links, notices, empty states, menus, and panel resizing.
+- The [web overlays](web-overlays.md), [rich-text editor](rich-text-editor.md),
+  and [drag select](drag-select.md) protocols cover their own areas.
 
 ## Rich Text Editor Contract
 
@@ -46,687 +65,83 @@ live carets, tracked changes, and comment threads — is specified in
 
 ## Theming Contract
 
-- The library ships a default theme matching the accounting component colors.
-- Consumers can override brand-sensitive tokens through a shared theme provider
-  or theme creation helper.
-- At minimum, the theme must expose primary color tokens:
-  `primary`, `primaryDeep`, `primarySoft`, and `primaryBorder`.
-- Shared semantic tokens must also cover surface, text, muted text, borders,
-  danger, warning, radii, and fonts so copied components do not depend on a
-  consumer theme module.
-- The warning and danger accents must ship a deep variant (`amberDeep`,
-  `roseDeep`, mirroring `primaryDeep`) so a tinted status fill can carry
-  AA-contrast accent text; the lighter `amber` / `rose` accents fall below the
-  4.5:1 text minimum on their own soft tints.
-- Focus rings use the active theme primary color. On web the provider
-  serializes it at alpha `0.35` plus the `4px` width through
-  `--firna-focus-ring-color` and `--firna-focus-ring-width`; `domBackendCss`
-  consumes those variables so static and server-rendered HTML needs no
-  hydration to show keyboard focus.
-- How a control shows keyboard focus is one `FocusIndicator` value: `ring`
-  (the shared glow, the default), `outline` (no glow; the browser's default
-  outline, moved onto the visible box when focus and paint live on different
-  elements), or `none` (no focus styling at all). The theme's `focusIndicator`
-  sets the default and every ring-bearing control's `focusIndicator` prop
-  overrides it in both directions; `useFocusRing` takes the same value as its
-  `indicator` option and returns the resolved `indicator`.
-- `none` must remove every focus-only style the library draws for that control:
-  the glow, the browser outline on the focus target and on its visible box, and
-  any focus-only decoration such as an input's active border or a resize
-  handle's highlight. Explicit state that is not focus — `active`, `invalid`,
-  an open popover — still applies. On web the painted box carries
-  `data-firna-focus-none="<target>"` (and a split control's target keeps
-  `data-firna-focus-target`), with no `data-firna-focus-ring` or
-  `data-firna-focus-host` marker. `domBackendCss` strips the outline from that
-  focus target with a zero-specificity `:where()` rule, so any focus style the
-  caller supplies wins, and only under `forced-colors: none`, so forced-colors
-  mode keeps the system outline. A separately focusable action inside the
-  control — a clear, suffix, or chip-remove button — keeps its browser outline.
-  Native keeps its platform focus behavior; `none` drops only the focus-only
-  decoration there.
-- `none` transfers the focus indicator to the caller, which must show focus
-  some other way (WCAG 2.1 — 2.4.7). Docs must present it for controls embedded
-  in a surface that already shows focus, never as a way to hide focus.
-- `useFocusRing` must expose its CSS markers in both spellings: `dataSet` props
-  (`focusRingProps` / `focusTargetProps`) for Firna primitives and React
-  Native hosts, and literal `data-*` props (`focusRingDomProps` /
-  `focusTargetDomProps`) for raw DOM elements, so a web-only consumer with no
-  primitive to spread onto gets the same glow. Both spellings must serialize in
-  static markup, and a `self` host must never emit an `undefined` marker.
-- The web theme provider must inject `domBackendCss` on the client, exactly as
-  `View`, `Text`, and `TextInput` do (once per document, first in `<head>`),
-  so a page that renders only the provider and raw DOM hosts still paints the
-  glow. Static and server-rendered HTML keeps emitting `domBackendCss` in
-  `<head>` itself; the injection is a client effect and never serializes.
-- Only `View` rewrites an inline `boxShadow` into
-  `--firna-focus-ring-base-shadow`. A raw DOM host must set that variable for
-  a resting shadow instead of `box-shadow`; the docs must say so, because an
-  inline `box-shadow` outranks the glow rule while the rule still removes the
-  browser outline, leaving no focus indicator at all.
-- A `descendant` host's glow and outline reset must follow only its marked
-  focus target. Any other focusable element inside the host — an input's clear
-  button, a chip-remove button, the wheel date trigger's clear button — keeps
-  the browser's own focus outline and leaves the host unlit, so keyboard users
-  can tell which action Enter will activate (WCAG 2.1 — 2.4.7).
-- The web theme provider serializes those variables on a `display: contents`
-  boundary so its HTML is self-contained. SSR/static consumers emit
-  `domBackendCss` plus a `:root` variable fallback in `<head>` before their own
-  stylesheets; later equal-specificity consumer rules remain authoritative.
-- That boundary is a real `<div>`. Consumers must mount the provider around
-  block content — an app shell, a page, a panel — never directly inside a
-  table row, a list, a paragraph, or SVG, where a `div` is invalid HTML and
-  server-rendered output would fail to hydrate. The library never nests the
-  provider inside its own components, and the docs must state the constraint.
-- Consumer theme overrides must be shallow and predictable; unspecified tokens
-  fall back to the default shared theme.
-- Dark mode ships as presets, not as a mode flag: four presets are shipped (the
-  accounting default and Juno, each light and dark). A theme creation helper
-  must accept a base theme to extend so a branded override of a dark preset
-  stays dark.
-- Inverse content — text and icons on a solid accent fill — must resolve through
-  a single `onSolid` token rather than a literal white, so it inverts with the
-  palette.
-- Solid fills invert on the dark presets: the deep accents become light and
-  `onSolid` becomes the page ink-well. This keeps every token relationship
-  (deep-on-soft, deep-as-fill, ramp ordering) valid in both schemes, so
-  components need no scheme-specific code.
-- A `scheme` field states which side of the light/dark divide a palette sits on.
-  Components must not branch on it except at genuine physical-metaphor sites
-  that cannot invert through tokens — today the switch knob, the skeleton sheen,
-  the solid toast's hover wash, and the data grid's fixed pill colors.
-- Every documented contrast obligation applies to all four presets.
-- The library does not detect the OS color scheme; consumers own that wiring so
-  the theme module stays free of platform imports.
+See the [theming page](shared-ui-theming.md#theming-contract).
 
 ## Segmented Control Contract
 
-The segmented control family covers compact single-select controls where all
-options remain visible. This includes accounting's report-style pill tabs and
-the Profit & loss income-source filter pills.
-
-Required behavior:
-
-- Render one selected value from a small option set.
-- Expose `radiogroup` and `radio` accessibility roles, with checked and
-  disabled state on every segment.
-- Support the outline variant used for filter pills and the pill-track variant
-  used for tab-like report switches.
-- Support equal-width segments and content-sized wrapping filter pills.
-- Use shared theme tokens for selected backgrounds, selected text, borders,
-  disabled opacity, labels, hint text, and validation text.
-- Keep labels, required state, hints, and validation errors available without
-  depending on consumer-local form components.
+See the [controls page](shared-ui-controls.md#segmented-control-contract).
 
 ## Switch Contract
 
-The switch family covers compact binary settings where surrounding rows or form
-fields own the visible label.
-
-Required behavior:
-
-- Render a 40px by 24px track with an 18px knob that moves between off and on
-  positions.
-- Expose `switch` accessibility semantics with checked and disabled state.
-- Keep the touch target at least 44px on native and web even though the visible
-  track is smaller.
-- Treat missing `onValueChange` as a read-only disabled control.
-- Use shared theme tokens for off track color, on track color, disabled opacity,
-  and pill radius.
-- Keep a `trackStyle` override available for non-default surfaces without
-  requiring consumers to fork the component.
+See the [controls page](shared-ui-controls.md#switch-contract).
 
 ## Spinner Contract
 
-The spinner family covers the indeterminate loading indicator: a ring whose
-accent arc rotates continuously while content is loading.
-
-Required behavior:
-
-- Render a circular ring sized by the shared `ControlSize` scale (`sm` / `md` /
-  `lg`, with `md` as the default) or by an explicit pixel diameter, deriving the
-  ring stroke thickness from the diameter.
-- Animate a continuous rotation through React Native's `Animated` API so the
-  same component spins on native and web, and stop the loop on unmount.
-- Expose `progressbar` accessibility semantics with a busy state and an
-  accessible name that defaults to a loading label.
-- Use shared theme tokens for the accent arc (`primary`) and the ring track
-  (`border2`), and allow per-instance `color` and `trackColor` overrides for
-  alternate surfaces without forking the component.
-- Keep only the inner ring rotating so the labelled container keeps a stable box
-  for layout and assistive technology.
-- Honour the user's "reduce motion" preference by slowing the loop right down
-  and fading the ring in place instead of rotating it. The indicator must keep
-  animating: a frozen spinner reads as a hung screen.
+See the [indicators page](shared-ui-indicators.md#spinner-contract).
 
 ## Loader Contract
 
-The loader family covers the rest of the loading vocabulary: an indeterminate
-indicator with a switchable shape, and the two determinate progress meters.
-
-Required behavior:
-
-- Render `Loader` in any of six shapes — `ring`, `dot-grid`, `dots`, `bars`,
-  `blades`, `pulse` — defaulting to `ring`.
-- Size every shape's box height from the same scale the spinner uses (`sm` /
-  `md` / `lg`, `md` default, or an explicit pixel size) so a shape can be
-  swapped for another without moving the surrounding layout. `dots` and `bars`
-  may be wider than they are tall; the rest are square.
-- Delegate `variant="ring"` to the spinner rather than reimplementing the arc,
-  so the library holds exactly one ring.
-- Give each shape a default cycle length suited to its motion, overridable per
-  instance with `duration`.
-- Drive every shape from a single `Animated` loop that stops on unmount and
-  animates only opacity and transform, so the loader stays on the native driver
-  on iOS and Android and renders identically on web. Stagger elements by
-  interpolating that one driver at a phase offset rather than by running one
-  loop per element.
-- Honour "reduce motion" by slowing the loop and animating brightness alone —
-  no translation, scale, or rotation — rather than freezing.
-- Expose `progressbar` accessibility semantics with a busy state and an
-  accessible name that defaults to a loading label. The shape itself is
-  decorative and must stay out of the accessibility tree.
-- Use shared theme tokens for the animated elements (`primary`) and tracks
-  (`border2`), with per-instance `color` and `trackColor` overrides.
-
-`ProgressBar` and `ProgressRing` cover progress whose total is known:
-
-- `ProgressBar` renders a full-width track. A `value` prop, a 0–1 fraction
-  clamped to range, makes it determinate; omitting `value` sweeps a segment
-  across the track for unknown progress.
-- `ProgressRing` renders the determinate circular meter, sharing the spinner's
-  geometry so it can replace a spinner of the same size without moving the
-  layout. Its arc starts at 12 o'clock and fills clockwise.
-- Both publish the percentage through `aria-valuenow` on ARIA's default 0–100
-  range, so screen readers announce a percentage rather than a fraction. An
-  indeterminate bar publishes a busy state and no value, per ARIA.
-- Emit both React Native's `accessibilityValue` and the literal `aria-value*`
-  DOM props. The web backend does not translate the former into the latter — it
-  drops the React Native-only accessibility props by design — so setting only
-  `accessibilityValue` leaves a web screen reader with a `progressbar` that
-  carries no value. This applies to any determinate control, not only these
-  two.
+See the [indicators page](shared-ui-indicators.md#loader-contract).
 
 ## Animated Border Contract
 
-The animated border covers the decorative "working" highlight: a comet trail
-that traces the perimeter of the element it frames, marking an active tool icon,
-avatar, or card while work is running.
-
-Required behavior:
-
-- Trace the real rounded-rectangle path of the framed box, sized by `width` /
-  `height` (or a square `size`) and `borderRadius`, so the trail follows the
-  same corner radius as the element it frames. `shape="circle"` fully rounds the
-  box instead — a true circle when square, an elongated stadium ("pill") when
-  not — and ignores `borderRadius`.
-- Draw the trail as stacked `react-native-svg` rects with an animated
-  `strokeDashoffset`: a short, bright head leading progressively fainter, longer
-  tail segments. Real path geometry is required because a CSS gradient border
-  cannot bend around a corner and a single rotated dash only reads as motion on
-  a circle.
-- Run the loop through React Native's `Animated` API and stop it on unmount. The
-  loop is JS-driven (`useNativeDriver: false`) because an SVG attribute cannot
-  run on the native driver.
-- Accept `color` as either a single color or a `[from, to]` pair, defaulting to
-  the theme `primary`. A pair strokes the trail with an SVG gradient sweeping
-  `from → to → from` across the box, so a border can carry a consumer's brand
-  pair and identify which connected app is working, not merely that something
-  is. `from` is repeated at both ends so the two sides of the border read the
-  same rather than ramping one way across it.
-- Treat a pair of identical colors as the single-color case — solid, with no
-  gradient defined — so a caller holding one brand color can repeat it instead
-  of branching. Gradient ids must be per-instance and free of any characters
-  that would break a `url(#…)` reference on web.
-- Keep the border out of the accessibility tree on every platform and let
-  pointer events pass through to the content it overlays. It is decoration; the
-  surrounding control owns the announced state.
-- Honour the user's "reduce motion" preference by settling into a static
-  outline — stroked with the same color or gradient — instead of looping the
-  trail around the perimeter.
-- Wrap `children` and overlay the border over them, or render standalone (with
-  no children) for the caller to position over an existing box.
+See the [indicators page](shared-ui-indicators.md#animated-border-contract).
 
 ## Radio Card Contract
 
-The radio card family covers titled, card-shaped single-select options where the
-supporting body copy is part of the option label.
-
-Required behavior:
-
-- Render a title, optional body copy, and a circular checked indicator.
-- Expose `radio` accessibility semantics with checked and disabled state.
-- Treat missing `onPress` as a read-only disabled option.
-- Allow consumers to place related cards under their own labelled `radiogroup`.
-- Use shared theme tokens for selected backgrounds, selected borders, dot
-  colors, text, disabled opacity, fonts, radii, and focus treatment.
+See the [controls page](shared-ui-controls.md#radio-card-contract).
 
 ## Button Contract
 
-The button family covers the pressable actions that the accounting mockups model
-as `.btn`: primary calls to action, neutral secondary actions, low-emphasis
-ghost actions, and destructive danger actions.
-
-Required behavior:
-
-- Render a labelled button with an optional leading icon tinted to match the
-  label color.
-- Treat caller-supplied icon nodes as decorative content: hide them from the web
-  accessibility tree and prevent pointer targeting so focus stays on the outer
-  button even when a child SVG is independently focusable.
-- Support the primary (filled), secondary (surface + border, the default), ghost
-  (no fill or border), and danger (rose border + label) tones.
-- Support a full-width block variant for stacked form actions and bottom sheets.
-- Expose `button` accessibility semantics with a disabled state, and treat a
-  missing press handler as a read-only disabled control.
-- Accept a caller-supplied role in place of `button`, limited to the
-  single-activation roles a button's press behavior stays correct under:
-  `checkbox`, `menuitem`, `radio`, `switch`, and `tab`. `link` is excluded — a
-  re-roled button has no `href`, so a real link must be an anchor.
-- Accept the state that role carries — `checked` for a checkbox / radio /
-  switch, `selected` for a tab, `pressed` for a toggle button, and `expanded`
-  for a control that reveals a menu, panel, or section — and emit it on both the
-  React Native state channel and the literal ARIA attributes web needs, since
-  the web backend drops `accessibilityState` rather than translating it.
-- Warn in development when a state is paired with a role ARIA does not allow it
-  on, or when a role that requires a state is left without one.
-- Bind Spacebar for every role other than `button`, which is the only role React
-  Native Web's press responder binds it on, and leave Enter to that responder so
-  no press fires twice.
-- Remain a single control: group semantics — the `tablist` / `radiogroup` /
-  `menu` container, roving focus, and arrow-key navigation — stay with the
-  caller or with the segmented control.
-- Own the shared CSS focus marker under every role. On web `domBackendCss` must
-  hide the browser outline only while its `:focus-visible` glow is active;
-  `focusIndicator="outline"` restores the default outline and
-  `focusIndicator="none"` removes it. Disabling a focused button must still
-  clear tracked interaction state so re-enabling it cannot restore stale
-  non-painting focus state. Native keeps its platform focus behavior.
-- Use shared theme tokens for fills, borders, label colors, disabled opacity,
-  fonts, and radii, and size with the shared control-size scale.
+See the [controls page](shared-ui-controls.md#button-contract).
 
 ## Control Size Contract
 
-Interactive controls share one size scale so a form can size its fields and
-their buttons from a single vocabulary.
-
-Required behavior:
-
-- Expose `sm`, `md` (default), and `lg` sizes through a shared `ControlSize`
-  type used by the button, input/field, and textarea.
-- The button scales its height, horizontal padding, label type scale, and icon
-  with the size.
-- The input/field scales its box height, padding, input text, textarea minimum
-  height, and prefix / suffix / clear icons with the size, while keeping the
-  label, hint, and error messages at a constant scale.
-- `md` preserves the established defaults (the 38px button and the 40px input
-  box) so existing call sites are unchanged when no size is supplied.
+See the [controls page](shared-ui-controls.md#control-size-contract).
 
 ## Input Contract
 
-The input family covers labelled single-line text fields, labelled multiline
-textareas, and a bare framed input box for controls that own their own label or
-popover.
-
-Required behavior:
-
-- Render a visible label, required marker, framed text entry surface, hint text,
-  and validation error without depending on consumer-local form components.
-- Associate labels, hints, and errors with the underlying `TextInput` through
-  generated ids and literal ARIA attributes on web, while preserving native
-  accessibility hints.
-- Treat `Input` as the default single-line field and `Textarea` as the multiline
-  field; `Textarea` must force multiline mode and default to four visible rows.
-- Use the same validation border, focus ring, placeholder color, clear button,
-  icons, and `ControlSize` scaling for single-line and multiline fields.
-- Keep `InputFrame` available as the shared bare box so date fields and other
-  custom controls can reuse the chrome without duplicating it.
-- With `focusIndicator="none"` the frame shows no glow, no outline, and no
-  active border while its input is focused; an explicit `active` or `invalid`
-  border still applies, and the clear and suffix buttons keep their browser
-  outline.
+See the [controls page](shared-ui-controls.md#input-contract).
 
 ## Avatar Contract
 
-The avatar family covers the compact initials badge used to represent a person
-or entity, as either a circular disc or a rounded square.
-
-Required behavior:
-
-- Render a disc or a rounded square with one or two initials centered on it.
-- Drive the box, the corner radius, and the initials' font size from a single
-  `size` prop so every avatar scales proportionally.
-- Offer two shapes: `circle` (the default, radius `size / 2`) and `square`,
-  whose radius is `size * radii.avatarRatio` — a theme ratio token (default
-  `0.25`) clamped to `[0, 0.5]` so the corner reads identically at every size.
-- Support a solid tone (primary-filled disc with white initials) and a soft tone
-  (soft-tinted disc with deep-primary initials).
-- Offer an indeterminate `loading` state that replaces the initials in place
-  with the loader family's `dot-grid` shape, drawn in the same foreground color
-  the initials would have used. The disc keeps its fill, corner, and footprint
-  so a row of avatars does not reflow, and it reports itself as a busy
-  progress indicator rather than an image for as long as it is loading.
-- Use shared theme tokens for the disc backgrounds, the initials' color, and the
-  initials' font, with no consumer-local theme imports.
-- Accept an optional accessible name and a container style override without
-  requiring consumers to fork the component.
-- Accept an optional initials color override so consumer-provided palette discs
-  can keep matching palette-specific foreground colors.
+See the [indicators page](shared-ui-indicators.md#avatar-contract).
 
 ## Badge Contract
 
-The badge family covers the compact, non-interactive status pill that labels a
-status (e.g. `Active`, `Pending`, `Overdue`) with a themed tone.
-
-Required behavior:
-
-- Render a content-hugging, fully-rounded pill around one short label, sized on
-  the shared `ControlSize` scale (`sm` / `md` (default) / `lg`).
-- Carry a semantic status `tone` — `neutral` (default), `primary`, `warning`,
-  and `danger` — in a `soft` (tinted fill, deep accent text) or `solid` (filled
-  accent, white text) variant. There is no `success` or `info` tone, because the
-  shared theme exposes no green or blue accent distinct from the brand
-  `primary`; a status badge maps onto the existing accent families.
-- Keep every tone/variant pair at the WCAG 1.4.3 AA text-contrast minimum
-  (≥4.5:1) on its own fill in both shipped themes, using the deep
-  `amberDeep` / `roseDeep` accents for the warning and danger tones.
-- Keep the visible label text as the status channel so the tone color reinforces
-  rather than solely conveys the meaning, with an optional accessibility-label
-  override for abbreviated or numeric labels.
-- Offer an optional leading status dot, tinted to the resolved label color (or a
-  custom color), which may `pulse` for a live state through the same shared halo
-  as the status dot family.
-- Use shared theme tokens for the fills, the label color, the font, and the pill
-  radius, with no consumer-local theme imports.
+See the [indicators page](shared-ui-indicators.md#badge-contract).
 
 ## Status Dot Contract
 
-The status dot family covers the small round state indicator that sits beside a
-label — in a list row, a table cell, a header, or inside a badge.
-
-Required behavior:
-
-- Render a circle sized on the shared `ControlSize` scale (`sm` / `md`
-  (default) / `lg`), where `md` matches the workflow graph's run-status dot so
-  the two families cannot diverge.
-- Carry the `Badge` tone vocabulary (`neutral` (default), `primary`, `warning`,
-  `danger`) as a type alias rather than a restated union, so a dot and the pill
-  beside it describe a status in one language. A dot has no text of its own, so
-  it takes the mid accent rather than a soft-fill/deep-text pair.
-- Accept a custom color for a caller-owned palette the semantic tones do not
-  cover — the route by which the workflow graph keeps its own status palette.
-- Offer an optional `pulse` that swells a translucent halo out of the dot and
-  fades it — the design system's live-state ping — while the dot itself stays
-  solid. The halo is drawn out of flow so it overflows the dot (and any pill
-  around it) without affecting layout, it is shared with the badge dot so no
-  surface hand-rolls a heartbeat, it is decorative, and under reduced motion it
-  is not drawn at all (2.3.3). Its loop stops on unmount.
-- Stay decorative unless given a label, on the assumption the adjacent text
-  states the status; a labelled dot reports as an `image` with that name, so the
-  status is never carried by color alone (WCAG 1.4.1).
-- Use shared theme tokens for the fill and the radius, with no consumer-local
-  theme imports.
+See the [indicators page](shared-ui-indicators.md#status-dot-contract).
 
 ## Date Contract
 
-The date family covers single-date fields and start–end ranges built from two
-independent single-date inputs.
-
-Required behavior:
-
-- Use ISO `YYYY-MM-DD` as the canonical value with `""` as the unset sentinel,
-  and render the display as `D Mon YYYY`.
-- Render an identical styled trigger on every platform and resolve only the
-  opened picker per platform: an editable type-or-pick text input plus anchored
-  calendar popover on web, and a tap-to-pick calendar sheet on native.
-- Keep the web calendar popover at its compact `280px` width below wider form
-  fields, shrinking it only when required by the viewport; the field width must
-  not spread the seven day columns across the form.
-- Render every calendar month as six weeks, padding with the adjacent months'
-  muted days, so the calendar keeps one size while the user pages months.
-- Never clip the web calendar to the room below its field: it opens through
-  the shared measured placement (Dropdown Contract), which flips it above when
-  the whole calendar does not fit below. When neither side fits a whole month,
-  scroll the month inside the clamped popover so every week row stays
-  reachable.
-- Give editable and tap-to-pick triggers the shared input border and focus glow,
-  and let the bare `DateInput` autofocus when mounted as an embedded editor.
-- Clamp selections and typed values to the inclusive `min`/`max` bounds.
-- Validate range ordering, surfacing an error when the start is after the end,
-  while still allowing each endpoint to hold any date independently.
-- Offer an opt-in (`clearable`, off by default) clear affordance that, once a
-  value is set, resets the value to the unset sentinel without clamping and closes
-  the picker; range endpoints clear independently. The clear control is a
-  labelled, focusable button, distinct from the decorative calendar icon.
-- Lift the open field root (and the range row) above following form content so
-  the calendar escapes sibling stacking contexts.
-- Keep day cells, navigation buttons, and the clear button labelled for
-  assistive technology, and include the field label in those accessible names.
+See the [controls page](shared-ui-controls.md#date-contract).
 
 ## Calendar Contract
 
-The calendar family covers a full event calendar (Google-Calendar-style) built
-on the shared datetime helpers, distinct from the date-field pickers.
-
-Required behavior:
-
-- Render month, week, day, and agenda views from a single controlled event list,
-  using timezone-naive ISO datetimes (`YYYY-MM-DDTHH:mm`) for timed events and
-  ISO dates (`YYYY-MM-DD`) for all-day events.
-- Let consumers either enforce one fixed view (no in-app switcher) or expose a
-  switcher across an allowed subset of views, with controlled or uncontrolled
-  view and focused-date state plus prev/next/today navigation.
-- Expand recurring events through a pragmatic RRULE subset — daily, weekly (with
-  by-weekday), monthly, and yearly frequencies, with interval, count, until, and
-  per-date exceptions — into concrete occurrences intersecting the view window,
-  preserving each instance's duration, behind a hard iteration cap.
-- Lay timed events that overlap into side-by-side columns within a day, and lay
-  multi-day and all-day events as spanning bars with lane overflow (`+N more`)
-  in the month grid.
-- Support web drag-to-create: dragging (or clicking) an empty region of the time
-  grid yields a snapped start/end draft surfaced through a create callback, and
-  dragging across month-grid day cells yields a multi-day all-day draft, each
-  with a native-safe no-op fallback for Expo platform resolution.
-- Keep view-switch segments, navigation, day cells, event blocks, and event
-  chips labelled for assistive technology, and inject "today"/"now" rather than
-  reading a clock inside the pure helpers.
-- Keep the pure datetime, recurrence, and layout helpers exported and covered by
-  unit tests.
+See the [data views page](shared-ui-data-views.md#calendar-contract).
 
 ## Heatmap Contract
 
-The heatmap family covers the calendar contribution grid: a date range laid out
-as columns of weeks with per-day intensity coloring, month labels along the top,
-and an optional weekday gutter and intensity legend.
-
-Required behavior:
-
-- Take an inclusive ISO `YYYY-MM-DD` start/end range plus a sparse list of
-  per-date values, and lay it out as column-major weeks (one column per week,
-  one row per weekday) padded so the grid stays rectangular.
-- Resolve the layout from pure, timezone-safe, unit-tested helpers that never
-  read the current date, returning an empty grid for an invalid or reversed
-  range.
-- Place a short month label above the column where each month's in-range days
-  begin, detecting the transition from in-range days so a leading partial week
-  is not mislabeled with the previous month.
-- Map each day's value to an ordered intensity ramp through ascending
-  lower-bound thresholds, deriving even bands from the data's max value by
-  default and honoring explicit thresholds for an absolute scale, with a
-  distinct empty color for days with no value.
-- Drive the cell size, gap, and corner radius, the color ramp and empty color,
-  the week start, and the month / weekday / legend chrome from props with
-  sensible defaults.
-- Use shared theme tokens for the default ramp, the empty cell, and the label
-  colors instead of consumer-local theme imports.
-- Label each in-range cell for assistive technology, hide padding cells from it,
-  and make cells focusable, pressable buttons when a press handler is supplied.
+See the [data views page](shared-ui-data-views.md#heatmap-contract).
 
 ## List Contract
 
-The List family covers vertical, optionally interactive rows with separators
-and a standard leading/title/description/trailing layout.
-
-Required behavior:
-
-- `List.onItemPress` makes the complete row one button and paints an inset,
-  full-row focus ring. This is the normal interaction for rows with decorative
-  trailing content such as a chevron.
-- `ListItem.onPress` makes only the title/description column a button. Use this
-  model when a trailing control, such as a switch, must remain an independent
-  sibling target; do not nest it inside a full-row `List.onItemPress` target.
-- On web, visual focus rings are `domBackendCss` `:focus-visible` rules, not
-  render-time raw-focus styles. Pointer focus remains real for behavior while
-  the browser owns modality; keyboard input can reveal the ring without a React
-  render. Native keeps its platform focus behavior.
-- `focusIndicator` is an explicit customization and must not be required to
-  suppress rings after ordinary pointer interaction. `outline` restores the
-  browser's default keyboard-focus outline; `none` removes it for a list whose
-  container shows focus itself.
-- `useFocusRing` still owns actual/visible-focus state for non-painting behavior.
-  List and ListItem must spread its CSS marker and variables rather than
-  implement local pointer/keyboard painting.
+See the [data views page](shared-ui-data-views.md#list-contract).
 
 ## Table Contract
 
-The table family covers the lightweight data table the accounting mockups model
-as `.table`: a header row over flex rows that share their column definitions
-(React Native has no native `<table>`).
-
-Required behavior:
-
-- Render rows from a column definition and a per-cell render callback, so a cell
-  can hold plain text, tags, buttons, or any node, with a text helper for the
-  default cell typography (including bold, muted, and tabular-numeric variants).
-- Size each column by a fixed width or a flex share, and align its header and
-  cells left, center, or right.
-- Allow a per-row container style override, merged over the base row style and
-  under the interactive states, so grouped tables can shade section-header and
-  subtotal bands (e.g. a balance sheet).
-- Make the header row optional for continuation tables and headerless layouts.
-- Make rows optionally pressable: a pressable row exposes `button` accessibility
-  semantics with a disabled state, owns the shared hover, focus ring, and pressed
-  treatment, hides the browser's default outline, and is keyboard operable; a
-  table without a row press handler renders plain static rows.
-- Use shared theme tokens for the header fill, row separators, cell and header
-  text, the hover and pressed fills, disabled opacity, and the focus ring, and
-  size with the shared control-size scale.
+See the [data views page](shared-ui-data-views.md#table-contract).
 
 ## Kanban Contract
 
-The kanban family covers the horizontally-scrolling status board the table
-mockups model as `.tb-kanban`: the same records the table shows as rows, grouped
-by a single-select field into one fixed-width column per status.
-
-Required behavior:
-
-- Group a flat cards array into columns by a `cardColumnId` accessor (the table
-  rows / list items pattern), with a stable card key and a per-card render
-  callback, so a card can be the standard card layout or any node; a card whose
-  column id matches no column is omitted.
-- Render each column as a header — a status chip whose color comes from a
-  semantic tone or a literal color override, a card count, and an optional add
-  button — above a vertical stack of cards, with an optional placeholder for an
-  empty column.
-- Allow the consumer to render its own accessory into a column header, between
-  the count and the add button, decided per column (a column that renders
-  nothing keeps the header markup and geometry it has when the slot is unused).
-  The slot is layout-only: it is end-aligned with the add button, never shrinks
-  (the title chip truncates first), is clipped to the header's content box so an
-  accessory can never change a header's height at any control size, adds no role,
-  label, or focus treatment of its own, and takes no part in the board's press
-  suppression, drag, or drop geometry. It renders in every state the add button
-  does, including the loading state.
-- Provide a convenience card layout: a wrapping title, an optional wrapping row
-  of chips, and an optional footer built from avatar / metadata / date slots or
-  a custom footer node.
-- Provide a chip primitive distinct from the badge pill: a small (`radii.sm`)
-  rounded tag whose fill resolves from a tone, a literal color, or a fill-less
-  plain variant for inline icon + count metadata, with a decorative leading icon
-  hidden from assistive technology.
-- Make cards optionally pressable: a pressable card exposes `button` semantics
-  with a disabled state, owns the shared hover, inset focus ring, and pressed
-  treatment, hides the browser's default outline, and is keyboard operable; a
-  board without a card press handler renders plain static cards.
-- Label the board and each column as accessibility groups, fold the card count
-  into the column's group name (hiding the redundant visible count from
-  assistive technology), and announce the board busy while showing skeleton
-  placeholder cards during loading.
-- Make cards draggable between and within columns via `onCardMove`, by pointer
-  and by keyboard (Space grabs, arrows move, Space/Enter drops, Escape cancels,
-  each step announced). The dragged card is lifted out of its column — a
-  translucent clone follows the pointer (the keyboard leaves the card dimmed in
-  place) — and a translucent preview of the card marks the target slot. The board
-  stays controlled: the drag reports a move (`{ cardKey, fromColumnId, fromIndex,
-toColumnId, toIndex }`, `toIndex` in dragged-removed semantics) for the consumer
-  to apply; it never mutates the cards. Dragging is a web gesture, so the native
-  drag is an inert no-op.
-- Render the web pointer-drag clone through a `document.body` portal. Its fixed
-  position consumes viewport `clientX` / `clientY` coordinates and must remain in
-  that coordinate system even when the board is inside a transformed or scrolling
-  ancestor such as the web backend's `ScrollView`.
-- Scroll the columns horizontally on both web and phone, and size with the
-  shared control-size scale.
+See the [data views page](shared-ui-data-views.md#kanban-contract).
 
 ## Dropdown Contract
 
-The dropdown family covers three related surfaces:
-
-- Button-backed selectors and action menus.
-- Read-only selector-shaped controls.
-- Input-backed combobox popovers and chip multi-selects.
-
-Required behavior:
-
-- Measure an anchor and render a portal surface that escapes ordinary page
-  stacking contexts.
-- Treat the anchor width as the portal surface minimum by default, while
-  allowing fixed-width custom surfaces to opt out when their content contract
-  is intentionally narrower than a wide anchor.
-- Place below the trigger when space permits, flip above near the viewport
-  bottom, and clamp max height. On web, measure each portal surface at its
-  natural height (up to `maxHeight`) before its first paint and require that
-  whole height below, or the roomier side when it fits neither; `minHeight`
-  can only raise that requirement. Measure once per open, so content that
-  changes size while open keeps its side. Native, which does not measure,
-  requires `minHeight` (default `140px`) below.
-- Treat a selector trigger as the popup's minimum width, grow the popup to its
-  wider option content, and cap that growth at `360px` by default and at the
-  viewport edge in all cases. Per-selector minimum and maximum overrides may
-  change the content bounds, but the configured maximum must not shrink a
-  popup below a wider visible trigger unless the viewport itself is narrower.
-- Support keyboard navigation, disabled row skipping, Enter selection, Escape
-  close, hover active state, outside pointer close, loading/empty rows, section
-  headers, dividers, footers, secondary text, right-side content, and danger or
-  warning row tones.
-- Keep the keyboard-active option scrolled into the visible list viewport when
-  navigation moves through long dropdown or combobox lists.
-- Include the field label in selector accessible names when a visual label is
-  supplied, so repeated selectors remain distinguishable to assistive
-  technology.
-- Expose a selector's pressable trigger through an optional caller ref without
-  giving up the internal anchor ref used for popup placement. Async modal forms
-  own their hydration timing and must use that handle to focus the first real
-  field after replacing a loading placeholder.
-- Preserve no-match empty rows even when combobox footers are present.
-- Keep input-backed comboboxes on a non-modal web portal so text inputs retain
-  focus while results are open.
-- Give field-style selectors and chip multi-selects the shared input border and
-  focus glow, with autofocus support for controls mounted as active editors.
-  Focusing a chip multi-select search input must open its option list, and
-  pressing anywhere on the control must return focus to that input.
-- Size chip multi-selects from the shared control scale and provide a
-  fixed-height single-line mode for dense table or data-grid editors, so their
-  chips cannot expand over neighboring rows; summarize overflow selections and
-  keep checked option rows enabled as removal toggles.
-- Provide an action-menu wrapper that owns the trigger anchor, controlled or
-  uncontrolled open state, portal/list composition, and default close-after-row
-  selection behavior for common trigger-backed menus.
-- Offer selectable trigger gestures (press, hover, long-press, context menu) on
-  the action-menu wrapper, resolving hover and context-menu behavior per
-  platform and keeping press available where a gesture is unavailable.
-- Keep dropdown and combobox portal layers opened inside the top dialog above
-  its surface, subject to the [web overlay rules](web-overlays.md#background-content).
-- Preserve native-safe fallbacks for Expo platform resolution.
+See the [overlays page](shared-ui-overlays.md#dropdown-contract).
 
 ## Drag Select Contract
 
@@ -749,92 +164,11 @@ Dialog behavior, web stacking, focus, and native presentation follow the
 
 ## Toast Contract
 
-The toast family covers transient, non-blocking notifications driven from an
-imperative API rather than rendered declaratively at a call site.
-
-Required behavior:
-
-- Provide a `ToastProvider` that owns a capped, ordered queue and publishes an
-  imperative API (`toast`, `dismiss`, `dismissAll`) through a `useToast` hook
-  and a module-level `toastController`; the hook must throw when used outside a
-  provider, and the controller must throw before a provider is mounted.
-- `toast()` must return an id usable with `dismiss`, default the tone to `info`,
-  and default the auto-dismiss delay to the provider default while accepting a
-  per-toast `duration` override and a `null`/non-positive duration for sticky
-  toasts. Toasts must also accept a `variant` prop that defaults to `card`.
-- Cap simultaneously visible toasts at a provider-configurable `max` (default 4)
-  by dropping the oldest entries.
-- Render toasts in a viewport pinned to one of six placements (top/bottom ×
-  left/center/right), with the newest toast nearest the pinned edge, through a
-  `document.body` portal with `position: fixed` on web and an
-  absolutely-positioned, `pointerEvents="box-none"` overlay on native.
-- Auto-dismiss each toast after its resolved duration and pause the countdown
-  while the pointer or keyboard focus is over the toast.
-- Carry tone (`info`, `success`, `warning`, `error`) as the leading icon color
-  and screen-reader semantics: errors announce assertively with the `alert`
-  role, other tones politely with the `status` role. The card keeps a uniform
-  1px border on every edge — tone must never be drawn as a left accent strip
-  (see the accent-bar rule in `AGENTS.md`).
-- Support a compact `solid` variant that uses the tone color as the filled
-  background, hides the default card icon, and can match the bottom-center
-  transaction-error style through props.
-- Support caller-provided leading icons for toast surfaces so in-progress,
-  branded, or feature-specific visuals do not require new visual variants.
-- Allow per-toast surface and filled-foreground overrides so compact solid
-  toasts can match dark in-progress status surfaces through props.
-- Allow per-toast title and description text style overrides that layer after
-  the built-in variant text styles.
-- Support an optional action button that runs its handler and then dismisses the
-  toast, and an optional close control that dismisses only its own toast.
-- Use shared theme tokens for the surface, border, accent colors, text, fonts,
-  and radii, with no consumer-local theme imports.
-- On web, float the toast viewport above modal surfaces, nested overlays, and
-  the consent banner, and export the layer token for consumers.
-- Keep the web toast region announced and operable under open dialogs, as
-  required by the [live-overlay contract](web-overlays.md#live-overlays).
+See the [overlays page](shared-ui-overlays.md#toast-contract).
 
 ## Workflow Builder Contract
 
-The workflow-builder family covers the branching step-graph canvas the
-workflow-builder and table-automation mockups model as `.wf-*`: a trigger-rooted
-vertical spine of step cards used to construct automation workflows.
-
-Required behavior:
-
-- Render a typed graph model (`WorkflowGraph`) of steps along a spine, where each
-  step is either a node (`trigger`, `code`, `agent`, `branch`, `app`, `outcome`)
-  or a fork that splits into parallel branches, each branch carrying its own
-  condition label and sub-spine (rendered recursively).
-- Link steps with 2px connectors and route transitions through tinted edge-label
-  pills whose tone (`success`, `failure`, `condition`, `always`, `neutral`) maps
-  onto the theme's accent families — the same philosophy as the badge, with no
-  invented green/blue token — so the visible text carries the meaning and color
-  only reinforces it.
-- Render a fork as a connector rail: a horizontal line spanning the branch
-  centers with a vertical drop into each branch column, so the spine visibly
-  splits into each branch rather than stacking disconnected columns.
-- Optionally render each transition as a round `+` insert button in place of the
-  edge labels (insert mode), reporting the branch and index where a new step is
-  inserted, with a trailing button that appends after the last step.
-- Color-code the six node kinds with a white-glyph icon chip from a fixed,
-  overridable decorative category palette (like avatar colors), and surface a
-  per-node run-status dot (`ok`, `running`, `waiting`, `error`, `skipped`) with a
-  spoken text alternative; the `running` dot pulses unless reduced motion. The
-  dot is the shared status dot family rendered with this module's vocabulary,
-  which supplies the color, the label, and the rule that only `running` pulses —
-  the graph keeps its own palette (notably the faint `skipped` fill) rather than
-  mapping onto the four semantic tones.
-- Make nodes optionally pressable: a pressable node exposes `button`
-  accessibility semantics with the selected state, owns the shared hover, focus
-  ring, and pressed treatment, hides the browser's default outline, and is
-  keyboard operable; a static node lets its text and status dot announce
-  naturally. Offer an optional trailing add-step button and an edge-tone legend.
-- Keep decorative rules (connectors) and the dotted graph-paper canvas out of the
-  accessibility tree on both platforms, and paint the dotted background as a
-  web-only enhancement (React Native has no CSS background-image).
-- Use shared theme tokens for the card surface, border, connectors, edge fills
-  and text, status colors, and the selected / focus rings, and size with the
-  shared control-size scale.
+See the [data views page](shared-ui-data-views.md#workflow-builder-contract).
 
 ## Layering Contract
 
@@ -843,126 +177,21 @@ Overlay order, backdrops, and public layer tokens follow the
 
 ## Test And Build Contract
 
-- Pure helpers for placement, navigation, close policy, and layer ordering must
-  have unit tests.
-- Component source contracts that protect web/native boundaries must have tests.
-- Browser interaction tests must cover opening, keyboard navigation, outside
-  dismissal, segmented selection, switch toggling, table row press (click and
-  keyboard), focus retention/restoration, pointer-versus-keyboard focus-ring
-  modality, focused-control disable/re-enable, async modal-form handoff to its
-  first hydrated field, portal layering for dropdowns, comboboxes, and web
-  modals, the date calendar's flip above a field near the viewport bottom, and
-  a measured list's selected option staying in view once it is clamped.
-- The package must typecheck and build before it is used by accounting or Juno.
-- `npm run test:package` must pack the built library, install the tarball into a
-  temporary consumer, import every public package subpath with Node's native ESM
-  resolver, typecheck those public package subpaths with TypeScript's NodeNext
-  resolver, and import the same subpaths through a Vite build.
-- After package build/tests pass, smoke-test at least one local web route or
-  harness that opens a dropdown, a combobox, and a modal, toggles a segmented
-  control and switch, and selects a radio card.
+See the [package page](shared-ui-package.md#test-and-build-contract).
 
 ## Package Release Contract
 
-- The public npm package name is `@firna/ui`.
-- Standard ESM `import` exports must point at Node-resolvable `dist/node/**`
-  files with explicit relative `.js` specifiers.
-- Exported `types` entries must point at NodeNext-compatible declarations under
-  `dist/node/**`, with explicit relative `.js` specifiers inside declaration
-  imports and re-exports.
-- The `react-native` export condition must continue to point at the normal
-  `dist/**` build so React Native platform resolution can choose platform files.
-- Every primitive a consumer is expected to import directly must have its own
-  subpath, not the package root alone. This includes the shared focus-glow
-  primitive (`./focusRing`, mirroring `./theme`): a consumer that imports every
-  component by subpath would otherwise pull the whole barrel through Metro just
-  to wire a focus ring onto its own control. Custom controls spread the hook's
-  `focusRingProps`, include `focusRingVariables` in the painted host style, and
-  use `target: "descendant"` / `"parent"` when focus and paint live on different
-  elements. They pass their `focusIndicator` through the `indicator` option and
-  gate any focus-only decoration of their own on the returned `indicator`.
-  `focusRingStyleFor` remains the explicit inline-style escape hatch.
-- release-please owns release PR creation, changelog updates, npm metadata
-  version updates, `vX.Y.Z` Git tags, and GitHub releases.
-- release-please must use the `node` release type so release PRs update
-  `CHANGELOG.md`, `package.json`, and `package-lock.json` together.
-- Generated release PRs must be normalized by the release workflow before they
-  are considered ready for merge: the workflow checks out the release PR branch,
-  runs the repository formatter, and pushes a bot commit only when formatting
-  changed generated files.
-- Ordinary pushes to `main` must not publish npm packages; publishing must only
-  run when release-please reports that a GitHub release was created from a
-  merged release PR, or when a maintainer manually dispatches a publish retry
-  for an existing `vX.Y.Z` tag.
-- npm publishing must run in the same workflow invocation that creates the
-  GitHub release so it does not depend on a separate `release` event emitted by
-  `GITHUB_TOKEN`.
-- That workflow must remain at `.github/workflows/release-plz.yml` unless the
-  npm trusted-publisher configuration is updated at the same time; npm validates
-  the configured workflow filename during `npm publish`.
-- The same workflow must expose a manual retry path that checks out an existing
-  release tag and runs the same verification and npm publish steps without
-  creating a new GitHub release.
-- npm publishing must use npm trusted publishing with `id-token: write` and
-  must guard against republishing an already-published version.
-- Scoped package publishing must use public access.
+See the [package page](shared-ui-package.md#package-release-contract).
 
 ## CI And Preview Contract
 
-- Storybook deployments use Cloudflare Pages.
-- The Cloudflare Pages project name is `futex-ui-storybook`.
-- The stable main Storybook deploy uses the Cloudflare Pages production branch
-  `main` and the default production URL
-  `https://futex-ui-storybook.pages.dev`, unless a custom domain is added later.
-- Same-repository non-release PR Storybook previews deploy the static Storybook
-  build to Cloudflare Pages with branch name `pr-<number>`, producing a
-  predictable preview URL such as
-  `https://pr-123.futex-ui-storybook.pages.dev`.
-- Every PR must run `cargo xtask check` after dependency installation. The
-  xtask check runs the JavaScript verification suite: formatting, unit tests,
-  typecheck, package build, package tarball smoke test, Storybook build, and
-  browser interaction tests.
-- The main branch must publish a stable default Storybook deployment.
-- Every same-repository non-release PR must publish an isolated Storybook
-  preview deployment.
-- Release Please PRs, identified by a `release-please--` head branch or an
-  `autorelease:` label, must skip the Storybook preview deploy job because they
-  only update release metadata for changes already previewed in source PRs.
-- The PR Storybook URL must be posted back to the pull request through a sticky
-  comment with marker `<!-- futex-ui-storybook-preview -->`, matching the
-  preview-comment pattern used by accounting and Juno.
-- The sticky comment must be updated on every PR deploy attempt with status,
-  preview URL, commit SHA, and workflow run URL.
-- PR previews update in place on every new commit by redeploying the same
-  `pr-<number>` Cloudflare Pages branch.
-- On PR close, the workflow must mark the sticky comment inactive and use the
-  Cloudflare Pages API to force-delete aliased non-production deployments for
-  the `pr-<number>` branch when that API is available to the workflow; if
-  deletion cannot be performed safely, the close workflow must report that the
-  preview was retained and include the reason.
-- Required Cloudflare configuration is repository variable
-  `CLOUDFLARE_ACCOUNT_ID` and repository secret `CLOUDFLARE_PAGES_API_TOKEN` or
-  `CLOUDFLARE_API_TOKEN`.
-- Storybook previews must include at least the shared dropdown selector,
-  dropdown action menu, input-backed combobox, chip multi-select, segmented
-  control variants, radio card group, switch toggle, button tones and sizes,
-  user avatars, a month event calendar, a data table with clickable rows,
-  centered web modal, bottom-sheet web modal, toast tones and an action toast,
-  default accounting theme, and alternate primary color theme.
-- Storybook navigation must keep each example family in its own top-level
-  folder, currently `Avatar/Examples`, `Badge/Examples`, `Button/Examples`,
-  `Calendar/Examples`,
-  `Date/Examples`, `Dropdown/Examples`, `Heatmap/Examples`, `Input/Examples`,
-  `Loader/Examples`,
-  `Modal/Examples`, `Popover/Examples`, `Radio/Examples`, `Segmented/Examples`,
-  `Spinner/Examples`, `Status dot/Examples`, `Switch/Examples`,
-  `Table/Examples`,
-  `Theme/Examples`, and `Toast/Examples`.
+See the [package page](shared-ui-package.md#ci-and-preview-contract).
 
 ## Non-Goals
 
 - Migrating accounting or Juno imports in this package extraction change.
 - Replacing platform modality or native OS pickers and action sheets.
 - Adding app-specific mutations, data fetching, routing, or screen state.
-- Adding a broad design system beyond the copied dropdown, segmented control,
-  and modal families.
+- Adding a broad design system beyond the families that Firna apps share.
+  Conductive decision 119 puts the [app shell parts](app-shell-parts.md) in
+  scope.

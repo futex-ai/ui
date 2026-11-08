@@ -1,0 +1,36 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+:global([data-surface="phone"]) .form {
+  gap: 18px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 6px;
+  padding-left: 164px;
+}
+
+.switchLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--control-height);
+}
+
+.switchLabel {
+  color: var(--ui-ink);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line);
+}
+
+.archive {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}

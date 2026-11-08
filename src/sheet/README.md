@@ -70,16 +70,22 @@ before the content scrolls.
 | `title`        | both     | Visible title when it should differ from `label`.      |
 | `children`     | both     | Node or `({ close, maxHeight }) => node`.              |
 | `maxHeight`    | both     | Body cap; also clamped to ~70% of the viewport.        |
-| `dismissLabel` | native   | Header dismiss control text. Default `"Cancel"`.       |
+| `dismissLabel` | both     | Dismiss control text; on web the close button's name.  |
 | `hideHeader`   | native   | Hide the header row (the grip stays). Default `false`. |
 
 ## Accessibility
 
-The surface is a modal dialog named by `label` (WCAG 4.1.2). Native uses
+The surface is a modal dialog named by `label` (WCAG 4.1.2), on web as on
+native, also when a different `title` shows. Native uses
 `accessibilityViewIsModal` for focus containment and closes on the Android back
 button; web inherits the modal frame's focus trap, focus restore, and
 escape-layer dismissal, so a dropdown or combobox opened inside the sheet
 consumes Escape first and only the top-most overlay closes.
+
+Inside a `TouchSurface`, the dismiss control is a 44 by 44px target on both
+platforms, with no hit slop. Outside a touch surface it keeps its size. The
+phone menu sheet of [`InlineMenu` and `ResponsiveMenu`](../popover/menus.md)
+is a `Sheet` that marks its own touch surface.
 
 ## Development
 

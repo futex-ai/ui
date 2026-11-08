@@ -15,6 +15,7 @@ export * from "./timelineLayout";
 export * from "./timelineScrubValue";
 export * from "./timelineSelection";
 export * from "./timelineSnap";
+export * from "./timelineStyleTypes";
 export * from "./timelineStyles";
 export * from "./timelineTime";
 export * from "./timelineTypes";

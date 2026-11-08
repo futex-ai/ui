@@ -29,7 +29,7 @@ test("button exposes the whole press lifecycle, gated together by busy", () => {
   // optional because keyboard activation has no pointer — Space routes through
   // `activate` with no event at all.
   assert.match(
-    source,
+    readSource("../../src/button/buttonProps.ts"),
     /onPress\?: \(event\?: GestureResponderEvent\) => void;/,
   );
   assert.match(source, /activate: \(\) => onPress\?\.\(\)/);
@@ -37,13 +37,15 @@ test("button exposes the whole press lifecycle, gated together by busy", () => {
 
 test("every tone takes a pressed treatment, and style can react to state", () => {
   const source = readSource("../../src/button/Button.tsx");
+  const paintSource = readSource("../../src/button/buttonPaint.ts");
+  const propsSource = readSource("../../src/button/buttonProps.ts");
   const stylesSource = readSource("../../src/button/buttonStyles.ts");
 
   // The filled and bordered tones join the borderless ones in having press
   // feedback, so a press reads on every tone rather than only ghost / plain.
   for (const tone of ["primary", "secondary", "ghost", "plain", "danger"]) {
     assert.match(
-      source,
+      paintSource,
       new RegExp(`pressed && !disabledState && !busy && tone === "${tone}"`),
       tone,
     );
@@ -65,13 +67,13 @@ test("every tone takes a pressed treatment, and style can react to state", () =>
   // The functional `style` is how that caller puts press feedback back — the
   // navigator swipe tray dims its custom fills this way.
   assert.match(
-    source,
+    propsSource,
     /style\?:\s*\| StyleProp<ViewStyle>\s*\| \(\(state: ButtonStateStyleArgs\) => StyleProp<ViewStyle>\);/,
   );
   assert.match(source, /typeof style === "function"/);
   for (const flag of ["busy", "disabled", "focused", "hovered", "pressed"]) {
     assert.match(
-      source,
+      propsSource,
       new RegExp(
         `export type ButtonStateStyleArgs = \\{[\\s\\S]*?${flag}: boolean;`,
       ),
@@ -81,12 +83,12 @@ test("every tone takes a pressed treatment, and style can react to state", () =>
 });
 
 test("the onMedia tone stays white in every scheme", () => {
-  const source = readSource("../../src/button/Button.tsx");
+  const source = readSource("../../src/button/buttonPaint.ts");
   const stylesSource = readSource("../../src/button/buttonStyles.ts");
 
   // A control over photography (an image-preview close / download) has no
   // theme surface to sit on: every other tone disappears against the picture.
-  assert.match(source, /\| "onMedia"/);
+  assert.match(readSource("../../src/button/buttonProps.ts"), /\| "onMedia"/);
   assert.match(source, /tone === "onMedia" \? styles\.onMedia : null/);
   assert.match(
     source,
@@ -115,7 +117,8 @@ test("the tap area and the visible box are set independently", () => {
   // `hitSlop` grows the target without growing the control, so a compact glyph
   // can still meet a comfortable target (WCAG 2.1 — 2.5.5 / 2.5.8). The
   // navigator footer gear traded a 50px target for its visible 34px without it.
-  assert.match(source, /hitSlop\?: number \| Insets;/);
+  const propsSource = readSource("../../src/button/buttonProps.ts");
+  assert.match(propsSource, /hitSlop\?: number \| Insets;/);
   assert.match(source, /hitSlop=\{hitSlop\}/);
   // React Native reads `hitSlop` off the pressable, but the web backend's
   // `Pressable` accepts the prop and ignores it (plan Decision 6, matching the
@@ -132,9 +135,9 @@ test("the tap area and the visible box are set independently", () => {
   // `minTouchTarget` is a floor and can only grow the box, so a control a
   // design specs below the smallest size's 30px track was unreachable.
   // `boxSize` sets the 1:1 box outright, including below that floor.
-  assert.match(source, /boxSize\?: number;/);
+  assert.match(propsSource, /boxSize\?: number;/);
   assert.match(
-    source,
+    readSource("../../src/button/buttonPaint.ts"),
     /boxSize \?\? Math\.max\(buttonHeight\(size\), minTouchTarget \?\? 0\)/,
   );
   // And a `minTouchTarget` below that floor is inert rather than wrong, so say
@@ -144,7 +147,7 @@ test("the tap area and the visible box are set independently", () => {
 });
 
 test("the label and the row around it are open to the caller", () => {
-  const source = readSource("../../src/button/Button.tsx");
+  const source = readSource("../../src/button/buttonProps.ts");
   const contentSource = readSource("../../src/button/ButtonContent.tsx");
 
   // A single-line ellipsized label over arbitrary user text (an agent

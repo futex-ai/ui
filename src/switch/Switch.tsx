@@ -12,9 +12,10 @@ import type { ControlSize } from "../controlSize";
 import { devWarn } from "../devWarn";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
+import { useTouchSurface } from "../touchSurface";
 import { useReducedMotion } from "../useReducedMotion";
 
-import { createSwitchStyles } from "./switchStyles";
+import { createSwitchStyles, createTouchSwitchStyles } from "./switchStyles";
 
 type SwitchKeyboardEvent = {
   key?: string;
@@ -45,7 +46,10 @@ export type SwitchProps = {
    */
   focusIndicator?: FocusIndicator;
   onValueChange?: (value: boolean) => void;
-  /** Control density: `sm`, `md` (default), or `lg`. */
+  /**
+   * Control density: `xs`, `sm`, `md` (default), or `lg`. The switch has no
+   * dense design, so `xs` draws the `sm` switch.
+   */
   size?: ControlSize;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
@@ -65,7 +69,15 @@ export function Switch({
   value,
 }: SwitchProps) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(() => createSwitchStyles(theme, size), [theme, size]);
+  // On a touch surface the switch keeps its drawing, and its target grows.
+  const touch = useTouchSurface();
+  const styles = useMemo(
+    () =>
+      touch
+        ? createTouchSwitchStyles(theme, size)
+        : createSwitchStyles(theme, size),
+    [theme, size, touch],
+  );
   const reducedMotion = useReducedMotion();
   // Draw the focus ring just outside the track so its contrast is measured
   // against the page surface, not the track fill. The Pressable padding leaves

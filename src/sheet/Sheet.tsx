@@ -10,6 +10,7 @@ import {
 
 import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
+import { TOUCH_TARGET_SIZE, useTouchSurface } from "../touchSurface";
 
 import { BottomSheetShell } from "./BottomSheetShell";
 import type { BottomSheetHandle } from "./BottomSheetShell";
@@ -35,6 +36,8 @@ export function Sheet({
 }: SheetProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createSheetStyles(theme), [theme]);
+  // On a touch surface the dismiss control is its own 44 by 44px target.
+  const touch = useTouchSurface();
   const { height: viewportHeight } = useWindowDimensions();
   const cap = sheetMaxHeight(maxHeight, viewportHeight);
   const sheetRef = useRef<BottomSheetHandle | null>(null);
@@ -56,9 +59,9 @@ export function Sheet({
       <Pressable
         accessibilityLabel={dismissLabel}
         accessibilityRole="button"
-        hitSlop={10}
+        hitSlop={touch ? undefined : 10}
         onPress={close}
-        style={styles.dismiss}
+        style={[styles.dismiss, touch ? styles.dismissTouch : null]}
       >
         <Text style={styles.dismissText}>{dismissLabel}</Text>
       </Pressable>
@@ -89,6 +92,12 @@ function createSheetStyles(theme: SharedUiTheme) {
   return StyleSheet.create({
     body: { gap: 12, paddingHorizontal: 16, paddingTop: 4 },
     dismiss: { paddingHorizontal: 4, paddingVertical: 2 },
+    dismissTouch: {
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: TOUCH_TARGET_SIZE,
+      minWidth: TOUCH_TARGET_SIZE,
+    },
     dismissText: {
       ...baseText,
       color: theme.colors.primaryDeep,

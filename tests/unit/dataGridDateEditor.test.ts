@@ -18,7 +18,7 @@ test("the data-grid editor applies the platform picker policy", () => {
 });
 
 test("an auto-focused date input opens every platform picker", () => {
-  const field = readSource("../../src/date/DateField.tsx");
+  const field = readSource("../../src/date/DateInput.tsx");
   const trigger = readSource("../../src/date/DateTrigger.tsx");
 
   assert.match(field, /if \(autoFocus\) \{\s*field\.setOpen\(true\)/);

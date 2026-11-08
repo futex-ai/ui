@@ -76,8 +76,9 @@ from it to produce `layout.plot`.
 
 ## Colours
 
-Every colour comes from `theme.charts` (see the root README's _Chart colors_
-section). Assign them through `assignSeriesColors`, never by array index:
+Every colour comes from `theme.charts` (see the _Chart colors_ section of the
+[theming guide](../../docs/theming.md#chart-colors)). Assign them through
+`assignSeriesColors`, never by array index:
 
 ```tsx
 const { colorById } = assignSeriesColors(series, theme.charts);

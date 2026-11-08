@@ -1,3 +1,8 @@
+- text: Extra small field
+- textbox "Extra small field":
+  - /placeholder: Search
+  - text: Invoices
+- button "Clear Extra small field"
 - text: Small field
 - textbox "Small field":
   - /placeholder: Search

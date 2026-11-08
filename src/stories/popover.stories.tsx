@@ -3,6 +3,8 @@ import { Pressable, StyleSheet, Text, View } from "../primitives/reactNative";
 
 import { Popover, darkSharedUiTheme } from "../index";
 
+import { InlineMenuExample, InlineMenuOpenExample } from "./menuExamples";
+import { MenuSheetExample, StaticMenuSheetExample } from "./menuSheetExamples";
 import {
   ControlledPopoverExample,
   PopoverExample,
@@ -92,6 +94,72 @@ export const ResponsiveMenuStory: Story = {
   render: () => (
     <StorySurface>
       <ResponsiveMenuExample />
+    </StorySurface>
+  ),
+};
+
+/**
+ * Dense `xs` menus drawn in place beside their triggers, with no portal and no
+ * measurement: project actions at the end edge (icons, a disabled row, a
+ * divider, and a danger row) and the sort order at the start edge (a group
+ * label, menu radio choices with a detail, and a note). Opening focuses the
+ * menu on its first enabled row; ↑/↓ skip the rows that cannot run, Enter or
+ * Space runs the active row once, and Escape or an outside press closes the
+ * menu and returns focus to the trigger.
+ */
+export const InlineMenuStory: Story = {
+  name: "Inline menu",
+  render: () => (
+    <StorySurface>
+      <InlineMenuExample />
+    </StorySurface>
+  ),
+};
+
+/**
+ * The menus drawn open, as static and server-rendered HTML shows them: below
+ * the trigger at the end edge with the first row active, and above the
+ * trigger at the start edge with a controlled active row.
+ */
+export const InlineMenuDrawnOpen: Story = {
+  name: "Inline menu drawn open",
+  render: () => (
+    <StorySurface>
+      <InlineMenuOpenExample />
+    </StorySurface>
+  ),
+};
+
+export const InlineMenuDark: Story = {
+  name: "Inline menu dark theme",
+  render: () => (
+    <StorySurface theme={darkSharedUiTheme}>
+      <InlineMenuOpenExample />
+    </StorySurface>
+  ),
+};
+
+/**
+ * On a touch surface, the in-place menu and the responsive menu open the
+ * phone menu sheet: a modal sheet named by the menu, with a title, a 44px
+ * close control, and 44px rows. It opens without an active row; the keys stay
+ * on the menu list, so Tab reaches the close control and Enter closes it.
+ */
+export const PhoneMenuSheet: Story = {
+  name: "Phone menu sheet",
+  render: () => (
+    <StorySurface>
+      <MenuSheetExample />
+    </StorySurface>
+  ),
+};
+
+/** The phone menu sheet drawn open in place over a phone layout, for static HTML. */
+export const PhoneMenuSheetDrawn: Story = {
+  name: "Phone menu sheet drawn in place",
+  render: () => (
+    <StorySurface>
+      <StaticMenuSheetExample />
     </StorySurface>
   ),
 };

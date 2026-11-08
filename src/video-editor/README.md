@@ -28,7 +28,8 @@ app, a storyboard tool, or a mock.
 - Show and edit keyframes as compact lanes or as a value graph.
 - Collect export settings, estimate the result, and report progress.
 - Size on the shared `ControlSize` scale and take every colour from
-  `SharedUiThemeProvider`.
+  `SharedUiThemeProvider`. The panels have no dense design, so `xs` draws
+  the `sm` panels, their buttons and fields included.
 
 ## Usage
 

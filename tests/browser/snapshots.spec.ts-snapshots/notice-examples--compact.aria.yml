@@ -1,0 +1,9 @@
+- text: Deploying to production The live site updates when the deploy finishes.
+- link "View log":
+  - /url: /atlas/activity
+- alert:
+  - text: The deploy failed The build stopped at the test step. The live site still runs the last good deploy.
+  - link "View log":
+    - /url: /atlas/activity
+  - button "Try again"
+- alert: The deploy failed. The build stopped at the test step. The live site still runs the last good deploy.

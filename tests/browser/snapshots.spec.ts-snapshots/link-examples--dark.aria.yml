@@ -1,0 +1,23 @@
+- link "Open primary":
+  - /url: /atlas/primary
+- link "Open secondary":
+  - /url: /atlas/secondary
+- link "Open ghost":
+  - /url: /atlas/ghost
+- link "Open plain":
+  - /url: /atlas/plain
+- link "All activity":
+  - /url: /atlas/activity
+- link "Settings":
+  - /url: /atlas/settings
+- link "Help center (opens in a new tab)":
+  - /url: https://help.example.com/deploys
+  - text: ""
+  - img "(opens in a new tab)"
+- link "Projects":
+  - /url: /projects
+- link "Documentation (opens in a new tab)":
+  - /url: https://docs.example.com
+  - text: ""
+  - img "(opens in a new tab)"
+- text: "Navigations: none"

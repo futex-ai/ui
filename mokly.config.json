@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/@mokly/mokly/config.schema.json",
+  "colorSchemes": ["light", "dark"],
+  "roots": [{ "dir": "docs/mockups/src/entries" }],
+  "renderer": "docs/mockups/src/render.tsx",
+  "moduleResolution": {
+    "resolveExtensions": [
+      ".web.tsx",
+      ".web.ts",
+      ".web.jsx",
+      ".web.js",
+      ".tsx",
+      ".ts",
+      ".jsx",
+      ".js",
+      ".json"
+    ]
+  },
+  "watch": { "rules": [{ "action": "ignore", "paths": [".context/**"] }] }
+}

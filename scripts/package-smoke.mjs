@@ -62,6 +62,8 @@ try {
   await writeNodePeerStubs(nodeConsumerRoot);
   await writeImportSmoke(nodeConsumerRoot, subpaths);
   await runNodeSmoke(nodeConsumerRoot);
+  await writeColdDropdownSmoke(nodeConsumerRoot);
+  await runNodeSmoke(nodeConsumerRoot, "cold-dropdown-smoke.mjs");
 
   const typesConsumerRoot = join(smokeRoot, "types-consumer");
   await prepareConsumer(typesConsumerRoot, tarballPath);
@@ -100,9 +102,9 @@ try {
  * failure reads only as "Command failed"; the noise is filtered out here so a
  * missing export is legible at a glance.
  */
-async function runNodeSmoke(consumerRoot) {
+async function runNodeSmoke(consumerRoot, fileName = "import-smoke.mjs") {
   try {
-    await execFileAsync("node", ["import-smoke.mjs"], { cwd: consumerRoot });
+    await execFileAsync("node", [fileName], { cwd: consumerRoot });
   } catch (error) {
     const detail = String(error.stderr ?? "")
       .split("\n")
@@ -205,6 +207,17 @@ void mod${index};`,
 console.log("package imports resolved");
 `;
   await writeFile(join(consumerRoot, "import-smoke.mjs"), body);
+}
+
+async function writeColdDropdownSmoke(consumerRoot) {
+  const body = `import assert from "node:assert/strict";
+
+await assert.doesNotReject(async () => {
+  const dropdown = await import("@firna/ui/dropdown");
+  assert.equal(typeof dropdown.DropdownSelector, "function");
+}, "cold dropdown entry loads and exposes DropdownSelector");
+`;
+  await writeFile(join(consumerRoot, "cold-dropdown-smoke.mjs"), body);
 }
 
 async function writeTypeSmoke(consumerRoot, importNames) {

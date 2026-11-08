@@ -14,6 +14,8 @@ import type { ControlSize } from "../controlSize";
 import { useFocusRing } from "../focusRing";
 import { InputFrame, inputIconSize } from "../input";
 import { useSharedUiTheme } from "../theme";
+import { touchControlMetrics } from "../touchMetrics";
+import { useTouchSurface } from "../touchSurface";
 
 import { DateFieldStyles } from "./dateFieldStyles";
 import { DateFieldController } from "./useDateField";
@@ -172,7 +174,8 @@ export function NativeTrigger({
   const theme = useSharedUiTheme();
   const focus = useFocusRing({ target: "descendant" });
   const triggerRef = useRef<View>(null);
-  const iconSize = inputIconSize(size);
+  const touch = useTouchSurface();
+  const iconSize = touch ? touchControlMetrics.iconSize : inputIconSize(size);
   useEffect(() => {
     if (!autoFocus) {
       return;
@@ -243,11 +246,14 @@ export function NativeTrigger({
         {/* Nested Pressable: on native it captures the touch (responder system),
             so clearing does not also open the picker the row press would. */}
         {clearable && field.value ? (
+          // On a touch surface the 44px box is the target, so it needs no
+          // hit slop that would overlap the open button.
           <Pressable
             accessibilityLabel={`Clear ${label}`}
             accessibilityRole="button"
-            hitSlop={8}
+            hitSlop={touch ? undefined : 8}
             onPress={field.clear}
+            style={styles.triggerClear}
           >
             <CircleX color={theme.colors.muted} size={iconSize} />
           </Pressable>

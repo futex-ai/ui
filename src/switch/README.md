@@ -5,8 +5,8 @@ accounting app's shared `Switch` primitive.
 
 ## Responsibilities
 
-- Render a toggle track sized by the shared `ControlSize` scale (`sm` / `md` /
-  `lg`); `md` is the original 40×24 track with an 18px knob.
+- Render a toggle track sized by the shared `ControlSize` scale (`xs` / `sm` /
+  `md` / `lg`); `md` is the original 40×24 track with an 18px knob.
 - Expose `switch` semantics with checked and disabled state.
 - Keep a real touch target (≥ 40px) around the track that grows with the size.
 - Use shared theme colors and radii instead of consumer-local theme imports.
@@ -74,10 +74,14 @@ also dims the visual track and reports the disabled accessibility state.
 
 ### Sizes
 
-`size` takes the shared `ControlSize` (`sm` / `md` / `lg`); `md` is the default
-and matches the original 40×24 track. The size scales the track, the knob, the
-on-position offset, and the surrounding touch target together, so a switch lines
-up with the inputs and buttons in the same row.
+`size` takes the shared `ControlSize` (`xs` / `sm` / `md` / `lg`); `md` is the
+default and matches the original 40×24 track. The size scales the track, the
+knob, the on-position offset, and the surrounding touch target together, so a
+switch lines up with the inputs and buttons in the same row. The switch has no
+dense design, so `xs` draws the `sm` switch.
+
+Inside a `TouchSurface`, the switch keeps the drawing of its size, and its
+target grows to at least 44 by 44px: the `sm` and `xs` targets grow from 40px.
 
 ```tsx
 <Switch

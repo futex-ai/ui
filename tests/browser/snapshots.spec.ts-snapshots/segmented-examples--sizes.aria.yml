@@ -1,3 +1,15 @@
+- radiogroup "Extra small report":
+  - radio "Profit & loss" [checked]
+  - radio "Balance sheet"
+- radiogroup "Extra small outline report":
+  - radio "Profit & loss" [checked]
+  - radio "Balance sheet"
+- radiogroup "Extra small icon layout":
+  - radio "Board" [checked]
+  - radio "Table"
+- radiogroup "Extra small icon status":
+  - radio "Live" [checked]
+  - radio "Paused"
 - radiogroup "Small report":
   - radio "Profit & loss" [checked]
   - radio "Balance sheet"

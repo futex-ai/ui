@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.web.json",
+  "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ES2024"],
+    "paths": {
+      "@firna/ui": ["../../src/index.ts"],
+      "@firna/ui/*": ["../../src/*"]
+    },
+    "types": []
+  },
+  "include": ["src"]
+}

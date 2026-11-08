@@ -5,8 +5,8 @@ export {
   createDataGridStyles,
   dataGridMetrics,
   type DataGridStyles,
-  type DataGridMetrics,
 } from "./dataGridStyles";
+export type { DataGridMetrics } from "./dataGridSizes";
 export {
   fieldTypeIcon,
   fieldTypeLabel,

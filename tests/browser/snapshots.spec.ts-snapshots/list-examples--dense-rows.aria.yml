@@ -1,0 +1,10 @@
+- list "Projects":
+  - listitem: /Billing \d+/
+  - listitem: Mobile app 4
+  - listitem: A project with a name long enough to wrap onto a second line 1
+- list "Pinned projects":
+  - listitem:
+    - button "Deploys"
+    - button "Pin Deploys"
+- list "Loading projects"
+- text: "Opened: none Pinned: no"

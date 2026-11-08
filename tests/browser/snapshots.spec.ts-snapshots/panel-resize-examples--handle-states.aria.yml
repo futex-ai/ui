@@ -1,0 +1,10 @@
+- text: At rest
+- separator "Resize at rest panel"
+- text: Under the pointer
+- separator "Resize under the pointer panel"
+- text: Dragged
+- separator "Resize dragged panel"
+- text: Keyboard focus
+- separator "Resize keyboard focus panel"
+- text: No focus indicator
+- separator "Resize panel without a focus indicator"

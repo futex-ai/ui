@@ -47,6 +47,8 @@ export interface WebOnlyStyle {
   backgroundImage?: string | undefined;
   /** CSS `background-size`, paired with {@link WebOnlyStyle.backgroundImage}. */
   backgroundSize?: string | undefined;
+  /** CSS `touch-action`, which lets a drag handle own a touch gesture. */
+  touchAction?: string | undefined;
   /** CSS `transition` shorthand. */
   transition?: string | undefined;
   /** CSS `transition-delay`. */

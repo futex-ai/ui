@@ -19,7 +19,7 @@ table-automation mockups.
   given, with the shared hover / focus-ring / selected treatment.
 - Offer an optional trailing **Add step** button and an edge-tone **legend**.
 - Read all colors, fonts, and radii from `SharedUiThemeProvider`, and size on
-  the shared `ControlSize` scale (`sm` / `md` / `lg`).
+  the shared `ControlSize` scale (`xs` / `sm` / `md` / `lg`).
 
 ## Usage
 
@@ -160,9 +160,10 @@ accent, and `skipped` a faint neutral.
 
 ### Sizes
 
-`size` takes the shared `ControlSize` (`sm` / `md` / `lg`); `md` is the default.
-It scales the card padding, icon chip, connector length, and type scale so the
-graph reads at the same density as the controls beside it.
+`size` takes the shared `ControlSize` (`xs` / `sm` / `md` / `lg`); `md` is the
+default. The graph has no dense design, so `xs` draws the `sm` graph. It scales
+the card padding, icon chip, connector length, and type scale so the graph reads
+at the same density as the controls beside it.
 
 ### Composable primitives
 

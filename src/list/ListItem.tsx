@@ -18,8 +18,14 @@ import {
   useFocusRing,
 } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
+import { useTouchSurface } from "../touchSurface";
 
-import { createListStyles, type ListStyles } from "./listStyles";
+import { useListRowLink } from "./listRowLink";
+import {
+  createListStyles,
+  createTouchListStyles,
+  type ListStyles,
+} from "./listStyles";
 
 export type ListItemProps = {
   /**
@@ -45,10 +51,14 @@ export type ListItemProps = {
    * `leading` and `trailing` slots independently interactive (e.g. a pressable
    * label beside a live toggle in the same row). Use this on a static
    * {@link List} (no `onItemPress`) so the two press targets do not nest —
-   * `List.onItemPress` instead makes the whole row the target.
+   * `List.onItemPress` instead makes the whole row the target. A navigation
+   * row (`List.itemLink`) is a link already, so it ignores `onPress`.
    */
   onPress?: () => void;
-  /** Match the type scale to the list's `size`. Defaults to `md`. */
+  /**
+   * Match the type scale to the list's `size`. Defaults to `md`. At `xs` and
+   * on a touch surface, a pressable title spans the full row height.
+   */
   size?: ControlSize;
   /**
    * Test identifier for the title press target when `onPress` is set, or the
@@ -74,14 +84,38 @@ export function ListItem({
   disabled = false,
   focusIndicator,
   leading,
-  onPress,
+  onPress: requestedOnPress,
   size = "md",
   testID,
   title,
   trailing,
 }: ListItemProps) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(() => createListStyles(theme, size), [theme, size]);
+  // On a touch surface the rows take the touch metrics, whatever the size.
+  const touch = useTouchSurface();
+  const styles = useMemo(
+    () =>
+      touch
+        ? createTouchListStyles(theme, size)
+        : createListStyles(theme, size),
+    [theme, size, touch],
+  );
+  // A navigation row is a link, and a link holds no other control, so its
+  // title cannot be a button. The current row takes the accent title.
+  const rowLink = useListRowLink();
+  const onPress = rowLink == null ? requestedOnPress : undefined;
+  if (rowLink != null && requestedOnPress) {
+    devWarn(
+      "ListItem: a navigation row is a link already, so `onPress` is " +
+        "ignored. Keep a control that a row needs outside its link.",
+    );
+  }
+  const titleStyle = rowLink?.current
+    ? [styles.itemTitle, styles.itemTitleCurrent]
+    : styles.itemTitle;
+  const descriptionStyle = rowLink?.current
+    ? [styles.itemDescription, styles.itemDescriptionCurrent]
+    : styles.itemDescription;
   // The pressable-title column needs an accessible name: an explicit
   // `accessibilityLabel`, or a string/number `title`. A rich-node title with no
   // label leaves the button nameless (WCAG 4.1.2), so warn.
@@ -95,9 +129,9 @@ export function ListItem({
   }
   const mainContent = (
     <>
-      {isText(title) ? <Text style={styles.itemTitle}>{title}</Text> : title}
+      {isText(title) ? <Text style={titleStyle}>{title}</Text> : title}
       {isText(description) ? (
-        <Text style={styles.itemDescription}>{description}</Text>
+        <Text style={descriptionStyle}>{description}</Text>
       ) : (
         (description ?? null)
       )}
@@ -170,6 +204,7 @@ function PressableTitle({
       style={({ pressed }: PressableHoverState) => [
         styles.itemMain,
         styles.itemMainPressable,
+        styles.itemMainTarget,
         pressed && !disabled ? styles.itemMainPressed : null,
         disabled ? styles.itemDisabled : null,
         focus.focusRingVariables,

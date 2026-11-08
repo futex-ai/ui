@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { ReactNode } from "react";
 import { StyleSheet, View } from "../primitives/reactNative";
 
 import {
@@ -12,6 +13,8 @@ import {
   Label,
   Overline,
   Text,
+  TextScaleProvider,
+  type TypographyVariant,
   darkSharedUiTheme,
   useSharedUiTheme,
 } from "../index";
@@ -105,6 +108,59 @@ export const Truncation: Story = {
   ),
 };
 
+const SCALE_ROLES: { text: string; variant: TypographyVariant }[] = [
+  { text: "Heading 1", variant: "h1" },
+  { text: "Heading 2", variant: "h2" },
+  { text: "Heading 3", variant: "h3" },
+  { text: "Heading 4", variant: "h4" },
+  { text: "Heading 5", variant: "h5" },
+  { text: "Body text", variant: "body" },
+  { text: "Label text", variant: "label" },
+  { text: "Caption text", variant: "caption" },
+  { text: "Overline text", variant: "overline" },
+];
+
+/** The nine roles under the scale of the nearest `TextScaleProvider`. */
+function ScaleColumn({
+  children,
+  label,
+}: {
+  children?: ReactNode;
+  label: string;
+}) {
+  return (
+    <View accessibilityLabel={label} role="group" style={styles.stack}>
+      {SCALE_ROLES.map((role) => (
+        <Text key={role.variant} variant={role.variant}>
+          {role.text}
+        </Text>
+      ))}
+      {children}
+    </View>
+  );
+}
+
+/**
+ * The compact scale beside the default one. A surface chooses the compact
+ * scale with `TextScaleProvider`, and one text overrides it with `scale`. The
+ * roles keep their colors, casing, and heading levels.
+ */
+export const CompactScale: Story = {
+  name: "Compact scale",
+  render: () => (
+    <StorySurface>
+      <View style={styles.columns}>
+        <ScaleColumn label="Default scale" />
+        <TextScaleProvider scale="compact">
+          <ScaleColumn label="Compact scale">
+            <Body scale="default">This text keeps the default scale.</Body>
+          </ScaleColumn>
+        </TextScaleProvider>
+      </View>
+    </StorySurface>
+  ),
+};
+
 /**
  * The semantic tokens under a dark preset, plus the one token that only makes
  * sense on a fill: `inverse` resolves to the theme's `onSolid`, so it is white
@@ -139,6 +195,7 @@ export const Dark: Story = {
 };
 
 const styles = StyleSheet.create({
+  columns: { flexDirection: "row", flexWrap: "wrap", gap: 32 },
   solidFill: {
     alignSelf: "flex-start",
     borderRadius: 8,

@@ -29,6 +29,11 @@ export function Sheet({
       : children;
   return (
     <WebModalFrame
+      // `label` names the sheet, as on native. The visible title names it
+      // only when the two are the same.
+      accessibilityLabel={
+        title !== undefined && title !== label ? label : undefined
+      }
       // `hideHeader` only drops the close control on web; the modal frame always
       // shows the title. The full headerless sheet is a native affordance.
       closeLabel={dismissLabel}

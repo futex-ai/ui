@@ -90,6 +90,11 @@
       "react-native": "./dist/dropdown/index.js",
       "import": "./dist/node/dropdown/index.js"
     },
+    "./empty-state": {
+      "types": "./dist/node/empty-state/index.d.ts",
+      "react-native": "./dist/empty-state/index.js",
+      "import": "./dist/node/empty-state/index.js"
+    },
     "./focusRing": {
       "types": "./dist/node/focusRing.d.ts",
       "react-native": "./dist/focusRing.js",
@@ -110,6 +115,11 @@
       "react-native": "./dist/kanban/index.js",
       "import": "./dist/node/kanban/index.js"
     },
+    "./link": {
+      "types": "./dist/node/link/index.d.ts",
+      "react-native": "./dist/link/index.js",
+      "import": "./dist/node/link/index.js"
+    },
     "./list": {
       "types": "./dist/node/list/index.d.ts",
       "react-native": "./dist/list/index.js",
@@ -124,6 +134,16 @@
       "types": "./dist/node/modal/index.d.ts",
       "react-native": "./dist/modal/index.js",
       "import": "./dist/node/modal/index.js"
+    },
+    "./notice": {
+      "types": "./dist/node/notice/index.d.ts",
+      "react-native": "./dist/notice/index.js",
+      "import": "./dist/node/notice/index.js"
+    },
+    "./panel-resize": {
+      "types": "./dist/node/panel-resize/index.d.ts",
+      "react-native": "./dist/panel-resize/index.js",
+      "import": "./dist/node/panel-resize/index.js"
     },
     "./popover": {
       "types": "./dist/node/popover/index.d.ts",
@@ -195,6 +215,11 @@
       "react-native": "./dist/toast/index.js",
       "import": "./dist/node/toast/index.js"
     },
+    "./touch-surface": {
+      "types": "./dist/node/touch-surface/index.d.ts",
+      "react-native": "./dist/touch-surface/index.js",
+      "import": "./dist/node/touch-surface/index.js"
+    },
     "./typography": {
       "types": "./dist/node/typography/index.d.ts",
       "react-native": "./dist/typography/index.js",
@@ -216,11 +241,15 @@
     "clean": "rm -rf dist .dist-web-types storybook-static playwright-report test-results",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md,yml,yaml}\"",
+    "mockups:build": "mokly build --strict --no-changes --out .context/mockups/static",
+    "mockups:check": "npm run mockups:typecheck && npm run mockups:build",
+    "mockups:serve": "mokly serve",
+    "mockups:typecheck": "tsc --noEmit --project docs/mockups/tsconfig.json",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build",
     "storybook:native": "npm run build && cd storybook-native && npm start -- --clear",
     "test": "node --import tsx --test tests/unit/*.test.ts",
-    "test:dist": "FIRNA_TEST_DIST=1 node --import tsx --test tests/unit/distDeclarations.test.ts tests/unit/staticFocusRing.test.ts tests/unit/staticFocusIndicator.test.ts tests/unit/staticDragSelect.test.ts",
+    "test:dist": "FIRNA_TEST_DIST=1 node --import tsx --test tests/unit/distDeclarations.test.ts tests/unit/staticFocusRing.test.ts tests/unit/staticFocusIndicator.test.ts tests/unit/staticDragSelect.test.ts tests/unit/staticMenus.test.ts",
     "test:browser": "playwright test",
     "test:package": "node scripts/package-smoke.mjs",
     "typecheck": "tsc --noEmit --project tsconfig.json",
@@ -268,6 +297,7 @@
     "@fontsource/noto-sans-math": "^5.3.0",
     "@fontsource/noto-sans-symbols-2": "^5.3.0",
     "@gorhom/bottom-sheet": "^5.2.14",
+    "@mokly/mokly": "0.18.0",
     "@playwright/test": "^1.57.0",
     "@storybook/addon-a11y": "^10.4.6",
     "@storybook/react-vite": "^10.1.6",

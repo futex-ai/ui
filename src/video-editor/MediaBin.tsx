@@ -23,6 +23,7 @@ import {
 } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { standardControlSize } from "../controlSizeTables";
 import { type FocusIndicator, useFocusRing } from "../focusRing";
 import { Input } from "../input";
 import { useSharedUiTheme } from "../theme";
@@ -166,7 +167,7 @@ export function MediaBin({
               prefixIcon={Search}
               onChangeText={onQueryChange}
               placeholder="Search media"
-              size={size}
+              size={standardControlSize(size)}
               testID={testID ? `${testID}-search` : undefined}
               value={query}
             />

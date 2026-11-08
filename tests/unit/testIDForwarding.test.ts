@@ -52,6 +52,7 @@ const FORWARDING_FILES = [
   "data-grid/DataGrid.tsx",
   "date/CalendarMonth.tsx",
   "date/DateField.tsx",
+  "date/DateInput.tsx",
   "date/DatePickerOverlay.tsx",
   "date/DatePickerOverlay.web.tsx",
   "date/DateRangeField.tsx",
@@ -62,17 +63,22 @@ const FORWARDING_FILES = [
   "dropdown/ComboboxMultiSelect.tsx",
   "dropdown/ComboboxPopover.tsx",
   "dropdown/ComboboxPopover.web.tsx",
+  "dropdown/DropdownIconBox.tsx",
   "dropdown/DropdownList.tsx",
   "dropdown/DropdownMenu.tsx",
   "dropdown/DropdownPortal.tsx",
   "dropdown/DropdownPortal.web.tsx",
   "dropdown/DropdownSelector.tsx",
   "dropdown/DropdownWebLayer.tsx",
+  "dropdown/ReadOnlySelector.tsx",
+  "empty-state/EmptyState.tsx",
   "heatmap/Heatmap.tsx",
   "input/LabelInfo.tsx",
   "kanban/Kanban.tsx",
   "kanban/KanbanCard.tsx",
   "kanban/KanbanChip.tsx",
+  "link/LinkButton.tsx",
+  "link/LinkTabs.tsx",
   "list/List.tsx",
   "list/ListItem.tsx",
   "loader/Loader.tsx",
@@ -80,8 +86,14 @@ const FORWARDING_FILES = [
   "loader/ProgressRing.tsx",
   "modal/WebModalFrame.tsx",
   "modal/WebModalFrame.web.tsx",
+  "notice/Notice.tsx",
+  "panel-resize/PanelResizeHandle.tsx",
+  "panel-resize/PanelResizeHandle.web.tsx",
   "popover/ContextMenu.tsx",
   "popover/ContextMenu.web.tsx",
+  "popover/InlineMenu.tsx",
+  "popover/InlineMenu.web.tsx",
+  "popover/InlineMenuSheet.tsx",
   "popover/Popover.tsx",
   "popover/PopoverSurface.tsx",
   "popover/PopoverSurface.web.tsx",
@@ -146,6 +158,8 @@ test("forwarding components declare an optional testID prop", () => {
   // The prop is declared in the component file itself unless it lives in a
   // shared props type in the same directory (platform-split components).
   const sharedTypeFiles: Record<string, string> = {
+    // The button's props contract lives beside it in its own module.
+    "button/Button.tsx": "button/buttonProps.ts",
     // Every chart shares one props contract, so `testID` is declared once.
     "chart/AreaChart.tsx": "chart/types.ts",
     "chart/BarChart.tsx": "chart/types.ts",
@@ -158,16 +172,24 @@ test("forwarding components declare an optional testID prop", () => {
       "drag-select/dragSelectableTypes.ts",
     "drag-select/DragSelectableProvider.web.tsx":
       "drag-select/dragSelectableTypes.ts",
+    "dropdown/ComboboxMultiSelect.tsx": "dropdown/comboboxMultiSelectTypes.ts",
     "dropdown/DropdownPortal.tsx": "dropdown/dropdownPortalModel.ts",
     "dropdown/DropdownPortal.web.tsx": "dropdown/dropdownPortalModel.ts",
+    "dropdown/DropdownSelector.tsx": "dropdown/dropdownSelectorProps.ts",
     "modal/WebModalFrame.tsx": "modal/types.ts",
     "modal/WebModalFrame.web.tsx": "modal/types.ts",
+    "panel-resize/PanelResizeHandle.tsx": "panel-resize/panelResizeModel.ts",
+    "panel-resize/PanelResizeHandle.web.tsx":
+      "panel-resize/panelResizeModel.ts",
     "popover/ContextMenu.tsx": "popover/contextMenuModel.ts",
     "popover/ContextMenu.web.tsx": "popover/contextMenuModel.ts",
+    "popover/InlineMenu.tsx": "popover/inlineMenuModel.ts",
+    "popover/InlineMenu.web.tsx": "popover/inlineMenuModel.ts",
     "popover/ResponsivePopover.tsx": "popover/responsivePopoverModel.ts",
     "popover/ResponsivePopover.web.tsx": "popover/responsivePopoverModel.ts",
     "rich-text/RichTextEditor.tsx": "rich-text/richTextTypes.ts",
     "rich-text/RichTextEditor.web.tsx": "rich-text/richTextTypes.ts",
+    "segmented/SegmentedControl.tsx": "segmented/segmentedControlTypes.ts",
     "sheet/Sheet.tsx": "sheet/types.ts",
     "sheet/Sheet.web.tsx": "sheet/types.ts",
   };
@@ -190,7 +212,8 @@ test("input family forwards testID through the spread onto the TextInput", () =>
   // so `testID` reaches the input host without an explicit prop; Input and
   // Textarea pass it straight through. No duplicate testID prop is added.
   const frame = readSource("../../src/input/InputFrame.tsx");
-  assert.match(frame, /Omit<TextInputProps/);
+  const frameProps = readSource("../../src/input/inputFrameProps.ts");
+  assert.match(frameProps, /Omit<TextInputProps/);
   assert.match(frame, /\.\.\.props/);
   const textarea = readSource("../../src/input/Textarea.tsx");
   assert.match(textarea, /\.\.\.props/);

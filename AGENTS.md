@@ -61,6 +61,10 @@ skill at that moment instead of guessing the rule.
   `xtask/`, also run `cargo fmt --all -- --check`,
   `cargo clippy --workspace --all-targets -- -D warnings`, and
   `cargo test --workspace`.
+- Mockup check: `npm run mockups:check` type-checks the Mokly catalogue in
+  `docs/mockups/` and builds it in strict mode into `.context/mockups/static/`.
+  `npm run mockups:serve` serves the catalogue and watches edits. Both are
+  local commands. `npm run verify` and CI do not run them.
 - Complete gate: `cargo xtask check`. It runs `npm run verify`: the format
   check, the unit tests, both typechecks, the build, `test:dist`, the package
   smoke test, the Storybook build, and the browser tests. It stops at the first
@@ -90,7 +94,7 @@ skill at that moment instead of guessing the rule.
   reason and a `scope` to `tests/browser/snapshotOptOuts.ts`. That file is the
   only place to declare an opt-out. The scope `aria` or `screenshot` skips that
   one baseline, and `story` skips both. Commit each baseline that the entry
-  does not skip. The root `README.md` gives the details.
+  does not skip. `docs/development.md` gives the details.
 
 ## Product
 

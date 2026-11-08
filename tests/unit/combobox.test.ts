@@ -83,23 +83,31 @@ test("combobox controls use shared input keyboard navigation", () => {
   const multiSelectSource = readSource(
     "../../src/dropdown/ComboboxMultiSelect.tsx",
   );
+  const stateSource = readSource(
+    "../../src/dropdown/useComboboxMultiSelectState.ts",
+  );
 
-  assert.match(multiSelectSource, /useComboboxNavigation/);
+  assert.match(stateSource, /useComboboxNavigation/);
   assert.match(multiSelectSource, /navigation\.keyProps/);
   assert.match(multiSelectSource, /ComboboxPopover/);
 });
 
 test("combobox multi-select uses theme-driven selected chip colors", () => {
   const source = readSource("../../src/dropdown/ComboboxMultiSelect.tsx");
+  const stylesSource = readSource(
+    "../../src/dropdown/comboboxMultiSelectStyles.ts",
+  );
 
   assert.match(source, /useSharedUiTheme/);
-  assert.match(source, /primarySoft/);
-  assert.match(source, /primaryDeep/);
+  assert.match(stylesSource, /primarySoft/);
+  assert.match(stylesSource, /primaryDeep/);
   assert.match(source, /placeholderTextColor=\{theme\.colors\.placeholder\}/);
 });
 
 test("combobox empty state renders before optional footer rows", () => {
-  const source = readSource("../../src/dropdown/ComboboxMultiSelect.tsx");
+  const source = readSource(
+    "../../src/dropdown/comboboxMultiSelectEntries.tsx",
+  );
 
   assert.match(source, /const optionRows: DropdownListEntry\[\]/);
   assert.match(source, /optionRows\.length > 0/);
@@ -109,6 +117,9 @@ test("combobox empty state renders before optional footer rows", () => {
 
 test("combobox multi-select wires a labelled field surface", () => {
   const source = readSource("../../src/dropdown/ComboboxMultiSelect.tsx");
+  const stateSource = readSource(
+    "../../src/dropdown/useComboboxMultiSelectState.ts",
+  );
 
   // Label names the combobox input via `aria-labelledby` (not an aria-label copy)
   // so the accessible name IS the visible label text — WCAG 2.5.3 / 1.3.1.
@@ -125,7 +136,7 @@ test("combobox multi-select wires a labelled field surface", () => {
   assert.match(source, /<Text aria-hidden style=\{styles\.required\}>/);
   // Error wins over the primary focused border, which `focusIndicator="none"`
   // drops along with the ring. Hint + error are referenced by a literal `aria-describedby`.
-  assert.match(source, /invalid = invalidProp \|\| Boolean\(error\)/);
+  assert.match(stateSource, /invalid = invalidProp \|\| Boolean\(error\)/);
   assert.match(
     source,
     /invalid\s*\? styles\.controlInvalid\s*:\s*focus\.focused && focus\.indicator !== "none"\s*\? styles\.controlActive/,
@@ -138,11 +149,14 @@ test("combobox multi-select wires a labelled field surface", () => {
   assert.match(source, /\.\.\.focus\.focusTargetProps/);
   assert.match(source, /aria-invalid=\{invalid\}/);
   assert.match(source, /accessibilityRole="alert"/);
-  assert.match(source, /"aria-describedby": describedBy/);
+  assert.match(stateSource, /"aria-describedby": describedBy/);
 });
 
 test("combobox multi-select reveals supplementary help from a labelInfo button", () => {
   const source = readSource("../../src/dropdown/ComboboxMultiSelect.tsx");
+  const stateSource = readSource(
+    "../../src/dropdown/useComboboxMultiSelectState.ts",
+  );
 
   // The shared ⓘ affordance is reused from the input package, not re-built.
   assert.match(source, /import \{[^}]*LabelInfo[^}]*\} from "\.\.\/input"/);
@@ -151,10 +165,10 @@ test("combobox multi-select reveals supplementary help from a labelInfo button",
     /\{labelInfo \? \([\s\S]*?<LabelInfo[\s\S]*?info=\{labelInfo\}[\s\S]*?\) : null\}/,
   );
   // The button's default accessible name derives from the visible label.
-  assert.match(source, /More information about \$\{label\}/);
+  assert.match(stateSource, /More information about \$\{label\}/);
   // `labelInfo` without a `label` has nowhere to anchor: a dev-warned no-op.
-  assert.match(source, /if \(labelInfo && !label\)/);
-  assert.match(source, /devWarn\(/);
+  assert.match(stateSource, /if \(labelInfo && !label\)/);
+  assert.match(stateSource, /devWarn\(/);
 });
 
 function readSource(relativePath: string) {

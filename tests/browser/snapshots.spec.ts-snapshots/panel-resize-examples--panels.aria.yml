@@ -1,0 +1,13 @@
+- switch "Lock panels"
+- text: Lock panels
+- button "Hide project list"
+- group "Files":
+  - text: Projects
+  - separator "Resize project list"
+  - text: Billing portal
+  - checkbox "InvoiceTable.tsx"
+  - checkbox "useInvoices.ts"
+  - checkbox "invoices.test.ts"
+  - text: Changes
+  - separator "Resize changes panel"
+  - text: "/Project list: \\d+ px · Changes: \\d+ px Proposals: 0 · Saves: 0 · Last saved: none Selected files: 0/"

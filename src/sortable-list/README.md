@@ -25,7 +25,8 @@ on one axis.
   live-region announcements, plus a lifted floating clone and a dashed drop
   preview under the pointer.
 - Expose `list` / `listitem` semantics and the shared `ControlSize` densities,
-  driven by shared theme tokens.
+  driven by shared theme tokens. The list has no dense design, so `xs` draws
+  the `sm` rows.
 - Exchange items with sibling lists through the `SortableGroups` coordinator —
   see [Groups](#groups-dragging-between-lists).
 

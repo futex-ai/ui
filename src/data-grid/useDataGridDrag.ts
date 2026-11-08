@@ -10,34 +10,33 @@
  */
 import { useCallback, useEffect, useRef, type MutableRefObject } from "react";
 
-import { autoScrollDelta } from "../dragGesture";
+import { attachPointerDragListeners } from "../dragGesture";
 
 import { announceGrid } from "./dataGridAnnounce";
 import {
-  attachDataGridDragListeners,
-  findGridScrollers,
   hitTestDataGrid,
   selectionBoxRect,
   type DataGridCellNode,
   type DataGridNodeMap,
 } from "./dataGridDragDom";
 import {
+  TAP_MOVE_THRESHOLD,
+  dataGridDragFocus,
+  dataGridMarqueeBox,
+  dataGridPointFromEvent,
+  type DataGridDragBox,
+  type DataGridDragMode,
+} from "./dataGridDragModel";
+import {
   cellKey,
   cellRefEquals,
   selectionCount,
 } from "./dataGridSelectionModel";
 import type { DataGridCellRef, DataGridSelection } from "./types";
+import { useDataGridAutoScroll } from "./useDataGridAutoScroll";
 
-export type DataGridDragBox = {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-};
-
-type DragMode = "cell" | "row" | "column";
 type Session = {
-  mode: DragMode;
+  mode: DataGridDragMode;
   anchor: DataGridCellRef;
   lastFocus: DataGridCellRef;
   /** Pointer position at press, so any real movement counts as a drag. */
@@ -48,21 +47,6 @@ type Session = {
   /** Fired on release if the press never became a drag — a plain click. */
   onTap?: () => void;
 };
-
-/** Pointer travel (px) beyond which a press is a drag, not a tap-to-edit click. */
-const TAP_MOVE_THRESHOLD = 4;
-
-/** Read the viewport point from a (synthetic or native) pointer event. */
-function pointFromEvent(rawEvent: unknown): { x: number; y: number } | null {
-  const event = rawEvent as {
-    clientX?: number;
-    clientY?: number;
-    nativeEvent?: { clientX?: number; clientY?: number };
-  };
-  const x = event.clientX ?? event.nativeEvent?.clientX;
-  const y = event.clientY ?? event.nativeEvent?.clientY;
-  return typeof x === "number" && typeof y === "number" ? { x, y } : null;
-}
 
 type PointerLike = {
   button?: number;
@@ -89,7 +73,6 @@ export function useDataGridDrag(options: UseDataGridDragOptions) {
 
   const sessionRef = useRef<Session | null>(null);
   const removeRef = useRef<(() => void) | null>(null);
-  const rafRef = useRef<number | null>(null);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
 
   const announceCount = useCallback((selection: DataGridSelection) => {
@@ -110,35 +93,22 @@ export function useDataGridDrag(options: UseDataGridDragOptions) {
     const anchor = cellNodesRef.current.get(cellKey(session.anchor))?.node;
     const focus = cellNodesRef.current.get(cellKey(session.lastFocus))?.node;
     if (anchor?.getBoundingClientRect && focus?.getBoundingClientRect) {
-      const g = grid.getBoundingClientRect();
-      const a = anchor.getBoundingClientRect();
-      const f = focus.getBoundingClientRect();
-      const left = Math.min(a.left, f.left);
-      const top = Math.min(a.top, f.top);
-      onDragBox({
-        left: left - g.left,
-        top: top - g.top,
-        width: Math.max(a.right, f.right) - left,
-        height: Math.max(a.bottom, f.bottom) - top,
-      });
+      onDragBox(
+        dataGridMarqueeBox(
+          grid.getBoundingClientRect(),
+          anchor.getBoundingClientRect(),
+          focus.getBoundingClientRect(),
+        ),
+      );
     } else {
       onDragBox(selectionBoxRect(grid));
     }
   }, []);
 
   const focusFrom = useCallback(
-    (mode: DragMode, hit: { rowId?: string; columnId?: string }) => {
+    (mode: DataGridDragMode, hit: { rowId?: string; columnId?: string }) => {
       const { rowIds, columnIds } = optionsRef.current;
-      if (mode === "cell" && hit.rowId && hit.columnId) {
-        return { rowId: hit.rowId, columnId: hit.columnId };
-      }
-      if (mode === "row" && hit.rowId) {
-        return { rowId: hit.rowId, columnId: columnIds[columnIds.length - 1] };
-      }
-      if (mode === "column" && hit.columnId) {
-        return { rowId: rowIds[rowIds.length - 1], columnId: hit.columnId };
-      }
-      return null;
+      return dataGridDragFocus(mode, hit, rowIds, columnIds);
     },
     [],
   );
@@ -186,50 +156,20 @@ export function useDataGridDrag(options: UseDataGridDragOptions) {
     [announceCount, focusFrom, updateBox],
   );
 
-  const stopAutoScroll = useCallback(() => {
-    if (
-      rafRef.current !== null &&
-      typeof cancelAnimationFrame !== "undefined"
-    ) {
-      cancelAnimationFrame(rafRef.current);
-    }
-    rafRef.current = null;
-  }, []);
-
-  const startAutoScroll = useCallback(() => {
-    if (
-      rafRef.current !== null ||
-      typeof requestAnimationFrame === "undefined"
-    ) {
-      return;
-    }
-    const step = () => {
-      rafRef.current = null;
-      const point = lastPointRef.current;
-      const grid = optionsRef.current.gridNodeRef.current;
-      if (!sessionRef.current || !point || !grid) {
-        return;
-      }
-      const { horizontal, vertical } = findGridScrollers(grid);
-      const scroller = vertical ?? grid;
-      const { dx, dy } = autoScrollDelta(
-        point,
-        scroller.getBoundingClientRect(),
-      );
-      if (dx === 0 && dy === 0) {
-        return; // out of the edge zone — stop until the next move restarts it
-      }
-      if (horizontal && dx !== 0) {
-        horizontal.scrollLeft += dx;
-      }
-      if (vertical && dy !== 0) {
-        vertical.scrollTop += dy;
-      }
-      extend(point);
-      rafRef.current = requestAnimationFrame(step);
-    };
-    rafRef.current = requestAnimationFrame(step);
-  }, [extend]);
+  // The drag's last point, or `null` once it ends, which stops the loop.
+  const readPoint = useCallback(
+    () => (sessionRef.current ? lastPointRef.current : null),
+    [],
+  );
+  const readGrid = useCallback(
+    () => optionsRef.current.gridNodeRef.current,
+    [],
+  );
+  const { startAutoScroll, stopAutoScroll } = useDataGridAutoScroll(
+    readGrid,
+    readPoint,
+    extend,
+  );
 
   const endDrag = useCallback(() => {
     removeRef.current?.();
@@ -242,7 +182,7 @@ export function useDataGridDrag(options: UseDataGridDragOptions) {
 
   const beginSession = useCallback(
     (
-      mode: DragMode,
+      mode: DataGridDragMode,
       anchor: DataGridCellRef,
       focus: DataGridCellRef,
       rawEvent: unknown,
@@ -265,7 +205,7 @@ export function useDataGridDrag(options: UseDataGridDragOptions) {
         mode,
         anchor,
         lastFocus: focus,
-        startPoint: pointFromEvent(rawEvent),
+        startPoint: dataGridPointFromEvent(rawEvent),
         extended: false,
         onTap,
       };
@@ -276,7 +216,7 @@ export function useDataGridDrag(options: UseDataGridDragOptions) {
       }
       updateBox();
       removeRef.current?.();
-      removeRef.current = attachDataGridDragListeners({
+      removeRef.current = attachPointerDragListeners({
         onMove: (x, y) => {
           extend({ x, y });
           startAutoScroll();

@@ -4,14 +4,15 @@ import test from "node:test";
 
 test("date field threads the shared size scale to its trigger", () => {
   const source = readSource("../../src/date/DateField.tsx");
+  const inputSource = readSource("../../src/date/DateInput.tsx");
 
   // Opt-in size prop, default md, on both the labelled field and the bare input.
   assert.match(source, /size\?: ControlSize;/);
   assert.match(source, /size = "md"/);
   assert.match(source, /createDateFieldStyles\(theme, size\)/);
   // The size flows down into the platform triggers.
-  assert.match(source, /<WebTrigger[\s\S]*size=\{size\}/);
-  assert.match(source, /<NativeTrigger[\s\S]*size=\{size\}/);
+  assert.match(inputSource, /<WebTrigger[\s\S]*size=\{size\}/);
+  assert.match(inputSource, /<NativeTrigger[\s\S]*size=\{size\}/);
 });
 
 test("date range field threads the size to both endpoints", () => {
@@ -47,7 +48,10 @@ test("date trigger styles size the box from the shared input scale", () => {
 test("native date trigger scales its icons with the size", () => {
   const source = readSource("../../src/date/DateTrigger.tsx");
 
-  assert.match(source, /const iconSize = inputIconSize\(size\)/);
+  assert.match(
+    source,
+    /const iconSize = touch \? touchControlMetrics\.iconSize : inputIconSize\(size\)/,
+  );
   // Both the clear (✕) and the calendar glyph use the per-size diameter.
   assert.match(
     source,

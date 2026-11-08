@@ -10,6 +10,7 @@
 import type { DimensionValue } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { withDenseAsSmall } from "../controlSizeTables";
 
 /**
  * A `0..1` fraction as a percentage dimension. A template literal widens to
@@ -42,38 +43,39 @@ export type VideoEditorSizing = {
   rowHeight: number;
 };
 
-export const videoEditorSizing: Record<ControlSize, VideoEditorSizing> = {
-  sm: {
-    buttonSize: 26,
-    fontSize: 11,
-    gap: 6,
-    iconSize: 14,
-    knobSize: 12,
-    meterThickness: 5,
-    padding: 8,
-    rowHeight: 26,
-    trackHeight: 5,
-  },
-  md: {
-    buttonSize: 32,
-    fontSize: 12,
-    gap: 8,
-    iconSize: 16,
-    knobSize: 14,
-    meterThickness: 6,
-    padding: 12,
-    rowHeight: 30,
-    trackHeight: 6,
-  },
-  lg: {
-    buttonSize: 38,
-    fontSize: 13,
-    gap: 10,
-    iconSize: 18,
-    knobSize: 16,
-    meterThickness: 8,
-    padding: 14,
-    rowHeight: 34,
-    trackHeight: 8,
-  },
-};
+export const videoEditorSizing: Record<ControlSize, VideoEditorSizing> =
+  withDenseAsSmall({
+    sm: {
+      buttonSize: 26,
+      fontSize: 11,
+      gap: 6,
+      iconSize: 14,
+      knobSize: 12,
+      meterThickness: 5,
+      padding: 8,
+      rowHeight: 26,
+      trackHeight: 5,
+    },
+    md: {
+      buttonSize: 32,
+      fontSize: 12,
+      gap: 8,
+      iconSize: 16,
+      knobSize: 14,
+      meterThickness: 6,
+      padding: 12,
+      rowHeight: 30,
+      trackHeight: 6,
+    },
+    lg: {
+      buttonSize: 38,
+      fontSize: 13,
+      gap: 10,
+      iconSize: 18,
+      knobSize: 16,
+      meterThickness: 8,
+      padding: 14,
+      rowHeight: 34,
+      trackHeight: 8,
+    },
+  });

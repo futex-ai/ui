@@ -15,6 +15,11 @@
  *
  * On native there is no keyboard: the hook's document listener is inert (there is
  * no `document`) and the sheet's rows are tapped directly.
+ *
+ * Inside a `TouchSurface` it opens the phone menu sheet instead, on web and
+ * native: touch rows, no active row on open, and the keys on the focused list
+ * rather than on the document, so the sheet's close control keeps Enter.
+ * Outside a touch surface both paths stay as described above.
  */
 import { useCallback, useId, useMemo } from "react";
 import type { ReactNode, RefObject } from "react";
@@ -27,7 +32,10 @@ import {
   useDropdownSelectorNavigation,
 } from "../dropdown";
 import type { DropdownHighlightVariant, DropdownListEntry } from "../dropdown";
+import type { ControlSize } from "../controlSize";
+import { useTouchSurface } from "../touchSurface";
 
+import { MenuSheet } from "./MenuSheet";
 import { ResponsivePopover } from "./ResponsivePopover";
 
 /** State handed to a {@link ResponsiveMenu} `entries` factory. */
@@ -79,6 +87,11 @@ export type ResponsiveMenuProps = {
   open: boolean;
   /** Optional search/control slot pinned above the header and rows. */
   search?: ReactNode;
+  /**
+   * Row size, for example `"xs"` for 26px rows. Inside a `TouchSurface` the
+   * rows take the touch metrics and keep the title weight of this size.
+   */
+  size?: ControlSize;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
   /** Override the visible native title when it should differ from `label`. */
@@ -113,11 +126,13 @@ export function ResponsiveMenu({
   onClose,
   open,
   search,
+  size,
   testID,
   title,
   zIndex,
 }: ResponsiveMenuProps) {
   const listId = useId();
+  const touch = useTouchSurface();
   const rawEntries =
     typeof entries === "function" ? entries({ close: onClose }) : entries;
   const menuEntries = useMemo(
@@ -128,10 +143,12 @@ export function ResponsiveMenu({
   // row regardless of focus, so ↑/↓/Enter work despite focus resting on the
   // dialog surface. `onOpen` is unreachable — the body only mounts while open —
   // so it is a no-op.
+  // The touch sheet keeps its keys on the focused list, so the document
+  // listener stays off there and cannot take Enter from the close control.
   const { activeId: navigationActiveId, setActiveId: setNavigationActiveId } =
     useDropdownSelectorNavigation({
       entries: menuEntries,
-      interactive: hasSelectableDropdownMenuEntry(menuEntries),
+      interactive: !touch && hasSelectableDropdownMenuEntry(menuEntries),
       onClose,
       onOpen: noop,
       open,
@@ -146,6 +163,29 @@ export function ResponsiveMenu({
     },
     [onActiveIdChange, setNavigationActiveId],
   );
+
+  if (touch) {
+    return (
+      <MenuSheet
+        activeId={activeId}
+        dismissLabel={dismissLabel}
+        entries={menuEntries}
+        footer={footer}
+        header={header}
+        hideHeader={hideSheetHeader}
+        highlightVariant={highlightVariant}
+        label={label}
+        maxHeight={maxHeight}
+        onActiveIdChange={onActiveIdChange}
+        onClose={onClose}
+        open={open}
+        search={search}
+        size={size}
+        testID={testID}
+        title={title}
+      />
+    );
+  }
 
   return (
     <ResponsivePopover
@@ -176,6 +216,7 @@ export function ResponsiveMenu({
           onActiveIdChange={setActiveRowId}
           onClose={close}
           search={search}
+          size={size}
         />
       )}
     </ResponsivePopover>

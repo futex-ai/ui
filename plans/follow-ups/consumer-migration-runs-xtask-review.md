@@ -19,7 +19,7 @@
   - Step 7 of its Juno section says: "Run Juno app tests, typecheck, browser smoke tests, `cargo xtask check`, commit, push, and run `cargo xtask review`."
   - A user decision of the earlier `agents-md` migration chose the shared rule: the review uses the `implementation-review` skill instead of `cargo xtask review`. Commit `e601a86` records that decision, and pull request #177 merged it on 2026-10-21.
   - The `finish-work` skill runs the review with the `implementation-review` skill after the push.
-  - The command `cargo xtask review` stays for manual use. The root `README.md` lists it as the read-only AI review wrapper that the accounting repository also uses.
+  - The command `cargo xtask review` stays for manual use. `docs/development.md` lists it as the read-only AI review wrapper that the accounting repository also uses.
   - The command takes its model from the Codex configuration of the reviewer, so it runs with any Codex provider.
 - **Problem:** Both steps end with `cargo xtask review`, but the user chose the review of the `implementation-review` skill instead. So the guide gives each consumer repository a replaced step.
 - **Impact if no action:** Agents in the consumer repositories follow a review step that the shared rules replaced. The guide also disagrees with the `finish-work` skill.

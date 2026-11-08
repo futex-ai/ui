@@ -59,18 +59,28 @@ shared `CalendarMonth` itself and the wheel variant renders our own
 
 ## Sizes
 
-`size` (`sm` / `md` / `lg`, default `md`) sizes the **trigger** from the shared
-`ControlSize` scale on `DateField`, `DateInput`, and `DateRangeField`. The web
-trigger is an `InputFrame`, so it scales exactly like the text input; the native
-trigger mirrors the same box height, padding, value text, and icon diameter — so
-a date field and a text input stay the same height in a form. The opened picker
-(calendar popover or wheel sheet) keeps its natural size. In particular, the web
-calendar stays at its compact `280px` width even when its field stretches across
-a wide form; it only shrinks when the viewport cannot fit that width.
+`size` (`xs` / `sm` / `md` / `lg`, default `md`) sizes the **trigger** from the
+shared `ControlSize` scale on `DateField`, `DateInput`, and `DateRangeField`.
+The web trigger is an `InputFrame`, so it scales exactly like the text input;
+the native trigger mirrors the same box height, padding, value text, and icon
+diameter — so a date field and a text input stay the same height in a form. The
+opened picker (calendar popover or wheel sheet) keeps its natural size. In
+particular, the web calendar stays at its compact `280px` width even when its
+field stretches across a wide form; it only shrinks when the viewport cannot fit
+that width.
 
 ```tsx
 <DateField label="Year ends" onChange={setIso} size="sm" value={iso} />
 ```
+
+At `xs` the trigger is a 26px frame around a 24px input with 13px text, like the
+`xs` text field. The tap trigger, which native and the web wheel variant use,
+keeps its Clear action in the text field's 24 by 24px action box. Inside a
+`TouchSurface`, the trigger takes the touch metrics, whatever its `size`: the
+web trigger is the touch text field (a 44px input in a 46px frame), and the
+native trigger is a 46px box with 16px text and 18px icons whose open button
+fills the row height and whose Clear action is a 44 by 44px box with no hit
+slop. `createTouchDateFieldStyles(theme)` builds the native trigger styles.
 
 ## Clearing
 
@@ -131,7 +141,8 @@ with `labelInfoIcon` and the button's accessible name with `labelInfoLabel`
 - `types.ts` — shared overlay prop contract (`DatePickerOverlayProps`).
 - `dateFieldLayers.ts` — the default web calendar portal layer and optional
   z-index override.
-- `DateField.tsx` — `DateField`, `DateInput`, and the shared `FieldLabel`.
+- `DateField.tsx` — `DateField` and the shared `FieldLabel`.
+- `DateInput.tsx` — `DateInput`, the trigger with its own single-date picker.
 - `DateTrigger.tsx` — the platform triggers (`WebTrigger`, `NativeTrigger` tap
   target) and the `triggerBorder` helper. `WebTrigger` renders the shared
   `InputFrame` (`@firna/ui/input`) for the editable box — the same chrome, focus
@@ -260,8 +271,9 @@ locales.
 `dateMath.ts` (including the wheel's `clampDay` / `wheelYearRange` helpers),
 `monthGrid.ts`, and `dateFieldLayers.ts` are unit-tested with the repo's Node
 test runner. Both the calendar and wheel variants are exercised by the Storybook
-Playwright spec (`tests/browser/storybook.spec.ts`) against the `Date/Examples`
-stories — covering the calendar's compact width below a wider trigger, month
+Playwright specs (`tests/browser/date-calendar.spec.ts`,
+`tests/browser/date-clear.spec.ts`, and `tests/browser/date-wheel.spec.ts`)
+against the `Date/Examples` stories — covering the calendar's compact width below a wider trigger, month
 navigation, and day picking, plus draft staging/commit, day-and-bounds
 clamping, Cancel, clearing, and the range field for the wheel. The editable
 data-grid story additionally verifies that web date cells open the inline

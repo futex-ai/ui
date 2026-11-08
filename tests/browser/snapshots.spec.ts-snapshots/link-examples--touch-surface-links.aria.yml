@@ -1,0 +1,27 @@
+- link "Projects":
+  - /url: /projects
+- link "All activity":
+  - /url: /atlas/activity
+- navigation "Project":
+  - link "Overview":
+    - /url: /atlas
+  - link /Files \d+/:
+    - /url: /atlas/files
+  - link "Activity":
+    - /url: /atlas/activity
+  - link "Settings":
+    - /url: /atlas/settings
+- navigation "Quarter":
+  - link "Q1":
+    - /url: /reports/q1
+  - link "Q2":
+    - /url: /reports/q2
+  - link "Q3":
+    - /url: /reports/q3
+  - link "Q4":
+    - /url: /reports/q4
+  - link "Year":
+    - /url: /reports/year
+  - link "Archive":
+    - /url: /reports/archive
+- text: "Navigations: none"

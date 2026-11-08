@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 test("dropdown rows expose an overridable accessible name", () => {
-  const listSource = readSource("../../src/dropdown/DropdownList.tsx");
+  const listSource = readSource("../../src/dropdown/DropdownRow.tsx");
 
   // The row's accessible name is overridable per entry and defaults to the
   // visible label, so callers can disambiguate duplicates or pin a
@@ -16,17 +16,20 @@ test("dropdown rows expose an overridable accessible name", () => {
 
 test("selector trigger name is value-independent", () => {
   const selectorSource = readSource("../../src/dropdown/DropdownSelector.tsx");
+  const modelSource = readSource("../../src/dropdown/dropdownSelectorModel.ts");
 
   // The trigger name resolves through selectorTriggerName (triggerLabel wins,
   // else the composed default), so getByRole("button", { name }) stays stable
   // across selections while the value stays visible in the trigger text.
-  assert.match(selectorSource, /function selectorTriggerName\(/);
-  assert.match(selectorSource, /return triggerLabel \?\? fallback;/);
+  assert.match(modelSource, /function selectorTriggerName\(/);
+  assert.match(modelSource, /return triggerLabel \?\? fallback;/);
   assert.match(selectorSource, /accessibilityLabel=\{triggerName\}/);
 });
 
 test("selector options forward an overridable accessible name", () => {
-  const selectorSource = readSource("../../src/dropdown/DropdownSelector.tsx");
+  const selectorSource = readSource(
+    "../../src/dropdown/dropdownSelectorModel.ts",
+  );
 
   assert.match(
     selectorSource,
@@ -35,7 +38,12 @@ test("selector options forward an overridable accessible name", () => {
 });
 
 test("selector reveals supplementary help from a labelInfo button", () => {
-  const selectorSource = readSource("../../src/dropdown/DropdownSelector.tsx");
+  const selectorSource = readSource(
+    "../../src/dropdown/dropdownSelectorParts.tsx",
+  );
+  const stateSource = readSource(
+    "../../src/dropdown/useDropdownSelectorState.ts",
+  );
   const stylesSource = readSource(
     "../../src/dropdown/dropdownSelectorStyles.ts",
   );
@@ -54,8 +62,8 @@ test("selector reveals supplementary help from a labelInfo button", () => {
   // The button's default accessible name derives from the visible label.
   assert.match(selectorSource, /More information about \$\{label\}/);
   // `labelInfo` without a `label` has nowhere to anchor: a dev-warned no-op.
-  assert.match(selectorSource, /if \(labelInfo && !label\)/);
-  assert.match(selectorSource, /devWarn\(/);
+  assert.match(stateSource, /if \(labelInfo && !label\)/);
+  assert.match(stateSource, /devWarn\(/);
   assert.match(stylesSource, /labelRow: \{[\s\S]*?flexDirection: "row"/);
 });
 

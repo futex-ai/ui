@@ -48,6 +48,10 @@ though it is now cross-platform.
   out of the tab order and the accessibility tree.
   On web, the close button shows a focus-visible ring according to the theme's
   `focusIndicator`, overridable with the frame's `focusIndicator` prop.
+- Name the dialog by its title, or by `accessibilityLabel` when the name must
+  differ from the visible title.
+- Make the close button a 44 by 44px target inside a `TouchSurface`, on web and
+  native, and keep its size elsewhere.
 - Apply close policy to Escape, backdrop presses, the close button, and close
   requests. Route Escape to the topmost overlay only, including dropdowns and
   popovers opened inside the top dialog.
@@ -142,6 +146,8 @@ npm run test:browser
 ### Key Code
 
 - `WebModalFrame.web.tsx` - web dialog presentation and stack integration.
+- `WebModalHeader.tsx` - the web title row and close button, which the in-place
+  menu sheet of `src/popover` shares.
 - `WebModalFrame.tsx` - native RN `Modal` frame (sheet + dialog).
 - `webModalStackModel.ts` - pure stack order, opener inheritance, focus-return,
   background-membership, and page-lock rules.

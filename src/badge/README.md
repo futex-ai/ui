@@ -7,7 +7,7 @@ themed tone.
 ## Responsibilities
 
 - Render a content-hugging rounded pill around one short label, sized on the
-  shared `ControlSize` scale (`sm` / `md` / `lg`).
+  shared `ControlSize` scale (`xs` / `sm` / `md` / `lg`).
 - Carry a semantic status color through a `tone` — `neutral` (default),
   `primary`, `warning`, or `danger` — in a quiet `soft` fill, a filled `solid`
   fill, or a bordered `outline` chip.
@@ -94,9 +94,10 @@ guarantees the 4.5:1 AA contract for its built-in tones, so make sure a custom
 
 ### Sizes
 
-`size` takes the shared `ControlSize` (`sm` / `md` / `lg`); `md` is the default.
-It scales the label type scale and the pill padding so a badge reads at the same
-density as the control beside it:
+`size` takes the shared `ControlSize` (`xs` / `sm` / `md` / `lg`); `md` is the
+default. The badge has no dense design, so `xs` draws the `sm` badge. It scales
+the label type scale and the pill padding so a badge reads at the same density
+as the control beside it:
 
 ```tsx
 <Badge tone="primary" size="sm">

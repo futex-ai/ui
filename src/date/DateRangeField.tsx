@@ -8,7 +8,8 @@ import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
 
 import { createDateFieldStyles } from "./dateFieldStyles";
-import { DateInput, FieldLabel } from "./DateField";
+import { FieldLabel } from "./DateField";
+import { DateInput } from "./DateInput";
 import { dateFieldZIndex } from "./dateFieldLayers";
 import { compareIso, DateRange } from "./dateMath";
 import { DatePickerVariant } from "./types";
@@ -49,7 +50,7 @@ export type DateRangeFieldProps = {
   clearable?: boolean;
   /** Calendar grid (default) or spinning day/month/year wheel bottom sheet. */
   variant?: DatePickerVariant;
-  /** Control density: `sm`, `md` (default), or `lg`. */
+  /** Control density. Defaults to `md`. */
   size?: ControlSize;
   /** z-index for open trigger wrappers and web calendar portals. */
   zIndex?: number;

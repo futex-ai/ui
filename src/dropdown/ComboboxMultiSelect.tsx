@@ -1,104 +1,18 @@
 /** Input-backed chip multi-select for combobox forms. */
-import { Check, IconComponent } from "../primitives/icons";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "../primitives/reactNative";
+import { useMemo } from "react";
+import { Pressable, Text, TextInput, View } from "../primitives/reactNative";
 
-import { announce } from "../announcer";
-import type { ControlSize } from "../controlSize";
-import { devWarn } from "../devWarn";
-import { type FocusIndicator, useFocusRing } from "../focusRing";
-import { inputSizeTokens, LabelInfo } from "../input";
+import { useFocusRing } from "../focusRing";
+import { LabelInfo } from "../input";
 import { useSharedUiTheme } from "../theme";
-import type { SharedUiTheme } from "../theme";
+import { useTouchSurface } from "../touchSurface";
 
 import { ComboboxPopover } from "./ComboboxPopover";
-import {
-  DropdownList,
-  DropdownListEntry,
-  dropdownRowDomId,
-} from "./DropdownList";
-import type { DropdownHighlightVariant } from "./DropdownList";
-import { comboboxInputA11y, filterComboboxOptions } from "./comboboxModel";
-import { useComboboxNavigation } from "./useComboboxNavigation";
-
-export type ComboboxMultiSelectOption = {
-  color?: string;
-  label: string;
-  mark?: string;
-  value: string;
-};
-
-export type ComboboxMultiSelectProps = {
-  /**
-   * Accessible name for the search input. When a `label` is set the input is
-   * already named from it (via `aria-labelledby`); pass this to name the bare,
-   * label-less variant, or to override the name where `aria-labelledby` is not
-   * honoured (e.g. iOS, which does not map it). Mirrors `Input`.
-   */
-  accessibilityLabel?: string;
-  /** Focus the search input when the control mounts. */
-  autoFocus?: boolean;
-  /**
-   * Corner radius (px) of the control box. Defaults to `theme.radii.md`; pass
-   * `0` for square corners (e.g. an in-grid cell editor that must match a
-   * square container).
-   */
-  borderRadius?: number;
-  /** Validation message shown below the control; turns its border rose. */
-  error?: string | null;
-  /**
-   * How the control shows keyboard focus: the shared `ring` glow, the browser's
-   * `outline`, or `none` — no glow, no outline, and no focus border, which
-   * leaves the caller to show focus some other way (WCAG 2.1 — 2.4.7 Focus
-   * Visible, AA). Defaults to the theme's `focusIndicator`.
-   */
-  focusIndicator?: FocusIndicator;
-  footer?: string;
-  /** How the keyboard-focused row is highlighted. Defaults to `"solid"`. */
-  highlightVariant?: DropdownHighlightVariant;
-  /** Helper text shown below the control. */
-  hint?: string;
-  /** Force the rose invalid border independent of `error`. */
-  invalid?: boolean;
-  /** Field label shown above the control. Omit for a bare, label-less control. */
-  label?: string;
-  /**
-   * Supplementary help text revealed by an ⓘ button after the label. Pressing
-   * the button opens a small bubble with this text (built on `Popover`);
-   * screen-reader users get it from the button's description. Unlike `hint` it
-   * is not shown until requested. Requires a `label` to anchor the button.
-   */
-  labelInfo?: string;
-  /** Icon for the {@link labelInfo} button. Defaults to the lucide `Info` glyph. */
-  labelInfoIcon?: IconComponent;
-  /**
-   * Accessible name for the {@link labelInfo} button. Defaults to
-   * `More information about {label}`.
-   */
-  labelInfoLabel?: string;
-  onChange: (values: string[]) => void;
-  options: ComboboxMultiSelectOption[];
-  placeholder?: string;
-  /** Marks the field required (adds a `*` to the label, wires `aria-required`). */
-  required?: boolean;
-  /**
-   * Keep the control at one fixed-height row instead of wrapping selected chips,
-   * showing the first selection plus a `+N` summary for the remainder. Useful
-   * inside dense table and data-grid cells.
-   */
-  singleLine?: boolean;
-  /** Control density. Defaults to `md`, matching the shared input size scale. */
-  size?: ControlSize;
-  /** Test identifier forwarded to the root element (`data-testid` on web). */
-  testID?: string;
-  values: string[];
-};
+import { DropdownList } from "./DropdownList";
+import { comboboxInputA11y } from "./comboboxModel";
+import { createComboboxMultiSelectStyles } from "./comboboxMultiSelectStyles";
+import type { ComboboxMultiSelectProps } from "./comboboxMultiSelectTypes";
+import { useComboboxMultiSelectState } from "./useComboboxMultiSelectState";
 
 export function ComboboxMultiSelect({
   accessibilityLabel,
@@ -128,106 +42,53 @@ export function ComboboxMultiSelect({
     indicator: focusIndicator,
     target: "descendant",
   });
+  const touch = useTouchSurface();
   const styles = useMemo(
     () =>
-      createComboboxMultiSelectStyles(theme, borderRadius, size, singleLine),
-    [theme, borderRadius, singleLine, size],
+      createComboboxMultiSelectStyles(
+        theme,
+        borderRadius,
+        size,
+        singleLine,
+        touch,
+      ),
+    [theme, borderRadius, singleLine, size, touch],
   );
-  const anchorRef = useRef<View>(null);
-  const inputRef = useRef<TextInput>(null);
-  const autoFocusAtRef = useRef(0);
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  useEffect(() => {
-    if (!autoFocus) {
-      return;
-    }
-    autoFocusAtRef.current = Date.now();
-    const focusInput = () => inputRef.current?.focus();
-    focusInput();
-    if (typeof requestAnimationFrame === "undefined") {
-      return;
-    }
-    const frame = requestAnimationFrame(focusInput);
-    return () => cancelAnimationFrame(frame);
-  }, [autoFocus]);
-  const selected = options.filter((option) => values.includes(option.value));
-  const visibleSelected = singleLine ? selected.slice(0, 1) : selected;
-  const hiddenSelectedCount = selected.length - visibleSelected.length;
-  const filtered = useMemo(
-    () => filterComboboxOptions(options, query),
-    [options, query],
-  );
-  const entries = entriesForOptions(
-    filtered,
-    values,
-    (value) => {
-      onChange(
-        values.includes(value)
-          ? values.filter((selectedValue) => selectedValue !== value)
-          : [...values, value],
-      );
-      setQuery("");
-    },
-    styles,
-    footer,
-  );
-  const navigation = useComboboxNavigation({
+  const {
+    activeDescendant,
+    anchorRef,
+    autoFocusAtRef,
+    describedByA11y,
     entries,
-    onClose: () => setOpen(false),
-    onOpen: () => setOpen(true),
+    errorId,
+    hiddenSelectedCount,
+    hintId,
+    inputRef,
+    invalid,
+    labelId,
+    labelInfoName,
+    listId,
+    navigation,
     open,
+    query,
+    setOpen,
+    setQuery,
+    visibleSelected,
+  } = useComboboxMultiSelectState({
+    autoFocus,
+    error,
+    footer,
+    hint,
+    invalidProp,
+    label,
+    labelInfo,
+    labelInfoLabel,
+    onChange,
+    options,
+    singleLine,
+    styles,
+    values,
   });
-
-  const reactId = useId();
-  const listId = `${reactId}-list`;
-  const labelId = `${reactId}-label`;
-  const errorId = `${reactId}-error`;
-  const hintId = `${reactId}-hint`;
-  const activeDescendant =
-    open && navigation.activeId
-      ? dropdownRowDomId(listId, navigation.activeId)
-      : undefined;
-
-  const invalid = invalidProp || Boolean(error);
-  // The ⓘ button anchors to the label row, so it needs a label to sit beside.
-  if (labelInfo && !label) {
-    devWarn(
-      "ComboboxMultiSelect: `labelInfo` needs a `label` to anchor the ⓘ " +
-        "button; it is ignored without one.",
-    );
-  }
-  const labelInfoName =
-    labelInfoLabel ??
-    (label ? `More information about ${label}` : "More information");
-  // Describe the input with whichever messages exist (error first so it reads
-  // before the hint). RNW does NOT map `accessibilityHint` to `aria-describedby`
-  // (WCAG 3.3.1 / 1.3.1), so emit the literal `aria-*` ourselves — as a cast
-  // object because RNW's bundled types omit these attributes on `TextInput`.
-  const describedBy =
-    [error ? errorId : null, hint ? hintId : null].filter(Boolean).join(" ") ||
-    undefined;
-  const describedByA11y =
-    typeof document === "undefined"
-      ? {}
-      : ({
-          "aria-describedby": describedBy,
-          "aria-errormessage": error ? errorId : undefined,
-        } as unknown as object);
-
-  // Announce the result count so screen readers hear matches change as the
-  // query filters, without focus leaving the input (WCAG 4.1.3).
-  const matchCount = filtered.length;
-  useEffect(() => {
-    if (!open || !query.trim()) {
-      return;
-    }
-    announce(
-      matchCount === 0
-        ? "No matching options"
-        : `${matchCount} ${matchCount === 1 ? "option" : "options"} available`,
-    );
-  }, [matchCount, open, query]);
 
   return (
     <View
@@ -388,217 +249,3 @@ export function ComboboxMultiSelect({
     </View>
   );
 }
-
-function entriesForOptions(
-  options: ComboboxMultiSelectOption[],
-  values: string[],
-  onSelect: (value: string) => void,
-  styles: ComboboxMultiSelectStyles,
-  footer?: string,
-): DropdownListEntry[] {
-  const optionRows: DropdownListEntry[] = options.map((option) => {
-    const selected = values.includes(option.value);
-    return {
-      id: option.value,
-      label: option.label,
-      leading: <OptionMark option={option} styles={styles} />,
-      onPress: () => onSelect(option.value),
-      // Tinted from the row's content color rather than pinned to `primaryDeep`,
-      // which all but vanishes (~1.3:1) on the solid active fill.
-      right: selected
-        ? ({ color }: { color: string }) => <Check color={color} size={15} />
-        : null,
-      selected,
-      type: "item",
-    };
-  });
-  const rows: DropdownListEntry[] =
-    optionRows.length > 0
-      ? optionRows
-      : [{ id: "empty", label: "No matching options", type: "section" }];
-  if (footer) {
-    rows.push({ id: "footer", label: footer, type: "section" });
-  }
-  return rows;
-}
-
-function OptionMark({
-  option,
-  styles,
-}: {
-  option: ComboboxMultiSelectOption;
-  styles: ComboboxMultiSelectStyles;
-}) {
-  return (
-    <View
-      style={[
-        styles.mark,
-        option.color ? { backgroundColor: option.color } : null,
-      ]}
-    >
-      <Text style={styles.markText}>
-        {option.mark ?? option.label[0] ?? "?"}
-      </Text>
-    </View>
-  );
-}
-
-function createComboboxMultiSelectStyles(
-  theme: SharedUiTheme,
-  borderRadius = theme.radii.md,
-  size: ControlSize = "md",
-  singleLine = false,
-) {
-  const baseText = { fontFamily: theme.fonts.sans } as const;
-  const inputSize = inputSizeTokens(size);
-  const sizing = MULTI_SELECT_SIZES[size];
-  return StyleSheet.create({
-    chip: {
-      alignItems: "center",
-      backgroundColor: theme.colors.primarySoft,
-      borderColor: theme.colors.primaryBorder,
-      borderRadius: theme.radii.pill,
-      borderWidth: 1,
-      flexDirection: "row",
-      flexShrink: singleLine ? 1 : 0,
-      gap: sizing.gap,
-      maxWidth: "100%",
-      paddingHorizontal: sizing.chipPaddingHorizontal,
-      paddingVertical: sizing.chipPaddingVertical,
-    },
-    chipRemove: {
-      alignItems: "center",
-      height: sizing.removeSize,
-      justifyContent: "center",
-      width: sizing.removeSize,
-    },
-    chipRemoveText: {
-      ...baseText,
-      color: theme.colors.primaryDeep,
-      fontSize: sizing.chipFontSize,
-      fontWeight: "800",
-      lineHeight: sizing.chipLineHeight,
-    },
-    chipSummary: {
-      flexShrink: 0,
-      paddingHorizontal: singleLine ? 5 : sizing.chipPaddingHorizontal,
-    },
-    chipText: {
-      ...baseText,
-      color: theme.colors.primaryDeep,
-      flexShrink: singleLine ? 1 : 0,
-      fontSize: sizing.chipFontSize,
-      fontWeight: "700",
-      lineHeight: sizing.chipLineHeight,
-      minWidth: 0,
-    },
-    control: {
-      alignItems: "center",
-      backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.controlBorder,
-      borderRadius,
-      borderWidth: 1,
-      flexDirection: "row",
-      flexWrap: singleLine ? "nowrap" : "wrap",
-      gap: singleLine ? 3 : sizing.gap,
-      height: singleLine ? inputSize.boxHeight : undefined,
-      minHeight: inputSize.boxHeight,
-      overflow: singleLine ? "hidden" : "visible",
-      paddingHorizontal: singleLine ? 6 : sizing.controlPaddingHorizontal,
-      paddingVertical: sizing.controlPaddingVertical,
-    },
-    controlActive: { borderColor: theme.colors.primary },
-    // Rose border + soft ring for the invalid state (matches DropdownSelector).
-    controlInvalid: {
-      borderColor: theme.colors.rose,
-      boxShadow: `0 0 0 2px ${theme.colors.roseSoft}`,
-    },
-    error: {
-      ...baseText,
-      color: theme.colors.rose,
-      fontSize: 11,
-      fontWeight: "700",
-      lineHeight: 16,
-    },
-    // The label + control + messages stack.
-    field: { gap: 6 },
-    hint: {
-      ...baseText,
-      color: theme.colors.muted,
-      fontSize: 11,
-      lineHeight: 16.5,
-    },
-    input: {
-      ...baseText,
-      color: theme.colors.ink,
-      flex: singleLine ? 1 : undefined,
-      flexGrow: singleLine ? undefined : 1,
-      flexShrink: 1,
-      fontSize: inputSize.inputFontSize,
-      minWidth: singleLine ? 28 : 130,
-      padding: 0,
-    },
-    label: {
-      ...baseText,
-      color: theme.colors.ink2,
-      fontSize: 12,
-      fontWeight: "700",
-      lineHeight: 18,
-    },
-    // The label + optional ⓘ info button share one baseline-centred row.
-    labelRow: { alignItems: "center", flexDirection: "row", gap: 4 },
-    mark: {
-      alignItems: "center",
-      backgroundColor: theme.colors.primary,
-      borderRadius: 12,
-      height: 24,
-      justifyContent: "center",
-      width: 24,
-    },
-    markText: {
-      ...baseText,
-      color: theme.colors.onSolid,
-      fontSize: 11,
-      fontWeight: "800",
-    },
-    required: { color: theme.colors.rose },
-    wrap: { position: "relative" },
-  });
-}
-
-const MULTI_SELECT_SIZES = {
-  sm: {
-    chipFontSize: 11,
-    chipLineHeight: 16,
-    chipPaddingHorizontal: 7,
-    chipPaddingVertical: 1,
-    controlPaddingHorizontal: 8,
-    controlPaddingVertical: 5,
-    gap: 4,
-    removeSize: 16,
-  },
-  md: {
-    chipFontSize: 12,
-    chipLineHeight: 18,
-    chipPaddingHorizontal: 9,
-    chipPaddingVertical: 3,
-    controlPaddingHorizontal: 8,
-    controlPaddingVertical: 6,
-    gap: 6,
-    removeSize: 18,
-  },
-  lg: {
-    chipFontSize: 13,
-    chipLineHeight: 20,
-    chipPaddingHorizontal: 10,
-    chipPaddingVertical: 4,
-    controlPaddingHorizontal: 10,
-    controlPaddingVertical: 8,
-    gap: 8,
-    removeSize: 20,
-  },
-} as const satisfies Record<ControlSize, object>;
-
-type ComboboxMultiSelectStyles = ReturnType<
-  typeof createComboboxMultiSelectStyles
->;

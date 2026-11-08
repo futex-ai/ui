@@ -8,7 +8,8 @@
  * item content stays free of border styling. The list exposes proper `list` /
  * `listitem` semantics, and — when given `onItemPress` — turns every item into a
  * pressable button with the shared hover wash, sage focus ring, pressed and
- * disabled states, and keyboard activation. Item content is supplied by a
+ * disabled states, and keyboard activation. `itemLink` turns a row into a
+ * navigation row: a link inside its list item. Item content is supplied by a
  * `renderItem` callback (use {@link ListItem} for the default avatar / title /
  * description / trailing row), so a list can hold anything.
  */
@@ -26,20 +27,17 @@ import {
   PressableHoverState,
   useFocusRing,
 } from "../focusRing";
-import {
-  SkeletonBar,
-  SkeletonCircle,
-  SkeletonPulseProvider,
-} from "../skeleton";
 import { useSharedUiTheme } from "../theme";
+import { useTouchSurface } from "../touchSurface";
 
-import { createListStyles, type ListStyles } from "./listStyles";
-
-/** Leading-circle diameter for a skeleton item, matching a typical list avatar. */
-const SKELETON_AVATAR_DIAMETER = 40;
-/** Title / description placeholder widths cycled by item index for natural variety. */
-const SKELETON_TITLE_WIDTHS = ["48%", "62%", "40%"] as const;
-const SKELETON_DESCRIPTION_WIDTHS = ["82%", "70%", "90%"] as const;
+import { LinkListItem } from "./LinkListItem";
+import type { ListItemLink } from "./listRowLink";
+import { ListSkeletonItems } from "./ListSkeleton";
+import {
+  createListStyles,
+  createTouchListStyles,
+  type ListStyles,
+} from "./listStyles";
 
 export type ListProps<Item> = {
   /** Accessible label for the whole list. */
@@ -57,6 +55,11 @@ export type ListProps<Item> = {
   itemKey: (item: Item, index: number) => string;
   /** Accessible label for a pressable item, e.g. `Open Calum Moore`. */
   itemLabel?: (item: Item, index: number) => string;
+  /**
+   * The link destination of an item. A row with a link is a navigation row:
+   * a link inside its list item, which wins over `onItemPress` for that row.
+   */
+  itemLink?: (item: Item, index: number) => ListItemLink | undefined;
   /** Test identifier for an item's rendered target (`data-testid` on web). */
   itemTestID?: (item: Item, index: number) => string;
   /** The data items. */
@@ -69,6 +72,14 @@ export type ListProps<Item> = {
   loading?: boolean;
   /** Number of skeleton items to render while `loading`. Defaults to 6. */
   loadingItemCount?: number;
+  /** The note at the end of the name of a new-tab row. Defaults to "(opens in a new tab)". */
+  newTabLabel?: string;
+  /**
+   * The app's own navigation for a navigation row. On web, a primary click or
+   * Enter without a modifier on a same-tab row runs it instead of loading the
+   * row's `href`; on native every activation runs it.
+   */
+  onItemNavigate?: (item: Item, index: number) => void;
   /** Press handler per item. Providing it makes every item a pressable button. */
   onItemPress?: (item: Item, index: number) => void;
   /** Renders the content for a given item. */
@@ -83,7 +94,7 @@ export type ListProps<Item> = {
    * with the text past a leading avatar. Defaults to full-bleed (`0`).
    */
   separatorInset?: number;
-  /** Control density: `sm`, `md` (default), or `lg`. */
+  /** Control density. Defaults to `md`. */
   size?: ControlSize;
   /** Extra style for the list container (e.g. a card border + radius). */
   style?: StyleProp<ViewStyle>;
@@ -104,10 +115,13 @@ export function List<Item>({
   itemDisabled,
   itemKey,
   itemLabel,
+  itemLink,
   itemTestID,
   items,
   loading = false,
   loadingItemCount = 6,
+  newTabLabel,
+  onItemNavigate,
   onItemPress,
   renderItem,
   separators = true,
@@ -117,7 +131,15 @@ export function List<Item>({
   testID,
 }: ListProps<Item>) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(() => createListStyles(theme, size), [theme, size]);
+  // On a touch surface the rows take the touch metrics, whatever the size.
+  const touch = useTouchSurface();
+  const styles = useMemo(
+    () =>
+      touch
+        ? createTouchListStyles(theme, size)
+        : createListStyles(theme, size),
+    [theme, size, touch],
+  );
 
   if (loading) {
     return (
@@ -131,46 +153,16 @@ export function List<Item>({
         style={[styles.list, style]}
         testID={testID}
       >
-        <SkeletonPulseProvider>
-          {Array.from({ length: loadingItemCount }).map((_, index) => {
-            const last = index === loadingItemCount - 1;
-            return (
-              <Fragment key={`skeleton-${index}`}>
-                <View aria-hidden style={styles.item}>
-                  <View style={styles.itemRow}>
-                    <View style={styles.itemLeading}>
-                      <SkeletonCircle diameter={SKELETON_AVATAR_DIAMETER} />
-                    </View>
-                    <View style={styles.itemMain}>
-                      <SkeletonBar
-                        height={14}
-                        width={
-                          SKELETON_TITLE_WIDTHS[
-                            index % SKELETON_TITLE_WIDTHS.length
-                          ]
-                        }
-                      />
-                      <SkeletonBar
-                        height={11}
-                        width={
-                          SKELETON_DESCRIPTION_WIDTHS[
-                            index % SKELETON_DESCRIPTION_WIDTHS.length
-                          ]
-                        }
-                      />
-                    </View>
-                    <View style={styles.itemTrailing}>
-                      <SkeletonBar height={12} radius="pill" width={56} />
-                    </View>
-                  </View>
-                </View>
-                {separators && !last ? (
-                  <Separator inset={separatorInset} styles={styles} />
-                ) : null}
-              </Fragment>
-            );
-          })}
-        </SkeletonPulseProvider>
+        <ListSkeletonItems
+          dense={size === "xs"}
+          loadingItemCount={loadingItemCount}
+          separator={
+            separators ? (
+              <Separator inset={separatorInset} styles={styles} />
+            ) : null
+          }
+          styles={styles}
+        />
       </View>
     );
   }
@@ -185,9 +177,25 @@ export function List<Item>({
       {items.map((item, index) => {
         const last = index === items.length - 1;
         const content = renderItem(item, index);
+        const link = itemLink?.(item, index);
         return (
           <Fragment key={itemKey(item, index)}>
-            {onItemPress ? (
+            {link ? (
+              <LinkListItem
+                focusIndicator={focusIndicator}
+                label={itemLabel?.(item, index)}
+                link={link}
+                newTabLabel={newTabLabel}
+                onNavigate={
+                  onItemNavigate ? () => onItemNavigate(item, index) : undefined
+                }
+                size={size}
+                styles={styles}
+                testID={itemTestID?.(item, index)}
+              >
+                {content}
+              </LinkListItem>
+            ) : onItemPress ? (
               <PressableListItem
                 disabled={itemDisabled?.(item, index) ?? false}
                 focusIndicator={focusIndicator}

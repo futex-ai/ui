@@ -1,6 +1,7 @@
 import { StyleSheet } from "../primitives/reactNative";
 
 import type { ControlSize } from "../controlSize";
+import { withDenseAsSmall } from "../controlSizeTables";
 import type { SharedUiTheme } from "../theme";
 
 /**
@@ -49,7 +50,7 @@ const BADGE_SIZES: Record<
     paddingHorizontal: number;
     paddingVertical: number;
   }
-> = {
+> = withDenseAsSmall({
   sm: {
     dotSize: 5,
     fontSize: 11,
@@ -74,7 +75,7 @@ const BADGE_SIZES: Record<
     paddingHorizontal: 12,
     paddingVertical: 5,
   },
-};
+});
 
 /**
  * Resolve a tone/variant pair to its container fill and label color from the

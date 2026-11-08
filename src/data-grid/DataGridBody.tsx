@@ -12,7 +12,8 @@ import type { SharedUiTheme } from "../theme";
 
 import { DataGridRow } from "./DataGridRow";
 import { gridcellRole } from "./dataGridLayout";
-import type { DataGridMetrics, DataGridStyles } from "./dataGridStyles";
+import type { DataGridMetrics } from "./dataGridSizes";
+import type { DataGridStyles } from "./dataGridStyles";
 import type { DropdownPoint } from "../dropdown";
 import type { DataGridController } from "./useDataGridController";
 import type {

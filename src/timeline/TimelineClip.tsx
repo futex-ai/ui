@@ -27,11 +27,8 @@ import {
   filmstripFrames,
   waveformBars,
 } from "./timelineClipContent";
-import {
-  createTimelineStyles,
-  type TimelineClipColors,
-  timelineSizing,
-} from "./timelineStyles";
+import { createTimelineStyles, timelineSizing } from "./timelineStyles";
+import type { TimelineClipColors } from "./timelineStyleTypes";
 import { DEFAULT_FPS, formatClock, formatTimecode } from "./timelineTime";
 import { clipEnd, type TimelineClipData } from "./timelineTypes";
 

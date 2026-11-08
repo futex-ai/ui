@@ -9,12 +9,17 @@ import {
 
 import { useSharedUiTheme } from "../theme";
 
+import { useTextScale } from "./textScale";
 import {
   createTypographyStyles,
   resolveTypographyColor,
   typographyLevel,
 } from "./typographyStyles";
-import type { TypographyColor, TypographyVariant } from "./typographyStyles";
+import type {
+  TextScale,
+  TypographyColor,
+  TypographyVariant,
+} from "./typographyStyles";
 
 /** The semantic color tokens, for the runtime token-vs-raw-string check. */
 const SEMANTIC_COLORS = new Set<TypographyColor>([
@@ -38,6 +43,11 @@ export type TextProps = {
   color?: TypographyColor | (string & {});
   /** Truncate to this many lines with a trailing ellipsis. */
   numberOfLines?: number;
+  /**
+   * The type scale of this text. Defaults to the scale that the nearest
+   * {@link TextScaleProvider} chooses, which is `default` without one.
+   */
+  scale?: TextScale;
   /** Extra style merged on top of the variant style. */
   style?: StyleProp<TextStyle>;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
@@ -59,18 +69,25 @@ export type TextProps = {
  * heading at the matching level (`accessibilityRole="header"`, which RNW maps to
  * `role="heading"`, plus the web `aria-level`). The named `H1`–`H5`, `Body`,
  * `Label`, `Caption`, and `Overline` exports are thin wrappers that pin
- * `variant`.
+ * `variant`. The type scale comes from `scale`, else from the nearest
+ * {@link TextScaleProvider}.
  */
 export function Text({
   children,
   color,
   numberOfLines,
+  scale,
   style,
   testID,
   variant = "body",
 }: TextProps) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(() => createTypographyStyles(theme), [theme]);
+  const surfaceScale = useTextScale();
+  const resolvedScale = scale ?? surfaceScale;
+  const styles = useMemo(
+    () => createTypographyStyles(theme, resolvedScale),
+    [theme, resolvedScale],
+  );
   const level = typographyLevel(variant);
   // A semantic token resolves to its AA-safe theme color; any other string is a
   // raw color passed straight through (the consumer owns its contrast).

@@ -17,6 +17,8 @@ drawn from one component-owned type scale and the shared theme.
   consumer-local theme imports.
 - Let a consumer recolor text with an AA-safe semantic token (or a raw color)
   and truncate to a line count without forking a variant.
+- Offer an optional compact type scale for dense surfaces, chosen for a surface
+  and overridable for one text, on web and native.
 
 ## Usage
 
@@ -71,6 +73,41 @@ size. `lineHeight` is absolute pixels (React Native has no multiplier).
 | `label`    | 14   | 20   | 600    | 0        | —         | ink           |
 | `caption`  | 13   | 18   | 400    | 0        | —         | muted         |
 | `overline` | 11   | 16   | 700    | 1        | uppercase | muted         |
+
+### Compact scale
+
+The compact scale is an optional second scale for dense surfaces. Wrap a
+surface in `TextScaleProvider` with `scale="compact"`, and give one `Text` its
+own `scale` to override the surface. Without a provider, every text uses the
+default scale above. A role keeps its color, its casing, and its heading level
+in either scale, and no compact role is larger than its default:
+
+```tsx
+import { Body, TextScaleProvider } from "@firna/ui/typography";
+
+<TextScaleProvider scale="compact">
+  <Body>13px body text on a 20px line.</Body>
+  <Body scale="default">This text keeps the default scale.</Body>
+</TextScaleProvider>;
+```
+
+| variant    | size | line | weight | tracking |
+| ---------- | ---- | ---- | ------ | -------- |
+| `h1`       | 20   | 26   | 700    | -0.2     |
+| `h2`       | 16   | 22   | 600    | -0.1     |
+| `h3`       | 14   | 20   | 600    | 0        |
+| `h4`       | 13   | 18   | 600    | 0        |
+| `h5`       | 12   | 16   | 600    | 0        |
+| `body`     | 13   | 20   | 400    | 0        |
+| `label`    | 12   | 16   | 500    | 0        |
+| `caption`  | 12   | 16   | 400    | 0        |
+| `overline` | 11   | 14   | 600    | 0.6      |
+
+The scale changes only the text roles of this family. Control labels follow the
+control sizes, and field labels, hints, and errors keep their metrics. The
+[app shell parts protocol](../../docs/protocol/app-shell-parts.md#compact-text)
+holds the requirements. `createTypographyStyles(theme, scale)` builds the styles
+of either scale.
 
 ### Color
 
