@@ -1,11 +1,53 @@
 /**
- * Helpers shared by the library's pointer drags: the click swallow after a
- * drag (the sortable list and the drag-select provider) and the edge
+ * Helpers shared by the library's pointer drags: the document listeners of a
+ * drag (the data grid and the panel resize handle), the click swallow after a
+ * drag (the sortable list and the drag-select provider), and the edge
  * auto-scroll step (the data grid and the drag-select provider).
  *
- * `suppressNextClick` no-ops outside the browser and `autoScrollDelta` is
- * pure, so a component may import this module on any platform.
+ * `attachPointerDragListeners` and `suppressNextClick` no-op outside the
+ * browser and `autoScrollDelta` is pure, so a component may import this module
+ * on any platform.
  */
+
+/** The callbacks of one pointer drag. */
+export type PointerDragHandlers = {
+  onMove: (clientX: number, clientY: number) => void;
+  /** `committed` is true only for a real pointerup (not pointercancel / blur). */
+  onEnd: (committed: boolean) => void;
+};
+
+/**
+ * Attach document-level pointer listeners for the duration of a drag and return
+ * a disposer, so the drag follows the pointer outside the element that started
+ * it. Move events `preventDefault` to suppress native text selection.
+ */
+export function attachPointerDragListeners(
+  handlers: PointerDragHandlers,
+): () => void {
+  if (typeof document === "undefined") {
+    return () => undefined;
+  }
+  const move = (event: PointerEvent) => {
+    event.preventDefault();
+    handlers.onMove(event.clientX, event.clientY);
+  };
+  // Only a genuine pointerup is a completed gesture; pointercancel and window
+  // blur are aborts, so they end the drag without committing a tap-to-edit.
+  const end = (event: Event) => handlers.onEnd(event.type === "pointerup");
+  document.addEventListener("pointermove", move, true);
+  document.addEventListener("pointerup", end, true);
+  document.addEventListener("pointercancel", end, true);
+  // The window `blur` listener must NOT be capture — a capture listener also
+  // catches element blur events, which fire when a drag's pointer-down focuses a
+  // new cell (blurring the previously-focused one), cancelling the drag.
+  window.addEventListener("blur", end, false);
+  return () => {
+    document.removeEventListener("pointermove", move, true);
+    document.removeEventListener("pointerup", end, true);
+    document.removeEventListener("pointercancel", end, true);
+    window.removeEventListener("blur", end, false);
+  };
+}
 
 /**
  * Swallow the click a committed drag produces, so a drag-release does not

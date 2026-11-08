@@ -45,6 +45,24 @@ Mockup refinements, recorded on 2026-11-07:
 - **Orchestrator call:** Let resize callers supply effective bounds that leave room for their main content. Arrow keys adjust the width. Home and End select the minimum and maximum. Use the short focus grip from the mockups.
 - **Orchestrator call:** Replace the drawn new parts with real library components during integration. Keep the mockup layouts and links as consumer examples.
 
+Package integration calls, recorded on 2026-11-08:
+
+- **Orchestrator call:** Use the focused subpaths `link`, `notice`, `empty-state`, `panel-resize`, and `touch-surface`. They follow the existing component-family naming pattern. The menu additions stay in `popover`, and the text scale stays in `typography`.
+- **Orchestrator call:** Export the new components, providers, hooks, and their public prop and entry types. Keep their internal placement, width, and metric helpers private. This gives consumers the selected parts without adding unrelated public contracts. Preserve every existing export.
+
+Menu and resize calls, recorded on 2026-11-08:
+
+- **Orchestrator call:** Wrap the trigger in `InlineMenu`. Its wrapper then owns stacking and outside-press exclusion without an extra anchor component or ref.
+- **Orchestrator call:** Keep standard menu row metrics for every size except `xs`, and keep each size's title weight on touch rows. Existing menu designs stay available.
+- **Orchestrator call:** Apply `checked` to menu choices, while listboxes keep `selected`. Notes describe the list, and the library owns the hidden decorative icon slot.
+- **Orchestrator call:** Add `size` to `ResponsiveMenu`. Existing `DropdownMenu` and `ContextMenu` rows keep their design outside a touch surface.
+- **Orchestrator call:** Use the existing sheet inset and center its larger close control vertically on touch surfaces. Keep the menu label as the dialog name when its visible title differs.
+- **Orchestrator call:** Report a resize completion only after a width change. Use the last proposed width, so callers can store it once.
+- **Orchestrator call:** Let the minimum win when bounds are inverted. The exposed maximum stays at least the minimum, which keeps the range usable.
+- **Orchestrator call:** Give native resize handles 12 px of horizontal hit slop. Keep the narrow drawing and short grip.
+- **Orchestrator call:** Draw resize states through `lineStyle` and `gripStyle`. The static catalogue then needs no private DOM access or extra state API.
+- **Orchestrator call:** Supply English pixel text with the accessible resize value. This prevents a percentage fallback, and no current caller needs a text formatter.
+
 No existing mechanism is replaced. Conductive's consumer migration belongs to its own repository.
 
 ## Milestone 1: Mockups
@@ -134,20 +152,37 @@ Depends on: 4
 
 Delegate to the `ui implementor` action. Reuse existing overlay, focus, and responder behavior.
 
-- [ ] Add a dense menu that renders open in static HTML.
-- [ ] Apply the shared 44 px touch row metrics to selector and chip multi-select popup options as well as menu rows. Their shared list currently keeps 34 px rows. This completes the touch-target requirement before merge.
-- [ ] Add a phone menu sheet using the shared sheet behavior and 44 px rows.
-- [ ] Add a controlled resize handle with drag, keyboard, bounds, and accessible value behavior.
-- [ ] Add main-variant stories, focused tests, and area READMEs.
-- [ ] Run targeted checks and both typechecks.
+- [x] Add a dense menu that renders open in static HTML.
+- [x] Apply the shared 44 px touch row metrics to selector and chip multi-select popup options as well as menu rows. Their shared list currently keeps 34 px rows. This completes the touch-target requirement before merge.
+- [x] Add a phone menu sheet using the shared sheet behavior and 44 px rows.
+- [x] Add a controlled resize handle with drag, keyboard, bounds, and accessible value behavior.
+- [x] Add main-variant stories, focused tests, and area READMEs.
+- [x] Run targeted checks and both typechecks.
 
-## Milestone 6: Package and visual integration
+The report is `.context/conductive-ui-parts/reports/menus-resize.md`. The independent check is `reports/menus-resize-orchestrator-check.md` in the same folder. The touch popup requirement is closed.
+
+## Milestone 5a: Short source files
 
 Tags: ui
 
 Depends on: 5
 
-Delegate package work to the `non-ui implementor` and UI integration to the `ui implementor`.
+The final size audit found existing long files that the density work changes. Split those files by responsibility under the shared 300-line rule. Keep their public APIs, rendering, tests, and behavior.
+
+- [ ] Split the touched long component and style files into focused internal modules. Keep every existing export.
+- [ ] Split the touched long story and test files. Keep every test name, assertion, story ID, and runner discovery path working.
+- [ ] Update live references to moved responsibilities and tests. Keep old documentation destinations available.
+- [ ] Prove output and test-inventory equivalence. Run targeted checks and both typechecks.
+
+The source inventory and delegation prompt are under `.context/conductive-ui-parts/`. This changes structure only and needs no new mockup or requirement.
+
+## Milestone 6: Package and visual integration
+
+Tags: ui
+
+Depends on: 5a
+
+Delegate package work to the `non-ui implementor` and UI integration to the `ui implementor`. Delegate the long README splits to the `docs implementor` after the public exports are final.
 
 - [ ] Export the parts from the root and appropriate subpath entry points on both platforms.
 - [ ] Register the stories in the native Storybook host.
@@ -158,6 +193,7 @@ Delegate package work to the `non-ui implementor` and UI integration to the `ui 
 - [ ] Prove the new tests fail on a behavior change. Run each new asynchronous or browser test ten times.
 - [ ] Smoke-test the new stories and compare them with the mockups. Save test costs and evidence under `.context/`.
 - [ ] Sync the final Storybook family coverage and implemented status in the docs after all parts exist.
+- [ ] Split touched READMEs above 300 lines into focused guides. Preserve their content, examples, links, and heading destinations.
 
 ## Milestone 7: Checks, pull request, and review
 
@@ -167,12 +203,12 @@ The orchestrator owns these steps. The task requests a pull request before its r
 
 - [ ] Run the early check and the complete `cargo xtask check` gate.
 - [ ] Commit the additions with `feat:` and push the current branch.
-- [ ] Open a pull request into `main`. Wait for CI and fix failures caused by this change.
+- [ ] Open a draft pull request into `main`. Wait for CI and fix failures caused by this change.
 - [ ] Run the `implementation-review` skill on the pushed pull request against `origin/main`.
 - [ ] Check every new finding. Apply its `fix now` option, record the rest under `plans/follow-ups/`, and re-review once.
 - [ ] Run the required checks after fixes. Commit, push, and wait for the final CI result.
 - [ ] Delete this plan after the other required TODOs finish. Keep its dated decisions and design calls in the pull request description.
-- [ ] Finalize the pull request description with the API summary, checks, review outcome, follow-ups, and release handoff.
+- [ ] Finalize the pull request description with the API summary, checks, review outcome, follow-ups, and release handoff. Mark it ready after review and final CI.
 
 ## Release handoff
 

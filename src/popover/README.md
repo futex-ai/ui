@@ -27,6 +27,14 @@ modal-backing, and outside-click / Escape dismissal. `Popover` adds only the ope
 - Serve the trigger-less case too: `ContextMenu` opens at a gesture's point
   rather than against a measured element, so a right-click or long-press menu
   lands under the pointer instead of at the edge of whatever was pressed.
+- Draw a menu open in place beside its trigger, with no portal or measurement,
+  so static HTML shows it open (`InlineMenu`), and draw the phone menu sheet in
+  place (`InlineMenuSheet`).
+- On a touch surface, open menus as the phone menu sheet, with touch rows and
+  a close control that keeps the keyboard.
+
+The [app shell parts protocol](../../docs/protocol/app-shell-parts.md#menus)
+holds the requirements of the in-place menu and the menu sheet.
 
 ## Usage
 
@@ -228,6 +236,109 @@ const [open, setOpen] = useState(false);
 />;
 ```
 
+On a touch surface `ResponsiveMenu` opens the phone menu sheet instead, on web
+and native (see below). Pass `size` to set its rows, for example `"xs"` for
+26px rows in the anchored web dialog; the sheet's touch rows keep the title
+weight of that size. Outside a `TouchSurface`, the anchored web dialog and the
+native sheet keep their behaviour: the document key listener and the first row
+active on web, and the standard rows on native.
+
+## InlineMenu
+
+`InlineMenu` draws a menu open in place beside its trigger: no portal and no
+measurement, so static and server-rendered HTML shows it open. It wraps the
+trigger, its `children`, in a self-hugging view that positions the menu and
+lifts itself above the content that follows while the menu is open. The caller
+owns `open` and `onClose`, and places the menu with `side` (`below` or
+`above`) and `align` (`start` or `end`), because static HTML cannot measure.
+
+```tsx
+import { InlineMenu } from "@firna/ui/popover";
+
+<InlineMenu
+  align="end"
+  entries={[
+    {
+      icon: Pencil,
+      id: "rename",
+      label: "Rename",
+      onPress: rename,
+      type: "item",
+    },
+    { id: "divider", label: "", type: "divider" },
+    {
+      icon: Archive,
+      id: "archive",
+      label: "Archive project",
+      onPress: archive,
+      tone: "danger",
+      type: "item",
+    },
+  ]}
+  label="Project actions"
+  onClose={() => setOpen(false)}
+  open={open}
+  size="xs"
+>
+  <Button
+    accessibilityLabel="Project actions"
+    expanded={open}
+    hasPopup="menu"
+    icon={MoreHorizontal}
+    onPress={() => setOpen((current) => !current)}
+    shape="square"
+    size="xs"
+    tone="ghost"
+  />
+</InlineMenu>;
+```
+
+- Opening moves focus to the menu, a `DropdownList` in `list` focus mode, with
+  its first enabled row active (`activeId` controls it). ↑/↓ skip disabled
+  rows, labels, dividers, and notes; Enter or Space runs the active row once;
+  Escape and an outside press close the menu, and focus returns to the
+  trigger. The keys stay on the focused list, so nothing listens on the
+  document for them.
+- The menu is content-sized between `minWidth` (180) and `maxWidth` (360), or
+  `width` wide. Rows scroll after `maxHeight` (320).
+- The menu cannot leave a clipping ancestor (`overflow: hidden`) or a stacking
+  context that the wrapper does not lift. Give such an ancestor room, or use
+  `DropdownMenu`, which portals.
+- On a touch surface, and always on native, `InlineMenu` opens the phone menu
+  sheet instead. The web-only placement props are then ignored.
+
+## Phone menu sheet
+
+On a touch surface, `InlineMenu` and `ResponsiveMenu` open the same sheet
+through `Sheet`: a modal dialog named by the menu `label`, with a visible
+`title` (default `label`), a 44px close control (`dismissLabel`), and touch
+rows of at least 44px. It opens without an active row, and the arrow keys
+still move one. The keys stay on the focused list, so Tab reaches the close
+control and Enter there closes the sheet. The sheet keeps the modal behaviour:
+the focus trap, Escape, a backdrop press, Android back, and focus return to the
+trigger.
+
+`InlineMenuSheet` draws the same sheet open in place, for static and
+server-rendered HTML such as a phone mockup: a backdrop, the grip, the title,
+the close control, and the rows, with no active row. It fills its nearest
+positioned ancestor. It is a named dialog but not a modal one, because nothing
+keeps focus inside a drawing.
+
+```tsx
+import { InlineMenuSheet } from "@firna/ui/popover";
+
+<View style={styles.phoneScreen}>
+  <ProjectPage />
+  <InlineMenuSheet
+    entries={projectActions}
+    label="Project actions"
+    onClose={closeMenu}
+    size="xs"
+    title="Billing portal"
+  />
+</View>;
+```
+
 ## ContextMenu
 
 `ContextMenu` is the menu a secondary gesture opens — right-click on web,
@@ -296,6 +407,16 @@ inside the menu's own list are ignored, so a long menu still scrolls.
 
 [`DataGrid`](../data-grid/README.md) is the reference consumer: it drives one
 `ContextMenu` for header, row-gutter, and cell regions.
+
+## Key Code
+
+- `ResponsiveMenu.tsx` — the anchored web menu, the native sheet menu, and the
+  touch-surface switch to the menu sheet.
+- `InlineMenu.web.tsx` / `InlineMenu.tsx` — the menu drawn in place on web, and
+  the menu sheet on a touch surface and on native; `inlineMenuModel.ts` holds
+  their props and placement.
+- `MenuSheet.tsx` — the phone menu sheet that both menus open.
+- `InlineMenuSheet.tsx` — the phone menu sheet drawn in place.
 
 ## Theming
 

@@ -145,7 +145,8 @@ whatever its `size`: the `field` trigger is the 46px touch field with 16px value
 text and an 18px chevron, the `map` / `pill` / `mobilePeriod` triggers keep
 their drawing and grow to at least 44px high, and the search input of a
 `searchable` selector is itself 44px high with 16px text. The option rows of the
-popup keep their size.
+popup are touch rows, at least 44px high, as in every `DropdownList` on a touch
+surface (see "Row sizes" below). Outside a touch surface they keep their size.
 
 Selector popups use the trigger width as their minimum, grow to fit wider option
 content, and stop at a default maximum of `360` pixels or the viewport edge,
@@ -291,6 +292,66 @@ mode, so keyboard-only users can always reach it (right-click is also
 keyboard-reachable on web via the context-menu key). For per-platform behavior,
 drive the prop yourself, for example
 `trigger={Platform.OS === "web" ? "hover" : "longPress"}`.
+
+### Row sizes, choices, and notes
+
+`DropdownList` draws its rows at the size that the caller gives, and every
+addition below is opt-in, so a list without them renders as before:
+
+- `size="xs"` draws 26px dense rows: 13/18px labels at weight 400, 12px
+  details, 14px icons, and a 4 by 8px row inset. Every other size, and no size,
+  draws the standard rows (about 34px, with 13/18px labels at weight 700).
+- Inside a `TouchSurface`, every list takes the touch rows, whatever its size:
+  at least 44px for one line, with 15/20px labels, 13/18px details, and 18px
+  icons. The label keeps the weight of the size. This covers the popups of the
+  selector, the chip multi-select, the menus, and the slash menu.
+- `icon` on an item draws a decorative glyph at the size of the row: muted at
+  rest, and in the label color on a highlighted or toned row. A `leading` slot
+  replaces it.
+- `checked` on an item of a menu (`listRole="menu"`) makes it a choice: a menu
+  radio item with `aria-checked` on web and the radio role with its checked
+  state on native. The checked row shows a check mark after any `rightText`. A
+  listbox ignores `checked` and keeps `selected`.
+- `{ id, label, type: "note" }` is muted text that explains the rows near it.
+  It is never active, and on web it describes the list through
+  `aria-describedby`.
+- `focusMode="list"` makes the list one tab stop: it points
+  `aria-activedescendant` at the active row, the rows leave the tab order, and
+  the list handles the arrow keys, Enter, Space, and Escape itself, without a
+  document listener. Without an active row, as in a sheet that has just opened,
+  the list shows the shared focus glow. Pass `listRef` to focus the list. A list
+  without a `listId` makes its own in this mode, so the active row always has an
+  id. `InlineMenu` and the phone menu sheet use this mode.
+
+```tsx
+<DropdownList
+  entries={[
+    { id: "sort-by", label: "Sort by", type: "section" },
+    {
+      checked: true,
+      id: "recent",
+      label: "Recent activity",
+      onPress: sortByActivity,
+      type: "item",
+    },
+    {
+      checked: false,
+      id: "name",
+      label: "Name",
+      onPress: sortByName,
+      type: "item",
+    },
+    { id: "divider", label: "", type: "divider" },
+    { id: "note", label: "Pinned projects stay at the top.", type: "note" },
+  ]}
+  focusMode="list"
+  label="Sort projects"
+  listRole="menu"
+  maxHeight={320}
+  onClose={close}
+  size="xs"
+/>
+```
 
 ## Accessibility
 

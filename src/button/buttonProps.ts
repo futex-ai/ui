@@ -83,7 +83,7 @@ type ButtonBaseProps = ButtonRoleState & {
    * Exact visible dimension for a `square` / `circle` button, in px, replacing
    * the box the `size` scale would derive. Unlike `minTouchTarget` — a floor
    * that can only grow the box — this also goes *below* the smallest size's
-   * 30px track, for a glyph a design specs smaller than any control density.
+   * 26px track, for a glyph a design specs smaller than any control density.
    * Pair it with `hitSlop` so a small visible box keeps a comfortable target.
    * On a touch surface, a box below 44px keeps its drawing, and the button
    * reserves a 44px target around it in the layout instead.

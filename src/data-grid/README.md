@@ -486,10 +486,13 @@ toggled off.
 
 - `DataGrid.tsx` — the controlled component + state wiring.
 - `useDataGridController.ts` / `useDataGridKeyboard.ts` / `useDataGridDrag.ts` —
-  selection, keyboard, and pointer-drag interaction.
+  selection, keyboard, and pointer-drag interaction. The drag's pure rules (the
+  marquee box, the tap threshold, and the focus of a row or column drag) are in
+  `dataGridDragModel.ts`, and its edge auto-scroll in `useDataGridAutoScroll.ts`.
 - `useDataGridColumnResize.ts` / `DataGridResizeHandle.tsx` — column resizing
   (pointer + keyboard) and the header-edge handle; widths resolved in
-  `dataGridColumnWidths.ts`.
+  `dataGridColumnWidths.ts`. Both drags use the shared document listeners of
+  `../dragGesture.ts`.
 - `dataGridSelectionModel.ts` / `dataGridKeyboardModel.ts` — pure, React-free
   models (unit-tested), exported as `dataGridSelectionModel` /
   `dataGridKeyboardModel` namespaces.

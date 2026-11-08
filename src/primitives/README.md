@@ -161,7 +161,7 @@ assignment stops working.
 
 Two deliberate departures from React Native's shape, both web-only and both
 already honoured by the current backend: the CSS keys in `style.ts`'s
-`WebOnlyStyle` (`transition`, `backgroundImage`, …) and the extra `position`
+`WebOnlyStyle` (`transition`, `backgroundImage`, `touchAction`, …) and the extra `position`
 (`fixed`, `sticky`), `cursor`, `outlineStyle` (`none`) and `DimensionValue`
 (`max-content`, …) values in `layout.ts`. They make our `ViewStyle` a superset
 of React Native's: an RN-typed style still flows into a component prop typed

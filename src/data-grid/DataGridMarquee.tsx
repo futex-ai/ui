@@ -2,7 +2,7 @@
 import { View } from "../primitives/reactNative";
 
 import type { DataGridStyles } from "./dataGridStyles";
-import type { DataGridDragBox } from "./useDataGridDrag";
+import type { DataGridDragBox } from "./dataGridDragModel";
 
 export function DataGridMarquee({
   box,

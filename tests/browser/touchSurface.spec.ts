@@ -127,6 +127,23 @@ test("every control on a touch surface is a target of at least 44 by 44 px", asy
     const box = await expectHeight(target(page), name, 44);
     expect(box.width, `${name} width`).toBeCloseTo(44, 0);
   }
+
+  // The option rows of the selector and chip multi-select popups are touch
+  // rows too: at least 44px for one line.
+  await page.getByRole("button", { name: "Environment, Production" }).click();
+  await expectHeight(
+    page.getByRole("option", { name: "Preview" }),
+    "selector option",
+    44,
+  );
+  await page.keyboard.press("Escape");
+  await page.getByRole("combobox", { name: "Labels" }).click();
+  const chipOption = page.getByRole("option", { name: "Mobile" });
+  await expect(chipOption).toBeVisible();
+  expect(
+    (await chipOption.boundingBox())?.height ?? 0,
+    "chip option height",
+  ).toBeGreaterThanOrEqual(44);
 });
 
 test("a small button on a touch surface reserves its own target and takes no hit slop", async ({

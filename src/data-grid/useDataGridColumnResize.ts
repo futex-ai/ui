@@ -23,11 +23,12 @@ import {
   type MutableRefObject,
 } from "react";
 
+import { attachPointerDragListeners } from "../dragGesture";
+
 import {
   clampColumnWidth,
   type ColumnWidthOverrides,
 } from "./dataGridColumnWidths";
-import { attachDataGridDragListeners } from "./dataGridDragDom";
 import type { DataGridColumn } from "./types";
 
 /** Width change (px) per arrow-key press on a focused resize handle. */
@@ -148,7 +149,7 @@ export function useDataGridColumnResize({
       // A grid-wide resize cursor while dragging, even off the 8px handle.
       document.body.style.cursor = "col-resize";
       removeRef.current?.();
-      removeRef.current = attachDataGridDragListeners({
+      removeRef.current = attachPointerDragListeners({
         onMove: (clientX) => {
           const session = sessionRef.current;
           if (!session) {

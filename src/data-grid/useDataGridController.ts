@@ -19,7 +19,8 @@ import {
   selectionCount,
   singleCell,
 } from "./dataGridSelectionModel";
-import { useDataGridDrag, type DataGridDragBox } from "./useDataGridDrag";
+import type { DataGridDragBox } from "./dataGridDragModel";
+import { useDataGridDrag } from "./useDataGridDrag";
 import { useDataGridKeyboard } from "./useDataGridKeyboard";
 import type {
   DataGridCellRef,

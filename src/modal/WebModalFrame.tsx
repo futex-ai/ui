@@ -33,12 +33,14 @@ import { BottomSheetShell } from "../sheet/BottomSheetShell";
 import type { BottomSheetHandle } from "../sheet/BottomSheetShell";
 import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
+import { TOUCH_TARGET_SIZE, useTouchSurface } from "../touchSurface";
 
 import type { WebModalFrameProps } from "./types";
 import { webModalCanClose, webModalMaxWidth } from "./webModalModel";
 import type { WebModalCloseSource } from "./webModalModel";
 
 export function WebModalFrame({
+  accessibilityLabel,
   body,
   children,
   closeDisabled = false,
@@ -63,6 +65,8 @@ export function WebModalFrame({
 }: WebModalFrameProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createNativeModalStyles(theme), [theme]);
+  // On a touch surface the close control is its own 44 by 44px target.
+  const touch = useTouchSurface();
   const sheet = placement === "bottom-sheet";
   const sheetRef = useRef<BottomSheetHandle | null>(null);
   const onCloseRef = useRef(onClose);
@@ -104,9 +108,13 @@ export function WebModalFrame({
           accessibilityRole="button"
           accessibilityState={{ disabled: closeDisabled }}
           disabled={closeDisabled}
-          hitSlop={10}
+          hitSlop={touch ? undefined : 10}
           onPress={() => requestClose("closeButton")}
-          style={[styles.closeButton, closeDisabled ? styles.disabled : null]}
+          style={[
+            styles.closeButton,
+            touch ? styles.closeButtonTouch : null,
+            closeDisabled ? styles.disabled : null,
+          ]}
         >
           <X color={theme.colors.ink2} size={18} />
         </Pressable>
@@ -126,7 +134,7 @@ export function WebModalFrame({
         dismissible={canDismiss}
         footer={footerBlock}
         header={header}
-        label={title}
+        label={accessibilityLabel ?? title}
         onClose={() => onCloseRef.current()}
         open={visible}
         scroll={scroll}
@@ -159,7 +167,7 @@ export function WebModalFrame({
         style={styles.center}
       >
         <View
-          accessibilityLabel={title}
+          accessibilityLabel={accessibilityLabel ?? title}
           accessibilityViewIsModal
           style={[
             styles.surface,
@@ -211,6 +219,7 @@ function createNativeModalStyles(theme: SharedUiTheme) {
       justifyContent: "center",
       width: 34,
     },
+    closeButtonTouch: { height: TOUCH_TARGET_SIZE, width: TOUCH_TARGET_SIZE },
     disabled: { opacity: 0.55 },
     footer: {
       borderTopColor: theme.colors.border,

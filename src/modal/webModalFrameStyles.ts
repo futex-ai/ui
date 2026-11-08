@@ -1,6 +1,7 @@
 import { StyleSheet } from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
+import { TOUCH_TARGET_SIZE } from "../touchSurface";
 
 import { WEB_MODAL_LAYERS } from "./modalLayers";
 
@@ -38,6 +39,8 @@ export function createWebModalFrameStyles(theme: SharedUiTheme) {
       justifyContent: "center",
       width: 34,
     },
+    // On a touch surface the close control is a 44 by 44px target.
+    closeButtonTouch: { height: TOUCH_TARGET_SIZE, width: TOUCH_TARGET_SIZE },
     disabled: { opacity: 0.55 },
     footer: {
       borderTopColor: theme.colors.border,
@@ -65,6 +68,8 @@ export function createWebModalFrameStyles(theme: SharedUiTheme) {
       padding: 14,
       paddingBottom: 12,
     },
+    // The 44px touch close control centres on the title line.
+    headerTouch: { alignItems: "center" },
     layer: {
       bottom: 0,
       left: 0,
@@ -117,3 +122,6 @@ export function createWebModalFrameStyles(theme: SharedUiTheme) {
     titleBlock: { flex: 1, minWidth: 0 },
   });
 }
+
+/** The styles of the web modal frame. */
+export type WebModalFrameStyles = ReturnType<typeof createWebModalFrameStyles>;

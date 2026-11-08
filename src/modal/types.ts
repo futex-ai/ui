@@ -19,6 +19,11 @@ import type { WebModalPlacement, WebModalSize } from "./webModalModel";
 export type Focusable = { focus?: () => void };
 
 export type WebModalFrameProps = {
+  /**
+   * Accessible name of the dialog when it should differ from the visible
+   * `title`. Defaults to the title, which then names the dialog.
+   */
+  accessibilityLabel?: string;
   body?: ReactNode;
   children?: ReactNode;
   closeDisabled?: boolean;

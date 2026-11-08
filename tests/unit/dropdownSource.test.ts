@@ -152,6 +152,62 @@ test("public dropdown entrypoint exports selector and layer helpers", () => {
   assert.match(source, /dropdownGeometry/);
 });
 
+test("dropdown selector forwards header and footer content to the list", () => {
+  const source = readSource("../../src/dropdown/DropdownSelector.tsx");
+
+  assert.match(source, /header\?: ReactNode;/);
+  assert.match(source, /footer\?: ReactNode;/);
+  assert.match(source, /<DropdownList[\s\S]*footer=\{footer\}/);
+  assert.match(source, /<DropdownList[\s\S]*header=\{header\}/);
+});
+
+test("dropdown selector filters options through a searchable input", () => {
+  const source = readSource("../../src/dropdown/DropdownSelector.tsx");
+
+  // Opt-in prop that filters options as the query changes.
+  assert.match(source, /searchable\?: boolean;/);
+  assert.match(source, /filterComboboxSections/);
+  // The search input drives navigation through the document-level key listener
+  // with the typeahead flag so the space bar keeps typing into the query.
+  assert.match(source, /typeahead: searchable/);
+  // A searchable selector renders a search field into the list search slot...
+  assert.match(source, /<DropdownList[\s\S]*search=\{searchField\}/);
+  // ...and shows an empty state when no options match the query.
+  assert.match(source, /No matching options/);
+});
+
+test("dropdown selector sizes the field variant from the shared input scale", () => {
+  const source = readSource("../../src/dropdown/DropdownSelector.tsx");
+  const stylesSource = readSource(
+    "../../src/dropdown/dropdownSelectorStyles.ts",
+  );
+
+  // Opt-in size prop, default md, threaded into the styles and the chevron.
+  assert.match(source, /size\?: ControlSize;/);
+  assert.match(
+    source,
+    /createDropdownSelectorStyles\(theme, props\.size \?\? "md"\)/,
+  );
+  assert.match(source, /size = "md"/);
+  assert.match(source, /variant === "field" \? inputIconSize\(size\) : 13/);
+  // The field box reuses the input's per-size geometry (single source of truth)
+  // so a select and a text input stay the same height.
+  assert.match(stylesSource, /import \{ inputSizeTokens \} from "\.\.\/input"/);
+  assert.match(stylesSource, /const sizing = inputSizeTokens\(size\)/);
+  assert.match(stylesSource, /height: sizing\.boxHeight/);
+  assert.match(stylesSource, /paddingHorizontal: sizing\.paddingHorizontal/);
+});
+
+test("dropdown selector fits wider content up to an overridable default cap", () => {
+  const source = readSource("../../src/dropdown/DropdownSelector.tsx");
+
+  assert.match(source, /menuMaxWidth\?: number;/);
+  assert.match(source, /menuMinWidth\?: number;/);
+  assert.match(source, /menuMaxWidth = DEFAULT_DROPDOWN_MAX_WIDTH/);
+  assert.match(source, /<DropdownPortal[\s\S]*fitContentWidth/);
+  assert.match(source, /maxWidth=\{menuMaxWidth\}/);
+});
+
 function readSource(relativePath: string) {
   return readFileSync(new URL(relativePath, import.meta.url), "utf8");
 }

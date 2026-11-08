@@ -1,5 +1,6 @@
 /** Shared style factory for dropdown list rows. */
 import { StyleSheet } from "../primitives/reactNative";
+import type { TextStyle } from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
 
@@ -145,7 +146,14 @@ export function createDropdownListStyles(theme: SharedUiTheme) {
   });
 }
 
-export type DropdownListStyles = ReturnType<typeof createDropdownListStyles>;
+/**
+ * The list styles, each widened to a text style so that a row size can
+ * override the geometry and type of the standard rows.
+ */
+export type DropdownListStyles = Record<
+  keyof ReturnType<typeof createDropdownListStyles>,
+  TextStyle
+>;
 
 /**
  * How the focused (active) and selected option rows are highlighted:

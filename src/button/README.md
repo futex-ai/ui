@@ -320,7 +320,7 @@ size's own track is inert (a `__DEV__` warning says so). Two other props cover
 what it cannot:
 
 - `boxSize` sets a `square` / `circle` button's visible dimension outright,
-  including below the smallest density's 30px track, for a glyph a design specs
+  including below the smallest density's 26px track, for a glyph a design specs
   smaller than any control size.
 - `hitSlop` extends the pressable area beyond the visible box, so a compact
   control still meets a comfortable target (WCAG 2.1 — 2.5.5 AAA / 2.5.8 AA)

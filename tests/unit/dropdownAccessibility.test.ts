@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 test("dropdown rows expose an overridable accessible name", () => {
-  const listSource = readSource("../../src/dropdown/DropdownList.tsx");
+  const listSource = readSource("../../src/dropdown/DropdownRow.tsx");
 
   // The row's accessible name is overridable per entry and defaults to the
   // visible label, so callers can disambiguate duplicates or pin a

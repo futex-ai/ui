@@ -1,119 +1,61 @@
 /** Branded dropdown list rows with shared hover and keyboard state. */
-import { Check, IconComponent } from "../primitives/icons";
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from "../primitives/reactNative";
+  ReactNode,
+  RefObject,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { Platform, ScrollView, View } from "../primitives/reactNative";
 
-import type { SharedUiTheme } from "../theme";
+import type { ControlSize } from "../controlSize";
 import { useSharedUiTheme } from "../theme";
+import { useTouchSurface } from "../touchSurface";
 
-import {
-  DEFAULT_DROPDOWN_HIGHLIGHT,
-  createDropdownListStyles,
-  dropdownRowHighlight,
-} from "./dropdownListStyles";
-import type {
-  DropdownHighlightVariant,
-  DropdownListStyles,
-} from "./dropdownListStyles";
+import { DropdownRow } from "./DropdownRow";
+import { DEFAULT_DROPDOWN_HIGHLIGHT } from "./dropdownListStyles";
+import type { DropdownHighlightVariant } from "./dropdownListStyles";
+import { useDropdownListKeyboard } from "./dropdownListKeyboard";
+import type { DropdownListFocusMode } from "./dropdownListKeyboard";
 import {
   dropdownListNavigationItems,
+  dropdownRowDomId,
   selectedDropdownListEntryId,
 } from "./dropdownListModel";
 import {
-  dropdownKeyAction,
   navigationResetKey,
-  nextSelectableId,
   selectedOrFirstId,
   shouldResetDropdownListActiveId,
 } from "./dropdownNavigation";
 import type { DropdownNavigationItem } from "./dropdownNavigation";
+import { createDropdownRowStyles } from "./dropdownRowSizing";
+import type { DropdownListEntry, DropdownListRole } from "./dropdownListTypes";
 import { scrollDropdownActiveRowIntoView } from "./dropdownScroll";
 
 export {
   dropdownListNavigationItems,
+  dropdownRowDomId,
   selectedDropdownListEntryId,
 } from "./dropdownListModel";
 export type { DropdownHighlightVariant } from "./dropdownListStyles";
-
-/** How the option list and its rows are exposed to assistive tech. */
-export type DropdownListRole = "listbox" | "menu";
-
-/**
- * Stable DOM id for a row so a trigger/input can point `aria-activedescendant`
- * at the active option (WCAG 4.1.2). Returns `undefined` when either part is
- * missing so the attribute is simply omitted rather than dangling.
- */
-export function dropdownRowDomId(
-  listId: string | undefined,
-  rowId: string | null | undefined,
-): string | undefined {
-  if (!listId || !rowId) {
-    return undefined;
-  }
-  return `${listId}-row-${rowId}`;
-}
-
-/**
- * Content for a row's `leading`/`right` slot: either a plain node the caller
- * owns outright, or a render function handed the row's resolved content color.
- *
- * A plain node is opaque to the library — it cannot be recolored — so an icon
- * hard-coded to `ink` stays near-black on the solid active fill while the label
- * beside it inverts to white. Pass a function instead to tint your own glyph
- * with the row's color, whichever icon set it comes from:
- *
- * ```tsx
- * leading: ({ color }) => <Ionicons color={color} name="settings-outline" size={18} />
- * ```
- */
-export type DropdownRowSlot =
-  | ReactNode
-  | ((state: { color: string }) => ReactNode);
-
-export type DropdownListEntry =
-  | { id: string; label: string; type: "divider" }
-  | { id: string; label: string; type: "section" }
-  | {
-      /**
-       * Overridable accessible name for the row. Defaults to `label`, so the
-       * on-screen text stays the test/automation handle. Set it to disambiguate
-       * duplicate labels or pin a locale-stable name without changing the
-       * visible copy.
-       */
-      accessibilityLabel?: string;
-      disabled?: boolean;
-      id: string;
-      label: string;
-      /** Leading slot (usually an icon). See {@link DropdownRowSlot}. */
-      leading?: DropdownRowSlot;
-      onPress?: () => void;
-      /** Trailing slot. See {@link DropdownRowSlot}. */
-      right?: DropdownRowSlot;
-      /**
-       * Trailing text (e.g. an account code) rendered in the right slot — the
-       * string companion to `right`. Library-styled, so it inverts to white on
-       * the solid active fill instead of vanishing as muted grey. Prefer this
-       * over a hand-colored `right` node for trailing text; `right` takes
-       * precedence and suppresses the selection check when both are set.
-       */
-      rightText?: string;
-      secondary?: string;
-      selected?: boolean;
-      /** Test identifier forwarded to this row's pressable (`data-testid` on web). */
-      testID?: string;
-      tone?: "amber" | "danger" | "default" | "muted";
-      type: "footer" | "item";
-    };
+export type { DropdownListFocusMode } from "./dropdownListKeyboard";
+export type {
+  DropdownListEntry,
+  DropdownListRole,
+  DropdownRowSlot,
+} from "./dropdownListTypes";
 
 type DropdownListProps = {
   activeId?: string | null;
   entries: DropdownListEntry[];
+  /**
+   * Where keyboard focus sits. `rows` (default) keeps each row its own tab
+   * stop. `list` makes the list one tab stop that points at the active row
+   * and handles the arrow keys, Enter, and Space itself, as an open menu does.
+   */
+  focusMode?: DropdownListFocusMode;
   footer?: ReactNode;
   header?: ReactNode;
   /**
@@ -129,6 +71,8 @@ type DropdownListProps = {
    * `aria-activedescendant`.
    */
   listId?: string;
+  /** The scrolling list node, for example to focus it in `list` focus mode. */
+  listRef?: RefObject<ScrollView | null>;
   /** Container/row roles: `listbox`/`option` (default) or `menu`/`menuitem`. */
   listRole?: DropdownListRole;
   maxHeight: number;
@@ -141,6 +85,12 @@ type DropdownListProps = {
    */
   required?: boolean;
   search?: ReactNode;
+  /**
+   * Row size. `xs` draws 26px dense rows; every other size and no size draw
+   * the standard rows. Inside a `TouchSurface` the rows take the touch
+   * metrics, 44px for one line, whatever the size.
+   */
+  size?: ControlSize;
   /** Test identifier forwarded to the root element (`data-testid` on web). */
   testID?: string;
 };
@@ -148,23 +98,38 @@ type DropdownListProps = {
 export function DropdownList({
   activeId: controlledActiveId,
   entries,
+  focusMode = "rows",
   footer,
   header,
   highlightVariant = DEFAULT_DROPDOWN_HIGHLIGHT,
   label,
-  listId,
+  listId: callerListId,
+  listRef,
   listRole = "listbox",
   maxHeight,
   onActiveIdChange,
   onClose,
   required,
   search,
+  size,
   testID,
 }: DropdownListProps) {
   const theme = useSharedUiTheme();
-  const styles = useMemo(() => createDropdownListStyles(theme), [theme]);
+  const touch = useTouchSurface();
+  // A focused list points at its active row by id, so `list` focus mode needs
+  // row ids even when the caller gives no list id. The rows mode keeps its
+  // markup: without a caller id, its rows stay without ids.
+  const generatedListId = useId();
+  const listId =
+    callerListId ?? (focusMode === "list" ? generatedListId : undefined);
+  const rowStyles = useMemo(
+    () => createDropdownRowStyles(theme, size, touch),
+    [theme, size, touch],
+  );
+  const styles = rowStyles.styles;
   const rowRefs = useRef(new Map<string, View>());
-  const scrollRef = useRef<ScrollView>(null);
+  const ownScrollRef = useRef<ScrollView>(null);
+  const scrollRef = listRef ?? ownScrollRef;
   const navItems = useMemo<DropdownNavigationItem[]>(
     () => dropdownListNavigationItems(entries),
     [entries],
@@ -209,36 +174,6 @@ export function DropdownList({
     rowRefs.current.delete(id);
   };
 
-  const keyProps = {
-    onKeyDown: (event: {
-      key?: string;
-      nativeEvent?: { key?: string };
-      preventDefault?: () => void;
-    }) => {
-      const action = dropdownKeyAction(
-        event.nativeEvent?.key ?? event.key ?? "",
-      );
-      if (!action) return;
-      event.preventDefault?.();
-      if (action === "close") {
-        onClose();
-        return;
-      }
-      if (action === "moveDown" || action === "moveUp") {
-        setActiveId(
-          nextSelectableId(navItems, activeId, action === "moveDown" ? 1 : -1),
-        );
-        return;
-      }
-      if (action === "select" || action === "toggle") {
-        const active = entries.find((entry) => entry.id === activeId);
-        if (active && "onPress" in active && !active.disabled) {
-          active.onPress?.();
-        }
-      }
-    },
-  };
-
   // `listbox`/`menu` (and `option`/`menuitem`) are web ARIA roles; gate them to
   // web so native list semantics are not regressed (the rows stay tappable
   // Pressables on native). WCAG 4.1.2 Name/Role/Value. They are passed via the
@@ -248,6 +183,16 @@ export function DropdownList({
   const isWeb = Platform.OS === "web";
   const itemRole: "menuitem" | "option" =
     listRole === "menu" ? "menuitem" : "option";
+  const listFocus = focusMode === "list";
+  const focus = useDropdownListKeyboard({
+    activeId,
+    entries,
+    focusMode,
+    listId,
+    navItems,
+    onClose,
+    setActiveId,
+  });
   const containerA11y: object = isWeb
     ? ({
         "aria-label": label,
@@ -256,6 +201,7 @@ export function DropdownList({
         ...(required && listRole === "listbox"
           ? { "aria-required": true }
           : {}),
+        ...focus.containerProps,
         nativeID: listId,
         role: listRole,
       } as unknown as object)
@@ -266,10 +212,10 @@ export function DropdownList({
     <ScrollView
       keyboardShouldPersistTaps="handled"
       ref={scrollRef}
-      style={hasChrome ? styles.scroll : { maxHeight }}
+      style={[hasChrome ? styles.scroll : { maxHeight }, focus.containerStyle]}
       testID={hasChrome ? undefined : testID}
       {...containerA11y}
-      {...keyProps}
+      {...focus.keyProps}
     >
       {entries.map((entry) => (
         <DropdownRow
@@ -279,10 +225,12 @@ export function DropdownList({
           isWeb={isWeb}
           itemRole={itemRole}
           key={entry.id}
+          listFocus={listFocus}
+          noteDomId={focus.noteDomId(entry.id)}
           onHover={() => setActiveId(entry.id)}
           onRowRef={setRowRef(entry.id)}
           rowDomId={dropdownRowDomId(listId, entry.id)}
-          styles={styles}
+          rowStyles={rowStyles}
           theme={theme}
         />
       ))}
@@ -302,171 +250,6 @@ export function DropdownList({
       {header ? <View style={styles.headerRegion}>{header}</View> : null}
       {scroll}
       {footer ? <View style={styles.footerRegion}>{footer}</View> : null}
-    </View>
-  );
-}
-
-function DropdownRow({
-  active,
-  entry,
-  highlightVariant,
-  isWeb,
-  itemRole,
-  onHover,
-  onRowRef,
-  rowDomId,
-  styles,
-  theme,
-}: {
-  active: boolean;
-  entry: DropdownListEntry;
-  highlightVariant: DropdownHighlightVariant;
-  isWeb: boolean;
-  itemRole: "menuitem" | "option";
-  onHover: () => void;
-  onRowRef: (node: View | null) => void;
-  rowDomId?: string;
-  styles: DropdownListStyles;
-  theme: SharedUiTheme;
-}) {
-  if (entry.type === "section") {
-    return <Text style={styles.section}>{entry.label}</Text>;
-  }
-  if (entry.type === "divider") {
-    return <View style={styles.divider} />;
-  }
-  const danger = entry.tone === "danger";
-  const amber = entry.tone === "amber";
-  const highlight = dropdownRowHighlight(styles, theme, highlightVariant, {
-    active,
-    disabled: Boolean(entry.disabled),
-    selected: Boolean(entry.selected),
-    tone: entry.tone,
-  });
-  // The solid active fill carries the tone (a red/amber fill) under an inverted
-  // white label, so the tone accent text yields there — the accent would be
-  // unreadable on the fill. Off the inverted row the accent colors the label.
-  const toneLabel = highlight.invertText
-    ? null
-    : danger
-      ? styles.dangerText
-      : amber
-        ? styles.amberText
-        : null;
-  // Selected options are marked with a trailing checkmark so the choice reads
-  // independently of which row is keyboard-focused. Only for `option` rows
-  // (a `menuitem` has no selected state), and only when the row's trailing slot
-  // is free — a custom `right` node or a `rightText` string occupies it instead
-  // (e.g. the combobox supplies its own check).
-  const selectedCheck =
-    itemRole === "option" &&
-    highlight.showCheck &&
-    !entry.right &&
-    !entry.rightText ? (
-      <Check color={highlight.checkColor} size={16} strokeWidth={2.5} />
-    ) : null;
-  // On web, expose the correct ARIA list-item role (`option`/`menuitem`) via
-  // the literal `role` prop, because `option` is missing from the bundled RN
-  // `AccessibilityRole` type (RNW forwards `role` at runtime). On native, keep
-  // the tappable `button` role so the OS exposes a familiar control. `option`
-  // carries `aria-selected`; `menuitem` has no selected state (an action menu).
-  // WCAG 4.1.2 Name/Role/Value.
-  const webRoleProps: object = isWeb
-    ? ({
-        nativeID: rowDomId,
-        role: itemRole,
-        ...(itemRole === "option"
-          ? { "aria-selected": Boolean(entry.selected) }
-          : {}),
-      } as unknown as object)
-    : { accessibilityRole: "button" as const };
-  return (
-    <Pressable
-      accessibilityLabel={entry.accessibilityLabel ?? entry.label}
-      accessibilityState={{
-        disabled: entry.disabled,
-        selected: itemRole === "option" ? entry.selected : undefined,
-      }}
-      disabled={entry.disabled}
-      onHoverIn={entry.disabled ? undefined : onHover}
-      onPress={entry.onPress}
-      ref={onRowRef}
-      testID={entry.testID}
-      {...webRoleProps}
-      style={[
-        styles.item,
-        entry.type === "footer" ? styles.footer : null,
-        highlight.rowStyle,
-        entry.disabled ? styles.itemDisabled : null,
-      ]}
-    >
-      {highlight.showDotSlot ? (
-        <View style={styles.itemDotSlot}>
-          {highlight.showDot ? <View style={styles.itemDot} /> : null}
-        </View>
-      ) : null}
-      {entry.leading ? (
-        <View style={styles.leading}>
-          {renderRowSlot(entry.leading, highlight.contentColor)}
-        </View>
-      ) : null}
-      <View style={styles.itemText}>
-        <Text style={[styles.itemLabel, highlight.labelStyle, toneLabel]}>
-          {entry.label}
-        </Text>
-        {entry.secondary ? (
-          <Text style={[styles.secondary, highlight.secondaryStyle]}>
-            {entry.secondary}
-          </Text>
-        ) : null}
-      </View>
-      {entry.right ? (
-        <View style={styles.right}>
-          {renderRowSlot(entry.right, highlight.contentColor)}
-        </View>
-      ) : entry.rightText ? (
-        <View style={styles.right}>
-          <Text style={[styles.rightText, highlight.secondaryStyle]}>
-            {entry.rightText}
-          </Text>
-        </View>
-      ) : selectedCheck ? (
-        <View style={styles.right}>{selectedCheck}</View>
-      ) : null}
-    </Pressable>
-  );
-}
-
-/**
- * Resolves a row slot against the row's content color. A plain node passes
- * through untouched (the caller owns its color); a render function receives the
- * color so its glyph tracks the active row's inversion. `ReactNode` excludes
- * functions, so the `typeof` check discriminates the union safely.
- */
-function renderRowSlot(slot: DropdownRowSlot, color: string): ReactNode {
-  return typeof slot === "function" ? slot({ color }) : slot;
-}
-
-export function DropdownIconBox({
-  Icon,
-  testID,
-  tone = "sage",
-}: {
-  Icon: IconComponent;
-  /** Test identifier forwarded to the root element (`data-testid` on web). */
-  testID?: string;
-  tone?: "danger" | "sage";
-}) {
-  const theme = useSharedUiTheme();
-  const styles = useMemo(() => createDropdownListStyles(theme), [theme]);
-  const color =
-    tone === "danger" ? theme.colors.rose : theme.colors.primaryDeep;
-  return (
-    <View
-      style={[styles.iconBox, tone === "danger" ? styles.iconBoxDanger : null]}
-      testID={testID}
-    >
-      <Icon color={color} size={14} />
     </View>
   );
 }
