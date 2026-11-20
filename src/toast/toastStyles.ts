@@ -9,6 +9,11 @@ import type { SharedUiTheme } from "../theme";
  * the card, the solid fill, custom leading icons, the action row, and the
  * close control — lives here so it tracks `SharedUiThemeProvider`.
  *
+ * Both variants are one row that ends with the close control. In a card
+ * toast, the first part of the row is a column: the icon and the copy, then
+ * the action row at the left edge of the card. A solid toast shows its action
+ * under the title.
+ *
  * The tone accent (the leading icon colour) is applied inline by {@link Toast}
  * because it depends on the tone, mirroring how {@link Button} applies its
  * tone-driven label colour.
@@ -27,7 +32,6 @@ export function createToastStyles(theme: SharedUiTheme) {
     actions: {
       flexDirection: "row",
       gap: 8,
-      marginTop: 10,
     },
     closeButton: {
       alignItems: "center",
@@ -40,6 +44,8 @@ export function createToastStyles(theme: SharedUiTheme) {
     },
     closeButtonHover: { backgroundColor: theme.colors.soft },
     content: { flex: 1, gap: 2, minWidth: 0 },
+    cardBody: { flex: 1, gap: 10, minWidth: 0 },
+    cardRow: { flexDirection: "row", gap: 12 },
     cardToast: {
       backgroundColor: theme.colors.surface,
       borderColor: theme.colors.border,
@@ -64,11 +70,6 @@ export function createToastStyles(theme: SharedUiTheme) {
       fontSize: 14,
       fontWeight: "800",
       lineHeight: 20,
-    },
-    solidActions: {
-      flexDirection: "row",
-      gap: 8,
-      marginTop: 0,
     },
     solidCloseButton: {
       marginLeft: 2,
@@ -130,3 +131,12 @@ export function createToastStyles(theme: SharedUiTheme) {
 }
 
 export type ToastStyles = ReturnType<typeof createToastStyles>;
+
+/**
+ * The focus ring of the action and the close control of a solid toast: a ring
+ * in the fill's foreground colour, so it stays visible on every tone fill
+ * (WCAG 2.1 — 2.4.7 Focus Visible, AA).
+ */
+export function toastFilledFocusRing(foreground: string) {
+  return { boxShadow: `0 0 0 2px ${foreground}` };
+}

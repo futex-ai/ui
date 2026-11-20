@@ -11,7 +11,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Platform, Pressable, Text, View } from "../primitives/reactNative";
 import type { ViewProps } from "../primitives/reactNative";
 
-import { Button } from "../button";
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 
@@ -20,7 +19,9 @@ import {
   toastSolidToneForeground,
   toastToneAccent,
 } from "./toastColors";
-import { createToastStyles } from "./toastStyles";
+import { ToastActionButton } from "./ToastActionButton";
+import { moveFocusToNeighbourToast } from "./toastFocus";
+import { createToastStyles, toastFilledFocusRing } from "./toastStyles";
 import { toastRole } from "./toastModel";
 import type {
   ToastIcon,
@@ -90,11 +91,8 @@ export function Toast({ toast, onDismiss, testID }: ToastProps) {
     document.addEventListener("visibilitychange", sync);
     return () => document.removeEventListener("visibilitychange", sync);
   }, []);
-  const [filledActionFocused, setFilledActionFocused] = useState(false);
   const [closeFocused, setCloseFocused] = useState(false);
-  const filledControlFocusRing = {
-    boxShadow: `0 0 0 2px ${filledForeground}`,
-  };
+  const filledControlFocusRing = toastFilledFocusRing(filledForeground);
   // The close control's focus ring adapts to the variant so it stays visible
   // (WCAG 2.1 — 2.4.7 Focus Visible, AA): the filled foreground on a solid
   // toast, or a surface+primary ring on a card toast.
@@ -154,26 +152,18 @@ export function Toast({ toast, onDismiss, testID }: ToastProps) {
     onMouseLeave: () => setPaused(false),
   };
 
-  return (
-    <View
-      {...(pauseHandlers as ViewProps)}
-      // The toast keeps its `status`/`alert` role so it is identifiable, but its
-      // own live announcement is suppressed (`aria-live="off"` overrides the
-      // implicit live behaviour of the role): the announcement is owned by the
-      // persistent `ToastLiveRegion`, since a region born empty announces far
-      // more reliably than one created with its content (WCAG 2.1 — 4.1.3, AA).
-      aria-live="off"
-      ref={containerRef}
-      role={toastRole(toast.tone)}
-      style={[
-        styles.toast,
-        filled
-          ? [styles.solidToast, { backgroundColor: filledBackground }]
-          : styles.cardToast,
-        toast.surfaceStyle,
-      ]}
-      testID={testID}
-    >
+  const action = toast.action ? (
+    <ToastActionButton
+      action={toast.action}
+      filled={filled}
+      filledForeground={filledForeground}
+      onDone={() => onDismiss(toast.id)}
+      styles={styles}
+    />
+  ) : null;
+
+  const lead = (
+    <>
       {/* The leading/tone icon is decorative — its meaning is carried by the
           toast copy and the assistive-tech announcement, so hide it (1.1.1, A). */}
       {shouldRenderToastIcon(icon) ? (
@@ -211,108 +201,76 @@ export function Toast({ toast, onDismiss, testID }: ToastProps) {
             {toast.description}
           </Text>
         ) : null}
-        {toast.action ? (
-          <View style={[styles.actions, filled ? styles.solidActions : null]}>
-            {filled ? (
-              <Pressable
-                accessibilityRole="button"
-                onBlur={() => setFilledActionFocused(false)}
-                onFocus={() => setFilledActionFocused(true)}
-                onPress={() => {
-                  toast.action?.onPress();
-                  onDismiss(toast.id);
-                }}
-                style={({ hovered }: PressableHoverState) => [
-                  styles.solidActionButton,
-                  hovered ? styles.solidActionButtonHover : null,
-                  filledActionFocused ? filledControlFocusRing : null,
-                  hideWebOutlineView,
-                ]}
-              >
-                <Text
-                  style={[styles.solidActionText, { color: filledForeground }]}
-                >
-                  {toast.action.label}
-                </Text>
-              </Pressable>
-            ) : (
-              <Button
-                onPress={() => {
-                  toast.action?.onPress();
-                  onDismiss(toast.id);
-                }}
-                size="sm"
-                tone="ghost"
-              >
-                {toast.action.label}
-              </Button>
-            )}
-          </View>
-        ) : null}
+        {solid && action}
       </View>
-      {toast.dismissible ? (
-        <Pressable
-          accessibilityLabel={`Dismiss ${toast.title}`}
-          accessibilityRole="button"
-          onBlur={() => setCloseFocused(false)}
-          onFocus={() => setCloseFocused(true)}
-          onPress={dismissFromClose}
-          style={({ hovered }: PressableHoverState) => [
-            styles.closeButton,
-            filled ? styles.solidCloseButton : null,
-            hovered
-              ? filled
-                ? styles.solidCloseButtonHover
-                : styles.closeButtonHover
-              : null,
-            closeFocused ? closeControlFocusRing : null,
-            hideWebOutlineView,
-          ]}
-        >
-          {/* The "×" glyph is decorative; the Pressable's label carries the
-              name ("Dismiss {title}"), so hide the icon from AT (1.1.1, A). */}
-          <X
-            aria-hidden
-            color={filled ? filledForeground : theme.colors.muted}
-            size={16}
-          />
-        </Pressable>
-      ) : null}
+    </>
+  );
+
+  const close = toast.dismissible ? (
+    <Pressable
+      accessibilityLabel={`Dismiss ${toast.title}`}
+      accessibilityRole="button"
+      onBlur={() => setCloseFocused(false)}
+      onFocus={() => setCloseFocused(true)}
+      onPress={dismissFromClose}
+      style={({ hovered }: PressableHoverState) => [
+        styles.closeButton,
+        filled ? styles.solidCloseButton : null,
+        hovered
+          ? filled
+            ? styles.solidCloseButtonHover
+            : styles.closeButtonHover
+          : null,
+        closeFocused ? closeControlFocusRing : null,
+        hideWebOutlineView,
+      ]}
+    >
+      {/* The "×" glyph is decorative; the Pressable's label carries the
+          name ("Dismiss {title}"), so hide the icon from AT (1.1.1, A). */}
+      <X
+        aria-hidden
+        color={filled ? filledForeground : theme.colors.muted}
+        size={16}
+      />
+    </Pressable>
+  ) : null;
+
+  return (
+    <View
+      {...(pauseHandlers as ViewProps)}
+      // The toast keeps its `status`/`alert` role so it is identifiable, but its
+      // own live announcement is suppressed (`aria-live="off"` overrides the
+      // implicit live behaviour of the role): the announcement is owned by the
+      // persistent `ToastLiveRegion`, since a region born empty announces far
+      // more reliably than one created with its content (WCAG 2.1 — 4.1.3, AA).
+      aria-live="off"
+      ref={containerRef}
+      role={toastRole(toast.tone)}
+      style={[
+        styles.toast,
+        filled
+          ? [styles.solidToast, { backgroundColor: filledBackground }]
+          : styles.cardToast,
+        toast.surfaceStyle,
+      ]}
+      testID={testID}
+    >
+      {/* A solid toast keeps the action under its title. A card toast puts
+          the action on its own row, at the left edge of the card, so it lines
+          up with the icon and not with the text. The close control stays the
+          last child in both, so Tab and a screen reader reach the action
+          first. */}
+      {solid ? (
+        lead
+      ) : (
+        <View style={styles.cardBody}>
+          <View style={styles.cardRow}>{lead}</View>
+          {action}
+        </View>
+      )}
+      {close}
     </View>
   );
-}
-
-/**
- * Web only. When a toast is dismissed from its own close control, the button is
- * about to unmount, so move keyboard focus to the next (or previous) toast's
- * close control before it goes — otherwise focus drops to `<body>` and the
- * keyboard user loses their place (WCAG 2.1 — 2.4.3 Focus Order, 2.1.2, A).
- * `container` is the dismissing toast's DOM node (RNW renders `View` as a div).
- */
-function moveFocusToNeighbourToast(container: View | null): void {
-  const node = container as unknown;
-  if (!(node instanceof HTMLElement) || typeof document === "undefined") {
-    return;
-  }
-  const viewport = node.parentElement;
-  if (!viewport) {
-    return;
-  }
-  const buttons = Array.from(
-    viewport.querySelectorAll<HTMLElement>('[aria-label^="Dismiss "]'),
-  );
-  // Drop the dismissing toast's own button (it sits inside `node`).
-  const others = buttons.filter((button) => !node.contains(button));
-  if (others.length === 0) {
-    return;
-  }
-  // Prefer the button at this toast's position (the next toast that slides into
-  // place); otherwise the last remaining one.
-  const ownIndex = buttons.findIndex((button) => node.contains(button));
-  const target =
-    others.find((button) => buttons.indexOf(button) > ownIndex) ??
-    others[others.length - 1];
-  target.focus();
 }
 
 /** Leading icon per tone. */

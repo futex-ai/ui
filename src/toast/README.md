@@ -123,7 +123,9 @@ toastController.toast({
 - Pass `surfaceStyle` to override the toast surface and `foregroundColor` to
   override filled-toast text, icon, action, and close-control colour.
 - Pass `action={{ label: "Undo", onPress }}` to add an action; pressing it runs
-  `onPress` and dismisses the toast.
+  `onPress` and dismisses the toast. A card toast shows the action on its own
+  row under the copy, at the left edge of the card. A solid toast shows it
+  under the title.
 - `dismiss(id)` removes one toast (the id is returned from `toast()`),
   `dismissAll()` clears them, and `dismissible: false` hides the close button.
   A toast that is both sticky (`duration: null`) and `dismissible: false` has no
@@ -156,8 +158,10 @@ npm run test:browser
 - `ToastProvider.tsx` — owns the queue and renders the viewport.
 - `ToastContext.ts` — context and the `useToast` hook.
 - `toastController.ts` — method-call API backed by the mounted provider.
-- `Toast.tsx` — toast surface, tone accent, auto-dismiss/pause timer, close
-  control with a keyboard focus ring, and focus hand-off on dismiss.
+- `Toast.tsx` — toast surface, tone accent, auto-dismiss/pause timer, and
+  close control with a keyboard focus ring.
+- `ToastActionButton.tsx` — the action button of a card toast and a solid toast.
+- `toastFocus.ts` — web focus hand-off to the next toast on dismiss.
 - `ToastLiveRegion.tsx` — persistent, always-mounted polite/assertive live
   region that announces toast text (4.1.3 AA).
 - `ToastViewport.web.tsx` — DOM-portalled, fixed web viewport; mounts the live

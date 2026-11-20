@@ -194,7 +194,6 @@ function SolidVariantTriggers() {
         onPress={() =>
           toastController.toast({
             action: { label: "Retry", onPress: () => undefined },
-            dismissible: false,
             duration: null,
             title: "Move failed",
             tone: "error",
