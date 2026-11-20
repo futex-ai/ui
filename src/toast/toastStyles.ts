@@ -71,11 +71,6 @@ export function createToastStyles(theme: SharedUiTheme) {
       fontWeight: "800",
       lineHeight: 20,
     },
-    solidActions: {
-      flexDirection: "row",
-      gap: 8,
-      marginTop: 0,
-    },
     solidCloseButton: {
       marginLeft: 2,
       marginRight: -8,
@@ -136,3 +131,12 @@ export function createToastStyles(theme: SharedUiTheme) {
 }
 
 export type ToastStyles = ReturnType<typeof createToastStyles>;
+
+/**
+ * The focus ring of the action and the close control of a solid toast: a ring
+ * in the fill's foreground colour, so it stays visible on every tone fill
+ * (WCAG 2.1 — 2.4.7 Focus Visible, AA).
+ */
+export function toastFilledFocusRing(foreground: string) {
+  return { boxShadow: `0 0 0 2px ${foreground}` };
+}

@@ -21,7 +21,7 @@ import {
 } from "./toastColors";
 import { ToastActionButton } from "./ToastActionButton";
 import { moveFocusToNeighbourToast } from "./toastFocus";
-import { createToastStyles } from "./toastStyles";
+import { createToastStyles, toastFilledFocusRing } from "./toastStyles";
 import { toastRole } from "./toastModel";
 import type {
   ToastIcon,
@@ -92,9 +92,7 @@ export function Toast({ toast, onDismiss, testID }: ToastProps) {
     return () => document.removeEventListener("visibilitychange", sync);
   }, []);
   const [closeFocused, setCloseFocused] = useState(false);
-  const filledControlFocusRing = {
-    boxShadow: `0 0 0 2px ${filledForeground}`,
-  };
+  const filledControlFocusRing = toastFilledFocusRing(filledForeground);
   // The close control's focus ring adapts to the variant so it stays visible
   // (WCAG 2.1 — 2.4.7 Focus Visible, AA): the filled foreground on a solid
   // toast, or a surface+primary ring on a card toast.
@@ -228,7 +226,7 @@ export function Toast({ toast, onDismiss, testID }: ToastProps) {
       ]}
     >
       {/* The "×" glyph is decorative; the Pressable's label carries the
-              name ("Dismiss {title}"), so hide the icon from AT (1.1.1, A). */}
+          name ("Dismiss {title}"), so hide the icon from AT (1.1.1, A). */}
       <X
         aria-hidden
         color={filled ? filledForeground : theme.colors.muted}

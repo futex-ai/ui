@@ -104,9 +104,10 @@ test("a solid toast keeps its action under the title, before the close control",
   const title = await box(toast.getByText("Move failed", { exact: true }));
   const action = await box(toast.getByRole("button", { name: "Retry" }));
   expect(action.y).toBeGreaterThanOrEqual(title.y + title.height);
-  await expect(toast).toHaveCSS("flex-direction", "row");
-  const names = await buttonNames(toast);
-  expect(names[0]).toBe("Retry");
+  // The solid action is bare text under the title, in the copy column. Its
+  // -6px side margin lets the hover wash reach past the label.
+  expect(Math.abs(action.x + 6 - title.x)).toBeLessThanOrEqual(1);
+  expect(await buttonNames(toast)).toEqual(["Retry", "Dismiss Move failed"]);
 });
 
 test("toast auto-dismisses after its duration elapses", async ({ page }) => {

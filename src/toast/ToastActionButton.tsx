@@ -5,6 +5,7 @@ import { Pressable, Text, View } from "../primitives/reactNative";
 import { Button } from "../button";
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";
 
+import { toastFilledFocusRing } from "./toastStyles";
 import type { ToastStyles } from "./toastStyles";
 import type { ToastAction } from "./toastModel";
 
@@ -49,7 +50,7 @@ export function ToastActionButton({
     );
   }
   return (
-    <View style={styles.solidActions}>
+    <View style={styles.actions}>
       <Pressable
         accessibilityRole="button"
         onBlur={() => setFocused(false)}
@@ -58,7 +59,7 @@ export function ToastActionButton({
         style={({ hovered }: PressableHoverState) => [
           styles.solidActionButton,
           hovered ? styles.solidActionButtonHover : null,
-          focused ? { boxShadow: `0 0 0 2px ${filledForeground}` } : null,
+          focused ? toastFilledFocusRing(filledForeground) : null,
           hideWebOutlineView,
         ]}
       >
