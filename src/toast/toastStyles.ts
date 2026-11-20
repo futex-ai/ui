@@ -9,9 +9,10 @@ import type { SharedUiTheme } from "../theme";
  * the card, the solid fill, custom leading icons, the action row, and the
  * close control — lives here so it tracks `SharedUiThemeProvider`.
  *
- * A card toast is a column: a top row with the icon, the copy, and the close
- * control, then the action row at the left edge of the card. A solid toast is
- * one row, with its action under the title.
+ * Both variants are one row that ends with the close control. In a card
+ * toast, the first part of the row is a column: the icon and the copy, then
+ * the action row at the left edge of the card. A solid toast shows its action
+ * under the title.
  *
  * The tone accent (the leading icon colour) is applied inline by {@link Toast}
  * because it depends on the tone, mirroring how {@link Button} applies its
@@ -43,13 +44,12 @@ export function createToastStyles(theme: SharedUiTheme) {
     },
     closeButtonHover: { backgroundColor: theme.colors.soft },
     content: { flex: 1, gap: 2, minWidth: 0 },
+    cardBody: { flex: 1, gap: 10, minWidth: 0 },
     cardRow: { flexDirection: "row", gap: 12 },
     cardToast: {
       backgroundColor: theme.colors.surface,
       borderColor: theme.colors.border,
       borderWidth: 1,
-      flexDirection: "column",
-      gap: 10,
     },
     description: {
       ...baseText,
@@ -106,7 +106,6 @@ export function createToastStyles(theme: SharedUiTheme) {
       alignItems: "center",
       borderRadius: theme.radii.xl,
       boxShadow: "0 18px 44px rgba(20, 28, 22, 0.24)",
-      flexDirection: "row",
       gap: 10,
       maxWidth: 560,
       paddingHorizontal: 22,
@@ -127,6 +126,8 @@ export function createToastStyles(theme: SharedUiTheme) {
       // gently lifted off the surface instead of harshly cut out.
       boxShadow:
         "0 1px 2px rgba(20, 28, 22, 0.04), 0 8px 24px rgba(20, 28, 22, 0.09)",
+      flexDirection: "row",
+      gap: 12,
       maxWidth: 380,
       overflow: "hidden",
       padding: 14,

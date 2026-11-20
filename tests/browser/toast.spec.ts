@@ -3,6 +3,7 @@
  * the controller.
  */
 import { expect, test } from "@playwright/test";
+import type { Locator } from "@playwright/test";
 
 test("toast appears on trigger, announces its tone, and dismisses on close", async ({
   page,
@@ -45,6 +46,67 @@ test("toast action runs and dismisses the toast", async ({ page }) => {
 
   await page.getByRole("button", { name: "Undo" }).click();
   await expect(toast).toBeHidden();
+});
+
+/** The names of the buttons of a toast, in DOM order (Tab and AT order). */
+function buttonNames(toast: Locator) {
+  return toast
+    .getByRole("button")
+    .evaluateAll((buttons) =>
+      buttons.map(
+        (button) =>
+          button.getAttribute("aria-label") ?? button.textContent ?? "",
+      ),
+    );
+}
+
+async function box(locator: Locator) {
+  const rect = await locator.boundingBox();
+  expect(rect, "element should have a layout box").not.toBeNull();
+  return rect!;
+}
+
+test("a card toast puts its action at the left edge, before the close control", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=toast-examples--with-action");
+
+  await page.getByRole("button", { name: "Delete invoice" }).click();
+  const toast = page
+    .getByRole("region", { name: "Notifications" })
+    .getByRole("status")
+    .filter({ hasText: "Invoice deleted" });
+  await expect(toast).toBeVisible();
+
+  const icon = await box(toast.locator('[aria-hidden="true"]').first());
+  const description = await box(
+    toast.getByText("The invoice was moved to trash."),
+  );
+  const action = await box(toast.getByRole("button", { name: "Undo" }));
+  // The action sits on its own row under the copy, in line with the icon.
+  expect(Math.abs(action.x - icon.x)).toBeLessThanOrEqual(1);
+  expect(action.y).toBeGreaterThanOrEqual(description.y + description.height);
+  expect(await buttonNames(toast)).toEqual(["Undo", "Dismiss Invoice deleted"]);
+});
+
+test("a solid toast keeps its action under the title, before the close control", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=toast-examples--solid-bottom-center");
+
+  await page.getByRole("button", { name: "Show action" }).click();
+  const toast = page
+    .getByRole("region", { name: "Notifications" })
+    .locator('[aria-live="off"]')
+    .filter({ hasText: "Move failed" });
+  await expect(toast).toBeVisible();
+
+  const title = await box(toast.getByText("Move failed", { exact: true }));
+  const action = await box(toast.getByRole("button", { name: "Retry" }));
+  expect(action.y).toBeGreaterThanOrEqual(title.y + title.height);
+  await expect(toast).toHaveCSS("flex-direction", "row");
+  const names = await buttonNames(toast);
+  expect(names[0]).toBe("Retry");
 });
 
 test("toast auto-dismisses after its duration elapses", async ({ page }) => {

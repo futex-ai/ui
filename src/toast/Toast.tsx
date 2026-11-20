@@ -19,7 +19,7 @@ import {
   toastSolidToneForeground,
   toastToneAccent,
 } from "./toastColors";
-import { ToastAction } from "./ToastAction";
+import { ToastActionButton } from "./ToastActionButton";
 import { moveFocusToNeighbourToast } from "./toastFocus";
 import { createToastStyles } from "./toastStyles";
 import { toastRole } from "./toastModel";
@@ -155,7 +155,7 @@ export function Toast({ toast, onDismiss, testID }: ToastProps) {
   };
 
   const action = toast.action ? (
-    <ToastAction
+    <ToastActionButton
       action={toast.action}
       filled={filled}
       filledForeground={filledForeground}
@@ -164,7 +164,7 @@ export function Toast({ toast, onDismiss, testID }: ToastProps) {
     />
   ) : null;
 
-  const main = (
+  const lead = (
     <>
       {/* The leading/tone icon is decorative — its meaning is carried by the
           toast copy and the assistive-tech announcement, so hide it (1.1.1, A). */}
@@ -205,36 +205,37 @@ export function Toast({ toast, onDismiss, testID }: ToastProps) {
         ) : null}
         {solid && action}
       </View>
-      {toast.dismissible ? (
-        <Pressable
-          accessibilityLabel={`Dismiss ${toast.title}`}
-          accessibilityRole="button"
-          onBlur={() => setCloseFocused(false)}
-          onFocus={() => setCloseFocused(true)}
-          onPress={dismissFromClose}
-          style={({ hovered }: PressableHoverState) => [
-            styles.closeButton,
-            filled ? styles.solidCloseButton : null,
-            hovered
-              ? filled
-                ? styles.solidCloseButtonHover
-                : styles.closeButtonHover
-              : null,
-            closeFocused ? closeControlFocusRing : null,
-            hideWebOutlineView,
-          ]}
-        >
-          {/* The "×" glyph is decorative; the Pressable's label carries the
-                name ("Dismiss {title}"), so hide the icon from AT (1.1.1, A). */}
-          <X
-            aria-hidden
-            color={filled ? filledForeground : theme.colors.muted}
-            size={16}
-          />
-        </Pressable>
-      ) : null}
     </>
   );
+
+  const close = toast.dismissible ? (
+    <Pressable
+      accessibilityLabel={`Dismiss ${toast.title}`}
+      accessibilityRole="button"
+      onBlur={() => setCloseFocused(false)}
+      onFocus={() => setCloseFocused(true)}
+      onPress={dismissFromClose}
+      style={({ hovered }: PressableHoverState) => [
+        styles.closeButton,
+        filled ? styles.solidCloseButton : null,
+        hovered
+          ? filled
+            ? styles.solidCloseButtonHover
+            : styles.closeButtonHover
+          : null,
+        closeFocused ? closeControlFocusRing : null,
+        hideWebOutlineView,
+      ]}
+    >
+      {/* The "×" glyph is decorative; the Pressable's label carries the
+              name ("Dismiss {title}"), so hide the icon from AT (1.1.1, A). */}
+      <X
+        aria-hidden
+        color={filled ? filledForeground : theme.colors.muted}
+        size={16}
+      />
+    </Pressable>
+  ) : null;
 
   return (
     <View
@@ -256,17 +257,20 @@ export function Toast({ toast, onDismiss, testID }: ToastProps) {
       ]}
       testID={testID}
     >
-      {/* A solid toast keeps its parts on one row, with the action under the
-          title. A card toast puts the action on its own row, at the left edge
-          of the card, so it lines up with the icon and not with the text. */}
+      {/* A solid toast keeps the action under its title. A card toast puts
+          the action on its own row, at the left edge of the card, so it lines
+          up with the icon and not with the text. The close control stays the
+          last child in both, so Tab and a screen reader reach the action
+          first. */}
       {solid ? (
-        main
+        lead
       ) : (
-        <>
-          <View style={styles.cardRow}>{main}</View>
+        <View style={styles.cardBody}>
+          <View style={styles.cardRow}>{lead}</View>
           {action}
-        </>
+        </View>
       )}
+      {close}
     </View>
   );
 }

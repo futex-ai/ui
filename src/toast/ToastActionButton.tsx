@@ -6,11 +6,11 @@ import { Button } from "../button";
 import { hideWebOutlineView, PressableHoverState } from "../focusRing";
 
 import type { ToastStyles } from "./toastStyles";
-import type { ToastAction as ToastActionModel } from "./toastModel";
+import type { ToastAction } from "./toastModel";
 
-export type ToastActionProps = {
+export type ToastActionButtonProps = {
   /** The action to render. */
-  action: ToastActionModel;
+  action: ToastAction;
   /** The colour of the text and focus ring on a filled toast. */
   filledForeground: string;
   /** Whether the toast has a solid fill instead of the card surface. */
@@ -27,13 +27,13 @@ export type ToastActionProps = {
  * fill colour under its title, with a wash on hover and a ring on focus.
  * A press runs the handler and then dismisses the toast.
  */
-export function ToastAction({
+export function ToastActionButton({
   action,
   filled,
   filledForeground,
   onDone,
   styles,
-}: ToastActionProps) {
+}: ToastActionButtonProps) {
   const [focused, setFocused] = useState(false);
   const onPress = () => {
     action.onPress();

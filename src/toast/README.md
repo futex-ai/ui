@@ -160,7 +160,7 @@ npm run test:browser
 - `toastController.ts` — method-call API backed by the mounted provider.
 - `Toast.tsx` — toast surface, tone accent, auto-dismiss/pause timer, and
   close control with a keyboard focus ring.
-- `ToastAction.tsx` — the action button of a card toast and a solid toast.
+- `ToastActionButton.tsx` — the action button of a card toast and a solid toast.
 - `toastFocus.ts` — web focus hand-off to the next toast on dismiss.
 - `ToastLiveRegion.tsx` — persistent, always-mounted polite/assertive live
   region that announces toast text (4.1.3 AA).
