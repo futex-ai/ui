@@ -10,6 +10,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.calumfutex.firna-ui-storybook"
     },
-    "android": {}
+    "android": {},
+    "plugins": ["expo-status-bar"]
   }
 }

@@ -35,6 +35,7 @@ through its public subpath:
 | `List.stories.tsx`           | `List/Native rows`                | Dense rows, navigation rows with the current page, and touch rows               |
 | `Popover.stories.tsx`        | `Popover/Native menus`            | The menu sheet of `InlineMenu`, `InlineMenuSheet`, and a touch `ResponsiveMenu` |
 | `PanelResize.stories.tsx`    | `Panel resize/Native handle`      | Resize handles with drag, adjustable actions, bounds, and drawn states          |
+| `Primitives.stories.tsx`     | `Primitives/Native primitives`    | The public primitives entry with layout, text, a press action, a link, and SVG  |
 | `TouchSurface.stories.tsx`   | `Touch surface/Native controls`   | The same `xs` controls outside and inside a touch surface                       |
 | `Typography.stories.tsx`     | `Typography/Native text scale`    | The default and compact text scales and a per-text override                     |
 
@@ -117,16 +118,16 @@ reader output on a device or a simulator.
 
 ## Versions
 
-Targets **Expo SDK 56** (React Native 0.85 + React 19.2, matching the library).
+The host uses **Expo SDK 58** with React Native 0.88.1 and React 19.3.0.
 Storybook React Native is on the **v10** major (same as the web Storybook). Run
 `npx expo install --fix` to keep native deps pinned to the SDK.
 
 ## Status
 
-Bundles successfully for iOS and Android. The rich-text story has also been
-interaction-smoked in Expo Go on the iOS simulator, including focus and the
-input-accessory toolbar. If Expo Go cannot mount the full navigator for a local
-SDK combination, use the **dev build** above.
+Bundles successfully for iOS and Android on Expo SDK 58. No simulator or
+device check has run on SDK 58 yet, so check the stories on a simulator before
+you rely on them. If Expo Go cannot mount the full navigator for a local SDK
+combination, use the **dev build** above.
 
 Notes:
 
