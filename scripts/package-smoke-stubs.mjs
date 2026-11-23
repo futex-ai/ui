@@ -148,6 +148,10 @@ export interface RefAttributes<T> {
   ref?: Ref<T> | undefined;
   key?: unknown;
 }
+export interface SVGProps<T> extends RefAttributes<T> {
+  children?: ReactNode;
+  style?: CSSProperties;
+}
 export type Dispatch<T> = (value: T) => void;
 export type PropsWithChildren<P = unknown> = P & { children?: ReactNode };
 export interface ReactElement<P = unknown> {

@@ -112,6 +112,8 @@ The package name is `@firna/ui`. Public exports are available from:
 - [`@firna/ui/panel-resize`](src/panel-resize/README.md) for the controlled panel resize handle.
 - [`@firna/ui/popover`](src/popover/README.md) for anchored popovers, in-place menus, and phone menu
   sheets.
+- [`@firna/ui/primitives`](src/primitives/README.md) for shared views with
+  React Native styles, SVG, and links.
 - [`@firna/ui/radio`](src/radio/README.md) for themed titled radio-option cards.
 - [`@firna/ui/rich-text`](src/rich-text/README.md) for the Notion-style block editor with markdown in/out,
   inline formatting, lists/checklists, native keyboard toolbars, and the
@@ -187,14 +189,13 @@ your target:
 - **Optional on native:** `@gorhom/bottom-sheet`, `react-native-gesture-handler`,
   and `react-native-reanimated` power the native bottom sheet.
 
-Every component reaches the platform through `src/primitives`, a small set of
-modules with a native file and a `.web` sibling: React Native primitives
-(`react-native` on native; the library's own DOM backend on web), SVG
-(`react-native-svg` on
-native, DOM `<svg>` on web), and icons (`lucide-react-native` on native,
-`lucide-react` on web). Icon props accept `IconComponent`, a type both Lucide
-packages' icons satisfy, so a consumer passes whichever matches their
-platform.
+Every component reaches the platform through the seam in `src/primitives`.
+On iOS and Android it uses React Native, React Native SVG, and
+`lucide-react-native`. On web it uses the library's DOM backend, DOM `<svg>`
+elements, and `lucide-react`. Icon props accept `IconComponent`, a type that
+the icons of both Lucide packages satisfy, so a consumer passes the icons of
+its own platform. An app can build its own views on the same seam through
+[`@firna/ui/primitives`](src/primitives/README.md).
 
 ## Theming
 

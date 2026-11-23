@@ -150,6 +150,11 @@
       "react-native": "./dist/popover/index.js",
       "import": "./dist/node/popover/index.js"
     },
+    "./primitives": {
+      "types": "./dist/node/primitives/index.d.ts",
+      "react-native": "./dist/primitives/index.js",
+      "import": "./dist/node/primitives/index.js"
+    },
     "./radio": {
       "types": "./dist/node/radio/index.d.ts",
       "react-native": "./dist/radio/index.js",
@@ -249,7 +254,7 @@
     "storybook:build": "storybook build",
     "storybook:native": "npm run build && cd storybook-native && npm start -- --clear",
     "test": "node --import tsx --test tests/unit/*.test.ts",
-    "test:dist": "FIRNA_TEST_DIST=1 node --import tsx --test tests/unit/distDeclarations.test.ts tests/unit/staticFocusRing.test.ts tests/unit/staticFocusIndicator.test.ts tests/unit/staticDragSelect.test.ts tests/unit/staticMenus.test.ts",
+    "test:dist": "FIRNA_TEST_DIST=1 node --import tsx --test tests/unit/distDeclarations.test.ts tests/unit/staticFocusRing.test.ts tests/unit/staticFocusIndicator.test.ts tests/unit/staticDragSelect.test.ts tests/unit/staticMenus.test.ts tests/unit/staticPrimitives.test.ts",
     "test:browser": "playwright test",
     "test:package": "node scripts/package-smoke.mjs",
     "typecheck": "tsc --noEmit --project tsconfig.json",

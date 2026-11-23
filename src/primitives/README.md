@@ -1,5 +1,64 @@
 # Platform primitives
 
+## Use in an app
+
+Use `@firna/ui/primitives` to build shared React views with React Native
+styles. The same imports work on web, iOS, and Android.
+
+- The React Native primitives include `View`, `Text`, `Pressable`, and
+  `StyleSheet`, with their types.
+- The SVG primitives include `Svg` and `Path`. The link host exports `Link`,
+  `LinkProps`, and `LinkInteractionState`.
+- `domBackendCss` supplies the stylesheet for server rendering on web. Its
+  value on native is an empty string. `IconComponent` and
+  `IconComponentProps` type icon props.
+- The export lists of `reactNative.ts`, `svg.tsx`, and `link.tsx` give every
+  name. Their `.web` siblings export the same names.
+
+Import glyphs from the Lucide package for your platform. The DOM and vendored
+type modules are internal to the library.
+
+Web bundlers use the `import` condition and the DOM build in `dist/node`.
+Metro uses the `react-native` condition and selects the native implementation
+on iOS and Android. On Expo web, Metro selects the web implementation.
+The entry uses React and React DOM on web. On iOS and Android it uses React,
+React Native, and React Native SVG. Install the package peers for your target.
+[Installation](../../README.md#installation)
+
+Every consumer's TypeScript reads the self-contained declarations in
+`dist/node`. These declarations use the seam's own copy of React Native's
+types. [Type details](#types)
+
+On web, the DOM backend translates styles and accessibility props and runs
+animations in JavaScript. Links render as HTML anchors.
+[DOM backend](#dom) · [Link behavior](#the-link-host)
+
+The export names and types are public API. Removing a name or narrowing a type
+requires a breaking release marked with `!` in the commit type or scope.
+
+```tsx
+import { Link, Pressable, StyleSheet, Text, View } from "@firna/ui/primitives";
+
+export function ProjectActions({ onRefresh }: { onRefresh: () => void }) {
+  return (
+    <View style={styles.actions}>
+      <Pressable accessibilityRole="button" onPress={onRefresh}>
+        <Text>Refresh</Text>
+      </Pressable>
+      <Link href="https://example.com/help">
+        <Text>Help</Text>
+      </Link>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  actions: { flexDirection: "row", gap: 12 },
+});
+```
+
+## How the library uses the seam
+
 The single seam between the library and its platform packages. Components
 never import `react-native`, `react-native-svg`, `lucide-react-native`,
 `react-native-web`, or `lucide-react` directly; they import from here, and a
@@ -202,7 +261,7 @@ why `svg.ts` is `svg.tsx`. A unit test enforces the ordering for every pair.
 Rules:
 
 - Each pair exports the same names; the unit test diffs them. Add a name to
-  both files in the same change, and only when a component needs it.
+  both files in the same change when a library component or consumer needs it.
 - A new name also needs a type in `types/` and an implementation in `dom/`.
   The web seam imports nothing but those two; a unit test asserts it.
 - Class-valued exports get a same-named type alias so `useRef<View>` keeps

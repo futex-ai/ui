@@ -45,6 +45,16 @@ package boundary and links every other page.
   elements. They pass their `focusIndicator` through the `indicator` option and
   gate any focus-only decoration of their own on the returned `indicator`.
   `focusRingStyleFor` remains the explicit inline-style escape hatch.
+- The public `./primitives` subpath must expose the React Native and SVG
+  primitives, the link host, the DOM backend stylesheet, and their public
+  types, including the icon component types.
+- The subpath must render with React Native and React Native SVG on iOS and
+  Android. On web it must render with the library's DOM backend and DOM SVG
+  elements.
+- Consumers import icon glyphs from Lucide because the library's glyph list
+  serves its own components and overlaps with primitive names.
+- The names and types that the subpath exports are public API. Removing a name
+  or narrowing a type requires a breaking release.
 - release-please owns release PR creation, changelog updates, npm metadata
   version updates, `vX.Y.Z` Git tags, and GitHub releases.
 - release-please must use the `node` release type so release PRs update

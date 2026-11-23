@@ -7,9 +7,14 @@
  * DOM-valid SVG attribute, so a thin shim over the DOM elements keeps web
  * builds free of that dependency. The export list mirrors `svg.ts`.
  */
-import React, { forwardRef } from "react";
+import {
+  createElement,
+  forwardRef,
+  type CSSProperties,
+  type SVGProps,
+} from "react";
 
-type SvgProps = React.SVGProps<SVGSVGElement> & {
+type SvgProps = SVGProps<SVGSVGElement> & {
   color?: string;
   size?: number | string;
 };
@@ -28,7 +33,7 @@ type NativeSvgProps = {
   strokeDasharray?: string | number | readonly number[];
 };
 
-type SvgChildProps = Omit<React.SVGProps<SVGElement>, "strokeDasharray"> &
+type SvgChildProps = Omit<SVGProps<SVGElement>, "strokeDasharray"> &
   NativeSvgProps;
 
 // Collapse a React Native style value into a single plain object the DOM can
@@ -38,17 +43,17 @@ type SvgChildProps = Omit<React.SVGProps<SVGElement>, "strokeDasharray"> &
 // array `style` makes React throw "Indexed property setter is not supported" on
 // `CSSStyleDeclaration[0]`. Flatten nested arrays and drop nullish entries so an
 // animated SVG child (e.g. the AnimatedBorder trail) renders.
-function flattenStyle(style: unknown): React.CSSProperties | undefined {
+function flattenStyle(style: unknown): CSSProperties | undefined {
   if (style == null || style === false) {
     return undefined;
   }
   if (Array.isArray(style)) {
-    return style.reduce<React.CSSProperties>((merged, entry) => {
+    return style.reduce<CSSProperties>((merged, entry) => {
       const flat = flattenStyle(entry);
       return flat ? { ...merged, ...flat } : merged;
     }, {});
   }
-  return style as React.CSSProperties;
+  return style as CSSProperties;
 }
 
 // Forward the ref to the underlying DOM element. `react-native-svg`'s nodes
@@ -61,7 +66,7 @@ function createChildElement(tag: keyof SVGElementTagNameMap) {
     { style, ...props },
     ref,
   ) {
-    return React.createElement(tag, {
+    return createElement(tag, {
       ...props,
       ref,
       style: flattenStyle(style),
