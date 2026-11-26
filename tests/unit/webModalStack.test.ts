@@ -44,7 +44,7 @@ test("root and stack are harmless without document", () => {
       reads.push("entry");
       return [];
     },
-    initialFocusTarget: () => {
+    openFocusTarget: () => {
       reads.push("focus");
       return null;
     },
@@ -86,7 +86,7 @@ test("push snapshots the opener before marking anything inert", () => {
   assert.match(source, /activeElement !== document\.documentElement/);
   assert.match(
     source,
-    /if \(pushed\.isTop\) \{\s*focusWebModalElement\(layer\.initialFocusTarget\(\)\)/,
+    /if \(pushed\.isTop\) \{\s*focusWebModalElement\(layer\.openFocusTarget\(\)\)/,
   );
 });
 
@@ -174,7 +174,7 @@ test("removal applies released nodes and layer roots before restoring focus", ()
   );
   assert.match(
     removal,
-    /focusWebModalElement\(candidate\.layer\.initialFocusTarget\(\)\)/,
+    /focusWebModalElement\(candidate\.layer\.entryFocusTargets\(\)\[0\]\)/,
   );
 });
 

@@ -109,8 +109,20 @@ function webModalElementIsFocusable(element: HTMLElement): boolean {
   if (disabled || element.getAttribute("aria-disabled") === "true") {
     return false;
   }
+  // A control under an inert or `display: none` ancestor cannot take focus,
+  // although its own computed style looks visible.
+  if (element.closest("[inert]")) {
+    return false;
+  }
+  if (typeof element.checkVisibility === "function") {
+    return element.checkVisibility({ visibilityProperty: true });
+  }
   const style = window.getComputedStyle(element);
-  return style.display !== "none" && style.visibility !== "hidden";
+  return (
+    style.display !== "none" &&
+    style.visibility !== "hidden" &&
+    element.getClientRects().length > 0
+  );
 }
 
 /** Focuses a DOM element or the caller's focusable handle when one is present. */

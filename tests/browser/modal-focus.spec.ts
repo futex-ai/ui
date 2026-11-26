@@ -185,3 +185,38 @@ test('initialFocus="surface" sends Tab to the first caller control when the init
   await page.keyboard.press("Tab");
   await expect(page.getByLabel("Display name")).toBeFocused();
 });
+
+test('initialFocus="surface" sends Tab past a caller control in a hidden container', async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=modal-examples--surface-initial-focus&args=bookTarget:!false;nameHidden:!true",
+  );
+  await expect(page.getByRole("dialog", { name: "Settings" })).toBeFocused();
+
+  // The name field is the first caller control in DOM order, but its
+  // container is hidden. Tab goes to the next caller control.
+  await page.keyboard.press("Tab");
+  await expect(
+    page.getByRole("button", { name: "Northwind Books" }),
+  ).toBeFocused();
+});
+
+test("closing a dialog whose opener is gone focuses the entry control of the surface-mode dialog beneath", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=modal-examples--surface-initial-focus");
+  const settings = page.getByRole("dialog", { name: "Settings" });
+  await expect(settings).toBeFocused();
+
+  await page.getByRole("button", { name: "Remove book" }).click();
+  const confirm = page.getByRole("dialog", { name: "Remove Northwind Books?" });
+  await expect(confirm).toBeVisible();
+
+  // Remove deletes the book chip, the initialFocusRef, and the Remove book
+  // button, the opener. Focus goes to the default entry control of Settings,
+  // not to its surface.
+  await page.getByRole("button", { name: "Remove", exact: true }).click();
+  await expect(confirm).toBeHidden();
+  await expect(page.getByLabel("Display name")).toBeFocused();
+});

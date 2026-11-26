@@ -80,7 +80,7 @@ export function useWebModalLayer({
   };
   const [layer] = useState<WebModalLayer>(() => ({
     entryFocusTargets,
-    initialFocusTarget: () =>
+    openFocusTarget: () =>
       initialFocusModeRef.current === "surface"
         ? hostElement(surfaceRef)
         : (entryFocusTargets()[0] ?? null),

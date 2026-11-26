@@ -57,7 +57,7 @@ export const ConfirmWebModal: Story = {
 };
 
 export const SurfaceInitialFocus: StoryObj<typeof ModalSurfaceFocusExample> = {
-  args: { bookDisabled: false, bookTarget: true },
+  args: { bookDisabled: false, bookTarget: true, nameHidden: false },
   name: "Opens on the surface",
   render: (args) => (
     <StorySurface>
