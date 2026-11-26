@@ -18,7 +18,7 @@ jobs:
   release:
     name: Release @firna/ui
     if: github.repository == 'futex-ai/ui'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
       id-token: write
