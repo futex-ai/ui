@@ -38,10 +38,20 @@ export function webModalInitialFocusTarget(
   return callerControl ?? closeButton ?? surface;
 }
 
-/** Wraps Tab inside the surface and brings escaped focus back into the dialog. */
+/**
+ * Wraps Tab inside the surface and brings escaped focus back into the dialog.
+ *
+ * When the surface itself has focus, as after `initialFocus="surface"` or a
+ * press on the surface background, Tab moves to the first entry target that
+ * takes focus inside the surface, and Shift+Tab to the last control. Without
+ * this, Shift+Tab from the surface would leave the dialog. A caller's entry
+ * target can fail, for example a disabled button; the frame's default target
+ * then takes focus, so Tab still skips the close button.
+ */
 export function trapWebModalFocus(
   event: KeyboardEvent,
   surface: HTMLElement | null,
+  entryTargets: () => readonly Focusable[],
 ): void {
   if (!surface) {
     return;
@@ -55,6 +65,21 @@ export function trapWebModalFocus(
   const first = focusable[0];
   const last = focusable[focusable.length - 1];
   const activeElement = document.activeElement;
+  if (activeElement === surface) {
+    event.preventDefault();
+    if (event.shiftKey) {
+      focusWebModalElement(last);
+      return;
+    }
+    for (const target of entryTargets()) {
+      focusWebModalElement(target);
+      const entered = document.activeElement;
+      if (entered && entered !== surface && surface.contains(entered)) {
+        return;
+      }
+    }
+    return;
+  }
   const activeInside = activeElement ? surface.contains(activeElement) : false;
   if (event.shiftKey && (!activeInside || activeElement === first)) {
     event.preventDefault();
@@ -79,8 +104,20 @@ function webModalElementIsFocusable(element: HTMLElement): boolean {
   if (disabled || element.getAttribute("aria-disabled") === "true") {
     return false;
   }
+  // A control under an inert or `display: none` ancestor cannot take focus,
+  // although its own computed style looks visible.
+  if (element.closest("[inert]")) {
+    return false;
+  }
+  if (typeof element.checkVisibility === "function") {
+    return element.checkVisibility({ visibilityProperty: true });
+  }
   const style = window.getComputedStyle(element);
-  return style.display !== "none" && style.visibility !== "hidden";
+  return (
+    style.display !== "none" &&
+    style.visibility !== "hidden" &&
+    element.getClientRects().length > 0
+  );
 }
 
 /** Focuses a DOM element or the caller's focusable handle when one is present. */

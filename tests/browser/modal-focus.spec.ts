@@ -1,8 +1,10 @@
 /**
  * Browser coverage for the web modal: focus restore, the initial focus, the
- * header actions, and nested dropdowns.
+ * surface initial focus mode, the header actions, and nested dropdowns.
  */
 import { expect, test } from "@playwright/test";
+
+import { DEFAULT_GLOW, expectGlow } from "./focusRingHelpers";
 
 test("web modal restores focus and allows nested dropdowns above the surface", async ({
   page,
@@ -174,4 +176,115 @@ test("header actions take the frame's focus indicator, as Close does", async ({
   await expect(fullScreen).toBeVisible();
   await expect(fullScreen).not.toHaveAttribute("data-firna-focus-ring");
   await expect(closeButton).not.toHaveAttribute("data-firna-focus-ring");
+});
+
+test('initialFocus="surface" opens on the dialog surface and Tab enters at the initialFocusRef', async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=modal-examples--surface-initial-focus");
+  const dialog = page.getByRole("dialog", { name: "Settings" });
+  const opener = page.getByRole("button", { name: "Open settings" });
+  const book = page.getByRole("button", { name: "Northwind Books" });
+
+  // The named dialog itself has focus, so a screen reader announces it, and no
+  // control has focus to show a ring.
+  await expect(dialog).toBeFocused();
+
+  // Reopen from the keyboard: Chrome then matches `:focus-visible` on the
+  // programmatic focus, which is the case that drew a ring on a control.
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await opener.focus();
+  await page.keyboard.press("Enter");
+  await expect(dialog).toBeFocused();
+  expect(
+    await dialog.evaluate((element) => element.matches(":focus-visible")),
+  ).toBe(true);
+  await expect(dialog).toHaveCSS("outline-style", "none");
+  expect(
+    await dialog.evaluate((element) => getComputedStyle(element).boxShadow),
+  ).not.toContain(DEFAULT_GLOW);
+
+  // The first Tab skips the name field before the chip, because the chip is
+  // the initialFocusRef, and the chip shows the shared glow.
+  await page.keyboard.press("Tab");
+  await expect(book).toBeFocused();
+  await expectGlow(book);
+
+  // The trap and the focus restore work as in the default mode.
+  await page.keyboard.press("Escape");
+  await expect(opener).toBeFocused();
+});
+
+test('initialFocus="surface" sends Shift+Tab from the surface to the last control', async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=modal-examples--surface-initial-focus");
+  await expect(page.getByRole("dialog", { name: "Settings" })).toBeFocused();
+
+  await page.keyboard.press("Shift+Tab");
+  await expect(page.getByRole("button", { name: "Billing" })).toBeFocused();
+});
+
+test('initialFocus="surface" without an initialFocusRef sends Tab to the first caller control', async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=modal-examples--surface-initial-focus&args=bookTarget:!false",
+  );
+  await expect(page.getByRole("dialog", { name: "Settings" })).toBeFocused();
+
+  // The close button comes first in DOM order, but Tab skips it, as the
+  // default initial focus does.
+  await page.keyboard.press("Tab");
+  await expect(page.getByLabel("Display name")).toBeFocused();
+});
+
+test('initialFocus="surface" sends Tab to the first caller control when the initialFocusRef cannot take focus', async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=modal-examples--surface-initial-focus&args=bookDisabled:!true",
+  );
+  await expect(page.getByRole("dialog", { name: "Settings" })).toBeFocused();
+
+  // The disabled chip cannot take focus. Tab goes to the default entry
+  // control and still skips the close button.
+  await page.keyboard.press("Tab");
+  await expect(page.getByLabel("Display name")).toBeFocused();
+});
+
+test('initialFocus="surface" sends Tab past a caller control in a hidden container', async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=modal-examples--surface-initial-focus&args=bookTarget:!false;nameHidden:!true",
+  );
+  await expect(page.getByRole("dialog", { name: "Settings" })).toBeFocused();
+
+  // The name field is the first caller control in DOM order, but its
+  // container is hidden. Tab goes to the next caller control.
+  await page.keyboard.press("Tab");
+  await expect(
+    page.getByRole("button", { name: "Northwind Books" }),
+  ).toBeFocused();
+});
+
+test("closing a dialog whose opener is gone focuses the entry control of the surface-mode dialog beneath", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=modal-examples--surface-initial-focus");
+  const settings = page.getByRole("dialog", { name: "Settings" });
+  await expect(settings).toBeFocused();
+
+  await page.getByRole("button", { name: "Remove book" }).click();
+  const confirm = page.getByRole("dialog", { name: "Remove Northwind Books?" });
+  await expect(confirm).toBeVisible();
+
+  // Remove deletes the book chip, the initialFocusRef, and the Remove book
+  // button, the opener. Focus goes to the default entry control of Settings,
+  // not to its surface.
+  await page.getByRole("button", { name: "Remove", exact: true }).click();
+  await expect(confirm).toBeHidden();
+  await expect(page.getByLabel("Display name")).toBeFocused();
 });

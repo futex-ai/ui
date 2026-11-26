@@ -32,9 +32,10 @@ though it is now cross-platform.
   hidden from assistive technology while covered by an open dialog.
 - Keep nested dialogs in tree order when they open together. A child dialog
   stays above its parent, and later siblings stay above earlier siblings.
-- Move focus into the top dialog and keep Tab inside it. Restore focus to its
-  opener on close, or to the dialog beneath when the opener is unavailable.
-  Closing a lower dialog does not move focus.
+- Move focus into the top dialog, on a control or, with
+  `initialFocus="surface"`, on the dialog surface, and keep Tab inside it.
+  Restore focus to its opener on close, or to the dialog beneath when the
+  opener is unavailable. Closing a lower dialog does not move focus.
 - Lock page scroll until the last dialog closes without shifting the layout.
 - Keep the toast region operable and its messages announced while dialogs are
   open.
@@ -126,6 +127,32 @@ const cancelRef = useRef<View | null>(null);
   visible={open}
 >
   This cannot be undone.
+</WebModalFrame>;
+```
+
+Pass `initialFocus="surface"` (web-only) to open the dialog with focus on its
+surface instead of on a control. Use it when a focus ring on a control at open
+is unwanted, for example a settings dialog that the user opens to read. The
+browser shows a ring on a control that gets focus by script when the page has
+just loaded or the user last used the keyboard. The surface shows no ring, and
+screen readers still announce the dialog. The first Tab moves to
+`initialFocusRef`, or to the first caller control when no ref is given.
+Shift+Tab moves to the last control. The default, `initialFocus="control"`,
+focuses that control directly.
+
+```tsx
+const bookRef = useRef<View | null>(null);
+
+<WebModalFrame
+  initialFocus="surface"
+  initialFocusRef={bookRef}
+  onClose={onClose}
+  title="Settings"
+  visible={open}
+>
+  <Button buttonRef={bookRef} onPress={onChooseBook}>
+    Northwind Books
+  </Button>
 </WebModalFrame>;
 ```
 

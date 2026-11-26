@@ -12,6 +12,7 @@ import { Pressable, ScrollView, View } from "../primitives/reactNative";
 import type { ViewStyle } from "../primitives/reactNative";
 
 import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
+import { hideWebOutlineView } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
 import { useReducedMotion } from "../useReducedMotion";
 
@@ -51,6 +52,7 @@ export function WebModalFrame({
   footerStyle,
   headerActions,
   headerStyle,
+  initialFocus = "control",
   initialFocusRef,
   onClose,
   placement = "center",
@@ -95,6 +97,7 @@ export function WebModalFrame({
   // restore on close. See webModalStack.ts.
   const layer = useWebModalLayer({
     closeButtonRef,
+    initialFocus,
     initialFocusRef,
     layerRef,
     requestClose,
@@ -198,6 +201,9 @@ export function WebModalFrame({
           role="dialog"
           style={[
             styles.surface,
+            // The surface takes focus as a container, never as a control, so
+            // it draws no browser outline.
+            hideWebOutlineView,
             sheet
               ? [
                   styles.surfaceSheet,

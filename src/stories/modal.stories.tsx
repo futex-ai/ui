@@ -5,6 +5,7 @@ import { ModalFromPopoverExample } from "./modalFromPopoverExample";
 import { ModalHeaderActionsExample } from "./modalHeaderActionsExample";
 import { ModalOverOverlaysExample } from "./modalOverOverlaysExample";
 import { ModalStackExample } from "./modalStackExample";
+import { ModalSurfaceFocusExample } from "./modalSurfaceFocusExample";
 import {
   ConfirmModalExample,
   ModalExample,
@@ -70,6 +71,16 @@ export const ConfirmWebModal: Story = {
   render: () => (
     <StorySurface>
       <ConfirmModalExample />
+    </StorySurface>
+  ),
+};
+
+export const SurfaceInitialFocus: StoryObj<typeof ModalSurfaceFocusExample> = {
+  args: { bookDisabled: false, bookTarget: true, nameHidden: false },
+  name: "Opens on the surface",
+  render: (args) => (
+    <StorySurface>
+      <ModalSurfaceFocusExample {...args} />
     </StorySurface>
   ),
 };

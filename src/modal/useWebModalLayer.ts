@@ -12,7 +12,10 @@ import type { View } from "../primitives/reactNative";
 
 import type { Focusable } from "./types";
 import { webModalInitialFocusTarget } from "./webModalFocusTrap";
-import type { WebModalCloseSource } from "./webModalModel";
+import type {
+  WebModalCloseSource,
+  WebModalInitialFocus,
+} from "./webModalModel";
 import { pushWebModalLayer, removeWebModalLayer } from "./webModalStack";
 import type { WebModalLayer } from "./webModalStack";
 
@@ -23,7 +26,9 @@ export const WebModalLayerContext = createContext<WebModalLayer | null>(null);
 export type WebModalLayerOptions = {
   /** The header close button, which the default initial focus skips. */
   closeButtonRef: RefObject<View | null>;
-  /** The caller's initial focus target, which wins over the default target. */
+  /** Whether opening focuses the entry control or the surface. */
+  initialFocus: WebModalInitialFocus;
+  /** The caller's entry control, which wins over the default control. */
   initialFocusRef?: RefObject<Focusable | null>;
   /** The frame's top-level node, a direct child of the shared root. */
   layerRef: RefObject<View | null>;
@@ -47,6 +52,7 @@ export type WebModalLayerOptions = {
  */
 export function useWebModalLayer({
   closeButtonRef,
+  initialFocus,
   initialFocusRef,
   layerRef,
   requestClose,
@@ -54,17 +60,30 @@ export function useWebModalLayer({
   visible,
 }: WebModalLayerOptions): WebModalLayer {
   const parent = useContext(WebModalLayerContext);
+  const initialFocusModeRef = useRef(initialFocus);
   const initialFocusTargetRef = useRef(initialFocusRef);
   const requestCloseRef = useRef(requestClose);
+  initialFocusModeRef.current = initialFocus;
   initialFocusTargetRef.current = initialFocusRef;
   requestCloseRef.current = requestClose;
+  // The layer keeps the first render's resolver. It reads only refs, so it
+  // stays current.
+  const entryFocusTargets = () => {
+    const defaultTarget = webModalInitialFocusTarget(
+      hostElement(surfaceRef),
+      hostElement(closeButtonRef),
+    );
+    const callerTarget = initialFocusTargetRef.current?.current;
+    return [callerTarget, defaultTarget].filter(
+      (target): target is Focusable => target != null,
+    );
+  };
   const [layer] = useState<WebModalLayer>(() => ({
-    initialFocusTarget: () =>
-      initialFocusTargetRef.current?.current ??
-      webModalInitialFocusTarget(
-        hostElement(surfaceRef),
-        hostElement(closeButtonRef),
-      ),
+    entryFocusTargets,
+    openFocusTarget: () =>
+      initialFocusModeRef.current === "surface"
+        ? hostElement(surfaceRef)
+        : (entryFocusTargets()[0] ?? null),
     parent,
     requestClose: (source) => requestCloseRef.current(source),
     root: () => hostElement(layerRef),

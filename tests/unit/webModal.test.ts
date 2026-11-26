@@ -248,9 +248,10 @@ test("web modal opens focus on caller content rather than the close button", () 
   // An explicit `initialFocusRef` still wins; otherwise the frame picks the
   // first focusable other than the close button, and only then falls back to
   // close/surface.
+  assert.match(hook, /\[callerTarget, defaultTarget\]\.filter\(/);
   assert.match(
     hook,
-    /initialFocusTargetRef\.current\?\.current \?\?\s*webModalInitialFocusTarget\(\s*hostElement\(surfaceRef\),\s*hostElement\(closeButtonRef\),?\s*\)/,
+    /const defaultTarget = webModalInitialFocusTarget\(\s*hostElement\(surfaceRef\),\s*hostElement\(closeButtonRef\),?\s*\)/,
   );
   assert.match(focusSource, /\(element\) => element !== closeButton/);
   assert.match(
