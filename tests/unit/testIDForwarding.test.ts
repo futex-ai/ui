@@ -86,6 +86,7 @@ const FORWARDING_FILES = [
   "loader/ProgressRing.tsx",
   "modal/WebModalFrame.tsx",
   "modal/WebModalFrame.web.tsx",
+  "modal/WebModalHeaderButton.tsx",
   "notice/Notice.tsx",
   "panel-resize/PanelResizeHandle.tsx",
   "panel-resize/PanelResizeHandle.web.tsx",

@@ -8,6 +8,10 @@ import {
   webModalSurfaceClearsBackdrop,
 } from "../../src/modal/modalLayers";
 import {
+  WEB_MODAL_HEADER_GAP,
+  webModalHeaderButtonHitSlop,
+} from "../../src/modal/webModalHeaderGroup";
+import {
   webModalCanClose,
   webModalMaxWidth,
 } from "../../src/modal/webModalModel";
@@ -38,6 +42,40 @@ test("web modal close policy honours disabled and non-dismissible states", () =>
 test("web modal size tokens are stable and ordered", () => {
   assert.equal(webModalMaxWidth("sm") < webModalMaxWidth("md"), true);
   assert.equal(webModalMaxWidth("md") < webModalMaxWidth("lg"), true);
+});
+
+test("native header buttons split the gap so Close never takes an action's tap", () => {
+  // A lone Close keeps the 10px slop on every edge that it had before the
+  // header actions slot existed.
+  assert.deepEqual(webModalHeaderButtonHitSlop("alone"), {
+    bottom: 10,
+    left: 10,
+    right: 10,
+    top: 10,
+  });
+  // Beside actions, each edge that faces a neighbour takes half the 4px gap.
+  assert.deepEqual(webModalHeaderButtonHitSlop("action"), {
+    bottom: 10,
+    left: 2,
+    right: 2,
+    top: 10,
+  });
+  assert.deepEqual(webModalHeaderButtonHitSlop("close"), {
+    bottom: 10,
+    left: 2,
+    right: 10,
+    top: 10,
+  });
+  const action = webModalHeaderButtonHitSlop("action");
+  const close = webModalHeaderButtonHitSlop("close");
+  assert.equal(
+    (action.right ?? 0) + (close.left ?? 0) <= WEB_MODAL_HEADER_GAP,
+    true,
+  );
+  assert.equal(
+    (action.right ?? 0) + (action.left ?? 0) <= WEB_MODAL_HEADER_GAP,
+    true,
+  );
 });
 
 test("web modal portals into the shared root and leaves focus to the stack", () => {
@@ -208,8 +246,8 @@ test("web modal opens focus on caller content rather than the close button", () 
   const focusSource = readSource("../../src/modal/webModalFocusTrap.ts");
 
   // An explicit `initialFocusRef` still wins; otherwise the frame picks the
-  // first focusable the caller rendered, skipping the close button even though
-  // it comes first in DOM order, and only then falls back to close/surface.
+  // first focusable other than the close button, and only then falls back to
+  // close/surface.
   assert.match(hook, /\[callerTarget, defaultTarget\]\.filter\(/);
   assert.match(
     hook,
@@ -248,6 +286,7 @@ test("public modal entrypoint exports frame, portal, models, and layers", () => 
   const source = readSource("../../src/modal/index.ts");
 
   assert.match(source, /WebModalFrame/);
+  assert.match(source, /WebModalHeaderButton/);
   assert.match(source, /WebModalPortal/);
   assert.match(source, /modalLayers/);
   assert.match(source, /webModalModel/);

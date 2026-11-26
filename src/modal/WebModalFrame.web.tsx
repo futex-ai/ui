@@ -50,6 +50,7 @@ export function WebModalFrame({
   footer,
   bodyStyle,
   footerStyle,
+  headerActions,
   headerStyle,
   initialFocus = "control",
   initialFocusRef,
@@ -148,6 +149,7 @@ export function WebModalFrame({
       closeDisabled={closeDisabled}
       closeLabel={closeLabel}
       focusIndicator={focusIndicator}
+      headerActions={headerActions}
       headerStyle={headerStyle}
       onClose={() => requestClose("closeButton")}
       showCloseButton={showCloseButton}

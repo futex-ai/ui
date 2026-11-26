@@ -16,7 +16,6 @@
  * `accessibilityViewIsModal` confines assistive tech to the surface (works
  * natively, unlike RNW — hence the web frame's manual `inert` focus trap).
  */
-import { X } from "../primitives/icons";
 import { useCallback, useMemo, useRef } from "react";
 import {
   KeyboardAvoidingView,
@@ -33,9 +32,9 @@ import { BottomSheetShell } from "../sheet/BottomSheetShell";
 import type { BottomSheetHandle } from "../sheet/BottomSheetShell";
 import type { SharedUiTheme } from "../theme";
 import { useSharedUiTheme } from "../theme";
-import { TOUCH_TARGET_SIZE, useTouchSurface } from "../touchSurface";
 
 import type { WebModalFrameProps } from "./types";
+import { WebModalHeaderControls } from "./WebModalHeaderControls";
 import { webModalCanClose, webModalMaxWidth } from "./webModalModel";
 import type { WebModalCloseSource } from "./webModalModel";
 
@@ -49,6 +48,7 @@ export function WebModalFrame({
   footer,
   bodyStyle,
   footerStyle,
+  headerActions,
   headerStyle,
   onClose,
   placement = "center",
@@ -65,8 +65,6 @@ export function WebModalFrame({
 }: WebModalFrameProps) {
   const theme = useSharedUiTheme();
   const styles = useMemo(() => createNativeModalStyles(theme), [theme]);
-  // On a touch surface the close control is its own 44 by 44px target.
-  const touch = useTouchSurface();
   const sheet = placement === "bottom-sheet";
   const sheetRef = useRef<BottomSheetHandle | null>(null);
   const onCloseRef = useRef(onClose);
@@ -102,23 +100,13 @@ export function WebModalFrame({
           <Text style={[styles.subtitle, subtitleStyle]}>{subtitle}</Text>
         ) : null}
       </View>
-      {showCloseButton ? (
-        <Pressable
-          accessibilityLabel={closeLabel ?? `Close ${title}`}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: closeDisabled }}
-          disabled={closeDisabled}
-          hitSlop={touch ? undefined : 10}
-          onPress={() => requestClose("closeButton")}
-          style={[
-            styles.closeButton,
-            touch ? styles.closeButtonTouch : null,
-            closeDisabled ? styles.disabled : null,
-          ]}
-        >
-          <X color={theme.colors.ink2} size={18} />
-        </Pressable>
-      ) : null}
+      <WebModalHeaderControls
+        closeDisabled={closeDisabled}
+        closeLabel={closeLabel ?? `Close ${title}`}
+        headerActions={headerActions}
+        onClose={() => requestClose("closeButton")}
+        showCloseButton={showCloseButton}
+      />
     </View>
   );
 
@@ -212,15 +200,6 @@ function createNativeModalStyles(theme: SharedUiTheme) {
       right: 0,
       top: 0,
     },
-    closeButton: {
-      alignItems: "center",
-      borderRadius: theme.radii.md,
-      height: 34,
-      justifyContent: "center",
-      width: 34,
-    },
-    closeButtonTouch: { height: TOUCH_TARGET_SIZE, width: TOUCH_TARGET_SIZE },
-    disabled: { opacity: 0.55 },
     footer: {
       borderTopColor: theme.colors.border,
       borderTopWidth: 1,

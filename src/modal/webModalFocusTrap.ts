@@ -13,16 +13,11 @@ const WEB_MODAL_FOCUSABLE_SELECTOR = [
 
 /**
  * Where focus lands when a modal opens, absent an explicit `initialFocusRef`:
- * the first control the *caller* rendered — the form field, or the footer's
- * action button when the body holds nothing focusable. The close button is
- * skipped even though it comes first in DOM order, because opening a dialog
- * with "dismiss" preselected is a poor landing spot: it is the least likely
- * thing the user came to do, and a reflexive Enter throws the dialog away.
- *
- * Tab order itself needs no rework. A focus trap is a cycle, so starting on the
- * caller's first control already yields `field → … → action → close → field`:
- * the close button is the last stop on the way round, and Shift+Tab from the
- * landing element reaches it immediately.
+ * the first focusable control in the dialog other than the close button. The
+ * close button is skipped because opening a dialog with "dismiss" preselected
+ * is a poor landing spot: it is the least likely thing the user came to do,
+ * and a reflexive Enter throws the dialog away. Tab order needs no rework,
+ * because the focus trap is a cycle that still reaches the close button.
  *
  * Falls back to the close button when the caller rendered nothing focusable at
  * all, then to the surface itself (`tabIndex={-1}`), so focus always enters the

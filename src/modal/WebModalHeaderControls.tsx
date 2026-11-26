@@ -1,0 +1,77 @@
+/**
+ * The controls at the end of the modal header row: the caller's
+ * `headerActions`, then the Close button. The web and native frames share it,
+ * so both platforms order and space the controls the same way. With no
+ * actions it renders only the Close button, with no wrapper.
+ */
+import type { ReactNode, Ref } from "react";
+import { X } from "../primitives/icons";
+import { StyleSheet, View } from "../primitives/reactNative";
+
+import type { FocusIndicator } from "../focusRing";
+
+import { WebModalHeaderButton } from "./WebModalHeaderButton";
+import {
+  WEB_MODAL_HEADER_GAP,
+  WebModalHeaderGroupContext,
+} from "./webModalHeaderGroup";
+import type { WebModalHeaderGroup } from "./webModalHeaderGroup";
+
+export type WebModalHeaderControlsProps = {
+  closeButtonRef?: Ref<View>;
+  closeDisabled: boolean;
+  closeLabel: string;
+  focusIndicator?: FocusIndicator;
+  headerActions?: ReactNode;
+  onClose: () => void;
+  showCloseButton: boolean;
+};
+
+export function WebModalHeaderControls({
+  closeButtonRef,
+  closeDisabled,
+  closeLabel,
+  focusIndicator,
+  headerActions,
+  onClose,
+  showCloseButton,
+}: WebModalHeaderControlsProps) {
+  const close = showCloseButton ? (
+    <WebModalHeaderButton
+      accessibilityLabel={closeLabel}
+      buttonRef={closeButtonRef}
+      disabled={closeDisabled}
+      focusIndicator={focusIndicator}
+      icon={X}
+      onPress={onClose}
+    />
+  ) : null;
+  if (!headerActions) {
+    return close;
+  }
+  // The actions come first in DOM order, so Tab reaches them before Close.
+  // The contexts tell each button its place in the row, for its native hit
+  // slop, and give the caller's buttons the frame's focus indicator.
+  const actions: WebModalHeaderGroup = { focusIndicator, position: "action" };
+  const closeGroup: WebModalHeaderGroup = { focusIndicator, position: "close" };
+  return (
+    <View style={styles.controls}>
+      <View style={styles.controls}>
+        <WebModalHeaderGroupContext.Provider value={actions}>
+          {headerActions}
+        </WebModalHeaderGroupContext.Provider>
+      </View>
+      <WebModalHeaderGroupContext.Provider value={closeGroup}>
+        {close}
+      </WebModalHeaderGroupContext.Provider>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  controls: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: WEB_MODAL_HEADER_GAP,
+  },
+});
