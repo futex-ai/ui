@@ -23,8 +23,16 @@ export type WebModalLayer = {
   readonly root: () => HTMLElement | null;
   /** The dialog surface used by the single Tab trap. */
   readonly surface: () => HTMLElement | null;
-  /** Resolves the caller's explicit target or the frame's default target. */
-  readonly initialFocusTarget: () => Focusable | null;
+  /**
+   * Resolves the entry controls in order: the caller's explicit target, then
+   * the frame's default target. Opening focuses the first one. The first Tab
+   * from the surface moves to the first one that takes focus. A restore to
+   * this dialog, when the opener of the closed dialog is gone, focuses the
+   * first one.
+   */
+  readonly entryFocusTargets: () => readonly Focusable[];
+  /** Resolves where focus lands on open: the entry control or the surface. */
+  readonly openFocusTarget: () => Focusable | null;
   /** Applies the frame's close policy to the requested source. */
   readonly requestClose: (source: WebModalCloseSource) => void;
 };
@@ -71,7 +79,7 @@ export function pushWebModalLayer(layer: WebModalLayer): void {
     lockPageScroll();
   }
   if (pushed.isTop) {
-    focusWebModalElement(layer.initialFocusTarget());
+    focusWebModalElement(layer.openFocusTarget());
   }
 }
 
@@ -105,7 +113,7 @@ export function removeWebModalLayer(layer: WebModalLayer): void {
         return;
       }
     } else {
-      focusWebModalElement(candidate.layer.initialFocusTarget());
+      focusWebModalElement(candidate.layer.entryFocusTargets()[0]);
       return;
     }
   }
@@ -189,7 +197,13 @@ function tryRestoreElement(element: HTMLElement): boolean {
 }
 
 function handleKeyDown(event: KeyboardEvent): void {
-  if (event.key === "Tab") {
-    trapWebModalFocus(event, topWebModalLayer()?.surface() ?? null);
+  if (event.key !== "Tab") {
+    return;
   }
+  const top = topWebModalLayer();
+  trapWebModalFocus(
+    event,
+    top?.surface() ?? null,
+    () => top?.entryFocusTargets() ?? [],
+  );
 }

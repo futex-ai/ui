@@ -40,7 +40,11 @@ test("root and stack are harmless without document", () => {
       reads.push("surface");
       return null;
     },
-    initialFocusTarget: () => {
+    entryFocusTargets: () => {
+      reads.push("entry");
+      return [];
+    },
+    openFocusTarget: () => {
       reads.push("focus");
       return null;
     },
@@ -82,7 +86,7 @@ test("push snapshots the opener before marking anything inert", () => {
   assert.match(source, /activeElement !== document\.documentElement/);
   assert.match(
     source,
-    /if \(pushed\.isTop\) \{\s*focusWebModalElement\(layer\.initialFocusTarget\(\)\)/,
+    /if \(pushed\.isTop\) \{\s*focusWebModalElement\(layer\.openFocusTarget\(\)\)/,
   );
 });
 
@@ -141,7 +145,7 @@ test("one capture-phase Tab listener follows first push and last removal", () =>
   );
   assert.match(
     source,
-    /if \(event\.key === "Tab"\) \{\s*trapWebModalFocus\(event, topWebModalLayer\(\)\?\.surface\(\) \?\? null\)/,
+    /if \(event\.key !== "Tab"\) \{\s*return;\s*\}\s*const top = topWebModalLayer\(\);\s*trapWebModalFocus\(\s*event,\s*top\?\.surface\(\) \?\? null,/,
   );
   assert.doesNotMatch(source, /event\.key === "Escape"/);
 });
@@ -170,7 +174,7 @@ test("removal applies released nodes and layer roots before restoring focus", ()
   );
   assert.match(
     removal,
-    /focusWebModalElement\(candidate\.layer\.initialFocusTarget\(\)\)/,
+    /focusWebModalElement\(candidate\.layer\.entryFocusTargets\(\)\[0\]\)/,
   );
 });
 

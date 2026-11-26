@@ -13,7 +13,11 @@ import type {
 
 import type { FocusIndicator } from "../focusRing";
 
-import type { WebModalPlacement, WebModalSize } from "./webModalModel";
+import type {
+  WebModalInitialFocus,
+  WebModalPlacement,
+  WebModalSize,
+} from "./webModalModel";
 
 /** Minimal focusable handle for `initialFocusRef` (web focus management only). */
 export type Focusable = { focus?: () => void };
@@ -41,9 +45,20 @@ export type WebModalFrameProps = {
   footerStyle?: StyleProp<ViewStyle>;
   headerStyle?: StyleProp<ViewStyle>;
   /**
-   * Web-only: element focused when the modal opens, overriding the default —
-   * the first focusable control the caller rendered (the close button is
-   * skipped despite coming first in DOM order). Point it at the safe action on
+   * Web-only: where focus lands when the modal opens. `control` (default)
+   * focuses the entry control: `initialFocusRef`, else the first focusable
+   * control the caller rendered. `surface` focuses the dialog surface
+   * itself, so no control shows a focus ring on open, and screen readers
+   * still announce the dialog. The first Tab from the surface goes to the
+   * entry control, and Shift+Tab goes to the last control. Ignored on
+   * native, which has no tab order.
+   */
+  initialFocus?: WebModalInitialFocus;
+  /**
+   * Web-only: the entry control, overriding the default — the first focusable
+   * control the caller rendered (the close button is skipped despite coming
+   * first in DOM order). Focus lands on it when the modal opens, or on the
+   * first Tab when `initialFocus` is `surface`. Point it at the safe action on
    * a destructive confirmation, where the default would land on the
    * destructive one. Ignored on native, which has no tab order.
    */
