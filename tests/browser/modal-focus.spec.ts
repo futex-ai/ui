@@ -1,6 +1,6 @@
 /**
- * Browser coverage for the web modal: focus restore, the initial focus, and
- * nested dropdowns.
+ * Browser coverage for the web modal: focus restore, the initial focus, the
+ * header actions, and nested dropdowns.
  */
 import { expect, test } from "@playwright/test";
 
@@ -106,4 +106,52 @@ test("a dropdown inside a modal closes on Escape without closing the modal", asy
   // With no overlay above it, a second Escape now closes the modal itself.
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
+});
+
+test("header actions sit left of Close and join the focus trap before it", async ({
+  page,
+}) => {
+  await page.goto("/iframe.html?id=modal-examples--header-actions");
+  const dialog = page.getByRole("dialog", { name: "Settings" });
+  const bookName = page.getByLabel("Book name");
+  const done = page.getByRole("button", { name: "Done", exact: true });
+  const fullScreen = dialog.getByRole("button", { name: "Full screen" });
+  const closeButton = dialog.getByRole("button", { name: "Close settings" });
+
+  // The action is the first caller control in DOM order, so the default
+  // initial focus lands on it. Close is still skipped.
+  await expect(fullScreen).toBeFocused();
+  await expect(fullScreen).toHaveAttribute("aria-pressed", "false");
+
+  // The action comes before Close in DOM order, so the trap cycle runs
+  // action → Close → field → footer → action, and back the same way.
+  await page.keyboard.press("Tab");
+  await expect(closeButton).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(bookName).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(done).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(fullScreen).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(done).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(fullScreen).toBeFocused();
+
+  // The action sits directly left of Close, on the same row, at Close's size.
+  const actionBox = await fullScreen.boundingBox();
+  const closeBox = await closeButton.boundingBox();
+  expect(actionBox).not.toBeNull();
+  expect(closeBox).not.toBeNull();
+  if (!actionBox || !closeBox) {
+    return;
+  }
+  expect(closeBox.x - (actionBox.x + actionBox.width)).toBe(4);
+  expect(actionBox.y).toBe(closeBox.y);
+  expect(actionBox.width).toBe(closeBox.width);
+  expect(actionBox.height).toBe(closeBox.height);
+
+  await page.keyboard.press("Enter");
+  await expect(fullScreen).toHaveAttribute("aria-pressed", "true");
+  await expect(dialog.getByText("The dialog fills the window.")).toBeVisible();
 });

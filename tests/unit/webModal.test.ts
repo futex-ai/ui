@@ -247,6 +247,7 @@ test("public modal entrypoint exports frame, portal, models, and layers", () => 
   const source = readSource("../../src/modal/index.ts");
 
   assert.match(source, /WebModalFrame/);
+  assert.match(source, /WebModalHeaderButton/);
   assert.match(source, /WebModalPortal/);
   assert.match(source, /modalLayers/);
   assert.match(source, /webModalModel/);

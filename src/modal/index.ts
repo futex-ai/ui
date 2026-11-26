@@ -1,4 +1,5 @@
 export * from "./WebModalFrame";
+export * from "./WebModalHeaderButton";
 export * from "./WebModalPortal";
 export * from "./modalLayers";
 export * from "./types";

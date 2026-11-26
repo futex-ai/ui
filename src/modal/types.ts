@@ -36,6 +36,14 @@ export type WebModalFrameProps = {
    */
   focusIndicator?: FocusIndicator;
   dismissible?: boolean;
+  /**
+   * Controls drawn in the header row, directly before the close button, such
+   * as a `WebModalHeaderButton` that expands the dialog. They come before the
+   * close button in Tab order. Without the close button they end the row.
+   * They are caller controls, so the default initial focus lands on the first
+   * of them; pass `initialFocusRef` to start in the body instead.
+   */
+  headerActions?: ReactNode;
   footer?: ReactNode;
   bodyStyle?: StyleProp<ViewStyle>;
   footerStyle?: StyleProp<ViewStyle>;

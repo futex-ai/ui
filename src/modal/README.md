@@ -52,6 +52,9 @@ though it is now cross-platform.
   differ from the visible title.
 - Make the close button a 44 by 44px target inside a `TouchSurface`, on web and
   native, and keep its size elsewhere.
+- Render the caller's `headerActions` in the header row, directly left of the
+  close button, on web and native. Provide `WebModalHeaderButton`, which draws
+  the close button too, so caller actions match it.
 - Apply close policy to Escape, backdrop presses, the close button, and close
   requests. Route Escape to the topmost overlay only, including dropdowns and
   popovers opened inside the top dialog.
@@ -126,6 +129,53 @@ const cancelRef = useRef<View | null>(null);
 </WebModalFrame>;
 ```
 
+### Header actions
+
+Pass `headerActions` to put controls in the header row, directly left of the
+close button. Draw each one with `WebModalHeaderButton`, the icon button that
+the frame also uses for Close. It has the same size, the same 18px icon in the
+theme's `ink2`, the same focus ring, and the same 44 by 44px target inside a
+`TouchSurface`. The group keeps a 4px gap. Without the close button the actions
+end the row. Without actions the header is unchanged.
+
+```tsx
+import { WebModalFrame, WebModalHeaderButton } from "@firna/ui/modal";
+import { Maximize2, Minimize2 } from "lucide-react";
+
+<WebModalFrame
+  headerActions={
+    <WebModalHeaderButton
+      accessibilityLabel="Full screen"
+      icon={expanded ? Minimize2 : Maximize2}
+      onPress={() => setExpanded((value) => !value)}
+      pressed={expanded}
+    />
+  }
+  onClose={onClose}
+  surfaceStyle={expanded ? styles.fullScreen : null}
+  title="Settings"
+  visible={open}
+>
+  <SettingsPane />
+</WebModalFrame>;
+```
+
+`WebModalHeaderButton` takes `accessibilityLabel` (required), `icon` (an
+`IconComponent`, such as a Lucide icon), `onPress`, and the optional
+`pressed`, `disabled`, `focusIndicator`, `buttonRef`, and `testID`. Set
+`pressed` for a toggle. Web announces it as `aria-pressed`, and native as
+`selected`. The button does not paint the pressed state, so change the icon
+with it and keep the label the same. The button has no hover style, like the
+close button.
+
+The actions come before the close button in DOM order, so Tab reaches them
+first. They are caller controls, so the default initial focus lands on the
+first action. Pass `initialFocusRef` to start in the body instead.
+
+The native frame takes the same props and renders the actions the same way,
+because both platforms share the header controls. A caller that shows an
+action only on web renders it conditionally.
+
 ## Theming
 
 Modal surfaces read colors, fonts, and radii from `SharedUiThemeProvider`. The
@@ -146,8 +196,12 @@ npm run test:browser
 ### Key Code
 
 - `WebModalFrame.web.tsx` - web dialog presentation and stack integration.
-- `WebModalHeader.tsx` - the web title row and close button, which the in-place
-  menu sheet of `src/popover` shares.
+- `WebModalHeader.tsx` - the web title row, which the in-place menu sheet of
+  `src/popover` shares.
+- `WebModalHeaderControls.tsx` - the header actions and the close button, which
+  the web and native frames share.
+- `WebModalHeaderButton.tsx` - the public header icon button, which draws the
+  close button and the caller's header actions.
 - `WebModalFrame.tsx` - native RN `Modal` frame (sheet + dialog).
 - `webModalStackModel.ts` - pure stack order, opener inheritance, focus-return,
   background-membership, and page-lock rules.
