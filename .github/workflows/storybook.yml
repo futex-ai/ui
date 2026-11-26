@@ -23,7 +23,7 @@ jobs:
   deploy-main:
     name: Deploy Main Storybook
     if: github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -72,7 +72,7 @@ jobs:
         startsWith(github.event.pull_request.head.ref, 'release-please--') ||
         contains(join(github.event.pull_request.labels.*.name, ','), 'autorelease:')
       )
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -168,7 +168,7 @@ jobs:
       github.event_name == 'pull_request' &&
       github.event.action == 'closed' &&
       github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Delete Cloudflare Pages PR deployments
         id: cleanup
