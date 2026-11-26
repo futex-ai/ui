@@ -94,6 +94,12 @@ This lets a dropdown in the revealed dialog work again.
 - When no caller control is focusable, initial focus goes to the close
   control.
 - When no control is focusable, initial focus goes to the dialog surface.
+- A caller can choose that opening focuses the dialog surface instead of the
+  initial focus target.
+- The dialog surface shows no focus indicator, because it is a container and
+  not a control.
+- When the dialog surface has focus, Tab moves focus to the initial focus
+  target, and Shift+Tab moves focus to the last focusable control.
 - Tab cycles within the top dialog.
 - When focus leaves the top dialog, the next Tab returns it to that dialog.
 - Closing the top dialog returns focus to the element that opened it.

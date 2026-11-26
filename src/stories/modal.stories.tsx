@@ -4,6 +4,7 @@ import { ToastProvider, darkSharedUiTheme } from "../index";
 import { ModalFromPopoverExample } from "./modalFromPopoverExample";
 import { ModalOverOverlaysExample } from "./modalOverOverlaysExample";
 import { ModalStackExample } from "./modalStackExample";
+import { ModalSurfaceFocusExample } from "./modalSurfaceFocusExample";
 import {
   ConfirmModalExample,
   ModalExample,
@@ -51,6 +52,16 @@ export const ConfirmWebModal: Story = {
   render: () => (
     <StorySurface>
       <ConfirmModalExample />
+    </StorySurface>
+  ),
+};
+
+export const SurfaceInitialFocus: StoryObj<typeof ModalSurfaceFocusExample> = {
+  args: { bookTarget: true },
+  name: "Opens on the surface",
+  render: (args) => (
+    <StorySurface>
+      <ModalSurfaceFocusExample {...args} />
     </StorySurface>
   ),
 };

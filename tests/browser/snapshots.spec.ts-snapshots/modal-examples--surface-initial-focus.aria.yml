@@ -1,0 +1,9 @@
+- dialog "Settings":
+  - heading "Settings" [level=1]
+  - button "Close Settings"
+  - text: Display name
+  - textbox "Display name": Alex Morgan
+  - text: Current book
+  - button "Northwind Books"
+  - button "Profile"
+  - button "Billing"

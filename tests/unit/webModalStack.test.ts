@@ -40,6 +40,10 @@ test("root and stack are harmless without document", () => {
       reads.push("surface");
       return null;
     },
+    entryFocusTarget: () => {
+      reads.push("entry");
+      return null;
+    },
     initialFocusTarget: () => {
       reads.push("focus");
       return null;
@@ -141,7 +145,7 @@ test("one capture-phase Tab listener follows first push and last removal", () =>
   );
   assert.match(
     source,
-    /if \(event\.key === "Tab"\) \{\s*trapWebModalFocus\(event, topWebModalLayer\(\)\?\.surface\(\) \?\? null\)/,
+    /if \(event\.key !== "Tab"\) \{\s*return;\s*\}\s*const top = topWebModalLayer\(\);\s*trapWebModalFocus\(\s*event,\s*top\?\.surface\(\) \?\? null,/,
   );
   assert.doesNotMatch(source, /event\.key === "Escape"/);
 });

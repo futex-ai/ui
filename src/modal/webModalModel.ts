@@ -20,6 +20,13 @@ export type WebModalSize = "lg" | "md" | "sm";
  */
 export type WebModalPlacement = "bottom-sheet" | "center";
 
+/**
+ * Where focus lands when a web modal opens. `control` focuses the entry
+ * control; `surface` focuses the dialog surface, and the first Tab moves to
+ * the entry control.
+ */
+export type WebModalInitialFocus = "control" | "surface";
+
 export function webModalCanClose(
   policy: WebModalClosePolicy,
   source: WebModalCloseSource,
