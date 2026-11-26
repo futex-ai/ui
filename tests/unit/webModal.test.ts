@@ -246,8 +246,8 @@ test("web modal opens focus on caller content rather than the close button", () 
   const focusSource = readSource("../../src/modal/webModalFocusTrap.ts");
 
   // An explicit `initialFocusRef` still wins; otherwise the frame picks the
-  // first focusable the caller rendered, skipping the close button even though
-  // it comes first in DOM order, and only then falls back to close/surface.
+  // first focusable other than the close button, and only then falls back to
+  // close/surface.
   assert.match(
     hook,
     /initialFocusTargetRef\.current\?\.current \?\?\s*webModalInitialFocusTarget\(\s*hostElement\(surfaceRef\),\s*hostElement\(closeButtonRef\),?\s*\)/,

@@ -140,13 +140,14 @@ focus style as Close. The group keeps a 4px gap. Without the close button the
 actions end the row. Without actions the header is unchanged.
 
 On native outside a `TouchSurface`, the header buttons share the gap between
-them for their hit slop. Each edge that faces a neighbour takes half the gap,
-so Close never takes a tap meant for the action beside it. The other edges keep
-the 10px slop of a lone close button.
+them for their hit slop, so Close never takes a tap meant for the action beside
+it. Each side edge of an action takes half the gap, 2px. Close takes 2px on its
+left edge and keeps 10px on its other edges, as a lone close button does. Every
+header button keeps 10px above and below.
 
 ```tsx
 import { WebModalFrame, WebModalHeaderButton } from "@firna/ui/modal";
-import { Maximize2, Minimize2 } from "lucide-react";
+import { Maximize2, Minimize2 } from "lucide-react-native"; // or "lucide-react" on web
 
 <WebModalFrame
   headerActions={
