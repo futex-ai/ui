@@ -68,18 +68,22 @@ export function useWebModalLayer({
   requestCloseRef.current = requestClose;
   // The layer keeps the first render's resolver. It reads only refs, so it
   // stays current.
-  const entryFocusTarget = () =>
-    initialFocusTargetRef.current?.current ??
-    webModalInitialFocusTarget(
+  const entryFocusTargets = () => {
+    const defaultTarget = webModalInitialFocusTarget(
       hostElement(surfaceRef),
       hostElement(closeButtonRef),
     );
+    const callerTarget = initialFocusTargetRef.current?.current;
+    return [callerTarget, defaultTarget].filter(
+      (target): target is Focusable => target != null,
+    );
+  };
   const [layer] = useState<WebModalLayer>(() => ({
-    entryFocusTarget,
+    entryFocusTargets,
     initialFocusTarget: () =>
       initialFocusModeRef.current === "surface"
         ? hostElement(surfaceRef)
-        : entryFocusTarget(),
+        : (entryFocusTargets()[0] ?? null),
     parent,
     requestClose: (source) => requestCloseRef.current(source),
     root: () => hostElement(layerRef),

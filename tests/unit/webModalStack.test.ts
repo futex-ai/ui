@@ -40,9 +40,9 @@ test("root and stack are harmless without document", () => {
       reads.push("surface");
       return null;
     },
-    entryFocusTarget: () => {
+    entryFocusTargets: () => {
       reads.push("entry");
-      return null;
+      return [];
     },
     initialFocusTarget: () => {
       reads.push("focus");

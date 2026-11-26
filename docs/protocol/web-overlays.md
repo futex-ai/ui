@@ -100,6 +100,8 @@ This lets a dropdown in the revealed dialog work again.
   not a control.
 - When the dialog surface has focus, Tab moves focus to the initial focus
   target, and Shift+Tab moves focus to the last focusable control.
+- When the caller-specified target cannot take focus, that Tab moves focus to
+  the default target instead.
 - Tab cycles within the top dialog.
 - When focus leaves the top dialog, the next Tab returns it to that dialog.
 - Closing the top dialog returns focus to the element that opened it.

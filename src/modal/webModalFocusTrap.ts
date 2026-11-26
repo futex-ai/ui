@@ -47,15 +47,16 @@ export function webModalInitialFocusTarget(
  * Wraps Tab inside the surface and brings escaped focus back into the dialog.
  *
  * When the surface itself has focus, as after `initialFocus="surface"` or a
- * press on the surface background, Tab moves to the entry control and
- * Shift+Tab to the last control. Without this, Shift+Tab from the surface
- * would leave the dialog. When the entry control cannot take focus inside
- * the surface, Tab falls back to the first control.
+ * press on the surface background, Tab moves to the first entry target that
+ * takes focus inside the surface, and Shift+Tab to the last control. Without
+ * this, Shift+Tab from the surface would leave the dialog. A caller's entry
+ * target can fail, for example a disabled button; the frame's default target
+ * then takes focus, so Tab still skips the close button.
  */
 export function trapWebModalFocus(
   event: KeyboardEvent,
   surface: HTMLElement | null,
-  entryTarget: () => Focusable | null,
+  entryTargets: () => readonly Focusable[],
 ): void {
   if (!surface) {
     return;
@@ -75,10 +76,12 @@ export function trapWebModalFocus(
       focusWebModalElement(last);
       return;
     }
-    focusWebModalElement(entryTarget());
-    const entered = document.activeElement;
-    if (entered === surface || !entered || !surface.contains(entered)) {
-      focusWebModalElement(first);
+    for (const target of entryTargets()) {
+      focusWebModalElement(target);
+      const entered = document.activeElement;
+      if (entered && entered !== surface && surface.contains(entered)) {
+        return;
+      }
     }
     return;
   }

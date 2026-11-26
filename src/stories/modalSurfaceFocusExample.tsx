@@ -9,10 +9,14 @@ import { Body, Button, Input, WebModalFrame } from "../index";
  * no focus ring on any control. With `bookTarget`, the book chip is the
  * `initialFocusRef`, so the first Tab moves to it and skips the name field
  * before it. Without it, the first Tab moves to the first caller control.
+ * With `bookDisabled`, the chip cannot take focus, so the first Tab also
+ * moves to the first caller control.
  */
 export function ModalSurfaceFocusExample({
+  bookDisabled = false,
   bookTarget,
 }: {
+  bookDisabled?: boolean;
   bookTarget: boolean;
 }) {
   const [visible, setVisible] = useState(true);
@@ -43,6 +47,7 @@ export function ModalSurfaceFocusExample({
         <View style={styles.chipRow}>
           <Button
             buttonRef={bookRef}
+            disabled={bookDisabled}
             onPress={() => undefined}
             tone="secondary"
           >

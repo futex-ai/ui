@@ -24,10 +24,11 @@ export type WebModalLayer = {
   /** The dialog surface used by the single Tab trap. */
   readonly surface: () => HTMLElement | null;
   /**
-   * Resolves the entry control: the caller's explicit target or the frame's
-   * default target. The first Tab from the surface moves to it.
+   * Resolves the entry controls in order: the caller's explicit target, then
+   * the frame's default target. Opening focuses the first one. The first Tab
+   * from the surface moves to the first one that takes focus.
    */
-  readonly entryFocusTarget: () => Focusable | null;
+  readonly entryFocusTargets: () => readonly Focusable[];
   /** Resolves where focus lands on open: the entry control or the surface. */
   readonly initialFocusTarget: () => Focusable | null;
   /** Applies the frame's close policy to the requested source. */
@@ -201,6 +202,6 @@ function handleKeyDown(event: KeyboardEvent): void {
   trapWebModalFocus(
     event,
     top?.surface() ?? null,
-    () => top?.entryFocusTarget() ?? null,
+    () => top?.entryFocusTargets() ?? [],
   );
 }

@@ -171,3 +171,17 @@ test('initialFocus="surface" without an initialFocusRef sends Tab to the first c
   await page.keyboard.press("Tab");
   await expect(page.getByLabel("Display name")).toBeFocused();
 });
+
+test('initialFocus="surface" sends Tab to the first caller control when the initialFocusRef cannot take focus', async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=modal-examples--surface-initial-focus&args=bookDisabled:!true",
+  );
+  await expect(page.getByRole("dialog", { name: "Settings" })).toBeFocused();
+
+  // The disabled chip cannot take focus. Tab goes to the default entry
+  // control and still skips the close button.
+  await page.keyboard.press("Tab");
+  await expect(page.getByLabel("Display name")).toBeFocused();
+});
