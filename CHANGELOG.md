@@ -7,11 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.2.0](https://github.com/futex-ai/ui/compare/v5.1.0...v5.2.0) (2026-11-26)
 
-
 ### Features
 
-* **modal:** add header actions slot and WebModalHeaderButton ([#189](https://github.com/futex-ai/ui/issues/189)) ([a60591f](https://github.com/futex-ai/ui/commit/a60591ff6a9815781e319137b29d848c709eb2ad))
-* **modal:** open a web dialog with focus on its surface ([#187](https://github.com/futex-ai/ui/issues/187)) ([6af1fd7](https://github.com/futex-ai/ui/commit/6af1fd72700c43b93c04e96fa47946e2ce3e84cc))
+- **modal:** add header actions slot and WebModalHeaderButton ([#189](https://github.com/futex-ai/ui/issues/189)) ([a60591f](https://github.com/futex-ai/ui/commit/a60591ff6a9815781e319137b29d848c709eb2ad))
+- **modal:** open a web dialog with focus on its surface ([#187](https://github.com/futex-ai/ui/issues/187)) ([6af1fd7](https://github.com/futex-ai/ui/commit/6af1fd72700c43b93c04e96fa47946e2ce3e84cc))
 
 ## [5.1.0](https://github.com/futex-ai/ui/compare/v5.0.0...v5.1.0) (2026-11-08)
 
