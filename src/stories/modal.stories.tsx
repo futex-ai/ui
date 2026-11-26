@@ -56,6 +56,15 @@ export const HeaderActions: Story = {
   ),
 };
 
+export const HeaderActionsOutlineFocus: Story = {
+  name: "Header actions with outline focus",
+  render: () => (
+    <StorySurface>
+      <ModalHeaderActionsExample focusIndicator="outline" />
+    </StorySurface>
+  ),
+};
+
 export const ConfirmWebModal: Story = {
   name: "Confirmation modal",
   render: () => (

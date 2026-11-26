@@ -134,9 +134,15 @@ const cancelRef = useRef<View | null>(null);
 Pass `headerActions` to put controls in the header row, directly left of the
 close button. Draw each one with `WebModalHeaderButton`, the icon button that
 the frame also uses for Close. It has the same size, the same 18px icon in the
-theme's `ink2`, the same focus ring, and the same 44 by 44px target inside a
-`TouchSurface`. The group keeps a 4px gap. Without the close button the actions
-end the row. Without actions the header is unchanged.
+theme's `ink2`, and the same 44 by 44px target inside a `TouchSurface`. In the
+slot it takes the frame's `focusIndicator` as its default, so it shows the same
+focus style as Close. The group keeps a 4px gap. Without the close button the
+actions end the row. Without actions the header is unchanged.
+
+On native outside a `TouchSurface`, the header buttons share the gap between
+them for their hit slop. Each edge that faces a neighbour takes half the gap,
+so Close never takes a tap meant for the action beside it. The other edges keep
+the 10px slop of a lone close button.
 
 ```tsx
 import { WebModalFrame, WebModalHeaderButton } from "@firna/ui/modal";

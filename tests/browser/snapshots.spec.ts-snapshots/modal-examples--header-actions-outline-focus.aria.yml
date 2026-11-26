@@ -1,0 +1,8 @@
+- dialog "Settings":
+  - heading "Settings" [level=1]
+  - button "Full screen"
+  - button "Close settings"
+  - text: Book name
+  - textbox "Book name": Household
+  - text: Press Full screen to fill the window.
+  - button "Done"

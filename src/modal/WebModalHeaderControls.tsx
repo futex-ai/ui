@@ -11,6 +11,11 @@ import { StyleSheet, View } from "../primitives/reactNative";
 import type { FocusIndicator } from "../focusRing";
 
 import { WebModalHeaderButton } from "./WebModalHeaderButton";
+import {
+  WEB_MODAL_HEADER_GAP,
+  WebModalHeaderGroupContext,
+} from "./webModalHeaderGroup";
+import type { WebModalHeaderGroup } from "./webModalHeaderGroup";
 
 export type WebModalHeaderControlsProps = {
   closeButtonRef?: Ref<View>;
@@ -45,14 +50,28 @@ export function WebModalHeaderControls({
     return close;
   }
   // The actions come first in DOM order, so Tab reaches them before Close.
+  // The contexts tell each button its place in the row, for its native hit
+  // slop, and give the caller's buttons the frame's focus indicator.
+  const actions: WebModalHeaderGroup = { focusIndicator, position: "action" };
+  const closeGroup: WebModalHeaderGroup = { focusIndicator, position: "close" };
   return (
     <View style={styles.controls}>
-      <View style={styles.controls}>{headerActions}</View>
-      {close}
+      <View style={styles.controls}>
+        <WebModalHeaderGroupContext.Provider value={actions}>
+          {headerActions}
+        </WebModalHeaderGroupContext.Provider>
+      </View>
+      <WebModalHeaderGroupContext.Provider value={closeGroup}>
+        {close}
+      </WebModalHeaderGroupContext.Provider>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  controls: { alignItems: "center", flexDirection: "row", gap: 4 },
+  controls: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: WEB_MODAL_HEADER_GAP,
+  },
 });

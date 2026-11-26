@@ -4,7 +4,7 @@
  * control has one size, one icon tint, and one focus ring. Inside a
  * `TouchSurface` it is a 44 by 44px target.
  */
-import { useMemo } from "react";
+import { useContext, useMemo } from "react";
 import type { Ref } from "react";
 import { Platform, Pressable, StyleSheet } from "../primitives/reactNative";
 import type { View } from "../primitives/reactNative";
@@ -17,6 +17,11 @@ import { useSharedUiTheme } from "../theme";
 import type { SharedUiTheme } from "../theme";
 import { TOUCH_TARGET_SIZE, useTouchSurface } from "../touchSurface";
 
+import {
+  WebModalHeaderGroupContext,
+  webModalHeaderButtonHitSlop,
+} from "./webModalHeaderGroup";
+
 export type WebModalHeaderButtonProps = {
   /** Accessible name. The button shows only an icon, so the name is required. */
   accessibilityLabel: string;
@@ -25,7 +30,8 @@ export type WebModalHeaderButtonProps = {
   disabled?: boolean;
   /**
    * How the button shows keyboard focus: the shared `ring`, the browser's
-   * `outline`, or `none`. Defaults to the theme's `focusIndicator`.
+   * `outline`, or `none`. In a frame's `headerActions` it defaults to the
+   * frame's `focusIndicator`, and elsewhere to the theme's.
    */
   focusIndicator?: FocusIndicator;
   /** A Lucide icon, or any icon that takes `color` and `size`. */
@@ -34,7 +40,8 @@ export type WebModalHeaderButtonProps = {
   /**
    * The on state of a toggle button. Web announces it as `aria-pressed`, and
    * native as `selected`. Leave it unset for a plain action button. The button
-   * does not paint the state, so change the icon or the label with it.
+   * does not paint the state, so change the icon with it. Keep the label the
+   * same, because a toggle that also changes its name announces both.
    */
   pressed?: boolean;
   /** Test identifier forwarded to the button (`data-testid` on web). */
@@ -57,7 +64,10 @@ export function WebModalHeaderButton({
     [theme],
   );
   const touch = useTouchSurface();
-  const ring = useFocusRing({ indicator: focusIndicator });
+  const group = useContext(WebModalHeaderGroupContext);
+  const ring = useFocusRing({
+    indicator: focusIndicator ?? group.focusIndicator,
+  });
   const semantics = buttonSemantics({
     busy: false,
     disabled,
@@ -74,7 +84,7 @@ export function WebModalHeaderButton({
       disabled={disabled}
       // Native only: the web backend ignores `hitSlop`. Inside a
       // `TouchSurface` the button is already a full touch target.
-      hitSlop={touch ? undefined : 10}
+      hitSlop={touch ? undefined : webModalHeaderButtonHitSlop(group.position)}
       {...ring.focusRingProps}
       onBlur={ring.onBlur}
       onFocus={ring.onFocus}

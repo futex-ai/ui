@@ -118,6 +118,10 @@ test("header actions sit left of Close and join the focus trap before it", async
   const fullScreen = dialog.getByRole("button", { name: "Full screen" });
   const closeButton = dialog.getByRole("button", { name: "Close settings" });
 
+  // Both header buttons follow the theme's ring indicator.
+  await expect(fullScreen).toHaveAttribute("data-firna-focus-ring", "self");
+  await expect(closeButton).toHaveAttribute("data-firna-focus-ring", "self");
+
   // The action is the first caller control in DOM order, so the default
   // initial focus lands on it. Close is still skipped.
   await expect(fullScreen).toBeFocused();
@@ -154,4 +158,20 @@ test("header actions sit left of Close and join the focus trap before it", async
   await page.keyboard.press("Enter");
   await expect(fullScreen).toHaveAttribute("aria-pressed", "true");
   await expect(dialog.getByText("The dialog fills the window.")).toBeVisible();
+});
+
+test("header actions take the frame's focus indicator, as Close does", async ({
+  page,
+}) => {
+  await page.goto(
+    "/iframe.html?id=modal-examples--header-actions-outline-focus",
+  );
+  const dialog = page.getByRole("dialog", { name: "Settings" });
+  const fullScreen = dialog.getByRole("button", { name: "Full screen" });
+  const closeButton = dialog.getByRole("button", { name: "Close settings" });
+
+  // The frame sets `outline`, so neither button carries the ring marker.
+  await expect(fullScreen).toBeVisible();
+  await expect(fullScreen).not.toHaveAttribute("data-firna-focus-ring");
+  await expect(closeButton).not.toHaveAttribute("data-firna-focus-ring");
 });
