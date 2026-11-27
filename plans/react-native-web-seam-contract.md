@@ -51,6 +51,9 @@ Research reports: `.context/react-native-web-seam-contract/brainstorm-report.md`
   The task message gives the reason: Bookfolio draws its own screens with RNW,
   and the update to 5.1.0 made it load a second renderer and lose the anchor
   of its list link rows.
+- **Cal, 2026-11-27, answered the four decisions below:** 1A, 2D, 3A, and 4C.
+  For decision 3, Cal asked for a new workspace for the fix after this change
+  merges.
 
 ### Terms
 
@@ -66,11 +69,11 @@ Research reports: `.context/react-native-web-seam-contract/brainstorm-report.md`
 - **Press registry:** the map of active presses in
   `src/primitives/dom/usePress.ts`. `endPointerPresses` ends the presses in it.
 
-### Open decisions
+### Decisions
 
-The four decisions below wait for Cal. Milestone 1 starts only after the
-answers. An options check ran over them on 2026-11-27, and its results are
-merged here.
+Cal answered the four decisions below on 2026-11-27. An options check ran
+over them on 2026-11-27, and its results are merged here. Each item keeps its
+record. Its **Answer** line gives the choice.
 
 #### 1. The shape of the published rule
 
@@ -151,8 +154,7 @@ merged here.
   copy of the list, its generated table cannot go stale, and it keeps the
   export conditions that the release contract names. F protects consumers best
   when no app code matters more than a Large effort.
-- **Action:** ask the user, because the rule is a new public entry point, and
-  the options trade app glue against package size, new conditions, and effort.
+- **Answer:** A, Cal, 2026-11-27.
 
 #### 2. How a drag ends a press on RNW
 
@@ -218,9 +220,7 @@ merged here.
 - **Recommendation:** D. It ends both kinds of library press on both renderers
   with public API, and only the identity of the event changes on RNW. The
   first draft recommended B, which leaves a link row pressed on RNW.
-- **Action:** ask the user, because the recommended option changes a
-  requirement of `docs/protocol/drag-select.md`, and no user decision covers
-  that change.
+- **Answer:** D, Cal, 2026-11-27.
 
 #### 3. Focus glow hides resting shadows on RNW
 
@@ -280,8 +280,9 @@ merged here.
 - **Recommendation:** B. It meets the requirement on both renderers and does
   not depend on stylesheet order. C is the choice when no host may change. D
   best protects the codebase.
-- **Action:** ask the user, because B, C, and D trade host changes, a wrapper
-  around RNW, and a change of the glow's look, and no option is clearly best.
+- **Answer:** A, Cal, 2026-11-27. The fix waits until after the merge, in a
+  new workspace. The protocol records the gap for the RNW route, and the
+  follow-up item holds options B, C, and D.
 
 #### 4. How a consumer's icon curation keeps Firna's icons
 
@@ -332,13 +333,11 @@ merged here.
   `ArrowUpRight` for `list`.
 - **Recommendation:** C. A consumer curates exactly what its subpaths draw, and
   the list cannot go stale. F best protects the apps.
-- **Action:** ask the user, because a published icon list is a new
-  requirement at the package boundary.
+- **Answer:** C, Cal, 2026-11-27.
 
 ### Design calls
 
-These calls are mine, made on 2026-11-27. They assume the recommended options
-of the open decisions. A different answer changes the calls that name it.
+These calls are mine, made on 2026-11-27, and they follow the answers above.
 
 - **The link host serves both web renderers.** `link.web.tsx` builds the link
   on the seam's own `View` with `href`, `hrefAttrs`, `aria-current`,
@@ -356,8 +355,7 @@ of the open decisions. A different answer changes the calls that name it.
   form of each seam: `native` for the native file, or `web` for the `.web`
   file. A unit test fails when a seam pair has no entry, so a new seam cannot
   skip the contract. The build generates the rule's table from it. A third
-  kind, a file of its own, is added only when an answer needs it, for example
-  option C of decision 3. Reason: one source of truth that the gate checks.
+  kind, a file of its own, is added only when a later seam needs it. Reason: one source of truth that the gate checks.
 - **The RNW form of each seam.** `reactNative`, `svg`, and `icons`: `native`.
   They are correct on RNW today. `link`: `web`, as above. `domBackendCss`:
   `web`, because RNW needs the focus-ring rules of the stylesheet.
@@ -397,7 +395,6 @@ of the open decisions. A different answer changes the calls that name it.
   does not apply the rule gets the DOM backend as before. Bookfolio's current
   resolver keeps working, because `reactNative`, `svg`, and `icons` keep their
   native forms. Reason: the repository marks only a breaking change with `!`.
-  Option F of decision 1 or option F of decision 4 can change this.
 - **Docs.** The protocol docs state the RNW route, and the follow-up item
   `plans/follow-ups/docs-name-react-native-web.md` changes, because some RNW
   names are now correct names of a supported route. `README.md:180-186` says
@@ -443,7 +440,7 @@ Replaced ways:
 
 ## Milestone 1: Documentation and protocol
 
-Depends on: the answers to the open decisions
+Depends on: none
 
 Update the docs so that they state the RNW route and the decisions.
 
@@ -455,8 +452,9 @@ Update the docs so that they state the RNW route and the decisions.
       web renderers.
 - [ ] `docs/protocol/drag-select.md`: the takeover sentence for the RNW route,
       as decision 2 chooses.
-- [ ] `docs/protocol/shared-ui-theming.md`: the resting shadow under the glow
-      on every web renderer, as decision 3 chooses.
+- [ ] `docs/protocol/shared-ui-theming.md`: record the known gap of the RNW
+      route, as decision 3 chooses. On RNW, focus can drop a resting shadow,
+      and an inline resting shadow hides the glow.
 - [ ] Record the icon list requirement in `shared-ui-package.md`, as decision
       4 chooses.
 - [ ] `README.md` "Installation": add the RNW route with its packages and the
@@ -546,9 +544,8 @@ Tags: ui
 
 Depends on: 5
 
-- [ ] Keep the resting shadow under the glow on both renderers, as decision 3
-      chooses. Run the `focus-ring` browser specs, and add an RNW harness case
-      for the invalid `DropdownSelector`.
+- [ ] Add the follow-up item for decision 3 under `plans/follow-ups/`, with
+      options B, C, and D of the decision and the check's corrections.
 - [ ] Set `aria-atomic` on the toast live region element. Correct the comment
       at `src/toast/ToastLiveRegion.tsx:125-126`. Add an RNW harness case.
 - [ ] Correct the comments in the four drag hooks that say RNW's `Pressable`
@@ -584,6 +581,9 @@ Depends on: every other milestone
       a permalink to this plan, and the follow-up items that the change adds.
 
 ## Post-merge follow-up (non-blocking)
+
+- [ ] Create a new workspace for the follow-up item of decision 3, as Cal
+      asked on 2026-11-27.
 
 - [ ] Bookfolio adopts the release in `futex-ai/accounting`: it replaces its
       resolver and the three test copies of the seam list with the published
