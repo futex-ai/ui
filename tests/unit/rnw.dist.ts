@@ -9,6 +9,7 @@ import { build, type Plugin } from "esbuild";
 import ts from "typescript";
 
 import packageJson from "../../package.json" with { type: "json" };
+import type { generateFirnaIconNames } from "../../scripts/rnw-icons";
 import { rnwForms } from "../../src/primitives/rnwForms";
 
 const workspaceRoot = fileURLToPath(new URL("../../", import.meta.url));
@@ -16,9 +17,9 @@ const dist = join(workspaceRoot, "dist");
 const {
   firnaIconNames,
   resolveFirnaRnwFile,
-}: typeof import("../../scripts/rnw-entry.js") = createRequire(import.meta.url)(
-  "@firna/ui/rnw",
-);
+}: typeof import("../../scripts/rnw-entry.js") & {
+  firnaIconNames: ReturnType<typeof generateFirnaIconNames>;
+} = createRequire(import.meta.url)("@firna/ui/rnw");
 
 test("the built RNW rule resolves real requests from both build trees", () => {
   const expectedFile = join(dist, "primitives", "reactNative.js");

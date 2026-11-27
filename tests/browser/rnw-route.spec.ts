@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 
+import { boxOfLocator } from "./dragSelectHelpers";
 import { expectGlow, focusWithKeyboard } from "./focusRingHelpers";
 import { bundleRnwFixture, openRnwFixture } from "./rnw/harness";
 
@@ -89,5 +90,40 @@ test("Firna renders links, focus, and live regions on React Native Web", async (
         overlay.locator(`div[aria-live="${priority}"]`),
       ).toHaveAttribute("aria-atomic", "true");
     }
+  });
+});
+
+test("a Firna scrubber and an RNW button respond only to their own gestures", async ({
+  page,
+}) => {
+  const {
+    outputFiles: [script],
+  } = await bundleRnwFixture("mixedResponderFixture.jsx", "dom");
+  await openRnwFixture(page, script.text);
+  const scrubber = page.getByRole("slider", { name: "Video position" });
+  const button = page.getByRole("button", { name: "App button" });
+  const pressStarts = page.getByText(/^App press starts:/);
+  await expect(scrubber).toHaveAttribute("aria-valuenow", "0");
+  await expect(pressStarts).toHaveText("App press starts: 0");
+
+  await test.step("pressing the RNW button leaves the scrubber in place", async () => {
+    await button.hover();
+    await page.mouse.down();
+    await expect(pressStarts).toHaveText("App press starts: 1");
+    await expect(scrubber).toHaveAttribute("aria-valuenow", "0");
+    await page.mouse.up();
+    await expect(scrubber).toHaveAttribute("aria-valuenow", "0");
+  });
+
+  await test.step("dragging the scrubber leaves the RNW button at rest", async () => {
+    const { x, y, width, height } = await boxOfLocator(scrubber);
+    const centerY = y + height / 2;
+    await page.mouse.move(x + width / 4, centerY);
+    await page.mouse.down();
+    await expect(scrubber).toHaveAttribute("aria-valuenow", "25");
+    await page.mouse.move(x + (3 * width) / 4, centerY);
+    await expect(scrubber).toHaveAttribute("aria-valuenow", "75");
+    await page.mouse.up();
+    await expect(pressStarts).toHaveText("App press starts: 1");
   });
 });

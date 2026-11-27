@@ -9,8 +9,6 @@
  * `exports/StyleSheet/compiler/index.js`.
  */
 
-export { SYSTEM_FONT_STACK } from "../webStylesheet";
-
 /** Font stack `fontFamily: "monospace"` resolves to. */
 export const MONOSPACE_FONT_STACK = "monospace,monospace";
 

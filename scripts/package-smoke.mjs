@@ -185,13 +185,12 @@ async function assertViteBundledLibrary(consumerRoot) {
   );
   assert.ok(chunks.length > 0, "the Vite consumer emitted a JavaScript chunk");
   const bundle = chunks.join("\n");
-  // A string literal only the DOM backend defines (`dom/css.ts`), so its
-  // presence means the library's own modules were bundled and not left behind
-  // an import of `@firna/ui`.
+  // The id from `webStylesheet.ts` shows that the bundle includes Firna's
+  // shared web stylesheet.
   assert.match(
     bundle,
     /firna-ui-dom-backend/,
-    "the bundle contains the library's DOM backend",
+    "the bundle contains Firna's shared web stylesheet",
   );
   assert.doesNotMatch(
     bundle,
@@ -251,8 +250,11 @@ async function writeTypeSmoke(consumerRoot, importNames) {
 type Module${index} = typeof mod${index};`,
   );
   const body = `${lines.join("\n")}
-import { resolveFirnaRnwFile } from "@firna/ui/rnw";
+import { firnaIconNames, resolveFirnaRnwFile } from "@firna/ui/rnw";
 const resolveRnw: (fromFile: string, request: string) => string | null = resolveFirnaRnwFile;
+const listWebIcons: readonly string[] = firnaIconNames["@firna/ui/list"].web;
+// @ts-expect-error The icon table accepts only public specifiers.
+const misspelledWebIcons = firnaIconNames["@firna/ui/lits"].web;
 export {};
 `;
   await writeFile(join(consumerRoot, "import-smoke.ts"), body);

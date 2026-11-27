@@ -4,15 +4,20 @@ type IconLists = {
   readonly web: readonly string[];
   readonly native: readonly string[];
 };
-type IconNames = Readonly<Record<string, IconLists>>;
+type IconNames<Specifier extends string> = {
+  readonly [Key in Specifier]: IconLists;
+};
 
-declare const FIRNA_ICON_NAMES: IconNames;
-
-export const firnaIconNames: IconNames = Object.freeze(FIRNA_ICON_NAMES);
-for (const lists of Object.values(firnaIconNames)) {
-  Object.freeze(lists.web);
-  Object.freeze(lists.native);
-  Object.freeze(lists);
+function freezeIconNames<Specifier extends string>(
+  names: IconNames<Specifier>,
+): IconNames<Specifier> {
+  Object.freeze(names);
+  for (const lists of Object.values<IconLists>(names)) {
+    Object.freeze(lists.web);
+    Object.freeze(lists.native);
+    Object.freeze(lists);
+  }
+  return names;
 }
 
 export function resolveFirnaRnwFile(

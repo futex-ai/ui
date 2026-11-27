@@ -64,6 +64,21 @@ holds the requirements of the route. The
 [root README](../../README.md#react-native-web-route) shows how an app applies
 the rule.
 
+## Shared web stylesheet
+
+`webStylesheet.ts` provides CSS for both web renderers. `useDomBackendCss`
+injects it once per document under a stable id. The DOM `View`, `Text`, and
+`TextInput` call the hook. Both renderers use it through the web theme root
+and `useFocusRing`. The package publishes the CSS as `domBackendCss` for
+server rendering.
+
+The sheet holds the `View` and `Text` element resets in classes so that
+inline styles take precedence. It also holds the `pointerEvents` child
+selectors, the `TextInput` reset and `::placeholder` colour, the rules for
+hidden scroll indicators, and RNW's top-level reset. It provides the
+attribute-based `:focus-visible` glow, including inset and forced-colors
+variants, and the `focusIndicator="none"` outline reset.
+
 ## `dom/`
 
 The library's own DOM backend: plain React elements, no `react-native-web`.
@@ -82,17 +97,6 @@ were recorded on that backend and are what prove the swap changed nothing.
   `href` makes the element an anchor unless a role names another one, and
   `hrefAttrs` adds its `rel` and `target`; `tests/unit/link.test.ts` pins them
   through the link host.
-- `webStylesheet.ts` holds the few rules an inline style cannot express, injected once
-  per document under a stable id by `useDomBackendCss` (called from `View`,
-  `Text`, `TextInput`, the web `SharedUiThemeRoot`, and `useFocusRing` through
-  `src/focusRingStylesheet.web.ts`) and published as
-  `domBackendCss` for server rendering. That is the `View` and `Text` element
-  resets (a class, so every inline style still outranks them), the
-  `pointerEvents` child-selector rules, the `TextInput` reset, its
-  `::placeholder` colour, a `ScrollView`'s hidden scroll indicators, the
-  attribute-based `:focus-visible` glow (including inset and forced-colors
-  variants) and its `focusIndicator="none"` outline reset, and
-  `react-native-web`'s own top-level reset.
 - `useLayout.ts` runs one shared `ResizeObserver` for `onLayout` and puts
   `measure`, `measureInWindow`, `measureLayout` and `setNativeProps` on the DOM
   element itself, so a `ref` is still the element the library reads
