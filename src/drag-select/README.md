@@ -197,8 +197,9 @@ import {
   the axes where its overflow lets it scroll.
 - Text does not highlight during a drag. A double-click or a triple-click
   still selects text, because a press without movement blocks nothing.
-- A drag from a row `Button` takes over the button's press and prevents
-  `onPress` on release. The [press takeover rules](../../docs/protocol/drag-select.md#gesture)
+- A drag from a row `Button` ends the button's press on the starting move,
+  even if that move lands outside the provider. This prevents `onPress` on
+  release. The [press takeover rules](../../docs/protocol/drag-select.md#gesture)
   describe the `onPressOut` event on each web renderer.
 - After the release, the provider swallows the click, so a drag never opens
   a row. A plain click is not swallowed.
@@ -273,7 +274,8 @@ use `selectedIds` to read fresh row data from the app's own source.
 - `useDragSelectableGesture.ts`: the web gesture. `dragSelectablePress.ts`
   holds the claim and the fixed rules, `dragSelectableStartRules.ts` the
   default rules, `dragSelectableSession.ts` one gesture from the press to the
-  release, and `dragSelectableSessionDom.ts` its DOM listeners.
+  release, and `dragSelectableSessionDom.ts` its DOM listeners and responder
+  takeover.
   `dragSelectableTextSelection.ts` blocks text selection during a drag.
 - `dragSelectableScrollContainer.ts`, `dragSelectableScrollAxes.ts`,
   `dragSelectableScrollbar.ts`, and `dragSelectableScrollAnchor.ts`: the

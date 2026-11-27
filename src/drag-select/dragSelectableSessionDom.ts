@@ -25,6 +25,7 @@ export type DragSelectableSessionDomOptions = {
   commit: (hitIds: string[]) => void;
   container: DragSelectableScrollContainer;
   end: () => void;
+  provider: Element;
   render: (drag: DragSelectableActiveDrag | null) => void;
   /** The live registrations, read at call time. */
   targets: () => Iterable<DragSelectableTargetRegistration>;
@@ -45,7 +46,39 @@ export function dragSelectableSessionDom(
   options: DragSelectableSessionDomOptions,
 ): DragSelectableSessionEnv & { claimResponder: ClaimResponder } {
   let lastMove: PointerEvent | null = null;
-  let takeoverMove: PointerEvent | null = null;
+  let takeoverMove: MouseEvent | null = null;
+
+  const copyOutsideStartingMove = (event: MouseEvent) => {
+    if (
+      takeoverMove?.type !== "pointermove" ||
+      event.target !== takeoverMove.target ||
+      event.composedPath().includes(options.provider)
+    ) {
+      return;
+    }
+
+    const copy = new MouseEvent("mousemove", {
+      altKey: event.altKey,
+      bubbles: true,
+      button: event.button,
+      buttons: event.buttons,
+      cancelable: true,
+      clientX: event.clientX,
+      clientY: event.clientY,
+      composed: event.composed,
+      ctrlKey: event.ctrlKey,
+      metaKey: event.metaKey,
+      screenX: event.screenX,
+      screenY: event.screenY,
+      shiftKey: event.shiftKey,
+      view: event.view,
+    });
+    // The responder system must see the provider on the move's event path.
+    takeoverMove = copy;
+    options.provider.dispatchEvent(copy);
+    takeoverMove = null;
+  };
+
   return {
     blockTextSelection: blockDragSelectableTextSelection,
     claimResponder: ({ nativeEvent, target }) => {
@@ -75,10 +108,14 @@ export function dragSelectableSessionDom(
       }
     },
     listen: (handlers) =>
-      listenToDragSelectableSession(handlers, (event) => {
-        lastMove = event;
-        takeoverMove = null;
-      }),
+      listenToDragSelectableSession(
+        handlers,
+        (event) => {
+          lastMove = event;
+          takeoverMove = null;
+        },
+        copyOutsideStartingMove,
+      ),
     measureTargets: () => measureDragSelectableTargets(options.targets()),
     measureTargetsInOrder: () =>
       measureDragSelectableTargets(
@@ -110,6 +147,7 @@ export function dragSelectableSessionDom(
 export function listenToDragSelectableSession(
   handlers: DragSelectableSessionHandlers,
   recordMove: (event: PointerEvent) => void,
+  onMouseMove: (event: MouseEvent) => void,
 ): () => void {
   const point = (event: PointerEvent) => ({
     x: event.clientX,
@@ -135,6 +173,7 @@ export function listenToDragSelectableSession(
   const blockNativeDrag = (event: DragEvent) => event.preventDefault();
   const scroll = () => handlers.scroll();
   document.addEventListener("pointermove", move, true);
+  document.addEventListener("mousemove", onMouseMove, true);
   document.addEventListener("pointerup", release, true);
   document.addEventListener("pointercancel", cancel, true);
   document.addEventListener("dragstart", blockNativeDrag, true);
@@ -143,6 +182,7 @@ export function listenToDragSelectableSession(
   window.addEventListener("blur", blur);
   return () => {
     document.removeEventListener("pointermove", move, true);
+    document.removeEventListener("mousemove", onMouseMove, true);
     document.removeEventListener("pointerup", release, true);
     document.removeEventListener("pointercancel", cancel, true);
     document.removeEventListener("dragstart", blockNativeDrag, true);

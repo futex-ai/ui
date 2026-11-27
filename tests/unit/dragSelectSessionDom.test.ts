@@ -33,10 +33,52 @@ class FakeRootElement extends FakeElement {
   readonly scrollTop = 0;
 }
 
+class FakeProviderElement extends FakeElement {
+  readonly dispatchedMoves: Event[] = [];
+
+  dispatchEvent(event: Event): boolean {
+    this.dispatchedMoves.push(event);
+    return !event.bubbles || dispatchFrom(this, event);
+  }
+}
+
+class FakeMouseEvent extends Event {
+  constructor(
+    type: string,
+    readonly init: MouseEventInit,
+  ) {
+    const { bubbles, cancelable, composed, ...mouse } = init;
+    super(type, { bubbles, cancelable, composed });
+    Object.assign(this, mouse, { pageX: init.clientX, pageY: init.clientY });
+  }
+}
+
+const originalMouseEvent = Object.getOwnPropertyDescriptor(
+  globalThis,
+  "MouseEvent",
+);
+test.before(() => {
+  Object.defineProperty(globalThis, "MouseEvent", {
+    configurable: true,
+    value: FakeMouseEvent,
+  });
+});
+test.after(() => {
+  if (originalMouseEvent) {
+    Object.defineProperty(globalThis, "MouseEvent", originalMouseEvent);
+  } else {
+    Reflect.deleteProperty(globalThis, "MouseEvent");
+  }
+});
+
 function withDragSession(
-  check: (provider: FakeElement, pressOuts: GestureResponderEvent[]) => void,
+  check: (
+    provider: FakeProviderElement,
+    pressOuts: GestureResponderEvent[],
+  ) => void,
 ) {
   withFakeDocument(() => {
+    const provider = new FakeProviderElement();
     const pressOuts: GestureResponderEvent[] = [];
     pressHandlers({
       delayPressIn: 0,
@@ -47,6 +89,7 @@ function withDragSession(
       commit: () => undefined,
       container: { element: asElement(new FakeRootElement()), root: true },
       end: () => undefined,
+      provider: asElement(provider),
       render: () => undefined,
       targets: () => [],
     });
@@ -61,7 +104,6 @@ function withDragSession(
       },
       env,
     );
-    const provider = new FakeElement();
     const providerId = 1;
     addNode(providerId, asElement(provider), {
       onMoveShouldSetResponderCapture: env.claimResponder,
@@ -76,30 +118,40 @@ function withDragSession(
   });
 }
 
+function dispatchFrom(target: FakeElement, event: Event): boolean {
+  const path: FakeElement[] = [];
+  for (let node: FakeElement | null = target; node; node = node.parentElement) {
+    path.push(node);
+  }
+  Object.defineProperty(event, "target", { value: target });
+  return document.dispatchEvent(
+    Object.assign(event, { composedPath: () => path }),
+  );
+}
+
 function mouse(
-  path: readonly Element[],
+  target: FakeElement,
   type: "mousedown" | "mousemove" | "mouseup",
   pageX: number,
 ) {
-  document.dispatchEvent(
-    Object.assign(new Event(type), {
+  dispatchFrom(
+    target,
+    new FakeMouseEvent(type, {
       altKey: false,
       button: 0,
       buttons: type === "mouseup" ? 0 : 1,
-      composedPath: () => path,
+      clientX: pageX,
+      clientY: 40,
       ctrlKey: false,
-      pageX,
-      pageY: 40,
     }),
   );
 }
 
 test("the starting move ends the DOM press and claims the responder until release", () => {
   withDragSession((provider, pressOuts) => {
-    const path = [asElement(provider)];
-    mouse(path, "mousedown", 100);
-    document.dispatchEvent(pointerMove(1, { x: 102, y: 40 }));
-    mouse(path, "mousemove", 102);
+    mouse(provider, "mousedown", 100);
+    dispatchFrom(provider, pointerMove(1, { x: 102, y: 40 }));
+    mouse(provider, "mousemove", 102);
     assert.equal(
       pressOuts.length,
       0,
@@ -108,25 +160,30 @@ test("the starting move ends the DOM press and claims the responder until releas
     assert.equal(getResponderNode(), null);
 
     const start = pointerMove(1, { x: 112, y: 40 });
-    document.dispatchEvent(start);
-    mouse(path, "mousemove", 112);
+    dispatchFrom(provider, start);
+    mouse(provider, "mousemove", 112);
     assert.equal(getResponderNode(), provider);
     assert.equal(pressOuts.length, 1);
     assert.equal(pressOuts[0].nativeEvent, start);
 
-    mouse(path, "mouseup", 112);
+    mouse(provider, "mouseup", 112);
     assert.equal(getResponderNode(), null);
     assert.equal(pressOuts.length, 1);
   });
 });
 
-test("the starting move takes the DOM responder from an active child gesture", () => {
+function withHeldResponder(
+  check: (
+    provider: FakeProviderElement,
+    holder: FakeElement,
+    holderEvents: string[],
+  ) => void,
+) {
   withDragSession((provider) => {
-    const holder = asElement(provider.append(new FakeElement()));
+    const holder = provider.append(new FakeElement());
     const holderId = 2;
-    const path = [holder, asElement(provider)];
     const holderEvents: string[] = [];
-    addNode(holderId, holder, {
+    addNode(holderId, asElement(holder), {
       onStartShouldSetResponder: () => true,
       onResponderTerminationRequest: ({ nativeEvent }) => {
         holderEvents.push(
@@ -147,28 +204,77 @@ test("the starting move takes the DOM responder from an active child gesture", (
     });
 
     try {
-      mouse(path, "mousedown", 100);
+      mouse(holder, "mousedown", 100);
       assert.equal(getResponderNode(), holder);
-      document.dispatchEvent(pointerMove(1, { x: 102, y: 40 }));
-      mouse(path, "mousemove", 102);
-      assert.equal(getResponderNode(), holder);
-
-      document.dispatchEvent(pointerMove(1, { x: 112, y: 40 }));
-      mouse(path, "mousemove", 112);
-      assert.equal(
-        getResponderNode(),
-        provider,
-        "the provider takes the responder at the start",
-      );
-
-      mouse(path, "mouseup", 112);
-      assert.equal(getResponderNode(), null);
-      assert.deepEqual(holderEvents, [
-        "request mousemove at 112",
-        "terminate mousemove at 112",
-      ]);
+      check(provider, holder, holderEvents);
     } finally {
       removeNode(holderId);
     }
+  });
+}
+
+test("the starting move takes the DOM responder from an active child gesture", () => {
+  withHeldResponder((provider, holder, holderEvents) => {
+    dispatchFrom(holder, pointerMove(1, { x: 102, y: 40 }));
+    mouse(holder, "mousemove", 102);
+    assert.equal(getResponderNode(), holder);
+
+    dispatchFrom(holder, pointerMove(1, { x: 112, y: 40 }));
+    mouse(holder, "mousemove", 112);
+    assert.equal(
+      getResponderNode(),
+      provider,
+      "the provider takes the responder at the start",
+    );
+
+    mouse(holder, "mouseup", 112);
+    assert.equal(getResponderNode(), null);
+    assert.deepEqual(holderEvents, [
+      "request mousemove at 112",
+      "terminate mousemove at 112",
+    ]);
+    assert.deepEqual(provider.dispatchedMoves, []);
+  });
+});
+
+test("a starting move outside the provider takes the DOM responder on that move", () => {
+  withHeldResponder((provider, _holder, holderEvents) => {
+    const outside = new FakeElement();
+    const start = {
+      altKey: true,
+      bubbles: true,
+      button: 0,
+      buttons: 3,
+      cancelable: true,
+      clientX: 112,
+      clientY: 40,
+      ctrlKey: false,
+      metaKey: true,
+      screenX: 520,
+      screenY: 300,
+      shiftKey: true,
+    };
+    dispatchFrom(outside, pointerMove(1, { x: 112, y: 40 }));
+    dispatchFrom(outside, new FakeMouseEvent("mousemove", start));
+    assert.equal(
+      getResponderNode(),
+      provider,
+      "the provider takes the responder on the starting move outside",
+    );
+    assert.deepEqual(holderEvents, [
+      "request mousemove at 112",
+      "terminate mousemove at 112",
+    ]);
+
+    dispatchFrom(outside, pointerMove(1, { x: 120, y: 40 }));
+    mouse(outside, "mousemove", 120);
+    mouse(outside, "mouseup", 120);
+    assert.equal(getResponderNode(), null);
+    assert.equal(holderEvents.length, 2);
+    assert.equal(provider.dispatchedMoves.length, 1);
+    const [copy] = provider.dispatchedMoves;
+    assert.ok(copy instanceof FakeMouseEvent);
+    assert.equal(copy.type, "mousemove");
+    assert.partialDeepStrictEqual(copy.init, start);
   });
 });

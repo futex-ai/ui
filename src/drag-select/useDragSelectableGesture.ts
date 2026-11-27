@@ -91,6 +91,7 @@ export function useDragSelectableGesture(
           sessionRef.current = null;
         }
       },
+      provider: event.currentTarget,
       render: setActiveDrag,
       targets: () => configRef.current.registry.targetsRef.current.values(),
     });

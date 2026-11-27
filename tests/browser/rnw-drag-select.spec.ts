@@ -114,7 +114,6 @@ test("an RNW drag inside a ScrollView ends the button press and selects its row"
 test("an RNW drag ends the press when the starting move leaves the provider", async ({
   page,
 }) => {
-  test.fixme(true, "The RNW provider-edge press takeover decision is open.");
   await dragFromButton(
     page,
     page.getByRole("group", { name: "Project rows" }),
