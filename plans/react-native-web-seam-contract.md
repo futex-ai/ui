@@ -386,6 +386,16 @@ These calls are mine, made on 2026-11-27, and they follow the answers above.
 - **The RNW test harness.** A browser spec bundles a harness with esbuild,
   RNW, and the published rule, and renders it with `page.setContent`. It does
   not use Storybook. Reason: it proves the rule as a consumer applies it.
+- **The stylesheet reaches every focus host on the RNW route.** On RNW, the
+  `View`, `Text`, and `TextInput` primitives come from RNW and inject no Firna
+  stylesheet, so today only `SharedUiThemeProvider` injects it. `useFocusRing`
+  injects the library stylesheet on web through a web-only module, as the DOM
+  `View` does. Reason: the glow must not depend on the provider on one route
+  only, and the app gets no new requirement.
+- **The protocol states the responder claim on both renderers.** Decision 2D
+  claims the responder on both renderers, so the start also ends a responder
+  gesture of the same press, such as an app's `PanResponder`. Reason: a review
+  must be able to check that behaviour.
 - **Other RNW fixes in scope.** The toast live region sets `aria-atomic` on
   the element, because RNW drops the prop. The comments in four drag hooks that
   say RNW's `Pressable` stops `pointerdown` are corrected. Reason: the contract
@@ -444,25 +454,26 @@ Depends on: none
 
 Update the docs so that they state the RNW route and the decisions.
 
-- [ ] `docs/protocol/shared-ui-package.md`: add the RNW route. A consumer that
+- [x] `docs/protocol/shared-ui-package.md`: add the RNW route. A consumer that
       draws with RNW applies the published rule in each tool. The route loads
       no DOM-backend module. The rule's shape follows decision 1. Name the
       supported RNW range.
-- [ ] `docs/protocol/shared-ui-components.md`: the package boundary names both
+- [x] `docs/protocol/shared-ui-components.md`: the package boundary names both
       web renderers.
-- [ ] `docs/protocol/drag-select.md`: the takeover sentence for the RNW route,
+- [x] `docs/protocol/drag-select.md`: the takeover sentence for the RNW route,
       as decision 2 chooses.
-- [ ] `docs/protocol/shared-ui-theming.md`: record the known gap of the RNW
+- [x] `docs/protocol/shared-ui-theming.md`: record the known gap of the RNW
       route, as decision 3 chooses. On RNW, focus can drop a resting shadow,
       and an inline resting shadow hides the glow.
-- [ ] Record the icon list requirement in `shared-ui-package.md`, as decision
+- [x] Record the icon list requirement in `shared-ui-package.md`, as decision
       4 chooses.
-- [ ] `README.md` "Installation": add the RNW route with its packages and the
+- [x] `README.md` "Installation": add the RNW route with its packages and the
       rule. Correct the sentences on the Metro conditions.
-- [ ] `docs/development.md` "Package export map": add the rule's entry.
-- [ ] `src/primitives/README.md`: the seam table gets an RNW column, and the
-      link host section says that it serves both renderers.
-- [ ] Update `plans/follow-ups/docs-name-react-native-web.md` for the RNW
+- [x] `docs/development.md` "Package export map": add the rule's entry.
+- [x] `src/primitives/README.md`: the seam table gets an RNW column. The link
+      host section moved to Milestone 3, because it describes code that
+      Milestone 3 changes.
+- [x] Update `plans/follow-ups/docs-name-react-native-web.md` for the RNW
       route.
 
 ## Milestone 2: The stylesheet and the responder globals
@@ -490,6 +501,8 @@ Build `link.web.tsx` over the seam `View`, as the design calls say.
       shared web module. The DOM `Pressable` keeps its behaviour.
 - [ ] Rewrite `link.web.tsx` over the seam `View`. Delete `dom/Link.tsx` and
       its export from `dom/index.ts`.
+- [ ] `src/primitives/README.md`: the link row of the seam table and the
+      link host section say that one host serves both renderers.
 - [ ] Move `tests/unit/link.test.ts` to the new host. Run
       `tests/browser/link.spec.ts` and `tests/browser/list.spec.ts` with no
       baseline change.
@@ -536,6 +549,9 @@ Depends on: 3, 5
       from the check in `tests/unit/primitives.test.ts` that no file outside
       `src/primitives` imports `primitives/dom`.
 - [ ] Implement the takeover as decision 2 chooses.
+- [ ] `docs/protocol/drag-select.md` "Press takeover": state that the claim
+      runs on both renderers and also ends a responder gesture of the same
+      press.
 - [ ] Extend the RNW harness: a drag that starts on a button and a drag that
       starts on a link row each end the press, with the events that the
       protocol names, also inside a scroll view. Run the drag-select browser
@@ -549,6 +565,9 @@ Depends on: 5
 
 - [ ] Add the follow-up item for decision 3 under `plans/follow-ups/`, with
       options B, C, and D of the decision and the check's corrections.
+- [ ] `useFocusRing` injects the library stylesheet on web. Add an RNW
+      harness case: a focus host shows the glow with no
+      `SharedUiThemeProvider`.
 - [ ] Set `aria-atomic` on the toast live region element. Correct the comment
       at `src/toast/ToastLiveRegion.tsx:125-126`. Add an RNW harness case.
 - [ ] Correct the comments in the four drag hooks that say RNW's `Pressable`

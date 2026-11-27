@@ -119,13 +119,15 @@ Two rules apply to raw DOM hosts that the primitives handle for you:
   only Firna code is the provider plus raw DOM controls still paints the glow.
   The "Raw DOM only page" story renders exactly that. The injection is a client
   effect: static and server-rendered markup must still emit `domBackendCss` in
-  `<head>` (next section).
+  `<head>` (next section). On the
+  [React Native Web route](../README.md#react-native-web-route), only
+  `SharedUiThemeProvider` injects it.
 - **A resting shadow.** The glow is a `box-shadow`, and an inline `box-shadow`
   on the host outranks the stylesheet, so the glow never paints and the host
-  loses its focus indicator. `View` rewrites an inline `boxShadow` into
-  `--firna-focus-ring-base-shadow` automatically; a raw host must set that
-  variable itself instead of `box-shadow`. The stylesheet paints the base
-  shadow at rest and composes it behind the glow on focus:
+  loses its focus indicator. With the DOM backend, `View` rewrites an inline
+  `boxShadow` into `--firna-focus-ring-base-shadow` automatically. A raw host
+  must set that variable itself instead of `box-shadow`. The stylesheet paints
+  the base shadow at rest and composes it behind the glow on focus:
 
 ```tsx
 <button

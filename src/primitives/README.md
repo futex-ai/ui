@@ -5,29 +5,64 @@ never import `react-native`, `react-native-svg`, `lucide-react-native`,
 `react-native-web`, or `lucide-react` directly; they import from here, and a
 unit test (`tests/unit/primitives.test.ts`) fails the build if one does.
 
-| Module             | Native resolves to      | Web (`.web`) resolves to  |
-| ------------------ | ----------------------- | ------------------------- |
-| `reactNative.ts`   | `react-native`          | `dom/`                    |
-| `svg.tsx`          | `react-native-svg`      | DOM `<svg>` elements      |
-| `icons.ts`         | `lucide-react-native`   | `lucide-react`            |
-| `link.tsx`         | `Pressable` + `Linking` | `dom/Link.tsx`, an `<a>`  |
-| `domBackendCss.ts` | `""`                    | `dom/css.ts`'s stylesheet |
-| `types/` (web)     | —                       | the seam's own types      |
+| Module             | Native resolves to      | Web (`.web`) resolves to  | RNW form    |
+| ------------------ | ----------------------- | ------------------------- | ----------- |
+| `reactNative.ts`   | `react-native`          | `dom/`                    | native file |
+| `svg.tsx`          | `react-native-svg`      | DOM `<svg>` elements      | native file |
+| `icons.ts`         | `lucide-react-native`   | `lucide-react`            | native file |
+| `link.tsx`         | `Pressable` + `Linking` | `dom/Link.tsx`, an `<a>`  | `.web` file |
+| `domBackendCss.ts` | `""`                    | CSS in `webStylesheet.ts` | `.web` file |
+| `types/` (web)     | —                       | the seam's own types      | —           |
 
-Every primitive comes from `dom/` on web — `View`, `Text`, `Pressable`,
-`Image`, `Modal`, `ScrollView`, `TextInput`, `FlatList`, `Animated`, `Easing`,
-`PanResponder`, `StyleSheet`, `Platform`, `useWindowDimensions`,
-`AccessibilityInfo`, `Keyboard`, `KeyboardAvoidingView` and
-`InputAccessoryView`.
+With the DOM backend, every primitive comes from `dom/` — `View`, `Text`,
+`Pressable`, `Image`, `Modal`, `ScrollView`, `TextInput`, `FlatList`,
+`Animated`, `Easing`, `PanResponder`, `StyleSheet`, `Platform`,
+`useWindowDimensions`, `AccessibilityInfo`, `Keyboard`, `KeyboardAvoidingView`
+and `InputAccessoryView`.
 
 Why this exists: the `dist/node` build (the `import` condition) selects the
 `.web` files, so a web consumer installs `react`, `react-dom` and
 `lucide-react` and nothing else — those three are the package's entire web peer
 set. There is no `react-native` alias to configure, the `react-native` package,
-`react-native-svg`, and `lucide-react-native` are never resolved at runtime on
-web, and `react-native-web` is not a peer dependency at all. Metro keeps
-resolving the native files on iOS and Android, and the `.web` files on Expo
-web.
+`react-native-svg`, and `lucide-react-native` are never resolved at runtime
+with the DOM backend, and `react-native-web` is not a peer dependency at all.
+Metro keeps resolving the native files on iOS and Android, and the `.web` files
+on Expo web. An app that draws with `react-native-web` can take
+[the RNW route](#the-rnw-route) instead.
+
+## The RNW route
+
+An app that draws its own screens with `react-native-web` (RNW) can draw the
+library with RNW too. The app applies `resolveFirnaRnwFile`, the rule that
+`@firna/ui/rnw` publishes, in each tool that resolves the library's modules.
+The RNW form of a seam is the file that this route loads for it. For a seam
+request from inside the package's `dist`, the rule returns the RNW form when
+that form is not the `.web` file. Otherwise it returns `null`. The RNW column
+of the table above gives each form:
+
+- `reactNative`, `svg`, and `icons` load their native files, which draw
+  through RNW, `react-native-svg`, and `lucide-react-native`.
+- `link` and `domBackendCss` keep their `.web` files, which serve both web
+  renderers.
+
+Rules for the seam:
+
+- `rnwForms.ts` names the RNW form of each seam pair: `native` or `web`. Add
+  the entry with the pair. A unit test fails when a pair has no entry, and the
+  build generates the rule's table from this file.
+- A seam whose RNW form is `native` imports only packages, never a relative
+  module. The rule sends a request from either build tree to that one file in
+  `dist/primitives/`, so a relative import would load a second copy of a
+  module. A test checks the emitted JavaScript.
+- Nothing that the RNW route loads imports from `dom/`. A test bundles every
+  public subpath through the rule and fails on a file under
+  `primitives/dom/`.
+
+The
+[package protocol](../../docs/protocol/shared-ui-package.md#react-native-web-contract)
+holds the requirements of the route. The
+[root README](../../README.md#react-native-web-route) shows how an app applies
+the rule.
 
 ## `dom/`
 
@@ -47,7 +82,7 @@ were recorded on that backend and are what prove the swap changed nothing.
   `href` makes the element an anchor unless a role names another one, and
   `hrefAttrs` adds its `rel` and `target`; `tests/unit/link.test.ts` pins them
   through the link host.
-- `css.ts` holds the few rules an inline style cannot express, injected once
+- `webStylesheet.ts` holds the few rules an inline style cannot express, injected once
   per document under a stable id by `useDomBackendCss` (called from `View`,
   `Text`, `TextInput`, and the web `SharedUiThemeRoot`) and published as
   `domBackendCss` for server rendering. That is the `View` and `Text` element
@@ -89,7 +124,7 @@ were recorded on that backend and are what prove the swap changed nothing.
   writing to the host node — which is how an animated value drives an SVG
   attribute as easily as a style.
 - `responder/` is the gesture responder system and `PanResponder`, ported
-  whole: the document-level listeners, the `__reactResponderId` tagging, the
+  whole: its `__firnaResponderSystemActive` flag, `__firnaResponderId` tags, the
   capture-then-bubble negotiation (`negotiation.ts`, over the shared lock in
   `responderState.ts`) and the touch history a gesture's `dx` / `dy` is computed
   from. `View`, `Text`, `TextInput` and `ScrollView` all register with it.

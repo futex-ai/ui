@@ -1,8 +1,8 @@
 # Shared UI Package Protocol
 
-The test, build, release, CI, and preview requirements of the `@firna/ui`
-package. The [shared UI component protocol](shared-ui-components.md) holds the
-package boundary and links every other page.
+The test, build, release, React Native Web, CI, and preview requirements of the
+`@firna/ui` package. The [shared UI component protocol](shared-ui-components.md)
+holds the package boundary and links every other page.
 
 ## Test And Build Contract
 
@@ -21,6 +21,13 @@ package boundary and links every other page.
   temporary consumer, import every public package subpath with Node's native ESM
   resolver, typecheck those public package subpaths with TypeScript's NodeNext
   resolver, and import the same subpaths through a Vite build.
+- `npm run test:package` must also load `@firna/ui/rnw` from CommonJS and from
+  an ES module.
+- The [React Native Web route](#react-native-web-contract) must have tests. A
+  bundle of every public subpath through the published rule, with
+  `react-native` aliased to `react-native-web`, must hold no module of the DOM
+  backend. A browser test must draw Firna with `react-native-web` through the
+  published rule, as an app applies it.
 - After package build/tests pass, smoke-test at least one local web route or
   harness that opens a dropdown, a combobox, and a modal, toggles a segmented
   control and switch, and selects a radio card.
@@ -35,6 +42,9 @@ package boundary and links every other page.
   imports and re-exports.
 - The `react-native` export condition must continue to point at the normal
   `dist/**` build so React Native platform resolution can choose platform files.
+- The `./rnw` subpath does not follow the two `dist/node/**` rules above. It
+  points at `dist/rnw.cjs`, a CommonJS module, and at its type declarations. A
+  Metro config can `require` it, and an ES module can import it.
 - Every primitive a consumer is expected to import directly must have its own
   subpath, not the package root alone. This includes the shared focus-glow
   primitive (`./focusRing`, mirroring `./theme`): a consumer that imports every
@@ -69,6 +79,66 @@ package boundary and links every other page.
 - npm publishing must use npm trusted publishing with `id-token: write` and
   must guard against republishing an already-published version.
 - Scoped package publishing must use public access.
+
+## React Native Web Contract
+
+`react-native-web` (RNW) draws React Native components in a browser. An app
+that draws its own screens with RNW can draw Firna with RNW too. This is the
+RNW route. A web app that does not take the route draws Firna through the
+library's own DOM backend, also when the app itself draws with RNW.
+
+- The supported RNW versions are `>=0.21.2 <0.22`.
+- `react-native-web` is not a peer dependency. Decision: this page names the
+  supported range, rather than an optional peer entry. npm 7 and later reject
+  an installed optional peer outside its range, so a peer entry could break
+  the install of an app that has another RNW version.
+- The app does what every RNW app does. On web, it aliases `react-native` to
+  `react-native-web`. It installs `react-native-svg` and
+  `lucide-react-native`, or aliases them.
+- The app applies the published rule in each tool that resolves Firna's
+  modules, such as Metro, esbuild, and a Node module hook. The app keeps no
+  list of Firna's modules. A Firna release that adds a platform module needs
+  no change in the app.
+- With the rule applied, Firna's React Native primitives come from RNW, its
+  SVG from `react-native-svg`, and its icons from `lucide-react-native`. No
+  public subpath loads a module of the DOM backend.
+- The requirements of the other protocol pages hold on the RNW route. A page
+  that has a difference for the route states it next to the requirement.
+
+### The Published Rule
+
+- Firna reaches the platform through a few platform modules. Each one has a
+  native file and a web file. The RNW form of a platform module is the file
+  that the RNW route loads for it.
+- `@firna/ui/rnw` exports `resolveFirnaRnwFile(fromFile, request)`, which
+  returns an absolute path or `null`. `fromFile` is the absolute path of the
+  importing file. `request` is the specifier as that file writes it.
+- The function returns the absolute path of the RNW form when all of these
+  are true:
+  - `fromFile` is inside Firna's `dist`.
+  - `request` names a platform module.
+  - The RNW form of that module is not its web file.
+- In every other case, the function returns `null`, and the tool resolves the
+  request as usual.
+- The function reads no file system state beyond its own location.
+- Decision: one published function with a table that the build generates,
+  rather than a custom export condition or a condition in the package
+  `imports` field. It is the smallest public surface, its table cannot go
+  stale, and the export conditions of the release contract stay the same.
+
+### Icon Names
+
+- For each public subpath, the package publishes the Lucide icon names that
+  the subpath can draw on web and on native. The build generates the lists
+  from the code, so they match each release.
+- `@firna/ui/rnw` exports the lists as `firnaIconNames`. It has one key for
+  each public specifier, such as `"@firna/ui/list"`. Each value is
+  `{ web, native }`, two read-only lists of icon names.
+- On the RNW route, Firna draws the icons of the `web` list with
+  `lucide-react-native`.
+- Decision: a list for each subpath and platform, rather than one flat list of
+  every icon, so that an app that limits its Lucide icons keeps only the icons
+  of its own subpaths.
 
 ## CI And Preview Contract
 

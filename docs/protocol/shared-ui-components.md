@@ -30,9 +30,16 @@ app, plus labelled text inputs and textareas for shared forms.
   `lucide-react-native`, and `lucide-react` are external peer/runtime
   dependencies, not copied app code. A web-only consumer needs just `react`,
   `react-dom`, and `lucide-react`.
-- Native renders through `react-native`, and web renders through the library's
-  own DOM backend, so the web build depends on neither `react-native` nor
-  `react-native-web` at runtime.
+- Native renders through `react-native`.
+- Web renders through one of two renderers. By default, it renders through the
+  library's own DOM backend, so the web build depends on neither
+  `react-native` nor `react-native-web` at runtime. An app that draws its own
+  screens with `react-native-web` (RNW) can apply the published rule of the
+  [React Native Web contract](shared-ui-package.md#react-native-web-contract).
+  Firna then renders through RNW and loads no module of the DOM backend.
+  Decision: Firna supports both web renderers, rather than the DOM backend for
+  every web resolution, so that an app that draws with RNW does not load a
+  second renderer.
 
 ## Contract Pages
 
@@ -48,8 +55,8 @@ below links to the page that holds its requirements.
 - [Data views](shared-ui-data-views.md): calendars, heatmaps, lists, tables,
   kanban boards, and workflow builders.
 - [Overlays](shared-ui-overlays.md): dropdowns and toasts.
-- [Package](shared-ui-package.md): tests, builds, releases, CI, and Storybook
-  previews.
+- [Package](shared-ui-package.md): tests, builds, releases, the React Native
+  Web route, CI, and Storybook previews.
 - [App shell parts](app-shell-parts.md): the `xs` size, compact text, touch
   surfaces, links, notices, empty states, menus, and panel resizing.
 - The [web overlays](web-overlays.md), [rich-text editor](rich-text-editor.md),

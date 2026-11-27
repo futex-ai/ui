@@ -34,13 +34,14 @@ Shared UI component library for Firna React Native and web surfaces. The first c
   with four shipped presets — the accounting default and Juno, each in a light
   and a dark variant. Every component reads its colors from the tokens, so dark
   mode is a preset swap rather than a per-component opt-in.
-- A shared, calm focus glow across every control. On web the DOM backend paints
-  it from CSS `:focus-visible`, so server-rendered and static HTML keeps the same
-  keyboard affordance before hydration — or with no JavaScript at all. Native
-  keeps its platform focus behavior. One `focusIndicator` setting — on the theme
-  for every control, or per instance — picks the glow (`ring`), the browser
-  outline on the control's visible box (`outline`), or no focus styling at all
-  (`none`) for a control embedded in a surface that shows focus itself.
+- A shared, calm focus glow across every control. On web the library's
+  stylesheet paints it from CSS `:focus-visible`, so server-rendered and static
+  HTML keeps the same keyboard affordance before hydration — or with no
+  JavaScript at all. Native keeps its platform focus behavior. One
+  `focusIndicator` setting — on the theme for every control, or per instance —
+  picks the glow (`ring`), the browser outline on the control's visible box
+  (`outline`), or no focus styling at all (`none`) for a control embedded in a
+  surface that shows focus itself.
 - Portaled, anchored web date/dropdown/popover overlays, each placed by its
   own measured size so it flips above its trigger rather than being clipped,
   with content-sized selector menus and z-index escape hatches, plus
@@ -48,8 +49,9 @@ Shared UI component library for Firna React Native and web surfaces. The first c
 - Stacked web dialogs with focus control for the top dialog, ordered focus
   return, a page scroll lock, and live toast feedback, plus native dialogs and
   bottom sheets.
-- Platform files shared by Expo, React Native, and the library's own DOM
-  backend on web.
+- Platform files shared by Expo, React Native, and two web renderers: the
+  library's own DOM backend by default, or `react-native-web` for an app that
+  draws its own screens with it.
 - Focused unit tests, browser interaction tests, and package export checks.
 - Storybook previews for visual review on same-repository non-release PRs.
 - Release-please release PRs and npm trusted publishing for `@firna/ui`.
@@ -117,6 +119,9 @@ The package name is `@firna/ui`. Public exports are available from:
   inline formatting, lists/checklists, native keyboard toolbars, and the
   collaboration layer (live carets, tracked changes, comment threads) with its
   `RichTextPresenceBar` and `RichTextCollabRail` surfaces.
+- `@firna/ui/rnw` for `resolveFirnaRnwFile`, the rule of the
+  [React Native Web route](#react-native-web-route), and `firnaIconNames`, the
+  [Lucide icon names](#lucide-icon-names) that each subpath can draw.
 - [`@firna/ui/segmented`](src/segmented/README.md) for themed single-select segmented controls.
 - [`@firna/ui/sheet`](src/sheet/README.md) for the modal bottom sheet that hosts
   a form, a menu list, or a picker behind one controlled API.
@@ -167,8 +172,8 @@ The package name is `@firna/ui`. Public exports are available from:
 npm install @firna/ui
 ```
 
-All platform packages are optional peer dependencies; install the set for
-your target:
+All platform packages are optional peer dependencies. Install the set for your
+target:
 
 - **Web only (Vite, Next.js, any DOM bundler):** `react`, `react-dom`, and
   `lucide-react` — that is the whole web peer set. No `react-native` and no
@@ -177,13 +182,18 @@ your target:
   library's own DOM backend. That holds for types too — the web build's
   declarations are self-contained, so even a strict TypeScript consumer
   installs nothing extra.
-- **Expo / React Native (iOS, Android, and Expo web):** `react`, `react-dom`,
+- **Expo / React Native (iOS, Android, and web):** `react`, `react-dom`,
   `react-native`, `react-native-svg`, `lucide-react-native`, and
-  `lucide-react`. Metro's `react-native` condition resolves `dist/**`, where
-  platform files pick native or web implementations per file. An Expo web app
-  keeps whatever `react-native-web` its own React Native code needs; the
-  library's `.web` files resolve to the DOM backend there too and never reach
-  for it.
+  `lucide-react`. On iOS and Android, Metro's `react-native` condition resolves
+  `dist/**`, and Metro picks the native file of each module there. Expo web
+  resolves the `import` condition instead, so it loads `dist/node`, as a
+  web-only app does. A bare React Native app gets its Metro config from
+  `@react-native/metro-config`, which asserts `react-native` on every
+  platform. So on web it resolves `dist/**`, and Metro picks the `.web` files
+  there. In both cases, Firna draws on web through its DOM backend, also when
+  the app's own screens draw with `react-native-web`. To draw Firna with
+  `react-native-web` too, take the
+  [React Native Web route](#react-native-web-route).
 - **Optional on native:** `@gorhom/bottom-sheet`, `react-native-gesture-handler`,
   and `react-native-reanimated` power the native bottom sheet.
 
@@ -194,7 +204,95 @@ modules with a native file and a `.web` sibling: React Native primitives
 native, DOM `<svg>` on web), and icons (`lucide-react-native` on native,
 `lucide-react` on web). Icon props accept `IconComponent`, a type both Lucide
 packages' icons satisfy, so a consumer passes whichever matches their
-platform.
+platform. On the React Native Web route, all three use their native packages
+on web too.
+
+### React Native Web route
+
+An app that draws its own screens with `react-native-web` (RNW), such as an
+Expo web app, can draw Firna with RNW too. Its pages then load one renderer,
+not two. The app does what every RNW app does. On web, it aliases
+`react-native` to `react-native-web`. It installs `react-native-svg` and
+`lucide-react-native`, or aliases them. `react-native-web` is not a peer
+dependency. The
+[package protocol](https://github.com/futex-ai/ui/blob/main/docs/protocol/shared-ui-package.md#react-native-web-contract)
+names the supported versions.
+
+The app then applies Firna's rule in each tool that resolves Firna's modules.
+`@firna/ui/rnw` exports the rule as `resolveFirnaRnwFile(fromFile, request)`:
+
+- `fromFile` is the absolute path of the importing file. `request` is the
+  specifier as that file writes it.
+- The function returns the absolute path of the file that the RNW route loads
+  in place of the web file, or `null`. On `null`, the tool resolves the
+  request as usual.
+- It returns a path only for a request from inside Firna's `dist` that names
+  one of Firna's platform modules. So the app keeps no list of Firna's
+  modules, also after a Firna update adds one.
+
+With the rule, Firna's React Native primitives come from RNW, its SVG from
+`react-native-svg`, and its icons from `lucide-react-native`. Firna then loads
+no module of its DOM backend.
+
+Metro, in `metro.config.js`:
+
+```js
+const { resolveFirnaRnwFile } = require("@firna/ui/rnw");
+
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  const file =
+    platform === "web"
+      ? resolveFirnaRnwFile(context.originModulePath, moduleName)
+      : null;
+  return file
+    ? { type: "sourceFile", filePath: file }
+    : context.resolveRequest(context, moduleName, platform);
+};
+```
+
+When the config already has a `resolveRequest`, call that function in place of
+`context.resolveRequest`.
+
+An esbuild plugin:
+
+```js
+import { resolveFirnaRnwFile } from "@firna/ui/rnw";
+
+const firnaRnw = {
+  name: "firna-rnw",
+  setup(build) {
+    build.onResolve({ filter: /^\./ }, (args) => {
+      const file = resolveFirnaRnwFile(args.importer, args.path);
+      return file ? { path: file } : undefined;
+    });
+  },
+};
+```
+
+A Node module hook:
+
+```js
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { resolveFirnaRnwFile } from "@firna/ui/rnw";
+
+export async function resolve(specifier, context, nextResolve) {
+  const file = context.parentURL?.startsWith("file:")
+    ? resolveFirnaRnwFile(fileURLToPath(context.parentURL), specifier)
+    : null;
+  return file
+    ? { url: pathToFileURL(file).href, shortCircuit: true }
+    : nextResolve(specifier, context);
+}
+```
+
+### Lucide icon names
+
+An app that limits the Lucide icons in its bundle can read `firnaIconNames`
+from `@firna/ui/rnw`. It has one entry for each public subpath, such as
+`"@firna/ui/list"`. Each entry is `{ web, native }`: the Lucide icon names that
+the subpath can draw on web and on native. The build generates the lists, so
+they match each release. On the React Native Web route, Firna draws the `web`
+icons with `lucide-react-native`.
 
 ## Theming
 
@@ -252,7 +350,7 @@ See the [releases and deployments guide](https://github.com/futex-ai/ui/blob/mai
   [src/touchMetrics.ts](src/touchMetrics.ts)
 - Shared focus-glow primitive: [src/focusRing.ts](src/focusRing.ts), its
   marker spellings in [src/focusRingHost.ts](src/focusRingHost.ts), and the
-  CSS rules in [src/primitives/dom/css.ts](src/primitives/dom/css.ts)
+  CSS rules in [src/primitives/webStylesheet.ts](src/primitives/webStylesheet.ts)
 - Guides:
   [theming](https://github.com/futex-ai/ui/blob/main/docs/theming.md),
   [focus indicators](https://github.com/futex-ai/ui/blob/main/docs/focus-indicators.md),
