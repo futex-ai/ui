@@ -3,35 +3,47 @@
 - **Severity:** Medium. **Likelihood:** Rare. **Effort:** Medium. **Confidence:** High. **Harder later:** Yes.
 - **Kind:** Outside the scope.
 - **Added:** 2026-11-02, from the branch `calummoore/dragselectableprovider-improvements`.
-- **Location:** src/primitives/dom/pressMachine.ts:98, src/primitives/dom/pressMachine.ts:178, src/primitives/types/events.ts:25, src/primitives/types/events.ts:60, src/primitives/types/events.ts:105
-- **Reason:** The press machine gave these raw events before the drag-select branch, and that branch does not change how it builds them, so the fix needs a branch of its own.
+- **Location:** src/primitives/webPress/pressMachine.ts:99, src/primitives/webPress/pressMachine.ts:179, src/primitives/types/events.ts:25, src/primitives/types/events.ts:60, src/primitives/types/events.ts:105, docs/protocol/drag-select.md:152-163
+- **Reason:** The press machine gave these raw events before the drag-select branch, and that branch did not change how it builds them, so the fix needs a branch of its own.
 
 - **Terms:**
-  - **`GestureResponderEvent`:** the event type of the press callbacks `onPress`, `onPressIn`, `onPressOut`, and `onLongPress`. src/primitives/types/events.ts:105 vendors it from React Native.
-  - **Press machine:** the state machine behind the web `Pressable`, in src/primitives/dom/pressMachine.ts. It ports the press responder of `react-native-web`.
+  - **`GestureResponderEvent`:** the event type of the press callbacks `onPress`, `onPressIn`, `onPressMove`, `onPressOut`, and `onLongPress`. src/primitives/types/events.ts:105 vendors it from React Native.
+  - **Press machine:** the state machine behind the `Pressable` of the library's own DOM backend and behind the web link host, in src/primitives/webPress/pressMachine.ts. It ports the press responder of `react-native-web`.
   - **Host element:** the element type that a vendored event reports as its `target` and `currentTarget`: `HostElement` in src/primitives/types/hostElement.ts.
 - **Background:**
   - `GestureResponderEvent` is a `NativeSyntheticEvent<NativeTouchEvent>`, at src/primitives/types/events.ts:25 and :60.
   - Its `nativeEvent` requires `changedTouches`, `identifier`, `locationX`, `locationY`, `pageX`, `pageY`, `target`, `timestamp`, and `touches`. Its `currentTarget` and `target` are host elements.
-  - On web, the press machine gives each callback the raw React event of the host element, or the DOM event of a document listener that `fromDomEvent` wraps, at src/primitives/dom/pressMachine.ts:98. `press()` casts that event to `GestureResponderEvent` at line 178.
-  - `onPress` comes from the DOM `click`, as on the previous backend, `react-native-web` 0.21.2. src/primitives/README.md says so.
-  - src/primitives/README.md:141 says that the vendored types "may be wider than React Native's, never narrower". tests/unit/primitiveTypesCompat.test.ts enforces that rule.
-- **Problem:** Even a plain click gives the callbacks events whose `nativeEvent` has no `locationX`, `timestamp`, or `touches`, and whose `currentTarget` is not a host element, although `GestureResponderEvent` requires them. For example, `onPressOut` after a release gets the `pointerup` of a document listener, so its `currentTarget` is the document. The cast in `press()` hides the gap from the type checker.
+  - With the DOM backend, the press machine gives each callback the raw React event of the host element, or the DOM event of a document listener that `fromDomEvent` wraps, at src/primitives/webPress/pressMachine.ts:99. `press()` casts that event to `GestureResponderEvent` at line 179. For example, `onPressMove` gets each `pointermove` through `fromDomEvent`, at src/primitives/webPress/usePress.ts:118-119.
+  - `onPress` comes from the DOM `click`, as in the press responder of `react-native-web`, which the press machine copies. src/primitives/README.md:159-163 says so.
+  - The web link host in src/primitives/link.web.tsx also runs the press machine, but it passes only its own state setter, so no app callback gets these events.
+  - An app that draws its own screens with `react-native-web` can apply the rule of `@firna/ui/rnw`, so that the library draws with `react-native-web` too. A library `Pressable` is then the `Pressable` of `react-native-web`, and the press machine does not reach it. For a pointer press, that `Pressable` gives `onPressIn`, `onPressOut`, and `onLongPress` its responder events, which have these fields, and gives `onPress` the click event, which does not. For a key press, it gives the `keydown` and `keyup` events, which do not have them either. Every other `Pressable` of such an app gets the same events, so this item covers the DOM backend only.
+  - src/primitives/README.md:192-193 says that the vendored types "may be wider than React Native's, never narrower". tests/unit/primitiveTypesCompat.test.ts enforces that rule.
+  - The "Press takeover" rule of docs/protocol/drag-select.md, at lines 152-153, says that with the DOM backend, a drag-select drag that starts on a control ends its press, and the `onPressOut` of the control receives the pointer event that started the drag. Lines 158-163 say that a link press ends with that pointer event, and that the library's own press handling keeps the pointer event.
+  - src/primitives/dom/responder/createResponderEvent.ts already builds these fields from a DOM event, for the responder system of the DOM backend. The press machine cannot import it: src/primitives/webPress/ imports nothing from `dom/`, because the link host runs it on the RNW route, which loads no module of the DOM backend. src/primitives/README.md:57-59 and :155-157 say so.
+- **Problem:** With the DOM backend, even a plain click gives the callbacks events whose `nativeEvent` has no `locationX`, `timestamp`, or `touches`, and whose `currentTarget` is not a host element, although `GestureResponderEvent` requires them. For example, `onPressOut` after a release gets the `pointerup` of a document listener, so its `currentTarget` is the document. The cast in `press()` hides the gap from the type checker.
 - **Impact if no action:** Code written for React Native that reads `locationX`, `timestamp`, or `touches` in a press callback gets `undefined` on web, and the types do not warn. Each new caller can come to rely on the raw DOM event, which makes the fix harder later.
-- **Root question:** How do web press callbacks get the event that their `GestureResponderEvent` type promises?
+- **Root question:** How do the press callbacks of the DOM backend get the event that their `GestureResponderEvent` type promises?
 - **Options:**
   - **A.** Build a full `GestureResponderEvent` in the press machine for every callback:
     - Fill `nativeEvent` from the DOM event: `locationX` and `locationY` relative to the host element, `pageX` and `pageY`, `timestamp` from the DOM `timeStamp`, `identifier` from the `pointerId`, and `touches` and `changedTouches` with one entry for the pointer.
     - Set `currentTarget` and `target` to host elements.
     - Choose the values for a key press, which has no pointer, and record the choice in src/primitives/README.md.
-    - Cost: one conversion for every press path, and a test for each path. Effort: Medium.
+    - Share the builder of src/primitives/dom/responder/createResponderEvent.ts: move it to a module outside `dom/` that both the press machine and the responder system import.
+    - At a drag-select drag start, `onPressOut` then gets a built event in place of the pointer event. So change the sentences of the "Press takeover" rule at docs/protocol/drag-select.md:152-163 that name the pointer event.
+    - Cost: one conversion for every press path, a test for each path, and a change of a requirement of the drag-select protocol. Effort: Medium.
 - **Left out:**
-  - Only one approach meets the goal, because the type rule forbids a narrower type.
-  - A narrower event type for web: it breaks the rule in src/primitives/README.md:141, which tests/unit/primitiveTypesCompat.test.ts enforces.
+  - The item has one option, because each other approach below fails the goal or breaks the type rule.
+  - Run the DOM backend's `Pressable` on the responder system of src/primitives/dom/responder/, as the `Pressable` of `react-native-web` does: `onPressIn` and `onPressOut` then get responder events, but `onPress` still comes from the DOM `click` and misses the fields, which fails the goal.
+  - A narrower event type for web: it breaks the rule in src/primitives/README.md:192-193, which tests/unit/primitiveTypesCompat.test.ts enforces.
+  - Keep the pointer event at a drag-select drag start: `onPressOut` then still gets an event without the fields that its type promises, which fails the goal.
   - Document the gap and keep the raw events: the type still promises fields that are missing, which fails the goal.
   - Change nothing: it fails the goal, and each new caller can come to rely on the raw event.
 - **Wider fix:** A. One conversion in the press machine gives every callback the full event, so no path can give a raw event.
 - **Previous examples:** None found.
-- **Related:** plans/follow-ups/press-machine-takes-real-events.md, the same code. Both items change the event that the press machine gives to callbacks, so do them in one branch, or one after the other.
+- **Related:**
+  - plans/follow-ups/press-machine-takes-real-events.md, the same code. Both items change the event that the press machine gives to callbacks, so do them in one branch, or one after the other.
+  - plans/follow-ups/docs-name-react-native-web.md, work that interacts. `src/video-editor/README.md:150-151` says that the press event has no `locationX`. Option A here gives each press callback of the DOM backend `locationX`, so that line changes with it. Whichever item goes second rewrites the line again.
+  - plans/follow-ups/responder-position-pixel-flake.md, the same code. That item questions the `locationX` of src/primitives/dom/responder/createResponderEvent.ts:108, which option A shares with the press machine. A correction there reaches both.
+  - plans/follow-ups/drag-select-start-survives-press-callback.md, options that conflict. Option A here changes the event that `onPressOut` gets at a drag start with the DOM backend, and every option of that item keeps the event that the press machine gives. That item changes only when the drag start ends the press, so the two items can go in either order.
 - **Recommendation:** A. It is the only option that makes the event match the type that callers compile against.
-- **Action:** fix after merge, apply A, because the press machine gave these events before the drag-select branch, and the fix belongs outside that branch.
+- **Action:** ask the user, because option A changes the event that the "Press takeover" rule of docs/protocol/drag-select.md names, a requirement in force, and no user decision covers that change.

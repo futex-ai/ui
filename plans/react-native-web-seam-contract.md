@@ -682,7 +682,7 @@ Depends on: 4
 
 Depends on: every other milestone
 
-- [ ] Update every follow-up item that this branch makes stale, with the
+- [x] Update every follow-up item that this branch makes stale, with the
       report `.context/react-native-web-seam-contract/follow-up-check.md` as
       input. Then run a fresh follow-up check, as the `plans` skill says.
 - [ ] Run the targeted tests and the complete gate, `cargo xtask check`.
