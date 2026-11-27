@@ -63,6 +63,8 @@ package boundary and links every other page.
   defines the React Native Web (RNW) route. On that route, the library has two
   known gaps in this requirement:
   - Focus can drop a resting shadow that comes from `StyleSheet.create`.
+  - At rest, such a shadow shows only while the library stylesheet comes
+    before the stylesheet of `react-native-web` in the document.
   - An inline resting shadow hides the glow.
 - A raw DOM host must set `--firna-focus-ring-base-shadow` for a resting
   shadow instead of `box-shadow`; the docs must say so, because an inline

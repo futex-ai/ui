@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+
 import {
   LIVE_OVERLAY_ATTRIBUTE,
   LIVE_OVERLAY_VIEW_PROPS,
@@ -34,6 +37,13 @@ import {
   registerToastProviderApi,
   toastController,
 } from "../../src/toast/toastController";
+
+import { resolveWebFirst } from "./webResolution";
+
+// The live region draws on the seam's `Text`. Load it as the web build
+// resolves it, so it renders over the DOM backend.
+resolveWebFirst();
+const { ToastLiveRegion } = await import("../../src/toast/ToastLiveRegion");
 
 const baseItem = (id: string): ToastItem => ({
   dismissible: true,
@@ -248,6 +258,25 @@ test("the persistent live region announces toasts at tone politeness", () => {
   assert.match(source, /accessibilityLiveRegion="assertive"/);
   assert.match(source, /"aria-live": "polite"/);
   assert.match(source, /"aria-live": "assertive"/);
+});
+
+test("each web toast live region is atomic in its server-rendered markup", () => {
+  // `aria-atomic` makes a screen reader read the title and the description of
+  // a toast as one message (WCAG 2.1 — 4.1.3, AA).
+  const markup = renderToStaticMarkup(
+    createElement(ToastLiveRegion, { toasts: [] }),
+  );
+  const regions = [...markup.matchAll(/<div [^>]*aria-live="(\w+)"[^>]*>/g)];
+  assert.deepEqual(
+    regions.map(([element, live]) => [
+      live,
+      /aria-atomic="true"/.test(element),
+    ]),
+    [
+      ["polite", true],
+      ["assertive", true],
+    ],
+  );
 });
 
 test("toast regions and the announcer stay live over web dialogs", () => {

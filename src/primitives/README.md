@@ -84,7 +84,8 @@ were recorded on that backend and are what prove the swap changed nothing.
   through the link host.
 - `webStylesheet.ts` holds the few rules an inline style cannot express, injected once
   per document under a stable id by `useDomBackendCss` (called from `View`,
-  `Text`, `TextInput`, and the web `SharedUiThemeRoot`) and published as
+  `Text`, `TextInput`, the web `SharedUiThemeRoot`, and `useFocusRing` through
+  `src/focusRingStylesheet.web.ts`) and published as
   `domBackendCss` for server rendering. That is the `View` and `Text` element
   resets (a class, so every inline style still outranks them), the
   `pointerEvents` child-selector rules, the `TextInput` reset, its

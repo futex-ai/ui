@@ -1,11 +1,13 @@
 /**
  * Pointer editing for the web timeline.
  *
- * The gesture starts from a **capture-phase** `pointerdown` on the document,
- * because the web backend's `Pressable` calls `stopPropagation()` in its press
- * responder and a handler on the clip itself would never see the grab. A small
- * travel threshold separates a drag from a click, and a committed drag sets a
- * suppression flag so the clip's own `onPress` fires once and is swallowed.
+ * The gesture starts from a **capture-phase** `pointerdown` on the document. It
+ * runs before any handler inside the lanes, so nothing in a clip can stop the
+ * grab before the gesture sees it, and the hook needs no handler on each clip.
+ * A clip's `Pressable` does not stop the `pointerdown` of an enabled press on
+ * either web renderer. A small travel threshold separates a drag from a click,
+ * and a committed drag sets a suppression flag so the clip's own `onPress`
+ * fires once and is swallowed.
  *
  * All of the *rules* live in `timelineEditModel`; this file only turns pointer
  * positions into the gestures those resolvers take, and reports the resulting

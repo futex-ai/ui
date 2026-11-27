@@ -15,13 +15,16 @@
  * move to read the drop position.
  *
  * Like the kanban board's card drag, the pointer drag starts from a
- * **capture-phase** `pointerdown` on the document (RNW's `Pressable` calls
- * `stopPropagation()` in its press responder). A small move threshold separates
- * a drag from a click, and a committed drag swallows the click it produces. In
- * handle mode — which is per group, so lists in one coordinator can differ — the
- * drag only starts when the pointer goes down on a row's grab handle; otherwise
- * the whole row is the drag surface. Horizontal lists assume left-to-right
- * reading order. All DOM work is guarded by `typeof document`.
+ * **capture-phase** `pointerdown` on the document. It runs before any handler
+ * inside the list, so nothing in a row can stop the event before the drag sees
+ * it, and the engine needs no handler on each row. A row's `Pressable` does not
+ * stop the `pointerdown` of an enabled press on either web renderer. A small
+ * move threshold separates a drag from a click, and a committed drag swallows
+ * the click it produces. In handle mode — which is per group, so lists in one
+ * coordinator can differ — the drag only starts when the pointer goes down on a
+ * row's grab handle; otherwise the whole row is the drag surface. Horizontal
+ * lists assume left-to-right reading order. All DOM work is guarded by
+ * `typeof document`.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 

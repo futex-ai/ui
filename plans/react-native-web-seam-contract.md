@@ -568,14 +568,14 @@ Tags: ui
 
 Depends on: 3
 
-- [ ] Add the follow-up item for decision 3 under `plans/follow-ups/`, with
+- [x] Add the follow-up item for decision 3 under `plans/follow-ups/`, with
       options B, C, and D of the decision and the check's corrections.
-- [ ] `useFocusRing` injects the library stylesheet on web. Milestone 5 adds
+- [x] `useFocusRing` injects the library stylesheet on web. Milestone 5 adds
       the RNW harness case.
-- [ ] Set `aria-atomic` on the toast live region element. Correct the comment
+- [x] Set `aria-atomic` on the toast live region element. Correct the comment
       at `src/toast/ToastLiveRegion.tsx:125-126`. Milestone 5 adds the RNW
       harness case.
-- [ ] Correct the comments in the four drag hooks that say RNW's `Pressable`
+- [x] Correct the comments in the four drag hooks that say RNW's `Pressable`
       stops `pointerdown`.
 
 ## Milestone 8: The icon list

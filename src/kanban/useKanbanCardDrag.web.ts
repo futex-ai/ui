@@ -12,11 +12,13 @@
  * move to read the drop position.
  *
  * Like the calendar's drag-to-create, the pointer drag starts from a
- * **capture-phase** `pointerdown` on the document (RNW's `Pressable` calls
- * `stopPropagation()` in its press responder). A small move threshold separates a
- * drag from a click, and a committed drag (pointer or keyboard) sets a
- * suppression flag so the card's own `onPress` is swallowed once. All DOM work is
- * guarded by `typeof document`.
+ * **capture-phase** `pointerdown` on the document. It runs before any handler
+ * inside the board, so nothing in a card can stop the event before the drag
+ * sees it. A card's `Pressable` does not stop the `pointerdown` of an enabled
+ * press on either web renderer. A small move threshold separates a drag from a
+ * click, and a committed drag (pointer or keyboard) sets a suppression flag so
+ * the card's own `onPress` is swallowed once. All DOM work is guarded by
+ * `typeof document`.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
