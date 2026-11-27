@@ -73,7 +73,7 @@ Research reports: `.context/react-native-web-seam-contract/brainstorm-report.md`
 ### Decisions
 
 Cal answered decisions 1 to 4 below on 2026-11-27. Decision 5 came from
-Milestone 6 and waits for Cal. An options check ran
+Milestone 6, and Cal answered it on 2026-11-27 too. An options check ran
 over them on 2026-11-27, and its results are merged here. Each item keeps its
 record. Its **Answer** line gives the choice.
 
@@ -424,9 +424,7 @@ record. Its **Answer** line gives the choice.
 - **Recommendation:** D. It is the only option that meets the protocol as
   written, on the starting move, on both renderers. The first draft
   recommended A, and the options check of 2026-11-27 changed it.
-- **Action:** ask the user, because option D adds an extra event at the
-  boundary that no requirement covers, and option A changes a requirement of
-  `docs/protocol/drag-select.md`.
+- **Answer:** D, Cal, 2026-11-27.
 
 ### Design calls
 
@@ -494,6 +492,15 @@ These calls are mine, made on 2026-11-27, and they follow the answers above.
   claims the responder on both renderers, so the start also ends a responder
   gesture of the same press, such as an app's `PanResponder`. Reason: a review
   must be able to check that behaviour.
+- **Review finding 2 of round 1, answered by Cal on 2026-11-27: D with C.**
+  The RNW form of `svg` and `icons` becomes `web`, so the RNW route draws SVG
+  with the DOM `<svg>` shim and icons with `lucide-react`, and only
+  `reactNative` routes to its native file. The alias and the rule are then
+  the whole app setup in Metro, esbuild, and Node. The gate runs that
+  documented setup: the harness uses only the README's esbuild settings, the
+  dist test resolves the real peers, and a `test:dist` case imports every
+  public subpath through the documented Node hook. This replaces the earlier
+  design call that gave `svg` and `icons` their native forms.
 - **Other RNW fixes in scope.** The toast live region sets `aria-atomic` on
   the element, because RNW drops the prop. The comments in four drag hooks that
   say RNW's `Pressable` stops `pointerdown` are corrected. Reason: the contract
