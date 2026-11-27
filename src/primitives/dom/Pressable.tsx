@@ -24,10 +24,10 @@ import type {
   ViewInstance,
   ViewProps,
 } from "../types";
+import { useHover } from "../webPress/useHover";
+import { usePress } from "../webPress/usePress";
 
 import { useHostRef } from "./hostRef";
-import { useHover } from "./useHover";
-import { usePress } from "./usePress";
 import { View } from "./View";
 
 const ACTIVE_STYLE = { cursor: "pointer", touchAction: "manipulation" };

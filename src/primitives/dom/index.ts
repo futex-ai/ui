@@ -13,7 +13,6 @@ export { domBackendCss, useDomBackendCss } from "../webStylesheet";
 export { FlatList } from "./FlatList";
 export { Image } from "./Image";
 export { InputAccessoryView, KeyboardAvoidingView } from "./KeyboardViews";
-export { Link } from "./Link";
 export { Modal } from "./Modal";
 export {
   AccessibilityInfo,

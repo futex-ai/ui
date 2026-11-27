@@ -230,14 +230,10 @@ test("no component imports react-native, react-native-svg, or lucide directly", 
 });
 
 test("no file outside src/primitives imports primitives/dom", () => {
-  // Milestone 6 of `plans/react-native-web-seam-contract.md` removes this exception.
-  const exception = new URL("drag-select/dragSelectableSessionDom.ts", srcRoot)
-    .pathname;
   const offenders: string[] = [];
   const domImport = /(?:^|\/)primitives\/dom(?:\/|$)/;
   for (const file of walk(srcRoot.pathname)) {
-    if (file.startsWith(primitivesRoot.pathname) || file === exception)
-      continue;
+    if (file.startsWith(primitivesRoot.pathname)) continue;
     if (!/\.(ts|tsx)$/.test(file)) continue;
     const imports = importedModules(readFileSync(file, "utf8"));
     if (imports.some((module) => domImport.test(module))) {
@@ -245,6 +241,24 @@ test("no file outside src/primitives imports primitives/dom", () => {
     }
   }
   assert.deepEqual(offenders.sort(), []);
+});
+
+test("the web link host and the shared press hooks import nothing from the DOM backend", () => {
+  // Both web renderers load these modules: the link host draws on the seam's
+  // own `View`, so a react-native-web app loads no DOM-backend module for it.
+  const files = [
+    "link.web.tsx",
+    ...readdirSync(new URL("webPress/", primitivesRoot)).map(
+      (name) => `webPress/${name}`,
+    ),
+  ];
+  const domImport = /(?:^|\/)dom(?:\/|$)/;
+  const offenders = files.flatMap((file) =>
+    importedModules(readFileSync(new URL(file, primitivesRoot), "utf8"))
+      .filter((module) => domImport.test(module))
+      .map((module) => `${file} imports ${module}`),
+  );
+  assert.deepEqual(offenders, []);
 });
 
 test("the icon type accepts both Lucide packages' icons", () => {

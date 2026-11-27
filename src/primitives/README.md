@@ -5,14 +5,14 @@ never import `react-native`, `react-native-svg`, `lucide-react-native`,
 `react-native-web`, or `lucide-react` directly; they import from here, and a
 unit test (`tests/unit/primitives.test.ts`) fails the build if one does.
 
-| Module             | Native resolves to      | Web (`.web`) resolves to  | RNW form    |
-| ------------------ | ----------------------- | ------------------------- | ----------- |
-| `reactNative.ts`   | `react-native`          | `dom/`                    | native file |
-| `svg.tsx`          | `react-native-svg`      | DOM `<svg>` elements      | native file |
-| `icons.ts`         | `lucide-react-native`   | `lucide-react`            | native file |
-| `link.tsx`         | `Pressable` + `Linking` | `dom/Link.tsx`, an `<a>`  | `.web` file |
-| `domBackendCss.ts` | `""`                    | CSS in `webStylesheet.ts` | `.web` file |
-| `types/` (web)     | —                       | the seam's own types      | —           |
+| Module             | Native resolves to      | Web (`.web`) resolves to    | RNW form    |
+| ------------------ | ----------------------- | --------------------------- | ----------- |
+| `reactNative.ts`   | `react-native`          | `dom/`                      | native file |
+| `svg.tsx`          | `react-native-svg`      | DOM `<svg>` elements        | native file |
+| `icons.ts`         | `lucide-react-native`   | `lucide-react`              | native file |
+| `link.tsx`         | `Pressable` + `Linking` | an `<a>` on the seam `View` | `.web` file |
+| `domBackendCss.ts` | `""`                    | CSS in `webStylesheet.ts`   | `.web` file |
+| `types/` (web)     | —                       | the seam's own types        | —           |
 
 With the DOM backend, every primitive comes from `dom/` — `View`, `Text`,
 `Pressable`, `Image`, `Modal`, `ScrollView`, `TextInput`, `FlatList`,
@@ -96,17 +96,8 @@ were recorded on that backend and are what prove the swap changed nothing.
   `measure`, `measureInWindow`, `measureLayout` and `setNativeProps` on the DOM
   element itself, so a `ref` is still the element the library reads
   `clientWidth` and `getBoundingClientRect()` from.
-- `usePress.ts` / `useHover.ts` / `Pressable.tsx` reproduce that backend's
-  press machine: the 50 ms press delay, the 450 ms long press, `onPress` from
-  the DOM `click` rather than the release, Enter anywhere and Space on a
-  button, and hover that ends when a nested pressable takes over.
-  `usePress.ts` also exports the internal `endPointerPresses(event)`: a
-  gesture that takes over a pointer, such as a drag-select drag that starts
-  on a button, passes the pointer event that took over. Each press of that
-  pointer, or of an unknown pointer, ends with that event: the control loses
-  its pressed look, and `onPressOut` gets the event through `fromDomEvent`,
-  as on a release. The caller swallows the click that follows, because
-  `onPress` comes from that click.
+- `Pressable.tsx` is that backend's `Pressable`: a `View` that runs the press
+  and hover hooks of [`webPress/`](#webpress).
 - `ScrollView.tsx` is that backend's `ScrollView` plus `ScrollViewBase`: an
   overflow container around a content wrapper, with its start / tick / end
   scroll rhythm (`scrollEvents.ts` holds the pure half) and its imperative
@@ -128,11 +119,6 @@ were recorded on that backend and are what prove the swap changed nothing.
   capture-then-bubble negotiation (`negotiation.ts`, over the shared lock in
   `responderState.ts`) and the touch history a gesture's `dx` / `dy` is computed
   from. `View`, `Text`, `TextInput` and `ScrollView` all register with it.
-- `Link.tsx` is the web link host: a `View` with an `href`, so the anchor keeps
-  the element reset, the layout and `ref` methods, and the focus markers. It
-  tracks the pressed, hovered and focused states for a function `style` and
-  `children`, as `Pressable` does, but takes no `onPress` and never stops its
-  click. The click rule is `linkActivation.ts`, which the native host shares.
 - `FlatList.tsx` windows a `ScrollView` with `VirtualizedList`'s arithmetic:
   `flatListWindow.ts` is the pure maths, `useFlatListWindow.ts` the scroll
   metrics and the batcher that grows the window one batch per render, and
@@ -162,6 +148,26 @@ style always wins and forced colors keep the system outline.
 with no visual meaning, but it promotes the scroller to its own compositing
 layer, and Chromium then snaps fractionally-positioned content inside that
 layer a device row away from the recorded baselines.
+
+## `webPress/`
+
+The press and hover hooks of both web renderers. The DOM backend's
+`Pressable` and [the link host](#the-link-host) run them, so they import
+nothing from `dom/`.
+
+- `pressMachine.ts`, `usePress.ts`, and `useHover.ts` reproduce
+  `react-native-web`'s press machine: the 50 ms press delay, the 450 ms long
+  press, `onPress` from the DOM `click` rather than the release, Enter
+  anywhere and Space on a button, and hover that ends when a nested pressable
+  takes over.
+- `usePress.ts` also exports the internal `endPointerPresses(event)`: a
+  gesture that takes over a pointer, such as a drag-select drag that starts
+  on a button, passes the pointer event that took over. Each press of that
+  pointer, or of an unknown pointer, ends with that event: the control loses
+  its pressed look, and `onPressOut` gets the event through `fromDomEvent`,
+  as on a release. The caller swallows the click that follows, because
+  `onPress` comes from that click. One registry in `usePress.ts` holds every
+  pointer press, so the takeover also ends the press of a link.
 
 ## `types/`
 
@@ -210,13 +216,29 @@ Native's own.
 `LinkInteractionState`: the host of the library's links. `linkTypes.ts` holds
 their props once, over the style, focus-event and layout-event types of each
 platform, so each file types them in its own world, as `reactNative.ts` and
-`reactNative.web.ts` do. The web host is an anchor with its `href` in static
-HTML. Only a primary click or Enter without a modifier on a same-tab link runs
-`onNavigate`, and it then prevents the page load; every other click keeps the
-browser default. `newTab` adds `target="_blank"` and `rel="noopener
-noreferrer"`. The native host is a `Pressable` with the link role and the
-selected state for `current`. An activation runs `onNavigate`, a new-tab link
-included, or `Linking.openURL` without one. The
+`reactNative.web.ts` do. The click rule is `linkActivation.ts`, which both
+hosts share.
+
+One web host serves both web renderers. `link.web.tsx` draws on the seam's own
+`View` from `reactNative`: the DOM backend's `View` by default, and
+`react-native-web`'s `View` on [the RNW route](#the-rnw-route). It imports
+nothing from `dom/`. Both renderers render a `View` with an `href` as an
+anchor, add the `rel` and `target` of `hrefAttrs`, and forward `aria-current`,
+`dataSet`, `onClick`, and the pointer, key, and focus handlers. So the anchor
+keeps the element reset, the layout and `ref` methods, and the focus markers
+of the `View`. The host tracks the pressed, hovered and focused states for a
+function `style` and `children` with the hooks of [`webPress/`](#webpress), as
+`Pressable` does, but takes no `onPress` and never stops its click. It is not
+a `Pressable`, because `react-native-web`'s `Pressable` stops every click and
+runs `onPress` on a Ctrl, Meta, or Shift click.
+
+The web host is an anchor with its `href` in static HTML. Only a primary click
+or Enter without a modifier on a same-tab link runs `onNavigate`, and it then
+prevents the page load; every other click keeps the browser default. `newTab`
+adds `target="_blank"` and `rel="noopener noreferrer"`. The native host is a
+`Pressable` with the link role and the selected state for `current`. An
+activation runs `onNavigate`, a new-tab link included, or `Linking.openURL`
+without one. The
 [app shell parts protocol](../../docs/protocol/app-shell-parts.md#links) holds
 the requirements.
 

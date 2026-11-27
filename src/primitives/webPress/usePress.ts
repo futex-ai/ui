@@ -1,5 +1,6 @@
 /**
- * `Pressable`'s press handlers.
+ * The press handlers of the DOM backend's `Pressable` and of the web link
+ * host, which draws on either web renderer.
  *
  * Feeds `pressMachine.ts` from DOM events: the pointer down that starts a
  * gesture, the document listeners that watch the rest of it (the way the

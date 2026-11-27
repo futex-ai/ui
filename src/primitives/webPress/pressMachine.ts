@@ -1,5 +1,6 @@
 /**
- * The press state machine behind `Pressable`.
+ * The press state machine behind the DOM backend's `Pressable` and the web
+ * link host.
  *
  * A port of `react-native-web`'s `PressResponder`: the same four states, the
  * same delays (press start after 50 ms unless `delayPressIn` says otherwise,

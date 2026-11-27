@@ -67,7 +67,8 @@ Research reports: `.context/react-native-web-seam-contract/brainstorm-report.md`
 - **Responder:** RNW's global gesture lock. RNW's `Pressable`, `ScrollView`,
   and `PanResponder` use it.
 - **Press registry:** the map of active presses in
-  `src/primitives/dom/usePress.ts`. `endPointerPresses` ends the presses in it.
+  `src/primitives/webPress/usePress.ts`. `endPointerPresses` ends the presses
+  in it.
 
 ### Decisions
 
@@ -497,13 +498,13 @@ Depends on: 1, 2
 
 Build `link.web.tsx` over the seam `View`, as the design calls say.
 
-- [ ] Move `usePress`, `pressMachine`, and `useHover` out of `dom/` to a
+- [x] Move `usePress`, `pressMachine`, and `useHover` out of `dom/` to a
       shared web module. The DOM `Pressable` keeps its behaviour.
-- [ ] Rewrite `link.web.tsx` over the seam `View`. Delete `dom/Link.tsx` and
+- [x] Rewrite `link.web.tsx` over the seam `View`. Delete `dom/Link.tsx` and
       its export from `dom/index.ts`.
-- [ ] `src/primitives/README.md`: the link row of the seam table and the
+- [x] `src/primitives/README.md`: the link row of the seam table and the
       link host section say that one host serves both renderers.
-- [ ] Move `tests/unit/link.test.ts` to the new host. Run
+- [x] Move `tests/unit/link.test.ts` to the new host. Run
       `tests/browser/link.spec.ts` and `tests/browser/list.spec.ts` with no
       baseline change.
 
@@ -544,8 +545,8 @@ Depends on: 4
 
 Depends on: 3, 5
 
-- [ ] Drag-select imports `endPointerPresses` from the shared press module.
-- [ ] Remove the exception for `src/drag-select/dragSelectableSessionDom.ts`
+- [x] Drag-select imports `endPointerPresses` from the shared press module.
+- [x] Remove the exception for `src/drag-select/dragSelectableSessionDom.ts`
       from the check in `tests/unit/primitives.test.ts` that no file outside
       `src/primitives` imports `primitives/dom`.
 - [ ] Implement the takeover as decision 2 chooses.
@@ -585,6 +586,9 @@ Depends on: 4
 
 Depends on: every other milestone
 
+- [ ] Update every follow-up item that this branch makes stale, with the
+      report `.context/react-native-web-seam-contract/follow-up-check.md` as
+      input. Then run a fresh follow-up check, as the `plans` skill says.
 - [ ] Run the targeted tests and the complete gate, `cargo xtask check`.
 - [ ] Commit with Conventional Commits and push the branch.
 - [ ] Review the complete local diff against `origin/main` with the

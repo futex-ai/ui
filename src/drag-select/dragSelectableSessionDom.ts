@@ -1,7 +1,7 @@
 /** The DOM side of a drag-select session: listeners and measurements. */
 import { suppressNextClick } from "../dragGesture";
 import { pushEscapeLayer, removeEscapeLayer } from "../escapeLayer";
-import { endPointerPresses } from "../primitives/dom/usePress";
+import { endPointerPresses } from "../primitives/webPress/usePress";
 
 import { startDragSelectableAutoScroll } from "./dragSelectableAutoScroll";
 import { measureDragSelectableTargets } from "./dragSelectableDom";

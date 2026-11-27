@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { endPointerPresses } from "../../src/primitives/dom/usePress";
+import { endPointerPresses } from "../../src/primitives/webPress/usePress";
 import type { GestureResponderEvent } from "../../src/primitives/types";
 
 import {
