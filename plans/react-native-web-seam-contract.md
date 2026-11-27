@@ -534,15 +534,15 @@ Add the seam table and the rule in the shape of decision 1.
 
 Depends on: 4, 7
 
-- [ ] Add a browser spec that bundles a harness with esbuild, RNW, and the
+- [x] Add a browser spec that bundles a harness with esbuild, RNW, and the
       published rule, as a consumer applies it.
-- [ ] Render a `List` with a link row. Assert a real `a` element with its
+- [x] Render a `List` with a link row. Assert a real `a` element with its
       `href`. Assert that a plain click runs `onNavigate` and loads no page,
       that a Ctrl or Meta click does not run it, and that `newTab` and
       `current` give their attributes.
-- [ ] Add an RNW harness case for the stylesheet of Milestone 7: a focus host
+- [x] Add an RNW harness case for the stylesheet of Milestone 7: a focus host
       shows the glow with no `SharedUiThemeProvider`.
-- [ ] Add an RNW harness case for the toast live region of Milestone 7: the
+- [x] Add an RNW harness case for the toast live region of Milestone 7: the
       element has `aria-atomic`.
 
 ## Milestone 6: The press takeover on both renderers
