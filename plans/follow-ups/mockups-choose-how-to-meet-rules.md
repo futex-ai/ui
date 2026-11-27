@@ -51,5 +51,6 @@
 - **Related:**
   - `plans/follow-ups/mockups-meet-mockups-skill.md`: the parent item. Its work waits for this answer.
   - `plans/follow-ups/mockups-choose-side-of-mismatch.md`: the other decision item of the same work. The alignment in options C, D, and E also waits for its answer.
+  - `plans/follow-ups/delete-completed-plans.md`: work that changes this item. That task deletes `plans/rich-text-collaboration-visuals.md`, and this item lists line 28 of that plan among the five live links to the mockups. The task replaces that name here with a permalink.
 - **Recommendation:** B. It removes the six defects at Small effort, and it leaves the port to a plan that can set up Mokly. D best protects the codebase.
 - **Action:** ask the user, because the options trade work now against drift, and the port needs a Mokly setup that does not exist here.

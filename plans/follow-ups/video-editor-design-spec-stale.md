@@ -45,5 +45,7 @@
   - `plans/follow-ups/clip-selection-ring-never-drawn.md`: the same doc. That item decides line 44, the clip selection ring. Option C or D here removes that line with the spec.
   - `plans/follow-ups/delete-completed-plans.md`: the same doc. That item replaces the link at line 3 when it deletes the completed plan `plans/video-editor-components.md`. Option C or D here removes that link with the spec.
   - `plans/follow-ups/docs-name-react-native-web.md`: the same cause in other docs. That item leaves line 113 of the spec to this item.
+  - `plans/follow-ups/code-comments-name-one-web-renderer.md`: the same code. That item rewrites the lines of `src/timeline/timelineScrubValue.ts` that say "the web backend", at lines 7 and 56. Line 56 is in the comment of `sliderRoleProps` that options A to D here correct. Whichever item goes second keeps the change of the other.
+  - `plans/follow-ups/icon-seam-story-only-glyphs.md`: the same code. Option A of that item rewrites the glyph rule at `src/primitives/icons.ts:8-9`, which this item gives as a reason why a new Lucide icon needs no stub. The rule still sends each new glyph to both seam modules, so that reason stays true.
 - **Recommendation:** C. Everything current in the spec already lives in the READMEs, the code comments, and the shared skills, so the spec only adds drift.
 - **Action:** ask the user, because option C deletes a doc on `main`, and only the user approves that.

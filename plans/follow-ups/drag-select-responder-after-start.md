@@ -1,0 +1,52 @@
+# A started drag can lose the responder
+
+- **Severity:** Medium. **Likelihood:** Rare. **Effort:** Small. **Confidence:** High. **Harder later:** No.
+- **Kind:** Outside the scope.
+- **Added:** 2026-11-27, from the branch `calummoore/firna-rnw-seam-contract-mhsd`. The finding check of review round 1, finding 5, listed it outside the scope.
+- **Location:** `src/drag-select/DragSelectableProvider.web.tsx:45-58`, `src/drag-select/dragSelectableSessionDom.ts:51-63`, `src/drag-select/dragSelectableSessionDom.ts:110-140`, `src/primitives/dom/responder/negotiation.ts:135-156`, `src/primitives/dom/responder/negotiation.ts:160-184`, `src/primitives/dom/responder/ResponderSystem.ts:60-82`, `src/primitives/dom/responder/ResponderSystem.ts:106-114`, `src/primitives/dom/responder/ResponderSystem.ts:168-202`, `docs/protocol/drag-select.md:146-165`, `tests/unit/dragSelectSessionDom.test.ts`, and `tests/browser/rnw-drag-select.spec.ts`.
+- **Reason:** The provider gave the responder away in the same way before the react-native-web route branch, and each fix adds a requirement that the user must review.
+
+- **Terms:**
+  - **Provider:** `DragSelectableProvider`, which lets a user drag a box across rows to select them on web. Its host element is a `View`.
+  - **Responder:** the gesture lock that `react-native-web` (RNW), and the copy of it in Firna's DOM backend, give to one node at a time.
+  - **Start:** the moment when the pointer has moved the threshold distance from the press, and the provider begins to draw the box.
+  - **RNW route:** an app that draws its own screens with RNW applies the rule of `@firna/ui/rnw`, and Firna then draws with RNW too.
+- **Background:**
+  - At the start, the provider takes the responder for its host. `claimResponder`, at `dragSelectableSessionDom.ts:51-63`, answers `onMoveShouldSetResponderCapture` with true once: on the `mousemove` that follows the `pointermove` that started the drag. The host passes it at `DragSelectableProvider.web.tsx:51-53`. With the DOM backend, the claim goes to Firna's responder port. On the RNW route, it goes to the responder of RNW.
+  - The host sets no `onResponderTerminationRequest`, at `DragSelectableProvider.web.tsx:45-58`. When the holder has none, both responder systems allow each transfer: Firna's port at `negotiation.ts:135-156`, and RNW 0.21.4 at `node_modules/react-native-web/dist/modules/useResponderEvents/ResponderSystem.js:476-487`.
+  - After the start, each later `mousemove` asks the registered nodes from the common ancestor of the move target and the holder upward, and skips the holder itself, at `negotiation.ts:160-184`. So a responder around the provider can claim on a later move. On the RNW route, that is any app gesture of RNW, such as a `PanResponder`. With the DOM backend, an app gesture cannot join Firna's port, because no public subpath exports the `View` or the `PanResponder` of the seam.
+  - A `scroll` of an element that contains the holder ends the hold, unless the holder refuses the termination request: Firna's port at `ResponderSystem.ts:110-113` and `:172-202`, and RNW at `ResponderSystem.js:329-331` and `:353-374`. The scroll container of a press is often an element above the provider, such as the document, and auto-scroll scrolls it during a drag.
+  - The end of a hold sets the count of tracked pointers to 0, and both systems then ignore each `mousemove` until the next press: Firna's port at `ResponderSystem.ts:71` and `:201`, and RNW at `ResponderSystem.js:218` and `:374`. So after a scroll ends the hold, no gesture can claim the pointer during the rest of the drag.
+  - The drag runs from pointer events, at `dragSelectableSessionDom.ts:110-140`, so it goes on after the provider loses the responder. The gesture that took the responder then runs beside the drag.
+  - A probe at the branch head on 2026-11-27 drove Firna's port on the fake document of `tests/unit/domPressFakes.ts`:
+    - After the provider took the responder at the start, a node around it that answers `onMoveShouldSetResponder` with true past 30 px got the responder on the move at 140 px. Its `onResponderGrant` ran with that `mousemove`.
+    - After the start, a `scroll` whose target contained the provider ran the `onResponderTerminate` of the provider with that `scroll` event, and no node held the responder after it.
+  - The "Press takeover" rule of `docs/protocol/drag-select.md:146-165` says that the start ends each library press of the same pointer, and that the provider claims the responder in the system of the renderer that draws it. Lines 151-153 say that only a gesture of the same press inside the provider gets a transfer request, and that a gesture above the provider keeps the responder until release. The rule says nothing about the responder after the start.
+  - A touch press never starts a drag, at `src/drag-select/dragSelectablePress.ts:111-113`. So a touch swipe of a pager around the provider never meets a drag.
+  - Before the react-native-web route branch, the provider claimed no responder, so a gesture around it took the pointer in the same way.
+  - A separate open question covers a drag whose starting move already lands outside the provider. Until the react-native-web route branch merges, decision 5 of its plan, `plans/react-native-web-seam-contract.md`, holds that question. The pull request of that branch deletes the plan, and an open decision then becomes a follow-up item. The test "an RNW drag ends the press when the starting move leaves the provider", at `tests/browser/rnw-drag-select.spec.ts:114-123`, is `test.fixme` until the user answers it.
+- **Problem:** After the start, a responder around the provider that claims on a later move takes the responder from the provider. The drag goes on, and the other gesture runs beside it. The protocol does not say whether the drag keeps the responder until release.
+- **Impact if no action:** An app gesture around the provider that claims on a mouse move, such as a pager built on `PanResponder`, can move the page during a box selection.
+- **Root question:** Which responder gestures may take the pointer while a drag-select drag runs, from its start to its release?
+- **Options:**
+  - **A.** Record that the drag yields. The protocol says that after the start, a responder around the provider that claims the pointer takes the responder, and that its gesture runs beside the drag. No code changes. Effort: Small.
+  - **B.** The drag keeps the responder until release:
+    - The provider host answers `onResponderTerminationRequest` with false while a drag runs, from the start to the release or a cancel.
+    - A later claim then gets `onResponderReject`. A scroll of an element above the provider no longer ends the hold either, so the protection lasts until release.
+    - A `dragstart`, a `touchcancel`, and a blur of the window still end the hold, because the responder systems ask the holder only for `contextmenu`, `scroll`, and `selectionchange`, at `ResponderSystem.ts:172-191`.
+    - The "Press takeover" rule gets one sentence.
+    - Add a DOM case to `tests/unit/dragSelectSessionDom.test.ts` and an RNW case to `tests/browser/rnw-drag-select.spec.ts`.
+    - Effort: Small.
+  - **C.** The drag ends when it loses the responder. The `onResponderTerminate` of the provider host cancels the drag, as Escape does, so the gesture that took the pointer runs alone. The host must still refuse the termination request for a `scroll`, or the auto-scroll of an element above the provider cancels each drag. The protocol says so. Effort: Medium.
+- **Left out:**
+  - A claim of the provider on each move of the drag: the pruned path skips the holder itself, at `negotiation.ts:176-179`, so the claim never runs, and it fails the goal.
+  - Change nothing: the protocol stays silent on the question, so it fails the goal.
+- **Wider fix:** B. It makes the drag the only responder gesture of its pointer in the system of the renderer that draws the provider, so no gesture of that system runs beside it.
+- **Previous examples:** None found.
+- **Related:**
+  - `plans/follow-ups/drag-select-start-survives-press-callback.md`: the same code. That item changes when the start ends the presses, and it keeps the takeover move that `claimResponder` reads, at `dragSelectableSessionDom.ts:71-76`. B here adds a termination answer to the provider host. The two items can go in either order.
+  - `plans/follow-ups/press-events-miss-responder-fields.md`: the same protocol rule. Its option A changes the sentences of the "Press takeover" rule that name the pointer event, and B here adds a sentence to that rule. Whichever item goes second keeps the sentences of the other.
+  - `plans/follow-ups/rnw-enclosing-pressable-presses-too.md`: work that interacts. Its option B lets a Firna link or resize handle take the responder at the press, and relies on the move claim of a drag-select provider to take it back at the start. This item decides what the provider does with the responder after that.
+  - `plans/follow-ups/dom-responder-private-registration.md`: work that interacts. Its option C changes how Firna's port records the documents that have listeners. The new DOM case of B here installs the listeners on a new fake document, as the current cases do.
+- **Recommendation:** B. The start already takes the pointer from library presses and from gestures inside the provider, and B keeps it until release, on either web renderer.
+- **Action:** ask the user, because the protocol does not say whether a drag keeps the responder after the start, so each option adds a requirement to the "Press takeover" rule of `docs/protocol/drag-select.md`.

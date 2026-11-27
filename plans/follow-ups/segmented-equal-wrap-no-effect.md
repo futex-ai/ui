@@ -1,0 +1,49 @@
+# Equal segments ignore `wrap` and cut labels
+
+- **Severity:** Medium. **Likelihood:** Rare. **Effort:** Small. **Confidence:** High. **Harder later:** Yes.
+- **Kind:** Outside the scope.
+- **Added:** 2026-11-27, from the branch `calummoore/firna-rnw-seam-contract-mhsd`. An earlier follow-up check named the case as unchecked, and a browser probe on that branch confirmed it.
+- **Location:** `src/segmented/segmentedControlStyles.ts:165`, `src/segmented/segmentedControlStyles.ts:187-189`, `src/segmented/segmentedControlStyles.ts:224`, `src/segmented/segmentedControlStyles.ts:261-272`, `src/segmented/SegmentedControl.tsx:55-59`, `src/segmented/SegmentedControl.tsx:179`, `src/segmented/SegmentedControlButton.tsx:166-199`, `src/segmented/segmentedControlTypes.ts:83-94`, `src/segmented/README.md:57-61`, and `docs/protocol/shared-ui-controls.md:21`.
+- **Reason:** The segmented control came before the react-native-web route branch, which does not change it, and the fix adds a rule that the user must review.
+
+- **Terms:**
+  - **`SegmentedControl`:** the one-of-N control of `@firna/ui/segmented`. Its `variant` is `pill`, a tab track, or `outline`, a row of separate cells.
+  - **`sizing`:** the width rule of the segments: `content`, the default, sizes each segment to its label, and `equal` shares the width evenly.
+  - **`wrap`:** a boolean prop that lets the row of segments flow onto more lines.
+  - **Flex basis:** the size that a flex item starts from before the row shares the free space. A wrapping row breaks its lines by these sizes.
+- **Background:**
+  - With `sizing="equal"`, each segment gets the style `equalSegment`, `{ flex: 1 }`, at `segmentedControlStyles.ts:187-189`, through `SegmentedControlButton.tsx:166-172`. `flex: 1` gives a flex basis of zero. Firna's DOM backend passes `flex: 1` to CSS unchanged, at `src/primitives/dom/resolveStyle.ts:183-190`.
+  - At the `sm`, `md`, and `lg` sizes, a segment has a `minWidth` of 0: the cell at `segmentedControlStyles.ts:165` and the pill at `:224`. The `xs` size gives 24 px. The view reset of the DOM backend also sets `min-width:0`, at `src/primitives/webStylesheet.ts:80`.
+  - `wrap` adds `flexWrap: "wrap"` to the row, at `SegmentedControl.tsx:179` and `segmentedControlStyles.ts:261-262`. With a zero basis, each segment counts only its padding and its border when the row breaks its lines, so the row almost never wraps.
+  - Each label renders with `numberOfLines={1}`, at `SegmentedControlButton.tsx:185-199`, so a label that does not fit ends in an ellipsis.
+  - `segmentedControlTypes.ts:83-84` documents `sizing`, and `wrap` at line 94 has no doc comment. `src/segmented/README.md:57-61` pairs `wrap` with content sizing, and gives `sizing="equal"` for a full-width two-up toggle. `docs/protocol/shared-ui-controls.md:21` requires "equal-width segments and content-sized wrapping filter pills". No doc says what `wrap` does with `sizing="equal"`.
+  - A browser probe at the branch head on 2026-11-27, in Chromium, drew five segments, "Profit and loss", "Balance sheet", "Cash flow", "Trial balance", and "General ledger", in a row of 320 px. It ran with the DOM backend and on the RNW route with `react-native-web` 0.21.4, with the same results:
+    - `variant="outline"`, `sizing="equal"`, and `wrap` at `md`: one line of five segments, 58 px each. Every label showed an ellipsis, for example 36 px of the 83 px of "Profit and loss".
+    - `variant="pill"` with the same props: one line, 59 px each, and every label cut.
+    - The outline form at `xs`, `sm`, and `lg`: one line each, and every label cut. At `xs`, the `minWidth` of 24 px did not help.
+    - `sizing="content"` and `wrap`: the outline form took two lines, the pill form three lines, and no label was cut.
+    - `sizing="equal"` with no `wrap` drew the same line as with `wrap`.
+  - The computed style of each equal segment was `flex: 1 1 0%`. Nobody checked native. React Native gives `flex: 1` the same zero basis, and its style type has no `max-content` value, at `node_modules/react-native/Libraries/StyleSheet/StyleSheetTypes.d.ts:21-26`.
+  - No story or component in this repository sets both props. `src/stories/segmentedExamples.tsx:93` and `:125` use `sizing="equal"` with no `wrap`, and `:220` uses `wrap` with `sizing="content"`. On 2026-11-27, a search of `futex-ai/accounting` at commit `f5ea7ea7cf` found no file under `ts/app/src` that passes `sizing="equal"`.
+- **Problem:** With `sizing="equal"`, the `wrap` prop has no effect: the segments stay on one line, and each label that does not fit ends in an ellipsis. The types accept the two props together, and no doc says what they do together.
+- **Screenshot:** The picture showed three controls in a row of 320 px: the outline form and the pill form with `sizing="equal"` and `wrap` kept all five segments on one line with every label cut, and the outline form with `sizing="content"` and `wrap` wrapped onto two lines. The red box marked the two equal forms.
+- **Impact if no action:** A consumer that sets both props to keep long labels readable gets cut labels and a `wrap` that does nothing, with no error. Each new caller of the combination makes a later change of the props a breaking change for that caller.
+- **Root question:** What does a segmented control with `sizing="equal"` and `wrap` do when its labels do not fit on one line?
+- **Options:**
+  - **A.** Document the limit. The doc comment of `wrap` and the README say that `wrap` applies to content sizing only, and the control warns once through `devWarn` from `src/devWarn.ts` when a caller sets both. The layout stays as it is. Effort: Small.
+  - **B.** Reject the combination in the type. The props become a union, in which `wrap` needs `sizing` to be `content` or unset, so a TypeScript caller that sets both gets a build error. A JavaScript caller keeps the current layout. The doc comment and the README say so. Effort: Small.
+  - **C.** Let the labels wrap inside equal segments. With `wrap`, an equal segment drops `numberOfLines={1}`, so each label breaks onto more lines, and the segments stay on one line at equal width. A single word wider than its segment still ends in an ellipsis. `wrap` then means a different thing for each `sizing`. Effort: Small.
+  - **D.** Wrap equal segments by the widest label. The control measures the widest label and gives each equal segment that width as its flex basis, so the row wraps when that width does not fit. The segments on a full line stay equal, and a last line with fewer segments has wider ones. Before the first measurement, the row draws as today. The controls protocol gets the rule. Effort: Medium.
+  - **E.** Lay out equal columns. The control measures the row and the widest label, computes how many columns fit, and gives every segment the same width on every line. It needs the measurement of D and a new layout on each resize. The controls protocol gets the rule. Effort: Medium.
+- **Left out:**
+  - Change nothing: `wrap` stays a silent no-op with equal sizing, and the labels stay cut, so it fails the goal.
+  - Remove the `wrap` prop: `docs/protocol/shared-ui-controls.md:21` requires content-sized wrapping filter pills, so it breaks a requirement that stays.
+  - A content basis for equal segments, such as `flexGrow: 1` with `flexBasis: "auto"`: segments that fit on one line no longer have equal widths, which breaks the equal-width requirement of the same line.
+  - A minimum width of `max-content` in CSS: the style type of React Native has no such value, so native cannot share the rule.
+- **Wider fix:** B. A type that cannot hold the two props together removes this silent combination for every TypeScript caller.
+- **Previous examples:** `plans/follow-ups/transport-scrubber-shrinks-to-knob.md` holds the same cause: the seek bar of the transport is a growing child with a zero flex basis in a wrapping row, and it shrinks to its knob.
+- **Related:**
+  - `plans/follow-ups/transport-scrubber-shrinks-to-knob.md`: the same cause. That item names this case under its **Wider fix**, and the probe here confirmed it, so the class now has two confirmed cases. The two fixes need different minimum widths, a fixed metric there and the widest label here.
+  - `plans/follow-ups/rnw-focus-glow-drops-resting-shadow.md`: the same code. Options D and E here change the style array of each segment at `src/segmented/SegmentedControlButton.tsx:166-172`. Option B of that item moves the resting shadow of the selected pill out of the same array. Whichever item goes second keeps the change of the other.
+- **Recommendation:** B. The protocol and the README pair `wrap` with content sizing, so a type that rejects the other pair stops the silent no-op at Small effort, and D stays open if a consumer needs equal segments that wrap.
+- **Action:** ask the user, because B adds a build error for a prop combination that compiles today, and no requirement says what the combination does.

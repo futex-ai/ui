@@ -49,6 +49,12 @@
   - Remove blank lines or compact code: it breaks the rule "Do not remove blank lines or compact code to stay under a limit."
 - **Wider fix:** C, a detection fix. No structural fix stops a file from growing, so a check is the strongest fix for this class.
 - **Previous examples:** Commit `b4e61b8`, from pull request #73, split the data grid under the limit on 2026-07-01. Twelve later changes grew `src/data-grid/DataGrid.tsx` from 299 to 491 lines.
-- **Related:** `plans/follow-ups/add-eslint.md`: work that waits for the answer. `max-lines` is an ESLint rule, so option C needs the ESLint configuration of that item. When the user keeps the package without ESLint, option B is the check that stays possible.
+- **Related:**
+  - `plans/follow-ups/add-eslint.md`: work that waits for the answer. `max-lines` is an ESLint rule, so option C needs the ESLint configuration of that item. When the user keeps the package without ESLint, option B is the check that stays possible.
+  - `plans/follow-ups/code-comments-name-one-web-renderer.md`: work that waits for the splits. That item changes stale comments in 18 files that pass 300 lines, and under its option B those comments change with the split of each file.
+  - `plans/follow-ups/dom-responder-private-registration.md`: the same file. Its option C changes `src/primitives/dom/responder/ResponderSystem.ts`, which has 333 lines, and splits it in the same change.
+  - `plans/follow-ups/calendar-and-grid-controls-hide-focus.md`: the same file. Its option C changes `src/data-grid/DataGrid.tsx`, which has 493 lines, and splits it in the same change.
+  - `plans/follow-ups/time-grid-event-click-creates-event.md`: the same file. Its option C changes `src/calendar/TimeGrid.tsx`, which has 387 lines, and splits it in the same change.
+  - `plans/follow-ups/icon-seam-story-only-glyphs.md`: the same files. Its options B and C change three story files that pass 300 lines: `src/stories/sharedExamples.tsx`, `src/stories/kanban.stories.tsx`, and `src/stories/sortableList.stories.tsx`.
 - **Recommendation:** C. It puts the limit in the lint that the `typescript` skill already asks for, so no custom check needs care.
 - **Action:** ask the user, because the recommended option adds a lint rule, and the always-on rules reserve each new lint for the user.

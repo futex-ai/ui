@@ -1,0 +1,44 @@
+# Private DOM barrel forwards an unused context
+
+- **Severity:** Low. **Effort:** Small. **Confidence:** High. **Harder later:** No.
+- **Kind:** Outside the scope.
+- **Added:** 2026-11-27, from the branch `calummoore/firna-rnw-seam-contract-mhsd`. The finding check of review round 1, finding 6, listed it outside the scope.
+- **Location:** `src/primitives/dom/index.ts:1-29`, `src/primitives/dom/index.ts:27`, `src/primitives/reactNative.web.ts:1-38`, `tests/unit/primitives.test.ts:93-112`, and `tests/unit/primitives.test.ts:150-160`.
+- **Reason:** The forward came with pull request #168, and the review of the react-native-web route branch put it outside that branch, which removed two other forwards of the barrel but not this one.
+
+- **Terms:**
+  - **DOM backend:** Firna's own web renderer under `src/primitives/dom`.
+  - **Private DOM barrel:** `src/primitives/dom/index.ts`, a module that re-exports the primitives of the DOM backend for the web seam. No public subpath exports it.
+  - **Web seam:** `src/primitives/reactNative.web.ts`, which gives every component its React Native primitives on web.
+  - **`TextAncestorContext`:** the React context at `src/primitives/dom/TextAncestorContext.ts:12` that tells a DOM `View` or `Text` whether it renders inside a `Text`.
+- **Background:**
+  - `src/primitives/dom/index.ts:11-29` re-exports the primitives of the DOM backend. Line 27 also forwards `TextAncestorContext`.
+  - On 2026-11-27, `grep -rn "TextAncestorContext" src tests scripts` found 7 lines in 3 files outside the module of the context. `src/primitives/dom/Text.tsx:25` and `src/primitives/dom/View.tsx:27` import it from `./TextAncestorContext`, not through the barrel, and use it. The third file holds the forward itself.
+  - The only module that imports the barrel is the web seam, at `src/primitives/reactNative.web.ts:19-38`. It imports 18 names, and `TextAncestorContext` is not one of them. `tests/unit/primitives.test.ts:150-160` checks that import against the list `SERVED_BY_THE_DOM_BACKEND`, at `:93-112`, which does not name the context either.
+  - The `exports` map of `package.json` has no subpath under `primitives/dom`, so no consumer can import the barrel. No doc names the context. The forward still ships in both build trees, for example in `dist/node/primitives/dom/index.js`.
+  - So the forward meets each condition of dead code in the `git-commit` skill: no code, test, script, or configuration uses it, no string or dynamic import names it, no consumer reaches it, and nothing keeps it on purpose.
+  - The `typescript` skill allows a barrel file only at the public entry point of a package: "Do not add a barrel file that re-exports modules to avoid updating imports."
+  - The barrel already lost two forwards that nothing imported through it. Commit `42e7331` removed the forward of `Link`, and commit `2fc2d4f` removed the forward of `domBackendCss` and `useDomBackendCss`.
+  - The header of the barrel, at `src/primitives/dom/index.ts:9`, names the completed plan `plans/pure-react-dom-backend.md`. `plans/follow-ups/delete-completed-plans.md` replaces that name when it deletes the plan.
+  - The barrel `src/primitives/dom/responder/index.ts` also re-exports modules. `Text.tsx:24`, `View.tsx:26`, and `TextInput.tsx:49` in `src/primitives/dom` import through it. This item leaves it as it is.
+- **Problem:** The private DOM barrel forwards `TextAncestorContext`, at `src/primitives/dom/index.ts:27`, and nothing imports the context through the barrel. The two modules that use the context import it from its own module.
+- **Impact if no action:** A second import path to the same context invites a new import through the barrel. The dead line ships in each build of the package.
+- **Root question:** How does each module reach `TextAncestorContext` and the primitives of the DOM backend through one import path?
+- **Options:**
+  - **A.** Delete the forward at `src/primitives/dom/index.ts:27`, and keep the barrel for the web seam. Effort: Small.
+  - **B.** Delete the private DOM barrel:
+    - The web seam imports each primitive from its own module under `dom/`, such as `./dom/View`.
+    - The seam check at `tests/unit/primitives.test.ts:150-160` collects the names from the `./dom/<module>` imports, and its list of allowed modules accepts them. The check keeps each assertion.
+    - The module comment at `src/primitives/reactNative.web.ts:4-8` changes. Its line 6 names the completed plan `plans/pure-react-dom-backend.md`, and `plans/follow-ups/delete-completed-plans.md` lists that line too.
+    - The location `src/primitives/dom/index.ts:9` leaves `plans/follow-ups/delete-completed-plans.md`.
+    - Effort: Small.
+- **Left out:**
+  - The forward has one place, so the only distinct approaches are to delete the line or the module that holds it.
+  - Keep the forward with a comment that says nothing uses it: it keeps a dead path, which the `git-commit` skill deletes, so it fails the goal.
+  - A test or a lint that fails on an unused re-export: it is a check for the class, which needs the user, and for this barrel B is better on every point.
+- **Wider fix:** B. With no private barrel, no forward through it can go unused. The `typescript` skill already forbids a new barrel outside the public entry point of a package.
+- **Previous examples:** Commits `42e7331` and `2fc2d4f` removed the forwards of `Link` and of the stylesheet from this barrel, because nothing imported them through it.
+- **Related:**
+  - `plans/follow-ups/delete-completed-plans.md`: the same code. That task replaces the name of the completed plan `pure-react-dom-backend` at `src/primitives/dom/index.ts:9` and `src/primitives/reactNative.web.ts:6`. Option B here deletes the first file and rewrites the comment that holds the second line. Whichever item goes second keeps the change of the other.
+- **Recommendation:** B. It removes the forwarding layer that the `typescript` skill forbids, so the context and each primitive have one import path, at the same Small effort as A.
+- **Action:** fix after merge, apply B, because the review of the react-native-web route branch put the forward outside that branch, and B also changes `src/primitives/reactNative.web.ts`, which that branch does not change.

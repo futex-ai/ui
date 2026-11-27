@@ -1,0 +1,37 @@
+# Resize release can press an enclosing control
+
+- **Severity:** High. **Likelihood:** Rare. **Effort:** Small. **Confidence:** High. **Harder later:** No.
+- **Kind:** Outside the scope.
+- **Added:** 2026-11-27, from the branch `calummoore/firna-rnw-seam-contract-mhsd`. A probe of the RNW caveat of the panel resize handle in its plan found it.
+- **Location:** `src/panel-resize/usePanelResizeDrag.ts:59-120`, `src/dragGesture.ts:24-73`, `docs/protocol/app-shell-parts.md:219-243`, and `tests/browser/panelResize.spec.ts`.
+- **Reason:** The resize handle came with pull request #183 on 2026-11-08, before the react-native-web route branch, and the defect does not depend on the renderer.
+
+- **Terms:**
+  - **Resize handle:** `PanelResizeHandle` of `@firna/ui/panel-resize`, the separator on the inner edge of a side panel that a pointer drag moves to change the width of the panel.
+  - **Release click:** the `click` that a browser fires after a press and a release. Its target is the nearest element that holds both the pressed element and the element under the release.
+  - **RNW route:** an app that draws its own screens with `react-native-web` (RNW) applies the rule of `@firna/ui/rnw`, and Firna then draws with RNW too.
+  - **Mixed page:** a page where Firna draws through its own DOM backend and the app draws its own controls with RNW.
+- **Background:**
+  - The web drag of the handle lives in `usePanelResizeDrag.ts`. A primary press on the handle starts a drag at `:74-120`, and `attachPointerDragListeners` from `src/dragGesture.ts:24-50` follows the pointer until the release. The end of the drag restores the page and reports the width once, at `:59-72`.
+  - The drag does not swallow its release click. Drag-select and the sortable list call `suppressNextClick`, from `src/dragGesture.ts:52-73`, after a committed drag, at `src/drag-select/dragSelectableSessionDom.ts:98` and `src/sortable-list/useSortableDrag.web.ts:224`.
+  - Both web renderers run the `onPress` of a `Pressable` on each `click` that reaches it, also when that `Pressable` did not start the press: RNW at `node_modules/react-native-web/dist/modules/usePressEvents/PressResponder.js:302-321`, and Firna's DOM backend at `src/primitives/webPress/usePress.ts:180-193`.
+  - So when a resize drag ends inside a control that holds the handle, the release click reaches that control, and the control runs its action.
+  - A browser probe at the branch head on 2026-11-27, in Chromium with RNW 0.21.4, put an app's RNW `Pressable` around a `PanelResizeHandle`. A drag of 20 px toward the panel ended inside the `Pressable`. On release, the `onPressOut` and the `onPress` of the `Pressable` ran. The probe ran on the RNW route and on a mixed page, with the same result.
+  - The panel resize section of `docs/protocol/app-shell-parts.md:219-243` says that a pointer drag follows the pointer until release. It says nothing about the release click. The drag-select protocol requires its provider to swallow the next click after a drag, at `docs/protocol/drag-select.md:170-173`.
+  - The drag of the data grid column resize also uses `attachPointerDragListeners` with no `suppressNextClick`, at `src/data-grid/useDataGridColumnResize.ts:152-165`. Nobody checked whether its release click reaches a control.
+- **Problem:** A resize drag that ends inside an enclosing control fires a release click on that control, and the control runs its `onPress`. The drag of the handle does not swallow the click, as the other library drags do.
+- **Screenshot:** None, because the probe read the callbacks and took no picture.
+- **Impact if no action:** An app that puts a resizable panel inside a pressable area runs the action of that area after a resize, for example opens a record that the user did not choose.
+- **Root question:** What does the click that follows a panel resize drag do?
+- **Options:**
+  - **A.** Swallow it. When a drag moved the handle, the end of the drag calls `suppressNextClick`, as drag-select and the sortable list do. A press with no move keeps its click. The panel resize section of the protocol says so. Add a browser test with a pressable around the handle. Effort: Small.
+  - **B.** Keep the click, and record in the protocol that the release click of a resize drag reaches the element under the pointer. Each app then guards its own pressable areas. Effort: Small.
+  - **C.** Give every library drag one rule: `attachPointerDragListeners` swallows the release click of each committed drag, so that no drag can leave its click behind. The resize handle, the data grid column resize at `src/data-grid/useDataGridColumnResize.ts:152`, and the data grid cell drag at `src/data-grid/useDataGridDrag.ts:219` use it. Each caller that needs the click must opt out. Effort: Medium.
+- **Left out:** Stop the release click only when it lands on a `Pressable`: a click handler of an app on a plain element still runs, and A is better on every point.
+- **Wider fix:** C. One shared rule in `src/dragGesture.ts` covers each drag that uses `attachPointerDragListeners`, so a new drag cannot forget the swallow.
+- **Previous examples:** None confirmed. The data grid column resize may have the same defect, as **Background** says. Drag-select and the sortable list already swallow their release click, at `docs/protocol/drag-select.md:170-173` and `src/sortable-list/useSortableDrag.web.ts:224`.
+- **Related:**
+  - `plans/follow-ups/time-grid-event-click-creates-event.md`: the same class of fix. The drag-to-create of the time grid swallows no click either, and its option C moves the one-slot create to a click. The answer here on the click after a drag also shapes that option.
+  - `plans/follow-ups/rnw-enclosing-pressable-presses-too.md`: the same code. That item keeps the same enclosing pressable at rest during the press. The two fixes change different lines of `src/panel-resize/usePanelResizeDrag.ts`, so they can go in either order.
+- **Recommendation:** A. It ends the defect where it shows, with the helper that the other library drags already use. C best protects the codebase, but it also changes the release click of the two data grid drags, which nobody checked.
+- **Action:** ask the user, because no requirement says what the release click of a resize drag does, so A adds a requirement to the panel resize section of `docs/protocol/app-shell-parts.md`.

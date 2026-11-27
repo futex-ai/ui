@@ -38,6 +38,7 @@
   At `acf2d43`, CI attempt 1 passed 485 tests and failed this test.
   The one failed-job rerun passed.
   The local run also passed this test in 1.8 seconds without a source change.
+- **Related:** `plans/follow-ups/press-events-miss-responder-fields.md`: the same code. Option A of that item moves the event builder of `src/primitives/dom/responder/createResponderEvent.ts`, with its `locationX` computation at lines 106-109, to a module that the press machine shares. A correction under option C here then reaches the press callbacks too.
 - **Recommendation:** A. Captured inputs distinguish pointer rounding from layout movement before a correction changes either side.
 - **Action:** fix after merge, apply A, because this unchanged flaky test needs its own branch.
   Reproduce the cause before editing source or fixtures. If the cause remains unknown, ask the user before a fix.
