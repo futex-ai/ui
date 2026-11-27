@@ -8,8 +8,8 @@ unit test (`tests/unit/primitives.test.ts`) fails the build if one does.
 | Module             | Native resolves to      | Web (`.web`) resolves to    | RNW form    |
 | ------------------ | ----------------------- | --------------------------- | ----------- |
 | `reactNative.ts`   | `react-native`          | `dom/`                      | native file |
-| `svg.tsx`          | `react-native-svg`      | DOM `<svg>` elements        | native file |
-| `icons.ts`         | `lucide-react-native`   | `lucide-react`              | native file |
+| `svg.tsx`          | `react-native-svg`      | DOM `<svg>` elements        | `.web` file |
+| `icons.ts`         | `lucide-react-native`   | `lucide-react`              | `.web` file |
 | `link.tsx`         | `Pressable` + `Linking` | an `<a>` on the seam `View` | `.web` file |
 | `domBackendCss.ts` | `""`                    | CSS in `webStylesheet.ts`   | `.web` file |
 | `types/` (web)     | —                       | the seam's own types        | —           |
@@ -40,10 +40,11 @@ request from inside the package's `dist`, the rule returns the RNW form when
 that form is not the `.web` file. Otherwise it returns `null`. The RNW column
 of the table above gives each form:
 
-- `reactNative`, `svg`, and `icons` load their native files, which draw
-  through RNW, `react-native-svg`, and `lucide-react-native`.
-- `link` and `domBackendCss` keep their `.web` files, which serve both web
-  renderers.
+- `reactNative` loads its native file. The app's alias sends that file's
+  `react-native` import to `react-native-web`.
+- `svg`, `icons`, `link`, and `domBackendCss` use their `.web` files on both
+  web routes. The SVG file draws DOM `<svg>` and the icon file uses
+  `lucide-react`.
 
 Rules for the seam:
 

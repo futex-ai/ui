@@ -23,11 +23,12 @@ holds the package boundary and links every other page.
   resolver, and import the same subpaths through a Vite build.
 - `npm run test:package` must also load `@firna/ui/rnw` from CommonJS and from
   an ES module.
-- The [React Native Web route](#react-native-web-contract) must have tests. A
-  bundle of every public subpath through the published rule, with
-  `react-native` aliased to `react-native-web`, must hold no module of the DOM
-  backend. A browser test must draw Firna with `react-native-web` through the
-  published rule, as an app applies it.
+- The [React Native Web route](#react-native-web-contract) tests must bundle
+  every public subpath with the documented esbuild setup and real packages.
+  The bundles must exclude the DOM backend, `react-native-svg`, and
+  `lucide-react-native`. A Node test must import every public subpath with the
+  documented hook. A browser test must draw Firna with `react-native-web`
+  through the published rule, as an app applies it.
 - After package build/tests pass, smoke-test at least one local web route or
   harness that opens a dropdown, a combobox, and a modal, toggles a segmented
   control and switch, and selects a radio card.
@@ -92,16 +93,16 @@ library's own DOM backend, also when the app itself draws with RNW.
   supported range, rather than an optional peer entry. npm 7 and later reject
   an installed optional peer outside its range, so a peer entry could break
   the install of an app that has another RNW version.
-- The app does what every RNW app does. On web, it aliases `react-native` to
-  `react-native-web`. It installs `react-native-svg` and
-  `lucide-react-native`, or aliases them.
+- The RNW route uses `react`, `react-dom`, `react-native-web`, and
+  `lucide-react` at runtime. The app aliases `react-native` to
+  `react-native-web` on web.
 - The app applies the published rule in each tool that resolves Firna's
   modules, such as Metro, esbuild, and a Node module hook. The app keeps no
   list of Firna's modules. A Firna release that adds a platform module needs
   no change in the app.
-- With the rule applied, Firna's React Native primitives come from RNW, its
-  SVG from `react-native-svg`, and its icons from `lucide-react-native`. No
-  public subpath loads a module of the DOM backend.
+- With the rule applied, Firna's React Native primitives come from RNW.
+  Firna draws SVG with DOM `<svg>` and icons with `lucide-react` on both web
+  routes. Every public subpath excludes the DOM backend on the RNW route.
 - The requirements of the other protocol pages hold on the RNW route. A page
   that has a difference for the route states it next to the requirement.
 
@@ -134,8 +135,12 @@ library's own DOM backend, also when the app itself draws with RNW.
 - `@firna/ui/rnw` exports the lists as `firnaIconNames`. It has one key for
   each public specifier, such as `"@firna/ui/list"`. Each value is
   `{ web, native }`, two read-only lists of icon names.
-- On the RNW route, Firna draws the icons of the `web` list with
-  `lucide-react-native`.
+- Firna draws the icons of the `web` list with `lucide-react` on both web
+  routes. It draws the icons of the `native` list with `lucide-react-native`
+  on iOS and Android.
+- An app that curates Lucide for bundle size needs the alias only in Metro,
+  which bundles every glyph that the Lucide package root imports. esbuild
+  keeps only the drawn glyphs with the original Lucide package.
 - Decision: a list for each subpath and platform, rather than one flat list of
   every icon, so that an app that limits its Lucide icons keeps only the icons
   of its own subpaths.

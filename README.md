@@ -197,26 +197,21 @@ target:
 - **Optional on native:** `@gorhom/bottom-sheet`, `react-native-gesture-handler`,
   and `react-native-reanimated` power the native bottom sheet.
 
-Every component reaches the platform through `src/primitives`, a small set of
-modules with a native file and a `.web` sibling: React Native primitives
-(`react-native` on native; the library's own DOM backend on web), SVG
-(`react-native-svg` on
-native, DOM `<svg>` on web), and icons (`lucide-react-native` on native,
-`lucide-react` on web). Icon props accept `IconComponent`, a type both Lucide
-packages' icons satisfy, so a consumer passes whichever matches their
-platform. On the React Native Web route, all three use their native packages
-on web too.
+Every component reaches the platform through modules in `src/primitives`.
+The React Native primitives use `react-native` on native and the library's
+DOM backend on web by default. SVG uses `react-native-svg` on native and DOM
+`<svg>` on web. Icons come from `lucide-react-native` on native and
+`lucide-react` on web. Icon props accept `IconComponent`, a type that both
+Lucide packages' icons satisfy.
 
 ### React Native Web route
 
 An app that draws its own screens with `react-native-web` (RNW), such as an
-Expo web app, can draw Firna with RNW too. Its pages then load one renderer,
-not two. The app does what every RNW app does. On web, it aliases
-`react-native` to `react-native-web`. It installs `react-native-svg` and
-`lucide-react-native`, or aliases them. `react-native-web` is not a peer
-dependency. The
-[package protocol](https://github.com/futex-ai/ui/blob/main/docs/protocol/shared-ui-package.md#react-native-web-contract)
-names the supported versions.
+Expo web app, can use RNW for Firna's React Native primitives too. Install
+`react-native-web` directly, along with the web peers `react`, `react-dom`,
+and `lucide-react`. Alias `react-native` to `react-native-web` on web. See
+the supported versions in the
+[package protocol](https://github.com/futex-ai/ui/blob/main/docs/protocol/shared-ui-package.md#react-native-web-contract).
 
 The app then applies Firna's rule in each tool that resolves Firna's modules.
 `@firna/ui/rnw` exports the rule as `resolveFirnaRnwFile(fromFile, request)`:
@@ -230,30 +225,33 @@ The app then applies Firna's rule in each tool that resolves Firna's modules.
   one of Firna's platform modules. So the app keeps no list of Firna's
   modules, also after a Firna update adds one.
 
-With the rule, Firna's React Native primitives come from RNW, its SVG from
-`react-native-svg`, and its icons from `lucide-react-native`. Firna then loads
-no module of its DOM backend.
+With the rule, Firna gets its React Native primitives from RNW. Its web
+modules draw SVG with DOM `<svg>` and icons with `lucide-react`. The RNW route
+excludes Firna's DOM backend.
 
-Metro, in `metro.config.js`:
+For Metro, add the rule and alias to the web resolver in `metro.config.js`.
 
 ```js
 const { resolveFirnaRnwFile } = require("@firna/ui/rnw");
+const resolveRequest = config.resolver.resolveRequest;
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   const file =
     platform === "web"
       ? resolveFirnaRnwFile(context.originModulePath, moduleName)
       : null;
-  return file
-    ? { type: "sourceFile", filePath: file }
-    : context.resolveRequest(context, moduleName, platform);
+  if (file) return { type: "sourceFile", filePath: file };
+
+  const request =
+    platform === "web" && moduleName === "react-native"
+      ? "react-native-web"
+      : moduleName;
+  return (resolveRequest ?? context.resolveRequest)(context, request, platform);
 };
 ```
 
-When the config already has a `resolveRequest`, call that function in place of
-`context.resolveRequest`.
-
-An esbuild plugin:
+For esbuild, pass the alias and plugin to your browser build. Use esbuild's
+default resolution settings.
 
 ```js
 import { resolveFirnaRnwFile } from "@firna/ui/rnw";
@@ -267,9 +265,14 @@ const firnaRnw = {
     });
   },
 };
+
+const rnwOptions = {
+  alias: { "react-native": "react-native-web" },
+  plugins: [firnaRnw],
+};
 ```
 
-A Node module hook:
+For Node, put the rule and alias in `rnw-hooks.mjs`.
 
 ```js
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -281,8 +284,25 @@ export async function resolve(specifier, context, nextResolve) {
     : null;
   return file
     ? { url: pathToFileURL(file).href, shortCircuit: true }
-    : nextResolve(specifier, context);
+    : nextResolve(
+        specifier === "react-native" ? "react-native-web" : specifier,
+        context,
+      );
 }
+```
+
+Register the hook in `rnw-register.mjs`.
+
+```js
+import { register } from "node:module";
+
+register("./rnw-hooks.mjs", import.meta.url);
+```
+
+Load the registration file before the app.
+
+```bash
+node --import ./rnw-register.mjs app.mjs
 ```
 
 ### Lucide icon names
@@ -291,8 +311,16 @@ An app that limits the Lucide icons in its bundle can read `firnaIconNames`
 from `@firna/ui/rnw`. It has one entry for each public subpath, such as
 `"@firna/ui/list"`. Each entry is `{ web, native }`: the Lucide icon names that
 the subpath can draw on web and on native. The build generates the lists, so
-they match each release. On the React Native Web route, Firna draws the `web`
-icons with `lucide-react-native`.
+they match each release. Firna draws the `web` list with `lucide-react` on
+both web routes. It draws the `native` list with `lucide-react-native` on
+iOS and Android.
+
+If you curate Lucide for bundle size, only Metro needs the Lucide alias.
+Metro bundles every glyph that the Lucide package root imports. On the RNW
+route, alias `lucide-react` to your curated module and include the `web`
+names for each Firna subpath you use. esbuild keeps only the drawn glyphs
+with the original Lucide package. An esbuild harness that copies the Metro
+alias can use a CommonJS curated module.
 
 ## Theming
 

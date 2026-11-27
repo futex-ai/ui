@@ -1,7 +1,7 @@
 export const rnwForms = {
   reactNative: "native",
-  svg: "native",
-  icons: "native",
+  svg: "web",
+  icons: "web",
   link: "web",
   domBackendCss: "web",
 } as const satisfies Readonly<Record<string, "native" | "web">>;

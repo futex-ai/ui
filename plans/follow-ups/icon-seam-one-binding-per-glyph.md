@@ -1,10 +1,10 @@
 # Curated icon modules fail an ES module build
 
 - **Severity:** Medium. **Likelihood:** Rare. **Effort:** Large. **Confidence:** High. **Harder later:** Yes.
-- **Kind:** Needs decision.
-- **Added:** 2026-11-27, from the branch `calummoore/firna-rnw-seam-contract-mhsd`, review round 1, finding 1 "Published icon lists cannot drive ESM curation". Option E of that finding, a README note, is due in the same branch before its merge. This item holds option B, which the review split off.
-- **Location:** `src/primitives/icons.ts:14-108`, `src/primitives/icons.web.ts:9-103`, `src/primitives/rnwForms.ts:4`, `scripts/rnw-icons.ts:31-32`, `scripts/rnw-icons.ts:140-150`, `scripts/rnw-icons.ts:189-195`, `scripts/rnw-rule.ts:18-39`, `scripts/package-smoke-icons.mjs:4-9`, `scripts/package-smoke-stubs.mjs:114-118`, `scripts/package-smoke-stubs.mjs:204-206`, `tests/unit/primitives.test.ts:34-47`, `tests/unit/rnwForms.test.ts:7-21`, `tests/unit/rnwRule.test.ts:13`, `tests/unit/rnwIcons.test.ts:20-55`, `tests/unit/rnw.dist.ts:50-84`, `tests/unit/rnw.dist.ts:86-141`, `src/primitives/README.md:8-15`, `src/primitives/README.md:48-59`, `docs/protocol/shared-ui-package.md:110-112`, `docs/protocol/shared-ui-package.md:129-141`, the section "Icon Names", `README.md:288`, the section "Lucide icon names", and the 72 files that `grep -rlE "primitives/icons['\"]" src` lists.
-- **Reason:** Option B changes 72 files outside the branch that found the problem, and its routing waits for the user's answer to an open question.
+- **Kind:** Fix after merge.
+- **Added:** 2026-11-27, from the branch `calummoore/firna-rnw-seam-contract-mhsd`, review round 1, finding 1 "Published icon lists cannot drive ESM curation". The branch applies option E of that finding in the README. This item holds option B, which the review split off.
+- **Location:** `src/primitives/icons.ts:14-108`, `src/primitives/icons.web.ts:9-103`, `src/primitives/rnwForms.ts:4`, `scripts/rnw-icons.ts:31-32`, `scripts/rnw-icons.ts:140-150`, `scripts/rnw-icons.ts:189-195`, `scripts/rnw-rule.ts:18-39`, `scripts/package-smoke-icons.mjs:4-9`, `scripts/package-smoke-stubs.mjs:114-118`, `scripts/package-smoke-stubs.mjs:204-206`, `tests/unit/primitives.test.ts:34-47`, `tests/unit/rnwForms.test.ts:7-21`, `tests/unit/rnwRule.test.ts:76-78`, `tests/unit/rnwIcons.test.ts:20-55`, `tests/unit/rnw.dist.ts:55-89`, `tests/unit/rnw.dist.ts:91-137`, `src/primitives/README.md:8-15`, `src/primitives/README.md:49-60`, `docs/protocol/shared-ui-package.md:111-113`, `docs/protocol/shared-ui-package.md:130-146`, the section "Icon Names", `README.md:308`, the section "Lucide icon names", and the 72 files that `grep -rlE "primitives/icons['\"]" src` lists.
+- **Reason:** Option B moves icon imports in 72 files outside the scope of the branch that found the problem.
 
 - **Terms:**
   - **Icon seam:** the module pair `src/primitives/icons.ts` and `src/primitives/icons.web.ts`, through which Firna's components and stories import their Lucide glyphs.
@@ -15,7 +15,7 @@
 - **Background:**
   - Each module of the icon seam re-exports 93 Lucide names in one `export { ... } from` statement: `src/primitives/icons.ts:14-108` from `lucide-react-native`, and `src/primitives/icons.web.ts:9-103` from `lucide-react`. So each bundle that reaches the icon seam binds all 93 names.
   - `grep -rlE "primitives/icons['\"]" src` lists 72 files that import the icon seam: 51 outside `src/stories/` and 21 in it.
-  - A web app draws Firna on one of two web routes. The default web route loads the `dist/node` build, where the icon seam draws with `lucide-react`. On the RNW route, the rule loads the RNW form that `src/primitives/rnwForms.ts` names for each module pair. The form of `icons` is `native`, at line 4, so that route draws with `lucide-react-native`.
+  - The default web route loads the `dist/node` build and draws icons with `lucide-react`. The RNW route uses the same web icon module. `src/primitives/rnwForms.ts` gives `icons` the `web` form, so the resolver uses its usual web resolution.
   - An app can keep its bundle small when it aliases a Lucide package root to a curated module. `firnaIconNames` tells the app which names each subpath draws. For example, `firnaIconNames["@firna/ui/list"]` is `{ web: ["ArrowUpRight"], native: ["ArrowUpRight"] }`.
   - `scripts/rnw-icons.ts` generates `firnaIconNames`. It reads the Lucide names only from the two seam files that it names at lines 31-32. The section "Icon Names" of `docs/protocol/shared-ui-package.md` states the lists as a requirement.
   - Tools treat a name that the curated module lacks in different ways:
@@ -25,24 +25,20 @@
     - Node rejects a missing name from a curated ES module and from a curated CommonJS module.
   - Normal use does not meet the problem, and each tool that fails has a workaround:
     - With no alias, esbuild keeps only the one drawn glyph of `list` on both web routes. A Vite production build of `list` keeps one glyph too.
-    - On the default web route, esbuild builds `list` with a curated CommonJS module.
+    - esbuild builds `list` with a curated CommonJS module on both web routes.
     - Node needs a curated module that also exports each name that the subpath does not draw, for example as `undefined`.
   - A curated module that exports all 73 names of the published web lists still fails esbuild on 20 names. 15 of them are glyphs that only stories draw. The other 5 are `Bold`, `Italic`, `Redo2`, `Strikethrough`, and `Undo2`, which only the native lists hold.
-  - The reproduction of 2026-11-27, against the `dist/` build of the branch:
+  - The reproduction of 2026-11-27 used the `dist/` build with the earlier RNW forms:
     - esbuild bundles `dist/node/list/index.js` with `bundle: true` and `format: "esm"`. `react`, `react-dom`, `react-native`, `react-native-web`, and `react-native-svg` stay external.
     - The curated module is an ES module that re-exports only the real `ArrowUpRight` glyph, for example from `lucide-react/dist/esm/icons/arrow-up-right.js`.
     - On the default web route, an alias sends `lucide-react` to the curated module.
     - On the RNW route, the rule runs as an esbuild plugin on relative requests. Aliases send `react-native` to `react-native-web` and `lucide-react-native` to the curated module. `resolveExtensions` is `[".web.js", ".js", ".json"]`.
     - In Node, `module.register()` loads a resolve hook that sends `lucide-react` to the curated module. Then the script runs `await import("@firna/ui/list")`.
-  - The branch that found the problem is due to add a note to the section "Lucide icon names" of `README.md` before its merge. At `ad7a402`, the section does not hold the note yet. The note tells an app that only Metro needs the curated alias, and that a harness can write its curated module as CommonJS. This item holds the structural fix.
-  - An open question of the same branch waits for the user, Cal. It asks whether the RNW route loads the web files of the `svg` and `icons` module pairs, in place of their native files. The web files draw with DOM `<svg>` elements and `lucide-react`, as the default web route does.
-  - The recommended answer gives both module pairs the RNW form `web`. It also makes the complete gate, `cargo xtask check`, run the RNW setup that the section "React Native Web route" of `README.md` documents: the alias of `react-native` to `react-native-web`, and the rule in each tool. The bundle test in `tests/unit/rnw.dist.ts` then resolves the packages. An answer of `web` changes each place that states the native form of `svg` and `icons`:
-    - `src/primitives/rnwForms.ts:3-4`.
-    - `src/primitives/README.md:11-12` and `:43-44`.
-    - `README.md:207-208`, `:215-216`, `:233-235`, and `:294-295`.
-    - `docs/protocol/shared-ui-package.md:96-97`, `:102-104`, and `:137-138`.
-    - `tests/unit/rnwRule.test.ts:13-14`.
-  - At `ad7a402`, no follow-up item holds that question. The review of the branch titles it "Resolver examples omit SVG web resolution". When the user answers it, record the answer and its date in this item. Then change the kind to Fix after merge, and the **Action** to apply B.
+  - To reproduce on the current RNW route, use the documented esbuild setup and alias `lucide-react` to the one-glyph ES module. The same 92 errors start with the missing `Archive` export.
+  - The "Lucide icon names" section of `README.md` says that only Metro needs the curated alias. It also gives the CommonJS workaround for an esbuild harness that copies the Metro alias.
+  - Cal answered "Resolver examples omit SVG web resolution" with D and C on 2026-11-27. D gives the `svg` and `icons` pairs the RNW form `web`. They draw with DOM `<svg>` and `lucide-react` on both web routes.
+  - C makes `cargo xtask check` exercise the documented setup. That setup uses the alias of `react-native` to `react-native-web` and the rule of `@firna/ui/rnw`. The bundle test in `tests/unit/rnw.dist.ts` resolves the real packages, and a child process imports the public subpaths with the Node hook.
+  - `src/primitives/rnwForms.ts` records the forms. `src/primitives/README.md`, `README.md`, and `docs/protocol/shared-ui-package.md` describe them. `tests/unit/rnwRule.test.ts` checks that the rule leaves both web modules to normal resolution.
 - **Problem:** With Lucide aliased to a curated ES module that exports only `ArrowUpRight`, esbuild fails `@firna/ui/list` with 92 errors on both web routes. The first error is `No matching export in "<curated module>" for import "Archive"`. Node fails the import with `SyntaxError: The requested module 'lucide-react' does not provide an export named 'Archive'`.
 - **Impact if no action:** With esbuild and a curated ES module, or Node and any curated module, an app must also export names that its subpaths do not draw. Each new file that imports the icon seam adds one more file for option B to move.
 - **Root question:** How can an app build with exactly the icons that its Firna subpaths draw, in every tool?
@@ -54,15 +50,14 @@
   - **B.** Give each glyph its own internal module, with a native and a web file, and remove the icon seam. Generate `firnaIconNames` from those modules. The work:
     - Move the 56 files that import a glyph to the glyph modules. Move the 16 files that import only the `IconComponent` type to `src/primitives/iconTypes.ts`.
     - Change the generator, which reads the Lucide names only from the two seam files at `scripts/rnw-icons.ts:31-32`. `readWebLucideNames`, at `:140-150`, reads only the web seam file, and the smoke stubs get their names through it, at `scripts/package-smoke-icons.mjs:4-9`.
-    - The route of the glyph modules depends on the open question in **Background**. With the RNW form `web` for `icons`, the RNW route loads the web glyph modules, and they need no route.
-    - With the form `native`, the rule must route each glyph module to its native file. The rule at `scripts/rnw-rule.ts:18-39` finds a module pair by the file name of the request, and only in `dist/primitives` and `dist/node/primitives`.
-    - A top-level glyph pair with no entry in `src/primitives/rnwForms.ts` fails the test at `tests/unit/rnwForms.test.ts:7-21`. A glyph module in a subfolder of `src/primitives/` escapes that test and gets no route, so the RNW route silently draws it with `lucide-react`.
-    - The bundle test at `tests/unit/rnw.dist.ts:86-141` looks only for files under `primitives/dom/`. It also marks every package external, so it cannot see a `lucide-react` import.
-    - Change the tests that name the seam files: the parity test at `tests/unit/primitives.test.ts:34-47`, the fixtures at `tests/unit/rnwIcons.test.ts:20-55`, the icon test at `tests/unit/rnw.dist.ts:50-84`, and the `icons` case at `tests/unit/rnwRule.test.ts:13`.
-    - Change the seam table and the seam rules at `src/primitives/README.md:8-15` and `:48-59`. Change the sentence "Firna reaches the platform through a few platform modules" at `docs/protocol/shared-ui-package.md:110-112`.
+    - The RNW route loads the web glyph modules through normal resolution. The glyph modules need no route entries.
+    - The rule at `scripts/rnw-rule.ts:18-39` finds a module pair by file name, only in `dist/primitives` and `dist/node/primitives`. The seam test at `tests/unit/rnwForms.test.ts:7-21` requires an entry for each top-level pair. Pairs in a subfolder of `src/primitives/` are outside that test.
+    - The bundle test in `tests/unit/rnw.dist.ts` resolves the real packages and excludes files under `primitives/dom/`, `react-native-svg`, and `lucide-react-native`.
+    - Change the tests that name the seam files: the parity test at `tests/unit/primitives.test.ts:34-47`, the fixtures at `tests/unit/rnwIcons.test.ts:20-55`, the icon test at `tests/unit/rnw.dist.ts:55-89`, and the `icons` cases at `tests/unit/rnwRule.test.ts:76` and `:78`.
+    - Change the seam table and the seam rules at `src/primitives/README.md:8-15` and `:49-60`. Change the sentence "Firna reaches the platform through a few platform modules" at `docs/protocol/shared-ui-package.md:111-113`.
     - Add a bundle test that builds `list` with esbuild, with Lucide aliased to the published list of `list`, as the reproduction in **Background** does.
     - Eight of the 72 files pass 300 lines. **Related** names them.
-    - Effort: Large. With the form `web`, the route work drops out, but the 72 files, the generator, and the tests keep B Large.
+    - Effort: Large. B changes 72 files, the generator, and the tests.
   - **C.** Generate Firna's own glyph components from Lucide's icon data, and draw them through the existing `svg` seam, `src/primitives/svg.tsx` and `src/primitives/svg.web.tsx`. No alias of a Lucide package can then remove a Firna icon. The `svg` module pair already has an RNW form, so C needs no new route. C changes the Lucide peers in the package boundary at `docs/protocol/shared-ui-components.md:29-32`. It reverses Cal's answer to the icon decision of 2026-11-27, which chose a published list for each subpath. Effort: Large.
   - **D.** Publish beside the drawn lists the Lucide names that the icon seam imports on each platform, 93 today. A curated module then exports the drawn glyphs and `undefined` for every other name. D adds a public field and a protocol line, which the user must approve. A drawn icon that an app stubs by mistake throws at render, as on Metro. Effort: Small.
 - **Left out:**
@@ -81,7 +76,7 @@
   - In this repository, the package smoke test stubs `lucide-react` with all 93 seam names, at `scripts/package-smoke-stubs.mjs:114-118` and `:204-206`, because the icon seam binds all of them.
 - **Related:**
   - `plans/follow-ups/video-editor-design-spec-stale.md`: the same code. Its **Background** says that a new Lucide icon needs no stub, because the smoke stubs read their names from the built web seam through `readWebLucideNames`. Option B removes that list, so B must give the stubs the names of the glyph modules, and that reason changes.
-  - `plans/follow-ups/rnw-focus-glow-drops-resting-shadow.md`: the same code. Its option C adds a third kind of RNW form in `src/primitives/rnwForms.ts`, `scripts/rnw-rule.ts`, and their tests. With the form `native` for `icons`, option B here changes the same table and rule to route each glyph module. Whichever item goes second keeps the change of the other.
+  - `plans/follow-ups/rnw-focus-glow-drops-resting-shadow.md`: the same code. Its option C adds a third kind of RNW form in `src/primitives/rnwForms.ts`, `scripts/rnw-rule.ts`, and their tests. Option B here removes `icons` from the form table and updates the rule tests. Whichever item goes second keeps the change of the other.
   - `plans/follow-ups/source-files-pass-line-cap.md`: the same files. Option B changes eight files that pass 300 lines. Under the reading of `plans/follow-ups/legacy-control-size-comments.md`, a changed file over 300 lines needs its split first. Option D of `plans/follow-ups/code-comments-name-one-web-renderer.md` edits such files without a split, and it leaves that reading to the user. The eight files:
     - `src/stories/sharedExamples.tsx`, 1,694 lines.
     - `src/date/CalendarMonth.tsx`, 668 lines.
@@ -94,4 +89,4 @@
   - `plans/follow-ups/remaining-dense-action-targets.md`: the same file. That item changes `src/sortable-list/SortableRow.tsx:236`, one of the eight files over 300 lines that option B changes. Under the reading of the 300-line rule above, the first change splits the file, and the second follows the split.
   - `plans/follow-ups/code-comments-name-one-web-renderer.md`: the same files. That item rewrites comments in 17 of the 72 files, and option B here changes their icon imports. Three of the 17 pass 300 lines: `src/date/CalendarMonth.tsx`, `src/stories/kanban.stories.tsx`, and `src/toast/Toast.tsx`. Both items wait for the splits of those three files.
 - **Recommendation:** B. It is the only option that makes the published lists enough in every tool and keeps the build error for a missing drawn icon.
-- **Action:** ask the user, because the fix depends on an open question, the RNW form of `icons`, and with the form `web` the glyph modules of B need no route.
+- **Action:** fix after merge, apply B, because it moves icon imports in 72 files outside this branch's scope.

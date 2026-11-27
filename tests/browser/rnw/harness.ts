@@ -1,44 +1,31 @@
 import { existsSync } from "node:fs";
-import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
 import type { Page } from "@playwright/test";
-import { build, type Plugin } from "esbuild";
+import { build } from "esbuild";
+
+import {
+  firnaRnwPlugin,
+  reactNativeWebAlias,
+} from "../../../scripts/rnw-esbuild";
 
 const workspaceRoot = new URL("../../../", import.meta.url);
 const fixtureUrl = "https://firna-rnw.test/";
-
-function firnaRnwPlugin(): Plugin {
-  if (!existsSync(new URL("dist/rnw.cjs", workspaceRoot))) {
-    throw new Error("dist/rnw.cjs is missing. Run npm run build first.");
-  }
-  const {
-    resolveFirnaRnwFile,
-  }: typeof import("../../../scripts/rnw-entry.js") = createRequire(
-    import.meta.url,
-  )("@firna/ui/rnw");
-
-  return {
-    name: "firna-rnw",
-    setup(build) {
-      build.onResolve({ filter: /^\./ }, ({ importer, path }) => {
-        const file = resolveFirnaRnwFile(importer, path);
-        return file ? { path: file } : undefined;
-      });
-    },
-  };
-}
 
 export async function bundleRnwFixture(
   entryPoint = "fixture.jsx",
   firnaRenderer: "dom" | "rnw" = "rnw",
 ) {
+  if (
+    firnaRenderer === "rnw" &&
+    !existsSync(new URL("dist/rnw.cjs", workspaceRoot))
+  ) {
+    throw new Error("dist/rnw.cjs is missing. Run npm run build first.");
+  }
   return build({
     absWorkingDir: fileURLToPath(workspaceRoot),
     entryPoints: [`tests/browser/rnw/${entryPoint}`],
-    alias: { "react-native": "react-native-web" },
-    platform: "browser",
-    resolveExtensions: [".web.js", ".js", ".json"],
+    alias: reactNativeWebAlias,
     plugins: firnaRenderer === "rnw" ? [firnaRnwPlugin()] : [],
     format: "iife",
     bundle: true,

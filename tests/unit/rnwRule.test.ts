@@ -10,8 +10,12 @@ test("native RNW forms resolve to the native tree from either build tree", () =>
     ["node/list/List.js", "../primitives/reactNative.web.js", "reactNative.js"],
     ["list/List.js", "../primitives/reactNative", "reactNative.js"],
     ["node/primitives/link.web.js", "./reactNative.web.js", "reactNative.js"],
-    ["list/List.js", "../primitives/icons.js", "icons.js"],
-    ["list/List.js", "../primitives/../primitives/svg.web", "svg.js"],
+    ["list/List.js", "../primitives/reactNative.js", "reactNative.js"],
+    [
+      "list/List.js",
+      "../primitives/../primitives/reactNative.web",
+      "reactNative.js",
+    ],
   ];
   for (const [importer, request, file] of cases) {
     assert.equal(
@@ -69,6 +73,10 @@ test("the RNW rule leaves other requests to normal resolution", () => {
     [nodeImporter, "../primitives/types"],
     [nodeImporter, "../primitives/link.web.js"],
     [nodeImporter, "../primitives/domBackendCss"],
+    [nodeImporter, "../primitives/icons.web.js"],
+    [nodeImporter, "../primitives/../primitives/svg.web"],
+    [`${dist}/list/List.js`, "../primitives/icons.js"],
+    [`${dist}/list/List.js`, "../primitives/svg"],
     [nodeImporter, "../primitives/reactNative/"],
     [nodeImporter, "@firna/ui/primitives/reactNative"],
     [nodeImporter, `${dist}/primitives/reactNative.js`],
