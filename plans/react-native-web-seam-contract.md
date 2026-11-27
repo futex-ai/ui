@@ -472,10 +472,15 @@ These calls are mine, made on 2026-11-27, and they follow the answers above.
   `__reactResponderSystemActive` and `__reactResponderId`. Reason: a page that
   loads both systems must not let one disable the other.
 - **`react-native-web` is not a peer.** The protocol names the supported range,
-  `>=0.21.2 <0.22`. RNW becomes a devDependency for the tests, and `esbuild`
+  `>=0.21.3 <0.22`. RNW becomes a devDependency for the tests, and `esbuild`
   becomes an explicit devDependency. Reason: npm 7 and later reject an
   installed optional peer outside its range, so a peer entry could break the
   install of an app with another RNW version in a minor release.
+  Correction, my call, 2026-11-27: the minimum was `0.21.2` until the
+  follow-up sweep found that RNW 0.21.2 does not export `InputAccessoryView`,
+  which the native `reactNative` seam re-exports. esbuild and Node reject the
+  missing name, and Metro leaves it `undefined`. RNW 0.21.3 exports it, and
+  the release is not published yet.
 - **The RNW test harness.** A browser spec bundles a harness with esbuild,
   RNW, and the published rule, and renders it with `page.setContent`. It does
   not use Storybook. Reason: it proves the rule as a consumer applies it.

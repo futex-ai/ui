@@ -87,7 +87,7 @@ that draws its own screens with RNW can draw Firna with RNW too. This is the
 RNW route. A web app that does not take the route draws Firna through the
 library's own DOM backend, also when the app itself draws with RNW.
 
-- The supported RNW versions are `>=0.21.2 <0.22`.
+- The supported RNW versions are `>=0.21.3 <0.22`.
 - `react-native-web` is not a peer dependency. Decision: this page names the
   supported range, rather than an optional peer entry. npm 7 and later reject
   an installed optional peer outside its range, so a peer entry could break

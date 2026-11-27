@@ -1,0 +1,33 @@
+# Curated icon modules fail an ES module build
+
+- **Severity:** Medium. **Likelihood:** Common. **Effort:** Large. **Confidence:** High. **Harder later:** No.
+- **Kind:** Fix after merge.
+- **Added:** 2026-11-27, from the branch `calummoore/firna-rnw-seam-contract-mhsd`, review round 1, finding 1 "Published icon lists cannot drive ESM curation". This item holds option B, which the review split off.
+- **Location:** `src/primitives/icons.ts:12-106`, `src/primitives/icons.web.ts:9-103`, `scripts/rnw-icons.ts`, `src/primitives/rnwForms.ts`, `tests/unit/rnw.dist.ts`, `docs/protocol/shared-ui-package.md` section "Icon Names".
+- **Reason:** Option B changes the icon imports of 72 files outside the branch that found the problem, and each new glyph module needs its own route on the react-native-web route.
+
+- **Terms:**
+  - **Icon seam:** `src/primitives/icons.ts` and `src/primitives/icons.web.ts`. Each re-exports 93 Lucide glyphs from one package root: `lucide-react-native` on native, `lucide-react` on web.
+  - **Curated module:** a module that an app aliases in place of a Lucide package root, and that exports only the glyphs that the app draws, to keep its bundle small.
+  - **`firnaIconNames`:** the table that `@firna/ui/rnw` exports. It gives, for each public subpath of `@firna/ui`, the Lucide names that the subpath can draw on web and on native.
+  - **RNW route:** an app that draws its own screens with `react-native-web` applies the rule of `@firna/ui/rnw`, and the rule loads the form of each seam that `src/primitives/rnwForms.ts` names.
+- **Background:** An app can curate its Lucide icons by aliasing the package root. Metro then leaves a name that the curated module lacks `undefined`. `firnaIconNames` tells the app which names each Firna subpath draws. For example, `firnaIconNames["@firna/ui/list"]` is `{ web: ["ArrowUpRight"], native: ["ArrowUpRight"] }`. The icon seam imports all 93 names from the package root in one statement, so every bundle that reaches the seam binds all 93 names.
+- **Problem:** An ES module tool checks each imported name when it links. With Lucide aliased to a module that exports only `ArrowUpRight`, esbuild fails `@firna/ui/list` with 92 errors, starting with `Archive`, on both web routes. Node's ES module loader rejects `Archive` too. With a module that exports all 73 names of every published web list, esbuild still fails on 20 names. Rollup and a Vite production build pass, because they check only the names that the bundle uses.
+- **Impact if no action:** An app that curates with the published lists builds only with Metro, Rollup, or Vite. With esbuild or Node, it must also export the names that Firna never draws. esbuild with no alias keeps only the drawn glyphs, so the alias is needed only in Metro.
+- **Root question:** How can an app build with exactly the icons that its Firna subpaths draw, in every tool?
+- **Options:**
+  - **A.** Read the Lucide names through a namespace import in each icon module. esbuild and Rollup then build, but they print one warning for each missing name, 92 for `list`. The destructuring form keeps 1,660 glyphs in esbuild. `scripts/rnw-icons.ts` rejects a namespace import from Lucide today and must change. Effort: Small.
+  - **B.** Give each glyph its own internal module, with a native and a web file, and move the 72 importing files to them. Generate `firnaIconNames` from those modules. On the RNW route, each glyph module needs the same form as the icon seam: when its form is `native`, the rule must route each glyph module, or the route silently draws `lucide-react` glyphs, and `tests/unit/rnw.dist.ts` checks only the DOM backend, so it would not catch that. Add a bundle test that aliases Lucide to the published list of `list` and builds with esbuild. Effort: Large.
+  - **C.** Generate Firna's own glyph components from Lucide's icon data, drawn through the `svg` seam. No alias of a Lucide package can then remove a Firna icon. It changes the package boundary in `docs/protocol/shared-ui-components.md` and the Lucide peers, and it reverses Cal's answer to the icon decision of 2026-11-27, which chose published lists. Effort: Large.
+  - **D.** Publish beside the drawn lists the Lucide names that the icon seam imports on each platform, 93 today. A curated module then exports the drawn glyphs and `undefined` for every other name. It adds a public field and a protocol line. A drawn icon that an app stubs by mistake throws at render, as on Metro. Effort: Small.
+- **Left out:**
+  - One flat list of every name for every subpath: the app cannot tell which names it may stub, so it keeps every glyph.
+  - Trim the icon seam to the glyphs that components draw: it removes the 15 story-only glyphs, but `list` still binds 77 names that it does not draw.
+  - One icon module for each component family: it needs the routing change of B, and a subpath still binds the family glyphs that it does not draw.
+  - Per-icon import paths of `lucide-react-native`: the package exports only `.` and `./icons`, so Node and esbuild reject them.
+- **Wider fix:** B. Each import then reaches only the glyphs that its module draws, so an unrelated glyph cannot become a required export.
+- **Previous examples:** Bookfolio's curated module missed `ArrowUpRight` for `list`, and its esbuild harness exports absent names as `undefined` by reading Firna's private `dist/primitives/icons.js` with a regular expression.
+- **Related:**
+  - `plans/follow-ups/icon-seam-story-only-glyphs.md`: the same code. Its fix removes glyphs from the seam that B splits.
+- **Recommendation:** B. It alone makes the published lists sufficient in every tool and keeps the build error for a missing drawn icon. Decide first whether the RNW form of `icons` stays `native`: the answer to review finding 2 of the same branch changes how B routes each glyph module.
+- **Action:** fix after merge, apply B, because it changes 72 files outside the branch that found it.

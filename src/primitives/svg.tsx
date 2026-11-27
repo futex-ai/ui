@@ -3,7 +3,8 @@
  *
  * Components draw vector geometry through this module so the SVG backend is
  * decided in one place: `react-native-svg` on iOS and Android, and a plain DOM
- * `<svg>` shim (`svg.web.tsx`) on web. The web shim exists because
+ * `<svg>` shim (`svg.web.tsx`) on web. On the `react-native-web` route, the
+ * rule of `@firna/ui/rnw` loads the form that `rnwForms.ts` names. The web shim exists because
  * `react-native-svg`'s own web build imports from `react-native`, which a web
  * consumer without a bundler alias cannot resolve.
  *

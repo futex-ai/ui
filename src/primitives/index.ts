@@ -7,6 +7,9 @@
  * build all select by platform. Native delegates to `react-native`,
  * `react-native-svg`, and `lucide-react-native`; web delegates to the
  * library's own DOM backend in `dom/`, DOM SVG elements, and `lucide-react`.
+ * An app that draws with `react-native-web` applies the rule of
+ * `@firna/ui/rnw`, which loads the form that `rnwForms.ts` names for each
+ * module.
  */
 export { domBackendCss } from "./domBackendCss";
 export type { IconComponent, IconComponentProps } from "./iconTypes";

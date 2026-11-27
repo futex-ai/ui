@@ -47,7 +47,7 @@ export const hideWebOutlineView = {
   outlineStyle: "none",
 } as unknown as ViewStyle;
 
-/** Pressable style-callback state, widened with the web backend's `hovered`. */
+/** Pressable style-callback state, widened with the web `hovered` state. */
 export type PressableHoverState = { pressed: boolean; hovered?: boolean };
 
 /**
