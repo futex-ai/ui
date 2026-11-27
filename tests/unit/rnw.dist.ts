@@ -13,8 +13,12 @@ import { rnwForms } from "../../src/primitives/rnwForms";
 
 const workspaceRoot = fileURLToPath(new URL("../../", import.meta.url));
 const dist = join(workspaceRoot, "dist");
-const { resolveFirnaRnwFile }: typeof import("../../scripts/rnw-entry.js") =
-  createRequire(import.meta.url)("@firna/ui/rnw");
+const {
+  firnaIconNames,
+  resolveFirnaRnwFile,
+}: typeof import("../../scripts/rnw-entry.js") = createRequire(import.meta.url)(
+  "@firna/ui/rnw",
+);
 
 test("the built RNW rule resolves real requests from both build trees", () => {
   const expectedFile = join(dist, "primitives", "reactNative.js");
@@ -39,6 +43,42 @@ test("native RNW seam files import only packages", () => {
       /^(?:[./\\#]|[^/]+:)/.test(request),
     );
     assert.deepEqual(nonPackageImports, [], file);
+  }
+});
+
+test("the built RNW module lists the icons of every public specifier", () => {
+  const specifiers = Object.keys(packageJson.exports).map(
+    (key) => `${packageJson.name}${key.slice(1)}`,
+  );
+  assert.deepEqual(Object.keys(firnaIconNames ?? {}).sort(), specifiers.sort());
+  assert.deepEqual(firnaIconNames["@firna/ui/rnw"], { web: [], native: [] });
+
+  const seams = {
+    web: join(dist, "node", "primitives", "icons.web.js"),
+    native: join(dist, "primitives", "icons.js"),
+  };
+  for (const platform of ["web", "native"] as const) {
+    const seamExports = namedExportsOf(seams[platform]);
+    const rootNames = new Set(firnaIconNames[packageJson.name][platform]);
+    for (const specifier of ["@firna/ui/link", "@firna/ui/list"]) {
+      assert.ok(
+        firnaIconNames[specifier][platform].includes("ArrowUpRight"),
+        `${specifier} ${platform} must include ArrowUpRight`,
+      );
+    }
+    for (const [specifier, lists] of Object.entries(firnaIconNames)) {
+      const names = lists[platform];
+      const label = `${specifier} ${platform}`;
+      assert.deepEqual(names, [...new Set(names)].sort(), label);
+      assert.ok(Object.isFrozen(names), `${label} must be read-only`);
+      for (const name of names) {
+        assert.ok(seamExports.has(name), `${label}: ${name} is not exported`);
+        assert.ok(
+          rootNames.has(name),
+          `${label}: ${name} is missing from root`,
+        );
+      }
+    }
   }
 });
 
@@ -104,4 +144,24 @@ function importsOf(file: string): string[] {
   return ts
     .preProcessFile(source, true, true)
     .importedFiles.map(({ fileName }) => fileName);
+}
+
+function namedExportsOf(file: string): Set<string> {
+  const source = ts.createSourceFile(
+    file,
+    readFileSync(file, "utf8"),
+    ts.ScriptTarget.ESNext,
+  );
+  return new Set(
+    source.statements.flatMap((statement) => {
+      if (
+        ts.isExportDeclaration(statement) &&
+        statement.exportClause &&
+        ts.isNamedExports(statement.exportClause)
+      ) {
+        return statement.exportClause.elements.map(({ name }) => name.text);
+      }
+      return [];
+    }),
+  );
 }

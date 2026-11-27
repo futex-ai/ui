@@ -582,7 +582,7 @@ Depends on: 3
 
 Depends on: 4
 
-- [ ] Publish the icon names as decision 4 chooses, generated at build time,
+- [x] Publish the icon names as decision 4 chooses, generated at build time,
       with a unit test that the list holds `ArrowUpRight` for `list` and
       `link`.
 
