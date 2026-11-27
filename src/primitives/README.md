@@ -264,7 +264,8 @@ why `svg.ts` is `svg.tsx`. A unit test enforces the ordering for every pair.
 Rules:
 
 - Each pair exports the same names; the unit test diffs them. Add a name to
-  both files in the same change, and only when a component needs it.
+  both files in the same change, and only when a component needs it. The icon
+  seam also takes a glyph that only a story needs.
 - A new name also needs a type in `types/` and an implementation in `dom/`.
   The web seam imports nothing but those two; a unit test asserts it.
 - Class-valued exports get a same-named type alias so `useRef<View>` keeps

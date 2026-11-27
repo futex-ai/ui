@@ -5,10 +5,10 @@
  * icon backend is decided in one place: `lucide-react-native` on iOS and
  * Android, `lucide-react` on web (see `icons.web.ts`). On the
  * `react-native-web` route, the rule of `@firna/ui/rnw` loads the form that
- * `rnwForms.ts` names. The two packages ship
- * the same glyph names, so both modules export an identical list; a unit test
- * keeps them in sync. Add a glyph here only when a component needs it, and add
- * it to the web module in the same change.
+ * `rnwForms.ts` names. The two packages ship the same glyph names, so both
+ * modules export an identical list; a unit test keeps them in sync. Add a glyph
+ * here only when a component or a story needs it, and add it to the web module
+ * in the same change.
  */
 export type { IconComponent, IconComponentProps } from "./iconTypes";
 export {

@@ -3,7 +3,7 @@
 - **Severity:** Low. **Likelihood:** Common. **Effort:** Small. **Confidence:** High. **Harder later:** No.
 - **Kind:** Outside the scope.
 - **Added:** 2026-11-01, from `calummoore/palette-forms-overlay-discussion`.
-- **Location:** `src/button/Button.tsx:142` and `src/popover/popoverModel.ts:65`.
+- **Location:** `src/button/buttonProps.ts:129` and `src/popover/popoverModel.ts:65`.
 - **Reason:** The Button API is outside the web modal stack change, and each fix adds a requirement to the public Button contract.
 
 - **Terms:**
@@ -24,5 +24,7 @@
 - **Left out:** Accept any `aria-*` prop on `Button`: it drops the typed props of the button contract and lets callers write invalid ARIA.
 - **Wider fix:** B. One prop that takes the whole trigger contract keeps `Button` in step when the popover adds a trigger attribute.
 - **Previous examples:** None found.
+- **Related:**
+  - `plans/follow-ups/code-comments-name-one-web-renderer.md`: the same code. Option A here adds `aria-controls` to the literal `aria-*` mirror of `Button`, which the comment at `src/button/Button.tsx:244-248` describes. That item rewrites that comment at `:246`. Whichever item goes second keeps the change of the other.
 - **Recommendation:** A. It follows the existing `expanded` and `hasPopup` props and keeps `Button` free of popover types. B protects the class better.
 - **Action:** ask the user, because options A and B add a prop to the public Button contract, and the user reviews each new requirement.

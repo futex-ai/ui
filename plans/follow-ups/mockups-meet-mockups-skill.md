@@ -67,7 +67,7 @@
     - The phone top bar, monitor, tabs, track gutter, and transport differ from the compact story.
     - The captions at `:650-651`, `:892-893`, and `:976-978` promise effects and keyframes in the inspector, a clip ring, an in-lane track label, and touch-size transport targets. The code draws none of them.
     - No screen shows a dark variant.
-  - Five live links name the files as the captured design: `docs/protocol/rich-text-editor.md:16`, `docs/protocol/rich-text-collaboration.md:23`, `src/timeline/README.md:206`, `src/video-editor/README.md:185`, and `plans/rich-text-collaboration-visuals.md:28`.
+  - Five live links name the files as the captured design: `docs/protocol/rich-text-editor.md:16`, `docs/protocol/rich-text-collaboration.md:23`, `src/timeline/README.md:212`, `src/video-editor/README.md:192`, and `plans/rich-text-collaboration-visuals.md:28`.
   - A port to Mokly changes those links. It also needs a mockup check command in `AGENTS.md`, and it changes the allowlist path `docs/mockups/rich-text-editor.html` at `tests/unit/noAccentBar.test.ts:68`.
   - No repository that the migration could read has a Mokly configuration, so the setup cost is an estimate.
   - The `plans` skill says: "When the repository has no mockup catalogue tooling yet, the mockup milestone also sets up that tooling."
@@ -94,5 +94,6 @@
   - `plans/follow-ups/native-collab-marks-depart-from-protocol.md`: the same code. This item compares the Collab anchor and deletion with the native styles at `src/rich-text/nativeRichTextStyles.ts:106-116`. Option B of that item changes those styles, so it changes what this item compares.
   - `plans/follow-ups/transport-scrubber-shrinks-to-knob.md`: the same screen. This item compares the Video transport with the product. The fix of that item changes the transport row, and the mockup draws the seek bar with `flex: 1`, at `docs/mockups/video-editor.html:268-269`.
   - `plans/follow-ups/delete-completed-plans.md`: work that changes this item. That task deletes the completed plans that this item names as evidence: `plans/rich-text-editor-component.md`, `plans/rich-text-collaboration-visuals.md`, and `plans/video-editor-components.md`. It replaces each name here with a permalink.
+  - `plans/follow-ups/video-editor-design-spec-stale.md`: the same code. Options C and D of that item replace the "Design spec" links at `src/timeline/README.md:211` and `src/video-editor/README.md:191`. They sit directly above the "Mockup" links that options D and E here change. Whichever item goes second keeps the change of the other.
 - **Recommendation:** B. It removes the six defects at Small effort and leaves the port to a plan that can set up Mokly, as the decision item recommends. D best protects the codebase.
 - **Action:** ask the user, because the work depends on the two open decision items `plans/follow-ups/mockups-choose-how-to-meet-rules.md` and `plans/follow-ups/mockups-choose-side-of-mismatch.md`.
