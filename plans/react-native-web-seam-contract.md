@@ -72,7 +72,8 @@ Research reports: `.context/react-native-web-seam-contract/brainstorm-report.md`
 
 ### Decisions
 
-Cal answered the four decisions below on 2026-11-27. An options check ran
+Cal answered decisions 1 to 4 below on 2026-11-27. Decision 5 came from
+Milestone 6 and waits for Cal. An options check ran
 over them on 2026-11-27, and its results are merged here. Each item keeps its
 record. Its **Answer** line gives the choice.
 
@@ -335,6 +336,97 @@ record. Its **Answer** line gives the choice.
 - **Recommendation:** C. A consumer curates exactly what its subpaths draw, and
   the list cannot go stale. F best protects the apps.
 - **Answer:** C, Cal, 2026-11-27.
+
+#### 5. A drag whose starting move lands outside the provider
+
+- **Severity:** Medium. **Likelihood:** Rare. **Effort:** Medium.
+- **Source:** Implementation.
+- **Category:** Product bug.
+- **Location:** `src/drag-select/dragSelectableSessionDom.ts`,
+  `src/primitives/dom/responder/negotiation.ts:160-174`,
+  `docs/protocol/drag-select.md` "Press takeover",
+  `tests/browser/rnw-drag-select.spec.ts:114-123`.
+- **Background:** Milestone 6 built decision 2D. When a drag starts, the
+  provider ends the presses in Firna's press registry, and its host claims the
+  responder on the `mousemove` that follows the starting `pointermove`. On RNW
+  that claim ends the press of a library `Pressable`. Both responder systems,
+  RNW's and the DOM backend's port, ask only the common ancestors of the move
+  target and the current responder whether they claim.
+- **Problem:** When the move that starts the drag already lands outside the
+  provider, neither responder system asks the provider. On RNW, the button
+  keeps its pressed look until release, and `onPressOut` runs only on release.
+  On both renderers, an app's `PanResponder` of the same press keeps running
+  until release. The drag still selects. The protocol says that the start ends
+  the press. The options check of decision 2 noted this gap, but option D's
+  text did not state it.
+- **Impact if no action:** a drag that starts near the provider's edge leaves
+  the control pressed on RNW and an app gesture running on both renderers.
+  `onLongPress` can run only when the drag starts closer than 10 px from the
+  press point: RNW cancels the long-press timer past 10 px, and a drag on a
+  control starts at 10 px by default. So the long-press risk is mainly a
+  `Pressable` that is its own drag target, which starts at 4 px. The RNW case in
+  `tests/browser/rnw-drag-select.spec.ts` stays `test.fixme`.
+- **Root question:** How does a drag whose starting move lands outside the
+  provider end the press and the gesture of that pointer, on both web
+  renderers?
+- **Options:**
+  - **A.** Record the gap. The protocol says that on both renderers, when the
+    starting move lands outside the provider, the responder press and gesture
+    end at release. The `test.fixme` case is removed, because a test of the
+    gap would only pin RNW's own press behaviour. A follow-up item holds
+    option D. Effort: Small.
+  - **B.** When the starting move lands outside the provider, the provider
+    calls `setPointerCapture` on its host for that pointer and claims the
+    responder on the next `mousemove`. A probe showed that the RNW press then
+    ends one move after the start, and `onPressOut` gets that later move, so
+    the protocol's event sentence changes. The capture clears the hover of the
+    element under the pointer and sends the release click to the provider,
+    where the provider already swallows it. Hit tests, auto-scroll, and
+    scrollbar presses did not change. The capture must be released whenever a
+    session ends: in the probe it outlived a synthetic `pointercancel`, and the
+    next click then went to the provider. A pointer that stops dead after the
+    start gives no next move. Effort: Medium.
+  - **C.** On the RNW route, draw the library `Pressable` with Firna's own press
+    hooks, as decision 2 option E. Then `endPointerPresses` ends every library
+    press on the starting move. It reverses the protocol's decision that a
+    `Pressable` keeps RNW's press handling, so RNW scroll views cannot cancel a
+    library press. The RNW form of `reactNative` stops being a plain re-export
+    and must import the shared press module, which breaks the design call that
+    a native RNW form imports only packages. It does not end an app's
+    `PanResponder`. Effort: Large.
+  - **D.** When the starting move lands outside the provider, the provider
+    dispatches one copy of that `mousemove`, with the same coordinates and
+    buttons, on its own host. Both responder systems then ask the provider, and
+    the claim runs on the starting move. A probe on both renderers showed that
+    the press ends on the starting move with no long press, an app
+    `PanResponder` gets its termination request, hover stays, and a plain click
+    still runs `onPress`. The protocol does not change, and the `test.fixme`
+    case can pass as written. An app's `mousemove` listeners see one extra,
+    untrusted event for each such drag. Effort: Medium.
+- **Left out:**
+  - Pointer capture when the press arms: the probe showed that it sends
+    ordinary button clicks to the provider, so a button no longer activates.
+  - A deep import of RNW's `terminateResponder`: it is not public API, as
+    decision 2 says.
+  - Synthetic cancel events such as `dragstart`, `select`, or `blur`, and a
+    synthetic `scroll`: each depends on internals of RNW's event tables, or has
+    side effects for the app, and D is better on every point.
+  - A claim at press start, a claim from the theme root, an overlay hit area,
+    and holding the start until the pointer is back inside: the options check
+    gives the reason for each in
+    `.context/react-native-web-seam-contract/options-check-5.md`.
+- **Wider fix:** D. It meets the protocol on both renderers, for library
+  presses and app gestures alike.
+- **Previous examples:** the options check of decision 2, in
+  `.context/react-native-web-seam-contract/options-check.md`, item 2. Note:
+  decision 2's text says that a drag on a control starts at 4 px. The default
+  is 10 px, at `src/drag-select/dragSelectableOptions.ts:14`.
+- **Recommendation:** D. It is the only option that meets the protocol as
+  written, on the starting move, on both renderers. The first draft
+  recommended A, and the options check of 2026-11-27 changed it.
+- **Action:** ask the user, because option D adds an extra event at the
+  boundary that no requirement covers, and option A changes a requirement of
+  `docs/protocol/drag-select.md`.
 
 ### Design calls
 
