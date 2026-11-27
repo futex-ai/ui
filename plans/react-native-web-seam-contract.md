@@ -553,11 +553,11 @@ Depends on: 3, 5
 - [x] Remove the exception for `src/drag-select/dragSelectableSessionDom.ts`
       from the check in `tests/unit/primitives.test.ts` that no file outside
       `src/primitives` imports `primitives/dom`.
-- [ ] Implement the takeover as decision 2 chooses.
-- [ ] `docs/protocol/drag-select.md` "Press takeover": state that the claim
+- [x] Implement the takeover as decision 2 chooses.
+- [x] `docs/protocol/drag-select.md` "Press takeover": state that the claim
       runs on both renderers and also ends a responder gesture of the same
       press.
-- [ ] Extend the RNW harness: a drag that starts on a button and a drag that
+- [x] Extend the RNW harness: a drag that starts on a button and a drag that
       starts on a link row each end the press, with the events that the
       protocol names, also inside a scroll view. Run the drag-select browser
       specs with no other change.

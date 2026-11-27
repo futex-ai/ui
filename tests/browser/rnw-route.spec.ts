@@ -49,18 +49,27 @@ test("Firna renders links, focus, and live regions on React Native Web", async (
 
     await page.keyboard.press("Space");
     await expect(navigations, "Space on the link").toHaveText("Navigations: 2");
+    await overview.click();
+    await expect(navigations).toHaveText("Navigations: 3");
 
-    for (const modifier of ["Control", "Meta"] as const) {
+    for (const [modifier, before, after] of [
+      ["Control", 3, 4],
+      ["Meta", 4, 5],
+    ] as const) {
       await overview.click({ modifiers: [modifier] });
       await expect(navigations, `${modifier} click on the link`).toHaveText(
-        "Navigations: 2",
+        `Navigations: ${before}`,
       );
+      await overview.click();
+      await expect(navigations).toHaveText(`Navigations: ${after}`);
     }
 
     await help.click();
     await expect(navigations, "click on the new-tab link").toHaveText(
-      "Navigations: 2",
+      "Navigations: 5",
     );
+    await overview.click();
+    await expect(navigations).toHaveText("Navigations: 6");
   });
 
   await test.step("keyboard focus glows without a theme provider", async () => {

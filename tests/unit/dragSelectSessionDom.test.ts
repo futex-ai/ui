@@ -3,6 +3,12 @@ import test from "node:test";
 
 import { startDragSelectableSession } from "../../src/drag-select/dragSelectableSession";
 import { dragSelectableSessionDom } from "../../src/drag-select/dragSelectableSessionDom";
+import {
+  addNode,
+  attachListeners,
+  getResponderNode,
+  removeNode,
+} from "../../src/primitives/dom/responder/ResponderSystem";
 import type { GestureResponderEvent } from "../../src/primitives/types";
 
 import {
@@ -27,7 +33,7 @@ class FakeRootElement extends FakeElement {
   readonly scrollTop = 0;
 }
 
-test("a drag that starts on a pressed control ends the press with the move that started it", () => {
+test("the starting move ends the DOM press and claims the responder until release", () => {
   withFakeDocument(() => {
     const pressOuts: GestureResponderEvent[] = [];
     pressHandlers({
@@ -35,6 +41,13 @@ test("a drag that starts on a pressed control ends the press with the move that 
       onPressChange: () => undefined,
       onPressEnd: (event) => pressOuts.push(event),
     }).onPointerDown(pointerDown(1, { x: 100, y: 40 }));
+    const env = dragSelectableSessionDom({
+      commit: () => undefined,
+      container: { element: asElement(new FakeRootElement()), root: true },
+      end: () => undefined,
+      render: () => undefined,
+      targets: () => [],
+    });
     const session = startDragSelectableSession(
       {
         autoScroll: false,
@@ -44,26 +57,54 @@ test("a drag that starts on a pressed control ends the press with the move that 
         preventTextSelection: false,
         threshold: 4,
       },
-      dragSelectableSessionDom({
-        commit: () => undefined,
-        container: { element: asElement(new FakeRootElement()), root: true },
-        end: () => undefined,
-        render: () => undefined,
-        targets: () => [],
-      }),
+      env,
     );
+    const provider = asElement(new FakeElement());
+    const providerId = 1;
+    addNode(providerId, provider, {
+      onMoveShouldSetResponderCapture: env.claimResponder,
+    });
+    attachListeners();
+    const mouse = (
+      type: "mousedown" | "mousemove" | "mouseup",
+      pageX: number,
+    ) =>
+      document.dispatchEvent(
+        Object.assign(new Event(type), {
+          altKey: false,
+          button: 0,
+          buttons: type === "mouseup" ? 0 : 1,
+          composedPath: () => [provider],
+          ctrlKey: false,
+          pageX,
+          pageY: 40,
+        }),
+      );
 
-    document.dispatchEvent(pointerMove(1, { x: 102, y: 40 }));
-    assert.equal(
-      pressOuts.length,
-      0,
-      "a move below the threshold ends nothing",
-    );
-    const start = pointerMove(1, { x: 112, y: 40 });
-    document.dispatchEvent(start);
-    session.stop();
+    try {
+      mouse("mousedown", 100);
+      document.dispatchEvent(pointerMove(1, { x: 102, y: 40 }));
+      mouse("mousemove", 102);
+      assert.equal(
+        pressOuts.length,
+        0,
+        "a move below the threshold ends nothing",
+      );
+      assert.equal(getResponderNode(), null);
 
-    assert.equal(pressOuts.length, 1);
-    assert.equal(pressOuts[0].nativeEvent, start);
+      const start = pointerMove(1, { x: 112, y: 40 });
+      document.dispatchEvent(start);
+      mouse("mousemove", 112);
+      assert.equal(getResponderNode(), provider);
+      assert.equal(pressOuts.length, 1);
+      assert.equal(pressOuts[0].nativeEvent, start);
+
+      mouse("mouseup", 112);
+      assert.equal(getResponderNode(), null);
+      assert.equal(pressOuts.length, 1);
+    } finally {
+      session.stop();
+      removeNode(providerId);
+    }
   });
 });

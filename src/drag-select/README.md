@@ -197,9 +197,9 @@ import {
   the axes where its overflow lets it scroll.
 - Text does not highlight during a drag. A double-click or a triple-click
   still selects text, because a press without movement blocks nothing.
-- A drag that started on a row `Button` ends that button's press. Its
-  `onPressOut` receives the pointer event that started the drag, and it does
-  not fire `onPress`.
+- A drag from a row `Button` takes over the button's press and prevents
+  `onPress` on release. The [press takeover rules](../../docs/protocol/drag-select.md#gesture)
+  describe the `onPressOut` event on each web renderer.
 - After the release, the provider swallows the click, so a drag never opens
   a row. A plain click is not swallowed.
 - Escape cancels a started drag without a change. `pointercancel`, a window

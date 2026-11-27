@@ -30,6 +30,11 @@ export type DragSelectableSessionDomOptions = {
   targets: () => Iterable<DragSelectableTargetRegistration>;
 };
 
+type ClaimResponder = (event: {
+  nativeEvent: object;
+  target: unknown;
+}) => boolean;
+
 /**
  * Builds the session environment for the browser. The listeners record each
  * `pointermove` before the session handles it. The session ends the presses
@@ -38,22 +43,41 @@ export type DragSelectableSessionDomOptions = {
  */
 export function dragSelectableSessionDom(
   options: DragSelectableSessionDomOptions,
-): DragSelectableSessionEnv {
+): DragSelectableSessionEnv & { claimResponder: ClaimResponder } {
   let lastMove: PointerEvent | null = null;
+  let takeoverMove: PointerEvent | null = null;
   return {
     blockTextSelection: blockDragSelectableTextSelection,
+    claimResponder: ({ nativeEvent, target }) => {
+      // Both responder systems negotiate on the mousemove that follows pointermove.
+      if (
+        !takeoverMove ||
+        target !== takeoverMove.target ||
+        !("type" in nativeEvent) ||
+        nativeEvent.type !== "mousemove"
+      ) {
+        return false;
+      }
+      takeoverMove = null;
+      return true;
+    },
     clipBox: (box) =>
       dragSelectableClipBox(box, dragSelectableVisibleRect(options.container)),
     commit: options.commit,
-    end: options.end,
+    end: () => {
+      takeoverMove = null;
+      options.end();
+    },
     endPresses: () => {
       if (lastMove) {
+        takeoverMove = lastMove;
         endPointerPresses(lastMove);
       }
     },
     listen: (handlers) =>
       listenToDragSelectableSession(handlers, (event) => {
         lastMove = event;
+        takeoverMove = null;
       }),
     measureTargets: () => measureDragSelectableTargets(options.targets()),
     measureTargetsInOrder: () =>

@@ -147,6 +147,8 @@ decision) needs the larger of `minimumDragDistance` and
   started, with the library's own DOM backend and on the
   [React Native Web (RNW) route](shared-ui-package.md#react-native-web-contract).
   The control loses its pressed look and does not fire `onPress` on release.
+  On both web renderers, the provider claims the responder, which also ends a
+  responder gesture of the same press when that responder accepts the transfer.
   - With the DOM backend, the control's `onPressOut` receives the pointer
     event that started the drag.
   - On the RNW route, RNW's responder holds the press of a library

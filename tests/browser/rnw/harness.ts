@@ -8,7 +8,7 @@ import { build, type Plugin } from "esbuild";
 const workspaceRoot = new URL("../../../", import.meta.url);
 const fixtureUrl = "https://firna-rnw.test/";
 
-export async function bundleRnwFixture() {
+export async function bundleRnwFixture(entryPoint = "fixture.jsx") {
   if (!existsSync(new URL("dist/rnw.cjs", workspaceRoot))) {
     throw new Error("dist/rnw.cjs is missing. Run npm run build first.");
   }
@@ -30,7 +30,7 @@ export async function bundleRnwFixture() {
 
   return build({
     absWorkingDir: fileURLToPath(workspaceRoot),
-    entryPoints: ["tests/browser/rnw/fixture.jsx"],
+    entryPoints: [`tests/browser/rnw/${entryPoint}`],
     alias: { "react-native": "react-native-web" },
     platform: "browser",
     resolveExtensions: [".web.js", ".js", ".json"],
