@@ -110,8 +110,8 @@ follows every story's `src/primitives` import to the native file and into
 rewriting that path to `react-native-web/dist/index.js` when that package is
 installed. Nothing here reads docgen output — no story declares `args` or
 `argTypes`, there is no autodocs tag or `.mdx` file, and both suites render
-`iframe.html` — so the option is off and `react-native-web` is not installed at
-all. `.storybook/main.ts` carries the note.
+`iframe.html`, so the option is off. `react-native-web` is a development
+dependency for the React Native Web route tests. See `.storybook/main.ts`.
 
 ## Snapshot opt-outs
 

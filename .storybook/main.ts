@@ -15,7 +15,8 @@ const config: StorybookConfig = {
   // survives by rewriting that path to `react-native-web/dist/index.js` when the
   // package happens to be on disk. Nothing here reads docgen output — no
   // `argTypes`, no autodocs, no `.mdx`, and the suites render `iframe.html` — so
-  // the option is off and the package is not installed.
+  // the option is off. The package is installed only for the React Native Web
+  // route tests, and Storybook does not use it.
   typescript: { reactDocgen: false },
   // No `react-native` alias: every component reaches React Native through
   // `src/primitives`, whose `.web` files render through the library's own DOM

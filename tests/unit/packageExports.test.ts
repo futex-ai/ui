@@ -44,6 +44,7 @@ test("package exposes every documented public subpath", () => {
     "./popover",
     "./radio",
     "./rich-text",
+    "./rnw",
     "./segmented",
     "./sheet",
     "./skeleton",
@@ -67,6 +68,13 @@ test("package exposes every documented public subpath", () => {
 });
 
 function assertExportConfig(subpath: string, exportConfig: unknown) {
+  if (subpath === "./rnw") {
+    assert.deepEqual(exportConfig, {
+      types: "./dist/rnw.d.cts",
+      default: "./dist/rnw.cjs",
+    });
+    return;
+  }
   assert.ok(exportConfig && typeof exportConfig === "object");
   const config = exportConfig as Record<string, string>;
   assert.ok(
