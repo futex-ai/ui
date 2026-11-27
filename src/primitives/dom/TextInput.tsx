@@ -17,9 +17,8 @@
  *   Native defines it. Every combination the library actually passes behaves
  *   exactly as before; that backend simply ignored the modern spelling.
  *
- * The base style is a class in `css.ts` rather than inline, for the reason the
- * `View` and `Text` resets are: it sits below every inline style, which is the
- * priority that backend's atomic reset had.
+ * The base style uses a class in `webStylesheet.ts`, like the `View` and `Text`
+ * resets. Every inline style takes precedence, as it did on that backend.
  */
 import {
   forwardRef,
@@ -36,15 +35,15 @@ import type {
   TextInputInstance,
   TextInputProps,
 } from "../types";
-
-import { createHostElement } from "./createHostElement";
 import {
   PLACEHOLDER_COLOR_ATTRIBUTE,
   PLACEHOLDER_COLOR_VARIABLE,
   POINTER_EVENTS_ATTRIBUTE,
   TEXT_INPUT_CLASS,
   useDomBackendCss,
-} from "./css";
+} from "../webStylesheet";
+
+import { createHostElement } from "./createHostElement";
 import { createDomProps, pointerEventsFor, type PropBag } from "./domProps";
 import { resolveStyle } from "./resolveStyle";
 import { responderConfig, useResponderEvents } from "./responder";
@@ -280,7 +279,7 @@ function TextInputImpl(
   domProps.style = resolved;
   domProps.type = multiline ? undefined : type;
   // The placeholder rule is attached unconditionally, as that backend's class
-  // was; see `css.ts`.
+  // was. See `webStylesheet.ts`.
   domProps[PLACEHOLDER_COLOR_ATTRIBUTE] = "";
   if (pointerEvents != null) {
     domProps[POINTER_EVENTS_ATTRIBUTE] = pointerEvents;

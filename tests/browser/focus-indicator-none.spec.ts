@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { domBackendCss } from "../../src/primitives/dom/css";
+import { domBackendCss } from "../../src/primitives/domBackendCss.web";
 
 import {
   expectBrowserOutline,

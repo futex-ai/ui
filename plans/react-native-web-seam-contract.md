@@ -467,14 +467,14 @@ Update the docs so that they state the RNW route and the decisions.
 
 ## Milestone 2: The stylesheet and the responder globals
 
-Depends on: 1
+Depends on: none
 
-- [ ] Move the library stylesheet and the hide-scrollbar attribute out of
+- [x] Move the library stylesheet and the hide-scrollbar attribute out of
       `dom/` into a shared web module. `dom/`, `themeRoot.web.tsx`, and
       `dragSelectableScrollbar.ts` import them from there.
       `domBackendCss.web.ts` keeps its output.
-- [ ] Rename the responder globals of `dom/responder`.
-- [ ] Update `tests/unit/primitives.test.ts` for the moved module. Run
+- [x] Rename the responder globals of `dom/responder`.
+- [x] Update `tests/unit/primitives.test.ts` for the moved module. Run
       `focusRingCss`, `domResponder`, and the drag-select and focus-ring
       browser specs.
 
@@ -482,7 +482,7 @@ Depends on: 1
 
 Tags: ui
 
-Depends on: 1
+Depends on: 1, 2
 
 Build `link.web.tsx` over the seam `View`, as the design calls say.
 
@@ -532,6 +532,9 @@ Depends on: 4
 Depends on: 3, 5
 
 - [ ] Drag-select imports `endPointerPresses` from the shared press module.
+- [ ] Remove the exception for `src/drag-select/dragSelectableSessionDom.ts`
+      from the check in `tests/unit/primitives.test.ts` that no file outside
+      `src/primitives` imports `primitives/dom`.
 - [ ] Implement the takeover as decision 2 chooses.
 - [ ] Extend the RNW harness: a drag that starts on a button and a drag that
       starts on a link row each end the press, with the events that the

@@ -6,7 +6,7 @@ import {
   TEXT_CLASS,
   TEXT_INPUT_CLASS,
   VIEW_CLASS,
-} from "../../src/primitives/dom/css";
+} from "../../src/primitives/webStylesheet";
 
 import {
   DEFAULT_GLOW,

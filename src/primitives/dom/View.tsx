@@ -11,15 +11,15 @@
 import { forwardRef, useContext, useRef } from "react";
 
 import type { ViewComponent, ViewInstance, ViewProps } from "../types";
-
-import { createHostElement } from "./createHostElement";
 import {
   FOCUS_RING_BASE_SHADOW_VARIABLE,
   POINTER_EVENTS_ATTRIBUTE,
   VIEW_CLASS,
   VIEW_INLINE_CLASS,
   useDomBackendCss,
-} from "./css";
+} from "../webStylesheet";
+
+import { createHostElement } from "./createHostElement";
 import { createDomProps, pointerEventsFor, type PropBag } from "./domProps";
 import { useHostRef } from "./hostRef";
 import { resolveStyle } from "./resolveStyle";

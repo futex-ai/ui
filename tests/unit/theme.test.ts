@@ -133,7 +133,7 @@ test("web theme root injects the DOM backend stylesheet on the client", () => {
   );
   assert.match(
     web,
-    /import \{ useDomBackendCss \} from "\.\/primitives\/dom\/css"/,
+    /import \{ useDomBackendCss \} from "\.\/primitives\/webStylesheet"/,
   );
   assert.match(web, /useDomBackendCss\(\);/);
   const native = readFileSync(

@@ -2,7 +2,7 @@
  * The scrollbar start rule: a press on a classic scrollbar, or in the zone
  * where an overlay scrollbar appears, never starts a drag.
  */
-import { HIDE_SCROLLBAR_ATTRIBUTE } from "../primitives/dom/css";
+import { HIDE_SCROLLBAR_ATTRIBUTE } from "../primitives/webStylesheet";
 
 import type { DragSelectablePoint } from "./dragSelectableModel";
 import {

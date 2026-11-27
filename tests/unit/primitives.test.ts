@@ -129,10 +129,10 @@ function importedNames(source: string, from: string): string[] {
 
 /** Every module specifier a file imports from. */
 function importedModules(source: string): string[] {
+  const imports =
+    /\b(?:from\s+|import\s*(?:\(\s*)?|require\s*\(\s*)["']([^"']+)["']/g;
   return [
-    ...new Set(
-      [...source.matchAll(/ from "([^"]+)"/g)].map((match) => match[1]),
-    ),
+    ...new Set([...source.matchAll(imports)].map((match) => match[1])),
   ].sort();
 }
 
@@ -147,14 +147,23 @@ test("web primitives delegate to web packages and native ones to native packages
   assert.doesNotMatch(web, /from "react-native"/);
   assert.doesNotMatch(web, /import\("react-native"\)/);
 
-  // The seam is pure React now: its only imports are the DOM backend and the
-  // vendored types.
-  assert.deepEqual(importedModules(web), ["./dom", "./types"]);
+  // The web seam can use the DOM backend, the types, and the shared stylesheet.
+  const allowedImports = ["./dom", "./types", "./webStylesheet"];
+  assert.deepEqual(
+    importedModules(web).filter((module) => !allowedImports.includes(module)),
+    [],
+  );
   assert.deepEqual(
     importedNames(web, "\\./dom"),
     SERVED_BY_THE_DOM_BACKEND,
     "every primitive comes from the library's own DOM backend",
   );
+
+  const webCss = readFileSync(
+    new URL("domBackendCss.web.ts", primitivesRoot),
+    "utf8",
+  );
+  assert.deepEqual(importedModules(webCss), ["./webStylesheet"]);
 
   // Nothing under `src/primitives` may reach for `react-native-web` at all;
   // `react-native-web.d.ts` went with the last import.
@@ -218,6 +227,24 @@ test("no component imports react-native, react-native-svg, or lucide directly", 
     }
   }
   assert.deepEqual(offenders, []);
+});
+
+test("no file outside src/primitives imports primitives/dom", () => {
+  // Milestone 6 of `plans/react-native-web-seam-contract.md` removes this exception.
+  const exception = new URL("drag-select/dragSelectableSessionDom.ts", srcRoot)
+    .pathname;
+  const offenders: string[] = [];
+  const domImport = /(?:^|\/)primitives\/dom(?:\/|$)/;
+  for (const file of walk(srcRoot.pathname)) {
+    if (file.startsWith(primitivesRoot.pathname) || file === exception)
+      continue;
+    if (!/\.(ts|tsx)$/.test(file)) continue;
+    const imports = importedModules(readFileSync(file, "utf8"));
+    if (imports.some((module) => domImport.test(module))) {
+      offenders.push(`src/${file.slice(srcRoot.pathname.length)}`);
+    }
+  }
+  assert.deepEqual(offenders.sort(), []);
 });
 
 test("the icon type accepts both Lucide packages' icons", () => {

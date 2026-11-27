@@ -25,8 +25,11 @@ import {
   FOCUS_RING_COLOR_VARIABLE,
   FOCUS_RING_WIDTH_VARIABLE,
   focusRingColorFor,
-} from "../../focusRingCss";
-import { SYSTEM_FONT_STACK } from "./styleTables";
+} from "../focusRingCss";
+
+/** Font stack `fontFamily: "System"` resolves to, as `react-native-web` spells it. */
+export const SYSTEM_FONT_STACK =
+  '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
 
 /** Class carrying `View`'s element reset. */
 export const VIEW_CLASS = "firna-view";

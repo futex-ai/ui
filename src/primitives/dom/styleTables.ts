@@ -9,9 +9,7 @@
  * `exports/StyleSheet/compiler/index.js`.
  */
 
-/** Font stack `fontFamily: "System"` resolves to, as `react-native-web` spells it. */
-export const SYSTEM_FONT_STACK =
-  '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+export { SYSTEM_FONT_STACK } from "../webStylesheet";
 
 /** Font stack `fontFamily: "monospace"` resolves to. */
 export const MONOSPACE_FONT_STACK = "monospace,monospace";
