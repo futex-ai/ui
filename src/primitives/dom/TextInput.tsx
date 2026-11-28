@@ -13,7 +13,8 @@
  *   `useDocumentKeyCapture`; that hook keeps working unchanged, because its
  *   capture-phase listener still runs first and still stops propagation for the
  *   keys it claims, so nothing is handled twice.
- * - Enter uses the shared web policy for `blurOnSubmit` and `submitBehavior`.
+ * - Enter uses the shared web rule to resolve `submitBehavior` and
+ *   `blurOnSubmit` as React Native does.
  *
  * The base style uses a class in `webStylesheet.ts`, like the `View` and `Text`
  * resets. Every inline style takes precedence, as it did on that backend.

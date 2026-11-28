@@ -144,6 +144,27 @@ Required behavior:
   border still applies, and the clear and suffix buttons keep their browser
   outline.
 
+### Enter
+
+Native and both web renderers must resolve the submit behavior for Enter as
+follows.
+
+- Use `submitBehavior` when the caller sets it. For a single-line field,
+  resolve `newline` to `blurAndSubmit`.
+- If `submitBehavior` is unset, use `blurOnSubmit` and the field mode.
+  - For a multiline field, use `blurAndSubmit` when `blurOnSubmit` is `true`.
+    Use `newline` when `blurOnSubmit` is `false` or unset.
+  - For a single-line field, use `submit` when `blurOnSubmit` is `false`.
+    Use `blurAndSubmit` when `blurOnSubmit` is `true` or unset.
+
+The `newline` mode adds a line and keeps focus. The `submit` mode submits the
+field and keeps focus. The `blurAndSubmit` mode submits the field and removes
+focus. Each submission calls `onSubmitEditing` once when the caller provides
+it.
+
+Cal chose the React Native rule on 2026-11-28 so that Enter follows one rule
+on every platform. He rejected keeping the DOM backend's own Enter rule.
+
 ## Date Contract
 
 The date family covers single-date fields and start–end ranges built from two

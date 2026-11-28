@@ -105,6 +105,12 @@ function FieldsFixture() {
         submitBehavior="newline"
       />
       <SubmitField label="Reference" submitBehavior="newline" />
+      <SubmitField
+        blurOnSubmit={false}
+        label="Summary"
+        multiline
+        submitBehavior="blurAndSubmit"
+      />
       <ComboboxMultiSelect
         label="Categories"
         onChange={() => {}}

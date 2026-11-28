@@ -12,17 +12,21 @@ export type TextFieldKeyEvent = KeyboardEvent<
   HTMLInputElement | HTMLTextAreaElement
 >;
 
-function submitBehaviorOf(props: TextFieldSubmitProps): SubmitBehavior {
-  if (props.blurOnSubmit != null) {
-    if (props.blurOnSubmit) {
-      return "blurAndSubmit";
-    }
-    return props.multiline === true ? "newline" : "submit";
+/** Resolve the submit behavior as React Native does. */
+function submitBehaviorOf({
+  blurOnSubmit,
+  multiline,
+  submitBehavior,
+}: TextFieldSubmitProps): SubmitBehavior {
+  if (submitBehavior != null) {
+    return !multiline && submitBehavior === "newline"
+      ? "blurAndSubmit"
+      : submitBehavior;
   }
-  return (
-    props.submitBehavior ??
-    (props.multiline === true ? "newline" : "blurAndSubmit")
-  );
+  if (multiline) {
+    return blurOnSubmit === true ? "blurAndSubmit" : "newline";
+  }
+  return blurOnSubmit === false ? "submit" : "blurAndSubmit";
 }
 
 /** An IME is still composing text, so Enter confirms an IME candidate. */

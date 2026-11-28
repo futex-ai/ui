@@ -16,16 +16,24 @@ const submitCases = [
     submissions: "1: Draft",
   },
   {
-    title: "blurOnSubmit takes precedence over newline",
+    title: "multiline newline adds a line and keeps focus despite blurOnSubmit",
     field: "Name",
+    focused: true,
+    submissions: "0",
+    value: "Draft\n",
+  },
+  {
+    title: "single-line newline submits once and removes focus",
+    field: "Reference",
     focused: false,
     submissions: "1: Draft",
   },
   {
-    title: "single-line newline keeps focus without submitting",
-    field: "Reference",
-    focused: true,
-    submissions: "0",
+    title:
+      "explicit blurAndSubmit submits once and removes focus despite blurOnSubmit=false",
+    field: "Summary",
+    focused: false,
+    submissions: "1: Draft",
   },
 ];
 
@@ -70,19 +78,26 @@ for (const renderer of ["rnw", "dom"] as const) {
       script = outputFiles[0].text;
     });
 
-    for (const { title, field, focused, submissions } of submitCases) {
+    for (const {
+      title,
+      field,
+      focused,
+      submissions,
+      value = "Draft",
+    } of submitCases) {
       test(title, async ({ page }) => {
         await page.clock.install({ time: 0 });
         await page.clock.pauseAt(1_000);
         await openRnwFixture(page, script);
         const input = page.getByRole("textbox", { name: field, exact: true });
+        await input.press("End");
         await input.press("Enter");
         // Flush the blur task the renderer may schedule after Enter.
         await page.clock.runFor(1);
 
         const focus = expect.soft(input);
         await (focused ? focus : focus.not).toBeFocused();
-        await expect.soft(input).toHaveValue("Draft");
+        await expect.soft(input).toHaveValue(value);
         await expect(
           page.getByRole("status", { name: `${field} submissions` }),
         ).toHaveText(submissions);
