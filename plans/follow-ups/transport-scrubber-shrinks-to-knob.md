@@ -48,5 +48,6 @@
   - `plans/follow-ups/segmented-equal-wrap-no-effect.md`: the same cause. That item holds the `SegmentedControl` case that the **Wider fix** here names: with `sizing="equal"` and `wrap`, the segments never wrap. So the class has two confirmed cases. The two fixes need different minimum widths, a fixed metric here and the widest label there.
   - `plans/follow-ups/source-files-pass-line-cap.md`: the same file. That item holds the files over 300 lines, and `src/video-editor/TransportBar.tsx` has 304. Under the reading of `plans/follow-ups/legacy-control-size-comments.md`, a change to it splits the file first.
   - `plans/follow-ups/icon-seam-one-binding-per-glyph.md`: the same file. Its option B changes the icon import of `src/video-editor/TransportBar.tsx`. The first change splits the file, and the second follows the split.
+  - `plans/follow-ups/set-native-props-drops-style-values.md`: the same file. Its option B moves `src/primitives/dom/resolveStyle.ts` to a shared web folder. This item cites that file at `:183-190` as evidence, so the branch of that option updates the path here.
 - **Recommendation:** B. It keeps both readouts beside the bar at every width without a new public prop.
 - **Action:** fix after merge, apply B, because the transport code is outside the files of the change that found the problem.

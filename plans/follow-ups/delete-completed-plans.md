@@ -3,7 +3,7 @@
 - **Severity:** Low. **Effort:** Large. **Confidence:** High. **Harder later:** No.
 - **Kind:** Post-merge task.
 - **Added:** 2026-11-04, from `conductor/agents-md-ui`.
-- **Location:** `plans/`, `docs/superpowers/specs/2026-08-12-video-editor-ui-design.md:3`, `src/chartScales.ts:11`, `src/primitives/dom/index.ts:9`, `src/primitives/reactNative.web.ts:6`, `src/stories/workflow.stories.tsx:293`, `src/workflow/WorkflowNode.tsx:152`, `tests/browser/snapshots.spec.ts:16`, `tests/unit/primitiveTypesCompat.test.ts:9`, and `tests/unit/primitives.test.ts:88`.
+- **Location:** `plans/`, `docs/superpowers/specs/2026-08-12-video-editor-ui-design.md:3`, `src/chartScales.ts:11`, `src/primitives/dom/index.ts:9`, `src/primitives/reactNative.web.ts:6`, `src/stories/workflow.stories.tsx:293`, `src/workflow/WorkflowNode.tsx:152`, `tests/browser/snapshots.spec.ts:16`, `tests/unit/primitiveTypesCompat.test.ts:9`, and `tests/unit/primitives.test.ts:89`.
 - **Reason:** The user's rule of 2026-11-04 deletes these plans, but nobody has listed them for the user, and the work starts only when the user asks.
 
 - **Terms:**
@@ -15,7 +15,7 @@
   - The user's rule of 2026-11-04 deletes each plan whose work has merged. On that day, the user chose the shared `plans` skill for this repository, which has that rule. Commit `769abcf`, of pull request #181, records the choice and this item.
   - The `plans` skill says: "Do not delete a completed plan that is already on `main` without the user's approval."
   - The `agents-md` migration did not list the plans of this repository for the user, so it kept them.
-  - 19 plans are completed. Together they hold 7,743 lines and 14 open TODOs. The line numbers below are those at commit `b141ed2`.
+  - 19 plans are completed. Together they hold 7,743 lines and 14 open TODOs. The line numbers of the plans below are those at commit `b141ed2`, and no completed plan has changed since then. The line numbers of the live links are those at commit `69e9989`.
   - 13 completed plans have no open TODO: `avatar-loading`, `avatar-rounded-square`, `button-consumer-capability-gaps`, `charts-design`, `dark-mode`, `firna-ui-npm-release`, `list-focus-visible-release`, `pure-react-dom-backend`, `rich-text-collaboration-visuals`, `rich-text-editor-design`, `shared-dropdown-modal-library`, `status-dot`, and `video-editor-components`.
   - `plans/charts-component-family.md` has 3 open TODOs:
     - Line 255: "Optional entry animation, gated on `useReducedMotion`. **Deferred.**"
@@ -23,7 +23,7 @@
     - Line 270: "Manual on-device native pass: scrub, tap-select, `ScrollView` coexistence. **Deferred** — cannot be gated in CI, same as `DataGrid` M7." `DataGrid` M7 is the native milestone of `plans/data-grid-component.md`, which holds the TODO at its line 383.
   - `plans/data-grid-component.md` has 3 open TODOs:
     - Line 329: "Auto-scroll when dragging past the body edge. _(Deferred to M4: the body becomes scrollable with virtualization.)_" M4 is the virtualization milestone of the same plan.
-    - Line 383: "Native-on-device verification (keyboard nav reliability, editor focus, scroll latency) via the Expo Storybook host — **deferred to a manual pass** (the Expo host can't run in this sandbox; see [native Storybook host setup memory]). Documented as a known-unverified surface in the README."
+    - Line 383: "Native-on-device verification (keyboard nav reliability, editor focus, scroll latency) via the Expo Storybook host — **deferred to a manual pass** (the Expo host can't run in this sandbox; see [native Storybook host setup memory]). Documented as a known-unverified surface in the README." No file of the repository holds the note that the bracketed name points to.
     - Line 410: "Release is handled by the existing `release-plz` automation on merge to `main` (do not `npm publish` by hand)." The repository releases with release-please, and `CHANGELOG.md` lists data-grid changes in released versions. The workflow file keeps the old name `.github/workflows/release-plz.yml`, but it runs release-please, as `docs/releases.md:21-23` says.
   - `plans/data-grid-context-menus.md` has 1 open TODO:
     - Line 874: "**Not done: the on-device native pass.** Long-press timing, sheet dismissal, and VoiceOver/TalkBack behaviour need a real device — the web Storybook only ever renders the `.web` code path, so none of the native branches above are exercised by the gate." The TODO adds that this pass joins the native pass at line 383 of `plans/data-grid-component.md`. It also joins the manual pass in "Definition of Done / Acceptance" of `plans/wcag-2-1-accessibility.md`.
@@ -41,7 +41,7 @@
   - These sections also hold deferred work, a backlog, follow-ups, or open questions:
     - `plans/avatar-loading.md` line 84: "Deferred".
     - `plans/avatar-rounded-square.md` line 660: "Follow-up (not in scope)".
-    - `plans/button-consumer-capability-gaps.md` line 120: "Out of scope". It leaves the `SegmentedControl` work of request 8 in the consumer list.
+    - `plans/button-consumer-capability-gaps.md` line 120: "Out of scope". It leaves the `SegmentedControl` work of request 8 in the consumer list, at lines 122-124: a `style` prop, a track that is not hardcoded to `alignSelf: "flex-start"`, per-option `testID`s, a re-pressable active option, and a nullable `value`. The consumer list is the list of capability requests that Juno's Expo app keeps in its `docs/dev/firna-ui-capability-requests.md`, as lines 28-33 of the plan say.
     - `plans/charts-component-family.md` line 282: "M9 — Backlog (not built)".
     - `plans/dark-mode.md` line 1003: "Follow-ups (explicitly out of scope)".
     - `plans/data-grid-component.md` line 415: "Open questions".
@@ -55,14 +55,16 @@
     - `src/chartScales.ts:11` names `charts-design`.
     - `src/primitives/dom/index.ts:9` and `src/primitives/reactNative.web.ts:6` name `pure-react-dom-backend`.
     - `src/stories/workflow.stories.tsx:293` and `src/workflow/WorkflowNode.tsx:152` name `dark-mode`.
-    - `tests/browser/snapshots.spec.ts:16`, `tests/unit/primitiveTypesCompat.test.ts:9`, and `tests/unit/primitives.test.ts:88` name `pure-react-dom-backend`.
+    - `tests/browser/snapshots.spec.ts:16`, `tests/unit/primitiveTypesCompat.test.ts:9`, and `tests/unit/primitives.test.ts:89` name `pure-react-dom-backend`.
   - Some completed plans link each other. `charts-design` and `charts-component-family` link each other. `rich-text-editor-design` and `rich-text-editor-component` link each other. `data-grid-context-menus` links `charts-component-family` and `data-grid-component`. `disable-focus-ring` links `charts-design`.
   - No plan that stays links a completed plan.
-  - Four follow-up items name a completed plan as evidence:
+  - Six follow-up items name a completed plan:
     - `plans/follow-ups/mockups-meet-mockups-skill.md` names `rich-text-editor-component`, `rich-text-collaboration-visuals`, and `video-editor-components`.
     - `plans/follow-ups/mockups-choose-how-to-meet-rules.md` names `rich-text-collaboration-visuals`.
     - `plans/follow-ups/video-editor-design-spec-stale.md` names `video-editor-components`.
     - `plans/follow-ups/native-collab-marks-depart-from-protocol.md` names `rich-text-collaboration-visuals`.
+    - `plans/follow-ups/docs-name-react-native-web.md` names six completed plans that its search lists: `button-consumer-capability-gaps`, `charts-design`, `data-grid-component`, `firna-ui-npm-release`, `pure-react-dom-backend`, and `shared-dropdown-modal-library`.
+    - `plans/follow-ups/dom-barrel-unused-forward.md` names `pure-react-dom-backend`, at lines 22, 32, and 43.
   - When a plan goes, replace each such name in an open follow-up item with a permalink to the plan at the commit before the deletion.
 - **Task:** Do these steps for each completed plan. They follow the steps of `references/deleting-a-plan.md` in the `plans` skill. Step 5 adds the links outside the docs, and step 4 keeps the evidence of the follow-up items.
   1. Read the whole plan, with its status paragraph and each section that the list above names.

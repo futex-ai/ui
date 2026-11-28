@@ -11,9 +11,11 @@
   - **`sizing`:** the width rule of the segments: `content`, the default, sizes each segment to its label, and `equal` shares the width evenly.
   - **`wrap`:** a boolean prop that lets the row of segments flow onto more lines.
   - **Flex basis:** the size that a flex item starts from before the row shares the free space. A wrapping row breaks its lines by these sizes.
+  - **DOM backend:** Firna's own web renderer under `src/primitives/dom`, which every web app uses when it does not take the RNW route.
+  - **RNW route:** an app that draws its own screens with `react-native-web` (RNW) applies the rule of `@firna/ui/rnw`, and Firna then draws with RNW too.
 - **Background:**
   - With `sizing="equal"`, each segment gets the style `equalSegment`, `{ flex: 1 }`, at `segmentedControlStyles.ts:187-189`, through `SegmentedControlButton.tsx:166-172`. `flex: 1` gives a flex basis of zero. Firna's DOM backend passes `flex: 1` to CSS unchanged, at `src/primitives/dom/resolveStyle.ts:183-190`.
-  - At the `sm`, `md`, and `lg` sizes, a segment has a `minWidth` of 0: the cell at `segmentedControlStyles.ts:165` and the pill at `:224`. The `xs` size gives 24 px. The view reset of the DOM backend also sets `min-width:0`, at `src/primitives/webStylesheet.ts:80`.
+  - Outside a touch surface, at the `sm`, `md`, and `lg` sizes, a segment has a `minWidth` of 0: the cell at `segmentedControlStyles.ts:165` and the pill at `:224` take `minTarget ?? 0`. The `xs` size gives 24 px, at `:55`. On a touch surface, each size takes the touch target as `minTarget`, at `:121`, so its minimum width is 44 px. The view reset of the DOM backend also sets `min-width:0`, at `src/primitives/webStylesheet.ts:80`.
   - `wrap` adds `flexWrap: "wrap"` to the row, at `SegmentedControl.tsx:179` and `segmentedControlStyles.ts:261-262`. With a zero basis, each segment counts only its padding and its border when the row breaks its lines, so the row almost never wraps.
   - Each label renders with `numberOfLines={1}`, at `SegmentedControlButton.tsx:185-199`, so a label that does not fit ends in an ellipsis.
   - `segmentedControlTypes.ts:83-84` documents `sizing`, and `wrap` at line 94 has no doc comment. `src/segmented/README.md:57-61` pairs `wrap` with content sizing, and gives `sizing="equal"` for a full-width two-up toggle. `docs/protocol/shared-ui-controls.md:21` requires "equal-width segments and content-sized wrapping filter pills". No doc says what `wrap` does with `sizing="equal"`.
@@ -45,5 +47,6 @@
 - **Related:**
   - `plans/follow-ups/transport-scrubber-shrinks-to-knob.md`: the same cause. That item names this case under its **Wider fix**, and the probe here confirmed it, so the class now has two confirmed cases. The two fixes need different minimum widths, a fixed metric there and the widest label here.
   - `plans/follow-ups/rnw-focus-glow-drops-resting-shadow.md`: the same code. Options D and E here change the style array of each segment at `src/segmented/SegmentedControlButton.tsx:166-172`. Option B of that item moves the resting shadow of the selected pill out of the same array. Whichever item goes second keeps the change of the other.
+  - `plans/follow-ups/set-native-props-drops-style-values.md`: the same file. Its option B moves `src/primitives/dom/resolveStyle.ts` to a shared web folder. This item cites that file at `:183-190` as evidence, so the branch of that option updates the path here.
 - **Recommendation:** B. The protocol and the README pair `wrap` with content sizing, so a type that rejects the other pair stops the silent no-op at Small effort, and D stays open if a consumer needs equal segments that wrap.
 - **Action:** ask the user, because B adds a build error for a prop combination that compiles today, and no requirement says what the combination does.

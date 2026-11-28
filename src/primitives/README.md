@@ -177,6 +177,23 @@ nothing from `dom/`.
   `onPress` comes from that click. One registry in `usePress.ts` holds every
   pointer press, so the takeover also ends the press of a link.
 
+## `refs/`
+
+Helpers for the public refs that receive a host element, such as
+`Button.buttonRef`. They import nothing from `dom/`, so both web renderers
+load them.
+
+- `useForwardedHostRef.ts` merges a forwarded ref with an optional local ref.
+  Before the forwarded ref gets the host element, the hook calls
+  `fillMissingHostMethods`. Pass each new public ref of a host element through
+  this hook.
+- `hostMethods.web.ts` builds `setNativeProps` for a host element, and
+  `setNativeProps` and `setSelection` for a text field. The DOM backend
+  attaches them to its hosts. `fillMissingHostMethods` adds each one that the
+  renderer did not install, so the hosts of `react-native-web` get them too.
+  The native `hostMethods.ts` does nothing, because React Native installs both
+  methods.
+
 ## `types/`
 
 The library's own copy of React Native's public type surface, vendored from
