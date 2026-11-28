@@ -1,6 +1,7 @@
 /** Input-backed chip multi-select for combobox forms. */
 import { useMemo } from "react";
-import { Pressable, Text, TextInput, View } from "../primitives/reactNative";
+import { Pressable, Text, View } from "../primitives/reactNative";
+import { TextField } from "../primitives/textField";
 
 import { useFocusRing } from "../focusRing";
 import { LabelInfo } from "../input";
@@ -172,7 +173,7 @@ export function ComboboxMultiSelect({
               </Text>
             </View>
           ) : null}
-          <TextInput
+          <TextField
             {...focus.focusTargetProps}
             accessibilityHint={error ?? hint}
             // Name the input from the visible label via `aria-labelledby` (so the

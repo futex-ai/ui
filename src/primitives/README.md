@@ -5,14 +5,15 @@ never import `react-native`, `react-native-svg`, `lucide-react-native`,
 `react-native-web`, or `lucide-react` directly; they import from here, and a
 unit test (`tests/unit/primitives.test.ts`) fails the build if one does.
 
-| Module             | Native resolves to      | Web (`.web`) resolves to    | RNW form    |
-| ------------------ | ----------------------- | --------------------------- | ----------- |
-| `reactNative.ts`   | `react-native`          | `dom/`                      | native file |
-| `svg.tsx`          | `react-native-svg`      | DOM `<svg>` elements        | `.web` file |
-| `icons.ts`         | `lucide-react-native`   | `lucide-react`              | `.web` file |
-| `link.tsx`         | `Pressable` + `Linking` | an `<a>` on the seam `View` | `.web` file |
-| `domBackendCss.ts` | `""`                    | CSS in `webStylesheet.ts`   | `.web` file |
-| `types/` (web)     | —                       | the seam's own types        | —           |
+| Module             | Native resolves to      | Web (`.web`) resolves to                  | RNW form    |
+| ------------------ | ----------------------- | ----------------------------------------- | ----------- |
+| `reactNative.ts`   | `react-native`          | `dom/`                                    | native file |
+| `svg.tsx`          | `react-native-svg`      | DOM `<svg>` elements                      | `.web` file |
+| `icons.ts`         | `lucide-react-native`   | `lucide-react`                            | `.web` file |
+| `link.tsx`         | `Pressable` + `Linking` | an `<a>` on the seam `View`               | `.web` file |
+| `textField.tsx`    | seam `TextInput`        | seam `TextInput` with shared key handling | `.web` file |
+| `domBackendCss.ts` | `""`                    | CSS in `webStylesheet.ts`                 | `.web` file |
+| `types/` (web)     | —                       | the seam's own types                      | —           |
 
 With the DOM backend, every primitive comes from `dom/` — `View`, `Text`,
 `Pressable`, `Image`, `Modal`, `ScrollView`, `TextInput`, `FlatList`,
@@ -42,9 +43,10 @@ of the table above gives each form:
 
 - `reactNative` loads its native file. The app's alias sends that file's
   `react-native` import to `react-native-web`.
-- `svg`, `icons`, `link`, and `domBackendCss` use their `.web` files on both
-  web routes. The SVG file draws DOM `<svg>` and the icon file uses
-  `lucide-react`.
+- `svg`, `icons`, `link`, `textField`, and `domBackendCss` use their `.web`
+  files on both web routes. The SVG file draws DOM `<svg>` and the icon file
+  uses `lucide-react`. The text field uses the chosen renderer's `TextInput`
+  and forwards key events through its key callback.
 
 Rules for the seam:
 
@@ -267,8 +269,9 @@ Rules:
 - Each pair exports the same names; the unit test diffs them. Add a name to
   both files in the same change, and only when a component needs it. The icon
   seam also takes a glyph that only a story needs.
-- A new name also needs a type in `types/` and an implementation in `dom/`.
-  The web seam imports nothing but those two; a unit test asserts it.
+- A new name in `reactNative` also needs a type in `types/` and an
+  implementation in `dom/`. A unit test checks the imports of
+  `reactNative.web.ts`.
 - Class-valued exports get a same-named type alias so `useRef<View>` keeps
   working; `Animated` merges a namespace for `Animated.Value`.
 - The DOM SVG shim only supports props that are valid SVG attributes, plus the

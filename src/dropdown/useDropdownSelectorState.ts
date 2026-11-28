@@ -3,8 +3,9 @@
  * entries and their keyboard navigation, the trigger's names and element ids,
  * and the announcement of the search result count.
  */
-import { Ref, useCallback, useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type Ref } from "react";
 import { View } from "../primitives/reactNative";
+import { useForwardedHostRef } from "../primitives/refs/useForwardedHostRef";
 
 import { announce } from "../announcer";
 import { devWarn } from "../devWarn";
@@ -52,17 +53,7 @@ export function useDropdownSelectorState({
   value: string;
 }) {
   const anchorRef = useRef<View>(null);
-  const setTriggerRef = useCallback(
-    (node: View | null) => {
-      anchorRef.current = node;
-      if (typeof triggerRef === "function") {
-        triggerRef(node);
-      } else if (triggerRef) {
-        (triggerRef as { current: View | null }).current = node;
-      }
-    },
-    [triggerRef],
-  );
+  const setTriggerRef = useForwardedHostRef(triggerRef, anchorRef);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const grouped = sections ?? [{ options }];

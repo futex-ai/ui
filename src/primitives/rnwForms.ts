@@ -4,4 +4,5 @@ export const rnwForms = {
   icons: "web",
   link: "web",
   domBackendCss: "web",
+  textField: "web",
 } as const satisfies Readonly<Record<string, "native" | "web">>;

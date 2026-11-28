@@ -37,6 +37,7 @@ test("web and native primitive modules export the same names", () => {
     ["svg.tsx", "svg.web.tsx"],
     ["icons.ts", "icons.web.ts"],
     ["link.tsx", "link.web.tsx"],
+    ["textField.tsx", "textField.web.tsx"],
   ]) {
     assert.deepEqual(
       exportedNames(webFile),

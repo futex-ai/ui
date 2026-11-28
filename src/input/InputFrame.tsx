@@ -1,7 +1,8 @@
 /** The bare bordered input box: prefix/suffix icons, clear button, focus ring. */
 import { CircleX } from "../primitives/icons";
 import { useCallback, useMemo, useRef } from "react";
-import { Pressable, TextInput, View } from "../primitives/reactNative";
+import { Pressable, View, type TextInput } from "../primitives/reactNative";
+import { TextField } from "../primitives/textField";
 
 import { useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
@@ -152,7 +153,7 @@ export function InputFrame({
           <PrefixIcon color={theme.colors.muted} size={iconSize} />
         </View>
       ) : null}
-      <TextInput
+      <TextField
         {...focus.focusTargetProps}
         ref={setInputRef}
         aria-invalid={invalid}

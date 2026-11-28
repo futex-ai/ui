@@ -39,6 +39,7 @@ import {
 import { navigatesInApp } from "./linkActivation";
 import type { LinkHostProps, LinkInteractionState } from "./linkTypes";
 import { View } from "./reactNative";
+import { useForwardedHostRef } from "./refs/useForwardedHostRef";
 import type {
   FocusEvent,
   LayoutChangeEvent,
@@ -106,18 +107,8 @@ export const Link: ForwardRefExoticComponent<
   const [focused, setFocused] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [pressed, setPressed] = useState(false);
-  const hostRef = useRef<HTMLElement | null>(null);
-  const setRef = useCallback(
-    (node: (HTMLElement & ViewInstance) | null) => {
-      hostRef.current = node;
-      if (typeof forwardedRef === "function") {
-        forwardedRef(node);
-      } else if (forwardedRef != null) {
-        forwardedRef.current = node;
-      }
-    },
-    [forwardedRef],
-  );
+  const hostRef = useRef<(HTMLElement & ViewInstance) | null>(null);
+  const setRef = useForwardedHostRef(forwardedRef, hostRef);
   const pressHandlers = usePress(
     useMemo(() => ({ onPressChange: setPressed }), []),
   );

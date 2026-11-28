@@ -2,7 +2,6 @@
 import {
   ReactNode,
   RefObject,
-  useCallback,
   useEffect,
   useId,
   useMemo,
@@ -10,6 +9,7 @@ import {
   useState,
 } from "react";
 import { Platform, ScrollView, View } from "../primitives/reactNative";
+import { useForwardedHostRef } from "../primitives/refs/useForwardedHostRef";
 
 import type { ControlSize } from "../controlSize";
 import { useSharedUiTheme } from "../theme";
@@ -139,15 +139,7 @@ export function DropdownList({
   // The list scrolls its active row through its own ref. A caller's `listRef`
   // gets the same node, so the caller can focus the list that scrolls.
   const scrollRef = useRef<ScrollView>(null);
-  const setScrollRef = useCallback(
-    (node: ScrollView | null) => {
-      scrollRef.current = node;
-      if (listRef) {
-        listRef.current = node;
-      }
-    },
-    [listRef],
-  );
+  const setScrollRef = useForwardedHostRef(listRef, scrollRef);
   const navItems = useMemo<DropdownNavigationItem[]>(
     () => dropdownListNavigationItems(entries),
     [entries],

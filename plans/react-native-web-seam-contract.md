@@ -501,12 +501,23 @@ These calls are mine, made on 2026-11-27, and they follow the answers above.
   dist test resolves the real peers, and a `test:dist` case imports every
   public subpath through the documented Node hook. This replaces the earlier
   design call that gave `svg` and `icons` their native forms.
+- **A text-field seam and a shared web ref helper, my call, 2026-11-28, from
+  review round 2.** `src/primitives/textField` wraps the seam `TextInput` on
+  both web renderers. It owns Enter with the DOM backend's existing rule, now
+  in `src/primitives/textFieldEnter.ts`, and it passes a forwarded `onKeyDown`
+  through on RNW. `src/primitives/refs/useForwardedHostRef.ts` fills
+  `setNativeProps`, and `setSelection` for a text field, on the five public
+  refs when the renderer does not install them. Its RNW form is `web`.
+  Reason: review findings 7 and 9 showed that RNW drops `submitBehavior` and
+  these ref methods, and the fix keeps the RNW form of `reactNative` a plain
+  re-export.
 - **Other RNW fixes in scope.** The toast live region sets `aria-atomic` on
   the element, because RNW drops the prop. The comments in four drag hooks that
   say RNW's `Pressable` stops `pointerdown` are corrected. Reason: the contract
   says that Firna is correct on RNW, and each fix is Small.
 - **Release type: minor.** The commits use `feat`, so release-please makes
-  5.2.0. No export target changes, `dom/` is not public, and a consumer that
+  5.3.0 after the 5.2.0 release on `origin/main`.
+  No export target changes, `dom/` is not public, and a consumer that
   does not apply the rule gets the DOM backend as before. Bookfolio's current
   resolver keeps working, because `reactNative`, `svg`, and `icons` keep their
   native forms. Reason: the repository marks only a breaking change with `!`.

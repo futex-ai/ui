@@ -2,12 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  isEventComposing,
-  isSelectionStale,
   pickTextInputProps,
   resolveInputType,
   textInputDefaults,
 } from "../../src/primitives/dom/textInputProps";
+import { isSelectionStale } from "../../src/primitives/refs/hostMethods.web";
+import { isEventComposing } from "../../src/primitives/textFieldEnter";
 
 /**
  * The pure prop mapping behind `dom/TextInput.tsx`, transcribed from

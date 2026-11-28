@@ -48,13 +48,21 @@ test("selector exposes its trigger for imperative focus", () => {
   const stateSource = readSource(
     "../../src/dropdown/useDropdownSelectorState.ts",
   );
+  const refSource = readSource(
+    "../../src/primitives/refs/useForwardedHostRef.ts",
+  );
 
   // Async forms need to move focus to the first field after their loading
   // placeholder is replaced. The selector keeps its own anchor ref for portal
   // placement while forwarding the same pressable to the caller.
   assert.match(propsSource, /triggerRef\?: Ref<View>;/);
-  assert.match(stateSource, /const setTriggerRef = useCallback\(/);
-  assert.match(stateSource, /anchorRef\.current = node;/);
+  assert.match(
+    stateSource,
+    /const setTriggerRef = useForwardedHostRef\(triggerRef, anchorRef\);/,
+  );
+  assert.match(refSource, /localRef\.current = node;/);
+  assert.match(refSource, /forwardedRef\(node\)/);
+  assert.match(refSource, /forwardedRef\.current = node;/);
   assert.match(selectorSource, /ref=\{setTriggerRef\}/);
 });
 

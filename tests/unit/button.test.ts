@@ -148,7 +148,11 @@ test("button exposes its pressable for imperative focus", () => {
     readSource("../../src/button/buttonProps.ts"),
     /buttonRef\?: Ref<View>;/,
   );
-  assert.match(source, /ref=\{buttonRef\}/);
+  assert.match(
+    source,
+    /const setButtonRef = useForwardedHostRef\(buttonRef\);/,
+  );
+  assert.match(source, /ref=\{setButtonRef\}/);
 });
 
 test("button has public root and subpath exports", () => {

@@ -13,10 +13,10 @@ import {
   type GestureResponderEvent,
   type StyleProp,
   Text,
-  TextInput,
   View,
   type ViewStyle,
 } from "../primitives/reactNative";
+import { TextField } from "../primitives/textField";
 
 import type { ControlSize } from "../controlSize";
 import { withDragSelectableIgnore } from "../drag-select/dragSelectableIgnore";
@@ -150,7 +150,7 @@ export function NumberScrubber({
       ]}
       testID={testID}
     >
-      <TextInput
+      <TextField
         {...focus.focusTargetProps}
         accessibilityLabel={label}
         editable={!disabled && Boolean(onValueChange)}
