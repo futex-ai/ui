@@ -40,6 +40,14 @@ export type WebModalFrameProps = {
    */
   focusIndicator?: FocusIndicator;
   dismissible?: boolean;
+  /**
+   * Controls drawn in the header row, directly before the close button, such
+   * as a `WebModalHeaderButton` that expands the dialog. They come before the
+   * close button in Tab order. Without the close button they end the row.
+   * They are caller controls, so the default initial focus lands on the first
+   * of them; pass `initialFocusRef` to start in the body instead.
+   */
+  headerActions?: ReactNode;
   footer?: ReactNode;
   bodyStyle?: StyleProp<ViewStyle>;
   footerStyle?: StyleProp<ViewStyle>;
@@ -56,9 +64,9 @@ export type WebModalFrameProps = {
   initialFocus?: WebModalInitialFocus;
   /**
    * Web-only: the entry control, overriding the default — the first focusable
-   * control the caller rendered (the close button is skipped despite coming
-   * first in DOM order). Focus lands on it when the modal opens, or on the
-   * first Tab when `initialFocus` is `surface`. Point it at the safe action on
+   * control other than the close button. Focus lands on it when the modal
+   * opens, or on the first Tab when `initialFocus` is `surface`. Point it at
+   * the safe action on
    * a destructive confirmation, where the default would land on the
    * destructive one. Ignored on native, which has no tab order.
    */

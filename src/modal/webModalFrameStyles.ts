@@ -1,7 +1,6 @@
 import { StyleSheet } from "../primitives/reactNative";
 
 import type { SharedUiTheme } from "../theme";
-import { TOUCH_TARGET_SIZE } from "../touchSurface";
 
 import { WEB_MODAL_LAYERS } from "./modalLayers";
 
@@ -32,16 +31,6 @@ export function createWebModalFrameStyles(theme: SharedUiTheme) {
       zIndex: WEB_MODAL_LAYERS.surface,
     },
     centerSheet: { justifyContent: "flex-end", padding: 0 },
-    closeButton: {
-      alignItems: "center",
-      borderRadius: theme.radii.md,
-      height: 34,
-      justifyContent: "center",
-      width: 34,
-    },
-    // On a touch surface the close control is a 44 by 44px target.
-    closeButtonTouch: { height: TOUCH_TARGET_SIZE, width: TOUCH_TARGET_SIZE },
-    disabled: { opacity: 0.55 },
     footer: {
       borderTopColor: theme.colors.border,
       borderTopWidth: 1,

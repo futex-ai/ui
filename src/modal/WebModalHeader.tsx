@@ -1,24 +1,21 @@
 /**
- * The title row of the web modal frame: the title, an optional subtitle, and
- * the close button. The frame and the in-place menu sheet share it, so both
- * draw the same header. Inside a `TouchSurface` the close button is a 44 by
- * 44px target.
+ * The title row of the web modal frame: the title, an optional subtitle, the
+ * caller's header actions, and the close button. The frame and the in-place
+ * menu sheet share it, so both draw the same header.
  */
 import type { ReactNode, Ref } from "react";
-import { X } from "../primitives/icons";
-import { Pressable, Text, View } from "../primitives/reactNative";
+import { Text, View } from "../primitives/reactNative";
 import type {
   StyleProp,
   TextStyle,
   ViewStyle,
 } from "../primitives/reactNative";
 
-import { useFocusRing } from "../focusRing";
 import type { FocusIndicator } from "../focusRing";
-import { useSharedUiTheme } from "../theme";
 import { useTouchSurface } from "../touchSurface";
 
 import type { WebModalFrameStyles } from "./webModalFrameStyles";
+import { WebModalHeaderControls } from "./WebModalHeaderControls";
 
 export type WebModalHeaderProps = {
   /** The close button, which the default initial focus of a dialog skips. */
@@ -26,6 +23,8 @@ export type WebModalHeaderProps = {
   closeDisabled?: boolean;
   closeLabel?: string;
   focusIndicator?: FocusIndicator;
+  /** Controls drawn before the close button, such as `WebModalHeaderButton`s. */
+  headerActions?: ReactNode;
   headerStyle?: StyleProp<ViewStyle>;
   /** Runs when the close button is pressed. */
   onClose: () => void;
@@ -44,6 +43,7 @@ export function WebModalHeader({
   closeDisabled = false,
   closeLabel,
   focusIndicator,
+  headerActions,
   headerStyle,
   onClose,
   showCloseButton = true,
@@ -54,9 +54,7 @@ export function WebModalHeader({
   titleId,
   titleStyle,
 }: WebModalHeaderProps) {
-  const theme = useSharedUiTheme();
   const touch = useTouchSurface();
-  const closeRing = useFocusRing({ indicator: focusIndicator });
   return (
     <View
       style={[styles.header, touch ? styles.headerTouch : null, headerStyle]}
@@ -74,27 +72,15 @@ export function WebModalHeader({
           <Text style={[styles.subtitle, subtitleStyle]}>{subtitle}</Text>
         ) : null}
       </View>
-      {showCloseButton ? (
-        <Pressable
-          accessibilityLabel={closeLabel ?? `Close ${title}`}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: closeDisabled }}
-          disabled={closeDisabled}
-          {...closeRing.focusRingProps}
-          onBlur={closeRing.onBlur}
-          onFocus={closeRing.onFocus}
-          onPress={onClose}
-          ref={closeButtonRef}
-          style={[
-            styles.closeButton,
-            touch ? styles.closeButtonTouch : null,
-            closeDisabled ? styles.disabled : null,
-            closeRing.focusRingVariables,
-          ]}
-        >
-          <X aria-hidden color={theme.colors.ink2} size={18} />
-        </Pressable>
-      ) : null}
+      <WebModalHeaderControls
+        closeButtonRef={closeButtonRef}
+        closeDisabled={closeDisabled}
+        closeLabel={closeLabel ?? `Close ${title}`}
+        focusIndicator={focusIndicator}
+        headerActions={headerActions}
+        onClose={onClose}
+        showCloseButton={showCloseButton}
+      />
     </View>
   );
 }
