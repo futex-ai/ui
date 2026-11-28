@@ -9,6 +9,7 @@ import type { Ref } from "react";
 import { Platform, Pressable, StyleSheet } from "../primitives/reactNative";
 import type { View } from "../primitives/reactNative";
 import type { IconComponent } from "../primitives/icons";
+import { useForwardedHostRef } from "../primitives/refs/useForwardedHostRef";
 
 import { buttonSemantics } from "../button/buttonSemantics";
 import { useFocusRing } from "../focusRing";
@@ -64,6 +65,7 @@ export function WebModalHeaderButton({
     [theme],
   );
   const touch = useTouchSurface();
+  const setButtonRef = useForwardedHostRef(buttonRef);
   const group = useContext(WebModalHeaderGroupContext);
   const ring = useFocusRing({
     indicator: focusIndicator ?? group.focusIndicator,
@@ -89,7 +91,7 @@ export function WebModalHeaderButton({
       onBlur={ring.onBlur}
       onFocus={ring.onFocus}
       onPress={onPress}
-      ref={buttonRef}
+      ref={setButtonRef}
       style={[
         styles.button,
         touch ? styles.buttonTouch : null,

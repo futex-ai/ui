@@ -33,6 +33,12 @@ const hostRefs = [
   { name: "Details", role: "link", action: "Dim link", ref: "linkRef" },
   { name: "Save", role: "button", action: "Dim button", ref: "buttonRef" },
   {
+    name: "Close panel",
+    role: "button",
+    action: "Dim header button",
+    ref: "header buttonRef",
+  },
+  {
     name: "Reference list",
     role: "listbox",
     action: "Dim list",

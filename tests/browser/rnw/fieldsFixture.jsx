@@ -9,6 +9,8 @@ import {
 } from "@firna/ui/dropdown";
 import { Input } from "@firna/ui/input";
 import { LinkButton } from "@firna/ui/link";
+import { WebModalHeaderButton } from "@firna/ui/modal";
+import { X } from "lucide-react";
 
 const options = [{ label: "Primary", value: "primary" }];
 
@@ -34,6 +36,7 @@ function SubmitField({ label, ...props }) {
 
 function RefFields() {
   const buttonRef = useRef(null);
+  const headerRef = useRef(null);
   const inputRef = useRef(null);
   const linkRef = useRef(null);
   const listRef = useRef(null);
@@ -47,6 +50,12 @@ function RefFields() {
       <Button buttonRef={buttonRef} onPress={() => {}}>
         Save
       </Button>
+      <WebModalHeaderButton
+        accessibilityLabel="Close panel"
+        buttonRef={headerRef}
+        icon={X}
+        onPress={() => {}}
+      />
       <Input defaultValue="Draft" inputRef={inputRef} label="Reference text" />
       <DropdownList
         entries={[{ id: "primary", label: "Primary", type: "item" }]}
@@ -64,6 +73,7 @@ function RefFields() {
       />
       <button onClick={() => dim(linkRef)}>Dim link</button>
       <button onClick={() => dim(buttonRef)}>Dim button</button>
+      <button onClick={() => dim(headerRef)}>Dim header button</button>
       <button onClick={() => dim(listRef)}>Dim list</button>
       <button onClick={() => dim(triggerRef)}>Dim selector</button>
       <button
