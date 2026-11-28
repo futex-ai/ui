@@ -48,6 +48,9 @@ export function DragSelectableProvider({
         // `accessibilityRole` type omits `"group"`, so use `role` (matching the
         // heatmap legend) to expose a named collection (WCAG 2.1 — 1.3.1
         // Info & Relationships, A).
+        onMoveShouldSetResponderCapture={
+          gesture.onMoveShouldSetResponderCapture
+        }
         onPointerDown={gesture.onPointerDown}
         role={accessibility.role}
         style={style}

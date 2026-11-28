@@ -11,6 +11,7 @@
  */
 import { useLayoutEffect, type RefObject } from "react";
 
+import { createSetNativeProps } from "../refs/hostMethods.web";
 import type { LayoutChangeEvent } from "../types";
 
 type LayoutHandler = (event: LayoutChangeEvent) => void;
@@ -161,22 +162,6 @@ export function useElementLayout(
   }, [hasLayoutHandler, observer, ref]);
 }
 
-type NativePropsBag = Record<string, unknown>;
-
-function applyNativeProps(node: HTMLElement, nativeProps: NativePropsBag) {
-  for (const [prop, value] of Object.entries(nativeProps)) {
-    if (prop === "style" && value != null && typeof value === "object") {
-      Object.assign(node.style, value);
-    } else if (prop === "class" || prop === "className") {
-      node.setAttribute("class", String(value));
-    } else if (prop === "text" || prop === "value") {
-      (node as HTMLInputElement).value = String(value);
-    } else if (value != null) {
-      node.setAttribute(prop, String(value));
-    }
-  }
-}
-
 /**
  * Adds React Native's imperative host methods to a DOM element.
  *
@@ -207,7 +192,5 @@ export function attachHostMethods(node: HTMLElement | null): void {
       callback(left, top, width, height);
     }, 0);
   };
-  host.setNativeProps = (nativeProps: NativePropsBag) => {
-    applyNativeProps(node, nativeProps ?? {});
-  };
+  host.setNativeProps = createSetNativeProps(node);
 }

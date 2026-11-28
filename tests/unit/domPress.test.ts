@@ -7,7 +7,7 @@ import {
   type Machine,
   type PressConfig,
   type PressEvent,
-} from "../../src/primitives/dom/pressMachine";
+} from "../../src/primitives/webPress/pressMachine";
 import { isTextInputNode } from "../../src/primitives/dom/platform";
 
 /**

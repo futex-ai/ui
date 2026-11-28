@@ -1,6 +1,7 @@
 /** Shared pressable button with tone, size, optional icon, and block variants. */
 import { useMemo } from "react";
 import { Platform, Pressable, View } from "../primitives/reactNative";
+import { useForwardedHostRef } from "../primitives/refs/useForwardedHostRef";
 
 import { devWarn } from "../devWarn";
 import { PressableHoverState, useFocusRing } from "../focusRing";
@@ -79,6 +80,7 @@ export function Button({
   tone = "secondary",
   trailing,
 }: ButtonProps) {
+  const setButtonRef = useForwardedHostRef(buttonRef);
   const theme = useSharedUiTheme();
   // On a touch surface the button draws the touch metrics, whatever its size.
   // A face that `boxSize` draws below the 44px target keeps the drawing of its
@@ -260,7 +262,7 @@ export function Button({
       onPress={busy ? undefined : onPress}
       onPressIn={busy ? undefined : onPressIn}
       onPressOut={busy ? undefined : onPressOut}
-      ref={buttonRef}
+      ref={setButtonRef}
       style={({ hovered = false, pressed }: PressableHoverState) =>
         reserve ? styles.reservedTarget : paintStyle({ hovered, pressed })
       }

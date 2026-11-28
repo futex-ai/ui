@@ -3,7 +3,7 @@
 - **Severity:** Medium. **Likelihood:** Common. **Effort:** Medium. **Confidence:** High. **Harder later:** No.
 - **Kind:** Outside the scope.
 - **Added:** 2026-11-04, from `conductor/agents-md-ui`, the investigation of the hand-written mockups.
-- **Location:** `src/rich-text/nativeRichTextStyles.ts:106-119`, `src/rich-text/nativeRichTextInline.tsx:107-146`, `docs/protocol/rich-text-collaboration.md:88-96`, and `docs/protocol/rich-text-collaboration.md:137-147`.
+- **Location:** `src/rich-text/nativeRichTextStyles.ts:106-119`, `src/rich-text/nativeRichTextInline.tsx:107-146`, `src/rich-text/domDecoration.web.ts:42-92`, `docs/protocol/rich-text-collaboration.md:88-96`, and `docs/protocol/rich-text-collaboration.md:137-147`.
 - **Reason:** The native rich-text files and the collaboration protocol are outside the files of `conductor/agents-md-ui`, a change that edits only `AGENTS.md` and follow-up items.
 
 - **Terms:**
@@ -34,15 +34,16 @@
     - A text run carries only text attributes, such as colours, font, lines, and shadow, at `ReactCommon/react/renderer/attributedstring/TextAttributes.h:42-87`. It has no border, so it cannot draw a ring.
   - So native text cannot draw a 2px line or a ring on either platform, or a line colour on Android. iOS can draw the accent and amber line colours. The code does not set them.
   - No commit, plan, or comment records why native departs from the table. The comment at `nativeRichTextStyles.ts:103-105` explains only why every anchor uses one amber tone.
-  - Nobody checked these styles on a device. No native screenshot exists. The protocol calls the on-device pass manual, at lines 193-194. Pull request #152 merged on 2026-08-21. Its plan deferred that pass.
+  - Nobody checked these styles on a device. No native screenshot exists. The protocol calls the on-device pass manual, at lines 193-194. Pull request #152 merged on 2026-08-21. Its plan, `plans/rich-text-collaboration-visuals.md`, deferred that pass, at lines 109-110. No story of the native Storybook shows the overlay: `storybook-native/stories/RichTextEditor.stories.tsx` passes no collaboration props.
   - The protocol already records two native exceptions. Remote carets are initials discs beside the text, at lines 141-143. On Android the innermost `textDecorationLine` wins, at lines 146-147.
   - Each change also has words. The native run label says "Insertion suggested by" or "Deletion suggested by" and the name, at `nativeRichTextInline.tsx:126-128`. The rail card names the author too, as lines 164-167 require.
 - **Problem:** The native editor draws four marks differently from the protocol table. No doc records the native look or its reason. On native, no line shows the accent of its author. A native anchor has no underline.
+- **Screenshot:** None, because no native screenshot exists, and nobody ran the overlay on a device.
 - **Impact if no action:** Native users see marks that the protocol does not describe. Reviewers cannot tell a defect from a platform limit. A later change can chase a look that React Native cannot draw.
 - **Root question:** How does the native editor draw the collaboration marks, within what React Native text can draw?
 - **Options:**
   - **A.** Keep the native code. Record the native look in the protocol as the fallback of each mark. Give the React Native limits as the reason. iOS then keeps plain lines that it could draw in the accent of the author. Effort: Small.
-  - **B.** Draw each mark as close to the table as each platform allows. Record the rest in the protocol. Put the look of each run in one shared pure function that both renderers apply. Native then sets `textDecorationColor` to the accent of the author on insertions and deletions, and to amber on an anchor underline. iOS shows these colours. Android shows the text colour. A deeper amber tint marks the active anchor, because a text run cannot draw a ring. Check both platforms on a device. Effort: Medium.
+  - **B.** Draw each mark as close to the table as each platform allows. Record the rest in the protocol. Put the look of each run in one shared pure function that both renderers apply. Native then sets `textDecorationColor` to the accent of the author on insertions and deletions, to `amber` on an anchor underline, and to `amberDeep` on the underline of the active anchor, as the web does at `src/rich-text/domDecoration.web.ts:56-58`. iOS shows these colours. Android shows the text colour. A deeper amber tint marks the active anchor, because a text run cannot draw a ring. Check both platforms on a device, with a native story or an app screen that shows the overlay, because no native story shows it today. Effort: Medium.
   - **C.** Change the table on every platform to marks that native text can draw. Lines take the text colour and the default thickness. A deeper tint replaces the ring. The web renderer changes to match, so web loses the accent of the author on lines. Effort: Medium.
   - **D.** Build a native text component that draws thick coloured lines and rings. Use it for overlay runs. It needs iOS and Android code, which the library does not ship today. Effort: Large.
 - **Left out:**
@@ -54,5 +55,9 @@
 - **Related:**
   - `plans/follow-ups/comment-anchor-underline-edge-rule.md`: work that waits for the answer. That item asks whether the underline on a tinted anchor is a banned edge strip under the new edge rule of the `product-ui` skill. Its answer decides whether option B adds an anchor underline on native.
   - `plans/follow-ups/comment-anchor-hides-selection-tint.md`: the same code and a shared wider fix. Both items change the anchor styles of `runTextProps`. The shared function of option B can also compose the fill that item needs.
+  - `plans/follow-ups/checklist-checked-text-parity.md`: the same code. That item compares the look of checked text with the native deletion style at `nativeRichTextStyles.ts:113-116`, and option B here changes that style. Whichever item goes second compares again with the new style.
+  - `plans/follow-ups/mockups-choose-side-of-mismatch.md` and `plans/follow-ups/mockups-meet-mockups-skill.md`: the same code. They compare the same native styles with the mockup, so a change here changes what they compare.
+  - `plans/follow-ups/delete-completed-plans.md`: the same work. That task merges the deferred on-device pass of `plans/rich-text-collaboration-visuals.md` into this item, which already holds that device check.
+  - `plans/follow-ups/docs-name-react-native-web.md`: the same line. That item rewrites `docs/protocol/rich-text-collaboration.md:5`, which this item gives as the evidence that the overlay runs on web, iOS, and Android. The rewrite changes only the name of the web platform, so the evidence stays true.
 - **Recommendation:** B. It brings each platform as close to the table as React Native allows, with the real limits in the protocol.
 - **Action:** ask the user, because the recommended option changes the protocol table, a requirement in force, and no user decision covers that change.

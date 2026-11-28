@@ -1,0 +1,60 @@
+# Clicking a time-grid event also creates one
+
+- **Severity:** High. **Likelihood:** Common. **Effort:** Small. **Confidence:** High. **Harder later:** No.
+- **Kind:** Outside the scope.
+- **Added:** 2026-11-27, from the branch `calummoore/firna-rnw-seam-contract-mhsd`, the RNW caveat "the calendar time grid cancels `pointerdown`" of its plan. A probe of that caveat found the extra event too.
+- **Location:** `src/calendar/useCalendarDragCreate.web.ts:78-111`, `src/calendar/useCalendarDragCreate.web.ts:156-184`, `src/calendar/TimeGrid.tsx:308-317`, `src/calendar/TimeGrid.tsx:337-348`, `src/calendar/CalendarEventBlock.tsx:58-77`, `src/data-grid/dataGridDragDom.ts:58-64`, `docs/protocol/shared-ui-data-views.md:28-31`, `tests/browser/calendar.spec.ts:82-110`, and `tests/browser/rnw-route.spec.ts`.
+- **Reason:** The drag-to-create of the time grid came with pull request #39 on 2026-06-18, and the defect shows on both web renderers, so the fix does not belong to the react-native-web route branch.
+
+- **Terms:**
+  - **Time grid:** the day columns of the week view and the day view of `@firna/ui/calendar`, which `TimeGrid` in `src/calendar/TimeGrid.tsx` draws.
+  - **Event block:** `CalendarEventBlock`, the `Pressable` that draws one timed event in a day column and calls `onSelectEvent` when the user presses it.
+  - **Drag-to-create:** the web gesture of `src/calendar/useCalendarDragCreate.web.ts`: a press and a drag over a day column sweep a time range, and the release calls `onCreateEvent`.
+  - **RNW route:** an app that draws its own screens with `react-native-web` (RNW) applies the rule of `@firna/ui/rnw`, and Firna then draws with RNW too.
+  - **Press-in:** the start of a press: the pressed look, `onPressIn`, and the long-press timer.
+- **Background:**
+  - `docs/protocol/shared-ui-data-views.md:28-31` requires: "Support web drag-to-create: dragging (or clicking) an empty region of the time grid yields a snapped start/end draft surfaced through a create callback".
+  - Each day column takes the `onPointerDown` of the drag-to-create hook, at `TimeGrid.tsx:308-310`. The event blocks of that day render inside the column, at `TimeGrid.tsx:337-348`.
+  - The `onPointerDown` of the hook, at `useCalendarDragCreate.web.ts:156-184`, ignores touch and each button other than the primary one. For every other press inside the column, it calls `preventDefault()` on the `pointerdown`, at line 168, and starts a session at the pressed slot. It does not check whether the press started on an event block.
+  - On release, `finish(true)` turns a press with no move into a one-slot event at the pressed slot, at lines 91-94, and calls `onCreateEvent`, at line 110. The column binds the hook also when the app gives no `onCreateEvent`.
+  - A browser probe at the branch head on 2026-11-27, in Chromium, drew a `DayView` with one event from 09:00 to 10:00, with `onCreateEvent` and `onSelectEvent`. It ran with the DOM backend and on the RNW route with RNW 0.21.4, with the same results:
+    - A click on the event block called `onCreateEvent` with the range from 09:30 to 10:00, and then `onSelectEvent`. A "New event" block appeared in the grid.
+    - During that click, the document got `pointerdown`, `pointerup`, and `click`, but no `mousedown` and no `mouseup`. A browser sends no compatibility mouse events after a canceled `pointerdown`.
+    - An RNW `Pressable` inside a parent whose `pointerdown` handler calls `preventDefault()` ran its `onPress`, but not its `onPressIn` or its `onPressOut`.
+  - On the RNW route, the event block is the `Pressable` of RNW. RNW starts a press from its responder, which listens for `mousedown` on the document, at `node_modules/react-native-web/dist/modules/useResponderEvents/ResponderSystem.js:520-537`. So on that route the block gets no press-in and no press-out. `onPress` still runs, because both web renderers run it from `click`. Nothing shows this today, because the style of the block reads only `hovered`, at `CalendarEventBlock.tsx:63-75`.
+  - With the DOM backend, the block starts its press from its own React `pointerdown` handler, at `src/primitives/webPress/usePress.ts:234-255`. React runs it before the handler of the column, so the block keeps its press-in. The code shows this, and the probe did not observe it.
+  - The month grid does not have the defect. Its drag starts from a capture-phase `pointerdown` on the document that it does not cancel, and it leaves a plain click to the press of the cell, at `src/calendar/useCalendarMonthDragCreate.web.ts:1-15`. The same probe on a `MonthView`, with the DOM backend, logged only the selection for a click on an event chip, and the document got `mousedown` and `mouseup`.
+  - The browser test "calendar drag creates a timed event", at `tests/browser/calendar.spec.ts:82-110`, drags over an empty column. It must keep passing.
+- **Problem:** The time grid starts drag-to-create for every press inside a day column, also for a press on an event block. So a click on an event selects it and also creates a one-slot event, against the requirement that only an empty region creates one. On the RNW route, the canceled `pointerdown` also takes the press-in and the press-out from the block.
+- **Screenshot:** None, because the probe read the callbacks and the document events, and a picture adds nothing to them.
+- **Impact if no action:** In an app that gives both callbacks, each click on an event opens it and also starts a new event, so users get events that they did not ask for. On the RNW route, a pressed look or an `onPressIn` that the block gets later does not run.
+- **Root question:** How does a press on an event block in the time grid stay a press of that block, with no drag-to-create, on both web renderers?
+- **Options:**
+  - **A.** Mark each event block, and let the column skip a press that starts inside one:
+    - `CalendarEventBlock` takes a marker through `dataSet`, for example `calendarEvent`, which both web renderers write as `data-calendar-event`.
+    - The `onPointerDown` of the hook returns at once when the press target is inside a marked element, before it cancels the `pointerdown` or starts a session.
+    - Add a browser test: a click on an event block calls `onSelectEvent` and not `onCreateEvent`.
+    - Add an RNW harness case in `tests/browser/rnw-route.spec.ts`: a press on an event block reaches the responder of RNW. No fixture in `tests/browser/rnw/` draws a calendar yet, so the case adds one, which `tests/browser/rnw/harness.ts` bundles.
+    - A control that a later change puts inside a day column needs the marker too.
+    - Effort: Small.
+  - **B.** Share the check that the data grid already uses, and let the column skip a press that starts on any control:
+    - Move `isInteractiveDragTarget`, at `src/data-grid/dataGridDragDom.ts:58-64`, to a module that both families import, such as `src/dragGesture.ts`. It returns true when the press target is inside `button, a, input, [role='button']`.
+    - The `onPointerDown` of the hook returns at once for such a press, before it cancels the `pointerdown` or starts a session. The event block has the role `button` on both web renderers, so it keeps its press and its click.
+    - The data grid imports the check from the new module, at `src/data-grid/DataGridRow.tsx:121-124` and `src/data-grid/DataGridHeader.tsx:121-124`.
+    - Add the browser test and the RNW harness case of A.
+    - Effort: Small.
+  - **C.** Build the time grid on the model of the month grid. The drag starts from a capture-phase `pointerdown` on the document that the hook does not cancel. A click on an empty slot creates through a press of the column, as a day cell of the month grid does at `src/calendar/MonthView.tsx:241-249`. The click of an event block then stops at the block. Cost: the column becomes a `Pressable` that needs a role and a name, or that leaves the tab order, and the one-slot create moves from the release to the click. A drag that starts on a block still needs the check of A or B. `src/calendar/TimeGrid.tsx` has 387 lines, over the hard limit of 300 lines in the `typescript` skill, so C also splits it. Effort: Medium.
+- **Left out:**
+  - Stop the propagation of the `pointerdown` of the block: it also hides the press from document listeners in the bubble phase, such as the outside-click handling of an app, and B is better on every point.
+  - Hit-test the rectangles of the blocks in the handler of the column, as the month grid hit-tests its cells: it measures layout on each press, and B is better on every point.
+  - Remove only the `preventDefault()` of the `pointerdown`: the RNW block gets its press back, but a click on a block still creates an event, so it fails the goal.
+- **Wider fix:** B. One shared check of the controls under a press serves the data grid and the time grid, so a control that a later change puts inside either drag surface keeps its press with no marker to remember.
+- **Previous examples:** None found for an extra create. The data grid already skips a drag that starts on a control, with `isInteractiveDragTarget`, in its row gutter and its header. For the lost press-in, the slash menu of the rich-text editor also cancels `pointerdown`, in a capture-phase listener at `src/rich-text/SlashMenu.web.tsx:101-123`, so an RNW `Pressable` in the menu gets no press-in. That listener selects the item itself on `pointerdown`, so nothing shows there.
+- **Related:**
+  - `plans/follow-ups/rnw-focus-glow-drops-resting-shadow.md`: the same code. Both items add cases to `tests/browser/rnw-route.spec.ts` and its fixture, so whichever goes second keeps the cases of the other.
+  - `plans/follow-ups/calendar-and-grid-controls-hide-focus.md`: the same code. Both items change `src/calendar/CalendarEventBlock.tsx` under option A here. Option A here adds a marker to the block, and that item adds the shared focus indicator to it. Whichever item goes second keeps the change of the other.
+  - `plans/follow-ups/panel-resize-release-click.md`: the same class of fix. That item decides whether a library drag swallows the click that follows it. The time grid swallows no click either, and option C here moves its one-slot create to a click, so the answer there also shapes C.
+  - `plans/follow-ups/rnw-enclosing-pressable-presses-too.md`: the same class and the same test file. There, an app's enclosing RNW pressable acts on a press of a Firna link or resize handle, as the day column acts on a press of an event block here. Both items add cases to `tests/browser/rnw-route.spec.ts` and its fixture, so whichever goes second keeps the cases of the other.
+  - `plans/follow-ups/source-files-pass-line-cap.md`: the same file. Option C here changes `src/calendar/TimeGrid.tsx`, which passes 300 lines, so it splits that file as that item asks.
+- **Recommendation:** B. It applies the requirement that only an empty region creates an event, gives the RNW block its press back, and covers every control in a day column with a check that the library already uses.
+- **Action:** fix after merge, apply B, because the defect came before the react-native-web route branch and shows on both web renderers, and the requirement of `docs/protocol/shared-ui-data-views.md:28-31` settles the fix.

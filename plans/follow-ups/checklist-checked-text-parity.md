@@ -37,6 +37,8 @@
 - **Left out:** Change nothing: the two renderers keep different looks, against the parity rule of `AGENTS.md`, so it fails the goal.
 - **Wider fix:** None, because the `documentation` skill already asks for a protocol rule for each behaviour at the boundary.
 - **Previous examples:** None found.
-- **Related:** `plans/follow-ups/mockups-choose-side-of-mismatch.md`: work that waits for the answer. That item asks which side wins when a mockup and the product differ. Its answer settles how much the plain look of the mockup counts here.
+- **Related:**
+  - `plans/follow-ups/mockups-choose-side-of-mismatch.md`: work that waits for the answer. That item asks which side wins when a mockup and the product differ. Its answer settles how much the plain look of the mockup counts here.
+  - `plans/follow-ups/native-collab-marks-depart-from-protocol.md`: the same code. This item compares checked text with the native deletion style at `src/rich-text/nativeRichTextStyles.ts:113-116`. Option B of that item changes that style, so whichever item goes second compares again with the new style.
 - **Recommendation:** B. It marks done items on both platforms without the strikethrough that the strike mark and tracked deletions use.
 - **Action:** ask the user, because no requirement says how checked text looks, so each option adds a requirement for the user to review.

@@ -11,7 +11,8 @@
 import { Clock, RotateCcw } from "../primitives/icons";
 import type { ComponentType } from "react";
 import { useMemo } from "react";
-import { Pressable, Text, TextInput, View } from "../primitives/reactNative";
+import { Pressable, Text, View } from "../primitives/reactNative";
+import { TextField } from "../primitives/textField";
 
 import type { ControlSize } from "../controlSize";
 import { DropdownMenu, type DropdownListEntry } from "../dropdown";
@@ -192,7 +193,7 @@ function PropertyControl({
     default:
       return (
         <View style={[styles.field, { height: metrics.rowHeight }]}>
-          <TextInput
+          <TextField
             accessibilityLabel={property.label}
             editable={!property.disabled && Boolean(onChange)}
             onChangeText={(text) => onChange?.(property.id, text)}

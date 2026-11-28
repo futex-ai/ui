@@ -44,6 +44,9 @@
   Root-first imports passed.
   An in-memory direct-owner correction allowed all 40 public entries to load alone.
   Rollup and esbuild bundles exposed the same bad read before that correction.
+- **Related:**
+  - `plans/follow-ups/icon-seam-one-binding-per-glyph.md`: the same files. Its option B changes the icon imports of `src/input/LabelInfo.tsx` and `src/dropdown/dropdownSelectorParts.tsx`, two of the import sites below. Whichever item goes second keeps the imports of the other.
+  - `plans/follow-ups/code-comments-name-one-web-renderer.md`: the same files. It rewrites the comments at `src/input/LabelInfo.tsx:43` and `tests/unit/input.test.ts:81`, in two files that option C here changes. Whichever item goes second keeps the change of the other.
 - **Recommendation:** C. Owner imports remove the existing cycle without a new gate or a public API change.
 - **Action:** fix after merge, apply C, because the broader cleanup reaches the older family graph beyond the direct regression fix.
 

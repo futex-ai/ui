@@ -1,0 +1,64 @@
+# DOM responder keeps its state in shared properties
+
+- **Severity:** Medium. **Likelihood:** Rare. **Effort:** Medium. **Confidence:** High. **Harder later:** No.
+- **Kind:** Fix after merge.
+- **Added:** 2026-11-27, from the branch `calummoore/firna-rnw-seam-contract-mhsd`, review round 1, finding 4 "Tests miss responder collisions between renderers". This item holds the wider fix that the review deferred.
+- **Location:** `src/primitives/dom/responder/ResponderSystem.ts:269-291`, `src/primitives/dom/responder/ResponderSystem.ts:293-309`, `src/primitives/dom/responder/utils.ts:4-21`, `src/primitives/dom/responder/utils.ts:54-77`, `src/primitives/dom/responder/useResponderEvents.ts:62`, `src/primitives/README.md:125-129`, `tests/browser/rnw-route.spec.ts:96-129`, `tests/unit/domPressFakes.ts:26-49`, and `tests/unit/dragSelectSessionDom.test.ts:106-111`.
+- **Reason:** Option C changes how every gesture of the DOM backend installs its listeners and finds its nodes, so it needs its own branch and its own gesture checks.
+
+- **Terms:**
+  - **DOM backend:** Firna's own web renderer under `src/primitives/dom`, which every web app uses unless it takes the RNW route.
+  - **RNW route:** an app that draws its own screens with `react-native-web` (RNW) applies the rule of `@firna/ui/rnw`, and Firna then draws with RNW too.
+  - **Mixed page:** a page where Firna draws through the DOM backend and the app draws its own controls with RNW.
+  - **Responder:** the gesture lock that RNW, and the DOM backend's copy of it, give to one node at a time. That node then gets the moves of the pointer.
+- **Background:**
+  - The responder system of the DOM backend is a copy of the system of RNW 0.21.2, in `src/primitives/dom/responder/`. It keeps two parts of its state in properties that other code on the page can write:
+    - The listener flag. `attachListeners`, at `ResponderSystem.ts:275-291`, installs the document listeners only when `window.__firnaResponderSystemActive` is not set, and then sets it.
+    - The node tag. `addNode`, at `ResponderSystem.ts:294-301`, writes the responder id onto the host element under the key `__firnaResponderId`, through `setResponderId` at `utils.ts:55-59`. `getResponderPaths`, at `utils.ts:66-77`, reads the tag back to find the registered nodes on the path of an event.
+  - The rest of the state is private to the modules: the handlers of each id in `responderListenersMap`, at `src/primitives/dom/responder/responderState.ts:56`, and the current holder.
+  - RNW 0.21.4 keeps the same state under other names: `window.__reactResponderSystemActive`, at `node_modules/react-native-web/dist/modules/useResponderEvents/ResponderSystem.js:529-537`, and the node key `__reactResponderId`, at `node_modules/react-native-web/dist/modules/useResponderEvents/utils.js:11`.
+  - Pull request #168, commit `cfd68e3`, copied the two names of RNW into the DOM backend. The react-native-web route branch renamed them in commit `c8ced33`, so that on a mixed page one system cannot disable the other. `docs/protocol/shared-ui-package.md:86-89` makes the mixed page a supported setup. `docs/protocol/shared-ui-components.md:34-36` says that the DOM backend depends on neither `react-native` nor `react-native-web` at runtime.
+  - On 2026-11-27, a probe put the old names back one at a time, on a mixed page with a Firna `Scrubber` and an RNW `Pressable`:
+    - With the old flag, the system that mounted second never installed its listeners. By mount order, the RNW press lost its press-in and press-out, or the `Scrubber` did not seek.
+    - With the old node tag, each system read the nodes of the other. A press on the RNW button also moved the `Scrubber`, and a press on the `Scrubber` also pressed the button.
+  - Commit `2fc2d4f` added the browser case "a Firna scrubber and an RNW button respond only to their own gestures", at `tests/browser/rnw-route.spec.ts:96-129`, with the fixture `tests/browser/rnw/mixedResponderFixture.jsx`. It fails when either old name comes back. With the old flag, the text "App press starts: 0" does not change on a press. With the old tag, the value of the `Scrubber` moves to 33. This case is option A below.
+  - Every copy of the DOM backend uses the same two names, and each copy starts its ids at 0, at `useResponderEvents.ts:62`. Two versions of the package in one bundle give two copies. The library expects that case: the stylesheet of a second copy reuses the sheet of the first, as `src/primitives/webStylesheet.ts:14-15` says.
+  - So the code shows that two copies on one page share the flag and the tags today. The copy that mounts second never installs its listeners. The listeners of the other copy read its tags as their own ids, so they run no handler, or the handlers of another node with the same id. Nobody ran this case.
+  - `src/primitives/dom/useLayout.ts:21` already keeps the layout handlers in a module `WeakMap`. RNW writes them onto the node as `__reactLayoutHandler`, at `node_modules/react-native-web/dist/modules/useElementLayout/index.js:13`.
+  - The unit tests install the listeners on a new fake document in each case. `withFakeDocument`, at `tests/unit/domPressFakes.ts:26-49`, installs a new `document` and a new `window`. `tests/unit/dragSelectSessionDom.test.ts:106-111` calls `attachListeners()` in each case. So private storage must keep a listener record for each document, not one flag for the whole module.
+  - `removeNode`, at `ResponderSystem.ts:304-309`, deletes only the handlers of an id. The tag stays on the element, as in RNW.
+  - The comments at `utils.ts:4-8` and `:14`, and at `ResponderSystem.ts:271-274`, describe the flag and the tag. `src/primitives/README.md:125-129` names both.
+- **Problem:** Firna's DOM responder keeps its listener flag on `window` and its node ids on the host elements, under names that any code on the page can write. The names differ from the names of RNW today, and only the browser case stops a later change from sharing a name again. Two copies of the DOM backend on one page already share both names.
+- **Impact if no action:** A shared name lets one responder system disable the other, or run the handlers of another control. With the old names of RNW, an RNW press lost its press-in, or also moved a Firna `Scrubber`. On a page with two copies of the library, the gestures of the second copy fail or reach the wrong control.
+- **Root question:** How does a page that loads Firna's DOM backend beside RNW, or beside a second copy of the DOM backend, keep each gesture with its own control, also after a later change to Firna's responder port?
+- **Options:**
+  - **A.** Applied on 2026-11-27, in commit `2fc2d4f`. A case in the RNW browser harness keeps Firna on the DOM backend and renders a Firna `Scrubber` beside an RNW `Pressable`. It asserts that each gesture changes only its own control. Effort: Small.
+  - **B.** Add a story with both renderers to the primitives interaction suite, `tests/browser/primitivesInteraction.spec.ts`, which draws the stories of `src/stories/primitivesInteraction.stories.tsx`. Storybook does not load RNW today, as `.storybook/main.ts:18-19` says, so B adds RNW to Storybook and a new story baseline. Effort: Medium.
+  - **C.** Give the DOM backend private storage, as `useLayout.ts:21` does:
+    - Keep a module record of each document whose listeners `attachListeners` installed, for example a `WeakSet` of documents, in place of the window flag.
+    - Keep a module `WeakMap` from each registered node to its id, in place of the node tag. `addNode` writes it, and `getResponderPaths` reads it.
+    - Write no property onto `window` or onto an element.
+    - Update the comments above and `src/primitives/README.md:125-129`.
+    - Keep these checks passing with no change: the browser case of A, the unit tests of the responder in `tests/unit/domResponder.test.ts`, and the gesture cases of `tests/browser/primitivesInteraction.spec.ts`.
+    - The case of A draws the built package: `tests/browser/rnw/mixedResponderFixture.jsx` imports `@firna/ui/video-editor`, and `tests/browser/rnw-route.spec.ts:101` bundles it. So run `npm run build` before that case can test C.
+    - `ResponderSystem.ts` has 333 lines, over the hard limit of 300 lines in the `typescript` skill. So C also splits it by responsibility, for example with the listener setup in a module of its own.
+    - Effort: Medium.
+  - **D.** Add a unit case on the fake document of `tests/unit/domPressFakes.ts`. It loads the private responder module of RNW, `react-native-web/dist/cjs/modules/useResponderEvents/ResponderSystem.js`, beside Firna's port. It registers one node in each system with the id 0, and asserts that one press calls only the handlers of its own system. It runs in milliseconds, but it imports a private RNW module, needs a fake `window.document` before RNW loads, and renders no control. Effort: Small.
+  - **E.** Apply A, and add one requirement to the RNW contract of `docs/protocol/shared-ui-package.md`: on a page with both renderers, each renderer handles only the gestures of its own controls. The test then protects a stated requirement, which the user must approve. Effort: Small.
+- **Left out:**
+  - An assertion of the two key spellings: it leaves the separation of the callbacks unchecked, and the `testing` skill says that a test of a copied constant protects nothing.
+  - Change nothing more than A: a later port from RNW can share a key again, and the browser case fails only for the old names of RNW, so it fails the goal.
+  - A scan that fails when the DOM backend writes a window or element property that RNW also writes: it checks names, not gestures, so it fails the goal. C removes the class in the code.
+  - One responder lock for both renderers: it needs the private responder module of RNW, and it breaks the requirement at `docs/protocol/shared-ui-components.md:34-36` that the DOM backend does not depend on RNW at runtime.
+  - A statement that a mixed page is not supported: it breaks `docs/protocol/shared-ui-package.md:88-89`.
+- **Wider fix:** C. No other renderer and no second copy of the DOM backend can then overwrite Firna's registration through a shared window or element property, because each copy keeps its own private storage.
+- **Previous examples:** Commit `cfd68e3` copied the responder keys of RNW into the DOM backend. Commit `c8ced33` renamed them on the react-native-web route branch.
+- **Related:**
+  - `plans/follow-ups/drag-select-responder-after-start.md`: work that interacts. Its option B adds DOM cases to `tests/unit/dragSelectSessionDom.test.ts`, which call `attachListeners()` on a new fake document in each case. C here must keep a listener record for each document, so those cases keep working.
+  - `plans/follow-ups/drag-select-start-survives-press-callback.md`: work that interacts. Its option D adds cases to `tests/unit/dragSelectSessionDom.test.ts`, which call `attachListeners()` on a new fake document in each case. C here must keep a listener record for each document, so those cases keep working.
+  - `plans/follow-ups/press-machine-takes-real-events.md`: work that interacts. Its option B changes the fake events of `tests/unit/domPressFakes.ts`, and it can add jsdom for the unit tests. C here relies on `withFakeDocument`, at `tests/unit/domPressFakes.ts:26-49`, which installs a new document in each case. Whichever item goes second keeps that helper working for the other.
+  - `plans/follow-ups/rnw-enclosing-pressable-presses-too.md`: the same code. Its option B makes the anchor `View` of the link host and the `View` of the resize handle answer `onStartShouldSetResponder`. With the DOM backend, those views then register through `addNode` and the node tag that C replaces. The two items also share the term "mixed page".
+  - `plans/follow-ups/source-files-pass-line-cap.md`: the same file. That item holds the files that pass 300 lines, and `ResponderSystem.ts` is one of them. The split of option C here removes it from that list.
+  - `plans/follow-ups/code-comments-name-one-web-renderer.md`: the same code. That item counts the comment at `ResponderSystem.ts:273`, "Firna uses its own flag so React Native Web can install its listeners too", as a correct name of RNW. C rewrites that comment, so that item has one correct line less.
+- **Recommendation:** C. It removes the shared keys, so the separation no longer depends on names that only a test checks, and two copies of the library keep their gestures apart. A stays in force as the regression test.
+- **Action:** fix after merge, apply C, because C changes listener ownership for all DOM gestures, so it needs its own branch and its own gesture checks.

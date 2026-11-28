@@ -1,9 +1,9 @@
 /**
  * Icon glyphs, web resolution.
  *
- * Delegates to `lucide-react`, which renders DOM `<svg>` directly, so web
- * consumers need neither `lucide-react-native` nor `react-native-svg`. The
- * export list mirrors `icons.ts` exactly.
+ * Delegates to `lucide-react`, which renders DOM `<svg>` directly, so a web
+ * consumer on the DOM backend needs neither `lucide-react-native` nor
+ * `react-native-svg`. The export list mirrors `icons.ts` exactly.
  */
 export type { IconComponent, IconComponentProps } from "./iconTypes";
 export {

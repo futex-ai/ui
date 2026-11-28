@@ -267,7 +267,7 @@ function ScrollViewImpl(
     ...(rest as PropBag),
     ...responderHandlers,
     // `dataSet` is how a `View` writes a `data-*` attribute; the rule behind
-    // `data-hide-scrollbar` lives in `css.ts`.
+    // `data-hide-scrollbar` lives in `webStylesheet.ts`.
     ...(hideScrollbar ? { dataSet: { hideScrollbar: true } } : null),
     children: <View {...contentProps} />,
     onScroll: handleScroll,

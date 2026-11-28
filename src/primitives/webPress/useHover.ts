@@ -1,5 +1,6 @@
 /**
- * Hover tracking for `Pressable`, ported from `react-native-web`'s `useHover`.
+ * Hover tracking for the DOM backend's `Pressable` and the web link host,
+ * ported from `react-native-web`'s `useHover`.
  *
  * Only a non-touch pointer hovers: a tap on a phone must not leave a control
  * looking hovered. Hover is also *contained* — entering a nested `Pressable`

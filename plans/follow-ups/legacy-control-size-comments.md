@@ -33,5 +33,8 @@
   Its button documentation also corrected the smallest track from 30 px to 26 px.
 - **Related:** `plans/follow-ups/source-files-pass-line-cap.md` covers the wider long-file backlog and a separate lint decision.
   This work needs the current manual split rule, not an answer about adding that lint.
+  `plans/follow-ups/code-comments-name-one-web-renderer.md` changes comments in the same four files and waits for the same splits under its option B.
+  Its option D asks the user whether a comment-only edit needs a split, and that answer also settles when this item can change its comments.
+  `plans/follow-ups/calendar-and-grid-controls-hide-focus.md` changes `src/data-grid/DataGrid.tsx` under its option C, so the split of that file serves both items.
 - **Recommendation:** B. It preserves the existing default and makes the shared type the single list of values.
 - **Action:** fix after merge, apply B, because the larger legacy component splits sit outside the current app shell implementation.

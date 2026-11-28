@@ -1,7 +1,6 @@
 /** Persistent, always-mounted screen-reader live region for the toast stack. */
 import { useEffect, useRef, useState } from "react";
 import { Platform, StyleSheet, Text, View } from "../primitives/reactNative";
-import type { TextProps } from "../primitives/reactNative";
 
 import { LIVE_OVERLAY_VIEW_PROPS } from "../liveOverlay";
 
@@ -122,18 +121,21 @@ export function ToastLiveRegion({ toasts, testID }: ToastLiveRegionProps) {
   );
 }
 
-// `aria-live` (typed on RN) plus `aria-atomic` (not in RN's prop types, but RNW
-// forwards the literal attribute to the DOM) so the whole message — title and
-// description — is read as a single unit (WCAG 2.1 — 4.1.3, AA). Cast once,
-// matching the codebase pattern for literal web-only aria attributes.
+// `aria-live` plus `aria-atomic`, so the whole message — title and description
+// — is read as a single unit (WCAG 2.1 — 4.1.3, AA). The regions spell
+// `aria-atomic` as `accessibilityAtomic`, which both web renderers write out as
+// `aria-atomic="true"`, also in server-rendered markup. react-native-web 0.21
+// drops a literal `aria-atomic` prop: its `createDOMProps` reads
+// `aria-activedescendant` in its place. So never pass `aria-atomic` as well,
+// or react-native-web drops the attribute again. Native ignores the prop.
 const POLITE_REGION_PROPS = {
-  "aria-atomic": true,
+  accessibilityAtomic: true,
   "aria-live": "polite",
-} as unknown as TextProps;
+} as const;
 const ASSERTIVE_REGION_PROPS = {
-  "aria-atomic": true,
+  accessibilityAtomic: true,
   "aria-live": "assertive",
-} as unknown as TextProps;
+} as const;
 
 /**
  * How long an announcement stays in the DOM before it is cleared. Long enough

@@ -187,7 +187,7 @@ function applyTabIndex(
 }
 
 /**
- * The `pointerEvents` value the CSS rules in `css.ts` have to implement.
+ * The `pointerEvents` value the CSS rules in `webStylesheet.ts` implement.
  *
  * The prop wins over the style, matching the order the previous backend
  * appended them in. `auto` is included because its rule is `!important`, which

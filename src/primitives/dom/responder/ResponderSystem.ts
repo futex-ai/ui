@@ -266,15 +266,18 @@ const documentEventsBubblePhase = [
   "selectionchange",
 ];
 
-type ResponderWindow = Window & { __reactResponderSystemActive?: boolean };
+type ResponderWindow = Window & { __firnaResponderSystemActive?: boolean };
 
-/** Installs the document listeners once per page. */
+/**
+ * Installs the document listeners once per page.
+ * Firna uses its own flag so React Native Web can install its listeners too.
+ */
 export function attachListeners(): void {
   if (typeof window === "undefined" || typeof document === "undefined") {
     return;
   }
   const scope = window as ResponderWindow;
-  if (scope.__reactResponderSystemActive != null) {
+  if (scope.__firnaResponderSystemActive != null) {
     return;
   }
   window.addEventListener("blur", eventListener);
@@ -284,7 +287,7 @@ export function attachListeners(): void {
   for (const eventType of documentEventsCapturePhase) {
     document.addEventListener(eventType, eventListener, true);
   }
-  scope.__reactResponderSystemActive = true;
+  scope.__firnaResponderSystemActive = true;
 }
 
 /** Registers a host node and the handlers it answers with. */

@@ -3,7 +3,7 @@
 - **Severity:** Low. **Effort:** Small. **Confidence:** High. **Harder later:** No.
 - **Kind:** Outside the scope.
 - **Added:** 2026-11-04, from `conductor/agents-md-ui`, the investigation of the hand-written mockups.
-- **Location:** `src/timeline/README.md:162-164`, `src/timeline/TimelineClip.tsx:62`, `src/video-editor/MediaBinItem.tsx:4`, `docs/superpowers/specs/2026-08-12-video-editor-ui-design.md:44`, `src/timeline/timelineStyles.ts:233`, and `src/video-editor/mediaBinStyles.ts:64`.
+- **Location:** `src/timeline/README.md:169-170`, `src/timeline/TimelineClip.tsx:59`, `src/video-editor/MediaBinItem.tsx:4`, `docs/superpowers/specs/2026-08-12-video-editor-ui-design.md:44`, `src/timeline/timelineStyles.ts:202`, `src/video-editor/mediaBinStyles.ts:64`, and `docs/mockups/video-editor.html:178-181`, `:497-501`, and `:891-893`.
 - **Reason:** The timeline and media bin files are outside the files of `conductor/agents-md-ui`, a change that edits only `AGENTS.md` and follow-up items.
 
 - **Terms:**
@@ -13,21 +13,22 @@
   - **Video-editor spec:** `docs/superpowers/specs/2026-08-12-video-editor-ui-design.md`, the design spec of the timeline and video-editor families, approved on 2026-08-12.
   - **Video-editor mockup:** `docs/mockups/video-editor.html`, a hand-written HTML page that draws the editor on a phone and on a desktop.
 - **Background:**
-  - `TimelineClip` shows selection with a 2px border in the accent colour of the clip. `TimelineClip.tsx:166` sets the colour. `clipSelected: { borderWidth: 2 }` at `src/timeline/timelineStyles.ts:233` sets the width.
+  - `TimelineClip` shows selection with a 2px border in the accent colour of the clip. `TimelineClip.tsx:163` sets the colour. `clipSelected: { borderWidth: 2 }` at `src/timeline/timelineStyles.ts:202` sets the width.
   - `MediaBinItem` shows selection with a 2px border in the `primary` colour, at `MediaBinItem.tsx:110` and `:112` and at `src/video-editor/mediaBinStyles.ts:64`.
   - Neither component draws a ring. Under `tests/browser/snapshots.spec.ts-snapshots/`, the baselines `timeline-examples--editing-linux.png` and `video-editor-examples--full-editor-light-linux.png` show the thick border and no ring.
-  - Both components add "selected" to the accessible name, at `TimelineClip.tsx:136-146` and `MediaBinItem.tsx:71-73`. So the state does not depend on colour alone.
+  - Both components add "selected" to the accessible name, at `TimelineClip.tsx:133-143` and `MediaBinItem.tsx:71-73`. So the state does not depend on colour alone.
   - Four docs name a ring:
-    - `src/timeline/README.md:162-164` says: "Selection thickens that same uniform border and adds an inset ring."
-    - The doc comment of the `selected` prop at `src/timeline/TimelineClip.tsx:62` says: "Draw the selection border and ring."
+    - `src/timeline/README.md:169-170` says: "Selection thickens that same uniform border and adds an inset ring."
+    - The doc comment of the `selected` prop at `src/timeline/TimelineClip.tsx:59` says: "Draw the selection border and ring."
     - The header comment at `src/video-editor/MediaBinItem.tsx:4` says: "Selection is carried by a uniform border plus an inset ring".
     - Line 44 of the video-editor spec lists a "selection ring" for `TimelineClip`.
   - No version of the code drew a ring. Both components have had the same selection styles since pull request #153, commit `d998e0b`, merged on 2026-08-21.
   - The video-editor mockup draws rings of its own:
     - A selected clip at `docs/mockups/video-editor.html:497-501` has a 2px border and an inset 2px ring at 30% alpha.
     - A selected asset at `docs/mockups/video-editor.html:178-181` has a 1px border and an outer 3px ring at 28% alpha. So the mockup and the comment of `MediaBinItem` disagree as well.
+    - The caption at `docs/mockups/video-editor.html:891-893` says that the selected clip carries a thicker uniform border and an inset ring.
   - The old `AGENTS.md` said that the `mockups` skill did not apply here. It called the files under `docs/mockups/` older design references. On 2026-11-04 the user chose the shared mockup rules instead. The change `conductor/agents-md-ui` removed the old bullet, so these files now count as mockups.
-  - A focused clip already draws an inset focus ring, from `useFocusRing({ offset: -2 })` at `TimelineClip.tsx:111`. An inset selection ring sits in the same place.
+  - A focused clip already draws an inset focus ring, from `useFocusRing` with `offset: -2`, at `TimelineClip.tsx:108`. An inset selection ring sits in the same place. A focused `MediaBinItem` draws an outer focus glow, because it gives `useFocusRing` no offset, at `MediaBinItem.tsx:68`, and the default offset is 2, at `src/focusRing.ts:157`.
 - **Problem:** The README, two code comments, and the spec say that selection adds an inset ring. Neither component draws one. The mockup draws a different ring on each.
 - **Impact if no action:** Readers and agents trust docs that contradict the code. A later change can add or drop a ring by accident, because nobody knows which look is intended.
 - **Root question:** How does selection look on a timeline clip and on a media bin asset, so that the code, the docs, and the mockup agree?
@@ -41,5 +42,9 @@
 - **Related:**
   - `plans/follow-ups/video-editor-design-spec-stale.md`: the same doc. That item corrects or deletes the other stale passages of the video-editor spec. When it deletes the spec, option A here needs no spec change.
   - `plans/follow-ups/mockups-choose-side-of-mismatch.md`: work that waits for the answer. That item asks which side wins when a mockup and the product differ. Its answer settles the mockup side of this item.
-- **Recommendation:** A. The 2px border and the accessible name already carry selection, so a ring adds only a clash with the inset focus ring.
+  - `plans/follow-ups/mockups-meet-mockups-skill.md`: work that waits. That item holds the mockup work that option A waits for, and it compares the same clip ring at `docs/mockups/video-editor.html:497-501`.
+  - `plans/follow-ups/docs-name-react-native-web.md`: the same code. That item rewrites `src/timeline/README.md:167`, next to the ring sentence at lines 169-170, in the same list. Do the two edits in either order, and keep the other edit.
+  - `plans/follow-ups/transport-scrubber-shrinks-to-knob.md`: the same baselines. Options B and C here re-record the baseline of each story with a selected clip or asset, such as `video-editor-examples--full-editor-light-linux.png` under `tests/browser/snapshots.spec.ts-snapshots/`. That item re-records the same "Full editor" baselines. The second fix records them again over the first.
+  - `plans/follow-ups/rnw-focus-glow-drops-resting-shadow.md`: work that interacts. Both components are focus hosts of `useFocusRing`, at `TimelineClip.tsx:108` and `MediaBinItem.tsx:68`. When an app draws the library with `react-native-web`, focus drops a resting `box-shadow` that comes from `StyleSheet.create`, and an inline resting `box-shadow` hides the focus glow. So a selection look that is a resting `box-shadow`, such as the inset ring of option B, meets that problem. That item holds the fix.
+- **Recommendation:** A. The 2px border and the accessible name already carry selection on both components. On `TimelineClip`, a ring would also clash with the inset focus ring.
 - **Action:** ask the user, because the README and the mockup show a ring that the code lacks, and only the user decides which side is right.

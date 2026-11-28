@@ -110,8 +110,8 @@ follows every story's `src/primitives` import to the native file and into
 rewriting that path to `react-native-web/dist/index.js` when that package is
 installed. Nothing here reads docgen output — no story declares `args` or
 `argTypes`, there is no autodocs tag or `.mdx` file, and both suites render
-`iframe.html` — so the option is off and `react-native-web` is not installed at
-all. `.storybook/main.ts` carries the note.
+`iframe.html`, so the option is off. `react-native-web` is a development
+dependency for the React Native Web route tests. See `.storybook/main.ts`.
 
 ## Snapshot opt-outs
 
@@ -147,3 +147,14 @@ The package export map intentionally separates runtime targets:
 - The `react-native` condition points at `dist/**`, preserving extensionless
   specifiers so Metro and React Native platform resolution can choose native or
   web files.
+- The `./rnw` subpath points at `dist/rnw.cjs`, a CommonJS module, and at its
+  type declarations. A Metro config can `require` it, and an ES module can
+  import it. It exports `resolveFirnaRnwFile`, the rule of the React Native Web
+  route, and `firnaIconNames`, the Lucide icon names of each subpath. The
+  build generates both from the source. The rule sends a seam request from
+  either tree to the native file of the seam in `dist/primitives/`, when the
+  route needs that file. The
+  [root README](../README.md#react-native-web-route) shows how an app applies
+  the rule, and the
+  [primitives README](../src/primitives/README.md#the-rnw-route) gives the
+  form of each seam.

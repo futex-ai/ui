@@ -10,14 +10,14 @@
 import { forwardRef, useCallback, useContext, useRef } from "react";
 
 import type { TextComponent, TextInstance, TextProps } from "../types";
-
-import { createHostElement } from "./createHostElement";
 import {
   POINTER_EVENTS_ATTRIBUTE,
   TEXT_CLASS,
   TEXT_NESTED_CLASS,
   useDomBackendCss,
-} from "./css";
+} from "../webStylesheet";
+
+import { createHostElement } from "./createHostElement";
 import { createDomProps, pointerEventsFor, type PropBag } from "./domProps";
 import { useHostRef } from "./hostRef";
 import { resolveStyle, type StyleInput } from "./resolveStyle";

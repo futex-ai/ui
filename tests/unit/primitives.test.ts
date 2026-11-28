@@ -37,6 +37,7 @@ test("web and native primitive modules export the same names", () => {
     ["svg.tsx", "svg.web.tsx"],
     ["icons.ts", "icons.web.ts"],
     ["link.tsx", "link.web.tsx"],
+    ["textField.tsx", "textField.web.tsx"],
   ]) {
     assert.deepEqual(
       exportedNames(webFile),
@@ -129,10 +130,10 @@ function importedNames(source: string, from: string): string[] {
 
 /** Every module specifier a file imports from. */
 function importedModules(source: string): string[] {
+  const imports =
+    /\b(?:from\s+|import\s*(?:\(\s*)?|require\s*\(\s*)["']([^"']+)["']/g;
   return [
-    ...new Set(
-      [...source.matchAll(/ from "([^"]+)"/g)].map((match) => match[1]),
-    ),
+    ...new Set([...source.matchAll(imports)].map((match) => match[1])),
   ].sort();
 }
 
@@ -147,14 +148,23 @@ test("web primitives delegate to web packages and native ones to native packages
   assert.doesNotMatch(web, /from "react-native"/);
   assert.doesNotMatch(web, /import\("react-native"\)/);
 
-  // The seam is pure React now: its only imports are the DOM backend and the
-  // vendored types.
-  assert.deepEqual(importedModules(web), ["./dom", "./types"]);
+  // The web seam can use the DOM backend, the types, and the shared stylesheet.
+  const allowedImports = ["./dom", "./types", "./webStylesheet"];
+  assert.deepEqual(
+    importedModules(web).filter((module) => !allowedImports.includes(module)),
+    [],
+  );
   assert.deepEqual(
     importedNames(web, "\\./dom"),
     SERVED_BY_THE_DOM_BACKEND,
     "every primitive comes from the library's own DOM backend",
   );
+
+  const webCss = readFileSync(
+    new URL("domBackendCss.web.ts", primitivesRoot),
+    "utf8",
+  );
+  assert.deepEqual(importedModules(webCss), ["./webStylesheet"]);
 
   // Nothing under `src/primitives` may reach for `react-native-web` at all;
   // `react-native-web.d.ts` went with the last import.
@@ -217,6 +227,38 @@ test("no component imports react-native, react-native-svg, or lucide directly", 
       offenders.push(file.slice(srcRoot.pathname.length));
     }
   }
+  assert.deepEqual(offenders, []);
+});
+
+test("no file outside src/primitives imports primitives/dom", () => {
+  const offenders: string[] = [];
+  const domImport = /(?:^|\/)primitives\/dom(?:\/|$)/;
+  for (const file of walk(srcRoot.pathname)) {
+    if (file.startsWith(primitivesRoot.pathname)) continue;
+    if (!/\.(ts|tsx)$/.test(file)) continue;
+    const imports = importedModules(readFileSync(file, "utf8"));
+    if (imports.some((module) => domImport.test(module))) {
+      offenders.push(`src/${file.slice(srcRoot.pathname.length)}`);
+    }
+  }
+  assert.deepEqual(offenders.sort(), []);
+});
+
+test("the web link host and the shared press hooks import nothing from the DOM backend", () => {
+  // Both web renderers load these modules: the link host draws on the seam's
+  // own `View`, so a react-native-web app loads no DOM-backend module for it.
+  const files = [
+    "link.web.tsx",
+    ...readdirSync(new URL("webPress/", primitivesRoot)).map(
+      (name) => `webPress/${name}`,
+    ),
+  ];
+  const domImport = /(?:^|\/)dom(?:\/|$)/;
+  const offenders = files.flatMap((file) =>
+    importedModules(readFileSync(new URL(file, primitivesRoot), "utf8"))
+      .filter((module) => domImport.test(module))
+      .map((module) => `${file} imports ${module}`),
+  );
   assert.deepEqual(offenders, []);
 });
 

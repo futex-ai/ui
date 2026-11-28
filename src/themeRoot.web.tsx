@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 
 import { focusRingCssVariablesFor } from "./focusRingCss";
-import { useDomBackendCss } from "./primitives/dom/css";
+import { useDomBackendCss } from "./primitives/webStylesheet";
 
 /**
  * Web theme boundary that makes focus variables survive static rendering.

@@ -5,6 +5,8 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import type { GestureResponderEvent } from "../primitives/types";
+
 import type { DragSelectableResolvedOptions } from "./dragSelectableOptions";
 import type { DragSelectableDragMode } from "./dragSelectableOptionTypes";
 import {
@@ -36,9 +38,10 @@ export type DragSelectablePointerDown = {
   nativeEvent?: unknown;
 };
 
-/** The gesture state and the handler for the provider element. */
+/** The gesture state and the handlers for the provider element. */
 export type DragSelectableGesture = {
   activeDrag: DragSelectableActiveDrag | null;
+  onMoveShouldSetResponderCapture: (event: GestureResponderEvent) => boolean;
   onPointerDown: (event: DragSelectablePointerDown) => void;
 };
 
@@ -48,7 +51,12 @@ export function useDragSelectableGesture(
 ): DragSelectableGesture {
   const configRef = useRef(config);
   configRef.current = config;
-  const sessionRef = useRef<DragSelectableSession | null>(null);
+  const sessionRef = useRef<{
+    session: DragSelectableSession;
+    claimResponder: ReturnType<
+      typeof dragSelectableSessionDom
+    >["claimResponder"];
+  } | null>(null);
   const [activeDrag, setActiveDrag] = useState<DragSelectableActiveDrag | null>(
     null,
   );
@@ -73,8 +81,20 @@ export function useDragSelectableGesture(
     if (!press) {
       return;
     }
-    sessionRef.current?.stop();
+    sessionRef.current?.session.stop();
     let session: DragSelectableSession | null = null;
+    const env = dragSelectableSessionDom({
+      commit: (hitIds) => configRef.current.commit(hitIds, press.mode),
+      container: press.container,
+      end: () => {
+        if (sessionRef.current?.session === session) {
+          sessionRef.current = null;
+        }
+      },
+      provider: event.currentTarget,
+      render: setActiveDrag,
+      targets: () => configRef.current.registry.targetsRef.current.values(),
+    });
     session = startDragSelectableSession(
       {
         autoScroll: options.autoScroll,
@@ -84,33 +104,29 @@ export function useDragSelectableGesture(
         preventTextSelection: options.preventTextSelection,
         threshold: press.threshold,
       },
-      dragSelectableSessionDom({
-        commit: (hitIds) => configRef.current.commit(hitIds, press.mode),
-        container: press.container,
-        end: () => {
-          if (sessionRef.current === session) {
-            sessionRef.current = null;
-          }
-        },
-        render: setActiveDrag,
-        targets: () => configRef.current.registry.targetsRef.current.values(),
-      }),
+      env,
     );
-    sessionRef.current = session;
+    sessionRef.current = { session, claimResponder: env.claimResponder };
   }, []);
+
+  const onMoveShouldSetResponderCapture = useCallback(
+    (event: GestureResponderEvent) =>
+      sessionRef.current?.claimResponder(event) ?? false,
+    [],
+  );
 
   useEffect(() => {
     if (config.disabled) {
-      sessionRef.current?.cancel();
+      sessionRef.current?.session.cancel();
     }
   }, [config.disabled]);
 
   useEffect(
     () => () => {
-      sessionRef.current?.stop();
+      sessionRef.current?.session.stop();
     },
     [],
   );
 
-  return { activeDrag, onPointerDown };
+  return { activeDrag, onMoveShouldSetResponderCapture, onPointerDown };
 }

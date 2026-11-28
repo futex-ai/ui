@@ -273,8 +273,8 @@ test("web-only keys the library relies on pass straight through", () => {
       userSelect: "none",
     },
   );
-  // `pointerEvents` survives translation; `View` is what moves it to the
-  // attribute the CSS rules in `dom/css.ts` key off.
+  // `pointerEvents` survives translation. `View` moves it to the attribute
+  // that the CSS rules in `webStylesheet.ts` use.
   assert.deepEqual(resolveStyle({ pointerEvents: "box-none" }), {
     pointerEvents: "box-none",
   });

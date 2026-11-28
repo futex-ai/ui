@@ -7,12 +7,12 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import type { PressEvent } from "../../src/primitives/dom/pressMachine";
+import type { PressEvent } from "../../src/primitives/webPress/pressMachine";
 import {
   usePress,
   type PressConfig,
   type PressHandlers,
-} from "../../src/primitives/dom/usePress";
+} from "../../src/primitives/webPress/usePress";
 
 /** A point in viewport coordinates, which are page coordinates here. */
 export type FakePoint = { x: number; y: number };

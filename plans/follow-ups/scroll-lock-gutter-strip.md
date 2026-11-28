@@ -1,9 +1,9 @@
 # Chromium cannot dim the reserved scrollbar gutter
 
-- **Severity:** High. **Effort:** Medium. **Confidence:** High. **Harder later:** No.
+- **Severity:** High. **Likelihood:** Common. **Effort:** Medium. **Confidence:** High. **Harder later:** No.
 - **Kind:** Needs decision.
 - **Added:** 2026-11-02, from `calummoore/palette-forms-overlay-discussion`.
-- **Location:** `src/modal/webModalScrollLock.ts:26` and `src/modal/webModalFrameStyles.ts:68`.
+- **Location:** `src/modal/webModalScrollLock.ts:26` and `src/modal/webModalFrameStyles.ts:62`.
 - **Reason:** On 2026-11-02 the user kept this decision as a follow-up item, so the branch that found it merged with the current padding lock.
 
 - **Terms:**
@@ -19,7 +19,9 @@
   - No element painted into the strip from x = 885 to x = 900. A layer that reached x = 900, a box shadow, an outline, a top-layer popover, and a native `<dialog>` backdrop all left the pixel at x = 893 at the page colour rgb(247, 247, 243), next to the dimmed rgb(165, 168, 163). A width of `100vw` measured 885 px.
   - Only the canvas colour reached the strip: a red root background turned it red. A real click at x = 893 reached `html`, and `document.elementFromPoint` at x = 896 returned `null`.
   - React Aria reserves the gutter in the same way, and it leaves the same strip. Before this library had a scroll lock, the live scrollbar also stayed undimmed beside the backdrop.
+  - The page scroll lock came with pull request #179, commit `b141ed2`. Its plan, `plans/web-modal-stack.md`, lived only on the branch `calummoore/palette-forms-overlay-discussion` of that pull request: commit `d275474` added it on 2026-10-19, and commit `d67daec` deleted it on 2026-11-02, before the merge.
 - **Problem:** The two parts of the user's choice conflict in Chromium. The lock can keep fixed elements still, or the backdrop can cover the whole window, but not both.
+- **Screenshot:** None, because the undimmed strip shows only with a reserved gutter, which the current lock does not set, and the move of a fixed element shows only between two frames.
 - **Impact if no action:** Fixed elements at the right edge keep moving by the scrollbar width, and the work in `plans/follow-ups/scroll-lock-moves-fixed-elements.md` waits.
 - **Root question:** While a dialog is open on a page with a classic scrollbar, what does the window edge show, and which page elements may move?
 - **Options:**
@@ -37,7 +39,7 @@
   - Snap the page back in a scroll listener: Chromium scrolls on its compositor thread, so the user sees the scrolled frame first.
   - Reserve the gutter only on pages where a fixed element would move: a toast raised from the dialog then moves when the dialog closes.
   - Move the fixed elements that consumers mark with a class, as MUI and Radix do: the user rejected a public contract and work for each consumer on 2026-11-01.
-- **Wider fix:** F. The lock has three side effects: fixed elements move, the strip shows, and sticky elements move. Only F removes that class, and it also removes the page scroll lock that the plan of 2026-10-19 added.
+- **Wider fix:** F. The lock has three side effects: fixed elements move, the strip shows, and sticky elements move. Only F removes that class, and it also removes the page scroll lock that pull request #179 added, from its plan of 2026-10-19.
 - **Previous examples:** React Aria's `usePreventScroll` ships option B. `plans/follow-ups/scroll-lock-moves-fixed-elements.md` records the movement of fixed elements under option A.
 - **Related:**
   - `plans/follow-ups/scroll-lock-moves-fixed-elements.md`: the parent item. Its work waits for this answer.

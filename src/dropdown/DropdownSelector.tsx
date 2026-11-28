@@ -1,7 +1,8 @@
 /** The single-value selector: its trigger, messages, and option popup. */
 import { ChevronDown, Search } from "../primitives/icons";
 import { useMemo } from "react";
-import { Pressable, Text, TextInput, View } from "../primitives/reactNative";
+import { Pressable, Text, View } from "../primitives/reactNative";
+import { TextField } from "../primitives/textField";
 
 import { hideWebOutline, useFocusRing } from "../focusRing";
 import { useSharedUiTheme } from "../theme";
@@ -125,7 +126,7 @@ function DropdownSelectorView({
         color={theme.colors.muted}
         size={touch ? touchControlMetrics.iconSize : 15}
       />
-      <TextInput
+      <TextField
         accessibilityLabel={searchPlaceholder}
         autoFocus
         onChangeText={setQuery}

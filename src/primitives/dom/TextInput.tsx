@@ -13,13 +13,11 @@
  *   `useDocumentKeyCapture`; that hook keeps working unchanged, because its
  *   capture-phase listener still runs first and still stops propagation for the
  *   keys it claims, so nothing is handled twice.
- * - `submitBehavior` is honoured where `blurOnSubmit` is absent, as React
- *   Native defines it. Every combination the library actually passes behaves
- *   exactly as before; that backend simply ignored the modern spelling.
+ * - Enter uses the shared web rule to resolve `submitBehavior` and
+ *   `blurOnSubmit` as React Native does.
  *
- * The base style is a class in `css.ts` rather than inline, for the reason the
- * `View` and `Text` resets are: it sits below every inline style, which is the
- * priority that backend's atomic reset had.
+ * The base style uses a class in `webStylesheet.ts`, like the `View` and `Text`
+ * resets. Every inline style takes precedence, as it did on that backend.
  */
 import {
   forwardRef,
@@ -31,34 +29,35 @@ import {
   type ForwardedRef,
 } from "react";
 
+import { applySelection, type Selection } from "../refs/hostMethods.web";
+import {
+  handleTextFieldEnter,
+  type TextFieldKeyEvent,
+} from "../textFieldEnter";
 import type {
   TextInputComponent,
   TextInputInstance,
   TextInputProps,
 } from "../types";
-
-import { createHostElement } from "./createHostElement";
 import {
   PLACEHOLDER_COLOR_ATTRIBUTE,
   PLACEHOLDER_COLOR_VARIABLE,
   POINTER_EVENTS_ATTRIBUTE,
   TEXT_INPUT_CLASS,
   useDomBackendCss,
-} from "./css";
+} from "../webStylesheet";
+
+import { createHostElement } from "./createHostElement";
 import { createDomProps, pointerEventsFor, type PropBag } from "./domProps";
 import { resolveStyle } from "./resolveStyle";
 import { responderConfig, useResponderEvents } from "./responder";
 import {
-  applySelection,
   attachFieldMethods,
-  selectAllSoon,
-  submitBehaviorOf,
   CARET_HIDDEN,
+  selectAllSoon,
   type FieldElement,
-  type Selection,
 } from "./textInputHost";
 import {
-  isEventComposing,
   pickTextInputProps,
   resolveInputType,
   textInputDefaults,
@@ -158,37 +157,18 @@ function TextInputImpl(
     }
   }, []);
 
-  const handleKeyDown = useCallback((event: PropBag) => {
-    const hostNode = event.target as FieldElement;
+  const handleKeyDown = useCallback((event: TextFieldKeyEvent) => {
     const current = latest.current;
     // Key events do not bubble out of a field, which is what keeps a dropdown's
     // own handler from seeing every character typed into its filter.
-    (event.stopPropagation as () => void)();
+    event.stopPropagation();
 
-    const behavior = submitBehaviorOf(current);
     const forwarded = (current as PropBag).onKeyDown as
-      | ((event: unknown) => void)
+      | ((event: TextFieldKeyEvent) => void)
       | undefined;
     forwarded?.(event);
     current.onKeyPress?.(event as never);
-
-    if (
-      event.key === "Enter" &&
-      event.shiftKey !== true &&
-      !isEventComposing(event.nativeEvent as PropBag) &&
-      !(event.isDefaultPrevented as () => boolean)()
-    ) {
-      if (behavior !== "newline" && current.onSubmitEditing != null) {
-        // Stops the newline, and stops an enclosing form from submitting.
-        (event.preventDefault as () => void)();
-        (event.nativeEvent as PropBag).text = hostNode.value;
-        current.onSubmitEditing(event as never);
-      }
-      if (behavior === "blurAndSubmit") {
-        // Deferred, so the submit handler sees a field that still has focus.
-        setTimeout(() => hostNode.blur(), 0);
-      }
-    }
+    handleTextFieldEnter(event, current);
   }, []);
 
   const handleSelectionChange = useCallback((event: PropBag) => {
@@ -280,7 +260,7 @@ function TextInputImpl(
   domProps.style = resolved;
   domProps.type = multiline ? undefined : type;
   // The placeholder rule is attached unconditionally, as that backend's class
-  // was; see `css.ts`.
+  // was. See `webStylesheet.ts`.
   domProps[PLACEHOLDER_COLOR_ATTRIBUTE] = "";
   if (pointerEvents != null) {
     domProps[POINTER_EVENTS_ATTRIBUTE] = pointerEvents;

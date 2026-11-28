@@ -149,30 +149,3 @@ export function textInputDefaults(props: {
       props.showSoftInputOnFocus === false ? "manual" : "auto",
   };
 }
-
-/** An IME is mid-composition, so Enter is committing a candidate, not text. */
-export function isEventComposing(nativeEvent: {
-  isComposing?: boolean;
-  keyCode?: number;
-}): boolean {
-  // The spec says a key handled by an IME reports 229.
-  return nativeEvent.isComposing === true || nativeEvent.keyCode === 229;
-}
-
-/**
- * Whether a controlled `selection` differs from the node's current one.
- *
- * Compared against `end` as written rather than against `end ?? start`, which
- * is what that backend did: a `{ start }` with no `end` therefore always reads
- * as stale and re-applies a collapsed caret, and callers rely on that to put
- * the caret back after a programmatic edit.
- */
-export function isSelectionStale(
-  node: { selectionStart: number | null; selectionEnd: number | null },
-  selection: { start: number; end?: number },
-): boolean {
-  return (
-    selection.start !== node.selectionStart ||
-    selection.end !== node.selectionEnd
-  );
-}

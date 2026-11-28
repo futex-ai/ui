@@ -278,8 +278,8 @@ test("pointerEvents takes the prop over the style", () => {
   assert.equal(pointerEventsFor({ pointerEvents: "none" }, "auto"), "none");
   assert.equal(pointerEventsFor({}, "box-none"), "box-none");
   assert.equal(pointerEventsFor({}, undefined), undefined);
-  // The prop itself never reaches the DOM; `View` turns it into the attribute
-  // the child-selector rules in `dom/css.ts` key off.
+  // `View` turns the prop into the attribute that the child-selector rules
+  // in `webStylesheet.ts` use.
   assert.deepEqual(createDomProps({ pointerEvents: "none" }, view).props, {});
 });
 

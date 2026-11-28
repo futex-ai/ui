@@ -4,11 +4,17 @@ import test from "node:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { Link } from "../../src/primitives/dom/Link";
 import {
   navigatesInApp,
   type LinkClick,
 } from "../../src/primitives/linkActivation";
+
+import { resolveWebFirst } from "./webResolution";
+
+// The web link host draws on the seam's `View`. Load it as the web build
+// resolves it, so the host renders over the DOM backend's `View`.
+resolveWebFirst();
+const { Link } = await import("../../src/primitives/link.web");
 
 /** A plain primary click: the one click that the app takes over. */
 const plain: LinkClick = {

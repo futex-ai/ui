@@ -12,6 +12,7 @@
  */
 import type { CSSProperties } from "react";
 
+import { SYSTEM_FONT_STACK } from "../webStylesheet";
 import {
   IGNORED_STYLE_PROPS,
   MONOSPACE_FONT_STACK,
@@ -20,7 +21,6 @@ import {
   PROPERTIES_VALUE,
   SHADOW_STYLE_PROPS,
   SHORT_FORM_EXPANSIONS,
-  SYSTEM_FONT_STACK,
 } from "./styleTables";
 import {
   createBoxShadowArrayValue,

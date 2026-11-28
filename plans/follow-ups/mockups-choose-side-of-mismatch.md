@@ -37,5 +37,7 @@
   - `plans/follow-ups/mockups-meet-mockups-skill.md`: the parent item. Its work waits for this answer.
   - `plans/follow-ups/mockups-choose-how-to-meet-rules.md`: the other decision item of the same work. Its options C, D, and E align the mockups by this answer.
   - `plans/follow-ups/clip-selection-ring-never-drawn.md` and `plans/follow-ups/checklist-checked-text-parity.md`: product gaps that the mockups show. Under option A, each stays its own follow-up item.
+  - `plans/follow-ups/native-collab-marks-depart-from-protocol.md`: the same code, and a product gap that the mockups show. This item compares the Collab phone anchor with the native style at `src/rich-text/nativeRichTextStyles.ts:106-112`. Option B of that item changes that style. Under option A here, it stays its own follow-up item.
+  - `plans/follow-ups/transport-scrubber-shrinks-to-knob.md`: the same screen. This item compares the Video transport of the mockup with the product. The fix of that item changes the transport row, so it changes what this item compares.
 - **Recommendation:** A. The product is tested and the protocol docs are reviewed, but nobody checked the mockups against the code.
 - **Action:** ask the user, because each option decides which side of a mockup and product mismatch is right, and only the user decides that.

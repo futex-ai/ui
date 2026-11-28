@@ -142,10 +142,34 @@ decision) needs the larger of `minimumDragDistance` and
 - Started: the pointer moved the threshold distance from the press point,
   and the provider draws the box. With `preventTextSelection`, the start
   removes any text highlight, and no text highlights until the release. A
-  press without a start blocks no text selection. The start ends the library
-  `Pressable` press that the same pointer started, so the control loses its
-  pressed look and does not fire `onPress` on release. The control's
-  `onPressOut` receives the pointer event that started the drag.
+  press without a start blocks no text selection.
+- Press takeover: the start ends each library press that the same pointer
+  started, with the library's own DOM backend and on the
+  [React Native Web (RNW) route](shared-ui-package.md#react-native-web-contract).
+  The control loses its pressed look and does not fire `onPress` on release.
+  The provider claims the responder in the system of the renderer that draws it.
+  Only a responder gesture of the same press inside the provider gets a
+  transfer request. The gesture ends if its holder accepts the transfer.
+  A gesture above the provider keeps the responder until release.
+  - At every drag start, the provider dispatches one copy of the starting
+    `mousemove` on its element during document capture. The copy can reach
+    the responder when content below the provider stops the original move.
+    An app's `mousemove` listener on the document or the provider can see one
+    untrusted copy at each drag start.
+  - If content above the provider stops the starting `mousemove` and its copy,
+    a press or gesture that the responder holds stays active until release.
+  - With the DOM backend, the control's `onPressOut` receives the pointer
+    event that started the drag.
+  - On the RNW route, RNW's responder holds the press of a library
+    `Pressable`. The start takes that responder for the provider, so RNW ends
+    the press. The `onPressOut` of the `Pressable` receives RNW's responder
+    event for the mouse move that started the drag.
+  - A link press ends with the pointer event that started the drag, in both
+    cases.
+  - Decision: on the RNW route, a `Pressable` keeps RNW's press handling, so
+    its `onPressOut` receives RNW's event rather than the pointer event.
+    Firna's own press handling would keep the pointer event, but an RNW
+    `ScrollView` could then not cancel a library press.
 - Anchor: the start point stays attached to the content of the press's
   scroll container. A scroll of that container, or of any ancestor that
   moves it, moves the start point with the content. The hit box runs from

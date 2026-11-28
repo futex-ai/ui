@@ -9,11 +9,9 @@
  * `plans/pure-react-dom-backend.md` and `../README.md`.
  */
 export { Animated, Easing } from "./animated";
-export { domBackendCss, useDomBackendCss } from "./css";
 export { FlatList } from "./FlatList";
 export { Image } from "./Image";
 export { InputAccessoryView, KeyboardAvoidingView } from "./KeyboardViews";
-export { Link } from "./Link";
 export { Modal } from "./Modal";
 export {
   AccessibilityInfo,

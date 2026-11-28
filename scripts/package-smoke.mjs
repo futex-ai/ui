@@ -62,6 +62,8 @@ try {
   await writeNodePeerStubs(nodeConsumerRoot);
   await writeImportSmoke(nodeConsumerRoot, subpaths);
   await runNodeSmoke(nodeConsumerRoot);
+  await writeRnwSmoke(nodeConsumerRoot);
+  await runNodeSmoke(nodeConsumerRoot, "rnw-smoke.mjs");
   await writeColdDropdownSmoke(nodeConsumerRoot);
   await runNodeSmoke(nodeConsumerRoot, "cold-dropdown-smoke.mjs");
 
@@ -183,13 +185,12 @@ async function assertViteBundledLibrary(consumerRoot) {
   );
   assert.ok(chunks.length > 0, "the Vite consumer emitted a JavaScript chunk");
   const bundle = chunks.join("\n");
-  // A string literal only the DOM backend defines (`dom/css.ts`), so its
-  // presence means the library's own modules were bundled and not left behind
-  // an import of `@firna/ui`.
+  // The id from `webStylesheet.ts` shows that the bundle includes Firna's
+  // shared web stylesheet.
   assert.match(
     bundle,
     /firna-ui-dom-backend/,
-    "the bundle contains the library's DOM backend",
+    "the bundle contains Firna's shared web stylesheet",
   );
   assert.doesNotMatch(
     bundle,
@@ -204,9 +205,32 @@ async function writeImportSmoke(consumerRoot, importNames) {
 void mod${index};`,
   );
   const body = `${lines.join("\n")}
+import { resolveFirnaRnwFile } from "@firna/ui/rnw";
+if (typeof resolveFirnaRnwFile !== "function") {
+  throw new Error("missing resolveFirnaRnwFile from @firna/ui/rnw");
+}
 console.log("package imports resolved");
 `;
   await writeFile(join(consumerRoot, "import-smoke.mjs"), body);
+}
+
+async function writeRnwSmoke(consumerRoot) {
+  const body = `import assert from "node:assert/strict";
+import { statSync } from "node:fs";
+import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
+import { resolveFirnaRnwFile } from "@firna/ui/rnw";
+
+const require = createRequire(import.meta.url);
+assert.equal(require("@firna/ui/rnw").resolveFirnaRnwFile, resolveFirnaRnwFile);
+const dist = dirname(require.resolve("@firna/ui/rnw"));
+const importer = join(dist, "node", "list", "List.js");
+assert.equal(statSync(importer).isFile(), true);
+const file = resolveFirnaRnwFile(importer, "../primitives/reactNative.web.js");
+assert.equal(file, join(dist, "primitives", "reactNative.js"));
+assert.equal(statSync(file).isFile(), true);
+`;
+  await writeFile(join(consumerRoot, "rnw-smoke.mjs"), body);
 }
 
 async function writeColdDropdownSmoke(consumerRoot) {
@@ -226,6 +250,11 @@ async function writeTypeSmoke(consumerRoot, importNames) {
 type Module${index} = typeof mod${index};`,
   );
   const body = `${lines.join("\n")}
+import { firnaIconNames, resolveFirnaRnwFile } from "@firna/ui/rnw";
+const resolveRnw: (fromFile: string, request: string) => string | null = resolveFirnaRnwFile;
+const listWebIcons: readonly string[] = firnaIconNames["@firna/ui/list"].web;
+// @ts-expect-error The icon table accepts only public specifiers.
+const misspelledWebIcons = firnaIconNames["@firna/ui/lits"].web;
 export {};
 `;
   await writeFile(join(consumerRoot, "import-smoke.ts"), body);

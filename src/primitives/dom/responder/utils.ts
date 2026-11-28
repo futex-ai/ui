@@ -4,15 +4,15 @@
  * Transcribed from `react-native-web` 0.21.2's
  * `modules/useResponderEvents/utils.js` and `modules/isSelectionValid`. Every
  * node that registers with the system is tagged with a numeric id under
- * `__reactResponderId`; an event's path is then filtered down to the tagged
- * nodes, which is the list the capture/bubble negotiation walks.
+ * `__firnaResponderId`. The capture and bubble negotiation walks only the
+ * nodes on the event path that Firna tagged.
  *
  * The pure half (`getLowestCommonAncestor`, `isPrimaryPointerDown`) is pinned
  * by `tests/unit/domResponder.test.ts`.
  */
 
 /** Property a registered node carries its responder id under. */
-const RESPONDER_ID_KEY = "__reactResponderId";
+const RESPONDER_ID_KEY = "__firnaResponderId";
 
 /** A DOM node with the fields the responder system reads off it. */
 type ResponderNode = Node & {

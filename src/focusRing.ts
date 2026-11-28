@@ -23,6 +23,7 @@ import {
   type FocusRingHostProps,
   type FocusRingTarget,
 } from "./focusRingHost";
+import { useFocusRingStylesheet } from "./focusRingStylesheet";
 import { useSharedUiTheme } from "./theme";
 
 export {
@@ -46,7 +47,7 @@ export const hideWebOutlineView = {
   outlineStyle: "none",
 } as unknown as ViewStyle;
 
-/** Pressable style-callback state, widened with the web backend's `hovered`. */
+/** Pressable style-callback state, widened with the web `hovered` state. */
 export type PressableHoverState = { pressed: boolean; hovered?: boolean };
 
 /**
@@ -184,9 +185,10 @@ export function focusRingStyleFor(options: FocusRingOptions): ViewStyle {
  * `<button>`, which React DOM would otherwise leave unmarked. Either way the
  * host also needs `focusRingVariables` in its `style`. A raw host with a
  * resting shadow must set `--firna-focus-ring-base-shadow` instead of an
- * inline `box-shadow`, which would outrank the glow; only `View` rewrites
- * that for you. The stylesheet itself reaches the page through any primitive
- * or the theme provider on the client, and through `<head>` for static HTML.
+ * inline `box-shadow`, which would outrank the glow; only the DOM backend's
+ * `View` rewrites that for you. On web the hook injects the stylesheet on the
+ * client, once per document, so the glow needs no theme provider on either
+ * web renderer. Static HTML still emits the stylesheet in `<head>`.
  *
  * A `descendant` host paints only while its marked target has visible focus.
  * Other focusable descendants — a clear, suffix, or chip-remove button inside
@@ -198,6 +200,8 @@ export function focusRingStyleFor(options: FocusRingOptions): ViewStyle {
  * all (`none`), which leaves the caller to show focus some other way.
  */
 export function useFocusRing(options: FocusRingOptions = {}) {
+  // Every indicator mode reads its rules from the stylesheet.
+  useFocusRingStylesheet();
   const [focusState, setFocusState] = useState<FocusState>(UNFOCUSED_STATE);
   const focusedTargetRef = useRef<WebFocusTarget | null>(null);
   const theme = useSharedUiTheme();

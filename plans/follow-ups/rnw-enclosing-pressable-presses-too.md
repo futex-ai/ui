@@ -1,0 +1,58 @@
+# Enclosing app pressables press with Firna controls
+
+- **Severity:** Medium. **Likelihood:** Rare. **Effort:** Medium. **Confidence:** High. **Harder later:** No.
+- **Kind:** Needs decision.
+- **Added:** 2026-11-27, from the branch `calummoore/firna-rnw-seam-contract-mhsd`. Its plan recorded the link caveat in the design call "The link host serves both web renderers", and the panel resize handle among its RNW caveats.
+- **Location:** `src/primitives/link.web.tsx:112-115`, `src/primitives/webPress/usePress.ts:234-255`, `src/primitives/webPress/pressMachine.ts:66-67`, `src/panel-resize/usePanelResizeDrag.ts:74-97`, `src/panel-resize/PanelResizeHandle.web.tsx:100-129`, `docs/protocol/drag-select.md:150`, `tests/browser/link.spec.ts`, `tests/unit/link.test.ts`, and `tests/browser/rnw-route.spec.ts`.
+- **Reason:** No requirement says whether an enclosing pressable stays at rest while a control inside it owns the press, so the fix adds one, and the user reviews each new requirement.
+
+- **Terms:**
+  - **RNW route:** an app that draws its own screens with `react-native-web` (RNW) applies the rule of `@firna/ui/rnw`, and Firna then draws with RNW too.
+  - **Mixed page:** a page where Firna draws through its own DOM backend and the app draws its own controls with RNW.
+  - **Responder:** the gesture lock of RNW, which it gives to one node at a time. The `Pressable` of RNW presses only while it holds the lock.
+  - **Link host:** `src/primitives/link.web.tsx`, the anchor that draws Firna's links on both web renderers. Firna's own press hooks track its pressed look.
+  - **Claim mark:** the property `__firnaPressClaimed` that Firna's press hooks set on a native `pointerdown`, so that an enclosing press of the DOM backend stands down.
+- **Background:**
+  - The `Pressable` of RNW starts a press when the responder of RNW grants it the lock. The responder listens for `mousedown` on the document, at `node_modules/react-native-web/dist/modules/useResponderEvents/ResponderSystem.js:520-537`. It grants the deepest node that answers `onStartShouldSetResponder` with true. The press of RNW answers it at `node_modules/react-native-web/dist/modules/usePressEvents/PressResponder.js:226-234`.
+  - The link host tracks its pressed look with Firna's press hooks, at `link.web.tsx:112-114`. On `pointerdown`, the hooks set the claim mark, at `usePress.ts:234-255`, with the key at `pressMachine.ts:66-67`. An enclosing press of the DOM backend reads the mark and stands down, at `usePress.ts:236-239`. The responder of RNW does not read the mark.
+  - The resize handle stops the propagation of its React `pointerdown`, at `usePanelResizeDrag.ts:84-87`, so an enclosing press of the DOM backend and a drag-select provider do not start. The responder of RNW starts from the `mousedown` on the document, which this does not stop.
+  - Neither the `View` of the link host nor the `View` of the handle answers a responder question. So an enclosing `Pressable` of RNW is the deepest node that the responder of RNW asks.
+  - A browser probe at the branch head on 2026-11-27, in Chromium with RNW 0.21.4, put an app's RNW `Pressable` around a Firna `LinkButton`, and another one around a `PanelResizeHandle`. It ran on the RNW route and on a mixed page, with the same results:
+    - A press on the link pressed the enclosing `Pressable` too. Its `onPressIn` ran, and it showed its pressed colour, `rgb(173, 193, 181)`, during the press. On release, its `onPressOut` ran.
+    - A press of 900 ms on the link also ran the `onLongPress` of the enclosing `Pressable`. On release, the link still ran its `onNavigate`.
+    - A drag of the handle also pressed the enclosing `Pressable`, with its pressed colour during the drag. On release, its `onPressOut` ran.
+  - A rerun on 2026-11-28, at commit `69e9989`, on the RNW route, gave the same result for the link. The enclosing `Pressable` turned `rgb(173, 193, 181)` during the press, and ran its `onPressIn` and `onPressOut`.
+  - With the DOM backend, an enclosing library press reads the claim mark, or never sees the stopped `pointerdown`, so it stays at rest during the press. The code shows this, and the probe did not run it.
+  - On a mixed page, Firna draws through the DOM backend, which cannot reach the responder of RNW, because `docs/protocol/shared-ui-components.md:34-36` says that the DOM backend does not depend on RNW at runtime. `docs/protocol/drag-select.md:150` already accepts this limit for the claim of a drag-select provider: the claim reaches the responder system of the renderer that draws the provider.
+  - The click that ends each of these presses is a separate question. `plans/follow-ups/panel-resize-release-click.md` holds the click after a resize drag. The link host lets its own click propagate on purpose, at `link.web.tsx:19-21`, so an enclosing pressable also runs `onPress` on a link click, on every web renderer.
+  - The react-native-web route branch moved the link host onto the `View` of the seam, so that one host serves both renderers. A design call of that branch, on 2026-11-27, keeps the timing of the pressed look of the link, and sends a change of it to the user. No test checks that timing: `tests/browser/link.spec.ts` and `tests/unit/link.test.ts` have no pressed case. Option B keeps it, because the press hooks of the link do not read the responder.
+- **Problem:** On the RNW route and on a mixed page, an app's RNW `Pressable` around a Firna link or panel resize handle presses along with that control. It shows its pressed look and runs `onPressIn`, `onPressOut`, and `onLongPress`, although the inner control owns the press.
+- **Screenshot:** On the RNW route, a held press on a Firna `LinkButton` turned the enclosing RNW `Pressable` to its pressed colour, and the box marked that card.
+- **Impact if no action:** The app's control looks pressed during a press of a Firna link or a resize drag. A long press on the link also runs the app's `onLongPress`.
+- **Root question:** How does an app's pressable around a Firna link or panel resize handle show no press while that inner control owns the pointer?
+- **Options:**
+  - **A.** Record the limit. `docs/protocol/app-shell-parts.md` says, in its sections "Links" at line 81 and "Panel Resize Handle" at line 219, that on the RNW route and on a mixed page, an enclosing RNW pressable also presses while the control inside it owns the pointer. `docs/protocol/shared-ui-package.md:106-107` puts each difference of the route next to its requirement. No code changes. Effort: Small.
+  - **B.** Join the responder of RNW on the RNW route:
+    - The anchor `View` of the link host and the `View` of the handle answer `onStartShouldSetResponder` with true. Both web renderers forward that prop.
+    - The responder of RNW then grants the inner control, and the enclosing pressable never presses.
+    - With the DOM backend, the answer goes to Firna's own responder port. No library press uses that port, and a gesture that claims on a move, such as a drag-select provider, still takes the lock from the inner control.
+    - A mixed page keeps the press-in, as the drag-select protocol accepts for its claim.
+    - The sections "Links" and "Panel Resize Handle" of `docs/protocol/app-shell-parts.md`, at lines 81 and 219, get the rule for the RNW route.
+    - Add RNW harness cases for both controls to `tests/browser/rnw-route.spec.ts`. `tests/browser/rnw/fixture.jsx` draws neither control, so add a fixture that draws an app's RNW `Pressable` around a `LinkButton` and around a `PanelResizeHandle`. `bundleRnwFixture`, at `tests/browser/rnw/harness.ts:15-36`, bundles it for the RNW route in its mode `rnw`. Its mode `dom` leaves out the plugin, so it gives the mixed page.
+    - Run `npm run build` first, because the harness reads `dist/` and throws without `dist/rnw.cjs`. Then run `npx playwright test tests/browser/rnw-route.spec.ts`.
+    - Effort: Medium.
+  - **C.** Hide the press from the responder of RNW. The link host and the handle stop the propagation of the native `mousedown` at their element, so the listener of RNW on the document never sees it, on the RNW route and on a mixed page. Cost: each other `mousedown` listener on the document misses these presses too, for example the outside-click handling of an app. Effort: Medium.
+- **Left out:**
+  - Cancel the `pointerdown` of the link and of the handle, so that the browser sends no `mousedown`: it hides the press as C does, and it also stops the browser from moving focus to the control, so C is better on every point.
+  - Make the responder of RNW read Firna's claim mark: the mark lives only in Firna's press hooks, and RNW's responder is not public API that Firna can change.
+- **Wider fix:** B. One responder answer on each control that owns a pointer gesture keeps every enclosing RNW pressable at rest on the RNW route, with the public responder props.
+- **Previous examples:** The press takeover of drag-select had the same gap on the RNW route: ending the presses of Firna's own press hooks did not reach a press that the responder of RNW held. The react-native-web route branch added a responder claim for it, as `docs/protocol/drag-select.md:146-159` says.
+- **Related:**
+  - `plans/follow-ups/rnw-focus-glow-drops-resting-shadow.md`: the same code. Both items add cases to `tests/browser/rnw-route.spec.ts` and its fixture, so whichever goes second keeps the cases of the other.
+  - `plans/follow-ups/drag-select-responder-after-start.md`: work that interacts. Option B here lets a link or a resize handle take the responder at the press, and the move claim of a drag-select provider takes it back at the start. That item decides what the provider does with the responder after the start.
+  - `plans/follow-ups/dom-responder-private-registration.md`: the same code. With the DOM backend, option B here registers the two views through `addNode` and the node tag of Firna's responder port, which option C of that item replaces with private storage. The two items also share the term "mixed page".
+  - `plans/follow-ups/panel-resize-release-click.md`: the same code. That item holds the click that follows a resize drag, which can run the `onPress` of the same enclosing pressable. The two fixes change different lines of `src/panel-resize/usePanelResizeDrag.ts`, so they can go in either order.
+  - `plans/follow-ups/time-grid-event-click-creates-event.md`: the same class and the same test file. There, the drag-to-create of a day column acts on a press of an event block inside it, as an enclosing RNW pressable acts on a press of a link here. Both items add cases to `tests/browser/rnw-route.spec.ts` and its fixture, so whichever goes second keeps the cases of the other.
+  - `plans/follow-ups/press-events-miss-responder-fields.md`: the same protocol rule. Option B here keeps the limit of `docs/protocol/drag-select.md:150` on a mixed page. Option A of that item changes other sentences of that "Press takeover" rule, and keeps line 150.
+- **Recommendation:** B. It uses the rule of RNW that the deepest node wins the responder, through public props, and the mixed page keeps the limit that the drag-select protocol already accepts.
+- **Action:** ask the user, because no requirement says whether an enclosing pressable stays at rest while a control inside it owns the pointer, so B adds a requirement at the component boundary.

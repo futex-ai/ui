@@ -5,29 +5,82 @@ never import `react-native`, `react-native-svg`, `lucide-react-native`,
 `react-native-web`, or `lucide-react` directly; they import from here, and a
 unit test (`tests/unit/primitives.test.ts`) fails the build if one does.
 
-| Module             | Native resolves to      | Web (`.web`) resolves to  |
-| ------------------ | ----------------------- | ------------------------- |
-| `reactNative.ts`   | `react-native`          | `dom/`                    |
-| `svg.tsx`          | `react-native-svg`      | DOM `<svg>` elements      |
-| `icons.ts`         | `lucide-react-native`   | `lucide-react`            |
-| `link.tsx`         | `Pressable` + `Linking` | `dom/Link.tsx`, an `<a>`  |
-| `domBackendCss.ts` | `""`                    | `dom/css.ts`'s stylesheet |
-| `types/` (web)     | —                       | the seam's own types      |
+| Module             | Native resolves to      | Web (`.web`) resolves to                  | RNW form    |
+| ------------------ | ----------------------- | ----------------------------------------- | ----------- |
+| `reactNative.ts`   | `react-native`          | `dom/`                                    | native file |
+| `svg.tsx`          | `react-native-svg`      | DOM `<svg>` elements                      | `.web` file |
+| `icons.ts`         | `lucide-react-native`   | `lucide-react`                            | `.web` file |
+| `link.tsx`         | `Pressable` + `Linking` | an `<a>` on the seam `View`               | `.web` file |
+| `textField.tsx`    | seam `TextInput`        | seam `TextInput` with shared key handling | `.web` file |
+| `domBackendCss.ts` | `""`                    | CSS in `webStylesheet.ts`                 | `.web` file |
+| `types/` (web)     | —                       | the seam's own types                      | —           |
 
-Every primitive comes from `dom/` on web — `View`, `Text`, `Pressable`,
-`Image`, `Modal`, `ScrollView`, `TextInput`, `FlatList`, `Animated`, `Easing`,
-`PanResponder`, `StyleSheet`, `Platform`, `useWindowDimensions`,
-`AccessibilityInfo`, `Keyboard`, `KeyboardAvoidingView` and
-`InputAccessoryView`.
+With the DOM backend, every primitive comes from `dom/` — `View`, `Text`,
+`Pressable`, `Image`, `Modal`, `ScrollView`, `TextInput`, `FlatList`,
+`Animated`, `Easing`, `PanResponder`, `StyleSheet`, `Platform`,
+`useWindowDimensions`, `AccessibilityInfo`, `Keyboard`, `KeyboardAvoidingView`
+and `InputAccessoryView`.
 
 Why this exists: the `dist/node` build (the `import` condition) selects the
 `.web` files, so a web consumer installs `react`, `react-dom` and
 `lucide-react` and nothing else — those three are the package's entire web peer
 set. There is no `react-native` alias to configure, the `react-native` package,
-`react-native-svg`, and `lucide-react-native` are never resolved at runtime on
-web, and `react-native-web` is not a peer dependency at all. Metro keeps
-resolving the native files on iOS and Android, and the `.web` files on Expo
-web.
+`react-native-svg`, and `lucide-react-native` are never resolved at runtime
+with the DOM backend, and `react-native-web` is not a peer dependency at all.
+Metro keeps resolving the native files on iOS and Android, and the `.web` files
+on Expo web. An app that draws with `react-native-web` can take
+[the RNW route](#the-rnw-route) instead.
+
+## The RNW route
+
+An app that draws its own screens with `react-native-web` (RNW) can draw the
+library with RNW too. The app applies `resolveFirnaRnwFile`, the rule that
+`@firna/ui/rnw` publishes, in each tool that resolves the library's modules.
+The RNW form of a seam is the file that this route loads for it. For a seam
+request from inside the package's `dist`, the rule returns the RNW form when
+that form is not the `.web` file. Otherwise it returns `null`. The RNW column
+of the table above gives each form:
+
+- `reactNative` loads its native file. The app's alias sends that file's
+  `react-native` import to `react-native-web`.
+- `svg`, `icons`, `link`, `textField`, and `domBackendCss` use their `.web`
+  files on both web routes. The SVG file draws DOM `<svg>` and the icon file
+  uses `lucide-react`. The text field uses the chosen renderer's `TextInput`
+  and forwards key events through its key callback.
+
+Rules for the seam:
+
+- `rnwForms.ts` names the RNW form of each seam pair: `native` or `web`. Add
+  the entry with the pair. A unit test fails when a pair has no entry, and the
+  build generates the rule's table from this file.
+- A seam whose RNW form is `native` imports only packages, never a relative
+  module. The rule sends a request from either build tree to that one file in
+  `dist/primitives/`, so a relative import would load a second copy of a
+  module. A test checks the emitted JavaScript.
+- Nothing that the RNW route loads imports from `dom/`. A test bundles every
+  public subpath through the rule and fails on a file under
+  `primitives/dom/`.
+
+The
+[package protocol](../../docs/protocol/shared-ui-package.md#react-native-web-contract)
+holds the requirements of the route. The
+[root README](../../README.md#react-native-web-route) shows how an app applies
+the rule.
+
+## Shared web stylesheet
+
+`webStylesheet.ts` provides CSS for both web renderers. `useDomBackendCss`
+injects it once per document under a stable id. The DOM `View`, `Text`, and
+`TextInput` call the hook. Both renderers use it through the web theme root
+and `useFocusRing`. The package publishes the CSS as `domBackendCss` for
+server rendering.
+
+The sheet holds the `View` and `Text` element resets in classes so that
+inline styles take precedence. It also holds the `pointerEvents` child
+selectors, the `TextInput` reset and `::placeholder` colour, the rules for
+hidden scroll indicators, and RNW's top-level reset. It provides the
+attribute-based `:focus-visible` glow, including inset and forced-colors
+variants, and the `focusIndicator="none"` outline reset.
 
 ## `dom/`
 
@@ -47,31 +100,12 @@ were recorded on that backend and are what prove the swap changed nothing.
   `href` makes the element an anchor unless a role names another one, and
   `hrefAttrs` adds its `rel` and `target`; `tests/unit/link.test.ts` pins them
   through the link host.
-- `css.ts` holds the few rules an inline style cannot express, injected once
-  per document under a stable id by `useDomBackendCss` (called from `View`,
-  `Text`, `TextInput`, and the web `SharedUiThemeRoot`) and published as
-  `domBackendCss` for server rendering. That is the `View` and `Text` element
-  resets (a class, so every inline style still outranks them), the
-  `pointerEvents` child-selector rules, the `TextInput` reset, its
-  `::placeholder` colour, a `ScrollView`'s hidden scroll indicators, the
-  attribute-based `:focus-visible` glow (including inset and forced-colors
-  variants) and its `focusIndicator="none"` outline reset, and
-  `react-native-web`'s own top-level reset.
 - `useLayout.ts` runs one shared `ResizeObserver` for `onLayout` and puts
   `measure`, `measureInWindow`, `measureLayout` and `setNativeProps` on the DOM
   element itself, so a `ref` is still the element the library reads
   `clientWidth` and `getBoundingClientRect()` from.
-- `usePress.ts` / `useHover.ts` / `Pressable.tsx` reproduce that backend's
-  press machine: the 50 ms press delay, the 450 ms long press, `onPress` from
-  the DOM `click` rather than the release, Enter anywhere and Space on a
-  button, and hover that ends when a nested pressable takes over.
-  `usePress.ts` also exports the internal `endPointerPresses(event)`: a
-  gesture that takes over a pointer, such as a drag-select drag that starts
-  on a button, passes the pointer event that took over. Each press of that
-  pointer, or of an unknown pointer, ends with that event: the control loses
-  its pressed look, and `onPressOut` gets the event through `fromDomEvent`,
-  as on a release. The caller swallows the click that follows, because
-  `onPress` comes from that click.
+- `Pressable.tsx` is that backend's `Pressable`: a `View` that runs the press
+  and hover hooks of [`webPress/`](#webpress).
 - `ScrollView.tsx` is that backend's `ScrollView` plus `ScrollViewBase`: an
   overflow container around a content wrapper, with its start / tick / end
   scroll rhythm (`scrollEvents.ts` holds the pure half) and its imperative
@@ -89,15 +123,10 @@ were recorded on that backend and are what prove the swap changed nothing.
   writing to the host node — which is how an animated value drives an SVG
   attribute as easily as a style.
 - `responder/` is the gesture responder system and `PanResponder`, ported
-  whole: the document-level listeners, the `__reactResponderId` tagging, the
+  whole: its `__firnaResponderSystemActive` flag, `__firnaResponderId` tags, the
   capture-then-bubble negotiation (`negotiation.ts`, over the shared lock in
   `responderState.ts`) and the touch history a gesture's `dx` / `dy` is computed
   from. `View`, `Text`, `TextInput` and `ScrollView` all register with it.
-- `Link.tsx` is the web link host: a `View` with an `href`, so the anchor keeps
-  the element reset, the layout and `ref` methods, and the focus markers. It
-  tracks the pressed, hovered and focused states for a function `style` and
-  `children`, as `Pressable` does, but takes no `onPress` and never stops its
-  click. The click rule is `linkActivation.ts`, which the native host shares.
 - `FlatList.tsx` windows a `ScrollView` with `VirtualizedList`'s arithmetic:
   `flatListWindow.ts` is the pure maths, `useFlatListWindow.ts` the scroll
   metrics and the batcher that grows the window one batch per render, and
@@ -127,6 +156,43 @@ style always wins and forced colors keep the system outline.
 with no visual meaning, but it promotes the scroller to its own compositing
 layer, and Chromium then snaps fractionally-positioned content inside that
 layer a device row away from the recorded baselines.
+
+## `webPress/`
+
+The press and hover hooks of both web renderers. The DOM backend's
+`Pressable` and [the link host](#the-link-host) run them, so they import
+nothing from `dom/`.
+
+- `pressMachine.ts`, `usePress.ts`, and `useHover.ts` reproduce
+  `react-native-web`'s press machine: the 50 ms press delay, the 450 ms long
+  press, `onPress` from the DOM `click` rather than the release, Enter
+  anywhere and Space on a button, and hover that ends when a nested pressable
+  takes over.
+- `usePress.ts` also exports the internal `endPointerPresses(event)`: a
+  gesture that takes over a pointer, such as a drag-select drag that starts
+  on a button, passes the pointer event that took over. Each press of that
+  pointer, or of an unknown pointer, ends with that event: the control loses
+  its pressed look, and `onPressOut` gets the event through `fromDomEvent`,
+  as on a release. The caller swallows the click that follows, because
+  `onPress` comes from that click. One registry in `usePress.ts` holds every
+  pointer press, so the takeover also ends the press of a link.
+
+## `refs/`
+
+Helpers for the public refs that receive a host element, such as
+`Button.buttonRef`. They import nothing from `dom/`, so both web renderers
+load them.
+
+- `useForwardedHostRef.ts` merges a forwarded ref with an optional local ref.
+  Before the forwarded ref gets the host element, the hook calls
+  `fillMissingHostMethods`. Pass each new public ref of a host element through
+  this hook.
+- `hostMethods.web.ts` builds `setNativeProps` for a host element, and
+  `setNativeProps` and `setSelection` for a text field. The DOM backend
+  attaches them to its hosts. `fillMissingHostMethods` adds each one that the
+  renderer did not install, so the hosts of `react-native-web` get them too.
+  The native `hostMethods.ts` does nothing, because React Native installs both
+  methods.
 
 ## `types/`
 
@@ -175,13 +241,29 @@ Native's own.
 `LinkInteractionState`: the host of the library's links. `linkTypes.ts` holds
 their props once, over the style, focus-event and layout-event types of each
 platform, so each file types them in its own world, as `reactNative.ts` and
-`reactNative.web.ts` do. The web host is an anchor with its `href` in static
-HTML. Only a primary click or Enter without a modifier on a same-tab link runs
-`onNavigate`, and it then prevents the page load; every other click keeps the
-browser default. `newTab` adds `target="_blank"` and `rel="noopener
-noreferrer"`. The native host is a `Pressable` with the link role and the
-selected state for `current`. An activation runs `onNavigate`, a new-tab link
-included, or `Linking.openURL` without one. The
+`reactNative.web.ts` do. The click rule is `linkActivation.ts`, which both
+hosts share.
+
+One web host serves both web renderers. `link.web.tsx` draws on the seam's own
+`View` from `reactNative`: the DOM backend's `View` by default, and
+`react-native-web`'s `View` on [the RNW route](#the-rnw-route). It imports
+nothing from `dom/`. Both renderers render a `View` with an `href` as an
+anchor, add the `rel` and `target` of `hrefAttrs`, and forward `aria-current`,
+`dataSet`, `onClick`, and the pointer, key, and focus handlers. So the anchor
+keeps the element reset, the layout and `ref` methods, and the focus markers
+of the `View`. The host tracks the pressed, hovered and focused states for a
+function `style` and `children` with the hooks of [`webPress/`](#webpress), as
+`Pressable` does, but takes no `onPress` and never stops its click. It is not
+a `Pressable`, because `react-native-web`'s `Pressable` stops every click and
+runs `onPress` on a Ctrl, Meta, or Shift click.
+
+The web host is an anchor with its `href` in static HTML. Only a primary click
+or Enter without a modifier on a same-tab link runs `onNavigate`, and it then
+prevents the page load; every other click keeps the browser default. `newTab`
+adds `target="_blank"` and `rel="noopener noreferrer"`. The native host is a
+`Pressable` with the link role and the selected state for `current`. An
+activation runs `onNavigate`, a new-tab link included, or `Linking.openURL`
+without one. The
 [app shell parts protocol](../../docs/protocol/app-shell-parts.md#links) holds
 the requirements.
 
@@ -202,9 +284,11 @@ why `svg.ts` is `svg.tsx`. A unit test enforces the ordering for every pair.
 Rules:
 
 - Each pair exports the same names; the unit test diffs them. Add a name to
-  both files in the same change, and only when a component needs it.
-- A new name also needs a type in `types/` and an implementation in `dom/`.
-  The web seam imports nothing but those two; a unit test asserts it.
+  both files in the same change, and only when a component needs it. The icon
+  seam also takes a glyph that only a story needs.
+- A new name in `reactNative` also needs a type in `types/` and an
+  implementation in `dom/`. A unit test checks the imports of
+  `reactNative.web.ts`.
 - Class-valued exports get a same-named type alias so `useRef<View>` keeps
   working; `Animated` merges a namespace for `Animated.Value`.
 - The DOM SVG shim only supports props that are valid SVG attributes, plus the

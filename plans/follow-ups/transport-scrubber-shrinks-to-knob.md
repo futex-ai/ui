@@ -12,11 +12,11 @@
   - **`videoEditorSizing`:** the size metrics of the video-editor family for the `sm`, `md`, and `lg` densities, in `src/video-editor/videoEditorSizing.ts`.
   - **Story snapshot sweep:** the browser test that pins a screenshot of each Storybook story under `tests/browser/snapshots.spec.ts-snapshots/`.
 - **Background:**
-  - `TransportBar` puts its controls in one row that wraps, at `src/video-editor/videoEditorStyles.ts:91-95`. Each control shows only when the consumer supplies its handler.
+  - `TransportBar` puts its controls in one row that wraps, at `src/video-editor/videoEditorStyles.ts:91-95`. Each button and the rate menu show only when the consumer supplies their handler. The two timecodes always show. The scrubber shows unless `showScrubber` is false, at `TransportBar.tsx:121` and `:208`, and the level meter shows when the consumer gives `levels`.
   - The row starts with the leading slot, five playback buttons, and the current timecode. The scrubber and the duration come next. Mark in, mark out, loop, the rate menu, the level meter, and the trailing slot follow.
   - The scrubber sits in a `View` with the style `grow`, at `TransportBar.tsx:208-224`. `grow` is `{ flex: 1 }`, at `videoEditorStyles.ts:33`.
-  - `flex: 1` gives a flex basis of zero on native and on web. The web backend passes `flex: 1` to CSS unchanged, at `src/primitives/dom/resolveStyle.ts:183-190`. Its view reset sets `min-width: 0`, at `src/primitives/dom/css.ts:77`.
-  - The scrubber has no content width. Its track has `width: "100%"`. Its knob and markers are absolutely positioned, at `src/video-editor/Scrubber.tsx:197-253`.
+  - `flex: 1` gives a flex basis of zero on native and on web. The library's own DOM backend, its default web renderer, passes `flex: 1` to CSS unchanged, at `src/primitives/dom/resolveStyle.ts:183-190`. Its view reset sets `min-width: 0`, at `src/primitives/webStylesheet.ts:80`.
+  - The scrubber has no content width. Its track has `width: "100%"`, and its knob and markers are absolutely positioned, at `src/video-editor/videoEditorStyles.ts:116-146`. `src/video-editor/Scrubber.tsx:197-253` draws them.
   - So the row places its line breaks as if the scrubber had no width. The scrubber then gets only the space that is left on its line. A row that takes its width from its content leaves no space at all.
   - Four committed baselines of the story snapshot sweep show the result:
     - `video-editor-examples--full-editor-light-linux.png` and `video-editor-examples--full-editor-dark-linux.png` show the scrubber as a knob between `00:00:06:06` and `00:00:22:00`. The Export button wraps to a second line.
@@ -25,21 +25,29 @@
   - A headless Chrome check of the same flex styles measured the scrubber at 19 px in a 624 px row. It measured 0 px in a row that takes its width from its content.
   - No native screenshot exists. The native row uses the same zero flex basis, so it can collapse in the same way.
   - Pointer seeking needs a width. `seekAt` at `Scrubber.tsx:117-125` turns a press into a time only when the measured width is above zero.
-  - The test "the transport and the timeline share one playhead", at `tests/browser/videoEditor.spec.ts:50-64`, seeks with an arrow key. So it passes at any scrubber width.
+  - The test "the transport and the timeline share one playhead", at `tests/browser/videoEditor.spec.ts:50-63`, seeks with an arrow key. So it passes at any scrubber width.
   - A fix changes these four baselines. `AGENTS.md` says to record them on Linux with `npx playwright test snapshots --update-snapshots`.
   - The test at `tests/unit/scrubber.test.ts:59-70` checks that no `videoEditorSizing` metric shrinks from `sm` to `lg`. A new metric joins that check.
 - **Problem:** When the other controls fill the row, the scrubber shrinks to its knob or to nothing. A pointer user then cannot seek. Nobody can read the position from the bar either.
+- **Screenshot:** The committed baseline `video-editor-examples--full-editor-light-linux.png` shows the scrubber of the transport row as a knob between `00:00:06:06` and `00:00:22:00`, with the Export button on a second line.
 - **Impact if no action:** The "Full editor" stories and each consumer with a full transport show a seek bar without a track. A pointer user cannot seek at zero width. A track a few pixels wide gives no useful control.
 - **Root question:** How does the transport keep a usable seek bar when its other controls fill the row?
 - **Options:**
-  - **A.** Give the scrubber wrapper a minimum width, for example a new `scrubberMinWidth` metric in `videoEditorSizing`. The row then wraps the controls after the scrubber first. The duration can wrap away from the bar onto the next line. Effort: Small.
+  - **A.** Give the scrubber wrapper a minimum width, for example a new `scrubberMinWidth` metric in `videoEditorSizing` for the `sm`, `md`, and `lg` sizes. `withDenseAsSmall` at `src/video-editor/videoEditorSizing.ts:47` gives the `xs` size the `sm` values. The row then wraps the controls after the scrubber first. The duration can wrap away from the bar onto the next line. Effort: Small.
   - **B.** Put the current timecode, the scrubber, and the duration in one seek group that grows to fill its line. Give the scrubber in the group the minimum width of option A. The group wraps as one unit, so both readouts stay beside the bar. In a narrow row the group can take a line of its own, so the transport can be one line taller than with A. The group does not grow when `showScrubber` is false. Effort: Small.
   - **C.** Always put the seek group on its own full-width line above the buttons. The bar then always gets the full width. A compact play-and-seek transport then needs two lines in every app. Effort: Small.
   - **D.** Stack the seek group on its own line through a `layout` prop or from the measured row width. This adds a public prop or a second layout pass. The inline layout still needs option A or B. Effort: Medium.
 - **Left out:**
   - Change only the stories, for example with a wider monitor: consumers still meet the collapse, so it fails the goal.
   - Remove `flexWrap`: the controls then overflow the row. The scrubber still gets only the space that is left, so it fails the goal.
-- **Wider fix:** None, because a search of the other wrapping rows in `src/` found no other growing child without a minimum width.
-- **Previous examples:** None found for a growing child in a wrapping row. Commit `40c4a2a`, from pull request #164, fixed a related zero-width case. A context menu at a pointer had a zero-size anchor, so the menu now passes an explicit `minWidth`.
+- **Wider fix:** None. A search of the other wrapping rows in `src/` found one more growing child without a minimum width. `SegmentedControl` with `sizing="equal"` and `wrap` gives each segment `flex: 1`, at `src/segmented/segmentedControlStyles.ts:187-189`. At the `sm`, `md`, and `lg` sizes, a segment has a `minWidth` of 0, at `:165` and `:224`. A browser probe on 2026-11-27 confirmed that case, in `plans/follow-ups/segmented-equal-wrap-no-effect.md`. The two cases need different minimum widths, a fixed metric here and the widest label there, so no option here adds a shared rule.
+- **Previous examples:** The `SegmentedControl` case under **Wider fix**, which a browser probe confirmed on 2026-11-27. Commit `40c4a2a`, from pull request #164, fixed a related zero-width case. A context menu at a pointer had a zero-size anchor, so the menu now passes an explicit `minWidth`.
+- **Related:**
+  - `plans/follow-ups/clip-selection-ring-never-drawn.md`: the same baselines. Options B and C of that item re-record the baseline of each story with a selected clip or asset, such as the "Full editor" baselines that this fix changes. The second fix records them again over the first.
+  - `plans/follow-ups/mockups-choose-side-of-mismatch.md` and `plans/follow-ups/mockups-meet-mockups-skill.md`: the same screen. The mockup draws the seek bar with `flex: 1`, at `docs/mockups/video-editor.html:268-269`, in the transport at `:707`. Both items compare the transport with the mockup, so a fix here changes what they compare.
+  - `plans/follow-ups/segmented-equal-wrap-no-effect.md`: the same cause. That item holds the `SegmentedControl` case that the **Wider fix** here names: with `sizing="equal"` and `wrap`, the segments never wrap. So the class has two confirmed cases. The two fixes need different minimum widths, a fixed metric here and the widest label there.
+  - `plans/follow-ups/source-files-pass-line-cap.md`: the same file. That item holds the files over 300 lines, and `src/video-editor/TransportBar.tsx` has 304. Under the reading of `plans/follow-ups/legacy-control-size-comments.md`, a change to it splits the file first.
+  - `plans/follow-ups/icon-seam-one-binding-per-glyph.md`: the same file. Its option B changes the icon import of `src/video-editor/TransportBar.tsx`. The first change splits the file, and the second follows the split.
+  - `plans/follow-ups/set-native-props-drops-style-values.md`: the same file. Its option B moves `src/primitives/dom/resolveStyle.ts` to a shared web folder. This item cites that file at `:183-190` as evidence, so the branch of that option updates the path here.
 - **Recommendation:** B. It keeps both readouts beside the bar at every width without a new public prop.
 - **Action:** fix after merge, apply B, because the transport code is outside the files of the change that found the problem.

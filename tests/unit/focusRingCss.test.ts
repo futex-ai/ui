@@ -10,7 +10,7 @@ import {
   focusRingColorFor,
   focusRingCssVariablesFor,
 } from "../../src/focusRingCss";
-import { domBackendCss } from "../../src/primitives/dom/css";
+import { domBackendCss } from "../../src/primitives/domBackendCss.web";
 import { View } from "../../src/primitives/dom/View";
 import {
   darkSharedUiTheme,

@@ -6,13 +6,13 @@
  * creates a single-day event, on web and native alike.
  *
  * The drag starts from a **capture-phase** `pointerdown` listener on the
- * document, not a per-cell handler: RNW's `Pressable` runs `stopPropagation()`
- * in its press responder, so a bubble-phase `onPointerDown` on the cell (or an
- * ancestor) never fires. A document capture listener fires before the responder;
- * it is scoped to this grid via the container ref, and the start/hovered cell is
- * found by hit-testing the cells' DOM rects (each carries its date in
- * `data-testid`). Touch and non-left buttons are ignored, and everything is
- * guarded by `typeof document`.
+ * document, not a per-cell handler. It runs before any handler inside the grid,
+ * so nothing in a cell can stop the event before the drag sees it. A cell's
+ * `Pressable` does not stop the `pointerdown` of an enabled press on either web
+ * renderer. The listener is scoped to this grid via the container ref, and the
+ * start/hovered cell is found by hit-testing the cells' DOM rects (each carries
+ * its date in `data-testid`). Touch and non-left buttons are ignored, and
+ * everything is guarded by `typeof document`.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -192,8 +192,8 @@ export function useCalendarMonthDragCreate(opts: {
     return false;
   }, []);
 
-  // A capture-phase `pointerdown` on the document reliably fires before RNW's
-  // Pressable runs `stopPropagation()` in its press responder. The press is
+  // A capture-phase `pointerdown` on the document fires before any handler
+  // inside the grid, so nothing in a cell can stop it first. The press is
   // scoped to this grid via the container ref, and the start cell is found by
   // hit-testing the cells' rects.
   useEffect(() => {

@@ -7,6 +7,8 @@
  * resolves on web (Metro web, the `dist/node` build, and Storybook) and
  * delegates to the library's own DOM backend (`./dom`), so a web consumer
  * installs neither `react-native` nor `react-native-web` and aliases nothing.
+ * An app that draws with `react-native-web` loads this file on web through the
+ * rule of `@firna/ui/rnw`, with `react-native` aliased to `react-native-web`.
  *
  * The export list is an explicit allowlist mirrored by `reactNative.web.ts`; a
  * unit test keeps the two in sync. Add a name here only when a component needs

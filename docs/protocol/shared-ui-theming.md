@@ -58,8 +58,15 @@ package boundary and links every other page.
   raw DOM hosts still paints the glow. Static and server-rendered HTML keeps
   emitting `domBackendCss` in `<head>` itself; the injection is a client effect
   and never serializes.
-- On web, a library control keeps both an inline resting shadow and its focus
-  glow. A raw DOM host must set `--firna-focus-ring-base-shadow` for a resting
+- On web, a library control keeps both its resting shadow and its focus glow.
+  The [package protocol](shared-ui-package.md#react-native-web-contract)
+  defines the React Native Web (RNW) route. On that route, the library has three
+  known gaps in this requirement:
+  - Focus can drop a resting shadow that comes from `StyleSheet.create`.
+  - At rest, such a shadow shows only while the library stylesheet comes
+    before the stylesheet of `react-native-web` in the document.
+  - An inline resting shadow hides the glow.
+- A raw DOM host must set `--firna-focus-ring-base-shadow` for a resting
   shadow instead of `box-shadow`; the docs must say so, because an inline
   `box-shadow` outranks the glow rule while the rule still removes the browser
   outline, leaving no focus indicator at all.

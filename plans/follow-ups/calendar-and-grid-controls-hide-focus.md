@@ -1,0 +1,66 @@
+# Calendar and data grid controls hide keyboard focus
+
+- **Severity:** High. **Likelihood:** Common. **Effort:** Medium. **Confidence:** High. **Harder later:** Yes.
+- **Kind:** Outside the scope.
+- **Added:** 2026-11-27, from the branch `calummoore/firna-rnw-seam-contract-mhsd`, the RNW caveat "`src/calendar/CalendarToolbar.tsx:80` and `src/data-grid/DataGridAddRow.tsx:35` can show no focus indicator" of its plan. A probe found the same defect on both web renderers and on more controls.
+- **Location:** `src/calendar/CalendarToolbar.tsx:73-108`, `src/calendar/CalendarEventBlock.tsx:59-77`, `src/calendar/CalendarEventChip.tsx:60-96`, `src/calendar/AgendaView.tsx:161-177`, `src/data-grid/DataGridAddRow.tsx:28-40`, `src/data-grid/DataGridColumnMenu.tsx:61-71`, `src/data-grid/DataGridColumnMenu.tsx:109-119`, `src/data-grid/DataGridRow.tsx:157-168`, `src/data-grid/DataGridCardStack.tsx:146-158`, `src/data-grid/DataGrid.tsx:148-154`, `src/focusRing.ts:46-48`, `src/focusRing.ts:202`, `docs/protocol/shared-ui-theming.md:26-49`, `tests/browser/focus-ring.spec.ts`, and `tests/browser/focusRingHelpers.ts`.
+- **Reason:** These controls came before the react-native-web route branch, and the defect is the same on both web renderers, so its fix does not belong to that branch.
+
+- **Terms:**
+  - **Focus indicator:** what a control draws on keyboard focus. The theme's `focusIndicator` chooses `ring`, the shared glow and the default, `outline`, the browser outline, or `none`.
+  - **`useFocusRing`:** the hook at `src/focusRing.ts:202` that gives a control the markers and the style of the shared focus indicator, as the theme or a `focusIndicator` prop chooses.
+  - **`hideWebOutlineView`:** the style `{ outlineStyle: "none" }` at `src/focusRing.ts:46-48`, which removes the browser outline of a `View` or a `Pressable` on web. `@firna/ui/focusRing` exports it.
+  - **RNW route:** an app that draws its own screens with `react-native-web` (RNW) applies the rule of `@firna/ui/rnw`, and Firna then draws with RNW too.
+  - **DOM backend:** Firna's own web renderer under `src/primitives/dom`, which every web app uses when it does not take the RNW route.
+- **Background:**
+  - `docs/protocol/shared-ui-theming.md:26-32` says that one `FocusIndicator` value sets how a control shows keyboard focus, and that the theme sets the default. Lines 47-49 say that a control with `none` must show focus some other way, after WCAG 2.1 — 2.4.7 Focus Visible, level AA.
+  - These eleven controls add `hideWebOutlineView` to their style, in twelve places of eight files, and draw no other focus indicator. None calls `useFocusRing`.
+    - `CalendarToolbar`: the "Previous", "Next", and "Today" buttons, at `src/calendar/CalendarToolbar.tsx:80`, `:92`, and `:104`.
+    - `CalendarEventBlock`: a timed event in the week and day views, at `src/calendar/CalendarEventBlock.tsx:74`.
+    - `CalendarEventChip`: an event in the month view, in its "dot" form at `src/calendar/CalendarEventChip.tsx:68` and its "bar" form at `:90`.
+    - `AgendaRow`: an event row of the agenda view, at `src/calendar/AgendaView.tsx:168`. Its style `agendaRow` and its hover style `agendaRowHover`, at `src/calendar/calendarStyles.ts:452-458`, draw no focus state.
+    - `DataGridAddRow`: the "New record" button, at `src/data-grid/DataGridAddRow.tsx:35`.
+    - `DataGridColumnMenu`: the "field options" button of a column, at `src/data-grid/DataGridColumnMenu.tsx:67`, and the "Add field" button, at `:115`.
+    - `DataGridRow`: the "Expand row" button, at `src/data-grid/DataGridRow.tsx:164`.
+    - `DataGridCardStack`: the "Open record" card of the narrow layout, at `src/data-grid/DataGridCardStack.tsx:154`.
+  - A browser probe at the branch head on 2026-11-27, in Chromium, focused each control after a key press, so the browser used keyboard focus. It ran with the DOM backend and on the RNW route with RNW 0.21.4, with the same results. Each control matched `:focus-visible`, and each had `outline-style: none`, `box-shadow: none`, and no `data-firna-focus-ring` marker. The probe covered every control above except the "bar" form of the chip and the agenda row, whose code has the same pattern.
+  - The data grid draws its active cell with an inset ring, at `src/data-grid/dataGridStyles.ts:160-165`, so its cells keep a focus indicator. In the probe, the active cell showed its ring while focus sat on "New record", so the only visible ring was on the wrong element.
+  - `DataGrid` has a `focusIndicator` prop, at `src/data-grid/DataGrid.tsx:148-154`. Its doc comment applies it to the column resize handles only. `CalendarView` has no `focusIndicator` prop.
+  - The other library controls with `hideWebOutlineView` draw their own indicator, except the day cell of the month view that the next bullet names. The toast buttons add a focus ring when they have focus, at `src/toast/Toast.tsx:228` and `:268`. The surfaces of the popover and the modal frame take focus only from code, at `src/popover/PopoverSurface.web.tsx:112` and `src/modal/WebModalFrame.web.tsx:206`.
+  - A day cell of the month view, at `src/calendar/MonthView.tsx:241-258`, is also a tab stop with no focus indicator in the probe, but it has no role and no name. How keyboard users reach that cell is a separate question, so this item leaves the cell out.
+  - `tests/browser/focus-ring.spec.ts` and `tests/browser/focus-indicator-none.spec.ts` check the indicator of a set of controls in a focus-ring story. They cover no calendar or data grid control. `tests/browser/focusRingHelpers.ts` holds their helpers.
+  - These stories draw the eleven controls:
+    - `calendar-examples--month-calendar`, "Month view": the toolbar buttons and both forms of the chip.
+    - `calendar-examples--week-calendar`, "Week view": the event blocks.
+    - `calendar-examples--agenda-calendar`, "Agenda view": the agenda rows.
+    - `datagrid-examples--full-featured`, "Column menu, add column & row": "New record", the "field options" buttons, and "Add field".
+    - `datagrid-examples--clipped-text-cards`, "Clipped text (card stack)": "Expand row" at a viewport of 700 px or more, and the "Open record" cards below 700 px.
+  - A probe on 2026-11-28 drew each control on both web renderers and checked where a 4 px glow would meet an ancestor that clips. Only "New record" lost room: the scroll container of the grid and its frame, at `src/data-grid/dataGridStyles.ts:36-41`, cut its left, right, and bottom sides. The other ten controls had room for the glow on every side.
+- **Problem:** Eleven controls of the calendar and the data grid, in twelve places of eight files, remove the browser outline and draw no other focus indicator, on both web renderers. A keyboard user cannot see which of them has focus.
+- **Screenshot:** The picture showed the calendar toolbar while the "Previous" button had keyboard focus: the button looked the same as "Next", and the red box marked "Previous".
+- **Impact if no action:** Keyboard users lose their place in the calendar navigation and in the data grid, which fails WCAG 2.1 — 2.4.7 Focus Visible, level AA. Each new control that copies this style pattern adds one more case.
+- **Root question:** How does each calendar and data grid control show keyboard focus on web, with the indicator that the theme chooses?
+- **Options:**
+  - **A.** Give each of the eleven controls the shared indicator through `useFocusRing`, in all twelve places, as `src/segmented/SegmentedControlButton.tsx:95`, `:145`, and `:171` do:
+    - Spread `focusRingProps` on the control, add `focusRingVariables` to its style, and pass a negative `offset` where the glow must stay inside a clipped parent. In the probe above, only "New record" needs it.
+    - Each control takes the `focusIndicator` of the theme, which `useFocusRing` reads. `DataGrid` keeps its `focusIndicator` prop for its resize handles, as its doc comment says, so `src/data-grid/DataGrid.tsx` does not change.
+    - Add a browser case that focuses each control with the keyboard and expects the glow, with the helpers of `tests/browser/focusRingHelpers.ts`, in the stories above.
+    - Cost: eleven controls in eight files change, and `src/calendar/CalendarEventBlock.tsx` also changes under `plans/follow-ups/time-grid-event-click-creates-event.md`. A glow that a later layout clips needs its own `offset`.
+    - Effort: Medium.
+  - **B.** Apply A, and add a unit test for the class: it fails when a source file gives a `Pressable` the style `hideWebOutlineView` with no `useFocusRing` and no other focus style. A test for the class needs the approval of the user. Effort: Medium.
+  - **C.** Apply A, and let the `focusIndicator` prop of `DataGrid` reach every control of the grid, with a `focusIndicator` prop for `CalendarView` too. An app can then set the indicator of one grid or one calendar. `src/data-grid/DataGrid.tsx` has 493 lines, over the hard limit of 300 lines in the `typescript` skill, so C also needs its split. Effort: Large.
+- **Left out:**
+  - Only remove `hideWebOutlineView`, so that the browser outline shows: the theme's `focusIndicator` then no longer decides the indicator, and `none` keeps an outline, which breaks `docs/protocol/shared-ui-theming.md:26-46`.
+  - Draw the shared ring on every `Pressable` of the seam by default: on the RNW route the seam gives the `Pressable` of RNW, which Firna does not wrap, so it fails the goal there.
+  - Remove `hideWebOutlineView` from `@firna/ui/focusRing`: it deletes a public export that the two surfaces above use correctly, and a control can still write `outlineStyle: "none"` itself, so it does not stop the class.
+  - Change nothing: keyboard users keep losing focus, so it fails the goal.
+- **Wider fix:** B. A test that rejects a hidden outline with no focus style catches each later case, but it needs the approval of the user.
+- **Previous examples:** The toast close button removed the browser outline with no replacement. The WCAG 2.1 plan of the library graded it High, at `plans/wcag-2-1-accessibility.md:239`, and the close button now adds its own focus ring, at `src/toast/Toast.tsx:257-269`.
+- **Related:**
+  - `plans/follow-ups/legacy-control-size-comments.md`: the same file. Option C here changes `src/data-grid/DataGrid.tsx`, whose split that item waits for. The split serves both items.
+  - `plans/follow-ups/source-files-pass-line-cap.md`: the same file. Option C here changes `src/data-grid/DataGrid.tsx`, which passes 300 lines, so C splits it as that item asks.
+  - `plans/follow-ups/code-comments-name-one-web-renderer.md`: the same code. That item rewrites the comment at `src/data-grid/DataGridCardStack.tsx:140`, directly above the card `Pressable` at `:146-158` that A changes, and the header comment at `src/data-grid/DataGrid.tsx:4`. Whichever item goes second keeps the change of the other.
+  - `plans/follow-ups/rnw-focus-glow-drops-resting-shadow.md`: work that interacts. Both items add focus-ring browser cases with `tests/browser/focusRingHelpers.ts`. Option D of that item draws the glow with `outline`, so the new cases of A here then expect an outline in place of a `box-shadow`.
+  - `plans/follow-ups/time-grid-event-click-creates-event.md`: the same code. Option A of that item adds a marker to `src/calendar/CalendarEventBlock.tsx`, and A here adds the shared focus indicator to the same block. Whichever item goes second keeps the change of the other.
+- **Recommendation:** A. It gives each control the indicator that the theme protocol already requires, with the hook that the other controls use.
+- **Action:** fix after merge, apply A, because the controls came before the react-native-web route branch, and the theming protocol already settles which indicator they show.
