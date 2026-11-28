@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.3.0](https://github.com/futex-ai/ui/compare/v5.2.0...v5.3.0) (2026-11-28)
+
+### Features
+
+- **rnw:** support react-native-web consumers through one published rule ([#190](https://github.com/futex-ai/ui/issues/190)) ([c1a1fb6](https://github.com/futex-ai/ui/commit/c1a1fb6c8f51c0b01b9e08bfed8210938e34880f))
+
 ## [5.2.0](https://github.com/futex-ai/ui/compare/v5.1.0...v5.2.0) (2026-11-26)
 
 ### Features
