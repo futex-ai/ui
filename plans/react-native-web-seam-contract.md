@@ -716,13 +716,13 @@ Depends on: every other milestone
 - [x] Update every follow-up item that this branch makes stale, with the
       report `.context/react-native-web-seam-contract/follow-up-check.md` as
       input. Then run a fresh follow-up check, as the `plans` skill says.
-- [ ] Run the targeted tests and the complete gate, `cargo xtask check`.
-- [ ] Commit with Conventional Commits and push the branch.
-- [ ] Review the complete local diff against `origin/main` with the
+- [x] Run the targeted tests and the complete gate, `cargo xtask check`.
+- [x] Commit with Conventional Commits and push the branch.
+- [x] Review the complete local diff against `origin/main` with the
       `implementation-review` skill after the push. Report the findings, then
       apply the fix rule: fix the `fix now` findings, record follow-up items
       under `plans/follow-ups/` for the rest, re-review once, and report.
-- [ ] Add follow-up items for the RNW caveats outside this scope: the calendar
+- [x] Add follow-up items for the RNW caveats outside this scope: the calendar
       time grid cancels `pointerdown`, the panel resize handle and the link
       host show press-in on an enclosing RNW `Pressable`, `pointerEvents`
       passed as a prop warns on RNW, the rich-text editor warns twice on RNW,
