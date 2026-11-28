@@ -48,11 +48,10 @@ export function dragSelectableSessionDom(
   let lastMove: PointerEvent | null = null;
   let takeoverMove: MouseEvent | null = null;
 
-  const copyOutsideStartingMove = (event: MouseEvent) => {
+  const copyStartingMove = (event: MouseEvent) => {
     if (
       takeoverMove?.type !== "pointermove" ||
-      event.target !== takeoverMove.target ||
-      event.composedPath().includes(options.provider)
+      event.target !== takeoverMove.target
     ) {
       return;
     }
@@ -73,7 +72,7 @@ export function dragSelectableSessionDom(
       shiftKey: event.shiftKey,
       view: event.view,
     });
-    // The responder system must see the provider on the move's event path.
+    // Send the move through the provider before a child can stop the original.
     takeoverMove = copy;
     options.provider.dispatchEvent(copy);
     takeoverMove = null;
@@ -114,7 +113,7 @@ export function dragSelectableSessionDom(
           lastMove = event;
           takeoverMove = null;
         },
-        copyOutsideStartingMove,
+        copyStartingMove,
       ),
     measureTargets: () => measureDragSelectableTargets(options.targets()),
     measureTargetsInOrder: () =>

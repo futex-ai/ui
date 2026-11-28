@@ -11,17 +11,22 @@ import { List, ListItem } from "@firna/ui/list";
 
 const projects = [{ id: "overview", href: "#overview", title: "Overview" }];
 
-function SelectableRow({ children, id, label }) {
+function SelectableRow({ children, id, label, stopMouseMove }) {
   const target = useDragSelectableTarget({ id, label });
   return (
-    <View ref={target.ref}>
+    <View
+      onMouseMove={
+        stopMouseMove ? (event) => event.stopPropagation() : undefined
+      }
+      ref={target.ref}
+    >
       <View {...target.a11yProps} style={{ height: 20 }} />
       {children}
     </View>
   );
 }
 
-function TakeoverRows({ label }) {
+function TakeoverRows({ label, stopMouseMove }) {
   const [events, setEvents] = useState([]);
   const [navigations, setNavigations] = useState(0);
   const record = (event) => setEvents((previous) => [...previous, event]);
@@ -33,7 +38,11 @@ function TakeoverRows({ label }) {
       minimumControlDragDistance={4}
       style={{ width: 220 }}
     >
-      <SelectableRow id="archive" label="Archive row">
+      <SelectableRow
+        id="archive"
+        label="Archive row"
+        stopMouseMove={stopMouseMove}
+      >
         <Button
           block
           onPress={() => record("press")}
@@ -76,5 +85,6 @@ createRoot(document.getElementById("root")).render(
       <TakeoverRows label="Scrollable rows" />
       <View style={{ height: 200 }} />
     </ScrollView>
+    <TakeoverRows label="Rows that stop mouse moves" stopMouseMove />
   </main>,
 );

@@ -65,6 +65,15 @@ test("an RNW drag ends the button press at the starting move", async ({
   await dragFromButton(page, page.getByRole("group", { name: "Project rows" }));
 });
 
+test("an RNW drag ends the button press when a row stops the starting mousemove", async ({
+  page,
+}) => {
+  await dragFromButton(
+    page,
+    page.getByRole("group", { name: "Rows that stop mouse moves" }),
+  );
+});
+
 test("an RNW drag clears a link row's pressed look and swallows its click", async ({
   page,
 }) => {

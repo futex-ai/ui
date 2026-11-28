@@ -151,6 +151,13 @@ decision) needs the larger of `minimumDragDistance` and
   Only a responder gesture of the same press inside the provider gets a
   transfer request. The gesture ends if its holder accepts the transfer.
   A gesture above the provider keeps the responder until release.
+  - At every drag start, the provider dispatches one copy of the starting
+    `mousemove` on its element during document capture. The copy can reach
+    the responder when content below the provider stops the original move.
+    An app's `mousemove` listener on the document or the provider can see one
+    untrusted copy at each drag start.
+  - If content above the provider stops the starting `mousemove` and its copy,
+    a press or gesture that the responder holds stays active until release.
   - With the DOM backend, the control's `onPressOut` receives the pointer
     event that started the drag.
   - On the RNW route, RNW's responder holds the press of a library
