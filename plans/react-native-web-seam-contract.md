@@ -511,6 +511,14 @@ These calls are mine, made on 2026-11-27, and they follow the answers above.
   Reason: review findings 7 and 9 showed that RNW drops `submitBehavior` and
   these ref methods, and the fix keeps the RNW form of `reactNative` a plain
   re-export.
+- **Review round 2, answered by Cal on 2026-11-28.** Finding 8: option A.
+  The provider sends the copy of the starting `mousemove` at every drag
+  start, during the document's capture phase, so content that stops the
+  move below the provider cannot keep the press. A stop above the provider
+  still keeps it, and the drag-select protocol states that limit. Finding 7,
+  option E: the Input contract states React Native's Enter rule, where
+  `submitBehavior` overrides `blurOnSubmit` and a single-line `newline` acts
+  as `blurAndSubmit`, and the shared web rule follows it on both renderers.
 - **Other RNW fixes in scope.** The toast live region sets `aria-atomic` on
   the element, because RNW drops the prop. The comments in four drag hooks that
   say RNW's `Pressable` stops `pointerdown` are corrected. Reason: the contract
